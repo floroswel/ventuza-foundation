@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { BottomNav } from "@/components/BottomNav";
 import { listUpcomingEvents, eventTypeLabel, formatEventDate, type EventType, type EventWithMeta } from "@/lib/events";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
+import { NotificationBell } from "@/components/NotificationBell";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/events")({
