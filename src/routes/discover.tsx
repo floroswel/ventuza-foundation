@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Compass, Heart, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, Ruler, SlidersHorizontal, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
 import {
   DEFAULT_FILTERS, fetchDiscover, requestAndStoreLocation,
-  signPhotos, formatDistance, ageFrom, isOnline,
+  signPhotos, formatDistance, ageFrom, isOnline, formatLastSeen, formatHeight,
   type DiscoverFilters, type DiscoverProfile,
 } from "@/lib/discover";
 import { cn } from "@/lib/utils";
