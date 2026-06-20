@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VisitorsRouteImport } from './routes/visitors'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as EventsRouteImport } from './routes/events'
@@ -37,6 +38,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PremiumRoute = PremiumRouteImport.update({
+  id: '/premium',
+  path: '/premium',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -102,6 +108,7 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
+  '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
@@ -118,6 +125,7 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
+  '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
@@ -135,6 +143,7 @@ export interface FileRoutesById {
   '/events': typeof EventsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
+  '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
@@ -153,6 +162,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/notifications'
     | '/onboarding'
+    | '/premium'
     | '/profile'
     | '/settings'
     | '/visitors'
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/notifications'
     | '/onboarding'
+    | '/premium'
     | '/profile'
     | '/settings'
     | '/visitors'
@@ -185,6 +196,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/notifications'
     | '/onboarding'
+    | '/premium'
     | '/profile'
     | '/settings'
     | '/visitors'
@@ -202,6 +214,7 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
+  PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
   SettingsRoute: typeof SettingsRoute
   VisitorsRoute: typeof VisitorsRoute
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       path: '/profile'
       fullPath: '/profile'
       preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/premium': {
+      id: '/premium'
+      path: '/premium'
+      fullPath: '/premium'
+      preLoaderRoute: typeof PremiumRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -332,6 +352,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
+  PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
   SettingsRoute: SettingsRoute,
   VisitorsRoute: VisitorsRoute,

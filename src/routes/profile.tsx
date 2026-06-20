@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, Eye, EyeOff, Pencil, Settings as SettingsIcon, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
+import { BadgeCheck, Crown, Eye, EyeOff, Pencil, Settings as SettingsIcon, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -130,6 +130,9 @@ function ProfilePage() {
 
         <div className="absolute right-4 top-4 flex gap-2">
           <NotificationBell className="size-10 border border-border bg-surface/80 backdrop-blur" />
+          <Button size="icon" variant="subtle" onClick={() => navigate({ to: "/premium" })} aria-label="Premium">
+            <Crown className="size-4 text-primary" />
+          </Button>
           <Button size="icon" variant="subtle" onClick={() => setEditing(true)} aria-label="Edit profile">
             <Pencil className="size-4" />
           </Button>
