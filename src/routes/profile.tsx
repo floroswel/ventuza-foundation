@@ -14,6 +14,7 @@ import { Chip } from "@/components/Chip";
 import { BottomNav } from "@/components/BottomNav";
 import { PhotoManager } from "@/components/PhotoManager";
 import { ProfilePremiumPanel } from "@/components/ProfilePremiumPanel";
+import { PrivateAlbumManager } from "@/components/PrivateAlbum";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
@@ -266,6 +267,12 @@ function ProfilePage() {
             }}
           />
         </Section>
+
+        <Section title="Album privat">
+          <PrivateAlbumManager userId={profile.id} />
+        </Section>
+
+
 
 
         {/* Privacy quick actions */}

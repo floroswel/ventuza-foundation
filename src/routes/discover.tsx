@@ -1,9 +1,10 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Ruler, Sparkles, SlidersHorizontal, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Plane, Rocket, Ruler, Sparkles, SlidersHorizontal, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
+import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
 import { getOrCreateConversation } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -139,7 +140,7 @@ function DiscoverPage() {
 
       <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={filters} onApply={setFilters} />
       <MatchModal open={!!match} onClose={() => setMatch(null)} otherName={match?.name ?? ""} otherPhotoUrl={match?.photo ?? null} />
-      <ProfileSheet profile={selected} onClose={() => setSelected(null)} onDecision={handleDecision} onMessage={async (p) => {
+      <ProfileSheet profile={selected} currentUserId={user?.id ?? null} onClose={() => setSelected(null)} onDecision={handleDecision} onMessage={async (p) => {
         try {
           const cid = await getOrCreateConversation(p.id);
           setSelected(null);
@@ -243,9 +244,19 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
                 className="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgb(52,211,153)] ring-2 ring-black/50"
               />
             )}
-            {p.verified && (
+            {p.boost_until && new Date(p.boost_until) > new Date() && (
+              <span aria-label="boosted" className="absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-lg backdrop-blur">
+                <Rocket className="size-2.5" /> BOOST
+              </span>
+            )}
+            {!(p.boost_until && new Date(p.boost_until) > new Date()) && p.verified && (
               <span aria-label="verified" className="absolute left-1.5 top-1.5 rounded-full bg-black/60 p-0.5 backdrop-blur">
                 <BadgeCheck className="size-3.5 text-primary" />
+              </span>
+            )}
+            {p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date()) && (
+              <span className="absolute right-1.5 bottom-8 flex items-center gap-0.5 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] text-white backdrop-blur">
+                <Plane className="size-2.5" /> {p.travel_city}
               </span>
             )}
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 p-1.5 text-left">
@@ -269,9 +280,10 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
 }
 
 function ProfileSheet({
-  profile, onClose, onDecision, onMessage,
+  profile, currentUserId, onClose, onDecision, onMessage,
 }: {
   profile: DiscoverProfile | null;
+  currentUserId: string | null;
   onClose: () => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
   onMessage: (p: DiscoverProfile) => void;
@@ -402,6 +414,9 @@ function ProfileSheet({
 
           {profile.looking_for?.length ? <TagBlock label="Looking for" values={profile.looking_for} /> : null}
           {profile.interests?.length ? <TagBlock label="Interests" values={profile.interests} /> : null}
+
+          {currentUserId && <PrivateAlbumViewer ownerId={profile.id} currentUserId={currentUserId} />}
+
 
           <div className="flex items-center gap-2 pt-2">
             <button

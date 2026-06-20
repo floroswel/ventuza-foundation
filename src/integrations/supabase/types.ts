@@ -604,6 +604,7 @@ export type Database = {
           bio: string
           birthdate: string
           body_type: string
+          boost_until: string
           display_name: string
           distance_m: number
           ethnicity: string
@@ -622,6 +623,8 @@ export type Database = {
           pronouns: string[]
           relationship_status: string
           score: number
+          travel_city: string
+          travel_until: string
           tribes: string[]
           verified: boolean
           weight_kg: number

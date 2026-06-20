@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2, Plus, Star, X } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { moderatePhoto } from "@/lib/verification.functions";
 import { cn } from "@/lib/utils";
 
 const MAX_PHOTOS = 9;
@@ -18,6 +20,7 @@ type Props = {
 export function PhotoManager({ userId, photos, onChange, persist = true, className }: Props) {
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const moderate = useServerFn(moderatePhoto);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -60,6 +63,22 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           .from("profile-photos")
           .upload(path, file, { upsert: false, contentType: file.type });
         if (error) { toast.error(error.message); continue; }
+
+        // AI moderation pass — best effort, don't block on failure
+        try {
+          const { data: signedData } = await supabase.storage.from("profile-photos").createSignedUrl(path, 300);
+          if (signedData?.signedUrl) {
+            const mod = await moderate({ data: { photoUrl: signedData.signedUrl } });
+            if (!mod.allowed) {
+              await supabase.storage.from("profile-photos").remove([path]);
+              toast.error(`Poza respinsă: ${mod.reason || "conținut nepermis"}`);
+              continue;
+            }
+          }
+        } catch {
+          // moderation failure shouldn't block upload
+        }
+
         added.push(path);
       }
       if (added.length) {
