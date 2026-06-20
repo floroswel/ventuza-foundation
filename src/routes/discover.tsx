@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Ruler, Sparkles, SlidersHorizontal, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Plane, Rocket, Ruler, Sparkles, SlidersHorizontal, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
 import { getOrCreateConversation } from "@/lib/chat";
