@@ -13,7 +13,7 @@ export const ORIENTATION_OPTIONS = [
 ];
 
 export const LOOKING_FOR_OPTIONS = [
-  "Long-term relationship", "Short-term dating", "Casual", "Friendship", "Networking", "Still figuring it out",
+  "Long-term relationship", "Short-term dating", "Casual", "Friendship", "Networking", "Right now", "Still figuring it out",
 ];
 
 export const INTEREST_OPTIONS = [
@@ -35,4 +35,33 @@ export const PROMPT_OPTIONS = [
   "My love language is…",
   "I'm looking for someone who…",
   "The first thing you'll notice about me…",
+];
+
+// === SPRINT 1: rich profile fields ===
+
+export const TRIBE_OPTIONS = [
+  "Bear", "Cub", "Daddy", "Otter", "Wolf", "Jock", "Twink", "Twunk",
+  "Muscle", "Geek", "Leather", "Pup", "Rugged", "Clean-cut",
+  "Trans", "Bi", "Discreet",
+];
+
+export const BODY_TYPE_OPTIONS = [
+  "Slim", "Average", "Athletic", "Muscular", "Stocky", "Bear", "Husky", "Large",
+];
+
+export const POSITION_OPTIONS = [
+  "Top", "Vers Top", "Versatile", "Vers Bottom", "Bottom", "Side", "Oral", "Not sure",
+];
+
+export const HIV_STATUS_OPTIONS = [
+  "Negative", "Negative on PrEP", "Positive", "Positive Undetectable", "Prefer not to say",
+];
+
+export const RELATIONSHIP_STATUS_OPTIONS = [
+  "Single", "Dating", "Exclusive", "Partnered", "Open relationship", "Married", "Polyamorous",
+];
+
+export const ETHNICITY_OPTIONS = [
+  "Asian", "Black", "Latino / Hispanic", "Middle Eastern", "Mixed", "Native American",
+  "Pacific Islander", "South Asian", "White", "Other",
 ];

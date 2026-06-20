@@ -5,8 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Chip } from "@/components/Chip";
 import {
   GENDER_OPTIONS, ORIENTATION_OPTIONS, LOOKING_FOR_OPTIONS,
+  TRIBE_OPTIONS, BODY_TYPE_OPTIONS, POSITION_OPTIONS, HIV_STATUS_OPTIONS,
 } from "@/lib/profile-options";
-import type { DiscoverFilters } from "@/lib/discover";
+import { DEFAULT_FILTERS, type DiscoverFilters } from "@/lib/discover";
 
 function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
@@ -32,29 +33,36 @@ export function FiltersDrawer({
           <X className="size-5" />
         </button>
         <h2 className="font-display text-lg">Filters</h2>
-        <button
-          onClick={() => setDraft({ maxDistanceKm: 100, minAge: 18, maxAge: 60, lookingFor: [], gender: [], orientation: [] })}
-          className="text-sm text-primary hover:underline"
-        >
+        <button onClick={() => setDraft(DEFAULT_FILTERS)} className="text-sm text-primary hover:underline">
           Reset
         </button>
       </header>
 
       <div className="flex-1 space-y-8 overflow-y-auto px-6 py-6">
-        {/* distance */}
+        {/* quick toggles */}
+        <section className="flex flex-wrap gap-2">
+          <Toggle active={draft.onlineOnly} onClick={() => setDraft({ ...draft, onlineOnly: !draft.onlineOnly })}>
+            <span className="mr-1.5 inline-block size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />
+            Online only
+          </Toggle>
+          <Toggle active={draft.verifiedOnly} onClick={() => setDraft({ ...draft, verifiedOnly: !draft.verifiedOnly })}>
+            ✓ Verified only
+          </Toggle>
+          <Toggle active={draft.withPhotoOnly} onClick={() => setDraft({ ...draft, withPhotoOnly: !draft.withPhotoOnly })}>
+            With photo
+          </Toggle>
+        </section>
+
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <Label>Distance</Label>
             <span className="text-sm text-primary">{draft.maxDistanceKm} km</span>
           </div>
-          <input
-            type="range" min={1} max={500} value={draft.maxDistanceKm}
+          <input type="range" min={1} max={500} value={draft.maxDistanceKm}
             onChange={(e) => setDraft({ ...draft, maxDistanceKm: Number(e.target.value) })}
-            className="accent-[var(--primary)] w-full"
-          />
+            className="accent-[var(--primary)] w-full" />
         </section>
 
-        {/* age */}
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <Label>Age range</Label>
@@ -63,15 +71,40 @@ export function FiltersDrawer({
           <div className="flex items-center gap-3">
             <input type="range" min={18} max={99} value={draft.minAge}
               onChange={(e) => setDraft({ ...draft, minAge: Math.min(Number(e.target.value), draft.maxAge) })}
-              className="accent-[var(--primary)] w-full"
-            />
+              className="accent-[var(--primary)] w-full" />
             <input type="range" min={18} max={99} value={draft.maxAge}
               onChange={(e) => setDraft({ ...draft, maxAge: Math.max(Number(e.target.value), draft.minAge) })}
-              className="accent-[var(--primary)] w-full"
-            />
+              className="accent-[var(--primary)] w-full" />
           </div>
         </section>
 
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <Label>Height</Label>
+            <span className="text-sm text-primary">
+              {draft.minHeight ?? 140}cm – {draft.maxHeight ?? 210}cm
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <input type="range" min={140} max={210} value={draft.minHeight ?? 140}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setDraft({ ...draft, minHeight: v, maxHeight: Math.max(v, draft.maxHeight ?? 210) });
+              }}
+              className="accent-[var(--primary)] w-full" />
+            <input type="range" min={140} max={210} value={draft.maxHeight ?? 210}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                setDraft({ ...draft, maxHeight: v, minHeight: Math.min(v, draft.minHeight ?? 140) });
+              }}
+              className="accent-[var(--primary)] w-full" />
+          </div>
+        </section>
+
+        <ChipSection label="Tribes" options={TRIBE_OPTIONS} value={draft.tribes} onChange={(v) => setDraft({ ...draft, tribes: v })} />
+        <ChipSection label="Body type" options={BODY_TYPE_OPTIONS} value={draft.bodyTypes} onChange={(v) => setDraft({ ...draft, bodyTypes: v })} />
+        <ChipSection label="Position" options={POSITION_OPTIONS} value={draft.positions} onChange={(v) => setDraft({ ...draft, positions: v })} />
+        <ChipSection label="HIV status" options={HIV_STATUS_OPTIONS} value={draft.hivStatuses} onChange={(v) => setDraft({ ...draft, hivStatuses: v })} />
         <ChipSection label="Looking for" options={LOOKING_FOR_OPTIONS} value={draft.lookingFor} onChange={(v) => setDraft({ ...draft, lookingFor: v })} />
         <ChipSection label="Gender" options={GENDER_OPTIONS} value={draft.gender} onChange={(v) => setDraft({ ...draft, gender: v })} />
         <ChipSection label="Orientation" options={ORIENTATION_OPTIONS} value={draft.orientation} onChange={(v) => setDraft({ ...draft, orientation: v })} />
@@ -83,6 +116,22 @@ export function FiltersDrawer({
         </Button>
       </footer>
     </div>
+  );
+}
+
+function Toggle({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={
+        "rounded-full border px-3 py-1.5 text-xs transition-all " +
+        (active
+          ? "border-primary/60 bg-primary/15 text-primary glow-gold"
+          : "border-border bg-surface text-muted-foreground hover:text-foreground")
+      }
+    >
+      {children}
+    </button>
   );
 }
 
