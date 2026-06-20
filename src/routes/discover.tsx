@@ -136,7 +136,15 @@ function DiscoverPage() {
 
       <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={filters} onApply={setFilters} />
       <MatchModal open={!!match} onClose={() => setMatch(null)} otherName={match?.name ?? ""} otherPhotoUrl={match?.photo ?? null} />
-      <ProfileSheet profile={selected} onClose={() => setSelected(null)} onDecision={handleDecision} />
+      <ProfileSheet profile={selected} onClose={() => setSelected(null)} onDecision={handleDecision} onMessage={async (p) => {
+        try {
+          const cid = await getOrCreateConversation(p.id);
+          setSelected(null);
+          navigate({ to: "/messages/$id", params: { id: cid } });
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "Couldn't open chat");
+        }
+      }} />
       <BottomNav />
     </main>
   );
