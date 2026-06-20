@@ -343,6 +343,7 @@ export type Database = {
           body_type: string | null
           boost_until: string | null
           created_at: string
+          deleted_at: string | null
           display_name: string | null
           ethnicity: string | null
           gender: string[] | null
@@ -356,6 +357,7 @@ export type Database = {
           last_seen: string
           location: unknown
           looking_for: string[] | null
+          notification_prefs: Json
           onboarding_completed: boolean
           orientation: string[] | null
           photos: string[] | null
@@ -382,6 +384,7 @@ export type Database = {
           body_type?: string | null
           boost_until?: string | null
           created_at?: string
+          deleted_at?: string | null
           display_name?: string | null
           ethnicity?: string | null
           gender?: string[] | null
@@ -395,6 +398,7 @@ export type Database = {
           last_seen?: string
           location?: unknown
           looking_for?: string[] | null
+          notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
           photos?: string[] | null
@@ -421,6 +425,7 @@ export type Database = {
           body_type?: string | null
           boost_until?: string | null
           created_at?: string
+          deleted_at?: string | null
           display_name?: string | null
           ethnicity?: string | null
           gender?: string[] | null
@@ -434,6 +439,7 @@ export type Database = {
           last_seen?: string
           location?: unknown
           looking_for?: string[] | null
+          notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
           photos?: string[] | null
@@ -537,6 +543,51 @@ export type Database = {
           proj4text?: string | null
           srid?: number
           srtext?: string | null
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          auto_renew: boolean | null
+          expires_at: string | null
+          id: string
+          original_transaction_id: string | null
+          platform: string
+          product_id: string
+          purchase_token: string | null
+          raw: Json | null
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_renew?: boolean | null
+          expires_at?: string | null
+          id?: string
+          original_transaction_id?: string | null
+          platform: string
+          product_id: string
+          purchase_token?: string | null
+          raw?: Json | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_renew?: boolean | null
+          expires_at?: string | null
+          id?: string
+          original_transaction_id?: string | null
+          platform?: string
+          product_id?: string
+          purchase_token?: string | null
+          raw?: Json | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -920,6 +971,7 @@ export type Database = {
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       get_or_create_conversation: { Args: { _other: string }; Returns: string }
       gettransactionid: { Args: never; Returns: unknown }
+      has_active_subscription: { Args: { _user: string }; Returns: boolean }
       is_conversation_participant: {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
