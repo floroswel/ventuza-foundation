@@ -1,13 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ChevronLeft, Loader2, Send } from "lucide-react";
+import { ChevronLeft, Languages, Loader2, Send, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import {
   fetchMessages, fetchOtherProfile, markRead, sendMessage,
   type MessageRow,
 } from "@/lib/chat";
+import { generateOpener, translateText } from "@/lib/ai.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/messages/$id")({
