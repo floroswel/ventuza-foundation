@@ -107,6 +107,95 @@ export type Database = {
         }
         Relationships: []
       }
+      event_rsvps: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: Database["public"]["Enums"]["rsvp_status"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: Database["public"]["Enums"]["rsvp_status"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: Database["public"]["Enums"]["rsvp_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          city: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          event_type: Database["public"]["Enums"]["event_type"]
+          host_id: string
+          id: string
+          is_private: boolean
+          lat: number | null
+          lng: number | null
+          max_attendees: number | null
+          starts_at: string
+          title: string
+          updated_at: string
+          venue: string | null
+        }
+        Insert: {
+          city: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          event_type?: Database["public"]["Enums"]["event_type"]
+          host_id: string
+          id?: string
+          is_private?: boolean
+          lat?: number | null
+          lng?: number | null
+          max_attendees?: number | null
+          starts_at: string
+          title: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Update: {
+          city?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          event_type?: Database["public"]["Enums"]["event_type"]
+          host_id?: string
+          id?: string
+          is_private?: boolean
+          lat?: number | null
+          lng?: number | null
+          max_attendees?: number | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           created_at: string
@@ -325,6 +414,36 @@ export type Database = {
           verified?: boolean
           verified_at?: string | null
           weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          created_at: string
+          fcm_token: string
+          id: string
+          last_seen_at: string
+          platform: string | null
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          fcm_token: string
+          id?: string
+          last_seen_at?: string
+          platform?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          fcm_token?: string
+          id?: string
+          last_seen_at?: string
+          platform?: string | null
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -1406,7 +1525,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      event_type: "party" | "bar" | "pride" | "private" | "meetup" | "other"
+      rsvp_status: "going" | "interested"
     }
     CompositeTypes: {
       geometry_dump: {
@@ -1541,6 +1661,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      event_type: ["party", "bar", "pride", "private", "meetup", "other"],
+      rsvp_status: ["going", "interested"],
+    },
   },
 } as const
