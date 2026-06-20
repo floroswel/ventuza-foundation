@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Ruler, SlidersHorizontal, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Ruler, Sparkles, SlidersHorizontal, X } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { matchScore } from "@/lib/ai.functions";
 import { getOrCreateConversation } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -15,6 +17,7 @@ import {
   type DiscoverFilters, type DiscoverProfile,
 } from "@/lib/discover";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/discover")({
   head: () => ({ meta: [{ title: "Discover — Ventuza" }] }),
@@ -359,8 +362,10 @@ function ProfileSheet({
                 </span>
               )}
             </div>
+            <MatchScoreBadge target={profile} />
           </div>
         </div>
+
 
         <div className="space-y-5 px-5 pb-6 pt-4">
           {profile.tribes && profile.tribes.length > 0 && (
@@ -477,5 +482,74 @@ function CenterMessage({ icon, title, desc, action }: { icon: React.ReactNode; t
       {desc && <p className="max-w-xs text-sm text-muted-foreground">{desc}</p>}
       {action && <div className="mt-3">{action}</div>}
     </div>
+  );
+}
+
+function MatchScoreBadge({ target }: { target: DiscoverProfile }) {
+  const { user } = useAuth();
+  const score = useServerFn(matchScore);
+  const [result, setResult] = useState<{ score: number; reason: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function run() {
+    if (!user) return;
+    setLoading(true);
+    try {
+      const { data: me } = await supabase
+        .from("profiles")
+        .select("display_name, birthdate, bio, interests, tribes, looking_for")
+        .eq("id", user.id)
+        .maybeSingle();
+      const ageOf = (d: string | null | undefined) => {
+        if (!d) return undefined;
+        const diff = Date.now() - new Date(d).getTime();
+        return Math.floor(diff / (365.25 * 24 * 3600 * 1000));
+      };
+      const res = await score({
+        data: {
+          me: {
+            name: me?.display_name ?? undefined,
+            age: ageOf(me?.birthdate),
+            bio: me?.bio ?? undefined,
+            interests: me?.interests ?? [],
+            tribes: me?.tribes ?? [],
+            lookingFor: me?.looking_for ?? [],
+          },
+          them: {
+            name: target.display_name ?? undefined,
+            age: ageOf(target.birthdate),
+            bio: target.bio ?? undefined,
+            interests: target.interests ?? [],
+            tribes: target.tribes ?? [],
+            lookingFor: target.looking_for ?? [],
+          },
+        },
+      });
+      setResult(res);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI eșuat");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  if (result) {
+    return (
+      <div className="mt-3 inline-flex max-w-full items-start gap-2 rounded-2xl border border-primary/40 bg-black/50 px-3 py-2 text-xs text-white backdrop-blur">
+        <span className="font-display text-lg font-medium text-primary leading-none">{result.score}</span>
+        <span className="leading-snug text-white/85">{result.reason}</span>
+      </div>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={run}
+      disabled={loading}
+      className="mt-3 inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-black/40 px-3 py-1.5 text-[11px] text-primary backdrop-blur hover:bg-black/60 disabled:opacity-60"
+    >
+      {loading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+      Match score AI
+    </button>
   );
 }

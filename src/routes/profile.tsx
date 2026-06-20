@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BadgeCheck, Eye, EyeOff, LogOut, Pencil, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { generateBio } from "@/lib/ai.functions";
+import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -166,7 +166,10 @@ function ProfilePage() {
             photos={profile.photos ?? []}
             onChange={(next) => setProfile({ ...profile, photos: next })}
           />
+          <PhotoCoachButton photos={profile.photos ?? []} />
         </section>
+
+
 
 
         {profile.bio && (
@@ -464,3 +467,52 @@ function AiBioButton({ form, setForm }: { form: Profile; setForm: (p: Profile) =
     </button>
   );
 }
+
+function PhotoCoachButton({ photos }: { photos: string[] }) {
+  const coach = useServerFn(photoCoach);
+  const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] = useState<string | null>(null);
+  async function run() {
+    if (!photos.length) {
+      toast.message("Adaugă cel puțin o poză.");
+      return;
+    }
+    setLoading(true);
+    setFeedback(null);
+    try {
+      const signed = await Promise.all(
+        photos.slice(0, 6).map(async (p) => {
+          const { data } = await supabase.storage.from("profile-photos").createSignedUrl(p, 600);
+          return data?.signedUrl ?? null;
+        }),
+      );
+      const urls = signed.filter(Boolean) as string[];
+      if (!urls.length) throw new Error("Nu am putut accesa pozele.");
+      const res = await coach({ data: { photoUrls: urls } });
+      setFeedback(res.feedback);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI eșuat");
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <div className="mt-4">
+      <button
+        type="button"
+        onClick={run}
+        disabled={loading}
+        className="inline-flex items-center gap-1.5 rounded-full border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs text-primary hover:bg-primary/20 disabled:opacity-60"
+      >
+        {loading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+        AI photo coach
+      </button>
+      {feedback && (
+        <div className="mt-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
+          {feedback}
+        </div>
+      )}
+    </div>
+  );
+}
+
