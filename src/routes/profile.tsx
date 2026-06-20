@@ -1,7 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, Eye, EyeOff, LogOut, Pencil, ShieldAlert, X, Loader2 } from "lucide-react";
+import { BadgeCheck, Eye, EyeOff, LogOut, Pencil, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { generateBio } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -375,7 +377,10 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
           <Input value={form.display_name ?? ""} onChange={(e) => setForm({ ...form, display_name: e.target.value })} className="h-12 bg-surface border-border" />
         </div>
         <div className="space-y-2">
-          <Label>Bio</Label>
+          <div className="flex items-center justify-between">
+            <Label>Bio</Label>
+            <AiBioButton form={form} setForm={setForm} />
+          </div>
           <Textarea value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={5} maxLength={500} className="bg-surface border-border" />
         </div>
         <EditChips label="Tribes" options={TRIBE_OPTIONS} value={form.tribes ?? []} onChange={(v) => setForm({ ...form, tribes: v })} />
@@ -417,5 +422,45 @@ function EditChips({ label, options, value, onChange }: { label: string; options
         ))}
       </div>
     </div>
+  );
+}
+
+function AiBioButton({ form, setForm }: { form: Profile; setForm: (p: Profile) => void }) {
+  const gen = useServerFn(generateBio);
+  const [loading, setLoading] = useState(false);
+  async function run() {
+    setLoading(true);
+    try {
+      const a = form.birthdate ? age(form.birthdate) ?? undefined : undefined;
+      const res = await gen({
+        data: {
+          name: form.display_name ?? undefined,
+          age: a,
+          interests: form.interests ?? [],
+          tribes: form.tribes ?? [],
+          lookingFor: form.looking_for ?? [],
+          vibe: "witty",
+        },
+      });
+      if (res?.bio) {
+        setForm({ ...form, bio: res.bio });
+        toast.success("Bio generat ✨");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI eșuat");
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <button
+      type="button"
+      onClick={run}
+      disabled={loading}
+      className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/20 disabled:opacity-60"
+    >
+      {loading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+      AI bio
+    </button>
   );
 }
