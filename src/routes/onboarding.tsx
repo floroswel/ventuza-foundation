@@ -129,6 +129,9 @@ function Onboarding() {
       case "pronouns": return data.pronouns.length > 0 || data.pronouns_custom.trim().length > 0;
       case "orientation": return data.orientation.length > 0;
       case "looking_for": return data.looking_for.length > 0;
+      case "tribes": return true; // optional
+      case "stats": return true; // optional
+      case "health": return true; // optional but encouraged
       case "interests": return data.interests.length >= 3;
       case "prompts": return data.prompts.length === 3 && data.prompts.every((p) => p.answer.trim().length > 0);
       case "bio": return data.bio.trim().length >= 20;
@@ -153,6 +156,14 @@ function Onboarding() {
       pronouns_custom: data.pronouns_custom.trim() || null,
       orientation: data.orientation,
       looking_for: data.looking_for,
+      tribes: data.tribes,
+      body_type: data.body_type || null,
+      height_cm: data.height_cm,
+      weight_kg: data.weight_kg,
+      ethnicity: data.ethnicity || null,
+      position: data.position || null,
+      hiv_status: data.hiv_status || null,
+      relationship_status: data.relationship_status || null,
       interests: data.interests,
       bio: data.bio.trim(),
       prompts: data.prompts,
