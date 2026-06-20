@@ -16,6 +16,12 @@ import {
   LOOKING_FOR_OPTIONS,
   INTEREST_OPTIONS,
   PROMPT_OPTIONS,
+  TRIBE_OPTIONS,
+  BODY_TYPE_OPTIONS,
+  POSITION_OPTIONS,
+  HIV_STATUS_OPTIONS,
+  RELATIONSHIP_STATUS_OPTIONS,
+  ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
 
 export const Route = createFileRoute("/onboarding")({
@@ -34,10 +40,18 @@ type Data = {
   pronouns_custom: string;
   orientation: string[];
   looking_for: string[];
+  tribes: string[];
+  body_type: string;
+  height_cm: number | null;
+  weight_kg: number | null;
+  ethnicity: string;
+  position: string;
+  hiv_status: string;
+  relationship_status: string;
   interests: string[];
   prompts: Prompt[];
   bio: string;
-  photos: string[]; // storage paths
+  photos: string[];
 };
 
 const empty: Data = {
@@ -49,6 +63,14 @@ const empty: Data = {
   pronouns_custom: "",
   orientation: [],
   looking_for: [],
+  tribes: [],
+  body_type: "",
+  height_cm: null,
+  weight_kg: null,
+  ethnicity: "",
+  position: "",
+  hiv_status: "",
+  relationship_status: "",
   interests: [],
   prompts: [],
   bio: "",
@@ -62,6 +84,9 @@ const STEPS = [
   "pronouns",
   "orientation",
   "looking_for",
+  "tribes",
+  "stats",
+  "health",
   "interests",
   "prompts",
   "bio",
