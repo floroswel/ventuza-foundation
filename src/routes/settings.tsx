@@ -143,6 +143,14 @@ function SettingsPage() {
               </div>
             </div>
           </div>
+          <div className="mt-4 border-t border-border pt-3">
+            <button onClick={downloadMyData} className="w-full rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground hover:bg-surface">
+              📥 Exportă datele mele (GDPR)
+            </button>
+            <p className="mt-2 text-[10px] text-muted-foreground">
+              Primești un fișier JSON cu toate datele tale: profil, swipes, matches, mesaje, RSVP-uri, abonamente.
+            </p>
+          </div>
         </section>
 
         {/* Notifications */}
