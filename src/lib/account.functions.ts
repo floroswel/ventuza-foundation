@@ -100,5 +100,5 @@ export const exportMyData = createServerFn({ method: "GET" })
       event_rsvps: rsvps.data ?? [],
       subscriptions: subs.data ?? [],
       notifications: notifications.data ?? [],
-    })) as Record<string, unknown>;
+    })) as { exported_at: string; user_id: string };
   });
