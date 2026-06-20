@@ -366,6 +366,9 @@ export type Database = {
           pronouns: string[] | null
           pronouns_custom: string | null
           relationship_status: string | null
+          report_count: number
+          suspended_reason: string | null
+          suspended_until: string | null
           travel_city: string | null
           travel_location: unknown
           travel_until: string | null
@@ -407,6 +410,9 @@ export type Database = {
           pronouns?: string[] | null
           pronouns_custom?: string | null
           relationship_status?: string | null
+          report_count?: number
+          suspended_reason?: string | null
+          suspended_until?: string | null
           travel_city?: string | null
           travel_location?: unknown
           travel_until?: string | null
@@ -448,6 +454,9 @@ export type Database = {
           pronouns?: string[] | null
           pronouns_custom?: string | null
           relationship_status?: string | null
+          report_count?: number
+          suspended_reason?: string | null
+          suspended_until?: string | null
           travel_city?: string | null
           travel_location?: unknown
           travel_until?: string | null
@@ -497,27 +506,36 @@ export type Database = {
           created_at: string
           details: string | null
           id: string
+          moderator_notes: string | null
           reason: string
           reported_id: string
           reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
           status: string
         }
         Insert: {
           created_at?: string
           details?: string | null
           id?: string
+          moderator_notes?: string | null
           reason: string
           reported_id: string
           reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
           status?: string
         }
         Update: {
           created_at?: string
           details?: string | null
           id?: string
+          moderator_notes?: string | null
           reason?: string
           reported_id?: string
           reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
           status?: string
         }
         Relationships: []
@@ -612,6 +630,27 @@ export type Database = {
           id?: string
           swiper_id?: string
           target_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
         }
         Relationships: []
       }
@@ -972,11 +1011,22 @@ export type Database = {
       get_or_create_conversation: { Args: { _other: string }; Returns: string }
       gettransactionid: { Args: never; Returns: unknown }
       has_active_subscription: { Args: { _user: string }; Returns: boolean }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       is_conversation_participant: {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      moderator_suspend_user: {
+        Args: { _hours: number; _reason: string; _target: string }
+        Returns: undefined
+      }
       notify_user: {
         Args: {
           _actor_id: string
@@ -1628,6 +1678,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "admin" | "moderator" | "user"
       event_type: "party" | "bar" | "pride" | "private" | "meetup" | "other"
       notification_type:
         | "match"
@@ -1773,6 +1824,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "moderator", "user"],
       event_type: ["party", "bar", "pride", "private", "meetup", "other"],
       notification_type: [
         "match",

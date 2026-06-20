@@ -18,12 +18,14 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
+import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 
 const VisitorsRoute = VisitorsRouteImport.update({
   id: '/visitors',
@@ -70,6 +72,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -100,9 +107,15 @@ const EventsIdRoute = EventsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => EventsRoute,
 } as any)
+const ApiPublicGooglePlayRtdnRoute = ApiPublicGooglePlayRtdnRouteImport.update({
+  id: '/api/public/google-play-rtdn',
+  path: '/api/public/google-play-rtdn',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
@@ -117,9 +130,11 @@ export interface FileRoutesByFullPath {
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/messages/': typeof MessagesIndexRoute
+  '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
@@ -134,10 +149,12 @@ export interface FileRoutesByTo {
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/messages': typeof MessagesIndexRoute
+  '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
@@ -152,11 +169,13 @@ export interface FileRoutesById {
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/messages/': typeof MessagesIndexRoute
+  '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/admin'
     | '/auth'
     | '/discover'
     | '/events'
@@ -171,9 +190,11 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/messages/$id'
     | '/messages/'
+    | '/api/public/google-play-rtdn'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/admin'
     | '/auth'
     | '/discover'
     | '/events'
@@ -188,9 +209,11 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/messages/$id'
     | '/messages'
+    | '/api/public/google-play-rtdn'
   id:
     | '__root__'
     | '/'
+    | '/admin'
     | '/auth'
     | '/discover'
     | '/events'
@@ -205,10 +228,12 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/messages/$id'
     | '/messages/'
+    | '/api/public/google-play-rtdn'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   DiscoverRoute: typeof DiscoverRoute
   EventsRoute: typeof EventsRouteWithChildren
@@ -222,6 +247,7 @@ export interface RootRouteChildren {
   LegalTermsRoute: typeof LegalTermsRoute
   MessagesIdRoute: typeof MessagesIdRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
+  ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -289,6 +315,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -331,6 +364,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsIdRouteImport
       parentRoute: typeof EventsRoute
     }
+    '/api/public/google-play-rtdn': {
+      id: '/api/public/google-play-rtdn'
+      path: '/api/public/google-play-rtdn'
+      fullPath: '/api/public/google-play-rtdn'
+      preLoaderRoute: typeof ApiPublicGooglePlayRtdnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -347,6 +387,7 @@ const EventsRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   DiscoverRoute: DiscoverRoute,
   EventsRoute: EventsRouteWithChildren,
@@ -360,6 +401,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalTermsRoute: LegalTermsRoute,
   MessagesIdRoute: MessagesIdRoute,
   MessagesIndexRoute: MessagesIndexRoute,
+  ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
