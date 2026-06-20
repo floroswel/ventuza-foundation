@@ -159,6 +159,8 @@ export async function signPhotos(paths: string[]): Promise<Record<string, string
   const out: Record<string, string> = {};
   await Promise.all(
     paths.map(async (p) => {
+      // Passthrough for full http(s) URLs (demo seed photos)
+      if (/^https?:\/\//i.test(p)) { out[p] = p; return; }
       const { data } = await supabase.storage.from("profile-photos").createSignedUrl(p, 3600);
       if (data?.signedUrl) out[p] = data.signedUrl;
     }),
