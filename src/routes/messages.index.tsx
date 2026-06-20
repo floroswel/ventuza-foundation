@@ -7,7 +7,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { fetchConversations, type ConversationListItem } from "@/lib/chat";
 import { cn } from "@/lib/utils";
 
-export const Route = createFileRoute("/messages")({
+export const Route = createFileRoute("/messages/")({
   head: () => ({ meta: [{ title: "Messages — Ventuza" }] }),
   component: MessagesPage,
 });

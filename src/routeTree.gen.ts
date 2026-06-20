@@ -11,10 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
-import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 
 const ProfileRoute = ProfileRouteImport.update({
@@ -25,11 +25,6 @@ const ProfileRoute = ProfileRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MessagesRoute = MessagesRouteImport.update({
-  id: '/messages',
-  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DiscoverRoute = DiscoverRouteImport.update({
@@ -47,39 +42,44 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MessagesIndexRoute = MessagesIndexRouteImport.update({
+  id: '/messages/',
+  path: '/messages/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MessagesIdRoute = MessagesIdRouteImport.update({
-  id: '/$id',
-  path: '/$id',
-  getParentRoute: () => MessagesRoute,
+  id: '/messages/$id',
+  path: '/messages/$id',
+  getParentRoute: () => rootRouteImport,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/discover': typeof DiscoverRoute
-  '/messages': typeof MessagesRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/messages/$id': typeof MessagesIdRoute
+  '/messages/': typeof MessagesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/discover': typeof DiscoverRoute
-  '/messages': typeof MessagesRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/messages/$id': typeof MessagesIdRoute
+  '/messages': typeof MessagesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/discover': typeof DiscoverRoute
-  '/messages': typeof MessagesRouteWithChildren
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
   '/messages/$id': typeof MessagesIdRoute
+  '/messages/': typeof MessagesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -87,37 +87,38 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/discover'
-    | '/messages'
     | '/onboarding'
     | '/profile'
     | '/messages/$id'
+    | '/messages/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/auth'
     | '/discover'
-    | '/messages'
     | '/onboarding'
     | '/profile'
     | '/messages/$id'
+    | '/messages'
   id:
     | '__root__'
     | '/'
     | '/auth'
     | '/discover'
-    | '/messages'
     | '/onboarding'
     | '/profile'
     | '/messages/$id'
+    | '/messages/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthRoute: typeof AuthRoute
   DiscoverRoute: typeof DiscoverRoute
-  MessagesRoute: typeof MessagesRouteWithChildren
   OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
+  MessagesIdRoute: typeof MessagesIdRoute
+  MessagesIndexRoute: typeof MessagesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -134,13 +135,6 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/messages': {
-      id: '/messages'
-      path: '/messages'
-      fullPath: '/messages'
-      preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/discover': {
@@ -164,35 +158,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/messages/': {
+      id: '/messages/'
+      path: '/messages'
+      fullPath: '/messages/'
+      preLoaderRoute: typeof MessagesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/messages/$id': {
       id: '/messages/$id'
-      path: '/$id'
+      path: '/messages/$id'
       fullPath: '/messages/$id'
       preLoaderRoute: typeof MessagesIdRouteImport
-      parentRoute: typeof MessagesRoute
+      parentRoute: typeof rootRouteImport
     }
   }
 }
-
-interface MessagesRouteChildren {
-  MessagesIdRoute: typeof MessagesIdRoute
-}
-
-const MessagesRouteChildren: MessagesRouteChildren = {
-  MessagesIdRoute: MessagesIdRoute,
-}
-
-const MessagesRouteWithChildren = MessagesRoute._addFileChildren(
-  MessagesRouteChildren,
-)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthRoute: AuthRoute,
   DiscoverRoute: DiscoverRoute,
-  MessagesRoute: MessagesRouteWithChildren,
   OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
+  MessagesIdRoute: MessagesIdRoute,
+  MessagesIndexRoute: MessagesIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
