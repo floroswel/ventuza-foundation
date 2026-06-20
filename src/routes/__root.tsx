@@ -14,6 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth-context";
 import { NotificationsProvider } from "@/lib/notifications-context";
 import { Toaster } from "sonner";
+import { CookieBanner } from "@/components/CookieBanner";
 
 function NotFoundComponent() {
   return (
@@ -130,6 +131,7 @@ function RootComponent() {
       <AuthProvider>
         <NotificationsProvider>
           <Outlet />
+          <CookieBanner />
           <Toaster theme="dark" position="top-center" richColors />
         </NotificationsProvider>
       </AuthProvider>

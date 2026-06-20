@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ChevronLeft, Languages, Loader2, Send, Sparkles } from "lucide-react";
+import { ChevronLeft, Languages, Loader2, Send, Sparkles, MoreVertical } from "lucide-react";
+import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
@@ -155,6 +156,18 @@ function ThreadPage() {
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{other?.name ?? "…"}</p>
         </div>
+        {other?.id && (
+          <ReportBlockDialog
+            targetUserId={other.id}
+            targetName={other.name ?? undefined}
+            onBlocked={() => navigate({ to: "/messages" })}
+            trigger={
+              <button className="rounded-full p-2 text-muted-foreground hover:text-foreground" aria-label="Opțiuni">
+                <MoreVertical className="size-5" />
+              </button>
+            }
+          />
+        )}
       </header>
 
       <div ref={scrollerRef} className="flex-1 overflow-y-auto px-4 py-4">

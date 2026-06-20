@@ -1,6 +1,7 @@
 import { motion, PanInfo, useMotionValue, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
-import { Heart, Star, X, MapPin } from "lucide-react";
+import { Heart, Star, X, MapPin, Flag } from "lucide-react";
+import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { ageFrom, formatDistance, signPhotos, type DiscoverProfile } from "@/lib/discover";
 
 type Props = {
@@ -64,6 +65,20 @@ export function SwipeCard({ profile, onDecision, stackIndex }: Props) {
           <div className="flex size-full items-center justify-center text-muted-foreground">No photo</div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent" />
+
+        {isTop && (
+          <div className="absolute right-3 top-3 z-10" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+            <ReportBlockDialog
+              targetUserId={profile.id}
+              targetName={profile.display_name ?? undefined}
+              trigger={
+                <button className="rounded-full bg-background/70 p-2 text-foreground/70 backdrop-blur hover:text-destructive" aria-label="Raportează">
+                  <Flag className="size-4" />
+                </button>
+              }
+            />
+          </div>
+        )}
 
         {/* like / pass / super overlays */}
         {isTop && (
