@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
+import { NotificationBell } from "@/components/NotificationBell";
 import {
   DEFAULT_FILTERS, fetchDiscover, requestAndStoreLocation,
   signPhotos, formatDistance, ageFrom, isOnline, formatLastSeen, formatHeight,
