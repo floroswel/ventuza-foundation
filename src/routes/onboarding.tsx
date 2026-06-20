@@ -458,7 +458,7 @@ function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) =>
   }
 
   return (
-    <Field title="Add your photos" hint="Up to 6. The first one is your primary.">
+    <Field title="Add your photos" hint="Up to 9. The first one is your primary.">
       <div className="grid grid-cols-3 gap-3">
         {data.photos.map((p, i) => (
           <div key={p} className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-border bg-surface">
