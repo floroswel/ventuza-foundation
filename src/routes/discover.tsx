@@ -266,11 +266,12 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
 }
 
 function ProfileSheet({
-  profile, onClose, onDecision,
+  profile, onClose, onDecision, onMessage,
 }: {
   profile: DiscoverProfile | null;
   onClose: () => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
+  onMessage: (p: DiscoverProfile) => void;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [idx, setIdx] = useState(0);
