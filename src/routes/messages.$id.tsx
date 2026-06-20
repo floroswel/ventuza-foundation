@@ -22,11 +22,17 @@ function ThreadPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<MessageRow[]>([]);
-  const [other, setOther] = useState<{ id: string; name: string | null; photo: string | null } | null>(null);
+  const [other, setOther] = useState<{ id: string; name: string | null; photo: string | null; bio?: string | null; interests?: string[] | null } | null>(null);
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const [text, setText] = useState("");
+  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [translatingId, setTranslatingId] = useState<string | null>(null);
+  const [openers, setOpeners] = useState<string[] | null>(null);
+  const [wingmanLoading, setWingmanLoading] = useState(false);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const genOpener = useServerFn(generateOpener);
+  const tr = useServerFn(translateText);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
