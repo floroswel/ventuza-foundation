@@ -252,6 +252,45 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          actor_id: string | null
+          body: string | null
+          created_at: string
+          entity_id: string | null
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       private_albums: {
         Row: {
           created_at: string
@@ -886,6 +925,18 @@ export type Database = {
         Returns: boolean
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      notify_user: {
+        Args: {
+          _actor_id: string
+          _body: string
+          _entity_id: string
+          _link: string
+          _title: string
+          _type: Database["public"]["Enums"]["notification_type"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
         | { Args: { use_typmod?: boolean }; Returns: string }
@@ -1526,6 +1577,14 @@ export type Database = {
     }
     Enums: {
       event_type: "party" | "bar" | "pride" | "private" | "meetup" | "other"
+      notification_type:
+        | "match"
+        | "message"
+        | "profile_view"
+        | "album_request"
+        | "album_granted"
+        | "event_rsvp"
+        | "event_reminder"
       rsvp_status: "going" | "interested"
     }
     CompositeTypes: {
@@ -1663,6 +1722,15 @@ export const Constants = {
   public: {
     Enums: {
       event_type: ["party", "bar", "pride", "private", "meetup", "other"],
+      notification_type: [
+        "match",
+        "message",
+        "profile_view",
+        "album_request",
+        "album_granted",
+        "event_rsvp",
+        "event_reminder",
+      ],
       rsvp_status: ["going", "interested"],
     },
   },

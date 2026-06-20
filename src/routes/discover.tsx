@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
+import { NotificationBell } from "@/components/NotificationBell";
 import {
   DEFAULT_FILTERS, fetchDiscover, requestAndStoreLocation,
   signPhotos, formatDistance, ageFrom, isOnline, formatLastSeen, formatHeight,
@@ -111,13 +112,16 @@ function DiscoverPage() {
               {visible.length} {visible.length === 1 ? "person" : "people"}
             </p>
           </div>
-          <button
-            onClick={() => setFiltersOpen(true)}
-            aria-label="Filters"
-            className="flex size-10 items-center justify-center rounded-full border border-border bg-surface text-primary hover:bg-primary/10"
-          >
-            <SlidersHorizontal className="size-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <button
+              onClick={() => setFiltersOpen(true)}
+              aria-label="Filters"
+              className="flex size-10 items-center justify-center rounded-full border border-border bg-surface text-primary hover:bg-primary/10"
+            >
+              <SlidersHorizontal className="size-4" />
+            </button>
+          </div>
         </div>
 
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
