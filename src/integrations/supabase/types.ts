@@ -213,6 +213,7 @@ export type Database = {
           bio: string | null
           birthdate: string | null
           body_type: string | null
+          boost_until: string | null
           created_at: string
           display_name: string | null
           ethnicity: string | null
@@ -235,8 +236,14 @@ export type Database = {
           pronouns: string[] | null
           pronouns_custom: string | null
           relationship_status: string | null
+          travel_city: string | null
+          travel_location: unknown
+          travel_until: string | null
           tribes: string[]
           updated_at: string
+          verification_reason: string | null
+          verification_selfie_path: string | null
+          verification_status: string
           verified: boolean
           verified_at: string | null
           weight_kg: number | null
@@ -245,6 +252,7 @@ export type Database = {
           bio?: string | null
           birthdate?: string | null
           body_type?: string | null
+          boost_until?: string | null
           created_at?: string
           display_name?: string | null
           ethnicity?: string | null
@@ -267,8 +275,14 @@ export type Database = {
           pronouns?: string[] | null
           pronouns_custom?: string | null
           relationship_status?: string | null
+          travel_city?: string | null
+          travel_location?: unknown
+          travel_until?: string | null
           tribes?: string[]
           updated_at?: string
+          verification_reason?: string | null
+          verification_selfie_path?: string | null
+          verification_status?: string
           verified?: boolean
           verified_at?: string | null
           weight_kg?: number | null
@@ -277,6 +291,7 @@ export type Database = {
           bio?: string | null
           birthdate?: string | null
           body_type?: string | null
+          boost_until?: string | null
           created_at?: string
           display_name?: string | null
           ethnicity?: string | null
@@ -299,8 +314,14 @@ export type Database = {
           pronouns?: string[] | null
           pronouns_custom?: string | null
           relationship_status?: string | null
+          travel_city?: string | null
+          travel_location?: unknown
+          travel_until?: string | null
           tribes?: string[]
           updated_at?: string
+          verification_reason?: string | null
+          verification_selfie_path?: string | null
+          verification_status?: string
           verified?: boolean
           verified_at?: string | null
           weight_kg?: number | null
