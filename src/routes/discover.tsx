@@ -398,12 +398,18 @@ function ProfileSheet({
           {profile.looking_for?.length ? <TagBlock label="Looking for" values={profile.looking_for} /> : null}
           {profile.interests?.length ? <TagBlock label="Interests" values={profile.interests} /> : null}
 
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-2 pt-2">
             <button
               onClick={() => onDecision(profile, "pass")}
               className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full border border-border bg-background text-sm text-muted-foreground hover:text-foreground"
             >
               <X className="size-4" /> Pass
+            </button>
+            <button
+              onClick={() => onMessage(profile)}
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full border border-primary/40 bg-background text-sm text-primary hover:bg-primary/10"
+            >
+              <MessageCircle className="size-4" /> Message
             </button>
             <button
               onClick={() => onDecision(profile, "like")}
