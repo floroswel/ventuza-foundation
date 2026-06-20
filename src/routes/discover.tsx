@@ -415,7 +415,7 @@ function ProfileSheet({
           {profile.looking_for?.length ? <TagBlock label="Looking for" values={profile.looking_for} /> : null}
           {profile.interests?.length ? <TagBlock label="Interests" values={profile.interests} /> : null}
 
-          {user && <PrivateAlbumViewer ownerId={profile.id} currentUserId={user.id} />}
+          {currentUserId && <PrivateAlbumViewer ownerId={profile.id} currentUserId={currentUserId} />}
 
 
           <div className="flex items-center gap-2 pt-2">
