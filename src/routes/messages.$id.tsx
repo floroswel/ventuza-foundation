@@ -108,6 +108,39 @@ function ThreadPage() {
     }
   }
 
+  async function handleWingman() {
+    if (wingmanLoading) return;
+    setWingmanLoading(true);
+    try {
+      const res = await genOpener({
+        data: {
+          theirName: other?.name ?? undefined,
+          theirBio: other?.bio ?? undefined,
+          theirInterests: other?.interests ?? [],
+          style: "playful",
+        },
+      });
+      setOpeners(res?.openers ?? []);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Wingman a eșuat");
+    } finally {
+      setWingmanLoading(false);
+    }
+  }
+
+  async function handleTranslate(m: MessageRow) {
+    if (translations[m.id] || translatingId) return;
+    setTranslatingId(m.id);
+    try {
+      const res = await tr({ data: { text: m.body, targetLang: "ro" } });
+      setTranslations((t) => ({ ...t, [m.id]: res.translation }));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Traducere eșuată");
+    } finally {
+      setTranslatingId(null);
+    }
+  }
+
   return (
     <div className="mx-auto flex h-[100dvh] max-w-md flex-col bg-background">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
