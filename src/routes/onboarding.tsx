@@ -433,7 +433,7 @@ function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) =>
 
   async function handleUpload(files: FileList | null) {
     if (!files || !user) return;
-    if (data.photos.length + files.length > 6) return toast.error("Up to 6 photos.");
+    if (data.photos.length + files.length > 9) return toast.error("Up to 9 photos.");
     setUploading(true);
     const added: string[] = [];
     try {
