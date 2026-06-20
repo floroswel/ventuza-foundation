@@ -70,3 +70,35 @@ export const recordGooglePlayPurchase = createServerFn({ method: "POST" })
 
     return { status };
   });
+
+/**
+ * GDPR Right to Data Portability — export all user data as JSON.
+ */
+export const exportMyData = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const [profile, swipes, matches, messages, events, rsvps, subs, notifications] =
+      await Promise.all([
+        supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+        supabase.from("swipes").select("*").eq("swiper_id", userId),
+        supabase.from("matches").select("*").or(`user_a.eq.${userId},user_b.eq.${userId}`),
+        supabase.from("messages").select("*").eq("sender_id", userId),
+        supabase.from("events").select("*").eq("host_id", userId),
+        supabase.from("event_rsvps").select("*").eq("user_id", userId),
+        supabase.from("subscriptions").select("*").eq("user_id", userId),
+        supabase.from("notifications").select("*").eq("user_id", userId),
+      ]);
+    return {
+      exported_at: new Date().toISOString(),
+      user_id: userId,
+      profile: profile.data,
+      swipes: swipes.data ?? [],
+      matches: matches.data ?? [],
+      messages_sent: messages.data ?? [],
+      events_hosted: events.data ?? [],
+      event_rsvps: rsvps.data ?? [],
+      subscriptions: subs.data ?? [],
+      notifications: notifications.data ?? [],
+    };
+  });
