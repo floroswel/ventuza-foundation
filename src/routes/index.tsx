@@ -18,7 +18,7 @@ function Welcome() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/profile" });
+    if (!loading && user) navigate({ to: "/discover" });
   }, [loading, user, navigate]);
 
   return (
