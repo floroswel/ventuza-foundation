@@ -1,29 +1,66 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "Ventuza — Dating, elevated." },
+      { name: "description", content: "A premium, inclusive dating experience for people who want more than a swipe." },
     ],
   }),
-  component: Index,
+  component: Welcome,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function Welcome() {
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!loading && user) navigate({ to: "/profile" });
+  }, [loading, user, navigate]);
+
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
+    <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background px-6 py-10">
+      {/* ambient gold glow */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 left-1/2 h-[480px] w-[480px] -translate-x-1/2 rounded-full opacity-30 blur-3xl"
+        style={{ background: "radial-gradient(circle, var(--primary), transparent 65%)" }}
       />
-    </div>
+
+      <header className="flex items-center justify-between">
+        <span className="wordmark text-2xl font-semibold tracking-wide">Ventuza</span>
+        <Link to="/auth" search={{ mode: "login" }} className="text-sm text-muted-foreground hover:text-primary transition-colors">
+          Log in
+        </Link>
+      </header>
+
+      <section className="relative z-10 my-auto flex flex-col items-center text-center">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-surface px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-primary">
+          <span className="inline-block size-1.5 rounded-full bg-primary" />
+          Members only · invite-grade
+        </div>
+        <h1 className="wordmark text-6xl font-medium leading-[0.95] sm:text-7xl">Ventuza</h1>
+        <p className="mt-6 max-w-md text-balance text-lg leading-relaxed text-muted-foreground">
+          Dating, elevated. A quiet, considered place to meet people with depth — for everyone, on every spectrum.
+        </p>
+
+        <div className="mt-10 flex w-full max-w-xs flex-col gap-3">
+          <Button asChild variant="hero" size="lg">
+            <Link to="/auth" search={{ mode: "signup" }}>Create an account</Link>
+          </Button>
+          <Button asChild variant="outline" size="lg">
+            <Link to="/auth" search={{ mode: "login" }}>I already have one</Link>
+          </Button>
+        </div>
+      </section>
+
+      <footer className="relative z-10 mt-10 flex flex-col items-center gap-3">
+        <div className="pride-bar h-0.5 w-16 rounded-full opacity-70" />
+        <p className="text-xs text-muted-foreground">For every identity. Every story. Every you.</p>
+      </footer>
+    </main>
   );
 }
