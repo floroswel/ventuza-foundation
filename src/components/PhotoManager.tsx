@@ -20,6 +20,7 @@ type Props = {
 export function PhotoManager({ userId, photos, onChange, persist = true, className }: Props) {
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const moderate = useServerFn(moderatePhoto);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
