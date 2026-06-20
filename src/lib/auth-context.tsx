@@ -16,22 +16,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      setSession(s);
-      setLoading(false);
-    });
-    supabase.auth.getSession().then(async ({ data }) => {
+    let cancelled = false;
+
+    async function ensurePreviewSession() {
+      setLoading(true);
+      const { data } = await supabase.auth.getSession();
+      if (cancelled) return;
+
       if (data.session) {
         setSession(data.session);
         setLoading(false);
-      } else {
-        // Auto sign-in anonymously for instant preview access
-        const { data: anon } = await supabase.auth.signInAnonymously();
-        setSession(anon.session ?? null);
-        setLoading(false);
+        return;
       }
+
+      const { data: anon, error } = await supabase.auth.signInAnonymously();
+      if (cancelled) return;
+
+      if (error) console.error("Anonymous preview sign-in failed", error);
+      setSession(anon.session ?? null);
+      setLoading(false);
+    }
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (_e === "INITIAL_SESSION") return;
+      setSession(s);
+      setLoading(false);
     });
-    return () => sub.subscription.unsubscribe();
+    void ensurePreviewSession();
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   return (
@@ -42,6 +58,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         signOut: async () => {
           await supabase.auth.signOut();
+          const { data } = await supabase.auth.signInAnonymously();
+          setSession(data.session ?? null);
         },
       }}
     >
