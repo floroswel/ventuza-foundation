@@ -53,11 +53,11 @@ export async function fetchConversations(meId: string): Promise<ConversationList
   const otherIds = Array.from(new Set(rows.map((r) => (r.user_a === meId ? r.user_b : r.user_a))));
   const { data: profs } = await supabase
     .from("profiles")
-    .select("id, display_name, primary_photo")
+    .select("id, display_name, photos")
     .in("id", otherIds);
   const map = new Map<string, { name: string | null; photo: string | null }>();
-  for (const p of (profs ?? []) as Array<{ id: string; display_name: string | null; primary_photo: string | null }>) {
-    map.set(p.id, { name: p.display_name, photo: await signPhoto(p.primary_photo) });
+  for (const p of (profs ?? []) as Array<{ id: string; display_name: string | null; photos: string[] | null }>) {
+    map.set(p.id, { name: p.display_name, photo: await signPhoto(p.photos?.[0] ?? null) });
   }
 
   // Unread: any message in conv where sender != me and read_at IS NULL
