@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Loader2, Plus, Star, X } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { moderatePhoto } from "@/lib/verification.functions";
 import { cn } from "@/lib/utils";
 
 const MAX_PHOTOS = 9;
