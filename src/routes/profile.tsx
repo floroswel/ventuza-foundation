@@ -74,7 +74,7 @@ function age(iso?: string | null) {
 }
 
 function ProfilePage() {
-  const { user, loading: authLoading, signOut } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [signed, setSigned] = useState<Record<string, string>>({});
