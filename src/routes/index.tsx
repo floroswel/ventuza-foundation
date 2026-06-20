@@ -32,15 +32,12 @@ function Welcome() {
 
       <header className="flex items-center justify-between">
         <span className="wordmark text-2xl font-semibold tracking-wide">Ventuza</span>
-        <Link to="/auth" search={{ mode: "login" }} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-          Log in
-        </Link>
       </header>
 
       <section className="relative z-10 my-auto flex flex-col items-center text-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-surface px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-primary">
           <span className="inline-block size-1.5 rounded-full bg-primary" />
-          Members only · invite-grade
+          Coming soon · invite-grade
         </div>
         <h1 className="wordmark text-6xl font-medium leading-[0.95] sm:text-7xl">Ventuza</h1>
         <p className="mt-6 max-w-md text-balance text-lg leading-relaxed text-muted-foreground">
@@ -48,11 +45,8 @@ function Welcome() {
         </p>
 
         <div className="mt-10 flex w-full max-w-xs flex-col gap-3">
-          <Button asChild variant="hero" size="lg">
-            <Link to="/auth" search={{ mode: "signup" }}>Create an account</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link to="/auth" search={{ mode: "login" }}>I already have one</Link>
+          <Button variant="hero" size="lg" disabled className="opacity-70">
+            Sign-up opens soon
           </Button>
         </div>
       </section>
