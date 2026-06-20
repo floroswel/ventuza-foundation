@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, Ruler, SlidersHorizontal, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Ruler, SlidersHorizontal, X } from "lucide-react";
+import { getOrCreateConversation } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -135,7 +136,15 @@ function DiscoverPage() {
 
       <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={filters} onApply={setFilters} />
       <MatchModal open={!!match} onClose={() => setMatch(null)} otherName={match?.name ?? ""} otherPhotoUrl={match?.photo ?? null} />
-      <ProfileSheet profile={selected} onClose={() => setSelected(null)} onDecision={handleDecision} />
+      <ProfileSheet profile={selected} onClose={() => setSelected(null)} onDecision={handleDecision} onMessage={async (p) => {
+        try {
+          const cid = await getOrCreateConversation(p.id);
+          setSelected(null);
+          navigate({ to: "/messages/$id", params: { id: cid } });
+        } catch (e) {
+          toast.error(e instanceof Error ? e.message : "Couldn't open chat");
+        }
+      }} />
       <BottomNav />
     </main>
   );
@@ -257,11 +266,12 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
 }
 
 function ProfileSheet({
-  profile, onClose, onDecision,
+  profile, onClose, onDecision, onMessage,
 }: {
   profile: DiscoverProfile | null;
   onClose: () => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
+  onMessage: (p: DiscoverProfile) => void;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [idx, setIdx] = useState(0);
@@ -388,12 +398,18 @@ function ProfileSheet({
           {profile.looking_for?.length ? <TagBlock label="Looking for" values={profile.looking_for} /> : null}
           {profile.interests?.length ? <TagBlock label="Interests" values={profile.interests} /> : null}
 
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-2 pt-2">
             <button
               onClick={() => onDecision(profile, "pass")}
               className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full border border-border bg-background text-sm text-muted-foreground hover:text-foreground"
             >
               <X className="size-4" /> Pass
+            </button>
+            <button
+              onClick={() => onMessage(profile)}
+              className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full border border-primary/40 bg-background text-sm text-primary hover:bg-primary/10"
+            >
+              <MessageCircle className="size-4" /> Message
             </button>
             <button
               onClick={() => onDecision(profile, "like")}
