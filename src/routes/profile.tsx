@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Chip } from "@/components/Chip";
+import { BottomNav } from "@/components/BottomNav";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
   LOOKING_FOR_OPTIONS, INTEREST_OPTIONS,
@@ -90,7 +91,7 @@ function ProfilePage() {
   const primary = profile.photos?.[0];
 
   return (
-    <main className="min-h-dvh bg-background pb-24">
+    <main className="min-h-dvh bg-background pb-28">
       {/* hero photo */}
       <section className="relative">
         <div className="aspect-[4/5] w-full overflow-hidden bg-surface">
@@ -187,6 +188,7 @@ function ProfilePage() {
           onSaved={(p) => { setProfile(p); setEditing(false); toast.success("Profile updated."); }}
         />
       )}
+      <BottomNav />
     </main>
   );
 }
