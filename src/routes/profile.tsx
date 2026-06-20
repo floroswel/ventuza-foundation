@@ -1,7 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, EyeOff, LogOut, Pencil, ShieldAlert, X, Loader2 } from "lucide-react";
+import { BadgeCheck, Eye, EyeOff, LogOut, Pencil, ShieldAlert, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Chip } from "@/components/Chip";
 import { BottomNav } from "@/components/BottomNav";
+import { PhotoManager } from "@/components/PhotoManager";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
@@ -157,18 +158,14 @@ function ProfilePage() {
 
       <div className="space-y-8 px-6 pt-8">
         {/* photos grid */}
-        {profile.photos && profile.photos.length > 1 && (
-          <section>
-            <h2 className="mb-3 text-sm uppercase tracking-[0.2em] text-muted-foreground">Photos</h2>
-            <div className="grid grid-cols-3 gap-2">
-              {profile.photos.slice(1).map((p) => (
-                <div key={p} className="aspect-[3/4] overflow-hidden rounded-xl bg-surface">
-                  {signed[p] && <img src={signed[p]} alt="" className="size-full object-cover" />}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+        <section>
+          <PhotoManager
+            userId={profile.id}
+            photos={profile.photos ?? []}
+            onChange={(next) => setProfile({ ...profile, photos: next })}
+          />
+        </section>
+
 
         {profile.bio && (
           <Section title="About">
@@ -224,6 +221,24 @@ function ProfilePage() {
           <TagRow label="Pronouns" values={[...(profile.pronouns ?? []), ...(profile.pronouns_custom ? [profile.pronouns_custom] : [])]} />
           <TagRow label="Orientation" values={profile.orientation ?? []} />
           <TagRow label="Looking for" values={profile.looking_for ?? []} />
+        </Section>
+
+        <Section title="Activity">
+          <Link
+            to="/visitors"
+            className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4 hover:border-primary/50"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex size-10 items-center justify-center rounded-full bg-primary/15 text-primary">
+                <Eye className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">Who viewed you</p>
+                <p className="text-xs text-muted-foreground">See everyone who checked your profile</p>
+              </div>
+            </div>
+            <span className="text-xs text-muted-foreground">›</span>
+          </Link>
         </Section>
 
         {/* Privacy quick actions */}
