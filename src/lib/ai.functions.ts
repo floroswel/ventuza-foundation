@@ -91,3 +91,72 @@ export const translateText = createServerFn({ method: "POST" })
     });
     return { translation: text };
   });
+
+// ---------- Photo Coach ----------
+const PhotoCoachInput = z.object({
+  photoUrls: z.array(z.string().url()).min(1).max(9),
+});
+
+export const photoCoach = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => PhotoCoachInput.parse(d))
+  .handler(async ({ data }) => {
+    const sys =
+      "Ești un photo coach pentru o app gay de dating. Analizezi pozele și dai feedback concret, prietenos, în română. Pentru fiecare poză: 1 punct forte + 1 sugestie. La final: o recomandare globală (ce poză ar fi cea principală, ce să adauge/scoată). Ton: încurajator, direct, fără clișee. Max 600 caractere total. Fără markdown.";
+    const content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
+      { type: "text", text: `Analizează cele ${data.photoUrls.length} poze de profil:` },
+      ...data.photoUrls.map((url) => ({ type: "image_url" as const, image_url: { url } })),
+    ];
+    const text = await aiComplete({
+      model: "google/gemini-2.5-flash",
+      messages: [
+        { role: "system", content: sys },
+        { role: "user", content },
+      ],
+      temperature: 0.7,
+      maxTokens: 600,
+    });
+    return { feedback: text };
+  });
+
+// ---------- Match Score ----------
+const ProfileSummary = z.object({
+  name: z.string().optional(),
+  age: z.number().optional(),
+  bio: z.string().optional(),
+  interests: z.array(z.string()).optional(),
+  tribes: z.array(z.string()).optional(),
+  lookingFor: z.array(z.string()).optional(),
+});
+const MatchInput = z.object({ me: ProfileSummary, them: ProfileSummary });
+
+export const matchScore = createServerFn({ method: "POST" })
+  .inputValidator((d: unknown) => MatchInput.parse(d))
+  .handler(async ({ data }) => {
+    const sys =
+      'Evaluezi compatibilitatea între doi useri pe app gay de dating. Răspunzi DOAR JSON valid: {"score": <0-100>, "reason": "<o frază scurtă în română, max 120 caractere, care explică DE CE>"}. Bazează-te pe interese comune, ce caută fiecare, triburi, vibe-ul bio-ului. Fii realist — nu da 90+ fără motive solide.';
+    const fmt = (p: z.infer<typeof ProfileSummary>) =>
+      [
+        p.name && `Nume: ${p.name}`,
+        p.age && `Vârstă: ${p.age}`,
+        p.bio && `Bio: ${p.bio}`,
+        p.interests?.length && `Interese: ${p.interests.join(", ")}`,
+        p.tribes?.length && `Triburi: ${p.tribes.join(", ")}`,
+        p.lookingFor?.length && `Caută: ${p.lookingFor.join(", ")}`,
+      ].filter(Boolean).join("\n");
+    const text = await aiComplete({
+      messages: [
+        { role: "system", content: sys },
+        { role: "user", content: `EU:\n${fmt(data.me)}\n\nEL:\n${fmt(data.them)}` },
+      ],
+      temperature: 0.4,
+      maxTokens: 200,
+      json: true,
+    });
+    try {
+      const parsed = JSON.parse(text) as { score: number; reason: string };
+      const score = Math.max(0, Math.min(100, Math.round(parsed.score)));
+      return { score, reason: String(parsed.reason ?? "").slice(0, 140) };
+    } catch {
+      return { score: 50, reason: "Compatibilitate medie." };
+    }
+  });
