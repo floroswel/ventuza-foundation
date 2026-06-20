@@ -118,12 +118,13 @@ export async function markRead(conversationId: string, meId: string): Promise<vo
 export async function fetchOtherProfile(otherId: string): Promise<{ id: string; name: string | null; photo: string | null }> {
   const { data } = await supabase
     .from("profiles")
-    .select("id, display_name, primary_photo")
+    .select("id, display_name, photos")
     .eq("id", otherId)
     .maybeSingle();
+  const row = data as { display_name: string | null; photos: string[] | null } | null;
   return {
     id: otherId,
-    name: data?.display_name ?? null,
-    photo: await signPhoto(data?.primary_photo ?? null),
+    name: row?.display_name ?? null,
+    photo: await signPhoto(row?.photos?.[0] ?? null),
   };
 }
