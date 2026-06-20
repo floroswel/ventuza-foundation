@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { ChevronLeft, Loader2, LogOut, Mail, Shield, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { deleteMyAccount } from "@/lib/account.functions";
+import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
 import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/settings")({
@@ -21,6 +21,23 @@ function SettingsPage() {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const deleteAcct = useServerFn(deleteMyAccount);
+  const exportData = useServerFn(exportMyData);
+
+  async function downloadMyData() {
+    try {
+      const data = await exportData({});
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ventuza-data-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Datele tale au fost exportate (GDPR)");
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
 
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
   const [savingPrefs, setSavingPrefs] = useState(false);
@@ -125,6 +142,14 @@ function SettingsPage() {
                 </button>
               </div>
             </div>
+          </div>
+          <div className="mt-4 border-t border-border pt-3">
+            <button onClick={downloadMyData} className="w-full rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground hover:bg-surface">
+              📥 Exportă datele mele (GDPR)
+            </button>
+            <p className="mt-2 text-[10px] text-muted-foreground">
+              Primești un fișier JSON cu toate datele tale: profil, swipes, matches, mesaje, RSVP-uri, abonamente.
+            </p>
           </div>
         </section>
 
