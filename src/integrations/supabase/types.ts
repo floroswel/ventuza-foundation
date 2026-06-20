@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: {
+        Row: {
+          bio: string | null
+          birthdate: string | null
+          created_at: string
+          display_name: string | null
+          gender: string[] | null
+          gender_custom: string | null
+          id: string
+          interests: string[] | null
+          looking_for: string[] | null
+          onboarding_completed: boolean
+          orientation: string[] | null
+          photos: string[] | null
+          prompts: Json | null
+          pronouns: string[] | null
+          pronouns_custom: string | null
+          updated_at: string
+          verified: boolean
+        }
+        Insert: {
+          bio?: string | null
+          birthdate?: string | null
+          created_at?: string
+          display_name?: string | null
+          gender?: string[] | null
+          gender_custom?: string | null
+          id: string
+          interests?: string[] | null
+          looking_for?: string[] | null
+          onboarding_completed?: boolean
+          orientation?: string[] | null
+          photos?: string[] | null
+          prompts?: Json | null
+          pronouns?: string[] | null
+          pronouns_custom?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Update: {
+          bio?: string | null
+          birthdate?: string | null
+          created_at?: string
+          display_name?: string | null
+          gender?: string[] | null
+          gender_custom?: string | null
+          id?: string
+          interests?: string[] | null
+          looking_for?: string[] | null
+          onboarding_completed?: boolean
+          orientation?: string[] | null
+          photos?: string[] | null
+          prompts?: Json | null
+          pronouns?: string[] | null
+          pronouns_custom?: string | null
+          updated_at?: string
+          verified?: boolean
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
