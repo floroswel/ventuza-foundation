@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VisitorsRouteImport } from './routes/visitors'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SafetyRouteImport } from './routes/safety'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -35,6 +36,11 @@ const VisitorsRoute = VisitorsRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SafetyRoute = SafetyRouteImport.update({
+  id: '/safety',
+  path: '/safety',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
+  '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
   '/events/$id': typeof EventsIdRoute
@@ -142,6 +149,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
+  '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
   '/events/$id': typeof EventsIdRoute
@@ -162,6 +170,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
+  '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
   '/events/$id': typeof EventsIdRoute
@@ -183,6 +192,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/premium'
     | '/profile'
+    | '/safety'
     | '/settings'
     | '/visitors'
     | '/events/$id'
@@ -202,6 +212,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/premium'
     | '/profile'
+    | '/safety'
     | '/settings'
     | '/visitors'
     | '/events/$id'
@@ -221,6 +232,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/premium'
     | '/profile'
+    | '/safety'
     | '/settings'
     | '/visitors'
     | '/events/$id'
@@ -241,6 +253,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
+  SafetyRoute: typeof SafetyRoute
   SettingsRoute: typeof SettingsRoute
   VisitorsRoute: typeof VisitorsRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
@@ -264,6 +277,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/safety': {
+      id: '/safety'
+      path: '/safety'
+      fullPath: '/safety'
+      preLoaderRoute: typeof SafetyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -395,6 +415,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
+  SafetyRoute: SafetyRoute,
   SettingsRoute: SettingsRoute,
   VisitorsRoute: VisitorsRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
