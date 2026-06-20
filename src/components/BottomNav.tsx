@@ -1,11 +1,12 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Compass, User } from "lucide-react";
+import { Compass, MessageCircle, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
   const { pathname } = useLocation();
   const items = [
     { to: "/discover", label: "Discover", Icon: Compass },
+    { to: "/messages", label: "Messages", Icon: MessageCircle },
     { to: "/profile", label: "Profile", Icon: User },
   ] as const;
   return (
