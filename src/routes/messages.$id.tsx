@@ -51,10 +51,14 @@ function ThreadPage() {
         if (error) throw error;
         if (!conv) throw new Error("Conversation not found");
         const oid = conv.user_a === user!.id ? conv.user_b : conv.user_a;
-        const [msgs, prof] = await Promise.all([fetchMessages(id), fetchOtherProfile(oid)]);
+        const [msgs, prof, extra] = await Promise.all([
+          fetchMessages(id),
+          fetchOtherProfile(oid),
+          supabase.from("profiles").select("bio, interests").eq("id", oid).maybeSingle(),
+        ]);
         if (!alive) return;
         setMessages(msgs);
-        setOther(prof);
+        setOther({ ...prof, bio: extra.data?.bio ?? null, interests: extra.data?.interests ?? null });
         await markRead(id, user!.id);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't open chat");
