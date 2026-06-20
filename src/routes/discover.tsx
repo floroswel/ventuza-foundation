@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Plane, Rocket, Ruler, Sparkles, SlidersHorizontal, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
+import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
 import { getOrCreateConversation } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
