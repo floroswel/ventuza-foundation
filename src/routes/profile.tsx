@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { BadgeCheck, Eye, EyeOff, LogOut, Pencil, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { generateBio } from "@/lib/ai.functions";
+import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
