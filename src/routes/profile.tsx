@@ -375,7 +375,10 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
           <Input value={form.display_name ?? ""} onChange={(e) => setForm({ ...form, display_name: e.target.value })} className="h-12 bg-surface border-border" />
         </div>
         <div className="space-y-2">
-          <Label>Bio</Label>
+          <div className="flex items-center justify-between">
+            <Label>Bio</Label>
+            <AiBioButton form={form} setForm={setForm} />
+          </div>
           <Textarea value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={5} maxLength={500} className="bg-surface border-border" />
         </div>
         <EditChips label="Tribes" options={TRIBE_OPTIONS} value={form.tribes ?? []} onChange={(v) => setForm({ ...form, tribes: v })} />
