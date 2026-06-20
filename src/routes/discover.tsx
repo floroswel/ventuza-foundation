@@ -231,10 +231,20 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
                 className="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgb(52,211,153)] ring-2 ring-black/50"
               />
             )}
+            {p.verified && (
+              <span aria-label="verified" className="absolute left-1.5 top-1.5 rounded-full bg-black/60 p-0.5 backdrop-blur">
+                <BadgeCheck className="size-3.5 text-primary" />
+              </span>
+            )}
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 p-1.5 text-left">
-              <p className="truncate text-[11px] font-medium leading-tight text-white">
-                {p.display_name}{age ? <span className="text-white/70">, {age}</span> : null}
-              </p>
+              <div className="min-w-0">
+                <p className="truncate text-[11px] font-medium leading-tight text-white">
+                  {p.display_name}{age ? <span className="text-white/70">, {age}</span> : null}
+                </p>
+                {p.tribes && p.tribes.length > 0 && (
+                  <p className="truncate text-[9px] uppercase tracking-wider text-primary/90">{p.tribes.slice(0, 2).join(" · ")}</p>
+                )}
+              </div>
               {p.distance_m != null && (
                 <span className="shrink-0 text-[10px] text-white/70">{formatDistance(p.distance_m)}</span>
               )}
