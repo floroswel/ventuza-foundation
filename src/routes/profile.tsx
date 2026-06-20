@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, LogOut, Pencil, ShieldAlert, X, Loader2 } from "lucide-react";
+import { BadgeCheck, EyeOff, LogOut, Pencil, ShieldAlert, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Chip } from "@/components/Chip";
 import { BottomNav } from "@/components/BottomNav";
+import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
   LOOKING_FOR_OPTIONS, INTEREST_OPTIONS,
+  TRIBE_OPTIONS, BODY_TYPE_OPTIONS, POSITION_OPTIONS,
+  HIV_STATUS_OPTIONS, RELATIONSHIP_STATUS_OPTIONS, ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
 
 export const Route = createFileRoute("/profile")({
@@ -36,6 +39,17 @@ type Profile = {
   photos: string[] | null;
   onboarding_completed: boolean;
   verified: boolean;
+  tribes: string[] | null;
+  body_type: string | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  ethnicity: string | null;
+  position: string | null;
+  hiv_status: string | null;
+  hiv_test_date: string | null;
+  relationship_status: string | null;
+  verified_at: string | null;
+  incognito: boolean;
 };
 
 function age(iso?: string | null) {
