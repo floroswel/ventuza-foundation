@@ -158,18 +158,14 @@ function ProfilePage() {
 
       <div className="space-y-8 px-6 pt-8">
         {/* photos grid */}
-        {profile.photos && profile.photos.length > 1 && (
-          <section>
-            <h2 className="mb-3 text-sm uppercase tracking-[0.2em] text-muted-foreground">Photos</h2>
-            <div className="grid grid-cols-3 gap-2">
-              {profile.photos.slice(1).map((p) => (
-                <div key={p} className="aspect-[3/4] overflow-hidden rounded-xl bg-surface">
-                  {signed[p] && <img src={signed[p]} alt="" className="size-full object-cover" />}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
+        <section>
+          <PhotoManager
+            userId={profile.id}
+            photos={profile.photos ?? []}
+            onChange={(next) => setProfile({ ...profile, photos: next })}
+          />
+        </section>
+
 
         {profile.bio && (
           <Section title="About">
