@@ -1,25 +1,26 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Compass, MessageCircle, User } from "lucide-react";
+import { Compass, MessageCircle, User, CalendarHeart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function BottomNav() {
   const { pathname } = useLocation();
   const items = [
     { to: "/discover", label: "Discover", Icon: Compass },
+    { to: "/events", label: "Events", Icon: CalendarHeart },
     { to: "/messages", label: "Messages", Icon: MessageCircle },
     { to: "/profile", label: "Profile", Icon: User },
   ] as const;
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/85 backdrop-blur">
-      <div className="mx-auto flex max-w-md items-center justify-around px-6 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="mx-auto flex max-w-md items-center justify-around px-4 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {items.map(({ to, label, Icon }) => {
-          const active = pathname === to;
+          const active = pathname === to || (to === "/events" && pathname.startsWith("/events"));
           return (
             <Link
               key={to}
               to={to}
               className={cn(
-                "flex flex-1 flex-col items-center gap-1 rounded-xl px-3 py-2 text-xs transition-colors",
+                "flex flex-1 flex-col items-center gap-1 rounded-xl px-2 py-2 text-[11px] transition-colors",
                 active ? "text-primary" : "text-muted-foreground hover:text-foreground",
               )}
             >
