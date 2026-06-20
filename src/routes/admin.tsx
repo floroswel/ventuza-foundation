@@ -42,12 +42,21 @@ function AdminDashboard() {
   async function loadReports() {
     const { data, error } = await supabase
       .from("reports")
-      .select("*, reported_profile:profiles!reports_reported_id_fkey(display_name, report_count, suspended_until)")
+      .select("*")
       .eq("status", "pending")
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) { toast.error(error.message); return; }
-    setReports((data ?? []) as Report[]);
+    const ids = Array.from(new Set((data ?? []).map((r) => r.reported_id)));
+    const profilesMap = new Map<string, { display_name: string | null; report_count: number; suspended_until: string | null }>();
+    if (ids.length) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("id, display_name, report_count, suspended_until")
+        .in("id", ids);
+      profs?.forEach((p) => profilesMap.set(p.id, { display_name: p.display_name, report_count: p.report_count ?? 0, suspended_until: p.suspended_until }));
+    }
+    setReports((data ?? []).map((r) => ({ ...r, reported_profile: profilesMap.get(r.reported_id) ?? null })) as Report[]);
   }
 
   async function suspend(userId: string, hours: number, reason: string) {
