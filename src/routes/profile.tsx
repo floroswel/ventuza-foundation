@@ -166,7 +166,10 @@ function ProfilePage() {
             photos={profile.photos ?? []}
             onChange={(next) => setProfile({ ...profile, photos: next })}
           />
+          <PhotoCoachButton photos={profile.photos ?? []} />
         </section>
+
+
 
 
         {profile.bio && (
