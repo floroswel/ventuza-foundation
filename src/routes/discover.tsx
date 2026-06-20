@@ -362,8 +362,10 @@ function ProfileSheet({
                 </span>
               )}
             </div>
+            <MatchScoreBadge target={profile} />
           </div>
         </div>
+
 
         <div className="space-y-5 px-5 pb-6 pt-4">
           {profile.tribes && profile.tribes.length > 0 && (
