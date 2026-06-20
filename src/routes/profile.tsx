@@ -268,6 +268,12 @@ function ProfilePage() {
           />
         </Section>
 
+        <Section title="Album privat">
+          <PrivateAlbumManager userId={profile.id} />
+        </Section>
+
+
+
 
         {/* Privacy quick actions */}
         <Section title="Privacy">
