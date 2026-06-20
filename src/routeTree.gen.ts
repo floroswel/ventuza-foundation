@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VisitorsRouteImport } from './routes/visitors'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as DiscoverRouteImport } from './routes/discover'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 
+const VisitorsRoute = VisitorsRouteImport.update({
+  id: '/visitors',
+  path: '/visitors',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ProfileRoute = ProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
+  '/visitors': typeof VisitorsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/messages/': typeof MessagesIndexRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
+  '/visitors': typeof VisitorsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/messages': typeof MessagesIndexRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/onboarding': typeof OnboardingRoute
   '/profile': typeof ProfileRoute
+  '/visitors': typeof VisitorsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/messages/': typeof MessagesIndexRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/onboarding'
     | '/profile'
+    | '/visitors'
     | '/messages/$id'
     | '/messages/'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/onboarding'
     | '/profile'
+    | '/visitors'
     | '/messages/$id'
     | '/messages'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/onboarding'
     | '/profile'
+    | '/visitors'
     | '/messages/$id'
     | '/messages/'
   fileRoutesById: FileRoutesById
@@ -117,12 +129,20 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   OnboardingRoute: typeof OnboardingRoute
   ProfileRoute: typeof ProfileRoute
+  VisitorsRoute: typeof VisitorsRoute
   MessagesIdRoute: typeof MessagesIdRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/visitors': {
+      id: '/visitors'
+      path: '/visitors'
+      fullPath: '/visitors'
+      preLoaderRoute: typeof VisitorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/profile': {
       id: '/profile'
       path: '/profile'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   OnboardingRoute: OnboardingRoute,
   ProfileRoute: ProfileRoute,
+  VisitorsRoute: VisitorsRoute,
   MessagesIdRoute: MessagesIdRoute,
   MessagesIndexRoute: MessagesIndexRoute,
 }
