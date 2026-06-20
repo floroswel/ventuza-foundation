@@ -12,13 +12,6 @@ export const Route = createFileRoute("/")({
 });
 
 function Welcome() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!loading && user) navigate({ to: "/profile" });
-  }, [loading, user, navigate]);
-
   return (
     <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background px-6 py-10">
       {/* ambient gold glow */}
