@@ -279,9 +279,10 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
 }
 
 function ProfileSheet({
-  profile, onClose, onDecision, onMessage,
+  profile, currentUserId, onClose, onDecision, onMessage,
 }: {
   profile: DiscoverProfile | null;
+  currentUserId: string | null;
   onClose: () => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
   onMessage: (p: DiscoverProfile) => void;
