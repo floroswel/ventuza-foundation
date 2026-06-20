@@ -188,6 +188,7 @@ function ProfilePage() {
           onSaved={(p) => { setProfile(p); setEditing(false); toast.success("Profile updated."); }}
         />
       )}
+      <BottomNav />
     </main>
   );
 }
