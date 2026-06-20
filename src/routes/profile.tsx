@@ -134,10 +134,20 @@ function ProfilePage() {
             </h1>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">
-              <ShieldAlert className="size-3" /> Unverified
-              <span className="text-muted-foreground/70">· coming soon</span>
-            </span>
+            {profile.verified_at ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur">
+                <BadgeCheck className="size-3" /> Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">
+                <ShieldAlert className="size-3" /> Unverified
+              </span>
+            )}
+            {profile.incognito && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">
+                <EyeOff className="size-3" /> Incognito
+              </span>
+            )}
             {profile.pronouns?.slice(0, 2).map((p) => (
               <span key={p} className="rounded-full bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">{p}</span>
             ))}
@@ -187,11 +197,55 @@ function ProfilePage() {
           </Section>
         )}
 
+        {profile.tribes && profile.tribes.length > 0 && (
+          <Section title="Tribes">
+            <div className="flex flex-wrap gap-2">
+              {profile.tribes.map((t) => <Chip key={t} active>{t}</Chip>)}
+            </div>
+          </Section>
+        )}
+
+        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.hiv_status) && (
+          <Section title="Stats">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface p-4 text-sm">
+              {profile.body_type && <StatRow label="Body" value={profile.body_type} />}
+              {profile.position && <StatRow label="Position" value={profile.position} />}
+              {formatHeight(profile.height_cm) && <StatRow label="Height" value={formatHeight(profile.height_cm)!} />}
+              {profile.weight_kg && <StatRow label="Weight" value={`${profile.weight_kg} kg`} />}
+              {profile.ethnicity && <StatRow label="Ethnicity" value={profile.ethnicity} />}
+              {profile.relationship_status && <StatRow label="Relationship" value={profile.relationship_status} />}
+              {profile.hiv_status && <StatRow label="HIV" value={profile.hiv_status} />}
+            </div>
+          </Section>
+        )}
+
         <Section title="Identity">
           <TagRow label="Gender" values={[...(profile.gender ?? []), ...(profile.gender_custom ? [profile.gender_custom] : [])]} />
           <TagRow label="Pronouns" values={[...(profile.pronouns ?? []), ...(profile.pronouns_custom ? [profile.pronouns_custom] : [])]} />
           <TagRow label="Orientation" values={profile.orientation ?? []} />
           <TagRow label="Looking for" values={profile.looking_for ?? []} />
+        </Section>
+
+        {/* Privacy quick actions */}
+        <Section title="Privacy">
+          <button
+            onClick={async () => {
+              const next = !profile.incognito;
+              const { error } = await supabase.from("profiles").update({ incognito: next }).eq("id", profile.id);
+              if (error) return toast.error(error.message);
+              setProfile({ ...profile, incognito: next });
+              toast.success(next ? "You're now in Obsidian Vault." : "You're visible again.");
+            }}
+            className="flex w-full items-center justify-between rounded-2xl border border-border bg-surface p-4 text-left hover:border-primary/50"
+          >
+            <div>
+              <p className="text-sm font-medium">Obsidian Vault</p>
+              <p className="text-xs text-muted-foreground">Hide your profile from the grid. You can still browse.</p>
+            </div>
+            <span className={profile.incognito ? "rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground" : "rounded-full bg-surface-elevated px-3 py-1 text-xs text-muted-foreground"}>
+              {profile.incognito ? "On" : "Off"}
+            </span>
+          </button>
         </Section>
       </div>
 
