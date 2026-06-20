@@ -111,13 +111,16 @@ function DiscoverPage() {
               {visible.length} {visible.length === 1 ? "person" : "people"}
             </p>
           </div>
-          <button
-            onClick={() => setFiltersOpen(true)}
-            aria-label="Filters"
-            className="flex size-10 items-center justify-center rounded-full border border-border bg-surface text-primary hover:bg-primary/10"
-          >
-            <SlidersHorizontal className="size-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <button
+              onClick={() => setFiltersOpen(true)}
+              aria-label="Filters"
+              className="flex size-10 items-center justify-center rounded-full border border-border bg-surface text-primary hover:bg-primary/10"
+            >
+              <SlidersHorizontal className="size-4" />
+            </button>
+          </div>
         </div>
 
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
