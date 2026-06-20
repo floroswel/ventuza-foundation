@@ -51,12 +51,15 @@ function EventsPage() {
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
         <div className="flex items-center justify-between">
           <h1 className="text-lg font-semibold tracking-tight">Events</h1>
-          <button
-            onClick={() => setCreating(true)}
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-[0_0_18px_-6px_var(--primary)] hover:opacity-90"
-          >
-            <Plus className="size-3.5" /> Host
-          </button>
+          <div className="flex items-center gap-1">
+            <NotificationBell />
+            <button
+              onClick={() => setCreating(true)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-[0_0_18px_-6px_var(--primary)] hover:opacity-90"
+            >
+              <Plus className="size-3.5" /> Host
+            </button>
+          </div>
         </div>
         <div className="mt-3 flex gap-2">
           <input
