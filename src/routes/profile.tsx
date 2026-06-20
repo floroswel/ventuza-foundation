@@ -130,6 +130,9 @@ function ProfilePage() {
 
         <div className="absolute right-4 top-4 flex gap-2">
           <NotificationBell className="size-10 border border-border bg-surface/80 backdrop-blur" />
+          <Button size="icon" variant="subtle" onClick={() => navigate({ to: "/premium" })} aria-label="Premium">
+            <Crown className="size-4 text-primary" />
+          </Button>
           <Button size="icon" variant="subtle" onClick={() => setEditing(true)} aria-label="Edit profile">
             <Pencil className="size-4" />
           </Button>
