@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, Eye, EyeOff, Pencil, Settings as SettingsIcon, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
+import { BadgeCheck, Crown, Eye, EyeOff, Pencil, Settings as SettingsIcon, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
