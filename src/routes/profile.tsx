@@ -252,6 +252,22 @@ function ProfilePage() {
           </Link>
         </Section>
 
+        <Section title="Verificare & Premium">
+          <ProfilePremiumPanel
+            userId={profile.id}
+            mainPhotoPath={profile.photos?.[0] ?? null}
+            verificationStatus={profile.verification_status}
+            travelCity={profile.travel_city}
+            travelUntil={profile.travel_until}
+            boostUntil={profile.boost_until}
+            onUpdate={async () => {
+              const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
+              if (data) setProfile(data as Profile);
+            }}
+          />
+        </Section>
+
+
         {/* Privacy quick actions */}
         <Section title="Privacy">
           <button
