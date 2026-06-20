@@ -53,6 +53,11 @@ type Profile = {
   relationship_status: string | null;
   verified_at: string | null;
   incognito: boolean;
+  verification_status: string;
+  verification_selfie_path: string | null;
+  travel_city: string | null;
+  travel_until: string | null;
+  boost_until: string | null;
 };
 
 function age(iso?: string | null) {
