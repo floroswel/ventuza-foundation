@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Chip } from "@/components/Chip";
 import { BottomNav } from "@/components/BottomNav";
 import { PhotoManager } from "@/components/PhotoManager";
+import { ProfilePremiumPanel } from "@/components/ProfilePremiumPanel";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
