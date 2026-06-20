@@ -127,7 +127,10 @@ function DiscoverPage() {
       ) : visible.length === 0 ? (
         <EmptyState onRefresh={() => load()} hasLocation={locStatus === "granted"} />
       ) : (
-        <Cascade profiles={visible} onOpen={setSelected} />
+        <>
+          <OnlineRow profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)} onOpen={setSelected} />
+          <Cascade profiles={visible} onOpen={setSelected} />
+        </>
       )}
 
       <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={filters} onApply={setFilters} />
