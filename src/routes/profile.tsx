@@ -223,6 +223,24 @@ function ProfilePage() {
           <TagRow label="Looking for" values={profile.looking_for ?? []} />
         </Section>
 
+        <Section title="Activity">
+          <Link
+            to="/visitors"
+            className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4 hover:border-primary/50"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex size-10 items-center justify-center rounded-full bg-primary/15 text-primary">
+                <Eye className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">Who viewed you</p>
+                <p className="text-xs text-muted-foreground">See everyone who checked your profile</p>
+              </div>
+            </div>
+            <span className="text-xs text-muted-foreground">›</span>
+          </Link>
+        </Section>
+
         {/* Privacy quick actions */}
         <Section title="Privacy">
           <button
