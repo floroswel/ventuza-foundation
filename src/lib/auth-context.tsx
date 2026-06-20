@@ -9,7 +9,12 @@ type AuthCtx = {
   signOut: () => Promise<void>;
 };
 
-const Ctx = createContext<AuthCtx>({ user: null, session: null, loading: true, signOut: async () => {} });
+const Ctx = createContext<AuthCtx>({
+  user: null,
+  session: null,
+  loading: true,
+  signOut: async () => {},
+});
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
@@ -18,31 +23,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
 
-    async function ensurePreviewSession() {
-      setLoading(true);
-      const { data } = await supabase.auth.getSession();
+    // Listener first so we never miss an event.
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       if (cancelled) return;
-
-      if (data.session) {
-        setSession(data.session);
-        setLoading(false);
-        return;
-      }
-
-      const { data: anon, error } = await supabase.auth.signInAnonymously();
-      if (cancelled) return;
-
-      if (error) console.error("Anonymous preview sign-in failed", error);
-      setSession(anon.session ?? null);
-      setLoading(false);
-    }
-
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (_e === "INITIAL_SESSION") return;
       setSession(s);
       setLoading(false);
     });
-    void ensurePreviewSession();
+
+    // Then hydrate the current session.
+    void supabase.auth.getSession().then(({ data }) => {
+      if (cancelled) return;
+      setSession(data.session ?? null);
+      setLoading(false);
+    });
 
     return () => {
       cancelled = true;
@@ -58,8 +51,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
         signOut: async () => {
           await supabase.auth.signOut();
-          const { data } = await supabase.auth.signInAnonymously();
-          setSession(data.session ?? null);
+          setSession(null);
         },
       }}
     >
