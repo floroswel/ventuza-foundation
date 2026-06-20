@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, Eye, EyeOff, LogOut, Pencil, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
+import { BadgeCheck, Eye, EyeOff, Pencil, Settings as SettingsIcon, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { supabase } from "@/integrations/supabase/client";
@@ -133,8 +133,8 @@ function ProfilePage() {
           <Button size="icon" variant="subtle" onClick={() => setEditing(true)} aria-label="Edit profile">
             <Pencil className="size-4" />
           </Button>
-          <Button size="icon" variant="subtle" onClick={async () => { await signOut(); navigate({ to: "/" }); }} aria-label="Sign out">
-            <LogOut className="size-4" />
+          <Button size="icon" variant="subtle" onClick={() => navigate({ to: "/settings" })} aria-label="Settings">
+            <SettingsIcon className="size-4" />
           </Button>
         </div>
 
