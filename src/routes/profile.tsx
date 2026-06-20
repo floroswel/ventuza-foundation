@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Chip } from "@/components/Chip";
 import { BottomNav } from "@/components/BottomNav";
 import { PhotoManager } from "@/components/PhotoManager";
+import { ProfilePremiumPanel } from "@/components/ProfilePremiumPanel";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
@@ -53,6 +54,11 @@ type Profile = {
   relationship_status: string | null;
   verified_at: string | null;
   incognito: boolean;
+  verification_status: string;
+  verification_selfie_path: string | null;
+  travel_city: string | null;
+  travel_until: string | null;
+  boost_until: string | null;
 };
 
 function age(iso?: string | null) {
@@ -245,6 +251,22 @@ function ProfilePage() {
             <span className="text-xs text-muted-foreground">›</span>
           </Link>
         </Section>
+
+        <Section title="Verificare & Premium">
+          <ProfilePremiumPanel
+            userId={profile.id}
+            mainPhotoPath={profile.photos?.[0] ?? null}
+            verificationStatus={profile.verification_status}
+            travelCity={profile.travel_city}
+            travelUntil={profile.travel_until}
+            boostUntil={profile.boost_until}
+            onUpdate={async () => {
+              const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
+              if (data) setProfile(data as Profile);
+            }}
+          />
+        </Section>
+
 
         {/* Privacy quick actions */}
         <Section title="Privacy">
