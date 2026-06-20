@@ -156,6 +156,46 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     </button>
   );
 }
+function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p: DiscoverProfile) => void }) {
+  const [urls, setUrls] = useState<Record<string, string>>({});
+  useEffect(() => {
+    const paths = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
+    if (paths.length) signPhotos(paths).then(setUrls);
+  }, [profiles]);
+  if (!profiles.length) return null;
+  return (
+    <div className="border-b border-border/40 px-4 py-3">
+      <p className="mb-2 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+        <span className="mr-1.5 inline-block size-1.5 translate-y-[-1px] rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />
+        Online now · {profiles.length}
+      </p>
+      <div className="-mx-1 flex gap-2.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {profiles.map((p) => {
+          const path = p.photos?.[0];
+          const url = path ? urls[path] : null;
+          return (
+            <button key={p.id} onClick={() => onOpen(p)} className="group flex shrink-0 flex-col items-center gap-1">
+              <span className="relative block size-[66px] rounded-full p-[2px] bg-gradient-to-tr from-primary via-primary-glow to-primary">
+                <span className="block size-full overflow-hidden rounded-full bg-surface ring-2 ring-background">
+                  {url ? (
+                    <img src={url} alt={p.display_name ?? ""} className="size-full object-cover" />
+                  ) : (
+                    <span className="flex size-full items-center justify-center text-lg text-muted-foreground/50">
+                      {p.display_name?.[0]?.toUpperCase() ?? "?"}
+                    </span>
+                  )}
+                </span>
+                <span className="absolute bottom-0 right-0.5 size-3 rounded-full bg-emerald-400 ring-2 ring-background shadow-[0_0_6px_rgb(52,211,153)]" />
+              </span>
+              <span className="max-w-[68px] truncate text-[10px] text-foreground/80">{p.display_name}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 
 function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p: DiscoverProfile) => void }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
