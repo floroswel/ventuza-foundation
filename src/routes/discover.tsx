@@ -263,13 +263,6 @@ function ProfileSheet({
   onClose: () => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
 }) {
-function ProfileSheet({
-  profile, onClose, onDecision,
-}: {
-  profile: DiscoverProfile | null;
-  onClose: () => void;
-  onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
-}) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const [idx, setIdx] = useState(0);
 
