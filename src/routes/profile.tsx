@@ -284,6 +284,15 @@ function TagRow({ label, values }: { label: string; values: string[] }) {
   );
 }
 
+function StatRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-foreground/90">{value}</p>
+    </div>
+  );
+}
+
 function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 }
@@ -305,10 +314,32 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
       looking_for: form.looking_for ?? [],
       interests: form.interests ?? [],
       prompts: form.prompts ?? [],
+      tribes: form.tribes ?? [],
+      body_type: form.body_type,
+      height_cm: form.height_cm,
+      weight_kg: form.weight_kg,
+      ethnicity: form.ethnicity,
+      position: form.position,
+      hiv_status: form.hiv_status,
+      relationship_status: form.relationship_status,
     }).eq("id", profile.id).select("*").maybeSingle();
     setSaving(false);
     if (error || !data) return toast.error(error?.message ?? "Failed");
     onSaved(data as Profile);
+  }
+
+  function single<K extends keyof Profile>(k: K, options: string[]) {
+    const current = (form[k] as unknown as string) || "";
+    return (
+      <div className="space-y-2">
+        <Label>{String(k).replace(/_/g, " ").replace(/^./, c => c.toUpperCase())}</Label>
+        <div className="flex flex-wrap gap-2">
+          {options.map((o) => (
+            <Chip key={o} active={current === o} onClick={() => setForm({ ...form, [k]: current === o ? null : o } as Profile)}>{o}</Chip>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -332,6 +363,25 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
           <Label>Bio</Label>
           <Textarea value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={5} maxLength={500} className="bg-surface border-border" />
         </div>
+        <EditChips label="Tribes" options={TRIBE_OPTIONS} value={form.tribes ?? []} onChange={(v) => setForm({ ...form, tribes: v })} />
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>Height (cm)</Label>
+            <Input type="number" min={140} max={220} value={form.height_cm ?? ""} onChange={(e) => setForm({ ...form, height_cm: e.target.value ? Number(e.target.value) : null })} className="h-12 bg-surface border-border" />
+          </div>
+          <div className="space-y-2">
+            <Label>Weight (kg)</Label>
+            <Input type="number" min={40} max={200} value={form.weight_kg ?? ""} onChange={(e) => setForm({ ...form, weight_kg: e.target.value ? Number(e.target.value) : null })} className="h-12 bg-surface border-border" />
+          </div>
+        </div>
+
+        {single("body_type", BODY_TYPE_OPTIONS)}
+        {single("position", POSITION_OPTIONS)}
+        {single("ethnicity", ETHNICITY_OPTIONS)}
+        {single("relationship_status", RELATIONSHIP_STATUS_OPTIONS)}
+        {single("hiv_status", HIV_STATUS_OPTIONS)}
+
         <EditChips label="Gender" options={GENDER_OPTIONS} value={form.gender ?? []} onChange={(v) => setForm({ ...form, gender: v })} />
         <EditChips label="Pronouns" options={PRONOUN_OPTIONS} value={form.pronouns ?? []} onChange={(v) => setForm({ ...form, pronouns: v })} />
         <EditChips label="Orientation" options={ORIENTATION_OPTIONS} value={form.orientation ?? []} onChange={(v) => setForm({ ...form, orientation: v })} />
