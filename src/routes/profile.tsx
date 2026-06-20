@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Chip } from "@/components/Chip";
 import { BottomNav } from "@/components/BottomNav";
+import { PhotoManager } from "@/components/PhotoManager";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
