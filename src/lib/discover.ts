@@ -83,9 +83,9 @@ export async function fetchDiscover(
     max_distance_km: filters.maxDistanceKm,
     min_age: filters.minAge,
     max_age: filters.maxAge,
-    looking_for_filter: filters.lookingFor.length ? filters.lookingFor : null,
-    gender_filter: filters.gender.length ? filters.gender : null,
-    orientation_filter: filters.orientation.length ? filters.orientation : null,
+    looking_for_filter: filters.lookingFor.length ? filters.lookingFor : (null as unknown as string[] | undefined),
+    gender_filter: filters.gender.length ? filters.gender : (null as unknown as string[] | undefined),
+    orientation_filter: filters.orientation.length ? filters.orientation : (null as unknown as string[] | undefined),
     order_mode: orderMode,
     result_limit: 60,
   });
