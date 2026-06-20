@@ -63,6 +63,22 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           .from("profile-photos")
           .upload(path, file, { upsert: false, contentType: file.type });
         if (error) { toast.error(error.message); continue; }
+
+        // AI moderation pass — best effort, don't block on failure
+        try {
+          const { data: signedData } = await supabase.storage.from("profile-photos").createSignedUrl(path, 300);
+          if (signedData?.signedUrl) {
+            const mod = await moderate({ data: { photoUrl: signedData.signedUrl } });
+            if (!mod.allowed) {
+              await supabase.storage.from("profile-photos").remove([path]);
+              toast.error(`Poza respinsă: ${mod.reason || "conținut nepermis"}`);
+              continue;
+            }
+          }
+        } catch {
+          // moderation failure shouldn't block upload
+        }
+
         added.push(path);
       }
       if (added.length) {
