@@ -179,6 +179,8 @@ function SettingsPage() {
         <section className="rounded-2xl border border-border bg-surface p-4">
           <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Legal</h2>
           <div className="mt-3 space-y-2 text-sm">
+            <Link to="/safety" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+              <Shield className="size-4" /> Centrul de siguranță</Link>
             <Link to="/legal/terms" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
               <Shield className="size-4" /> Termeni și condiții
             </Link>
