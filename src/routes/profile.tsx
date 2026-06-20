@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Chip } from "@/components/Chip";
 import { BottomNav } from "@/components/BottomNav";
 import { PhotoManager } from "@/components/PhotoManager";
+import { NotificationBell } from "@/components/NotificationBell";
 import { ProfilePremiumPanel } from "@/components/ProfilePremiumPanel";
 import { PrivateAlbumManager } from "@/components/PrivateAlbum";
 import { formatHeight } from "@/lib/discover";
