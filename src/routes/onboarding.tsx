@@ -16,6 +16,12 @@ import {
   LOOKING_FOR_OPTIONS,
   INTEREST_OPTIONS,
   PROMPT_OPTIONS,
+  TRIBE_OPTIONS,
+  BODY_TYPE_OPTIONS,
+  POSITION_OPTIONS,
+  HIV_STATUS_OPTIONS,
+  RELATIONSHIP_STATUS_OPTIONS,
+  ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
 
 export const Route = createFileRoute("/onboarding")({
@@ -34,10 +40,18 @@ type Data = {
   pronouns_custom: string;
   orientation: string[];
   looking_for: string[];
+  tribes: string[];
+  body_type: string;
+  height_cm: number | null;
+  weight_kg: number | null;
+  ethnicity: string;
+  position: string;
+  hiv_status: string;
+  relationship_status: string;
   interests: string[];
   prompts: Prompt[];
   bio: string;
-  photos: string[]; // storage paths
+  photos: string[];
 };
 
 const empty: Data = {
@@ -49,6 +63,14 @@ const empty: Data = {
   pronouns_custom: "",
   orientation: [],
   looking_for: [],
+  tribes: [],
+  body_type: "",
+  height_cm: null,
+  weight_kg: null,
+  ethnicity: "",
+  position: "",
+  hiv_status: "",
+  relationship_status: "",
   interests: [],
   prompts: [],
   bio: "",
@@ -62,6 +84,9 @@ const STEPS = [
   "pronouns",
   "orientation",
   "looking_for",
+  "tribes",
+  "stats",
+  "health",
   "interests",
   "prompts",
   "bio",
@@ -104,6 +129,9 @@ function Onboarding() {
       case "pronouns": return data.pronouns.length > 0 || data.pronouns_custom.trim().length > 0;
       case "orientation": return data.orientation.length > 0;
       case "looking_for": return data.looking_for.length > 0;
+      case "tribes": return true; // optional
+      case "stats": return true; // optional
+      case "health": return true; // optional but encouraged
       case "interests": return data.interests.length >= 3;
       case "prompts": return data.prompts.length === 3 && data.prompts.every((p) => p.answer.trim().length > 0);
       case "bio": return data.bio.trim().length >= 20;
@@ -128,6 +156,14 @@ function Onboarding() {
       pronouns_custom: data.pronouns_custom.trim() || null,
       orientation: data.orientation,
       looking_for: data.looking_for,
+      tribes: data.tribes,
+      body_type: data.body_type || null,
+      height_cm: data.height_cm,
+      weight_kg: data.weight_kg,
+      ethnicity: data.ethnicity || null,
+      position: data.position || null,
+      hiv_status: data.hiv_status || null,
+      relationship_status: data.relationship_status || null,
       interests: data.interests,
       bio: data.bio.trim(),
       prompts: data.prompts,
@@ -243,6 +279,58 @@ function StepView({
       return (
         <Field title="What are you looking for?" hint="Pick all that apply.">
           <ChipGrid options={LOOKING_FOR_OPTIONS} selected={data.looking_for} onToggle={(v) => setData({ ...data, looking_for: toggle(data.looking_for, v) })} />
+        </Field>
+      );
+    case "tribes":
+      return (
+        <Field title="Your tribes" hint="Optional. Helps people who share your vibe find you.">
+          <ChipGrid options={TRIBE_OPTIONS} selected={data.tribes} onToggle={(v) => setData({ ...data, tribes: toggle(data.tribes, v) })} />
+        </Field>
+      );
+    case "stats":
+      return (
+        <Field title="Stats" hint="Optional. Show only what you want.">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Body type</Label>
+              <ChipGrid options={BODY_TYPE_OPTIONS} selected={data.body_type ? [data.body_type] : []} onToggle={(v) => setData({ ...data, body_type: data.body_type === v ? "" : v })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Position</Label>
+              <ChipGrid options={POSITION_OPTIONS} selected={data.position ? [data.position] : []} onToggle={(v) => setData({ ...data, position: data.position === v ? "" : v })} />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Height (cm)</Label>
+                <Input type="number" min={140} max={220} value={data.height_cm ?? ""}
+                  onChange={(e) => setData({ ...data, height_cm: e.target.value ? Number(e.target.value) : null })}
+                  className="h-12 bg-surface border-border" />
+              </div>
+              <div className="space-y-2">
+                <Label>Weight (kg)</Label>
+                <Input type="number" min={40} max={200} value={data.weight_kg ?? ""}
+                  onChange={(e) => setData({ ...data, weight_kg: e.target.value ? Number(e.target.value) : null })}
+                  className="h-12 bg-surface border-border" />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Ethnicity</Label>
+              <ChipGrid options={ETHNICITY_OPTIONS} selected={data.ethnicity ? [data.ethnicity] : []} onToggle={(v) => setData({ ...data, ethnicity: data.ethnicity === v ? "" : v })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Relationship status</Label>
+              <ChipGrid options={RELATIONSHIP_STATUS_OPTIONS} selected={data.relationship_status ? [data.relationship_status] : []} onToggle={(v) => setData({ ...data, relationship_status: data.relationship_status === v ? "" : v })} />
+            </div>
+          </div>
+        </Field>
+      );
+    case "health":
+      return (
+        <Field title="Sexual health" hint="Optional. Honesty builds trust — your status is yours to share.">
+          <div className="space-y-2">
+            <Label>HIV status</Label>
+            <ChipGrid options={HIV_STATUS_OPTIONS} selected={data.hiv_status ? [data.hiv_status] : []} onToggle={(v) => setData({ ...data, hiv_status: data.hiv_status === v ? "" : v })} />
+          </div>
         </Field>
       );
     case "interests":

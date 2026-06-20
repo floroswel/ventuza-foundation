@@ -14,6 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      album_requests: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          requester_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          requester_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          requester_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      album_unlocks: {
+        Row: {
+          granted_at: string
+          id: string
+          owner_id: string
+          viewer_id: string
+        }
+        Insert: {
+          granted_at?: string
+          id?: string
+          owner_id: string
+          viewer_id: string
+        }
+        Update: {
+          granted_at?: string
+          id?: string
+          owner_id?: string
+          viewer_id?: string
+        }
+        Relationships: []
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -56,15 +101,66 @@ export type Database = {
         }
         Relationships: []
       }
+      private_albums: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          photos: string[]
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          photos?: string[]
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          photos?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      profile_views: {
+        Row: {
+          id: string
+          viewed_at: string
+          viewed_id: string
+          viewer_id: string
+        }
+        Insert: {
+          id?: string
+          viewed_at?: string
+          viewed_id: string
+          viewer_id: string
+        }
+        Update: {
+          id?: string
+          viewed_at?: string
+          viewed_id?: string
+          viewer_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           bio: string | null
           birthdate: string | null
+          body_type: string | null
           created_at: string
           display_name: string | null
+          ethnicity: string | null
           gender: string[] | null
           gender_custom: string | null
+          height_cm: number | null
+          hiv_status: string | null
+          hiv_test_date: string | null
           id: string
+          incognito: boolean
           interests: string[] | null
           last_seen: string
           location: unknown
@@ -72,20 +168,31 @@ export type Database = {
           onboarding_completed: boolean
           orientation: string[] | null
           photos: string[] | null
+          position: string | null
           prompts: Json | null
           pronouns: string[] | null
           pronouns_custom: string | null
+          relationship_status: string | null
+          tribes: string[]
           updated_at: string
           verified: boolean
+          verified_at: string | null
+          weight_kg: number | null
         }
         Insert: {
           bio?: string | null
           birthdate?: string | null
+          body_type?: string | null
           created_at?: string
           display_name?: string | null
+          ethnicity?: string | null
           gender?: string[] | null
           gender_custom?: string | null
+          height_cm?: number | null
+          hiv_status?: string | null
+          hiv_test_date?: string | null
           id: string
+          incognito?: boolean
           interests?: string[] | null
           last_seen?: string
           location?: unknown
@@ -93,20 +200,31 @@ export type Database = {
           onboarding_completed?: boolean
           orientation?: string[] | null
           photos?: string[] | null
+          position?: string | null
           prompts?: Json | null
           pronouns?: string[] | null
           pronouns_custom?: string | null
+          relationship_status?: string | null
+          tribes?: string[]
           updated_at?: string
           verified?: boolean
+          verified_at?: string | null
+          weight_kg?: number | null
         }
         Update: {
           bio?: string | null
           birthdate?: string | null
+          body_type?: string | null
           created_at?: string
           display_name?: string | null
+          ethnicity?: string | null
           gender?: string[] | null
           gender_custom?: string | null
+          height_cm?: number | null
+          hiv_status?: string | null
+          hiv_test_date?: string | null
           id?: string
+          incognito?: boolean
           interests?: string[] | null
           last_seen?: string
           location?: unknown
@@ -114,11 +232,46 @@ export type Database = {
           onboarding_completed?: boolean
           orientation?: string[] | null
           photos?: string[] | null
+          position?: string | null
           prompts?: Json | null
           pronouns?: string[] | null
           pronouns_custom?: string | null
+          relationship_status?: string | null
+          tribes?: string[]
           updated_at?: string
           verified?: boolean
+          verified_at?: string | null
+          weight_kg?: number | null
+        }
+        Relationships: []
+      }
+      reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reported_id: string
+          reporter_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reported_id: string
+          reporter_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reported_id?: string
+          reporter_id?: string
+          status?: string
         }
         Relationships: []
       }
@@ -346,30 +499,49 @@ export type Database = {
       disablelongtransactions: { Args: never; Returns: string }
       discover_profiles: {
         Args: {
+          body_filter?: string[]
           gender_filter?: string[]
+          hiv_filter?: string[]
           looking_for_filter?: string[]
           max_age?: number
           max_distance_km?: number
+          max_height?: number
           min_age?: number
+          min_height?: number
+          online_only?: boolean
           order_mode?: string
           orientation_filter?: string[]
+          position_filter?: string[]
           result_limit?: number
+          tribes_filter?: string[]
+          verified_only?: boolean
+          with_photo_only?: boolean
         }
         Returns: {
           bio: string
           birthdate: string
+          body_type: string
           display_name: string
           distance_m: number
+          ethnicity: string
           gender: string[]
+          height_cm: number
+          hiv_status: string
+          hiv_test_date: string
           id: string
           interests: string[]
           last_seen: string
           looking_for: string[]
           orientation: string[]
           photos: string[]
+          position: string
           prompts: Json
           pronouns: string[]
+          relationship_status: string
           score: number
+          tribes: string[]
+          verified: boolean
+          weight_kg: number
         }[]
       }
       dropgeometrycolumn:

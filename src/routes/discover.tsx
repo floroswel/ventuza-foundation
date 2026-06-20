@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Compass, Heart, Loader2, MapPin, SlidersHorizontal, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, Ruler, SlidersHorizontal, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
 import {
   DEFAULT_FILTERS, fetchDiscover, requestAndStoreLocation,
-  signPhotos, formatDistance, ageFrom, isOnline,
+  signPhotos, formatDistance, ageFrom, isOnline, formatLastSeen, formatHeight,
   type DiscoverFilters, type DiscoverProfile,
 } from "@/lib/discover";
 import { cn } from "@/lib/utils";
@@ -231,10 +231,20 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
                 className="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgb(52,211,153)] ring-2 ring-black/50"
               />
             )}
+            {p.verified && (
+              <span aria-label="verified" className="absolute left-1.5 top-1.5 rounded-full bg-black/60 p-0.5 backdrop-blur">
+                <BadgeCheck className="size-3.5 text-primary" />
+              </span>
+            )}
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 p-1.5 text-left">
-              <p className="truncate text-[11px] font-medium leading-tight text-white">
-                {p.display_name}{age ? <span className="text-white/70">, {age}</span> : null}
-              </p>
+              <div className="min-w-0">
+                <p className="truncate text-[11px] font-medium leading-tight text-white">
+                  {p.display_name}{age ? <span className="text-white/70">, {age}</span> : null}
+                </p>
+                {p.tribes && p.tribes.length > 0 && (
+                  <p className="truncate text-[9px] uppercase tracking-wider text-primary/90">{p.tribes.slice(0, 2).join(" · ")}</p>
+                )}
+              </div>
               {p.distance_m != null && (
                 <span className="shrink-0 text-[10px] text-white/70">{formatDistance(p.distance_m)}</span>
               )}
@@ -253,25 +263,65 @@ function ProfileSheet({
   onClose: () => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
 }) {
-  const [url, setUrl] = useState<string | null>(null);
+  const [urls, setUrls] = useState<Record<string, string>>({});
+  const [idx, setIdx] = useState(0);
+
   useEffect(() => {
-    if (!profile?.photos?.[0]) { setUrl(null); return; }
-    signPhotos([profile.photos[0]]).then((m) => setUrl(m[profile.photos![0]] ?? null));
+    setIdx(0);
+    if (!profile?.photos?.length) { setUrls({}); return; }
+    signPhotos(profile.photos).then(setUrls);
   }, [profile]);
 
   if (!profile) return null;
   const age = ageFrom(profile.birthdate);
+  const photos = profile.photos ?? [];
+  const currentPath = photos[idx];
+  const currentUrl = currentPath ? urls[currentPath] : null;
+  const lastSeenText = formatLastSeen(profile.last_seen);
   const online = isOnline(profile.last_seen);
+  const heightStr = formatHeight(profile.height_cm);
 
   return (
     <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md overflow-hidden rounded-t-3xl border border-border bg-surface"
+        className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-surface"
       >
+        {/* Carousel */}
         <div className="relative aspect-square w-full bg-background">
-          {url && <img src={url} alt={profile.display_name ?? ""} className="size-full object-cover" />}
-          <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/30 to-transparent" />
+          {currentUrl ? (
+            <img src={currentUrl} alt={profile.display_name ?? ""} className="size-full object-cover" />
+          ) : (
+            <div className="flex size-full items-center justify-center text-5xl text-muted-foreground/40">
+              {profile.display_name?.[0]?.toUpperCase() ?? "?"}
+            </div>
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent" />
+
+          {photos.length > 1 && (
+            <>
+              <button
+                onClick={() => setIdx((i) => (i - 1 + photos.length) % photos.length)}
+                aria-label="Previous photo"
+                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white backdrop-blur hover:bg-black/60"
+              >
+                <ChevronLeft className="size-5" />
+              </button>
+              <button
+                onClick={() => setIdx((i) => (i + 1) % photos.length)}
+                aria-label="Next photo"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white backdrop-blur hover:bg-black/60"
+              >
+                <ChevronRight className="size-5" />
+              </button>
+              <div className="absolute left-1/2 top-2 flex -translate-x-1/2 gap-1.5">
+                {photos.map((_, i) => (
+                  <span key={i} className={cn("h-1 w-6 rounded-full transition-all", i === idx ? "bg-white" : "bg-white/30")} />
+                ))}
+              </div>
+            </>
+          )}
+
           <button
             onClick={onClose}
             className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur"
@@ -279,35 +329,64 @@ function ProfileSheet({
           >
             <X className="size-4" />
           </button>
+
           <div className="absolute inset-x-0 bottom-0 p-5">
-            <h2 className="font-display text-3xl font-medium text-white">
+            <h2 className="flex items-center gap-2 font-display text-3xl font-medium text-white">
               {profile.display_name}{age ? <span className="text-white/70">, {age}</span> : null}
+              {profile.verified && <BadgeCheck className="size-5 text-primary" />}
             </h2>
-            <div className="mt-1 flex items-center gap-3 text-xs text-white/80">
-              {online && (
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" /> online
-                </span>
-              )}
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85">
+              <span className="inline-flex items-center gap-1.5">
+                <span className={cn("size-1.5 rounded-full", online ? "bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" : "bg-white/40")} />
+                {lastSeenText}
+              </span>
               <span className="inline-flex items-center gap-1">
                 <MapPin className="size-3" /> {formatDistance(profile.distance_m)}
               </span>
+              {heightStr && (
+                <span className="inline-flex items-center gap-1">
+                  <Ruler className="size-3" /> {heightStr}
+                </span>
+              )}
             </div>
           </div>
         </div>
 
-        <div className="space-y-4 px-5 pb-5 pt-4">
+        <div className="space-y-5 px-5 pb-6 pt-4">
+          {profile.tribes && profile.tribes.length > 0 && (
+            <TagBlock label="Tribes" values={profile.tribes} gold />
+          )}
+
+          {(profile.body_type || profile.position || profile.ethnicity || profile.relationship_status || profile.weight_kg) && (
+            <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-background/50 p-3 text-xs">
+              {profile.body_type && <Stat label="Body" value={profile.body_type} />}
+              {profile.position && <Stat label="Position" value={profile.position} />}
+              {profile.ethnicity && <Stat label="Ethnicity" value={profile.ethnicity} />}
+              {profile.weight_kg && <Stat label="Weight" value={`${profile.weight_kg} kg`} />}
+              {profile.relationship_status && <Stat label="Status" value={profile.relationship_status} />}
+              {profile.hiv_status && <Stat label="HIV" value={profile.hiv_status} />}
+            </div>
+          )}
+
           {profile.pronouns?.length ? (
             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{profile.pronouns.join(" · ")}</p>
           ) : null}
+
           {profile.bio && <p className="text-sm leading-relaxed text-foreground/90">{profile.bio}</p>}
-          {profile.interests?.length ? (
-            <div className="flex flex-wrap gap-1.5">
-              {profile.interests.slice(0, 8).map((t) => (
-                <span key={t} className="rounded-full border border-border bg-background px-2.5 py-1 text-[11px] text-foreground/80">{t}</span>
+
+          {profile.prompts && profile.prompts.length > 0 && (
+            <div className="space-y-2">
+              {profile.prompts.filter((p) => p.question && p.answer).map((p, i) => (
+                <div key={i} className="rounded-2xl border border-border bg-background/40 p-3">
+                  <p className="text-[10px] uppercase tracking-wider text-primary">{p.question}</p>
+                  <p className="mt-1 text-sm">{p.answer}</p>
+                </div>
               ))}
             </div>
-          ) : null}
+          )}
+
+          {profile.looking_for?.length ? <TagBlock label="Looking for" values={profile.looking_for} /> : null}
+          {profile.interests?.length ? <TagBlock label="Interests" values={profile.interests} /> : null}
 
           <div className="flex items-center gap-3 pt-2">
             <button
@@ -325,6 +404,38 @@ function ProfileSheet({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function TagBlock({ label, values, gold }: { label: string; values: string[]; gold?: boolean }) {
+  return (
+    <div>
+      <p className="mb-1.5 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">{label}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {values.map((v) => (
+          <span
+            key={v}
+            className={cn(
+              "rounded-full px-2.5 py-1 text-[11px]",
+              gold
+                ? "border border-primary/40 bg-primary/10 text-primary"
+                : "border border-border bg-background text-foreground/80",
+            )}
+          >
+            {v}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Stat({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-foreground/90">{value}</p>
     </div>
   );
 }

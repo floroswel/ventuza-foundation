@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, LogOut, Pencil, ShieldAlert, X, Loader2 } from "lucide-react";
+import { BadgeCheck, EyeOff, LogOut, Pencil, ShieldAlert, X, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -10,9 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Chip } from "@/components/Chip";
 import { BottomNav } from "@/components/BottomNav";
+import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
   LOOKING_FOR_OPTIONS, INTEREST_OPTIONS,
+  TRIBE_OPTIONS, BODY_TYPE_OPTIONS, POSITION_OPTIONS,
+  HIV_STATUS_OPTIONS, RELATIONSHIP_STATUS_OPTIONS, ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
 
 export const Route = createFileRoute("/profile")({
@@ -36,6 +39,17 @@ type Profile = {
   photos: string[] | null;
   onboarding_completed: boolean;
   verified: boolean;
+  tribes: string[] | null;
+  body_type: string | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  ethnicity: string | null;
+  position: string | null;
+  hiv_status: string | null;
+  hiv_test_date: string | null;
+  relationship_status: string | null;
+  verified_at: string | null;
+  incognito: boolean;
 };
 
 function age(iso?: string | null) {
@@ -120,10 +134,20 @@ function ProfilePage() {
             </h1>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">
-              <ShieldAlert className="size-3" /> Unverified
-              <span className="text-muted-foreground/70">· coming soon</span>
-            </span>
+            {profile.verified_at ? (
+              <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur">
+                <BadgeCheck className="size-3" /> Verified
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">
+                <ShieldAlert className="size-3" /> Unverified
+              </span>
+            )}
+            {profile.incognito && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">
+                <EyeOff className="size-3" /> Incognito
+              </span>
+            )}
             {profile.pronouns?.slice(0, 2).map((p) => (
               <span key={p} className="rounded-full bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">{p}</span>
             ))}
@@ -173,11 +197,55 @@ function ProfilePage() {
           </Section>
         )}
 
+        {profile.tribes && profile.tribes.length > 0 && (
+          <Section title="Tribes">
+            <div className="flex flex-wrap gap-2">
+              {profile.tribes.map((t) => <Chip key={t} active>{t}</Chip>)}
+            </div>
+          </Section>
+        )}
+
+        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.hiv_status) && (
+          <Section title="Stats">
+            <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface p-4 text-sm">
+              {profile.body_type && <StatRow label="Body" value={profile.body_type} />}
+              {profile.position && <StatRow label="Position" value={profile.position} />}
+              {formatHeight(profile.height_cm) && <StatRow label="Height" value={formatHeight(profile.height_cm)!} />}
+              {profile.weight_kg && <StatRow label="Weight" value={`${profile.weight_kg} kg`} />}
+              {profile.ethnicity && <StatRow label="Ethnicity" value={profile.ethnicity} />}
+              {profile.relationship_status && <StatRow label="Relationship" value={profile.relationship_status} />}
+              {profile.hiv_status && <StatRow label="HIV" value={profile.hiv_status} />}
+            </div>
+          </Section>
+        )}
+
         <Section title="Identity">
           <TagRow label="Gender" values={[...(profile.gender ?? []), ...(profile.gender_custom ? [profile.gender_custom] : [])]} />
           <TagRow label="Pronouns" values={[...(profile.pronouns ?? []), ...(profile.pronouns_custom ? [profile.pronouns_custom] : [])]} />
           <TagRow label="Orientation" values={profile.orientation ?? []} />
           <TagRow label="Looking for" values={profile.looking_for ?? []} />
+        </Section>
+
+        {/* Privacy quick actions */}
+        <Section title="Privacy">
+          <button
+            onClick={async () => {
+              const next = !profile.incognito;
+              const { error } = await supabase.from("profiles").update({ incognito: next }).eq("id", profile.id);
+              if (error) return toast.error(error.message);
+              setProfile({ ...profile, incognito: next });
+              toast.success(next ? "You're now in Obsidian Vault." : "You're visible again.");
+            }}
+            className="flex w-full items-center justify-between rounded-2xl border border-border bg-surface p-4 text-left hover:border-primary/50"
+          >
+            <div>
+              <p className="text-sm font-medium">Obsidian Vault</p>
+              <p className="text-xs text-muted-foreground">Hide your profile from the grid. You can still browse.</p>
+            </div>
+            <span className={profile.incognito ? "rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground" : "rounded-full bg-surface-elevated px-3 py-1 text-xs text-muted-foreground"}>
+              {profile.incognito ? "On" : "Off"}
+            </span>
+          </button>
         </Section>
       </div>
 
@@ -216,6 +284,15 @@ function TagRow({ label, values }: { label: string; values: string[] }) {
   );
 }
 
+function StatRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div>
+      <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="text-foreground/90">{value}</p>
+    </div>
+  );
+}
+
 function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 }
@@ -237,10 +314,32 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
       looking_for: form.looking_for ?? [],
       interests: form.interests ?? [],
       prompts: form.prompts ?? [],
+      tribes: form.tribes ?? [],
+      body_type: form.body_type,
+      height_cm: form.height_cm,
+      weight_kg: form.weight_kg,
+      ethnicity: form.ethnicity,
+      position: form.position,
+      hiv_status: form.hiv_status,
+      relationship_status: form.relationship_status,
     }).eq("id", profile.id).select("*").maybeSingle();
     setSaving(false);
     if (error || !data) return toast.error(error?.message ?? "Failed");
     onSaved(data as Profile);
+  }
+
+  function single<K extends keyof Profile>(k: K, options: string[]) {
+    const current = (form[k] as unknown as string) || "";
+    return (
+      <div className="space-y-2">
+        <Label>{String(k).replace(/_/g, " ").replace(/^./, c => c.toUpperCase())}</Label>
+        <div className="flex flex-wrap gap-2">
+          {options.map((o) => (
+            <Chip key={o} active={current === o} onClick={() => setForm({ ...form, [k]: current === o ? null : o } as Profile)}>{o}</Chip>
+          ))}
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -264,6 +363,25 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
           <Label>Bio</Label>
           <Textarea value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={5} maxLength={500} className="bg-surface border-border" />
         </div>
+        <EditChips label="Tribes" options={TRIBE_OPTIONS} value={form.tribes ?? []} onChange={(v) => setForm({ ...form, tribes: v })} />
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label>Height (cm)</Label>
+            <Input type="number" min={140} max={220} value={form.height_cm ?? ""} onChange={(e) => setForm({ ...form, height_cm: e.target.value ? Number(e.target.value) : null })} className="h-12 bg-surface border-border" />
+          </div>
+          <div className="space-y-2">
+            <Label>Weight (kg)</Label>
+            <Input type="number" min={40} max={200} value={form.weight_kg ?? ""} onChange={(e) => setForm({ ...form, weight_kg: e.target.value ? Number(e.target.value) : null })} className="h-12 bg-surface border-border" />
+          </div>
+        </div>
+
+        {single("body_type", BODY_TYPE_OPTIONS)}
+        {single("position", POSITION_OPTIONS)}
+        {single("ethnicity", ETHNICITY_OPTIONS)}
+        {single("relationship_status", RELATIONSHIP_STATUS_OPTIONS)}
+        {single("hiv_status", HIV_STATUS_OPTIONS)}
+
         <EditChips label="Gender" options={GENDER_OPTIONS} value={form.gender ?? []} onChange={(v) => setForm({ ...form, gender: v })} />
         <EditChips label="Pronouns" options={PRONOUN_OPTIONS} value={form.pronouns ?? []} onChange={(v) => setForm({ ...form, pronouns: v })} />
         <EditChips label="Orientation" options={ORIENTATION_OPTIONS} value={form.orientation ?? []} onChange={(v) => setForm({ ...form, orientation: v })} />

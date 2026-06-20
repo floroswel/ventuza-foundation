@@ -7,6 +7,15 @@ export type DiscoverFilters = {
   lookingFor: string[];
   gender: string[];
   orientation: string[];
+  tribes: string[];
+  bodyTypes: string[];
+  positions: string[];
+  hivStatuses: string[];
+  minHeight: number | null;
+  maxHeight: number | null;
+  onlineOnly: boolean;
+  withPhotoOnly: boolean;
+  verifiedOnly: boolean;
 };
 
 export const DEFAULT_FILTERS: DiscoverFilters = {
@@ -16,6 +25,15 @@ export const DEFAULT_FILTERS: DiscoverFilters = {
   lookingFor: [],
   gender: [],
   orientation: [],
+  tribes: [],
+  bodyTypes: [],
+  positions: [],
+  hivStatuses: [],
+  minHeight: null,
+  maxHeight: null,
+  onlineOnly: false,
+  withPhotoOnly: false,
+  verifiedOnly: false,
 };
 
 export type DiscoverProfile = {
@@ -31,6 +49,16 @@ export type DiscoverProfile = {
   prompts: Array<{ question: string; answer: string }> | null;
   photos: string[] | null;
   last_seen: string;
+  tribes: string[] | null;
+  body_type: string | null;
+  height_cm: number | null;
+  weight_kg: number | null;
+  ethnicity: string | null;
+  position: string | null;
+  hiv_status: string | null;
+  hiv_test_date: string | null;
+  relationship_status: string | null;
+  verified: boolean;
   distance_m: number | null;
   score: number;
 };
@@ -57,6 +85,29 @@ export function isOnline(lastSeen: string): boolean {
   return Date.now() - new Date(lastSeen).getTime() < 5 * 60 * 1000;
 }
 
+/** Detailed "Active …" formatter à la Grindr / Hinge. */
+export function formatLastSeen(lastSeen: string): string {
+  const diffMs = Date.now() - new Date(lastSeen).getTime();
+  const min = Math.floor(diffMs / 60_000);
+  if (min < 1) return "Active now";
+  if (min < 60) return `Active ${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `Active ${hr}h ago`;
+  const day = Math.floor(hr / 24);
+  if (day === 1) return "Active yesterday";
+  if (day < 7) return `Active ${day}d ago`;
+  if (day < 30) return `Active ${Math.floor(day / 7)}w ago`;
+  return "Active a while ago";
+}
+
+export function formatHeight(cm: number | null): string | null {
+  if (!cm) return null;
+  const totalIn = Math.round(cm / 2.54);
+  const ft = Math.floor(totalIn / 12);
+  const inch = totalIn % 12;
+  return `${cm} cm · ${ft}'${inch}"`;
+}
+
 export async function requestAndStoreLocation(): Promise<{ ok: boolean; error?: string }> {
   if (!("geolocation" in navigator)) return { ok: false, error: "Geolocation not supported" };
   return new Promise((resolve) => {
@@ -79,13 +130,24 @@ export async function fetchDiscover(
   filters: DiscoverFilters,
   orderMode: "score" | "distance",
 ): Promise<DiscoverProfile[]> {
-  const { data, error } = await supabase.rpc("discover_profiles", {
+  const arr = (v: string[]) => (v.length ? v : (null as unknown as string[] | undefined));
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.rpc as any)("discover_profiles", {
     max_distance_km: filters.maxDistanceKm,
     min_age: filters.minAge,
     max_age: filters.maxAge,
-    looking_for_filter: filters.lookingFor.length ? filters.lookingFor : (null as unknown as string[] | undefined),
-    gender_filter: filters.gender.length ? filters.gender : (null as unknown as string[] | undefined),
-    orientation_filter: filters.orientation.length ? filters.orientation : (null as unknown as string[] | undefined),
+    looking_for_filter: arr(filters.lookingFor),
+    gender_filter: arr(filters.gender),
+    orientation_filter: arr(filters.orientation),
+    tribes_filter: arr(filters.tribes),
+    body_filter: arr(filters.bodyTypes),
+    position_filter: arr(filters.positions),
+    hiv_filter: arr(filters.hivStatuses),
+    min_height: filters.minHeight,
+    max_height: filters.maxHeight,
+    online_only: filters.onlineOnly,
+    with_photo_only: filters.withPhotoOnly,
+    verified_only: filters.verifiedOnly,
     order_mode: orderMode,
     result_limit: 60,
   });
@@ -102,4 +164,8 @@ export async function signPhotos(paths: string[]): Promise<Record<string, string
     }),
   );
   return out;
+}
+
+export async function logProfileView(viewedId: string) {
+  await supabase.from("profile_views").insert({ viewed_id: viewedId, viewer_id: (await supabase.auth.getUser()).data.user?.id ?? "" } as never);
 }
