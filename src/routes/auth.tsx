@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { z } from "zod";
 import { Loader2 } from "lucide-react";
@@ -10,6 +10,9 @@ const searchSchema = z.object({
 
 export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
+  beforeLoad: () => {
+    throw redirect({ to: "/discover", replace: true });
+  },
   head: () => ({ meta: [{ title: "Sign in — Ventuza" }] }),
   component: AuthPage,
 });
