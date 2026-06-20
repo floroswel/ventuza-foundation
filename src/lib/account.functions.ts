@@ -89,7 +89,7 @@ export const exportMyData = createServerFn({ method: "GET" })
         supabase.from("subscriptions").select("*").eq("user_id", userId),
         supabase.from("notifications").select("*").eq("user_id", userId),
       ]);
-    return {
+    return JSON.parse(JSON.stringify({
       exported_at: new Date().toISOString(),
       user_id: userId,
       profile: profile.data,
@@ -100,5 +100,5 @@ export const exportMyData = createServerFn({ method: "GET" })
       event_rsvps: rsvps.data ?? [],
       subscriptions: subs.data ?? [],
       notifications: notifications.data ?? [],
-    };
+    })) as Record<string, unknown>;
   });
