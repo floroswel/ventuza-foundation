@@ -424,3 +424,43 @@ function EditChips({ label, options, value, onChange }: { label: string; options
     </div>
   );
 }
+
+function AiBioButton({ form, setForm }: { form: Profile; setForm: (p: Profile) => void }) {
+  const gen = useServerFn(generateBio);
+  const [loading, setLoading] = useState(false);
+  async function run() {
+    setLoading(true);
+    try {
+      const a = form.birthdate ? age(form.birthdate) ?? undefined : undefined;
+      const res = await gen({
+        data: {
+          name: form.display_name ?? undefined,
+          age: a,
+          interests: form.interests ?? [],
+          tribes: form.tribes ?? [],
+          lookingFor: form.looking_for ?? [],
+          vibe: "witty",
+        },
+      });
+      if (res?.bio) {
+        setForm({ ...form, bio: res.bio });
+        toast.success("Bio generat ✨");
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "AI eșuat");
+    } finally {
+      setLoading(false);
+    }
+  }
+  return (
+    <button
+      type="button"
+      onClick={run}
+      disabled={loading}
+      className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/20 disabled:opacity-60"
+    >
+      {loading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+      AI bio
+    </button>
+  );
+}
