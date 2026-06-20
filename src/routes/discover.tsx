@@ -243,9 +243,19 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
                 className="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgb(52,211,153)] ring-2 ring-black/50"
               />
             )}
-            {p.verified && (
+            {p.boost_until && new Date(p.boost_until) > new Date() && (
+              <span aria-label="boosted" className="absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-lg backdrop-blur">
+                <Rocket className="size-2.5" /> BOOST
+              </span>
+            )}
+            {!(p.boost_until && new Date(p.boost_until) > new Date()) && p.verified && (
               <span aria-label="verified" className="absolute left-1.5 top-1.5 rounded-full bg-black/60 p-0.5 backdrop-blur">
                 <BadgeCheck className="size-3.5 text-primary" />
+              </span>
+            )}
+            {p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date()) && (
+              <span className="absolute right-1.5 bottom-8 flex items-center gap-0.5 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] text-white backdrop-blur">
+                <Plane className="size-2.5" /> {p.travel_city}
               </span>
             )}
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 p-1.5 text-left">
