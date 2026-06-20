@@ -91,7 +91,7 @@ function ProfilePage() {
   const primary = profile.photos?.[0];
 
   return (
-    <main className="min-h-dvh bg-background pb-24">
+    <main className="min-h-dvh bg-background pb-28">
       {/* hero photo */}
       <section className="relative">
         <div className="aspect-[4/5] w-full overflow-hidden bg-surface">
