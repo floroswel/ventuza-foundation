@@ -170,8 +170,9 @@ function ThreadPage() {
           <ul className="space-y-2">
             {messages.map((m) => {
               const mine = m.sender_id === user?.id;
+              const translated = translations[m.id];
               return (
-                <li key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
+                <li key={m.id} className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}>
                   <div
                     className={cn(
                       "max-w-[78%] rounded-2xl px-3 py-2 text-sm",
@@ -182,6 +183,23 @@ function ThreadPage() {
                   >
                     {m.body}
                   </div>
+                  {!mine && (
+                    translated ? (
+                      <div className="max-w-[78%] rounded-2xl bg-primary/10 px-3 py-2 text-xs text-primary">
+                        <span className="mr-1 opacity-70">RO:</span>{translated}
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleTranslate(m)}
+                        disabled={translatingId === m.id}
+                        className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
+                      >
+                        {translatingId === m.id ? <Loader2 className="size-3 animate-spin" /> : <Languages className="size-3" />}
+                        Traduce
+                      </button>
+                    )
+                  )}
                 </li>
               );
             })}
@@ -189,10 +207,40 @@ function ThreadPage() {
         )}
       </div>
 
+      {openers && openers.length > 0 && (
+        <div className="border-t border-border/60 bg-surface/60 px-3 py-2">
+          <div className="mb-1 flex items-center justify-between">
+            <p className="text-[11px] uppercase tracking-wider text-primary">Wingman AI</p>
+            <button onClick={() => setOpeners(null)} className="text-xs text-muted-foreground">×</button>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            {openers.map((o, i) => (
+              <button
+                key={i}
+                type="button"
+                onClick={() => { setText(o); setOpeners(null); }}
+                className="rounded-xl border border-border bg-background px-3 py-2 text-left text-sm hover:border-primary"
+              >
+                {o}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <form
         onSubmit={handleSend}
         className="sticky bottom-0 flex items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur"
       >
+        <button
+          type="button"
+          onClick={handleWingman}
+          disabled={wingmanLoading}
+          aria-label="Wingman AI"
+          className="flex size-11 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary disabled:opacity-50"
+        >
+          {wingmanLoading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+        </button>
         <input
           value={text}
           onChange={(e) => setText(e.target.value)}
