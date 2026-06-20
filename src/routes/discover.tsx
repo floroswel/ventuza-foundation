@@ -1,7 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Ruler, SlidersHorizontal, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Ruler, Sparkles, SlidersHorizontal, X } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
+import { matchScore } from "@/lib/ai.functions";
 import { getOrCreateConversation } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -15,6 +17,7 @@ import {
   type DiscoverFilters, type DiscoverProfile,
 } from "@/lib/discover";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/discover")({
   head: () => ({ meta: [{ title: "Discover — Ventuza" }] }),
