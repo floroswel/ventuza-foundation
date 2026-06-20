@@ -1,7 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useAuth } from "@/lib/auth-context";
-import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,11 +17,11 @@ function Welcome() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user) navigate({ to: "/discover" });
-  }, [loading, user, navigate]);
+    if (!loading) navigate({ to: "/discover", replace: true });
+  }, [loading, navigate]);
 
   return (
-    <main className="relative flex min-h-dvh flex-col overflow-hidden bg-background px-6 py-10">
+    <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background px-6 py-10 text-center">
       {/* ambient gold glow */}
       <div
         aria-hidden
@@ -30,34 +29,16 @@ function Welcome() {
         style={{ background: "radial-gradient(circle, var(--primary), transparent 65%)" }}
       />
 
-      <header className="flex items-center justify-between">
-        <span className="wordmark text-2xl font-semibold tracking-wide">Ventuza</span>
-        <Link to="/auth" search={{ mode: "login" }} className="text-sm text-muted-foreground hover:text-primary transition-colors">
-          Log in
-        </Link>
-      </header>
-
-      <section className="relative z-10 my-auto flex flex-col items-center text-center">
+      <section className="relative z-10 flex flex-col items-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-surface px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-primary">
           <span className="inline-block size-1.5 rounded-full bg-primary" />
-          Members only · invite-grade
+          Opening preview
         </div>
         <h1 className="wordmark text-6xl font-medium leading-[0.95] sm:text-7xl">Ventuza</h1>
-        <p className="mt-6 max-w-md text-balance text-lg leading-relaxed text-muted-foreground">
-          Dating, elevated. A quiet, considered place to meet people with depth — for everyone, on every spectrum.
-        </p>
-
-        <div className="mt-10 flex w-full max-w-xs flex-col gap-3">
-          <Button asChild variant="hero" size="lg">
-            <Link to="/auth" search={{ mode: "signup" }}>Create an account</Link>
-          </Button>
-          <Button asChild variant="outline" size="lg">
-            <Link to="/auth" search={{ mode: "login" }}>I already have one</Link>
-          </Button>
-        </div>
+        <p className="mt-6 max-w-md text-balance text-lg leading-relaxed text-muted-foreground">Loading the people grid…</p>
       </section>
 
-      <footer className="relative z-10 mt-10 flex flex-col items-center gap-3">
+      <footer className="absolute bottom-10 z-10 flex flex-col items-center gap-3">
         <div className="pride-bar h-0.5 w-16 rounded-full opacity-70" />
         <p className="text-xs text-muted-foreground">For every identity. Every story. Every you.</p>
       </footer>
