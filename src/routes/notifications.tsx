@@ -110,10 +110,10 @@ function NotificationsPage() {
                       e.stopPropagation();
                       remove(n.id);
                     }}
-                    className="opacity-0 transition-opacity group-hover:opacity-100"
+                    className="shrink-0 rounded-full p-2 text-muted-foreground transition-opacity hover:text-destructive md:opacity-0 md:group-hover:opacity-100"
                     aria-label="Delete"
                   >
-                    <Trash2 className="size-4 text-muted-foreground hover:text-destructive" />
+                    <Trash2 className="size-4" />
                   </button>
                 </li>
               );
