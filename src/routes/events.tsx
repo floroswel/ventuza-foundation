@@ -114,6 +114,8 @@ function EventsPage() {
             <p className="mt-3 text-sm">No upcoming events.</p>
             <p className="text-xs">Be the first — host one with the Host button.</p>
           </div>
+        ) : view === "map" ? (
+          <EventsMap events={events} />
         ) : (
           <ul className="space-y-3">
             {events.map((e) => (
@@ -162,6 +164,7 @@ function EventsPage() {
             ))}
           </ul>
         )}
+
       </div>
 
       <CreateEventDialog
