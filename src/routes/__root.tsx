@@ -126,6 +126,14 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    // Re-apply discreet mode (icon/title swap) chosen by user on previous session.
+    import("@/lib/discreet-mode").then(({ loadDiscreetMode, applyDiscreetMode }) => {
+      const skin = loadDiscreetMode();
+      if (skin !== "off") applyDiscreetMode(skin);
+    });
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -138,3 +146,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+
