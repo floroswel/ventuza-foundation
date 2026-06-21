@@ -1,7 +1,7 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Flame, Hand, Heart, Loader2, MapPin, MessageCircle, Plane, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Flame, Hand, Heart, Loader2, MapPin, MessageCircle, Plane, Radar, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
 import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
@@ -13,6 +13,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
 import { StoriesStrip } from "@/components/StoriesStrip";
+import { QuickFiltersStrip } from "@/components/QuickFiltersStrip";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
   DEFAULT_FILTERS, fetchDiscover, requestAndStoreLocation,
@@ -160,6 +161,13 @@ function DiscoverPage() {
             </p>
           </div>
           <div className="flex items-center gap-1">
+            <Link
+              to="/cruise"
+              aria-label="Cruise · Right Now"
+              className="flex size-10 items-center justify-center rounded-full border border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
+            >
+              <Radar className="size-4" />
+            </Link>
             <NotificationBell />
             <button
               onClick={() => setFiltersOpen(true)}
@@ -176,6 +184,8 @@ function DiscoverPage() {
           <TabBtn active={tab === "online"} onClick={() => setTab("online")}>Online</TabBtn>
           <TabBtn active={tab === "fresh"} onClick={() => setTab("fresh")}>Fresh</TabBtn>
         </div>
+
+        <QuickFiltersStrip value={filters} onChange={setFilters} />
       </header>
 
       <StoriesStrip />
