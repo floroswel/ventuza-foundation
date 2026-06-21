@@ -80,8 +80,15 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           // moderation failure shouldn't block upload
         }
 
+        // Perceptual hash → server (catfishing detection)
+        try {
+          const phash = await computePhash(file);
+          if (phash) await supabase.rpc("record_photo_hash", { _path: path, _phash: phash });
+        } catch {
+          // non-blocking
+        }
+
         added.push(path);
-      }
       if (added.length) {
         await savePhotos([...photos, ...added]);
         toast.success(`${added.length} photo${added.length > 1 ? "s" : ""} uploaded.`);
