@@ -17,6 +17,8 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { ProfilePremiumPanel } from "@/components/ProfilePremiumPanel";
 import { RightNowCard } from "@/components/RightNowCard";
 import { PrivateAlbumManager } from "@/components/PrivateAlbum";
+import { ProfileCompleteness } from "@/components/ProfileCompleteness";
+import { ProfileStatsRow } from "@/components/ProfileStatsRow";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
@@ -192,6 +194,12 @@ function ProfilePage() {
           />
           <PhotoCoachButton photos={profile.photos ?? []} />
         </section>
+
+        <ProfileCompleteness profile={profile} onEdit={() => setEditing(true)} />
+
+        <ProfileStatsRow userId={profile.id} />
+
+
 
 
 
