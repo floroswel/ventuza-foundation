@@ -66,6 +66,8 @@ export type DiscoverProfile = {
   boost_until: string | null;
   travel_city: string | null;
   travel_until: string | null;
+  looking_now_until: string | null;
+  looking_now_intent: string | null;
 };
 
 export function ageFrom(iso?: string | null) {
