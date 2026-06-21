@@ -2,11 +2,12 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronLeft, Loader2, LogOut, Mail, Shield, Trash2 } from "lucide-react";
+import { ChevronLeft, EyeOff, Flame, Loader2, LogOut, Mail, ShieldOff, Shield, Star, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
 import { BottomNav } from "@/components/BottomNav";
+import { setLookingNow } from "@/lib/social";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
