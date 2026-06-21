@@ -324,37 +324,63 @@ function ThreadPage() {
               {messages.map((m) => {
                 const mine = m.sender_id === user?.id;
                 const translated = translations[m.id];
+                const replied = m.reply_to_id ? messages.find((x) => x.id === m.reply_to_id) : null;
+                const canUnsend = mine && !m.deleted_at && Date.now() - new Date(m.created_at).getTime() < 5 * 60_000;
+                const isDeleted = !!m.deleted_at;
                 return (
                   <li key={m.id} className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}>
                     <div className={cn("group relative flex w-full items-end gap-1", mine ? "justify-end" : "justify-start")}>
-                      {!mine && (
-                        <button
-                          type="button"
-                          onClick={() => setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)}
-                          aria-label="React"
-                          className="order-2 mb-1 hidden size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground group-hover:flex"
-                        >
-                          <Smile className="size-3.5" />
-                        </button>
+                      {!mine && !isDeleted && (
+                        <div className="order-2 mb-1 hidden gap-1 group-hover:flex">
+                          <button type="button" onClick={() => setReplyTo(m)} aria-label="Reply" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                            <CornerUpLeft className="size-3.5" />
+                          </button>
+                          <button type="button" onClick={() => setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)} aria-label="React" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                            <Smile className="size-3.5" />
+                          </button>
+                        </div>
                       )}
                       <div
                         className={cn(
-                          "order-1",
+                          "order-1 max-w-[82%]",
                           m._status === "pending" && "opacity-70",
                           m._status === "failed" && "rounded-2xl ring-1 ring-destructive/60",
                         )}
                       >
-                        <ChatMediaBubble m={m} mine={mine} />
+                        {replied && !isDeleted && (
+                          <div className={cn(
+                            "mb-1 rounded-xl border-l-2 px-2 py-1 text-[11px]",
+                            mine ? "border-primary-foreground/40 bg-primary/20 text-primary-foreground/80" : "border-primary/40 bg-muted text-muted-foreground",
+                          )}>
+                            <p className="truncate font-medium opacity-80">↩ {replied.sender_id === user?.id ? "Tu" : (other?.name ?? "…")}</p>
+                            <p className="line-clamp-2 opacity-90">{replied.deleted_at ? "Mesaj șters" : replied.body || (replied.media_type === "image" ? "📷 Photo" : replied.media_type === "audio" ? "🎤 Voice" : replied.media_type === "location" ? "📍 Location" : "")}</p>
+                          </div>
+                        )}
+                        {isDeleted ? (
+                          <div className={cn(
+                            "inline-flex items-center gap-1.5 rounded-2xl border border-dashed px-3 py-2 text-xs italic",
+                            mine ? "border-primary-foreground/30 bg-primary/30 text-primary-foreground/80" : "border-border bg-muted text-muted-foreground",
+                          )}>
+                            <Trash2 className="size-3" /> Mesaj șters
+                          </div>
+                        ) : (
+                          <ChatMediaBubble m={m} mine={mine} />
+                        )}
                       </div>
-                      {mine && (
-                        <button
-                          type="button"
-                          onClick={() => setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)}
-                          aria-label="React"
-                          className="order-0 mb-1 hidden size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground group-hover:flex"
-                        >
-                          <Smile className="size-3.5" />
-                        </button>
+                      {mine && !isDeleted && (
+                        <div className="order-0 mb-1 hidden gap-1 group-hover:flex">
+                          {canUnsend && (
+                            <button type="button" onClick={() => handleUnsend(m)} aria-label="Unsend" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive">
+                              <Trash2 className="size-3.5" />
+                            </button>
+                          )}
+                          <button type="button" onClick={() => setReplyTo(m)} aria-label="Reply" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                            <CornerUpLeft className="size-3.5" />
+                          </button>
+                          <button type="button" onClick={() => setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)} aria-label="React" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                            <Smile className="size-3.5" />
+                          </button>
+                        </div>
                       )}
                     </div>
                     {reactionPickerFor === m.id && (
