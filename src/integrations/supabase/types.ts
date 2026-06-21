@@ -995,110 +995,59 @@ export type Database = {
         }[]
       }
       disablelongtransactions: { Args: never; Returns: string }
-      discover_profiles:
-        | {
-            Args: {
-              body_filter?: string[]
-              gender_filter?: string[]
-              hiv_filter?: string[]
-              looking_for_filter?: string[]
-              max_age?: number
-              max_distance_km?: number
-              max_height?: number
-              min_age?: number
-              min_height?: number
-              online_only?: boolean
-              order_mode?: string
-              orientation_filter?: string[]
-              position_filter?: string[]
-              result_limit?: number
-              tribes_filter?: string[]
-              verified_only?: boolean
-              with_photo_only?: boolean
-            }
-            Returns: {
-              bio: string
-              birthdate: string
-              body_type: string
-              boost_until: string
-              display_name: string
-              distance_m: number
-              ethnicity: string
-              gender: string[]
-              height_cm: number
-              hiv_status: string
-              hiv_test_date: string
-              id: string
-              interests: string[]
-              last_seen: string
-              looking_for: string[]
-              orientation: string[]
-              photos: string[]
-              position: string
-              prompts: Json
-              pronouns: string[]
-              relationship_status: string
-              score: number
-              travel_city: string
-              travel_until: string
-              tribes: string[]
-              verified: boolean
-              weight_kg: number
-            }[]
-          }
-        | {
-            Args: {
-              body_filter?: string[]
-              gender_filter?: string[]
-              hiv_filter?: string[]
-              looking_for_filter?: string[]
-              looking_now_only?: boolean
-              max_age?: number
-              max_distance_km?: number
-              max_height?: number
-              min_age?: number
-              min_height?: number
-              online_only?: boolean
-              order_mode?: string
-              orientation_filter?: string[]
-              position_filter?: string[]
-              result_limit?: number
-              tribes_filter?: string[]
-              verified_only?: boolean
-              with_photo_only?: boolean
-            }
-            Returns: {
-              bio: string
-              birthdate: string
-              body_type: string
-              boost_until: string
-              display_name: string
-              distance_m: number
-              ethnicity: string
-              gender: string[]
-              height_cm: number
-              hiv_status: string
-              hiv_test_date: string
-              id: string
-              interests: string[]
-              last_seen: string
-              looking_for: string[]
-              looking_now_intent: string
-              looking_now_until: string
-              orientation: string[]
-              photos: string[]
-              position: string
-              prompts: Json
-              pronouns: string[]
-              relationship_status: string
-              score: number
-              travel_city: string
-              travel_until: string
-              tribes: string[]
-              verified: boolean
-              weight_kg: number
-            }[]
-          }
+      discover_profiles: {
+        Args: {
+          body_filter?: string[]
+          gender_filter?: string[]
+          hiv_filter?: string[]
+          looking_for_filter?: string[]
+          looking_now_only?: boolean
+          max_age?: number
+          max_distance_km?: number
+          max_height?: number
+          min_age?: number
+          min_height?: number
+          online_only?: boolean
+          order_mode?: string
+          orientation_filter?: string[]
+          position_filter?: string[]
+          result_limit?: number
+          tribes_filter?: string[]
+          verified_only?: boolean
+          with_photo_only?: boolean
+        }
+        Returns: {
+          bio: string
+          birthdate: string
+          body_type: string
+          boost_until: string
+          display_name: string
+          distance_m: number
+          ethnicity: string
+          gender: string[]
+          height_cm: number
+          hiv_status: string
+          hiv_test_date: string
+          id: string
+          interests: string[]
+          last_seen: string
+          looking_for: string[]
+          looking_now_intent: string
+          looking_now_until: string
+          orientation: string[]
+          photos: string[]
+          position: string
+          prompts: Json
+          pronouns: string[]
+          relationship_status: string
+          score: number
+          travel_city: string
+          travel_until: string
+          tribes: string[]
+          verified: boolean
+          weight_kg: number
+        }[]
+      }
       dropgeometrycolumn:
         | {
             Args: {
