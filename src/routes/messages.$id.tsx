@@ -467,6 +467,10 @@ function ThreadPage() {
         >
           {wingmanLoading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
         </button>
+        <ChatComposerExtras
+          conversationId={id}
+          onSent={(m) => setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))}
+        />
         <input
           value={text}
           onChange={(e) => { setText(e.target.value); sendTypingPing(); }}
