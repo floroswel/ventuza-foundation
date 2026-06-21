@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
-  AlertCircle, Check, CheckCheck, ChevronLeft, Clock, Languages,
-  Loader2, MoreVertical, Send, Smile, Sparkles,
+  AlertCircle, Check, CheckCheck, ChevronLeft, Clock, CornerUpLeft, Languages,
+  Loader2, MoreVertical, Send, Smile, Sparkles, Trash2, X as XIcon,
 } from "lucide-react";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { toast } from "sonner";
@@ -10,7 +10,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  MESSAGES_PAGE, fetchMessages, fetchOtherProfile, markRead, sendMessage,
+  MESSAGES_PAGE, fetchMessages, fetchOtherProfile, markRead, sendMessage, unsendMessage,
   type MessageRow,
 } from "@/lib/chat";
 import { generateOpener, translateText } from "@/lib/ai.functions";
@@ -47,6 +47,7 @@ function ThreadPage() {
   const lastTypingSentRef = useRef(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
+  const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
   const genOpener = useServerFn(generateOpener);
   const tr = useServerFn(translateText);
 
@@ -189,6 +190,7 @@ function ThreadPage() {
     const body = text.trim();
     if (!body || !user) return;
     const tempId = `tmp-${crypto.randomUUID()}`;
+    const replyId = replyTo?.id ?? null;
     const optimistic: UiMessage = {
       id: tempId,
       conversation_id: id,
@@ -196,20 +198,31 @@ function ThreadPage() {
       body,
       read_at: null,
       created_at: new Date().toISOString(),
+      reply_to_id: replyId,
       _status: "pending",
     };
     setMessages((prev) => [...prev, optimistic]);
     setText("");
+    setReplyTo(null);
     try {
-      const real = await sendMessage(id, body);
+      const real = await sendMessage(id, body, replyId);
       setMessages((prev) => {
-        // drop tmp and dedupe against realtime insert
         const without = prev.filter((m) => m.id !== tempId && m.id !== real.id);
         return [...without, real];
       });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't send");
       setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, _status: "failed" } : m)));
+    }
+  }
+
+  async function handleUnsend(m: MessageRow) {
+    if (!confirm("Șterge mesajul pentru toți? Doar în primele 5 minute.")) return;
+    try {
+      await unsendMessage(m.id);
+      setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, deleted_at: new Date().toISOString(), body: "", media_url: null, media_type: "text" } : x)));
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't unsend");
     }
   }
 
