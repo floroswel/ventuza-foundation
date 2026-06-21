@@ -214,14 +214,6 @@ export async function markMediaViewed(messageId: string): Promise<void> {
   await supabase.from("messages").update({ viewed_at: new Date().toISOString() }).eq("id", messageId);
 }
 
-export async function markRead(conversationId: string, meId: string): Promise<void> {
-  await supabase
-    .from("messages")
-    .update({ read_at: new Date().toISOString() })
-    .eq("conversation_id", conversationId)
-    .neq("sender_id", meId)
-    .is("read_at", null);
-}
 
 export async function fetchOtherProfile(otherId: string): Promise<{ id: string; name: string | null; photo: string | null }> {
   const { data } = await supabase
