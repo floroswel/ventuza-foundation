@@ -23,6 +23,9 @@ import { VoicePromptCard } from "@/components/VoicePromptCard";
 import { MusicAnthemCard } from "@/components/MusicAnthemCard";
 import { LifestyleFactsCard } from "@/components/LifestyleFactsCard";
 import { ShareProfileCard } from "@/components/ShareProfileCard";
+import { VideoClipCard } from "@/components/VideoClipCard";
+import { DateVibesCard } from "@/components/DateVibesCard";
+import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
@@ -101,6 +104,11 @@ type Profile = {
   diet: string | null;
   sleep_schedule: string | null;
   profile_slug: string | null;
+  video_clip_path: string | null;
+  ask_me_about: string[] | null;
+  dealbreakers: string[] | null;
+  ideal_match: string | null;
+  created_at: string | null;
 };
 
 function age(iso?: string | null) {
