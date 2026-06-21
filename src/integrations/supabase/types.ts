@@ -524,6 +524,8 @@ export type Database = {
       profiles: {
         Row: {
           accept_nsfw_photos: boolean | null
+          anthem: Json | null
+          ask_me_about: string[] | null
           auto_share_album_on_match: boolean
           banned_at: string | null
           banned_reason: string | null
@@ -531,9 +533,17 @@ export type Database = {
           birthdate: string | null
           body_type: string | null
           boost_until: string | null
+          cannabis: string | null
+          children: string | null
+          company: string | null
           created_at: string
+          dealbreakers: string[] | null
           deleted_at: string | null
+          diet: string | null
           display_name: string | null
+          drinking: string | null
+          drugs: string | null
+          education: string | null
           ethnicity: string | null
           expectations: string[] | null
           gender: string[] | null
@@ -545,8 +555,11 @@ export type Database = {
           hiv_status: string | null
           hiv_test_date: string | null
           id: string
+          ideal_match: string | null
           incognito: boolean
           interests: string[] | null
+          job_title: string | null
+          languages: string[] | null
           last_seen: string
           location: unknown
           looking_for: string[] | null
@@ -556,24 +569,32 @@ export type Database = {
           notification_prefs: Json
           onboarding_completed: boolean
           orientation: string[] | null
+          pets: string[] | null
           photos: string[] | null
+          politics: string | null
           position: string | null
           prep_status: string | null
           prev_location: unknown
           prev_location_at: string | null
+          profile_slug: string | null
           prompts: Json | null
           pronouns: string[] | null
           pronouns_custom: string | null
           read_receipts_enabled: boolean
           relationship_status: string | null
+          religion: string | null
           report_count: number
           risk_score: number
           risk_signals: Json
           risk_updated_at: string | null
           safety_practices: string[] | null
           scenes: string[] | null
+          school: string | null
+          sleep_schedule: string | null
+          smoking: string | null
           suspended_reason: string | null
           suspended_until: string | null
+          top_artists: Json | null
           travel_city: string | null
           travel_location: unknown
           travel_until: string | null
@@ -585,12 +606,20 @@ export type Database = {
           verification_status: string
           verified: boolean
           verified_at: string | null
+          video_clip_path: string | null
+          voice_prompt_duration_sec: number | null
+          voice_prompt_path: string | null
+          voice_prompt_question: string | null
           warned_at: string | null
           warned_reason: string | null
           weight_kg: number | null
+          workout: string | null
+          zodiac: string | null
         }
         Insert: {
           accept_nsfw_photos?: boolean | null
+          anthem?: Json | null
+          ask_me_about?: string[] | null
           auto_share_album_on_match?: boolean
           banned_at?: string | null
           banned_reason?: string | null
@@ -598,9 +627,17 @@ export type Database = {
           birthdate?: string | null
           body_type?: string | null
           boost_until?: string | null
+          cannabis?: string | null
+          children?: string | null
+          company?: string | null
           created_at?: string
+          dealbreakers?: string[] | null
           deleted_at?: string | null
+          diet?: string | null
           display_name?: string | null
+          drinking?: string | null
+          drugs?: string | null
+          education?: string | null
           ethnicity?: string | null
           expectations?: string[] | null
           gender?: string[] | null
@@ -612,8 +649,11 @@ export type Database = {
           hiv_status?: string | null
           hiv_test_date?: string | null
           id: string
+          ideal_match?: string | null
           incognito?: boolean
           interests?: string[] | null
+          job_title?: string | null
+          languages?: string[] | null
           last_seen?: string
           location?: unknown
           looking_for?: string[] | null
@@ -623,24 +663,32 @@ export type Database = {
           notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
+          pets?: string[] | null
           photos?: string[] | null
+          politics?: string | null
           position?: string | null
           prep_status?: string | null
           prev_location?: unknown
           prev_location_at?: string | null
+          profile_slug?: string | null
           prompts?: Json | null
           pronouns?: string[] | null
           pronouns_custom?: string | null
           read_receipts_enabled?: boolean
           relationship_status?: string | null
+          religion?: string | null
           report_count?: number
           risk_score?: number
           risk_signals?: Json
           risk_updated_at?: string | null
           safety_practices?: string[] | null
           scenes?: string[] | null
+          school?: string | null
+          sleep_schedule?: string | null
+          smoking?: string | null
           suspended_reason?: string | null
           suspended_until?: string | null
+          top_artists?: Json | null
           travel_city?: string | null
           travel_location?: unknown
           travel_until?: string | null
@@ -652,12 +700,20 @@ export type Database = {
           verification_status?: string
           verified?: boolean
           verified_at?: string | null
+          video_clip_path?: string | null
+          voice_prompt_duration_sec?: number | null
+          voice_prompt_path?: string | null
+          voice_prompt_question?: string | null
           warned_at?: string | null
           warned_reason?: string | null
           weight_kg?: number | null
+          workout?: string | null
+          zodiac?: string | null
         }
         Update: {
           accept_nsfw_photos?: boolean | null
+          anthem?: Json | null
+          ask_me_about?: string[] | null
           auto_share_album_on_match?: boolean
           banned_at?: string | null
           banned_reason?: string | null
@@ -665,9 +721,17 @@ export type Database = {
           birthdate?: string | null
           body_type?: string | null
           boost_until?: string | null
+          cannabis?: string | null
+          children?: string | null
+          company?: string | null
           created_at?: string
+          dealbreakers?: string[] | null
           deleted_at?: string | null
+          diet?: string | null
           display_name?: string | null
+          drinking?: string | null
+          drugs?: string | null
+          education?: string | null
           ethnicity?: string | null
           expectations?: string[] | null
           gender?: string[] | null
@@ -679,8 +743,11 @@ export type Database = {
           hiv_status?: string | null
           hiv_test_date?: string | null
           id?: string
+          ideal_match?: string | null
           incognito?: boolean
           interests?: string[] | null
+          job_title?: string | null
+          languages?: string[] | null
           last_seen?: string
           location?: unknown
           looking_for?: string[] | null
@@ -690,24 +757,32 @@ export type Database = {
           notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
+          pets?: string[] | null
           photos?: string[] | null
+          politics?: string | null
           position?: string | null
           prep_status?: string | null
           prev_location?: unknown
           prev_location_at?: string | null
+          profile_slug?: string | null
           prompts?: Json | null
           pronouns?: string[] | null
           pronouns_custom?: string | null
           read_receipts_enabled?: boolean
           relationship_status?: string | null
+          religion?: string | null
           report_count?: number
           risk_score?: number
           risk_signals?: Json
           risk_updated_at?: string | null
           safety_practices?: string[] | null
           scenes?: string[] | null
+          school?: string | null
+          sleep_schedule?: string | null
+          smoking?: string | null
           suspended_reason?: string | null
           suspended_until?: string | null
+          top_artists?: Json | null
           travel_city?: string | null
           travel_location?: unknown
           travel_until?: string | null
@@ -719,9 +794,15 @@ export type Database = {
           verification_status?: string
           verified?: boolean
           verified_at?: string | null
+          video_clip_path?: string | null
+          voice_prompt_duration_sec?: number | null
+          voice_prompt_path?: string | null
+          voice_prompt_question?: string | null
           warned_at?: string | null
           warned_reason?: string | null
           weight_kg?: number | null
+          workout?: string | null
+          zodiac?: string | null
         }
         Relationships: []
       }
