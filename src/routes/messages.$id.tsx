@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   AlertCircle, Check, CheckCheck, ChevronLeft, Clock, Languages,
-  Loader2, MoreVertical, Send, Sparkles,
+  Loader2, MoreVertical, Send, Smile, Sparkles,
 } from "lucide-react";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import {
   type MessageRow,
 } from "@/lib/chat";
 import { generateOpener, translateText } from "@/lib/ai.functions";
+import { REACTION_EMOJIS, toggleMessageReaction, type ReactionEmoji } from "@/lib/social";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/messages/$id")({
