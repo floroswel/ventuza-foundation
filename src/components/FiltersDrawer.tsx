@@ -41,6 +41,10 @@ export function FiltersDrawer({
       <div className="flex-1 space-y-8 overflow-y-auto px-6 py-6">
         {/* quick toggles */}
         <section className="flex flex-wrap gap-2">
+          <Toggle active={draft.lookingNowOnly} onClick={() => setDraft({ ...draft, lookingNowOnly: !draft.lookingNowOnly })}>
+            <span className="mr-1.5 inline-block size-1.5 animate-pulse rounded-full bg-rose-500 shadow-[0_0_6px_rgb(244,63,94)]" />
+            Right now
+          </Toggle>
           <Toggle active={draft.onlineOnly} onClick={() => setDraft({ ...draft, onlineOnly: !draft.onlineOnly })}>
             <span className="mr-1.5 inline-block size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />
             Online only
