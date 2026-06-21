@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
+import { StoriesStrip } from "@/components/StoriesStrip";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
   DEFAULT_FILTERS, fetchDiscover, requestAndStoreLocation,
@@ -183,6 +184,7 @@ function DiscoverPage() {
         <EmptyState onRefresh={() => load()} hasLocation={locStatus === "granted"} />
       ) : (
         <>
+          <StoriesStrip />
           <OnlineRow profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)} onOpen={setSelected} />
           <Cascade profiles={visible} onOpen={setSelected} />
         </>
