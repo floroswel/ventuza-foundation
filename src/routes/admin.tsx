@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-import { Loader2, ShieldAlert, Ban, Check, X } from "lucide-react";
+import { Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Moderation — Ventuza" }, { name: "robots", content: "noindex" }] }),
@@ -21,11 +21,28 @@ type Report = {
   reported_profile?: { display_name: string | null; report_count: number; suspended_until: string | null } | null;
 };
 
+type RiskRow = {
+  user_id: string;
+  display_name: string | null;
+  risk_score: number;
+  risk_signals: Record<string, unknown>;
+  verified: boolean;
+  report_count: number;
+  suspended_until: string | null;
+  banned_at: string | null;
+  open_flags: number;
+  duplicate_photo_accounts: number;
+  recent_flag_kinds: string[];
+  last_flag_at: string | null;
+};
+
 function AdminDashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [isMod, setIsMod] = useState<boolean | null>(null);
+  const [tab, setTab] = useState<"reports" | "risk">("reports");
   const [reports, setReports] = useState<Report[]>([]);
+  const [risk, setRisk] = useState<RiskRow[]>([]);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -35,28 +52,29 @@ function AdminDashboard() {
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       const ok = roles?.some((r) => r.role === "admin" || r.role === "moderator") ?? false;
       setIsMod(ok);
-      if (ok) loadReports();
+      if (ok) { loadReports(); loadRisk(); }
     })();
   }, [user, loading]);
 
   async function loadReports() {
     const { data, error } = await supabase
-      .from("reports")
-      .select("*")
-      .eq("status", "pending")
-      .order("created_at", { ascending: false })
-      .limit(100);
+      .from("reports").select("*").eq("status", "pending")
+      .order("created_at", { ascending: false }).limit(100);
     if (error) { toast.error(error.message); return; }
     const ids = Array.from(new Set((data ?? []).map((r) => r.reported_id)));
     const profilesMap = new Map<string, { display_name: string | null; report_count: number; suspended_until: string | null }>();
     if (ids.length) {
-      const { data: profs } = await supabase
-        .from("profiles")
-        .select("id, display_name, report_count, suspended_until")
-        .in("id", ids);
+      const { data: profs } = await supabase.from("profiles")
+        .select("id, display_name, report_count, suspended_until").in("id", ids);
       profs?.forEach((p) => profilesMap.set(p.id, { display_name: p.display_name, report_count: p.report_count ?? 0, suspended_until: p.suspended_until }));
     }
     setReports((data ?? []).map((r) => ({ ...r, reported_profile: profilesMap.get(r.reported_id) ?? null })) as Report[]);
+  }
+
+  async function loadRisk() {
+    const { data, error } = await supabase.rpc("admin_risk_queue", { _limit: 100 });
+    if (error) { toast.error(error.message); return; }
+    setRisk((data ?? []) as RiskRow[]);
   }
 
   async function suspend(userId: string, hours: number, reason: string) {
@@ -65,13 +83,44 @@ function AdminDashboard() {
     setBusy(false);
     if (error) return toast.error(error.message);
     toast.success(hours > 0 ? `Suspendat ${hours}h` : "Suspendare anulată");
-    loadReports();
+    loadReports(); loadRisk();
+  }
+
+  async function verifyUser(userId: string) {
+    setBusy(true);
+    const { error } = await supabase.rpc("moderator_verify_user", { _target: userId });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Verificat");
+    loadRisk();
+  }
+
+  async function warnUser(userId: string) {
+    const reason = prompt("Motiv avertisment:");
+    if (!reason) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("moderator_warn_user", { _target: userId, _reason: reason });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Utilizator avertizat");
+    loadRisk();
+  }
+
+  async function banUser(userId: string) {
+    const reason = prompt("Motiv ban permanent:");
+    if (!reason) return;
+    if (!confirm("Ban permanent? Acțiunea va suspenda contul pe termen lung.")) return;
+    setBusy(true);
+    const { error } = await supabase.rpc("moderator_ban_user", { _target: userId, _reason: reason });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success("Cont banat");
+    loadRisk(); loadReports();
   }
 
   async function resolve(reportId: string, dismissed = false) {
     setBusy(true);
-    const { error } = await supabase
-      .from("reports")
+    const { error } = await supabase.from("reports")
       .update({ status: dismissed ? "dismissed" : "resolved", resolved_at: new Date().toISOString(), resolved_by: user!.id })
       .eq("id", reportId);
     setBusy(false);
@@ -96,12 +145,21 @@ function AdminDashboard() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 py-6">
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold">Moderation Queue</h1>
-        <p className="text-sm text-muted-foreground">{reports.length} rapoarte deschise</p>
+      <header className="mb-4">
+        <h1 className="text-2xl font-semibold">Moderation</h1>
+        <div className="mt-3 flex gap-2 text-xs">
+          <button onClick={() => setTab("reports")}
+            className={`rounded-full px-4 py-1.5 font-medium ${tab === "reports" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
+            Rapoarte ({reports.length})
+          </button>
+          <button onClick={() => setTab("risk")}
+            className={`rounded-full px-4 py-1.5 font-medium ${tab === "risk" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
+            Risc & Catfishing ({risk.length})
+          </button>
+        </div>
       </header>
 
-      {reports.length === 0 ? (
+      {tab === "reports" && (reports.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
           🎉 Nimic de moderat acum
         </div>
@@ -114,9 +172,7 @@ function AdminDashboard() {
                   <div className="flex items-center gap-2">
                     <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-destructive">{r.reason}</span>
                     {r.reported_profile?.report_count && r.reported_profile.report_count >= 3 && (
-                      <span className="rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-semibold text-orange-500">
-                        {r.reported_profile.report_count} rapoarte
-                      </span>
+                      <span className="rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-semibold text-orange-500">{r.reported_profile.report_count} rapoarte</span>
                     )}
                     {r.reported_profile?.suspended_until && new Date(r.reported_profile.suspended_until) > new Date() && (
                       <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-semibold text-red-500">Suspendat</span>
@@ -128,23 +184,66 @@ function AdminDashboard() {
                 </div>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
-                <button disabled={busy} onClick={() => suspend(r.reported_id, 24, r.reason)} className="rounded-full bg-orange-500/15 px-3 py-1.5 text-xs font-medium text-orange-500 hover:bg-orange-500/25 disabled:opacity-50">
-                  <Ban className="mr-1 inline size-3" /> Suspend 24h
-                </button>
-                <button disabled={busy} onClick={() => suspend(r.reported_id, 24 * 7, r.reason)} className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/25 disabled:opacity-50">
-                  <Ban className="mr-1 inline size-3" /> Suspend 7 zile
-                </button>
-                <button disabled={busy} onClick={() => resolve(r.id, false)} className="rounded-full bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/25 disabled:opacity-50">
-                  <Check className="mr-1 inline size-3" /> Rezolvat
-                </button>
-                <button disabled={busy} onClick={() => resolve(r.id, true)} className="rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-surface disabled:opacity-50">
-                  <X className="mr-1 inline size-3" /> Respinge
-                </button>
+                <button disabled={busy} onClick={() => suspend(r.reported_id, 24, r.reason)} className="rounded-full bg-orange-500/15 px-3 py-1.5 text-xs font-medium text-orange-500 hover:bg-orange-500/25 disabled:opacity-50"><Ban className="mr-1 inline size-3" /> Suspend 24h</button>
+                <button disabled={busy} onClick={() => suspend(r.reported_id, 24 * 7, r.reason)} className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/25 disabled:opacity-50"><Ban className="mr-1 inline size-3" /> Suspend 7 zile</button>
+                <button disabled={busy} onClick={() => banUser(r.reported_id)} className="rounded-full bg-red-700/20 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-700/30 disabled:opacity-50"><Ban className="mr-1 inline size-3" /> Ban</button>
+                <button disabled={busy} onClick={() => resolve(r.id, false)} className="rounded-full bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/25 disabled:opacity-50"><Check className="mr-1 inline size-3" /> Rezolvat</button>
+                <button disabled={busy} onClick={() => resolve(r.id, true)} className="rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-surface disabled:opacity-50"><X className="mr-1 inline size-3" /> Respinge</button>
               </div>
             </li>
           ))}
         </ul>
-      )}
+      ))}
+
+      {tab === "risk" && (risk.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
+          ✅ Niciun cont cu risc detectat
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {risk.map((r) => {
+            const scoreColor = r.risk_score >= 80 ? "text-red-500 bg-red-500/15" : r.risk_score >= 60 ? "text-orange-500 bg-orange-500/15" : "text-yellow-500 bg-yellow-500/10";
+            return (
+              <li key={r.user_id} className="rounded-2xl border border-border bg-surface p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${scoreColor}`}>Risc {r.risk_score}</span>
+                      {r.verified && <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold text-primary"><BadgeCheck className="mr-0.5 inline size-3" />Verificat</span>}
+                      {r.duplicate_photo_accounts > 0 && (
+                        <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-semibold text-red-500"><AlertTriangle className="mr-0.5 inline size-3" />Poză duplicat × {r.duplicate_photo_accounts}</span>
+                      )}
+                      {r.report_count > 0 && <span className="rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-semibold text-orange-500">{r.report_count} rapoarte</span>}
+                      {r.banned_at && <span className="rounded-full bg-red-700/20 px-2 py-0.5 text-[10px] font-semibold text-red-400">Banat</span>}
+                      {r.suspended_until && new Date(r.suspended_until) > new Date() && !r.banned_at && (
+                        <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-semibold text-red-500">Suspendat</span>
+                      )}
+                    </div>
+                    <p className="mt-2 text-sm font-medium">{r.display_name ?? r.user_id.slice(0, 8)}</p>
+                    {r.recent_flag_kinds.length > 0 && (
+                      <p className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        Semnale: {r.recent_flag_kinds.join(" · ")}
+                      </p>
+                    )}
+                    {Object.keys(r.risk_signals || {}).length > 0 && (
+                      <pre className="mt-2 overflow-x-auto rounded-lg bg-background/60 p-2 text-[10px] text-muted-foreground">
+                        {JSON.stringify(r.risk_signals, null, 2)}
+                      </pre>
+                    )}
+                  </div>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button disabled={busy} onClick={() => verifyUser(r.user_id)} className="rounded-full bg-primary/15 px-3 py-1.5 text-xs font-medium text-primary hover:bg-primary/25 disabled:opacity-50"><ShieldCheck className="mr-1 inline size-3" /> Verifică</button>
+                  <button disabled={busy} onClick={() => warnUser(r.user_id)} className="rounded-full bg-yellow-500/15 px-3 py-1.5 text-xs font-medium text-yellow-500 hover:bg-yellow-500/25 disabled:opacity-50"><AlertTriangle className="mr-1 inline size-3" /> Avertizează</button>
+                  <button disabled={busy} onClick={() => suspend(r.user_id, 24, "high risk")} className="rounded-full bg-orange-500/15 px-3 py-1.5 text-xs font-medium text-orange-500 hover:bg-orange-500/25 disabled:opacity-50"><Ban className="mr-1 inline size-3" /> Suspend 24h</button>
+                  <button disabled={busy} onClick={() => suspend(r.user_id, 24 * 7, "high risk")} className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/25 disabled:opacity-50"><Ban className="mr-1 inline size-3" /> Suspend 7 zile</button>
+                  <button disabled={busy} onClick={() => banUser(r.user_id)} className="rounded-full bg-red-700/20 px-3 py-1.5 text-xs font-medium text-red-400 hover:bg-red-700/30 disabled:opacity-50"><Ban className="mr-1 inline size-3" /> Ban</button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ))}
     </main>
   );
 }
