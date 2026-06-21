@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarHeart, Loader2, MapPin, Plus, Users, Clock } from "lucide-react";
+import { CalendarHeart, Loader2, MapPin, Map as MapIcon, Plus, Users, Clock, List } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { BottomNav } from "@/components/BottomNav";
 import { listUpcomingEvents, eventTypeLabel, formatEventDate, type EventType, type EventWithMeta } from "@/lib/events";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { NotificationBell } from "@/components/NotificationBell";
+import { EventsMap } from "@/components/EventsMap";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/events")({
   head: () => ({ meta: [{ title: "Events — Ventuza" }, { name: "description", content: "Find gay-friendly parties, bars and meetups near you." }] }),
