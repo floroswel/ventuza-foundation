@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { moderatePhoto } from "@/lib/verification.functions";
 import { cn } from "@/lib/utils";
+import { computePhash } from "@/lib/phash";
 
 const MAX_PHOTOS = 9;
 const MAX_SIZE_MB = 8;
@@ -77,6 +78,14 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           }
         } catch {
           // moderation failure shouldn't block upload
+        }
+
+        // Perceptual hash → server (catfishing detection)
+        try {
+          const phash = await computePhash(file);
+          if (phash) await supabase.rpc("record_photo_hash", { _path: path, _phash: phash });
+        } catch {
+          // non-blocking
         }
 
         added.push(path);

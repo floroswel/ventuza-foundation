@@ -291,6 +291,30 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_hashes: {
+        Row: {
+          created_at: string
+          id: string
+          phash: string
+          photo_path: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phash: string
+          photo_path: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phash?: string
+          photo_path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       private_albums: {
         Row: {
           created_at: string
@@ -338,6 +362,8 @@ export type Database = {
       }
       profiles: {
         Row: {
+          banned_at: string | null
+          banned_reason: string | null
           bio: string | null
           birthdate: string | null
           body_type: string | null
@@ -362,11 +388,16 @@ export type Database = {
           orientation: string[] | null
           photos: string[] | null
           position: string | null
+          prev_location: unknown
+          prev_location_at: string | null
           prompts: Json | null
           pronouns: string[] | null
           pronouns_custom: string | null
           relationship_status: string | null
           report_count: number
+          risk_score: number
+          risk_signals: Json
+          risk_updated_at: string | null
           suspended_reason: string | null
           suspended_until: string | null
           travel_city: string | null
@@ -379,9 +410,13 @@ export type Database = {
           verification_status: string
           verified: boolean
           verified_at: string | null
+          warned_at: string | null
+          warned_reason: string | null
           weight_kg: number | null
         }
         Insert: {
+          banned_at?: string | null
+          banned_reason?: string | null
           bio?: string | null
           birthdate?: string | null
           body_type?: string | null
@@ -406,11 +441,16 @@ export type Database = {
           orientation?: string[] | null
           photos?: string[] | null
           position?: string | null
+          prev_location?: unknown
+          prev_location_at?: string | null
           prompts?: Json | null
           pronouns?: string[] | null
           pronouns_custom?: string | null
           relationship_status?: string | null
           report_count?: number
+          risk_score?: number
+          risk_signals?: Json
+          risk_updated_at?: string | null
           suspended_reason?: string | null
           suspended_until?: string | null
           travel_city?: string | null
@@ -423,9 +463,13 @@ export type Database = {
           verification_status?: string
           verified?: boolean
           verified_at?: string | null
+          warned_at?: string | null
+          warned_reason?: string | null
           weight_kg?: number | null
         }
         Update: {
+          banned_at?: string | null
+          banned_reason?: string | null
           bio?: string | null
           birthdate?: string | null
           body_type?: string | null
@@ -450,11 +494,16 @@ export type Database = {
           orientation?: string[] | null
           photos?: string[] | null
           position?: string | null
+          prev_location?: unknown
+          prev_location_at?: string | null
           prompts?: Json | null
           pronouns?: string[] | null
           pronouns_custom?: string | null
           relationship_status?: string | null
           report_count?: number
+          risk_score?: number
+          risk_signals?: Json
+          risk_updated_at?: string | null
           suspended_reason?: string | null
           suspended_until?: string | null
           travel_city?: string | null
@@ -467,6 +516,8 @@ export type Database = {
           verification_status?: string
           verified?: boolean
           verified_at?: string | null
+          warned_at?: string | null
+          warned_reason?: string | null
           weight_kg?: number | null
         }
         Relationships: []
@@ -537,6 +588,42 @@ export type Database = {
           resolved_at?: string | null
           resolved_by?: string | null
           status?: string
+        }
+        Relationships: []
+      }
+      risk_flags: {
+        Row: {
+          created_at: string
+          details: Json
+          id: string
+          kind: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: number
+          status: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kind: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: number
+          status?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          id?: string
+          kind?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: number
+          status?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -827,6 +914,23 @@ export type Database = {
             }
             Returns: string
           }
+      admin_risk_queue: {
+        Args: { _limit?: number }
+        Returns: {
+          banned_at: string
+          display_name: string
+          duplicate_photo_accounts: number
+          last_flag_at: string
+          open_flags: number
+          recent_flag_kinds: string[]
+          report_count: number
+          risk_score: number
+          risk_signals: Json
+          suspended_until: string
+          user_id: string
+          verified: boolean
+        }[]
+      }
       disablelongtransactions: { Args: never; Returns: string }
       discover_profiles: {
         Args: {
@@ -1023,8 +1127,17 @@ export type Database = {
         Returns: boolean
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      moderator_ban_user: {
+        Args: { _reason: string; _target: string }
+        Returns: undefined
+      }
       moderator_suspend_user: {
         Args: { _hours: number; _reason: string; _target: string }
+        Returns: undefined
+      }
+      moderator_verify_user: { Args: { _target: string }; Returns: undefined }
+      moderator_warn_user: {
+        Args: { _reason: string; _target: string }
         Returns: undefined
       }
       notify_user: {
@@ -1079,6 +1192,11 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      recompute_risk_score: { Args: { _uid: string }; Returns: number }
+      record_photo_hash: {
+        Args: { _path: string; _phash: string }
+        Returns: undefined
+      }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
