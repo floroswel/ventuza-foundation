@@ -84,15 +84,23 @@ export async function fetchConversations(meId: string): Promise<ConversationList
   });
 }
 
-export async function fetchMessages(conversationId: string): Promise<MessageRow[]> {
-  const { data, error } = await supabase
+export const MESSAGES_PAGE = 30;
+
+export async function fetchMessages(
+  conversationId: string,
+  opts: { before?: string; limit?: number } = {},
+): Promise<MessageRow[]> {
+  const limit = opts.limit ?? MESSAGES_PAGE;
+  let q = supabase
     .from("messages")
     .select("*")
     .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: true })
-    .limit(200);
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (opts.before) q = q.lt("created_at", opts.before);
+  const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []) as MessageRow[];
+  return ((data ?? []) as MessageRow[]).slice().reverse();
 }
 
 export async function sendMessage(conversationId: string, body: string): Promise<void> {
