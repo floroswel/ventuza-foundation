@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
+import { StoriesStrip } from "@/components/StoriesStrip";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
   DEFAULT_FILTERS, fetchDiscover, requestAndStoreLocation,
@@ -177,6 +178,7 @@ function DiscoverPage() {
         </div>
       </header>
 
+      <StoriesStrip />
       {loading ? (
         <CenterMessage icon={<Loader2 className="size-6 animate-spin text-primary" />} title="Finding people…" />
       ) : visible.length === 0 ? (
