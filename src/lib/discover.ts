@@ -155,6 +155,7 @@ export async function fetchDiscover(
     online_only: filters.onlineOnly,
     with_photo_only: filters.withPhotoOnly,
     verified_only: filters.verifiedOnly,
+    looking_now_only: filters.lookingNowOnly,
     order_mode: orderMode,
     result_limit: 60,
   });
