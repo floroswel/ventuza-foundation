@@ -47,6 +47,11 @@ function SettingsPage() {
   const [newPwd, setNewPwd] = useState("");
   const [confirmDelete, setConfirmDelete] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [privacy, setPrivacy] = useState({ hide_age: false, hide_distance: false, hide_online: false });
+  const [savingPrivacy, setSavingPrivacy] = useState(false);
+  const [lookingUntil, setLookingUntil] = useState<string | null>(null);
+  const [intent, setIntent] = useState("");
+  const [busyNow, setBusyNow] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", search: { mode: "login" } });
@@ -55,11 +60,46 @@ function SettingsPage() {
   useEffect(() => {
     if (!user) return;
     setEmail(user.email ?? "");
-    supabase.from("profiles").select("notification_prefs").eq("id", user.id).maybeSingle()
+    supabase.from("profiles")
+      .select("notification_prefs, hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent")
+      .eq("id", user.id).maybeSingle()
       .then(({ data }) => {
-        if (data?.notification_prefs) setPrefs({ ...DEFAULT_PREFS, ...(data.notification_prefs as Prefs) });
+        if (!data) return;
+        if (data.notification_prefs) setPrefs({ ...DEFAULT_PREFS, ...(data.notification_prefs as Prefs) });
+        setPrivacy({
+          hide_age: !!(data as { hide_age?: boolean }).hide_age,
+          hide_distance: !!(data as { hide_distance?: boolean }).hide_distance,
+          hide_online: !!(data as { hide_online?: boolean }).hide_online,
+        });
+        setLookingUntil((data as { looking_now_until?: string | null }).looking_now_until ?? null);
+        setIntent((data as { looking_now_intent?: string | null }).looking_now_intent ?? "");
       });
   }, [user]);
+
+  async function savePrivacy(next: { hide_age: boolean; hide_distance: boolean; hide_online: boolean }) {
+    if (!user) return;
+    setPrivacy(next);
+    setSavingPrivacy(true);
+    const { error } = await supabase.from("profiles").update(next).eq("id", user.id);
+    setSavingPrivacy(false);
+    if (error) toast.error(error.message);
+  }
+
+  async function activateLookingNow(hours: number) {
+    setBusyNow(true);
+    try {
+      await setLookingNow(hours, intent || undefined);
+      if (hours > 0) {
+        const until = new Date(Date.now() + hours * 3600_000).toISOString();
+        setLookingUntil(until);
+        toast.success(`Activ pentru ${hours}h`);
+      } else {
+        setLookingUntil(null);
+        toast.success("Dezactivat");
+      }
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setBusyNow(false); }
+  }
 
   async function savePrefs(next: Prefs) {
     if (!user) return;
