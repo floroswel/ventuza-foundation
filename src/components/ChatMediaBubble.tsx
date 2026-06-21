@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Eye, EyeOff, MapPin, Pause, Play } from "lucide-react";
+import { Eye, EyeOff, MapPin, Pause, Play, Timer } from "lucide-react";
 import { markMediaViewed, signChatMedia, type MessageRow } from "@/lib/chat";
 import { cn } from "@/lib/utils";
 
@@ -111,4 +111,4 @@ function ImageBubble({ m, mine }: Props) {
   );
 }
 
-import { Timer } from "lucide-react";
+
