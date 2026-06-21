@@ -103,15 +103,18 @@ export async function fetchMessages(
   return ((data ?? []) as MessageRow[]).slice().reverse();
 }
 
-export async function sendMessage(conversationId: string, body: string): Promise<void> {
+export async function sendMessage(conversationId: string, body: string): Promise<MessageRow> {
   const trimmed = body.trim();
-  if (!trimmed) return;
+  if (!trimmed) throw new Error("empty");
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("not signed in");
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("messages")
-    .insert({ conversation_id: conversationId, sender_id: u.user.id, body: trimmed.slice(0, 4000) });
+    .insert({ conversation_id: conversationId, sender_id: u.user.id, body: trimmed.slice(0, 4000) })
+    .select("*")
+    .single();
   if (error) throw error;
+  return data as MessageRow;
 }
 
 export async function markRead(conversationId: string, meId: string): Promise<void> {
