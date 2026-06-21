@@ -15,6 +15,7 @@ export type MessageRow = {
   body: string;
   read_at: string | null;
   created_at: string;
+  reactions?: Record<string, string[]> | null;
 };
 
 export type ConversationListItem = {
