@@ -89,6 +89,7 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         }
 
         added.push(path);
+      }
       if (added.length) {
         await savePhotos([...photos, ...added]);
         toast.success(`${added.length} photo${added.length > 1 ? "s" : ""} uploaded.`);
