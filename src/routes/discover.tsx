@@ -304,6 +304,11 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
                 <BadgeCheck className="size-3.5 text-primary" />
               </span>
             )}
+            {p.looking_now_until && new Date(p.looking_now_until) > new Date() && (
+              <span className="absolute right-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-rose-500/95 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-lg backdrop-blur">
+                <Flame className="size-2.5" /> NOW
+              </span>
+            )}
             {p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date()) && (
               <span className="absolute right-1.5 bottom-8 flex items-center gap-0.5 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] text-white backdrop-blur">
                 <Plane className="size-2.5" /> {p.travel_city}
