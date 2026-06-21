@@ -1,12 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarHeart, Loader2, MapPin, Plus, Users, Clock } from "lucide-react";
+import { CalendarHeart, Loader2, MapPin, Map as MapIcon, Plus, Users, Clock, List } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { BottomNav } from "@/components/BottomNav";
 import { listUpcomingEvents, eventTypeLabel, formatEventDate, type EventType, type EventWithMeta } from "@/lib/events";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { NotificationBell } from "@/components/NotificationBell";
+import { EventsMap } from "@/components/EventsMap";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/events")({
   head: () => ({ meta: [{ title: "Events — Ventuza" }, { name: "description", content: "Find gay-friendly parties, bars and meetups near you." }] }),
@@ -23,6 +25,8 @@ function EventsPage() {
   const [type, setType] = useState<EventType | "all">("all");
   const [city, setCity] = useState("");
   const [creating, setCreating] = useState(false);
+  const [view, setView] = useState<"list" | "map">("list");
+
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
@@ -68,6 +72,22 @@ function EventsPage() {
             placeholder="City"
             className="flex-1 rounded-full border border-border bg-surface px-3 py-1.5 text-sm outline-none focus:border-primary"
           />
+          <div className="inline-flex rounded-full border border-border bg-surface p-0.5">
+            <button
+              onClick={() => setView("list")}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs ${view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              aria-label="List view"
+            >
+              <List className="size-3.5" />
+            </button>
+            <button
+              onClick={() => setView("map")}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs ${view === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              aria-label="Map view"
+            >
+              <MapIcon className="size-3.5" />
+            </button>
+          </div>
         </div>
         <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1 -mx-3 px-3">
           {TYPES.map((t) => (
@@ -80,6 +100,7 @@ function EventsPage() {
             </button>
           ))}
         </div>
+
       </header>
 
       <div className="flex-1 px-3 py-3">
@@ -93,6 +114,8 @@ function EventsPage() {
             <p className="mt-3 text-sm">No upcoming events.</p>
             <p className="text-xs">Be the first — host one with the Host button.</p>
           </div>
+        ) : view === "map" ? (
+          <EventsMap events={events} />
         ) : (
           <ul className="space-y-3">
             {events.map((e) => (
@@ -141,6 +164,7 @@ function EventsPage() {
             ))}
           </ul>
         )}
+
       </div>
 
       <CreateEventDialog
