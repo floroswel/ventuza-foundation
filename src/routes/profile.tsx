@@ -79,6 +79,28 @@ type Profile = {
   prep_status: string | null;
   vaccinations: string[] | null;
   accept_nsfw_photos: boolean | null;
+  voice_prompt_path: string | null;
+  voice_prompt_question: string | null;
+  voice_prompt_duration_sec: number | null;
+  anthem: { title: string; artist: string; url?: string } | null;
+  zodiac: string | null;
+  languages: string[] | null;
+  education: string | null;
+  school: string | null;
+  job_title: string | null;
+  company: string | null;
+  religion: string | null;
+  politics: string | null;
+  children: string | null;
+  pets: string[] | null;
+  drinking: string | null;
+  smoking: string | null;
+  cannabis: string | null;
+  drugs: string | null;
+  workout: string | null;
+  diet: string | null;
+  sleep_schedule: string | null;
+  profile_slug: string | null;
 };
 
 function age(iso?: string | null) {
