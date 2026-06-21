@@ -17,6 +17,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiscoverRouteImport } from './routes/discover'
@@ -69,6 +70,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupsRoute = GroupsRouteImport.update({
+  id: '/groups',
+  path: '/groups',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -145,6 +151,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
+  '/groups': typeof GroupsRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -168,6 +175,7 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
+  '/groups': typeof GroupsRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -192,6 +200,7 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
+  '/groups': typeof GroupsRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -217,6 +226,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/events'
     | '/favorites'
+    | '/groups'
     | '/notifications'
     | '/onboarding'
     | '/premium'
@@ -240,6 +250,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/events'
     | '/favorites'
+    | '/groups'
     | '/notifications'
     | '/onboarding'
     | '/premium'
@@ -263,6 +274,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/events'
     | '/favorites'
+    | '/groups'
     | '/notifications'
     | '/onboarding'
     | '/premium'
@@ -287,6 +299,7 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   EventsRoute: typeof EventsRouteWithChildren
   FavoritesRoute: typeof FavoritesRoute
+  GroupsRoute: typeof GroupsRoute
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groups': {
+      id: '/groups'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof GroupsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -473,6 +493,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   EventsRoute: EventsRouteWithChildren,
   FavoritesRoute: FavoritesRoute,
+  GroupsRoute: GroupsRoute,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,
