@@ -169,7 +169,7 @@ export async function sendMediaMessage(conversationId: string, payload: MediaPay
     if (payload.kind === "image" && payload.viewOnce) insert.view_once = true;
   }
 
-  const { data, error } = await supabase.from("messages").insert(insert).select("*").single();
+  const { data, error } = await supabase.from("messages").insert(insert as never).select("*").single();
   if (error) throw error;
   return data as MessageRow;
 }
