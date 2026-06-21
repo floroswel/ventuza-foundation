@@ -1,5 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Shield, Eye, MessageCircle, MapPin, Phone, AlertTriangle, ChevronLeft } from "lucide-react";
+import { PanicToolsCard } from "@/components/PanicToolsCard";
+import { HealthReminderCard } from "@/components/HealthReminderCard";
+
 
 export const Route = createFileRoute("/safety")({
   head: () => ({
@@ -30,6 +33,12 @@ function SafetyCenter() {
         <Tip icon={<MapPin />} title="Prima întâlnire — loc public" body="Cafenea, restaurant, parc cu lume. Spune-i unui prieten unde mergi și cu cine. Trimite-i locația ta live." />
         <Tip icon={<MessageCircle />} title="Rămâi în Ventuza" body="Nu trece pe alte aplicații imediat. Aici comunicarea e protejată; raportarea funcționează rapid." />
         <Tip icon={<AlertTriangle />} title="Niciodată bani sau date bancare" body="Dacă cineva îți cere bani, IBAN, criptomonede, sau să-i finanțezi „o urgență” — e scam. Raportează imediat." />
+
+        <PanicToolsCard />
+
+        <HealthReminderCard />
+
+
 
         <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-destructive">
