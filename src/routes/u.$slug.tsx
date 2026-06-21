@@ -104,10 +104,20 @@ function PublicProfilePage() {
               <BadgeCheck className="size-3" /> Verified
             </span>
           )}
+          <div className="mt-3"><ProfileBadgesRow profile={profile} /></div>
         </div>
       </section>
 
       <div className="space-y-6 px-6 pt-6">
+        {signedVideo && (
+          <div className="rounded-2xl border border-border bg-surface p-3">
+            <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              <Video className="size-4 text-primary" /> Clip
+            </div>
+            <video src={signedVideo} controls playsInline className="w-full rounded-xl bg-black" />
+          </div>
+        )}
+
         {signedVoice && (
           <div className="rounded-2xl border border-border bg-surface p-5">
             <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
@@ -126,6 +136,22 @@ function PublicProfilePage() {
             <p className="text-sm text-muted-foreground">{profile.anthem.artist}</p>
             {profile.anthem.url && <a href={profile.anthem.url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Ascultă</a>}
           </div>
+        )}
+
+        {profile.ideal_match && (
+          <div className="rounded-2xl border border-border bg-surface p-5">
+            <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              <Heart className="size-4 text-primary" /> Match ideal
+            </div>
+            <p className="italic text-foreground/85">"{profile.ideal_match}"</p>
+          </div>
+        )}
+
+        {profile.ask_me_about?.length > 0 && (
+          <section>
+            <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">Ask me about</h2>
+            <div className="flex flex-wrap gap-2">{profile.ask_me_about.map((t: string) => <Chip key={t} active>💬 {t}</Chip>)}</div>
+          </section>
         )}
 
         {profile.bio && (
