@@ -26,6 +26,8 @@ export type MessageRow = {
   view_once?: boolean | null;
   expires_at?: string | null;
   viewed_at?: string | null;
+  reply_to_id?: string | null;
+  deleted_at?: string | null;
 };
 
 export type ConversationListItem = {
@@ -114,18 +116,46 @@ export async function fetchMessages(
   return ((data ?? []) as MessageRow[]).slice().reverse();
 }
 
-export async function sendMessage(conversationId: string, body: string): Promise<MessageRow> {
+export async function sendMessage(conversationId: string, body: string, replyToId?: string | null): Promise<MessageRow> {
   const trimmed = body.trim();
   if (!trimmed) throw new Error("empty");
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("not signed in");
+  const insert: Record<string, unknown> = {
+    conversation_id: conversationId,
+    sender_id: u.user.id,
+    body: trimmed.slice(0, 4000),
+    media_type: "text",
+  };
+  if (replyToId) insert.reply_to_id = replyToId;
   const { data, error } = await supabase
     .from("messages")
-    .insert({ conversation_id: conversationId, sender_id: u.user.id, body: trimmed.slice(0, 4000), media_type: "text" })
+    .insert(insert as never)
     .select("*")
     .single();
   if (error) throw error;
   return data as MessageRow;
+}
+
+export async function unsendMessage(messageId: string): Promise<void> {
+  const { error } = await supabase.rpc("unsend_message", { _message_id: messageId } as never);
+  if (error) throw error;
+}
+
+export async function markRead(conversationId: string, meId: string): Promise<void> {
+  // Respect the recipient's "read receipts" preference: if I have it OFF, don't stamp read_at
+  const { data: meProf } = await supabase
+    .from("profiles")
+    .select("read_receipts_enabled")
+    .eq("id", meId)
+    .maybeSingle();
+  if (meProf && (meProf as { read_receipts_enabled?: boolean }).read_receipts_enabled === false) return;
+  await supabase
+    .from("messages")
+    .update({ read_at: new Date().toISOString() })
+    .eq("conversation_id", conversationId)
+    .neq("sender_id", meId)
+    .is("read_at", null);
 }
 
 export type MediaPayload =
@@ -184,14 +214,6 @@ export async function markMediaViewed(messageId: string): Promise<void> {
   await supabase.from("messages").update({ viewed_at: new Date().toISOString() }).eq("id", messageId);
 }
 
-export async function markRead(conversationId: string, meId: string): Promise<void> {
-  await supabase
-    .from("messages")
-    .update({ read_at: new Date().toISOString() })
-    .eq("conversation_id", conversationId)
-    .neq("sender_id", meId)
-    .is("read_at", null);
-}
 
 export async function fetchOtherProfile(otherId: string): Promise<{ id: string; name: string | null; photo: string | null }> {
   const { data } = await supabase

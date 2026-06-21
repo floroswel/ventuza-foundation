@@ -344,6 +344,7 @@ export type Database = {
           body: string
           conversation_id: string
           created_at: string
+          deleted_at: string | null
           expires_at: string | null
           id: string
           location_lat: number | null
@@ -352,6 +353,7 @@ export type Database = {
           media_url: string | null
           reactions: Json
           read_at: string | null
+          reply_to_id: string | null
           sender_id: string
           view_once: boolean | null
           viewed_at: string | null
@@ -361,6 +363,7 @@ export type Database = {
           body: string
           conversation_id: string
           created_at?: string
+          deleted_at?: string | null
           expires_at?: string | null
           id?: string
           location_lat?: number | null
@@ -369,6 +372,7 @@ export type Database = {
           media_url?: string | null
           reactions?: Json
           read_at?: string | null
+          reply_to_id?: string | null
           sender_id: string
           view_once?: boolean | null
           viewed_at?: string | null
@@ -378,6 +382,7 @@ export type Database = {
           body?: string
           conversation_id?: string
           created_at?: string
+          deleted_at?: string | null
           expires_at?: string | null
           id?: string
           location_lat?: number | null
@@ -386,6 +391,7 @@ export type Database = {
           media_url?: string | null
           reactions?: Json
           read_at?: string | null
+          reply_to_id?: string | null
           sender_id?: string
           view_once?: boolean | null
           viewed_at?: string | null
@@ -396,6 +402,13 @@ export type Database = {
             columns: ["conversation_id"]
             isOneToOne: false
             referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
             referencedColumns: ["id"]
           },
         ]
@@ -511,6 +524,7 @@ export type Database = {
       profiles: {
         Row: {
           accept_nsfw_photos: boolean | null
+          auto_share_album_on_match: boolean
           banned_at: string | null
           banned_reason: string | null
           bio: string | null
@@ -550,6 +564,7 @@ export type Database = {
           prompts: Json | null
           pronouns: string[] | null
           pronouns_custom: string | null
+          read_receipts_enabled: boolean
           relationship_status: string | null
           report_count: number
           risk_score: number
@@ -576,6 +591,7 @@ export type Database = {
         }
         Insert: {
           accept_nsfw_photos?: boolean | null
+          auto_share_album_on_match?: boolean
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
@@ -615,6 +631,7 @@ export type Database = {
           prompts?: Json | null
           pronouns?: string[] | null
           pronouns_custom?: string | null
+          read_receipts_enabled?: boolean
           relationship_status?: string | null
           report_count?: number
           risk_score?: number
@@ -641,6 +658,7 @@ export type Database = {
         }
         Update: {
           accept_nsfw_photos?: boolean | null
+          auto_share_album_on_match?: boolean
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
@@ -680,6 +698,7 @@ export type Database = {
           prompts?: Json | null
           pronouns?: string[] | null
           pronouns_custom?: string | null
+          read_receipts_enabled?: boolean
           relationship_status?: string | null
           report_count?: number
           risk_score?: number
@@ -2099,6 +2118,7 @@ export type Database = {
       }
       touch_last_seen: { Args: never; Returns: undefined }
       unlockrows: { Args: { "": string }; Returns: number }
+      unsend_message: { Args: { _message_id: string }; Returns: undefined }
       update_my_location: {
         Args: { lat: number; lng: number }
         Returns: undefined

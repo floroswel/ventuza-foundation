@@ -47,7 +47,7 @@ function SettingsPage() {
   const [newPwd, setNewPwd] = useState("");
   const [confirmDelete, setConfirmDelete] = useState("");
   const [deleting, setDeleting] = useState(false);
-  const [privacy, setPrivacy] = useState({ hide_age: false, hide_distance: false, hide_online: false });
+  const [privacy, setPrivacy] = useState({ hide_age: false, hide_distance: false, hide_online: false, read_receipts_enabled: true, auto_share_album_on_match: false });
   const [savingPrivacy, setSavingPrivacy] = useState(false);
   const [lookingUntil, setLookingUntil] = useState<string | null>(null);
   const [intent, setIntent] = useState("");
@@ -61,22 +61,29 @@ function SettingsPage() {
     if (!user) return;
     setEmail(user.email ?? "");
     supabase.from("profiles")
-      .select("notification_prefs, hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent")
+      .select("notification_prefs, hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent, read_receipts_enabled, auto_share_album_on_match")
       .eq("id", user.id).maybeSingle()
       .then(({ data }) => {
         if (!data) return;
         if (data.notification_prefs) setPrefs({ ...DEFAULT_PREFS, ...(data.notification_prefs as Prefs) });
+        const d = data as {
+          hide_age?: boolean; hide_distance?: boolean; hide_online?: boolean;
+          read_receipts_enabled?: boolean; auto_share_album_on_match?: boolean;
+          looking_now_until?: string | null; looking_now_intent?: string | null;
+        };
         setPrivacy({
-          hide_age: !!(data as { hide_age?: boolean }).hide_age,
-          hide_distance: !!(data as { hide_distance?: boolean }).hide_distance,
-          hide_online: !!(data as { hide_online?: boolean }).hide_online,
+          hide_age: !!d.hide_age,
+          hide_distance: !!d.hide_distance,
+          hide_online: !!d.hide_online,
+          read_receipts_enabled: d.read_receipts_enabled ?? true,
+          auto_share_album_on_match: !!d.auto_share_album_on_match,
         });
-        setLookingUntil((data as { looking_now_until?: string | null }).looking_now_until ?? null);
-        setIntent((data as { looking_now_intent?: string | null }).looking_now_intent ?? "");
+        setLookingUntil(d.looking_now_until ?? null);
+        setIntent(d.looking_now_intent ?? "");
       });
   }, [user]);
 
-  async function savePrivacy(next: { hide_age: boolean; hide_distance: boolean; hide_online: boolean }) {
+  async function savePrivacy(next: typeof privacy) {
     if (!user) return;
     setPrivacy(next);
     setSavingPrivacy(true);
@@ -262,6 +269,8 @@ function SettingsPage() {
               ["hide_age", "Ascunde vârsta"],
               ["hide_distance", "Ascunde distanța"],
               ["hide_online", "Ascunde statusul online / „Active …"],
+              ["read_receipts_enabled", "Trimite confirmări de citire (read receipts)"],
+              ["auto_share_album_on_match", "Auto-share album privat la match"],
             ] as const).map(([key, label]) => (
               <label key={key} className="flex items-center justify-between py-2.5 text-sm">
                 <span>{label}</span>
