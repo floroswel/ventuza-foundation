@@ -215,6 +215,9 @@ function ProfilePage() {
               <span key={p} className="rounded-full bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">{p}</span>
             ))}
           </div>
+          <div className="mt-3">
+            <ProfileBadgesRow profile={profile} />
+          </div>
         </div>
       </section>
 
@@ -247,6 +250,18 @@ function ProfilePage() {
           userId={profile.id}
           anthem={profile.anthem}
           onChange={(next) => setProfile({ ...profile, anthem: next })}
+        />
+
+        <VideoClipCard
+          userId={profile.id}
+          videoPath={profile.video_clip_path}
+          onChange={(p) => setProfile({ ...profile, video_clip_path: p })}
+        />
+
+        <DateVibesCard
+          userId={profile.id}
+          vibes={{ ask_me_about: profile.ask_me_about, dealbreakers: profile.dealbreakers, ideal_match: profile.ideal_match }}
+          onChange={(next) => setProfile({ ...profile, ...next })}
         />
 
         <LifestyleFactsCard
