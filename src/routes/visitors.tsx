@@ -135,12 +135,13 @@ function VisitorsPage() {
             <Loader2 className="size-5 animate-spin" />
           </div>
         ) : visitors.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
-            <Eye className="size-10 text-primary/60" />
-            <p className="mt-3 text-sm">No visitors yet.</p>
-            <p className="text-xs">Once people check out your profile, they'll show up here.</p>
-          </div>
+          <EmptyState
+            icon={Eye}
+            title="Niciun vizitator încă"
+            body="Când cineva îți vede profilul, va apărea aici."
+          />
         ) : (
+
           <ul className="grid grid-cols-2 gap-3">
             {visitors.map((v) => (
               <li key={v.viewer_id} className="group overflow-hidden rounded-2xl border border-border bg-surface">
