@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Eye, EyeOff, MapPin, Pause, Play, Timer } from "lucide-react";
 import { markMediaViewed, signChatMedia, type MessageRow } from "@/lib/chat";
 import { cn } from "@/lib/utils";
