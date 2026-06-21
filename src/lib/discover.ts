@@ -16,6 +16,7 @@ export type DiscoverFilters = {
   onlineOnly: boolean;
   withPhotoOnly: boolean;
   verifiedOnly: boolean;
+  lookingNowOnly: boolean;
 };
 
 export const DEFAULT_FILTERS: DiscoverFilters = {
@@ -34,6 +35,7 @@ export const DEFAULT_FILTERS: DiscoverFilters = {
   onlineOnly: false,
   withPhotoOnly: false,
   verifiedOnly: false,
+  lookingNowOnly: false,
 };
 
 export type DiscoverProfile = {
@@ -64,6 +66,8 @@ export type DiscoverProfile = {
   boost_until: string | null;
   travel_city: string | null;
   travel_until: string | null;
+  looking_now_until: string | null;
+  looking_now_intent: string | null;
 };
 
 export function ageFrom(iso?: string | null) {
@@ -151,6 +155,7 @@ export async function fetchDiscover(
     online_only: filters.onlineOnly,
     with_photo_only: filters.withPhotoOnly,
     verified_only: filters.verifiedOnly,
+    looking_now_only: filters.lookingNowOnly,
     order_mode: orderMode,
     result_limit: 60,
   });

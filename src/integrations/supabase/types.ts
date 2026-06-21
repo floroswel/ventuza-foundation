@@ -196,6 +196,27 @@ export type Database = {
         }
         Relationships: []
       }
+      favorites: {
+        Row: {
+          created_at: string
+          favorite_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          favorite_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          favorite_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           created_at: string
@@ -223,6 +244,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           id: string
+          reactions: Json
           read_at: string | null
           sender_id: string
         }
@@ -231,6 +253,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           id?: string
+          reactions?: Json
           read_at?: string | null
           sender_id: string
         }
@@ -239,6 +262,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           id?: string
+          reactions?: Json
           read_at?: string | null
           sender_id?: string
         }
@@ -375,6 +399,9 @@ export type Database = {
           gender: string[] | null
           gender_custom: string | null
           height_cm: number | null
+          hide_age: boolean
+          hide_distance: boolean
+          hide_online: boolean
           hiv_status: string | null
           hiv_test_date: string | null
           id: string
@@ -383,6 +410,8 @@ export type Database = {
           last_seen: string
           location: unknown
           looking_for: string[] | null
+          looking_now_intent: string | null
+          looking_now_until: string | null
           notification_prefs: Json
           onboarding_completed: boolean
           orientation: string[] | null
@@ -428,6 +457,9 @@ export type Database = {
           gender?: string[] | null
           gender_custom?: string | null
           height_cm?: number | null
+          hide_age?: boolean
+          hide_distance?: boolean
+          hide_online?: boolean
           hiv_status?: string | null
           hiv_test_date?: string | null
           id: string
@@ -436,6 +468,8 @@ export type Database = {
           last_seen?: string
           location?: unknown
           looking_for?: string[] | null
+          looking_now_intent?: string | null
+          looking_now_until?: string | null
           notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
@@ -481,6 +515,9 @@ export type Database = {
           gender?: string[] | null
           gender_custom?: string | null
           height_cm?: number | null
+          hide_age?: boolean
+          hide_distance?: boolean
+          hide_online?: boolean
           hiv_status?: string | null
           hiv_test_date?: string | null
           id?: string
@@ -489,6 +526,8 @@ export type Database = {
           last_seen?: string
           location?: unknown
           looking_for?: string[] | null
+          looking_now_intent?: string | null
+          looking_now_until?: string | null
           notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
@@ -720,6 +759,30 @@ export type Database = {
         }
         Relationships: []
       }
+      taps: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -932,56 +995,110 @@ export type Database = {
         }[]
       }
       disablelongtransactions: { Args: never; Returns: string }
-      discover_profiles: {
-        Args: {
-          body_filter?: string[]
-          gender_filter?: string[]
-          hiv_filter?: string[]
-          looking_for_filter?: string[]
-          max_age?: number
-          max_distance_km?: number
-          max_height?: number
-          min_age?: number
-          min_height?: number
-          online_only?: boolean
-          order_mode?: string
-          orientation_filter?: string[]
-          position_filter?: string[]
-          result_limit?: number
-          tribes_filter?: string[]
-          verified_only?: boolean
-          with_photo_only?: boolean
-        }
-        Returns: {
-          bio: string
-          birthdate: string
-          body_type: string
-          boost_until: string
-          display_name: string
-          distance_m: number
-          ethnicity: string
-          gender: string[]
-          height_cm: number
-          hiv_status: string
-          hiv_test_date: string
-          id: string
-          interests: string[]
-          last_seen: string
-          looking_for: string[]
-          orientation: string[]
-          photos: string[]
-          position: string
-          prompts: Json
-          pronouns: string[]
-          relationship_status: string
-          score: number
-          travel_city: string
-          travel_until: string
-          tribes: string[]
-          verified: boolean
-          weight_kg: number
-        }[]
-      }
+      discover_profiles:
+        | {
+            Args: {
+              body_filter?: string[]
+              gender_filter?: string[]
+              hiv_filter?: string[]
+              looking_for_filter?: string[]
+              max_age?: number
+              max_distance_km?: number
+              max_height?: number
+              min_age?: number
+              min_height?: number
+              online_only?: boolean
+              order_mode?: string
+              orientation_filter?: string[]
+              position_filter?: string[]
+              result_limit?: number
+              tribes_filter?: string[]
+              verified_only?: boolean
+              with_photo_only?: boolean
+            }
+            Returns: {
+              bio: string
+              birthdate: string
+              body_type: string
+              boost_until: string
+              display_name: string
+              distance_m: number
+              ethnicity: string
+              gender: string[]
+              height_cm: number
+              hiv_status: string
+              hiv_test_date: string
+              id: string
+              interests: string[]
+              last_seen: string
+              looking_for: string[]
+              orientation: string[]
+              photos: string[]
+              position: string
+              prompts: Json
+              pronouns: string[]
+              relationship_status: string
+              score: number
+              travel_city: string
+              travel_until: string
+              tribes: string[]
+              verified: boolean
+              weight_kg: number
+            }[]
+          }
+        | {
+            Args: {
+              body_filter?: string[]
+              gender_filter?: string[]
+              hiv_filter?: string[]
+              looking_for_filter?: string[]
+              looking_now_only?: boolean
+              max_age?: number
+              max_distance_km?: number
+              max_height?: number
+              min_age?: number
+              min_height?: number
+              online_only?: boolean
+              order_mode?: string
+              orientation_filter?: string[]
+              position_filter?: string[]
+              result_limit?: number
+              tribes_filter?: string[]
+              verified_only?: boolean
+              with_photo_only?: boolean
+            }
+            Returns: {
+              bio: string
+              birthdate: string
+              body_type: string
+              boost_until: string
+              display_name: string
+              distance_m: number
+              ethnicity: string
+              gender: string[]
+              height_cm: number
+              hiv_status: string
+              hiv_test_date: string
+              id: string
+              interests: string[]
+              last_seen: string
+              looking_for: string[]
+              looking_now_intent: string
+              looking_now_until: string
+              orientation: string[]
+              photos: string[]
+              position: string
+              prompts: Json
+              pronouns: string[]
+              relationship_status: string
+              score: number
+              travel_city: string
+              travel_until: string
+              tribes: string[]
+              verified: boolean
+              weight_kg: number
+            }[]
+          }
       dropgeometrycolumn:
         | {
             Args: {
@@ -1195,6 +1312,10 @@ export type Database = {
       recompute_risk_score: { Args: { _uid: string }; Returns: number }
       record_photo_hash: {
         Args: { _path: string; _phash: string }
+        Returns: undefined
+      }
+      set_looking_now: {
+        Args: { _hours: number; _intent?: string }
         Returns: undefined
       }
       st_3dclosestpoint: {
@@ -1778,6 +1899,10 @@ export type Database = {
         Args: { geom: unknown; move: number; wrap: number }
         Returns: unknown
       }
+      toggle_message_reaction: {
+        Args: { _emoji: string; _msg_id: string }
+        Returns: Json
+      }
       touch_last_seen: { Args: never; Returns: undefined }
       unlockrows: { Args: { "": string }; Returns: number }
       update_my_location: {
@@ -1806,6 +1931,7 @@ export type Database = {
         | "album_granted"
         | "event_rsvp"
         | "event_reminder"
+        | "tap"
       rsvp_status: "going" | "interested"
     }
     CompositeTypes: {
@@ -1952,6 +2078,7 @@ export const Constants = {
         "album_granted",
         "event_rsvp",
         "event_reminder",
+        "tap",
       ],
       rsvp_status: ["going", "interested"],
     },

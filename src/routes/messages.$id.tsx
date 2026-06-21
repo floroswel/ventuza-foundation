@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
   AlertCircle, Check, CheckCheck, ChevronLeft, Clock, Languages,
-  Loader2, MoreVertical, Send, Sparkles,
+  Loader2, MoreVertical, Send, Smile, Sparkles,
 } from "lucide-react";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import {
   type MessageRow,
 } from "@/lib/chat";
 import { generateOpener, translateText } from "@/lib/ai.functions";
+import { REACTION_EMOJIS, toggleMessageReaction, type ReactionEmoji } from "@/lib/social";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/messages/$id")({
@@ -43,8 +44,19 @@ function ThreadPage() {
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const genOpener = useServerFn(generateOpener);
   const tr = useServerFn(translateText);
+
+  async function handleReact(msgId: string, emoji: ReactionEmoji) {
+    setReactionPickerFor(null);
+    try {
+      const next = await toggleMessageReaction(msgId, emoji);
+      setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, reactions: next } : m)));
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
@@ -299,18 +311,78 @@ function ThreadPage() {
                 const translated = translations[m.id];
                 return (
                   <li key={m.id} className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}>
-                    <div
-                      className={cn(
-                        "max-w-[78%] rounded-2xl px-3 py-2 text-sm",
-                        mine
-                          ? "bg-primary text-primary-foreground rounded-br-md"
-                          : "bg-muted text-foreground rounded-bl-md",
-                        m._status === "pending" && "opacity-70",
-                        m._status === "failed" && "ring-1 ring-destructive/60",
+                    <div className={cn("group relative flex w-full items-end gap-1", mine ? "justify-end" : "justify-start")}>
+                      {!mine && (
+                        <button
+                          type="button"
+                          onClick={() => setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)}
+                          aria-label="React"
+                          className="order-2 mb-1 hidden size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground group-hover:flex"
+                        >
+                          <Smile className="size-3.5" />
+                        </button>
                       )}
-                    >
-                      {m.body}
+                      <div
+                        className={cn(
+                          "max-w-[78%] rounded-2xl px-3 py-2 text-sm",
+                          mine
+                            ? "order-1 bg-primary text-primary-foreground rounded-br-md"
+                            : "order-1 bg-muted text-foreground rounded-bl-md",
+                          m._status === "pending" && "opacity-70",
+                          m._status === "failed" && "ring-1 ring-destructive/60",
+                        )}
+                      >
+                        {m.body}
+                      </div>
+                      {mine && (
+                        <button
+                          type="button"
+                          onClick={() => setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)}
+                          aria-label="React"
+                          className="order-0 mb-1 hidden size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground group-hover:flex"
+                        >
+                          <Smile className="size-3.5" />
+                        </button>
+                      )}
                     </div>
+                    {reactionPickerFor === m.id && (
+                      <div className={cn("flex gap-1 rounded-full border border-border bg-background px-2 py-1.5 shadow-lg", mine ? "self-end" : "self-start")}>
+                        {REACTION_EMOJIS.map((e) => {
+                          const active = user && (m.reactions?.[e] ?? []).includes(user.id);
+                          return (
+                            <button
+                              key={e}
+                              onClick={() => handleReact(m.id, e)}
+                              className={cn("text-base transition-transform hover:scale-125", active && "scale-110")}
+                            >
+                              {e}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {m.reactions && Object.keys(m.reactions).length > 0 && (
+                      <div className={cn("-mt-1 flex flex-wrap gap-1", mine ? "self-end" : "self-start")}>
+                        {Object.entries(m.reactions).map(([emoji, users]) => {
+                          if (!users || users.length === 0) return null;
+                          const mineReact = user ? users.includes(user.id) : false;
+                          return (
+                            <button
+                              key={emoji}
+                              onClick={() => handleReact(m.id, emoji as ReactionEmoji)}
+                              className={cn(
+                                "rounded-full border px-2 py-0.5 text-[10px] transition-colors",
+                                mineReact
+                                  ? "border-primary bg-primary/15 text-primary"
+                                  : "border-border bg-background/60 text-muted-foreground hover:border-primary/40",
+                              )}
+                            >
+                              {emoji} {users.length}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                     {mine && (
                       <div className="flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
                         {m._status === "pending" ? (
