@@ -216,6 +216,75 @@ function SettingsPage() {
           </div>
         </section>
 
+        {/* Right Now */}
+        <section className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4">
+          <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-rose-300">
+            <Flame className="size-4" /> Right Now
+          </h2>
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Anunță că ești disponibil acum. Profilul tău apare evidențiat în Discover.
+          </p>
+          {lookingUntil && new Date(lookingUntil) > new Date() ? (
+            <p className="mt-2 text-xs text-rose-200">
+              ⚡ Activ până la {new Date(lookingUntil).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" })}
+            </p>
+          ) : null}
+          <input
+            value={intent}
+            onChange={(e) => setIntent(e.target.value)}
+            placeholder="Ce cauți acum? (opțional, max. 80)"
+            maxLength={80}
+            className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-rose-400"
+          />
+          <div className="mt-3 grid grid-cols-4 gap-2">
+            {[1, 2, 4, 8].map((h) => (
+              <button key={h} disabled={busyNow} onClick={() => activateLookingNow(h)}
+                className="rounded-full bg-rose-500/15 px-2 py-2 text-xs font-medium text-rose-200 hover:bg-rose-500/25 disabled:opacity-50">
+                {h}h
+              </button>
+            ))}
+          </div>
+          {lookingUntil && new Date(lookingUntil) > new Date() && (
+            <button disabled={busyNow} onClick={() => activateLookingNow(0)}
+              className="mt-2 w-full rounded-full border border-border bg-background py-2 text-xs text-muted-foreground hover:text-foreground">
+              Dezactivează
+            </button>
+          )}
+        </section>
+
+        {/* Privacy */}
+        <section className="rounded-2xl border border-border bg-surface p-4">
+          <h2 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            <EyeOff className="size-4" /> Confidențialitate {savingPrivacy && <Loader2 className="ml-1 inline size-3 animate-spin" />}
+          </h2>
+          <div className="mt-3 divide-y divide-border">
+            {([
+              ["hide_age", "Ascunde vârsta"],
+              ["hide_distance", "Ascunde distanța"],
+              ["hide_online", "Ascunde statusul online / „Active …"],
+            ] as const).map(([key, label]) => (
+              <label key={key} className="flex items-center justify-between py-2.5 text-sm">
+                <span>{label}</span>
+                <input type="checkbox" checked={privacy[key]} onChange={(e) => savePrivacy({ ...privacy, [key]: e.target.checked })}
+                  className="size-4 accent-primary" />
+              </label>
+            ))}
+          </div>
+        </section>
+
+        {/* Listele mele */}
+        <section className="rounded-2xl border border-border bg-surface p-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Listele mele</h2>
+          <div className="mt-3 space-y-2 text-sm">
+            <Link to="/favorites" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+              <Star className="size-4" /> Profile favorite
+            </Link>
+            <Link to="/blocked" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+              <ShieldOff className="size-4" /> Utilizatori blocați
+            </Link>
+          </div>
+        </section>
+
         {/* Legal */}
         <section className="rounded-2xl border border-border bg-surface p-4">
           <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Legal</h2>
