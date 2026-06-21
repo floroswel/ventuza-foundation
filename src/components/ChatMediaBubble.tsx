@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Eye, EyeOff, MapPin, Pause, Play, Timer } from "lucide-react";
 import { markMediaViewed, signChatMedia, type MessageRow } from "@/lib/chat";
 import { cn } from "@/lib/utils";
@@ -49,19 +49,43 @@ function AudioBubble({ m, mine }: Props) {
     else { void audioRef.current.play(); setPlaying(true); }
   }
 
+  // Deterministic waveform bars derived from message id (no decoding needed).
+  const bars = useMemo<number[]>(() => {
+    const n = 28;
+    let h = 0;
+    for (let i = 0; i < m.id.length; i++) h = (h * 31 + m.id.charCodeAt(i)) >>> 0;
+    const out: number[] = [];
+    for (let i = 0; i < n; i++) {
+      h = (h * 1664525 + 1013904223) >>> 0;
+      const v = ((h >>> 8) % 1000) / 1000; // 0..1
+      out.push(0.25 + v * 0.75); // 0.25..1
+    }
+    return out;
+  }, [m.id]);
+
   const seconds = Math.round((m.audio_duration_ms ?? 0) / 1000);
   return (
     <div className={cn("flex max-w-[78%] items-center gap-3 rounded-2xl px-3 py-2", mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground")}>
-      <button onClick={toggle} disabled={!url} aria-label={playing ? "Pauză" : "Redă"} className="flex size-9 items-center justify-center rounded-full bg-background/20">
+      <button onClick={toggle} disabled={!url} aria-label={playing ? "Pauză" : "Redă"} className="flex size-9 shrink-0 items-center justify-center rounded-full bg-background/20">
         {playing ? <Pause className="size-4" /> : <Play className="size-4" />}
       </button>
-      <div className="flex h-1.5 w-32 overflow-hidden rounded-full bg-background/30">
-        <div className="h-full bg-current transition-all" style={{ width: `${progress * 100}%` }} />
+      <div className="flex h-8 w-32 items-center gap-[2px]">
+        {bars.map((b, i) => {
+          const active = i / bars.length <= progress;
+          return (
+            <span
+              key={i}
+              className={cn("flex-1 rounded-full transition-opacity", active ? "opacity-100" : "opacity-40")}
+              style={{ height: `${Math.round(b * 100)}%`, background: "currentColor" }}
+            />
+          );
+        })}
       </div>
       <span className="text-[11px] tabular-nums opacity-90">{Math.floor(seconds / 60)}:{(seconds % 60).toString().padStart(2, "0")}</span>
     </div>
   );
 }
+
 
 function ImageBubble({ m, mine }: Props) {
   const [url, setUrl] = useState<string | null>(null);

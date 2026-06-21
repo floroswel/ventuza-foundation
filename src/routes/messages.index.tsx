@@ -4,8 +4,10 @@ import { Loader2, MessageCircle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
+import { EmptyState } from "@/components/EmptyState";
 import { fetchConversations, type ConversationListItem } from "@/lib/chat";
 import { cn } from "@/lib/utils";
+
 
 export const Route = createFileRoute("/messages/")({
   head: () => ({ meta: [{ title: "Messages — Ventuza" }] }),
@@ -57,12 +59,13 @@ function MessagesPage() {
             <Loader2 className="size-5 animate-spin" />
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
-            <MessageCircle className="size-10 text-primary/60" />
-            <p className="mt-3 text-sm">No conversations yet.</p>
-            <p className="text-xs">Open a profile in Discover and tap Message.</p>
-          </div>
+          <EmptyState
+            icon={MessageCircle}
+            title="Nicio conversație încă"
+            body="Deschide un profil în Discover și apasă Mesaj ca să începi."
+          />
         ) : (
+
           <ul className="space-y-1">
             {items.map((c) => (
               <li key={c.id}>
