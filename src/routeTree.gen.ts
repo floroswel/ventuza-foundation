@@ -17,6 +17,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiscoverRouteImport } from './routes/discover'
@@ -28,6 +29,7 @@ import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 
@@ -69,6 +71,11 @@ const OnboardingRoute = OnboardingRouteImport.update({
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GroupsRoute = GroupsRouteImport.update({
+  id: '/groups',
+  path: '/groups',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -126,6 +133,11 @@ const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   path: '/legal/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GroupsIdRoute = GroupsIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => GroupsRoute,
+} as any)
 const EventsIdRoute = EventsIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -145,6 +157,7 @@ export interface FileRoutesByFullPath {
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -154,6 +167,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
   '/events/$id': typeof EventsIdRoute
+  '/groups/$id': typeof GroupsIdRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
@@ -168,6 +182,7 @@ export interface FileRoutesByTo {
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -177,6 +192,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
   '/events/$id': typeof EventsIdRoute
+  '/groups/$id': typeof GroupsIdRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
@@ -192,6 +208,7 @@ export interface FileRoutesById {
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
+  '/groups': typeof GroupsRouteWithChildren
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -201,6 +218,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
   '/events/$id': typeof EventsIdRoute
+  '/groups/$id': typeof GroupsIdRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
@@ -217,6 +235,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/events'
     | '/favorites'
+    | '/groups'
     | '/notifications'
     | '/onboarding'
     | '/premium'
@@ -226,6 +245,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/visitors'
     | '/events/$id'
+    | '/groups/$id'
     | '/legal/privacy'
     | '/legal/terms'
     | '/messages/$id'
@@ -240,6 +260,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/events'
     | '/favorites'
+    | '/groups'
     | '/notifications'
     | '/onboarding'
     | '/premium'
@@ -249,6 +270,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/visitors'
     | '/events/$id'
+    | '/groups/$id'
     | '/legal/privacy'
     | '/legal/terms'
     | '/messages/$id'
@@ -263,6 +285,7 @@ export interface FileRouteTypes {
     | '/discover'
     | '/events'
     | '/favorites'
+    | '/groups'
     | '/notifications'
     | '/onboarding'
     | '/premium'
@@ -272,6 +295,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/visitors'
     | '/events/$id'
+    | '/groups/$id'
     | '/legal/privacy'
     | '/legal/terms'
     | '/messages/$id'
@@ -287,6 +311,7 @@ export interface RootRouteChildren {
   DiscoverRoute: typeof DiscoverRoute
   EventsRoute: typeof EventsRouteWithChildren
   FavoritesRoute: typeof FavoritesRoute
+  GroupsRoute: typeof GroupsRouteWithChildren
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
@@ -358,6 +383,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/groups': {
+      id: '/groups'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof GroupsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -437,6 +469,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalPrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/groups/$id': {
+      id: '/groups/$id'
+      path: '/$id'
+      fullPath: '/groups/$id'
+      preLoaderRoute: typeof GroupsIdRouteImport
+      parentRoute: typeof GroupsRoute
+    }
     '/events/$id': {
       id: '/events/$id'
       path: '/$id'
@@ -465,6 +504,17 @@ const EventsRouteChildren: EventsRouteChildren = {
 const EventsRouteWithChildren =
   EventsRoute._addFileChildren(EventsRouteChildren)
 
+interface GroupsRouteChildren {
+  GroupsIdRoute: typeof GroupsIdRoute
+}
+
+const GroupsRouteChildren: GroupsRouteChildren = {
+  GroupsIdRoute: GroupsIdRoute,
+}
+
+const GroupsRouteWithChildren =
+  GroupsRoute._addFileChildren(GroupsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -473,6 +523,7 @@ const rootRouteChildren: RootRouteChildren = {
   DiscoverRoute: DiscoverRoute,
   EventsRoute: EventsRouteWithChildren,
   FavoritesRoute: FavoritesRoute,
+  GroupsRoute: GroupsRouteWithChildren,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,

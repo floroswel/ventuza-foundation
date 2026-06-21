@@ -22,6 +22,8 @@ import {
   LOOKING_FOR_OPTIONS, INTEREST_OPTIONS,
   TRIBE_OPTIONS, BODY_TYPE_OPTIONS, POSITION_OPTIONS,
   HIV_STATUS_OPTIONS, RELATIONSHIP_STATUS_OPTIONS, ETHNICITY_OPTIONS,
+  MEET_AT_OPTIONS, EXPECTATIONS_OPTIONS, SCENES_OPTIONS,
+  SAFETY_OPTIONS, PREP_STATUS_OPTIONS, VACCINATION_OPTIONS,
 } from "@/lib/profile-options";
 
 export const Route = createFileRoute("/profile")({
@@ -61,6 +63,13 @@ type Profile = {
   travel_city: string | null;
   travel_until: string | null;
   boost_until: string | null;
+  meet_at: string[] | null;
+  expectations: string[] | null;
+  scenes: string[] | null;
+  safety_practices: string[] | null;
+  prep_status: string | null;
+  vaccinations: string[] | null;
+  accept_nsfw_photos: boolean | null;
 };
 
 function age(iso?: string | null) {
@@ -219,7 +228,7 @@ function ProfilePage() {
           </Section>
         )}
 
-        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.hiv_status) && (
+        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.hiv_status || profile.prep_status) && (
           <Section title="Stats">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface p-4 text-sm">
               {profile.body_type && <StatRow label="Body" value={profile.body_type} />}
@@ -229,7 +238,41 @@ function ProfilePage() {
               {profile.ethnicity && <StatRow label="Ethnicity" value={profile.ethnicity} />}
               {profile.relationship_status && <StatRow label="Relationship" value={profile.relationship_status} />}
               {profile.hiv_status && <StatRow label="HIV" value={profile.hiv_status} />}
+              {profile.prep_status && <StatRow label="PrEP" value={profile.prep_status} />}
             </div>
+          </Section>
+        )}
+
+        {profile.expectations && profile.expectations.length > 0 && (
+          <Section title="Expectations">
+            <div className="flex flex-wrap gap-2">{profile.expectations.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+          </Section>
+        )}
+
+        {profile.meet_at && profile.meet_at.length > 0 && (
+          <Section title="Meet at">
+            <div className="flex flex-wrap gap-2">{profile.meet_at.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+          </Section>
+        )}
+
+        {profile.scenes && profile.scenes.length > 0 && (
+          <Section title="Scenes">
+            <div className="flex flex-wrap gap-2">{profile.scenes.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+          </Section>
+        )}
+
+        {((profile.safety_practices && profile.safety_practices.length > 0) || (profile.vaccinations && profile.vaccinations.length > 0)) && (
+          <Section title="Safer play">
+            {profile.safety_practices && profile.safety_practices.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-2">{profile.safety_practices.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+            )}
+            {profile.vaccinations && profile.vaccinations.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {profile.vaccinations.map((v) => (
+                  <span key={v} className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">💉 {v}</span>
+                ))}
+              </div>
+            )}
           </Section>
         )}
 
@@ -376,6 +419,13 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
       position: form.position,
       hiv_status: form.hiv_status,
       relationship_status: form.relationship_status,
+      meet_at: form.meet_at ?? [],
+      expectations: form.expectations ?? [],
+      scenes: form.scenes ?? [],
+      safety_practices: form.safety_practices ?? [],
+      vaccinations: form.vaccinations ?? [],
+      prep_status: form.prep_status,
+      accept_nsfw_photos: form.accept_nsfw_photos ?? false,
     }).eq("id", profile.id).select("*").maybeSingle();
     setSaving(false);
     if (error || !data) return toast.error(error?.message ?? "Failed");
@@ -438,6 +488,26 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
         {single("ethnicity", ETHNICITY_OPTIONS)}
         {single("relationship_status", RELATIONSHIP_STATUS_OPTIONS)}
         {single("hiv_status", HIV_STATUS_OPTIONS)}
+        {single("prep_status", PREP_STATUS_OPTIONS)}
+
+        <EditChips label="Expectations" options={EXPECTATIONS_OPTIONS} value={form.expectations ?? []} onChange={(v) => setForm({ ...form, expectations: v })} />
+        <EditChips label="Meet at" options={MEET_AT_OPTIONS} value={form.meet_at ?? []} onChange={(v) => setForm({ ...form, meet_at: v })} />
+        <EditChips label="Scenes" options={SCENES_OPTIONS} value={form.scenes ?? []} onChange={(v) => setForm({ ...form, scenes: v })} />
+        <EditChips label="Safer play" options={SAFETY_OPTIONS} value={form.safety_practices ?? []} onChange={(v) => setForm({ ...form, safety_practices: v })} />
+        <EditChips label="Vaccinations" options={VACCINATION_OPTIONS} value={form.vaccinations ?? []} onChange={(v) => setForm({ ...form, vaccinations: v })} />
+
+        <label className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
+          <div>
+            <p className="text-sm font-medium">Accept NSFW photos</p>
+            <p className="text-xs text-muted-foreground">Allow matches to send adult content in DMs.</p>
+          </div>
+          <input
+            type="checkbox"
+            checked={!!form.accept_nsfw_photos}
+            onChange={(e) => setForm({ ...form, accept_nsfw_photos: e.target.checked })}
+            className="size-5 accent-primary"
+          />
+        </label>
 
         <EditChips label="Gender" options={GENDER_OPTIONS} value={form.gender ?? []} onChange={(v) => setForm({ ...form, gender: v })} />
         <EditChips label="Pronouns" options={PRONOUN_OPTIONS} value={form.pronouns ?? []} onChange={(v) => setForm({ ...form, pronouns: v })} />
