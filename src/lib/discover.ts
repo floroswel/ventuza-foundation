@@ -16,6 +16,7 @@ export type DiscoverFilters = {
   onlineOnly: boolean;
   withPhotoOnly: boolean;
   verifiedOnly: boolean;
+  lookingNowOnly: boolean;
 };
 
 export const DEFAULT_FILTERS: DiscoverFilters = {
@@ -34,6 +35,7 @@ export const DEFAULT_FILTERS: DiscoverFilters = {
   onlineOnly: false,
   withPhotoOnly: false,
   verifiedOnly: false,
+  lookingNowOnly: false,
 };
 
 export type DiscoverProfile = {
