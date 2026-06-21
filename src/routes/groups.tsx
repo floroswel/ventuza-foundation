@@ -103,15 +103,34 @@ function GroupsPage() {
           </section>
 
           <section>
-            <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">Descoperă</h2>
-            {discover.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Niciun squad public momentan.</p>
-            ) : (
-              <ul className="space-y-2">
-                {discover.map((g) => <GroupCard key={g.id} g={g} action={<Button size="sm" variant="subtle" onClick={() => join(g)}>Alătură-te</Button>} />)}
-              </ul>
-            )}
+            <div className="mb-3 flex items-center gap-2">
+              <h2 className="flex-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">Descoperă</h2>
+            </div>
+            <div className="relative mb-3">
+              <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Caută squad-uri..."
+                className="h-10 w-full rounded-full border border-border bg-surface pl-9 pr-3 text-sm outline-none focus:border-primary"
+              />
+            </div>
+            {(() => {
+              const q = query.trim().toLowerCase();
+              const filtered = q
+                ? discover.filter((g) => g.name.toLowerCase().includes(q) || (g.description ?? "").toLowerCase().includes(q))
+                : discover;
+              if (filtered.length === 0) {
+                return <p className="text-sm text-muted-foreground">{q ? "Niciun rezultat." : "Niciun squad public momentan."}</p>;
+              }
+              return (
+                <ul className="space-y-2">
+                  {filtered.map((g) => <GroupCard key={g.id} g={g} action={<Button size="sm" variant="subtle" onClick={() => join(g)}>Alătură-te</Button>} />)}
+                </ul>
+              );
+            })()}
           </section>
+
         </div>
       )}
 
