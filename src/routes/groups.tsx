@@ -33,6 +33,8 @@ function GroupsPage() {
   const [discover, setDiscover] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
+  const [query, setQuery] = useState("");
+
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
