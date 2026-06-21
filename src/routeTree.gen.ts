@@ -27,6 +27,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
+import { Route as USlugRouteImport } from './routes/u.$slug'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
@@ -124,6 +125,11 @@ const MessagesIndexRoute = MessagesIndexRouteImport.update({
   path: '/messages/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const USlugRoute = USlugRouteImport.update({
+  id: '/u/$slug',
+  path: '/u/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MessagesIdRoute = MessagesIdRouteImport.update({
   id: '/messages/$id',
   path: '/messages/$id',
@@ -178,6 +184,7 @@ export interface FileRoutesByFullPath {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
+  '/u/$slug': typeof USlugRoute
   '/messages/': typeof MessagesIndexRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
@@ -204,6 +211,7 @@ export interface FileRoutesByTo {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
+  '/u/$slug': typeof USlugRoute
   '/messages': typeof MessagesIndexRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
+  '/u/$slug': typeof USlugRoute
   '/messages/': typeof MessagesIndexRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
@@ -259,6 +268,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/messages/$id'
+    | '/u/$slug'
     | '/messages/'
     | '/api/public/google-play-rtdn'
   fileRoutesByTo: FileRoutesByTo
@@ -285,6 +295,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/messages/$id'
+    | '/u/$slug'
     | '/messages'
     | '/api/public/google-play-rtdn'
   id:
@@ -311,6 +322,7 @@ export interface FileRouteTypes {
     | '/legal/privacy'
     | '/legal/terms'
     | '/messages/$id'
+    | '/u/$slug'
     | '/messages/'
     | '/api/public/google-play-rtdn'
   fileRoutesById: FileRoutesById
@@ -336,6 +348,7 @@ export interface RootRouteChildren {
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalTermsRoute: typeof LegalTermsRoute
   MessagesIdRoute: typeof MessagesIdRoute
+  USlugRoute: typeof USlugRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
 }
@@ -468,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessagesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/u/$slug': {
+      id: '/u/$slug'
+      path: '/u/$slug'
+      fullPath: '/u/$slug'
+      preLoaderRoute: typeof USlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/messages/$id': {
       id: '/messages/$id'
       path: '/messages/$id'
@@ -556,6 +576,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalTermsRoute: LegalTermsRoute,
   MessagesIdRoute: MessagesIdRoute,
+  USlugRoute: USlugRoute,
   MessagesIndexRoute: MessagesIndexRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
 }

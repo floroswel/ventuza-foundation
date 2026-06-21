@@ -19,6 +19,10 @@ import { RightNowCard } from "@/components/RightNowCard";
 import { PrivateAlbumManager } from "@/components/PrivateAlbum";
 import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { ProfileStatsRow } from "@/components/ProfileStatsRow";
+import { VoicePromptCard } from "@/components/VoicePromptCard";
+import { MusicAnthemCard } from "@/components/MusicAnthemCard";
+import { LifestyleFactsCard } from "@/components/LifestyleFactsCard";
+import { ShareProfileCard } from "@/components/ShareProfileCard";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
@@ -75,6 +79,28 @@ type Profile = {
   prep_status: string | null;
   vaccinations: string[] | null;
   accept_nsfw_photos: boolean | null;
+  voice_prompt_path: string | null;
+  voice_prompt_question: string | null;
+  voice_prompt_duration_sec: number | null;
+  anthem: { title: string; artist: string; url?: string } | null;
+  zodiac: string | null;
+  languages: string[] | null;
+  education: string | null;
+  school: string | null;
+  job_title: string | null;
+  company: string | null;
+  religion: string | null;
+  politics: string | null;
+  children: string | null;
+  pets: string[] | null;
+  drinking: string | null;
+  smoking: string | null;
+  cannabis: string | null;
+  drugs: string | null;
+  workout: string | null;
+  diet: string | null;
+  sleep_schedule: string | null;
+  profile_slug: string | null;
 };
 
 function age(iso?: string | null) {
@@ -198,6 +224,36 @@ function ProfilePage() {
         <ProfileCompleteness profile={profile} onEdit={() => setEditing(true)} />
 
         <ProfileStatsRow userId={profile.id} />
+
+        <ShareProfileCard slug={profile.profile_slug} displayName={profile.display_name} />
+
+        <VoicePromptCard
+          userId={profile.id}
+          voicePath={profile.voice_prompt_path}
+          question={profile.voice_prompt_question}
+          durationSec={profile.voice_prompt_duration_sec}
+          onChange={(next) => setProfile({ ...profile, ...next })}
+        />
+
+        <MusicAnthemCard
+          userId={profile.id}
+          anthem={profile.anthem}
+          onChange={(next) => setProfile({ ...profile, anthem: next })}
+        />
+
+        <LifestyleFactsCard
+          userId={profile.id}
+          facts={{
+            zodiac: profile.zodiac, languages: profile.languages, education: profile.education,
+            school: profile.school, job_title: profile.job_title, company: profile.company,
+            religion: profile.religion, politics: profile.politics, children: profile.children,
+            pets: profile.pets, drinking: profile.drinking, smoking: profile.smoking,
+            cannabis: profile.cannabis, drugs: profile.drugs, workout: profile.workout,
+            diet: profile.diet, sleep_schedule: profile.sleep_schedule,
+          }}
+          onChange={(next) => setProfile({ ...profile, ...next })}
+        />
+
 
 
 
