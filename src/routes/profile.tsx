@@ -63,6 +63,13 @@ type Profile = {
   travel_city: string | null;
   travel_until: string | null;
   boost_until: string | null;
+  meet_at: string[] | null;
+  expectations: string[] | null;
+  scenes: string[] | null;
+  safety_practices: string[] | null;
+  prep_status: string | null;
+  vaccinations: string[] | null;
+  accept_nsfw_photos: boolean | null;
 };
 
 function age(iso?: string | null) {
