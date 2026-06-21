@@ -493,6 +493,19 @@ function ThreadPage() {
         </div>
       )}
 
+      {replyTo && (
+        <div className="flex items-start gap-2 border-t border-border/60 bg-surface/70 px-3 py-2">
+          <CornerUpLeft className="mt-0.5 size-4 shrink-0 text-primary" />
+          <div className="min-w-0 flex-1 border-l-2 border-primary/60 pl-2">
+            <p className="text-[11px] font-medium text-primary">Răspunde la {replyTo.sender_id === user?.id ? "tine" : (other?.name ?? "…")}</p>
+            <p className="line-clamp-2 text-xs text-muted-foreground">{replyTo.deleted_at ? "Mesaj șters" : replyTo.body || "📎 media"}</p>
+          </div>
+          <button type="button" onClick={() => setReplyTo(null)} aria-label="Cancel reply" className="shrink-0 rounded-full p-1 text-muted-foreground hover:text-foreground">
+            <XIcon className="size-4" />
+          </button>
+        </div>
+      )}
+
       <form
         onSubmit={handleSend}
         className="sticky bottom-0 flex items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur"
