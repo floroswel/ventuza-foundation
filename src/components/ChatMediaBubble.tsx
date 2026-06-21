@@ -50,7 +50,7 @@ function AudioBubble({ m, mine }: Props) {
   }
 
   // Deterministic waveform bars derived from message id (no decoding needed).
-  const bars = useMemo(() => {
+  const bars = useMemo<number[]>(() => {
     const n = 28;
     let h = 0;
     for (let i = 0; i < m.id.length; i++) h = (h * 31 + m.id.charCodeAt(i)) >>> 0;
