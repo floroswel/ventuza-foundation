@@ -488,6 +488,26 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
         {single("ethnicity", ETHNICITY_OPTIONS)}
         {single("relationship_status", RELATIONSHIP_STATUS_OPTIONS)}
         {single("hiv_status", HIV_STATUS_OPTIONS)}
+        {single("prep_status", PREP_STATUS_OPTIONS)}
+
+        <EditChips label="Expectations" options={EXPECTATIONS_OPTIONS} value={form.expectations ?? []} onChange={(v) => setForm({ ...form, expectations: v })} />
+        <EditChips label="Meet at" options={MEET_AT_OPTIONS} value={form.meet_at ?? []} onChange={(v) => setForm({ ...form, meet_at: v })} />
+        <EditChips label="Scenes" options={SCENES_OPTIONS} value={form.scenes ?? []} onChange={(v) => setForm({ ...form, scenes: v })} />
+        <EditChips label="Safer play" options={SAFETY_OPTIONS} value={form.safety_practices ?? []} onChange={(v) => setForm({ ...form, safety_practices: v })} />
+        <EditChips label="Vaccinations" options={VACCINATION_OPTIONS} value={form.vaccinations ?? []} onChange={(v) => setForm({ ...form, vaccinations: v })} />
+
+        <label className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
+          <div>
+            <p className="text-sm font-medium">Accept NSFW photos</p>
+            <p className="text-xs text-muted-foreground">Allow matches to send adult content in DMs.</p>
+          </div>
+          <input
+            type="checkbox"
+            checked={!!form.accept_nsfw_photos}
+            onChange={(e) => setForm({ ...form, accept_nsfw_photos: e.target.checked })}
+            className="size-5 accent-primary"
+          />
+        </label>
 
         <EditChips label="Gender" options={GENDER_OPTIONS} value={form.gender ?? []} onChange={(v) => setForm({ ...form, gender: v })} />
         <EditChips label="Pronouns" options={PRONOUN_OPTIONS} value={form.pronouns ?? []} onChange={(v) => setForm({ ...form, pronouns: v })} />
