@@ -25,6 +25,8 @@ function EventsPage() {
   const [type, setType] = useState<EventType | "all">("all");
   const [city, setCity] = useState("");
   const [creating, setCreating] = useState(false);
+  const [view, setView] = useState<"list" | "map">("list");
+
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
