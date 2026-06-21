@@ -86,7 +86,7 @@ export async function listFavorites(): Promise<FavoriteRow[]> {
 }
 
 export async function setLookingNow(hours: number, intent?: string) {
-  const { error } = await supabase.rpc("set_looking_now", { _hours: hours, _intent: intent ?? null });
+  const { error } = await supabase.rpc("set_looking_now", { _hours: hours, _intent: intent ?? undefined });
   if (error) throw error;
 }
 
