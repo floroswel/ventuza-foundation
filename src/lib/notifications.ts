@@ -7,7 +7,8 @@ export type NotificationType =
   | "album_request"
   | "album_granted"
   | "event_rsvp"
-  | "event_reminder";
+  | "event_reminder"
+  | "tap";
 
 export type NotificationRow = {
   id: string;
