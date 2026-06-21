@@ -228,7 +228,7 @@ function ProfilePage() {
           </Section>
         )}
 
-        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.hiv_status) && (
+        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.hiv_status || profile.prep_status) && (
           <Section title="Stats">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface p-4 text-sm">
               {profile.body_type && <StatRow label="Body" value={profile.body_type} />}
@@ -238,7 +238,41 @@ function ProfilePage() {
               {profile.ethnicity && <StatRow label="Ethnicity" value={profile.ethnicity} />}
               {profile.relationship_status && <StatRow label="Relationship" value={profile.relationship_status} />}
               {profile.hiv_status && <StatRow label="HIV" value={profile.hiv_status} />}
+              {profile.prep_status && <StatRow label="PrEP" value={profile.prep_status} />}
             </div>
+          </Section>
+        )}
+
+        {profile.expectations && profile.expectations.length > 0 && (
+          <Section title="Expectations">
+            <div className="flex flex-wrap gap-2">{profile.expectations.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+          </Section>
+        )}
+
+        {profile.meet_at && profile.meet_at.length > 0 && (
+          <Section title="Meet at">
+            <div className="flex flex-wrap gap-2">{profile.meet_at.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+          </Section>
+        )}
+
+        {profile.scenes && profile.scenes.length > 0 && (
+          <Section title="Scenes">
+            <div className="flex flex-wrap gap-2">{profile.scenes.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+          </Section>
+        )}
+
+        {((profile.safety_practices && profile.safety_practices.length > 0) || (profile.vaccinations && profile.vaccinations.length > 0)) && (
+          <Section title="Safer play">
+            {profile.safety_practices && profile.safety_practices.length > 0 && (
+              <div className="mb-3 flex flex-wrap gap-2">{profile.safety_practices.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+            )}
+            {profile.vaccinations && profile.vaccinations.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {profile.vaccinations.map((v) => (
+                  <span key={v} className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">💉 {v}</span>
+                ))}
+              </div>
+            )}
           </Section>
         )}
 
