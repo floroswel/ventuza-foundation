@@ -472,6 +472,15 @@ function ProfileSheet({
 
           {currentUserId && <PrivateAlbumViewer ownerId={profile.id} currentUserId={currentUserId} />}
 
+          {profile.looking_now_until && new Date(profile.looking_now_until) > new Date() && (
+            <div className="flex items-center gap-2 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
+              <Flame className="size-3.5 text-rose-400" />
+              <span className="font-medium uppercase tracking-wider">Right now</span>
+              {profile.looking_now_intent && <span className="truncate text-rose-100/80">· {profile.looking_now_intent}</span>}
+            </div>
+          )}
+
+          <TapFavoriteRow targetId={profile.id} targetName={profile.display_name ?? "Anonim"} />
 
           <div className="flex items-center gap-2 pt-2">
             <button
@@ -494,6 +503,69 @@ function ProfileSheet({
             </button>
           </div>
         </div>
+      </div>
+    </div>
+  );
+}
+
+function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName: string }) {
+  const [fav, setFav] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [tapped, setTapped] = useState<TapEmoji | null>(null);
+
+  useEffect(() => { isFavorite(targetId).then(setFav).catch(() => {}); setTapped(null); }, [targetId]);
+
+  async function toggleFav() {
+    setBusy(true);
+    try {
+      if (fav) { await removeFavorite(targetId); setFav(false); toast.success("Eliminat din favorite"); }
+      else { await addFavorite(targetId); setFav(true); toast.success("Adăugat la favorite"); }
+    } catch (e) { toast.error((e as Error).message); }
+    finally { setBusy(false); }
+  }
+
+  async function tap(emoji: TapEmoji) {
+    if (tapped) return;
+    setTapped(emoji);
+    try { await sendTap(targetId, emoji); toast.success(`${emoji} trimis lui ${targetName}`); }
+    catch (e) { setTapped(null); toast.error((e as Error).message); }
+  }
+
+  return (
+    <div className="space-y-2 rounded-2xl border border-border bg-background/40 p-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+          <Hand className="mr-1 inline size-3" /> Trimite un Tap
+        </p>
+        <button
+          onClick={toggleFav}
+          disabled={busy}
+          aria-label={fav ? "Elimină de la favorite" : "Adaugă la favorite"}
+          className={cn(
+            "flex size-8 items-center justify-center rounded-full border transition-colors",
+            fav ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:text-primary",
+          )}
+        >
+          <Star className={cn("size-4", fav && "fill-primary")} />
+        </button>
+      </div>
+      <div className="flex flex-wrap gap-1.5">
+        {TAP_EMOJIS.map((e) => (
+          <button
+            key={e}
+            onClick={() => tap(e)}
+            disabled={tapped !== null}
+            className={cn(
+              "flex h-9 w-11 items-center justify-center rounded-xl border text-lg transition-all",
+              tapped === e
+                ? "border-primary bg-primary/20 scale-110"
+                : "border-border bg-background hover:border-primary hover:bg-primary/10",
+              tapped && tapped !== e && "opacity-40",
+            )}
+          >
+            {e}
+          </button>
+        ))}
       </div>
     </div>
   );
