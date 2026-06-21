@@ -21,6 +21,7 @@ import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as CruiseRouteImport } from './routes/cruise'
 import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -93,6 +94,11 @@ const DiscoverRoute = DiscoverRouteImport.update({
   path: '/discover',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CruiseRoute = CruiseRouteImport.update({
+  id: '/cruise',
+  path: '/cruise',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BlockedRoute = BlockedRouteImport.update({
   id: '/blocked',
   path: '/blocked',
@@ -154,6 +160,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
+  '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
@@ -179,6 +186,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
+  '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
@@ -205,6 +213,7 @@ export interface FileRoutesById {
   '/admin': typeof AdminRoute
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
+  '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
@@ -232,6 +241,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/blocked'
+    | '/cruise'
     | '/discover'
     | '/events'
     | '/favorites'
@@ -257,6 +267,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/blocked'
+    | '/cruise'
     | '/discover'
     | '/events'
     | '/favorites'
@@ -282,6 +293,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/auth'
     | '/blocked'
+    | '/cruise'
     | '/discover'
     | '/events'
     | '/favorites'
@@ -308,6 +320,7 @@ export interface RootRouteChildren {
   AdminRoute: typeof AdminRoute
   AuthRoute: typeof AuthRoute
   BlockedRoute: typeof BlockedRoute
+  CruiseRoute: typeof CruiseRoute
   DiscoverRoute: typeof DiscoverRoute
   EventsRoute: typeof EventsRouteWithChildren
   FavoritesRoute: typeof FavoritesRoute
@@ -411,6 +424,13 @@ declare module '@tanstack/react-router' {
       path: '/discover'
       fullPath: '/discover'
       preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cruise': {
+      id: '/cruise'
+      path: '/cruise'
+      fullPath: '/cruise'
+      preLoaderRoute: typeof CruiseRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blocked': {
@@ -520,6 +540,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminRoute: AdminRoute,
   AuthRoute: AuthRoute,
   BlockedRoute: BlockedRoute,
+  CruiseRoute: CruiseRoute,
   DiscoverRoute: DiscoverRoute,
   EventsRoute: EventsRouteWithChildren,
   FavoritesRoute: FavoritesRoute,

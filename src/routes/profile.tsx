@@ -15,6 +15,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { PhotoManager } from "@/components/PhotoManager";
 import { NotificationBell } from "@/components/NotificationBell";
 import { ProfilePremiumPanel } from "@/components/ProfilePremiumPanel";
+import { RightNowCard } from "@/components/RightNowCard";
 import { PrivateAlbumManager } from "@/components/PrivateAlbum";
 import { formatHeight } from "@/lib/discover";
 import {
@@ -63,6 +64,8 @@ type Profile = {
   travel_city: string | null;
   travel_until: string | null;
   boost_until: string | null;
+  looking_now_until: string | null;
+  looking_now_intent: string | null;
   meet_at: string[] | null;
   expectations: string[] | null;
   scenes: string[] | null;
@@ -302,6 +305,15 @@ function ProfilePage() {
         </Section>
 
         <Section title="Verificare & Premium">
+          <RightNowCard
+            userId={profile.id}
+            lookingNowUntil={profile.looking_now_until}
+            lookingNowIntent={profile.looking_now_intent}
+            onUpdate={async () => {
+              const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
+              if (data) setProfile(data as Profile);
+            }}
+          />
           <ProfilePremiumPanel
             userId={profile.id}
             mainPhotoPath={profile.photos?.[0] ?? null}
