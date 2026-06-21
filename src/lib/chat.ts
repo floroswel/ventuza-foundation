@@ -84,26 +84,37 @@ export async function fetchConversations(meId: string): Promise<ConversationList
   });
 }
 
-export async function fetchMessages(conversationId: string): Promise<MessageRow[]> {
-  const { data, error } = await supabase
+export const MESSAGES_PAGE = 30;
+
+export async function fetchMessages(
+  conversationId: string,
+  opts: { before?: string; limit?: number } = {},
+): Promise<MessageRow[]> {
+  const limit = opts.limit ?? MESSAGES_PAGE;
+  let q = supabase
     .from("messages")
     .select("*")
     .eq("conversation_id", conversationId)
-    .order("created_at", { ascending: true })
-    .limit(200);
+    .order("created_at", { ascending: false })
+    .limit(limit);
+  if (opts.before) q = q.lt("created_at", opts.before);
+  const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []) as MessageRow[];
+  return ((data ?? []) as MessageRow[]).slice().reverse();
 }
 
-export async function sendMessage(conversationId: string, body: string): Promise<void> {
+export async function sendMessage(conversationId: string, body: string): Promise<MessageRow> {
   const trimmed = body.trim();
-  if (!trimmed) return;
+  if (!trimmed) throw new Error("empty");
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("not signed in");
-  const { error } = await supabase
+  const { data, error } = await supabase
     .from("messages")
-    .insert({ conversation_id: conversationId, sender_id: u.user.id, body: trimmed.slice(0, 4000) });
+    .insert({ conversation_id: conversationId, sender_id: u.user.id, body: trimmed.slice(0, 4000) })
+    .select("*")
+    .single();
   if (error) throw error;
+  return data as MessageRow;
 }
 
 export async function markRead(conversationId: string, meId: string): Promise<void> {
