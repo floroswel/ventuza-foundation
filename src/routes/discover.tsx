@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Heart, Loader2, MapPin, MessageCircle, Plane, Rocket, Ruler, Sparkles, SlidersHorizontal, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Flame, Hand, Heart, Loader2, MapPin, MessageCircle, Plane, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
 import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
@@ -18,6 +18,7 @@ import {
   signPhotos, formatDistance, ageFrom, isOnline, formatLastSeen, formatHeight,
   type DiscoverFilters, type DiscoverProfile,
 } from "@/lib/discover";
+import { addFavorite, isFavorite, removeFavorite, sendTap, TAP_EMOJIS, type TapEmoji } from "@/lib/social";
 import { cn } from "@/lib/utils";
 
 
