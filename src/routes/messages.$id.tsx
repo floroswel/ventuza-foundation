@@ -44,8 +44,19 @@ function ThreadPage() {
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
+  const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const genOpener = useServerFn(generateOpener);
   const tr = useServerFn(translateText);
+
+  async function handleReact(msgId: string, emoji: ReactionEmoji) {
+    setReactionPickerFor(null);
+    try {
+      const next = await toggleMessageReaction(msgId, emoji);
+      setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, reactions: next } : m)));
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+  }
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
