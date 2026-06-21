@@ -111,12 +111,13 @@ function EventsPage() {
             <Loader2 className="size-5 animate-spin" />
           </div>
         ) : events.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
-            <CalendarHeart className="size-10 text-primary/60" />
-            <p className="mt-3 text-sm">No upcoming events.</p>
-            <p className="text-xs">Be the first — host one with the Host button.</p>
-          </div>
+          <EmptyState
+            icon={CalendarHeart}
+            title="Niciun eveniment în curând"
+            body="Fii primul — creează unul cu butonul Host."
+          />
         ) : view === "map" ? (
+
           <EventsMap events={events} />
         ) : (
           <ul className="space-y-3">
