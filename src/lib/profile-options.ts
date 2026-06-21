@@ -65,3 +65,31 @@ export const ETHNICITY_OPTIONS = [
   "Asian", "Black", "Latino / Hispanic", "Middle Eastern", "Mixed", "Native American",
   "Pacific Islander", "South Asian", "White", "Other",
 ];
+
+// === SPRINT 3: Grindr-parity extended fields ===
+
+export const MEET_AT_OPTIONS = [
+  "My place", "Your place", "Bar / Café", "Public", "Online first", "Hotel", "Outdoor",
+];
+
+export const EXPECTATIONS_OPTIONS = [
+  "Chat", "Dates", "Friends", "Hookups", "Networking", "Relationship", "Right now",
+];
+
+export const SCENES_OPTIONS = [
+  "Vanilla", "Kink-friendly", "Leather", "Pup play", "Bondage",
+  "Role play", "Group", "Public", "Private", "Discreet",
+];
+
+export const SAFETY_OPTIONS = [
+  "Always safe", "Condoms", "PrEP", "DoxyPEP", "Regular STI tests",
+  "Vaccinated", "Discuss first",
+];
+
+export const PREP_STATUS_OPTIONS = [
+  "On PrEP", "Not on PrEP", "On-demand", "Prefer not to say",
+];
+
+export const VACCINATION_OPTIONS = [
+  "MPox", "HepA", "HepB", "HPV", "COVID", "Meningitis",
+];
