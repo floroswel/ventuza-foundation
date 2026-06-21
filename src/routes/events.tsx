@@ -7,7 +7,9 @@ import { listUpcomingEvents, eventTypeLabel, formatEventDate, type EventType, ty
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { NotificationBell } from "@/components/NotificationBell";
 import { EventsMap } from "@/components/EventsMap";
+import { EmptyState } from "@/components/EmptyState";
 import { toast } from "sonner";
+
 
 
 export const Route = createFileRoute("/events")({
