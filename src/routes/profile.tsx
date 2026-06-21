@@ -419,6 +419,13 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
       position: form.position,
       hiv_status: form.hiv_status,
       relationship_status: form.relationship_status,
+      meet_at: form.meet_at ?? [],
+      expectations: form.expectations ?? [],
+      scenes: form.scenes ?? [],
+      safety_practices: form.safety_practices ?? [],
+      vaccinations: form.vaccinations ?? [],
+      prep_status: form.prep_status,
+      accept_nsfw_photos: form.accept_nsfw_photos ?? false,
     }).eq("id", profile.id).select("*").maybeSingle();
     setSaving(false);
     if (error || !data) return toast.error(error?.message ?? "Failed");
