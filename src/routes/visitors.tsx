@@ -4,8 +4,10 @@ import { ChevronLeft, Eye, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { BottomNav } from "@/components/BottomNav";
+import { EmptyState } from "@/components/EmptyState";
 import { getOrCreateConversation } from "@/lib/chat";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/visitors")({
   head: () => ({ meta: [{ title: "Visitors — Ventuza" }] }),
