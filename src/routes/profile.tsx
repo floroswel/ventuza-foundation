@@ -225,6 +225,36 @@ function ProfilePage() {
 
         <ProfileStatsRow userId={profile.id} />
 
+        <ShareProfileCard slug={profile.profile_slug} displayName={profile.display_name} />
+
+        <VoicePromptCard
+          userId={profile.id}
+          voicePath={profile.voice_prompt_path}
+          question={profile.voice_prompt_question}
+          durationSec={profile.voice_prompt_duration_sec}
+          onChange={(next) => setProfile({ ...profile, ...next })}
+        />
+
+        <MusicAnthemCard
+          userId={profile.id}
+          anthem={profile.anthem}
+          onChange={(next) => setProfile({ ...profile, anthem: next })}
+        />
+
+        <LifestyleFactsCard
+          userId={profile.id}
+          facts={{
+            zodiac: profile.zodiac, languages: profile.languages, education: profile.education,
+            school: profile.school, job_title: profile.job_title, company: profile.company,
+            religion: profile.religion, politics: profile.politics, children: profile.children,
+            pets: profile.pets, drinking: profile.drinking, smoking: profile.smoking,
+            cannabis: profile.cannabis, drugs: profile.drugs, workout: profile.workout,
+            diet: profile.diet, sleep_schedule: profile.sleep_schedule,
+          }}
+          onChange={(next) => setProfile({ ...profile, ...next })}
+        />
+
+
 
 
 
