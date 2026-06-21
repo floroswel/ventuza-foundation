@@ -23,6 +23,9 @@ import { VoicePromptCard } from "@/components/VoicePromptCard";
 import { MusicAnthemCard } from "@/components/MusicAnthemCard";
 import { LifestyleFactsCard } from "@/components/LifestyleFactsCard";
 import { ShareProfileCard } from "@/components/ShareProfileCard";
+import { VideoClipCard } from "@/components/VideoClipCard";
+import { DateVibesCard } from "@/components/DateVibesCard";
+import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
@@ -101,6 +104,11 @@ type Profile = {
   diet: string | null;
   sleep_schedule: string | null;
   profile_slug: string | null;
+  video_clip_path: string | null;
+  ask_me_about: string[] | null;
+  dealbreakers: string[] | null;
+  ideal_match: string | null;
+  created_at: string | null;
 };
 
 function age(iso?: string | null) {
@@ -207,6 +215,9 @@ function ProfilePage() {
               <span key={p} className="rounded-full bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">{p}</span>
             ))}
           </div>
+          <div className="mt-3">
+            <ProfileBadgesRow profile={profile} />
+          </div>
         </div>
       </section>
 
@@ -239,6 +250,18 @@ function ProfilePage() {
           userId={profile.id}
           anthem={profile.anthem}
           onChange={(next) => setProfile({ ...profile, anthem: next })}
+        />
+
+        <VideoClipCard
+          userId={profile.id}
+          videoPath={profile.video_clip_path}
+          onChange={(p) => setProfile({ ...profile, video_clip_path: p })}
+        />
+
+        <DateVibesCard
+          userId={profile.id}
+          vibes={{ ask_me_about: profile.ask_me_about, dealbreakers: profile.dealbreakers, ideal_match: profile.ideal_match }}
+          onChange={(next) => setProfile({ ...profile, ...next })}
         />
 
         <LifestyleFactsCard

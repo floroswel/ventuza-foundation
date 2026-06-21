@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { BadgeCheck, Loader2, Mic, Music, ArrowLeft } from "lucide-react";
+import { BadgeCheck, Loader2, Mic, Music, ArrowLeft, Heart, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Chip } from "@/components/Chip";
+import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { formatHeight } from "@/lib/discover";
 
 export const Route = createFileRoute("/u/$slug")({
@@ -31,6 +32,7 @@ function PublicProfilePage() {
   const [profile, setProfile] = useState<any | null>(null);
   const [signedPhoto, setSignedPhoto] = useState<string | null>(null);
   const [signedVoice, setSignedVoice] = useState<string | null>(null);
+  const [signedVideo, setSignedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,6 +51,10 @@ function PublicProfilePage() {
       if (data?.voice_prompt_path) {
         const { data: s } = await supabase.storage.from("profile-media").createSignedUrl(data.voice_prompt_path, 3600);
         if (s?.signedUrl) setSignedVoice(s.signedUrl);
+      }
+      if (data?.video_clip_path) {
+        const { data: s } = await supabase.storage.from("profile-media").createSignedUrl(data.video_clip_path, 3600);
+        if (s?.signedUrl) setSignedVideo(s.signedUrl);
       }
     })();
   }, [slug]);
@@ -98,10 +104,20 @@ function PublicProfilePage() {
               <BadgeCheck className="size-3" /> Verified
             </span>
           )}
+          <div className="mt-3"><ProfileBadgesRow profile={profile} /></div>
         </div>
       </section>
 
       <div className="space-y-6 px-6 pt-6">
+        {signedVideo && (
+          <div className="rounded-2xl border border-border bg-surface p-3">
+            <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              <Video className="size-4 text-primary" /> Clip
+            </div>
+            <video src={signedVideo} controls playsInline className="w-full rounded-xl bg-black" />
+          </div>
+        )}
+
         {signedVoice && (
           <div className="rounded-2xl border border-border bg-surface p-5">
             <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
@@ -120,6 +136,22 @@ function PublicProfilePage() {
             <p className="text-sm text-muted-foreground">{profile.anthem.artist}</p>
             {profile.anthem.url && <a href={profile.anthem.url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Ascultă</a>}
           </div>
+        )}
+
+        {profile.ideal_match && (
+          <div className="rounded-2xl border border-border bg-surface p-5">
+            <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              <Heart className="size-4 text-primary" /> Match ideal
+            </div>
+            <p className="italic text-foreground/85">"{profile.ideal_match}"</p>
+          </div>
+        )}
+
+        {profile.ask_me_about?.length > 0 && (
+          <section>
+            <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">Ask me about</h2>
+            <div className="flex flex-wrap gap-2">{profile.ask_me_about.map((t: string) => <Chip key={t} active>💬 {t}</Chip>)}</div>
+          </section>
         )}
 
         {profile.bio && (
