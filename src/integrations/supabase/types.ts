@@ -217,6 +217,106 @@ export type Database = {
         }
         Relationships: []
       }
+      group_members: {
+        Row: {
+          group_id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          group_id: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
+        Update: {
+          group_id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      group_messages: {
+        Row: {
+          body: string | null
+          created_at: string
+          group_id: string
+          id: string
+          media_type: string
+          media_url: string | null
+          sender_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          group_id: string
+          id?: string
+          media_type?: string
+          media_url?: string | null
+          sender_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          group_id?: string
+          id?: string
+          media_type?: string
+          media_url?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      groups: {
+        Row: {
+          cover_path: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          member_count: number
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          cover_path?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          member_count?: number
+          name: string
+          owner_id: string
+        }
+        Update: {
+          cover_path?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          member_count?: number
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           created_at: string
@@ -240,31 +340,55 @@ export type Database = {
       }
       messages: {
         Row: {
+          audio_duration_ms: number | null
           body: string
           conversation_id: string
           created_at: string
+          expires_at: string | null
           id: string
+          location_lat: number | null
+          location_lng: number | null
+          media_type: string
+          media_url: string | null
           reactions: Json
           read_at: string | null
           sender_id: string
+          view_once: boolean | null
+          viewed_at: string | null
         }
         Insert: {
+          audio_duration_ms?: number | null
           body: string
           conversation_id: string
           created_at?: string
+          expires_at?: string | null
           id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          media_type?: string
+          media_url?: string | null
           reactions?: Json
           read_at?: string | null
           sender_id: string
+          view_once?: boolean | null
+          viewed_at?: string | null
         }
         Update: {
+          audio_duration_ms?: number | null
           body?: string
           conversation_id?: string
           created_at?: string
+          expires_at?: string | null
           id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          media_type?: string
+          media_url?: string | null
           reactions?: Json
           read_at?: string | null
           sender_id?: string
+          view_once?: boolean | null
+          viewed_at?: string | null
         }
         Relationships: [
           {
@@ -386,6 +510,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          accept_nsfw_photos: boolean | null
           banned_at: string | null
           banned_reason: string | null
           bio: string | null
@@ -396,6 +521,7 @@ export type Database = {
           deleted_at: string | null
           display_name: string | null
           ethnicity: string | null
+          expectations: string[] | null
           gender: string[] | null
           gender_custom: string | null
           height_cm: number | null
@@ -412,11 +538,13 @@ export type Database = {
           looking_for: string[] | null
           looking_now_intent: string | null
           looking_now_until: string | null
+          meet_at: string[] | null
           notification_prefs: Json
           onboarding_completed: boolean
           orientation: string[] | null
           photos: string[] | null
           position: string | null
+          prep_status: string | null
           prev_location: unknown
           prev_location_at: string | null
           prompts: Json | null
@@ -427,6 +555,8 @@ export type Database = {
           risk_score: number
           risk_signals: Json
           risk_updated_at: string | null
+          safety_practices: string[] | null
+          scenes: string[] | null
           suspended_reason: string | null
           suspended_until: string | null
           travel_city: string | null
@@ -434,6 +564,7 @@ export type Database = {
           travel_until: string | null
           tribes: string[]
           updated_at: string
+          vaccinations: string[] | null
           verification_reason: string | null
           verification_selfie_path: string | null
           verification_status: string
@@ -444,6 +575,7 @@ export type Database = {
           weight_kg: number | null
         }
         Insert: {
+          accept_nsfw_photos?: boolean | null
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
@@ -454,6 +586,7 @@ export type Database = {
           deleted_at?: string | null
           display_name?: string | null
           ethnicity?: string | null
+          expectations?: string[] | null
           gender?: string[] | null
           gender_custom?: string | null
           height_cm?: number | null
@@ -470,11 +603,13 @@ export type Database = {
           looking_for?: string[] | null
           looking_now_intent?: string | null
           looking_now_until?: string | null
+          meet_at?: string[] | null
           notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
           photos?: string[] | null
           position?: string | null
+          prep_status?: string | null
           prev_location?: unknown
           prev_location_at?: string | null
           prompts?: Json | null
@@ -485,6 +620,8 @@ export type Database = {
           risk_score?: number
           risk_signals?: Json
           risk_updated_at?: string | null
+          safety_practices?: string[] | null
+          scenes?: string[] | null
           suspended_reason?: string | null
           suspended_until?: string | null
           travel_city?: string | null
@@ -492,6 +629,7 @@ export type Database = {
           travel_until?: string | null
           tribes?: string[]
           updated_at?: string
+          vaccinations?: string[] | null
           verification_reason?: string | null
           verification_selfie_path?: string | null
           verification_status?: string
@@ -502,6 +640,7 @@ export type Database = {
           weight_kg?: number | null
         }
         Update: {
+          accept_nsfw_photos?: boolean | null
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
@@ -512,6 +651,7 @@ export type Database = {
           deleted_at?: string | null
           display_name?: string | null
           ethnicity?: string | null
+          expectations?: string[] | null
           gender?: string[] | null
           gender_custom?: string | null
           height_cm?: number | null
@@ -528,11 +668,13 @@ export type Database = {
           looking_for?: string[] | null
           looking_now_intent?: string | null
           looking_now_until?: string | null
+          meet_at?: string[] | null
           notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
           photos?: string[] | null
           position?: string | null
+          prep_status?: string | null
           prev_location?: unknown
           prev_location_at?: string | null
           prompts?: Json | null
@@ -543,6 +685,8 @@ export type Database = {
           risk_score?: number
           risk_signals?: Json
           risk_updated_at?: string | null
+          safety_practices?: string[] | null
+          scenes?: string[] | null
           suspended_reason?: string | null
           suspended_until?: string | null
           travel_city?: string | null
@@ -550,6 +694,7 @@ export type Database = {
           travel_until?: string | null
           tribes?: string[]
           updated_at?: string
+          vaccinations?: string[] | null
           verification_reason?: string | null
           verification_selfie_path?: string | null
           verification_status?: string
@@ -689,6 +834,65 @@ export type Database = {
           srtext?: string | null
         }
         Relationships: []
+      }
+      stories: {
+        Row: {
+          caption: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          media_path: string
+          user_id: string
+          view_count: number
+        }
+        Insert: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_path: string
+          user_id: string
+          view_count?: number
+        }
+        Update: {
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_path?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
+      story_views: {
+        Row: {
+          id: string
+          story_id: string
+          viewed_at: string
+          viewer_id: string
+        }
+        Insert: {
+          id?: string
+          story_id: string
+          viewed_at?: string
+          viewer_id: string
+        }
+        Update: {
+          id?: string
+          story_id?: string
+          viewed_at?: string
+          viewer_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       subscriptions: {
         Row: {
@@ -995,59 +1199,95 @@ export type Database = {
         }[]
       }
       disablelongtransactions: { Args: never; Returns: string }
-      discover_profiles: {
-        Args: {
-          body_filter?: string[]
-          gender_filter?: string[]
-          hiv_filter?: string[]
-          looking_for_filter?: string[]
-          looking_now_only?: boolean
-          max_age?: number
-          max_distance_km?: number
-          max_height?: number
-          min_age?: number
-          min_height?: number
-          online_only?: boolean
-          order_mode?: string
-          orientation_filter?: string[]
-          position_filter?: string[]
-          result_limit?: number
-          tribes_filter?: string[]
-          verified_only?: boolean
-          with_photo_only?: boolean
-        }
-        Returns: {
-          bio: string
-          birthdate: string
-          body_type: string
-          boost_until: string
-          display_name: string
-          distance_m: number
-          ethnicity: string
-          gender: string[]
-          height_cm: number
-          hiv_status: string
-          hiv_test_date: string
-          id: string
-          interests: string[]
-          last_seen: string
-          looking_for: string[]
-          looking_now_intent: string
-          looking_now_until: string
-          orientation: string[]
-          photos: string[]
-          position: string
-          prompts: Json
-          pronouns: string[]
-          relationship_status: string
-          score: number
-          travel_city: string
-          travel_until: string
-          tribes: string[]
-          verified: boolean
-          weight_kg: number
-        }[]
-      }
+      discover_profiles:
+        | {
+            Args: {
+              _genders?: string[]
+              _limit?: number
+              _looking_for?: string[]
+              _looking_now_only?: boolean
+              _max_age?: number
+              _max_km?: number
+              _min_age?: number
+              _offset?: number
+              _sort?: string
+              _tab?: string
+              _tribes?: string[]
+              _viewer: string
+            }
+            Returns: {
+              birthdate: string
+              display_name: string
+              distance_m: number
+              hide_age: boolean
+              hide_distance: boolean
+              hide_online: boolean
+              id: string
+              interests: string[]
+              last_seen: string
+              looking_now_intent: string
+              looking_now_until: string
+              photos: string[]
+              prompts: Json
+              pronouns: string[]
+              score: number
+              tribes: string[]
+              verified: boolean
+            }[]
+          }
+        | {
+            Args: {
+              body_filter?: string[]
+              gender_filter?: string[]
+              hiv_filter?: string[]
+              looking_for_filter?: string[]
+              looking_now_only?: boolean
+              max_age?: number
+              max_distance_km?: number
+              max_height?: number
+              min_age?: number
+              min_height?: number
+              online_only?: boolean
+              order_mode?: string
+              orientation_filter?: string[]
+              position_filter?: string[]
+              result_limit?: number
+              tribes_filter?: string[]
+              verified_only?: boolean
+              with_photo_only?: boolean
+            }
+            Returns: {
+              bio: string
+              birthdate: string
+              body_type: string
+              boost_until: string
+              display_name: string
+              distance_m: number
+              ethnicity: string
+              gender: string[]
+              height_cm: number
+              hiv_status: string
+              hiv_test_date: string
+              id: string
+              interests: string[]
+              last_seen: string
+              looking_for: string[]
+              looking_now_intent: string
+              looking_now_until: string
+              orientation: string[]
+              photos: string[]
+              position: string
+              prompts: Json
+              pronouns: string[]
+              relationship_status: string
+              score: number
+              travel_city: string
+              travel_until: string
+              tribes: string[]
+              verified: boolean
+              weight_kg: number
+            }[]
+          }
       dropgeometrycolumn:
         | {
             Args: {
@@ -1192,7 +1432,12 @@ export type Database = {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
       }
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      mark_message_viewed: { Args: { _msg_id: string }; Returns: undefined }
       moderator_ban_user: {
         Args: { _reason: string; _target: string }
         Returns: undefined
