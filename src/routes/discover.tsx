@@ -178,13 +178,13 @@ function DiscoverPage() {
         </div>
       </header>
 
+      <StoriesStrip />
       {loading ? (
         <CenterMessage icon={<Loader2 className="size-6 animate-spin text-primary" />} title="Finding people…" />
       ) : visible.length === 0 ? (
         <EmptyState onRefresh={() => load()} hasLocation={locStatus === "granted"} />
       ) : (
         <>
-          <StoriesStrip />
           <OnlineRow profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)} onOpen={setSelected} />
           <Cascade profiles={visible} onOpen={setSelected} />
         </>
