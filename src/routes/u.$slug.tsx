@@ -32,6 +32,7 @@ function PublicProfilePage() {
   const [profile, setProfile] = useState<any | null>(null);
   const [signedPhoto, setSignedPhoto] = useState<string | null>(null);
   const [signedVoice, setSignedVoice] = useState<string | null>(null);
+  const [signedVideo, setSignedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,6 +51,10 @@ function PublicProfilePage() {
       if (data?.voice_prompt_path) {
         const { data: s } = await supabase.storage.from("profile-media").createSignedUrl(data.voice_prompt_path, 3600);
         if (s?.signedUrl) setSignedVoice(s.signedUrl);
+      }
+      if (data?.video_clip_path) {
+        const { data: s } = await supabase.storage.from("profile-media").createSignedUrl(data.video_clip_path, 3600);
+        if (s?.signedUrl) setSignedVideo(s.signedUrl);
       }
     })();
   }, [slug]);
