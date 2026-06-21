@@ -8,6 +8,8 @@ export type ConversationRow = {
   last_message_preview: string | null;
 };
 
+export type MessageMediaType = "text" | "image" | "audio" | "location";
+
 export type MessageRow = {
   id: string;
   conversation_id: string;
@@ -16,6 +18,14 @@ export type MessageRow = {
   read_at: string | null;
   created_at: string;
   reactions?: Record<string, string[]> | null;
+  media_type?: MessageMediaType | null;
+  media_url?: string | null;
+  audio_duration_ms?: number | null;
+  location_lat?: number | null;
+  location_lng?: number | null;
+  view_once?: boolean | null;
+  expires_at?: string | null;
+  viewed_at?: string | null;
 };
 
 export type ConversationListItem = {
