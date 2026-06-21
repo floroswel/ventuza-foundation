@@ -33,6 +33,7 @@ function DiscoverPage() {
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("nearby");
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
+  const [debouncedFilters, setDebouncedFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,20 +57,64 @@ function DiscoverPage() {
     });
   }, [user, locStatus]);
 
+  // Debounce filter changes to avoid hammering the DB
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedFilters(filters), 350);
+    return () => clearTimeout(t);
+  }, [filters]);
+
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     try {
-      const data = await fetchDiscover(filters, "distance");
+      const data = await fetchDiscover(debouncedFilters, "distance");
       setProfiles(data);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't load discover");
     } finally {
       setLoading(false);
     }
-  }, [filters, user]);
+  }, [debouncedFilters, user]);
 
   useEffect(() => { void load(); }, [load]);
+
+  // Realtime: refresh online status periodically (last_seen lives in profiles)
+  useEffect(() => {
+    if (!user) return;
+    const t = setInterval(() => {
+      // Force re-render so isOnline() reevaluates against current time
+      setProfiles((p) => p.slice());
+    }, 30_000);
+    return () => clearInterval(t);
+  }, [user]);
+
+  // Realtime: new match notifications (when someone else likes me back)
+  useEffect(() => {
+    if (!user) return;
+    const ch = supabase
+      .channel(`matches-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "matches" },
+        async (payload) => {
+          const m = payload.new as { user_a: string; user_b: string };
+          if (m.user_a !== user.id && m.user_b !== user.id) return;
+          const otherId = m.user_a === user.id ? m.user_b : m.user_a;
+          const { data: prof } = await supabase
+            .from("profiles")
+            .select("display_name, photos")
+            .eq("id", otherId)
+            .maybeSingle();
+          const path = prof?.photos?.[0];
+          const signed = path ? (await signPhotos([path]))[path] : null;
+          setMatch({ name: prof?.display_name ?? "Someone wonderful", photo: signed ?? null });
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [user]);
+
+
 
   const visible = useMemo(() => {
     if (tab === "online") return profiles.filter((p) => isOnline(p.last_seen));
