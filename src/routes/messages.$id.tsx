@@ -1,13 +1,16 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { ChevronLeft, Languages, Loader2, Send, Sparkles, MoreVertical } from "lucide-react";
+import {
+  AlertCircle, Check, CheckCheck, ChevronLeft, Clock, Languages,
+  Loader2, MoreVertical, Send, Sparkles,
+} from "lucide-react";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  fetchMessages, fetchOtherProfile, markRead, sendMessage,
+  MESSAGES_PAGE, fetchMessages, fetchOtherProfile, markRead, sendMessage,
   type MessageRow,
 } from "@/lib/chat";
 import { generateOpener, translateText } from "@/lib/ai.functions";
@@ -18,20 +21,28 @@ export const Route = createFileRoute("/messages/$id")({
   component: ThreadPage,
 });
 
+type UiMessage = MessageRow & { _status?: "pending" | "failed" };
+
 function ThreadPage() {
   const { id } = Route.useParams();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<MessageRow[]>([]);
+  const [messages, setMessages] = useState<UiMessage[]>([]);
   const [other, setOther] = useState<{ id: string; name: string | null; photo: string | null; bio?: string | null; interests?: string[] | null } | null>(null);
   const [loading, setLoading] = useState(true);
-  const [sending, setSending] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [text, setText] = useState("");
   const [translations, setTranslations] = useState<Record<string, string>>({});
   const [translatingId, setTranslatingId] = useState<string | null>(null);
   const [openers, setOpeners] = useState<string[] | null>(null);
   const [wingmanLoading, setWingmanLoading] = useState(false);
+  const [otherTyping, setOtherTyping] = useState(false);
+  const [connected, setConnected] = useState(true);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastTypingSentRef = useRef(0);
+  const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const genOpener = useServerFn(generateOpener);
   const tr = useServerFn(translateText);
 
@@ -39,9 +50,11 @@ function ThreadPage() {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
 
+  // Initial load + realtime channel
   useEffect(() => {
     if (!user) return;
     let alive = true;
+
     async function load() {
       try {
         const { data: conv, error } = await supabase
@@ -59,6 +72,7 @@ function ThreadPage() {
         ]);
         if (!alive) return;
         setMessages(msgs);
+        setHasMore(msgs.length >= MESSAGES_PAGE);
         setOther({ ...prof, bio: extra.data?.bio ?? null, interests: extra.data?.interests ?? null });
         await markRead(id, user!.id);
       } catch (e) {
@@ -70,42 +84,132 @@ function ThreadPage() {
     void load();
 
     const ch = supabase
-      .channel(`thread-${id}`)
+      .channel(`thread-${id}`, { config: { broadcast: { self: false } } })
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
         (payload) => {
           const m = payload.new as MessageRow;
           setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
-          if (m.sender_id !== user!.id) void markRead(id, user!.id);
+          if (m.sender_id !== user!.id) {
+            setOtherTyping(false);
+            void markRead(id, user!.id);
+          }
         },
       )
-      .subscribe();
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
+        (payload) => {
+          const m = payload.new as MessageRow;
+          setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)));
+        },
+      )
+      .on("broadcast", { event: "typing" }, (payload) => {
+        const p = payload.payload as { userId: string };
+        if (p.userId !== user!.id) {
+          setOtherTyping(true);
+          if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+          typingTimerRef.current = setTimeout(() => setOtherTyping(false), 3000);
+        }
+      })
+      .subscribe((status) => {
+        setConnected(status === "SUBSCRIBED");
+      });
+
+    channelRef.current = ch;
 
     return () => {
       alive = false;
+      if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
       supabase.removeChannel(ch);
+      channelRef.current = null;
     };
   }, [id, user]);
 
+  // Auto scroll to bottom on new messages (only when near bottom)
   useEffect(() => {
     const el = scrollerRef.current;
-    if (el) el.scrollTop = el.scrollHeight;
+    if (!el) return;
+    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200;
+    if (nearBottom) el.scrollTop = el.scrollHeight;
   }, [messages.length]);
+
+  async function loadMore() {
+    if (loadingMore || !hasMore || messages.length === 0) return;
+    setLoadingMore(true);
+    const el = scrollerRef.current;
+    const prevHeight = el?.scrollHeight ?? 0;
+    try {
+      const oldest = messages[0];
+      const older = await fetchMessages(id, { before: oldest.created_at });
+      if (older.length === 0) setHasMore(false);
+      else {
+        setMessages((prev) => [...older, ...prev]);
+        if (older.length < MESSAGES_PAGE) setHasMore(false);
+        requestAnimationFrame(() => {
+          if (el) el.scrollTop = el.scrollHeight - prevHeight;
+        });
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
+  function onScroll() {
+    const el = scrollerRef.current;
+    if (!el) return;
+    if (el.scrollTop < 60 && hasMore && !loadingMore) void loadMore();
+  }
+
+  function sendTypingPing() {
+    if (!channelRef.current || !user) return;
+    const now = Date.now();
+    if (now - lastTypingSentRef.current < 1500) return;
+    lastTypingSentRef.current = now;
+    void channelRef.current.send({ type: "broadcast", event: "typing", payload: { userId: user.id } });
+  }
 
   async function handleSend(e: FormEvent) {
     e.preventDefault();
     const body = text.trim();
-    if (!body || sending) return;
-    setSending(true);
+    if (!body || !user) return;
+    const tempId = `tmp-${crypto.randomUUID()}`;
+    const optimistic: UiMessage = {
+      id: tempId,
+      conversation_id: id,
+      sender_id: user.id,
+      body,
+      read_at: null,
+      created_at: new Date().toISOString(),
+      _status: "pending",
+    };
+    setMessages((prev) => [...prev, optimistic]);
     setText("");
     try {
-      await sendMessage(id, body);
+      const real = await sendMessage(id, body);
+      setMessages((prev) => {
+        // drop tmp and dedupe against realtime insert
+        const without = prev.filter((m) => m.id !== tempId && m.id !== real.id);
+        return [...without, real];
+      });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't send");
-      setText(body);
-    } finally {
-      setSending(false);
+      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, _status: "failed" } : m)));
+    }
+  }
+
+  async function retryFailed(m: UiMessage) {
+    setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, _status: "pending" } : x)));
+    try {
+      const real = await sendMessage(id, m.body);
+      setMessages((prev) => {
+        const without = prev.filter((x) => x.id !== m.id && x.id !== real.id);
+        return [...without, real];
+      });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Couldn't send");
+      setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, _status: "failed" } : x)));
     }
   }
 
@@ -155,6 +259,9 @@ function ThreadPage() {
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{other?.name ?? "…"}</p>
+          <p className="truncate text-[10px] text-muted-foreground">
+            {otherTyping ? <span className="text-primary">typing…</span> : connected ? "online" : "reconnecting…"}
+          </p>
         </div>
         {other?.id && (
           <ReportBlockDialog
@@ -170,7 +277,7 @@ function ThreadPage() {
         )}
       </header>
 
-      <div ref={scrollerRef} className="flex-1 overflow-y-auto px-4 py-4">
+      <div ref={scrollerRef} onScroll={onScroll} className="flex-1 overflow-y-auto px-4 py-4">
         {loading ? (
           <div className="flex items-center justify-center py-16 text-muted-foreground">
             <Loader2 className="size-5 animate-spin" />
@@ -180,43 +287,78 @@ function ThreadPage() {
             Say something nice to {other?.name ?? "them"}.
           </p>
         ) : (
-          <ul className="space-y-2">
-            {messages.map((m) => {
-              const mine = m.sender_id === user?.id;
-              const translated = translations[m.id];
-              return (
-                <li key={m.id} className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}>
-                  <div
-                    className={cn(
-                      "max-w-[78%] rounded-2xl px-3 py-2 text-sm",
-                      mine
-                        ? "bg-primary text-primary-foreground rounded-br-md"
-                        : "bg-muted text-foreground rounded-bl-md",
-                    )}
-                  >
-                    {m.body}
-                  </div>
-                  {!mine && (
-                    translated ? (
-                      <div className="max-w-[78%] rounded-2xl bg-primary/10 px-3 py-2 text-xs text-primary">
-                        <span className="mr-1 opacity-70">RO:</span>{translated}
+          <>
+            {loadingMore && (
+              <div className="flex justify-center py-2 text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+              </div>
+            )}
+            <ul className="space-y-2">
+              {messages.map((m) => {
+                const mine = m.sender_id === user?.id;
+                const translated = translations[m.id];
+                return (
+                  <li key={m.id} className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}>
+                    <div
+                      className={cn(
+                        "max-w-[78%] rounded-2xl px-3 py-2 text-sm",
+                        mine
+                          ? "bg-primary text-primary-foreground rounded-br-md"
+                          : "bg-muted text-foreground rounded-bl-md",
+                        m._status === "pending" && "opacity-70",
+                        m._status === "failed" && "ring-1 ring-destructive/60",
+                      )}
+                    >
+                      {m.body}
+                    </div>
+                    {mine && (
+                      <div className="flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
+                        {m._status === "pending" ? (
+                          <><Clock className="size-3" /> sending</>
+                        ) : m._status === "failed" ? (
+                          <button onClick={() => retryFailed(m)} className="inline-flex items-center gap-1 text-destructive">
+                            <AlertCircle className="size-3" /> failed · tap to retry
+                          </button>
+                        ) : m.read_at ? (
+                          <><CheckCheck className="size-3 text-primary" /> read</>
+                        ) : (
+                          <><Check className="size-3" /> sent</>
+                        )}
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={() => handleTranslate(m)}
-                        disabled={translatingId === m.id}
-                        className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
-                      >
-                        {translatingId === m.id ? <Loader2 className="size-3 animate-spin" /> : <Languages className="size-3" />}
-                        Traduce
-                      </button>
-                    )
-                  )}
+                    )}
+                    {!mine && (
+                      translated ? (
+                        <div className="max-w-[78%] rounded-2xl bg-primary/10 px-3 py-2 text-xs text-primary">
+                          <span className="mr-1 opacity-70">RO:</span>{translated}
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleTranslate(m)}
+                          disabled={translatingId === m.id}
+                          className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
+                        >
+                          {translatingId === m.id ? <Loader2 className="size-3 animate-spin" /> : <Languages className="size-3" />}
+                          Traduce
+                        </button>
+                      )
+                    )}
+                  </li>
+                );
+              })}
+              {otherTyping && (
+                <li className="flex items-start">
+                  <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2">
+                    <span className="inline-flex gap-1">
+                      <span className="size-1.5 animate-bounce rounded-full bg-foreground/60 [animation-delay:-0.3s]" />
+                      <span className="size-1.5 animate-bounce rounded-full bg-foreground/60 [animation-delay:-0.15s]" />
+                      <span className="size-1.5 animate-bounce rounded-full bg-foreground/60" />
+                    </span>
+                  </div>
                 </li>
-              );
-            })}
-          </ul>
+              )}
+            </ul>
+          </>
         )}
       </div>
 
@@ -256,17 +398,17 @@ function ThreadPage() {
         </button>
         <input
           value={text}
-          onChange={(e) => setText(e.target.value)}
+          onChange={(e) => { setText(e.target.value); sendTypingPing(); }}
           placeholder="Type a message…"
           maxLength={4000}
           className="flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
         />
         <button
           type="submit"
-          disabled={!text.trim() || sending}
+          disabled={!text.trim()}
           className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
         >
-          {sending ? <Loader2 className="size-4 animate-spin" /> : <Send className="size-4" />}
+          <Send className="size-4" />
         </button>
       </form>
     </div>
