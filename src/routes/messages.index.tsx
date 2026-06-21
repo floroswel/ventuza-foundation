@@ -37,7 +37,7 @@ function MessagesPage() {
     }
     void load();
     const ch = supabase
-      .channel("conv-list")
+      .channel(`conv-list:${user!.id}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "conversations" }, () => void load())
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => void load())
       .subscribe();

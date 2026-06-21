@@ -56,7 +56,7 @@ function CruisePage() {
   useEffect(() => {
     if (!user) return;
     const ch = supabase
-      .channel("cruise-now")
+      .channel(`cruise-now:${user.id}`)
       .on(
         "postgres_changes",
         { event: "UPDATE", schema: "public", table: "profiles" },
