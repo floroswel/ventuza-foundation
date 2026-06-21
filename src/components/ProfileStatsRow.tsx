@@ -11,7 +11,7 @@ export function ProfileStatsRow({ userId }: { userId: string }) {
       const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
       const [views, taps, matches] = await Promise.all([
         supabase.from("profile_views").select("id", { count: "exact", head: true }).eq("viewed_id", userId).gte("created_at", since),
-        supabase.from("taps").select("id", { count: "exact", head: true }).eq("to_user", userId),
+        supabase.from("taps").select("id", { count: "exact", head: true }).eq("receiver_id", userId),
         supabase.from("matches").select("id", { count: "exact", head: true }).or(`user_a.eq.${userId},user_b.eq.${userId}`),
       ]);
       setStats({
