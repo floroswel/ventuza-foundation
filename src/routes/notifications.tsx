@@ -5,6 +5,7 @@ import {
   CalendarHeart,
   ChevronLeft,
   Eye,
+  Hand,
   Heart,
   Loader2,
   Lock,
@@ -30,6 +31,7 @@ const ICONS: Record<NotificationType, React.ComponentType<{ className?: string }
   album_granted: Unlock,
   event_rsvp: CalendarHeart,
   event_reminder: CalendarHeart,
+  tap: Hand,
 };
 
 function timeAgo(iso: string) {
