@@ -72,6 +72,22 @@ function EventsPage() {
             placeholder="City"
             className="flex-1 rounded-full border border-border bg-surface px-3 py-1.5 text-sm outline-none focus:border-primary"
           />
+          <div className="inline-flex rounded-full border border-border bg-surface p-0.5">
+            <button
+              onClick={() => setView("list")}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs ${view === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              aria-label="List view"
+            >
+              <List className="size-3.5" />
+            </button>
+            <button
+              onClick={() => setView("map")}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs ${view === "map" ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}
+              aria-label="Map view"
+            >
+              <MapIcon className="size-3.5" />
+            </button>
+          </div>
         </div>
         <div className="mt-2 flex gap-1.5 overflow-x-auto pb-1 -mx-3 px-3">
           {TYPES.map((t) => (
@@ -84,6 +100,7 @@ function EventsPage() {
             </button>
           ))}
         </div>
+
       </header>
 
       <div className="flex-1 px-3 py-3">
