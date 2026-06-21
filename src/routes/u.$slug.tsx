@@ -1,8 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { BadgeCheck, Loader2, Mic, Music, ArrowLeft } from "lucide-react";
+import { BadgeCheck, Loader2, Mic, Music, ArrowLeft, Heart, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Chip } from "@/components/Chip";
+import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { formatHeight } from "@/lib/discover";
 
 export const Route = createFileRoute("/u/$slug")({
