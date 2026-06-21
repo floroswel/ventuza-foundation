@@ -8,6 +8,8 @@ export type ConversationRow = {
   last_message_preview: string | null;
 };
 
+export type MessageMediaType = "text" | "image" | "audio" | "location";
+
 export type MessageRow = {
   id: string;
   conversation_id: string;
@@ -16,6 +18,14 @@ export type MessageRow = {
   read_at: string | null;
   created_at: string;
   reactions?: Record<string, string[]> | null;
+  media_type?: MessageMediaType | null;
+  media_url?: string | null;
+  audio_duration_ms?: number | null;
+  location_lat?: number | null;
+  location_lng?: number | null;
+  view_once?: boolean | null;
+  expires_at?: string | null;
+  viewed_at?: string | null;
 };
 
 export type ConversationListItem = {
@@ -111,11 +121,67 @@ export async function sendMessage(conversationId: string, body: string): Promise
   if (!u.user) throw new Error("not signed in");
   const { data, error } = await supabase
     .from("messages")
-    .insert({ conversation_id: conversationId, sender_id: u.user.id, body: trimmed.slice(0, 4000) })
+    .insert({ conversation_id: conversationId, sender_id: u.user.id, body: trimmed.slice(0, 4000), media_type: "text" })
     .select("*")
     .single();
   if (error) throw error;
   return data as MessageRow;
+}
+
+export type MediaPayload =
+  | { kind: "image"; file: Blob; viewOnce?: boolean }
+  | { kind: "audio"; file: Blob; durationMs: number }
+  | { kind: "location"; lat: number; lng: number; label?: string };
+
+export async function sendMediaMessage(conversationId: string, payload: MediaPayload): Promise<MessageRow> {
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) throw new Error("not signed in");
+  const uid = u.user.id;
+
+  let insert: Record<string, unknown> = {
+    conversation_id: conversationId,
+    sender_id: uid,
+    body: "",
+  };
+
+  if (payload.kind === "location") {
+    insert = {
+      ...insert,
+      media_type: "location",
+      location_lat: payload.lat,
+      location_lng: payload.lng,
+      body: payload.label ?? "📍 Location",
+    };
+  } else {
+    const ext = payload.kind === "image" ? "jpg" : "webm";
+    const path = `${uid}/${conversationId}/${crypto.randomUUID()}.${ext}`;
+    const { error: upErr } = await supabase.storage
+      .from("chat-media")
+      .upload(path, payload.file, { contentType: payload.file.type || (payload.kind === "image" ? "image/jpeg" : "audio/webm"), upsert: false });
+    if (upErr) throw upErr;
+    insert = {
+      ...insert,
+      media_type: payload.kind,
+      media_url: path,
+      body: payload.kind === "image" ? "📷 Photo" : "🎤 Voice message",
+    };
+    if (payload.kind === "audio") insert.audio_duration_ms = Math.round(payload.durationMs);
+    if (payload.kind === "image" && payload.viewOnce) insert.view_once = true;
+  }
+
+  const { data, error } = await supabase.from("messages").insert(insert as never).select("*").single();
+  if (error) throw error;
+  return data as MessageRow;
+}
+
+export async function signChatMedia(path: string | null | undefined): Promise<string | null> {
+  if (!path) return null;
+  const { data } = await supabase.storage.from("chat-media").createSignedUrl(path, 3600);
+  return data?.signedUrl ?? null;
+}
+
+export async function markMediaViewed(messageId: string): Promise<void> {
+  await supabase.from("messages").update({ viewed_at: new Date().toISOString() }).eq("id", messageId);
 }
 
 export async function markRead(conversationId: string, meId: string): Promise<void> {

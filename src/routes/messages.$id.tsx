@@ -15,6 +15,8 @@ import {
 } from "@/lib/chat";
 import { generateOpener, translateText } from "@/lib/ai.functions";
 import { REACTION_EMOJIS, toggleMessageReaction, type ReactionEmoji } from "@/lib/social";
+import { ChatComposerExtras } from "@/components/ChatComposerExtras";
+import { ChatMediaBubble } from "@/components/ChatMediaBubble";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/messages/$id")({
@@ -324,15 +326,12 @@ function ThreadPage() {
                       )}
                       <div
                         className={cn(
-                          "max-w-[78%] rounded-2xl px-3 py-2 text-sm",
-                          mine
-                            ? "order-1 bg-primary text-primary-foreground rounded-br-md"
-                            : "order-1 bg-muted text-foreground rounded-bl-md",
+                          "order-1",
                           m._status === "pending" && "opacity-70",
-                          m._status === "failed" && "ring-1 ring-destructive/60",
+                          m._status === "failed" && "rounded-2xl ring-1 ring-destructive/60",
                         )}
                       >
-                        {m.body}
+                        <ChatMediaBubble m={m} mine={mine} />
                       </div>
                       {mine && (
                         <button
@@ -398,7 +397,7 @@ function ThreadPage() {
                         )}
                       </div>
                     )}
-                    {!mine && (
+                    {!mine && m.media_type !== "audio" && m.media_type !== "image" && m.media_type !== "location" && (
                       translated ? (
                         <div className="max-w-[78%] rounded-2xl bg-primary/10 px-3 py-2 text-xs text-primary">
                           <span className="mr-1 opacity-70">RO:</span>{translated}
@@ -468,6 +467,10 @@ function ThreadPage() {
         >
           {wingmanLoading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
         </button>
+        <ChatComposerExtras
+          conversationId={id}
+          onSent={(m) => setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))}
+        />
         <input
           value={text}
           onChange={(e) => { setText(e.target.value); sendTypingPing(); }}
