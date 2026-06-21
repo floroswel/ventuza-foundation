@@ -130,12 +130,18 @@ function DiscoverPage() {
   const handleDecision = useCallback(async (target: DiscoverProfile, action: "like" | "pass" | "super") => {
     if (!user) return;
     setSelected(null);
-    setProfiles((p) => p.filter((x) => x.id !== target.id));
 
     const { error } = await supabase.from("swipes").insert({
       swiper_id: user.id, target_id: target.id, action,
     });
-    if (error) { toast.error(error.message); return; }
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+
+    // Remove from grid only after DB confirms
+    setProfiles((p) => p.filter((x) => x.id !== target.id));
+
     if (action === "like" || action === "super") {
       const { data: m } = await supabase
         .from("matches")
