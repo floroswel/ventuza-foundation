@@ -19,6 +19,10 @@ import { RightNowCard } from "@/components/RightNowCard";
 import { PrivateAlbumManager } from "@/components/PrivateAlbum";
 import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { ProfileStatsRow } from "@/components/ProfileStatsRow";
+import { VoicePromptCard } from "@/components/VoicePromptCard";
+import { MusicAnthemCard } from "@/components/MusicAnthemCard";
+import { LifestyleFactsCard } from "@/components/LifestyleFactsCard";
+import { ShareProfileCard } from "@/components/ShareProfileCard";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
