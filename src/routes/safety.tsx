@@ -34,6 +34,12 @@ function SafetyCenter() {
         <Tip icon={<MessageCircle />} title="Rămâi în Ventuza" body="Nu trece pe alte aplicații imediat. Aici comunicarea e protejată; raportarea funcționează rapid." />
         <Tip icon={<AlertTriangle />} title="Niciodată bani sau date bancare" body="Dacă cineva îți cere bani, IBAN, criptomonede, sau să-i finanțezi „o urgență” — e scam. Raportează imediat." />
 
+        <PanicToolsCard />
+
+        <HealthReminderCard />
+
+
+
         <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-destructive">
             <Phone className="size-4" /> Numere de urgență (România)
