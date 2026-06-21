@@ -5,6 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { moderatePhoto } from "@/lib/verification.functions";
 import { cn } from "@/lib/utils";
+import { computePhash } from "@/lib/phash";
 
 const MAX_PHOTOS = 9;
 const MAX_SIZE_MB = 8;
