@@ -129,19 +129,23 @@ function Onboarding() {
 
   const canContinue = useMemo(() => {
     switch (current) {
-      case "name": return data.display_name.trim().length >= 2;
-      case "birthdate": return data.birthdate && calcAge(data.birthdate) >= 18;
-      case "gender": return data.gender.length > 0 || data.gender_custom.trim().length > 0;
-      case "pronouns": return data.pronouns.length > 0 || data.pronouns_custom.trim().length > 0;
-      case "orientation": return data.orientation.length > 0;
-      case "looking_for": return data.looking_for.length > 0;
-      case "tribes": return true; // optional
-      case "stats": return true; // optional
-      case "health": return !data.hiv_status || data.health_consent;
-      case "interests": return data.interests.length >= 3;
-      case "prompts": return data.prompts.length === 3 && data.prompts.every((p) => p.answer.trim().length > 0);
-      case "bio": return data.bio.trim().length >= 20;
-      case "photos": return data.photos.length >= 1 && data.terms_accepted;
+      case "basics":
+        return data.display_name.trim().length >= 2 && !!data.birthdate && calcAge(data.birthdate) >= 18;
+      case "identity":
+        return (data.gender.length > 0 || data.gender_custom.trim().length > 0)
+          && (data.pronouns.length > 0 || data.pronouns_custom.trim().length > 0)
+          && data.orientation.length > 0;
+      case "intent":
+        return data.looking_for.length > 0;
+      case "stats":
+        return !data.hiv_status || data.health_consent;
+      case "personality":
+        return data.interests.length >= 3
+          && data.prompts.length === 3
+          && data.prompts.every((p) => p.answer.trim().length > 0)
+          && data.bio.trim().length >= 20;
+      case "photos":
+        return data.photos.length >= 1 && data.terms_accepted;
     }
   }, [current, data]);
 
