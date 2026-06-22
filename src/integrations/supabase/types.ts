@@ -504,8 +504,11 @@ export type Database = {
           read_at: string | null
           reply_to_id: string | null
           sender_id: string
+          translated_text: Json | null
           view_once: boolean | null
           viewed_at: string | null
+          voice_duration_sec: number | null
+          voice_url: string | null
         }
         Insert: {
           audio_duration_ms?: number | null
@@ -523,8 +526,11 @@ export type Database = {
           read_at?: string | null
           reply_to_id?: string | null
           sender_id: string
+          translated_text?: Json | null
           view_once?: boolean | null
           viewed_at?: string | null
+          voice_duration_sec?: number | null
+          voice_url?: string | null
         }
         Update: {
           audio_duration_ms?: number | null
@@ -542,8 +548,11 @@ export type Database = {
           read_at?: string | null
           reply_to_id?: string | null
           sender_id?: string
+          translated_text?: Json | null
           view_once?: boolean | null
           viewed_at?: string | null
+          voice_duration_sec?: number | null
+          voice_url?: string | null
         }
         Relationships: [
           {
@@ -689,12 +698,14 @@ export type Database = {
           dealbreakers: string[] | null
           deleted_at: string | null
           diet: string | null
+          discreet_mode_enabled: boolean
           display_name: string | null
           drinking: string | null
           drugs: string | null
           education: string | null
           ethnicity: string | null
           expectations: string[] | null
+          friends_only_mode: boolean
           gender: string[] | null
           gender_custom: string | null
           health_data_consent_at: string | null
@@ -724,6 +735,7 @@ export type Database = {
           photos: string[] | null
           politics: string | null
           position: string | null
+          preferred_language: string | null
           prep_status: string | null
           prev_location: unknown
           prev_location_at: string | null
@@ -745,6 +757,7 @@ export type Database = {
           school: string | null
           sleep_schedule: string | null
           smoking: string | null
+          sos_contacts: Json
           suspended_reason: string | null
           suspended_until: string | null
           terms_accepted_at: string | null
@@ -762,6 +775,8 @@ export type Database = {
           verified: boolean
           verified_at: string | null
           video_clip_path: string | null
+          voice_bio_duration_sec: number | null
+          voice_bio_url: string | null
           voice_prompt_duration_sec: number | null
           voice_prompt_path: string | null
           voice_prompt_question: string | null
@@ -789,12 +804,14 @@ export type Database = {
           dealbreakers?: string[] | null
           deleted_at?: string | null
           diet?: string | null
+          discreet_mode_enabled?: boolean
           display_name?: string | null
           drinking?: string | null
           drugs?: string | null
           education?: string | null
           ethnicity?: string | null
           expectations?: string[] | null
+          friends_only_mode?: boolean
           gender?: string[] | null
           gender_custom?: string | null
           health_data_consent_at?: string | null
@@ -824,6 +841,7 @@ export type Database = {
           photos?: string[] | null
           politics?: string | null
           position?: string | null
+          preferred_language?: string | null
           prep_status?: string | null
           prev_location?: unknown
           prev_location_at?: string | null
@@ -845,6 +863,7 @@ export type Database = {
           school?: string | null
           sleep_schedule?: string | null
           smoking?: string | null
+          sos_contacts?: Json
           suspended_reason?: string | null
           suspended_until?: string | null
           terms_accepted_at?: string | null
@@ -862,6 +881,8 @@ export type Database = {
           verified?: boolean
           verified_at?: string | null
           video_clip_path?: string | null
+          voice_bio_duration_sec?: number | null
+          voice_bio_url?: string | null
           voice_prompt_duration_sec?: number | null
           voice_prompt_path?: string | null
           voice_prompt_question?: string | null
@@ -889,12 +910,14 @@ export type Database = {
           dealbreakers?: string[] | null
           deleted_at?: string | null
           diet?: string | null
+          discreet_mode_enabled?: boolean
           display_name?: string | null
           drinking?: string | null
           drugs?: string | null
           education?: string | null
           ethnicity?: string | null
           expectations?: string[] | null
+          friends_only_mode?: boolean
           gender?: string[] | null
           gender_custom?: string | null
           health_data_consent_at?: string | null
@@ -924,6 +947,7 @@ export type Database = {
           photos?: string[] | null
           politics?: string | null
           position?: string | null
+          preferred_language?: string | null
           prep_status?: string | null
           prev_location?: unknown
           prev_location_at?: string | null
@@ -945,6 +969,7 @@ export type Database = {
           school?: string | null
           sleep_schedule?: string | null
           smoking?: string | null
+          sos_contacts?: Json
           suspended_reason?: string | null
           suspended_until?: string | null
           terms_accepted_at?: string | null
@@ -962,6 +987,8 @@ export type Database = {
           verified?: boolean
           verified_at?: string | null
           video_clip_path?: string | null
+          voice_bio_duration_sec?: number | null
+          voice_bio_url?: string | null
           voice_prompt_duration_sec?: number | null
           voice_prompt_path?: string | null
           voice_prompt_question?: string | null
@@ -1074,6 +1101,45 @@ export type Database = {
           resolved_by?: string | null
           severity?: number
           status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      sos_events: {
+        Row: {
+          city: string | null
+          contacts_notified: Json
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          note: string | null
+          resolved: boolean
+          triggered_at: string
+          user_id: string
+        }
+        Insert: {
+          city?: string | null
+          contacts_notified?: Json
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          note?: string | null
+          resolved?: boolean
+          triggered_at?: string
+          user_id: string
+        }
+        Update: {
+          city?: string | null
+          contacts_notified?: Json
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          note?: string | null
+          resolved?: boolean
+          triggered_at?: string
           user_id?: string
         }
         Relationships: []
