@@ -82,20 +82,22 @@ const empty: Data = {
 };
 
 const STEPS = [
-  "name",
-  "birthdate",
-  "gender",
-  "pronouns",
-  "orientation",
-  "looking_for",
-  "tribes",
-  "stats",
-  "health",
-  "interests",
-  "prompts",
-  "bio",
-  "photos",
+  "basics",       // name + birthdate
+  "identity",     // gender + pronouns + orientation
+  "intent",       // looking_for + tribes
+  "stats",        // body/position/height/weight/ethnicity/relationship + health
+  "personality",  // interests + prompts + bio
+  "photos",       // photos + terms
 ] as const;
+
+const STEP_LABELS: Record<typeof STEPS[number], string> = {
+  basics: "Despre tine",
+  identity: "Identitate",
+  intent: "Ce cauți",
+  stats: "Profil fizic",
+  personality: "Personalitate",
+  photos: "Poze",
+};
 
 function calcAge(iso: string) {
   if (!iso) return 0;
