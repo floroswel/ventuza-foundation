@@ -24,6 +24,7 @@ import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as CruiseRouteImport } from './routes/cruise'
 import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AdvertiseRouteImport } from './routes/advertise'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
@@ -37,6 +38,7 @@ import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalCommunityRouteImport } from './routes/legal.community'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
+import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 
 const VisitorsRoute = VisitorsRouteImport.update({
@@ -114,6 +116,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdvertiseRoute = AdvertiseRouteImport.update({
+  id: '/advertise',
+  path: '/advertise',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -179,6 +186,11 @@ const EventsIdRoute = EventsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => EventsRoute,
 } as any)
+const AdvertiseNewRoute = AdvertiseNewRouteImport.update({
+  id: '/new',
+  path: '/new',
+  getParentRoute: () => AdvertiseRoute,
+} as any)
 const ApiPublicGooglePlayRtdnRoute = ApiPublicGooglePlayRtdnRouteImport.update({
   id: '/api/public/google-play-rtdn',
   path: '/api/public/google-play-rtdn',
@@ -188,6 +200,7 @@ const ApiPublicGooglePlayRtdnRoute = ApiPublicGooglePlayRtdnRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
   '/cruise': typeof CruiseRoute
@@ -203,6 +216,7 @@ export interface FileRoutesByFullPath {
   '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
+  '/advertise/new': typeof AdvertiseNewRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
   '/legal/community': typeof LegalCommunityRoute
@@ -219,6 +233,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
   '/cruise': typeof CruiseRoute
@@ -234,6 +249,7 @@ export interface FileRoutesByTo {
   '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
+  '/advertise/new': typeof AdvertiseNewRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
   '/legal/community': typeof LegalCommunityRoute
@@ -251,6 +267,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
   '/cruise': typeof CruiseRoute
@@ -266,6 +283,7 @@ export interface FileRoutesById {
   '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
+  '/advertise/new': typeof AdvertiseNewRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
   '/legal/community': typeof LegalCommunityRoute
@@ -284,6 +302,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/admin'
+    | '/advertise'
     | '/auth'
     | '/blocked'
     | '/cruise'
@@ -299,6 +318,7 @@ export interface FileRouteTypes {
     | '/safety'
     | '/settings'
     | '/visitors'
+    | '/advertise/new'
     | '/events/$id'
     | '/groups/$id'
     | '/legal/community'
@@ -315,6 +335,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/admin'
+    | '/advertise'
     | '/auth'
     | '/blocked'
     | '/cruise'
@@ -330,6 +351,7 @@ export interface FileRouteTypes {
     | '/safety'
     | '/settings'
     | '/visitors'
+    | '/advertise/new'
     | '/events/$id'
     | '/groups/$id'
     | '/legal/community'
@@ -346,6 +368,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/admin'
+    | '/advertise'
     | '/auth'
     | '/blocked'
     | '/cruise'
@@ -361,6 +384,7 @@ export interface FileRouteTypes {
     | '/safety'
     | '/settings'
     | '/visitors'
+    | '/advertise/new'
     | '/events/$id'
     | '/groups/$id'
     | '/legal/community'
@@ -378,6 +402,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
+  AdvertiseRoute: typeof AdvertiseRouteWithChildren
   AuthRoute: typeof AuthRoute
   BlockedRoute: typeof BlockedRoute
   CruiseRoute: typeof CruiseRoute
@@ -512,6 +537,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/advertise': {
+      id: '/advertise'
+      path: '/advertise'
+      fullPath: '/advertise'
+      preLoaderRoute: typeof AdvertiseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -603,6 +635,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsIdRouteImport
       parentRoute: typeof EventsRoute
     }
+    '/advertise/new': {
+      id: '/advertise/new'
+      path: '/new'
+      fullPath: '/advertise/new'
+      preLoaderRoute: typeof AdvertiseNewRouteImport
+      parentRoute: typeof AdvertiseRoute
+    }
     '/api/public/google-play-rtdn': {
       id: '/api/public/google-play-rtdn'
       path: '/api/public/google-play-rtdn'
@@ -612,6 +651,18 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdvertiseRouteChildren {
+  AdvertiseNewRoute: typeof AdvertiseNewRoute
+}
+
+const AdvertiseRouteChildren: AdvertiseRouteChildren = {
+  AdvertiseNewRoute: AdvertiseNewRoute,
+}
+
+const AdvertiseRouteWithChildren = AdvertiseRoute._addFileChildren(
+  AdvertiseRouteChildren,
+)
 
 interface EventsRouteChildren {
   EventsIdRoute: typeof EventsIdRoute
@@ -638,6 +689,7 @@ const GroupsRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
+  AdvertiseRoute: AdvertiseRouteWithChildren,
   AuthRoute: AuthRoute,
   BlockedRoute: BlockedRoute,
   CruiseRoute: CruiseRoute,
