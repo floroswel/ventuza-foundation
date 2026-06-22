@@ -31,7 +31,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!uid || linkedRef.current === uid) return;
       linkedRef.current = uid;
       // Fire-and-forget; safe if no orphan apps exist.
-      linkOrphanBusinessApps({ data: undefined as never }).catch(() => {});
+      linkOrphanBusinessApps().catch(() => {});
     };
 
     // Listener first so we never miss an event.
