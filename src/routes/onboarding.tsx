@@ -340,6 +340,22 @@ function StepView({
             <Label>HIV status</Label>
             <ChipGrid options={HIV_STATUS_OPTIONS} selected={data.hiv_status ? [data.hiv_status] : []} onToggle={(v) => setData({ ...data, hiv_status: data.hiv_status === v ? "" : v })} />
           </div>
+          {data.hiv_status && (
+            <label className="mt-4 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-950/20 p-3">
+              <input
+                type="checkbox"
+                className="mt-1"
+                checked={data.health_consent}
+                onChange={(e) => setData({ ...data, health_consent: e.target.checked })}
+              />
+              <span className="text-xs leading-relaxed text-foreground/85">
+                <strong>Consimțământ explicit (GDPR Art. 9):</strong> Sunt de acord ca Ventuza
+                să proceseze și să afișeze statusul meu HIV pe profilul meu, ca dată sensibilă.
+                Pot retrage acest consimțământ oricând din Setări → Confidențialitate, iar
+                câmpul va fi șters.
+              </span>
+            </label>
+          )}
         </Field>
       );
     case "interests":
@@ -358,7 +374,27 @@ function StepView({
         </Field>
       );
     case "photos":
-      return <PhotosStep data={data} setData={setData} user={user} />;
+      return (
+        <div className="space-y-6">
+          <PhotosStep data={data} setData={setData} user={user} />
+          <label className="mx-auto flex w-full max-w-lg items-start gap-3 rounded-xl border border-border bg-surface/40 p-3">
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={data.terms_accepted}
+              onChange={(e) => setData({ ...data, terms_accepted: e.target.checked })}
+            />
+            <span className="text-xs leading-relaxed text-foreground/85">
+              Am citit și accept{" "}
+              <a href="/legal/terms" target="_blank" className="text-primary underline">Termenii și Condițiile</a>,{" "}
+              <a href="/legal/privacy" target="_blank" className="text-primary underline">Politica de Confidențialitate</a>{" "}
+              și{" "}
+              <a href="/legal/community" target="_blank" className="text-primary underline">Regulile Comunității</a>.
+              Confirm că am cel puțin 18 ani.
+            </span>
+          </label>
+        </div>
+      );
   }
 }
 
