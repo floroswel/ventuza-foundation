@@ -274,6 +274,46 @@ function AdminDashboard() {
           })}
         </ul>
       ))}
+
+      {tab === "ads" && (ads.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
+          Nicio campanie încă.
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {ads.map((a) => {
+            const isActive = a.status === "active";
+            const isPending = a.status === "pending";
+            const statusColor = isActive ? "bg-green-500/15 text-green-500" : isPending ? "bg-amber-500/15 text-amber-500" : "bg-muted text-muted-foreground";
+            return (
+              <li key={a.id} className="rounded-2xl border border-border bg-surface p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${statusColor}`}>{a.status}</span>
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">{a.placement.replace("_", " ")}</span>
+                      {a.city && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px]">{a.city}</span>}
+                    </div>
+                    <p className="mt-2 text-sm font-medium">{a.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{a.brand_name ?? a.advertiser_id.slice(0, 8)} · {a.budget_cents / 100} RON · {a.impressions} impresii · {a.clicks} click-uri</p>
+                    {a.body && <p className="mt-1 text-xs text-muted-foreground">{a.body}</p>}
+                    {a.cta_url && <a href={a.cta_url} target="_blank" rel="noopener" className="mt-1 inline-block break-all text-[10px] text-primary">{a.cta_url}</a>}
+                    <p className="mt-1 text-[10px] text-muted-foreground">{new Date(a.starts_at).toLocaleDateString("ro-RO")} → {new Date(a.ends_at).toLocaleDateString("ro-RO")}</p>
+                  </div>
+                  {a.image_url && <img src={a.image_url} alt="" className="size-16 rounded-lg object-cover" />}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {!isActive && <button disabled={busy} onClick={() => setAdStatus(a.id, "active")} className="rounded-full bg-green-500/15 px-3 py-1.5 text-xs font-medium text-green-500 hover:bg-green-500/25 disabled:opacity-50"><Play className="mr-1 inline size-3" /> Activează</button>}
+                  {isActive && <button disabled={busy} onClick={() => setAdStatus(a.id, "paused")} className="rounded-full bg-yellow-500/15 px-3 py-1.5 text-xs font-medium text-yellow-500 hover:bg-yellow-500/25 disabled:opacity-50"><Pause className="mr-1 inline size-3" /> Pauză</button>}
+                  <button disabled={busy} onClick={() => setAdStatus(a.id, "rejected")} className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/25 disabled:opacity-50"><X className="mr-1 inline size-3" /> Respinge</button>
+                  <button disabled={busy} onClick={() => setAdStatus(a.id, "ended")} className="rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-surface disabled:opacity-50">Termină</button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ))}
     </main>
+
   );
 }
