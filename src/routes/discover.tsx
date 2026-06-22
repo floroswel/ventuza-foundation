@@ -197,6 +197,7 @@ function DiscoverPage() {
       </header>
 
       <StoriesStrip />
+      <div className="px-3 pt-2"><SponsoredBanner placement="discover_card" /></div>
       {loading ? (
         <CenterMessage icon={<Loader2 className="size-6 animate-spin text-primary" />} title="Finding people…" />
       ) : visible.length === 0 ? (
