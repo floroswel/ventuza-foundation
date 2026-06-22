@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-import { Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck } from "lucide-react";
+import { Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck, Megaphone, Play, Pause } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Moderation — Ventuza" }, { name: "robots", content: "noindex" }] }),
@@ -40,9 +40,10 @@ function AdminDashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [isMod, setIsMod] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<"reports" | "risk">("reports");
+  const [tab, setTab] = useState<"reports" | "risk" | "ads">("reports");
   const [reports, setReports] = useState<Report[]>([]);
   const [risk, setRisk] = useState<RiskRow[]>([]);
+  const [ads, setAds] = useState<Array<{ id: string; title: string; body: string | null; placement: string; status: string; city: string | null; cta_url: string | null; image_url: string | null; starts_at: string; ends_at: string; budget_cents: number; impressions: number; clicks: number; advertiser_id: string; brand_name?: string | null }>>([]);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ function AdminDashboard() {
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       const ok = roles?.some((r) => r.role === "admin" || r.role === "moderator") ?? false;
       setIsMod(ok);
-      if (ok) { loadReports(); loadRisk(); }
+      if (ok) { loadReports(); loadRisk(); loadAds(); }
     })();
   }, [user, loading]);
 
@@ -75,6 +76,31 @@ function AdminDashboard() {
     const { data, error } = await supabase.rpc("admin_risk_queue", { _limit: 100 });
     if (error) { toast.error(error.message); return; }
     setRisk((data ?? []) as RiskRow[]);
+  }
+
+  async function loadAds() {
+    const { data, error } = await supabase
+      .from("ad_campaigns")
+      .select("id, title, body, placement, status, city, cta_url, image_url, starts_at, ends_at, budget_cents, impressions, clicks, advertiser_id")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) { toast.error(error.message); return; }
+    const advIds = Array.from(new Set((data ?? []).map((c) => c.advertiser_id)));
+    const brandMap = new Map<string, string>();
+    if (advIds.length) {
+      const { data: advs } = await supabase.from("advertisers").select("id, brand_name").in("id", advIds);
+      advs?.forEach((a) => brandMap.set(a.id, a.brand_name));
+    }
+    setAds((data ?? []).map((c) => ({ ...c, brand_name: brandMap.get(c.advertiser_id) ?? null })));
+  }
+
+  async function setAdStatus(id: string, status: string) {
+    setBusy(true);
+    const { error } = await supabase.from("ad_campaigns").update({ status }).eq("id", id);
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success(`Status: ${status}`);
+    loadAds();
   }
 
   async function suspend(userId: string, hours: number, reason: string) {
@@ -155,6 +181,10 @@ function AdminDashboard() {
           <button onClick={() => setTab("risk")}
             className={`rounded-full px-4 py-1.5 font-medium ${tab === "risk" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
             Risc & Catfishing ({risk.length})
+          </button>
+          <button onClick={() => setTab("ads")}
+            className={`rounded-full px-4 py-1.5 font-medium ${tab === "ads" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
+            <Megaphone className="mr-1 inline size-3" /> Ads ({ads.filter(a => a.status === "pending").length})
           </button>
         </div>
       </header>
