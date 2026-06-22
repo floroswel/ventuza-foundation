@@ -24,7 +24,7 @@ import {
   ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
 
-export const Route = createFileRoute("/onboarding")({
+export const Route = createFileRoute("/n")({
   head: () => ({ meta: [{ title: "Build your profile — Ventuza" }] }),
   component: Onboarding,
 });
