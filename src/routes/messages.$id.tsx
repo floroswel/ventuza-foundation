@@ -48,8 +48,23 @@ function ThreadPage() {
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
+  const [meVerified, setMeVerified] = useState<boolean | null>(null);
   const genOpener = useServerFn(generateOpener);
   const tr = useServerFn(translateText);
+
+  // Load my verification status once
+  useEffect(() => {
+    if (!user) return;
+    void supabase
+      .from("profiles")
+      .select("verified")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => setMeVerified(!!data?.verified));
+  }, [user]);
+
+  const hasInbound = messages.some((m) => m.sender_id && m.sender_id !== user?.id);
+  const blockedFirstMessage = meVerified === false && !hasInbound;
 
   async function handleReact(msgId: string, emoji: ReactionEmoji) {
     setReactionPickerFor(null);
