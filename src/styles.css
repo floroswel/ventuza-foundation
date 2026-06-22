@@ -139,13 +139,11 @@ html {
 @utility snake-border {
   position: relative;
   isolation: isolate;
-}
-@utility snake-border {
   &::before {
     content: "";
     position: absolute;
     inset: -2px;
-    z-index: 0;
+    z-index: 2;
     border-radius: inherit;
     padding: 2px;
     background: conic-gradient(
@@ -158,6 +156,6 @@ html {
     mask-composite: exclude;
     animation: snake-spin 2.4s linear infinite;
     pointer-events: none;
-    filter: drop-shadow(0 0 6px rgba(255, 45, 85, 0.5));
+    filter: drop-shadow(0 0 6px rgba(255, 45, 85, 0.55));
   }
 }
