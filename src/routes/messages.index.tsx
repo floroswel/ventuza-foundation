@@ -99,7 +99,11 @@ function MessagesPage() {
                       {c.last_message_preview ?? "Say hi 👋"}
                     </p>
                   </div>
-                  {c.unread ? <span className="size-2 rounded-full bg-primary" /> : null}
+                  {c.unread_count > 0 ? (
+                    <span className="flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white shadow-[0_0_8px_rgba(244,63,94,0.6)]">
+                      {c.unread_count > 99 ? "99+" : c.unread_count}
+                    </span>
+                  ) : null}
                 </Link>
               </li>
             ))}
