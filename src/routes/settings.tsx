@@ -8,6 +8,8 @@ import { useAuth } from "@/lib/auth-context";
 import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
 import { BottomNav } from "@/components/BottomNav";
 import { setLookingNow } from "@/lib/social";
+import { UniquesCard } from "@/components/UniquesCard";
+import { SosCard } from "@/components/SosCard";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
@@ -280,6 +282,12 @@ function SettingsPage() {
             ))}
           </div>
         </section>
+
+        {/* Unique features: pronouns, friends-only, language, PIN, discreet mode */}
+        <UniquesCard />
+
+        {/* SOS contacts + emergency button */}
+        <SosCard />
 
         {/* Listele mele */}
         <section className="rounded-2xl border border-border bg-surface p-4">

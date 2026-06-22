@@ -16,6 +16,7 @@ import { NotificationsProvider } from "@/lib/notifications-context";
 import { Toaster } from "sonner";
 import { CookieBanner } from "@/components/CookieBanner";
 import { TravelWarning } from "@/components/TravelWarning";
+import { PinLockGate } from "@/components/PinLockGate";
 
 function NotFoundComponent() {
   return (
@@ -142,6 +143,7 @@ function RootComponent() {
           <Outlet />
           <CookieBanner />
           <TravelWarning />
+          <PinLockGate />
           <Toaster theme="dark" position="top-center" richColors />
         </NotificationsProvider>
       </AuthProvider>
