@@ -71,7 +71,7 @@ function EventsPage() {
               </button>
             ) : (
               <Link
-                to="/business/apply"
+                to="/business"
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
               >
                 <Plus className="size-3.5" /> Business
