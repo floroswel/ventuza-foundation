@@ -25,6 +25,7 @@ import { addFavorite, isFavorite, removeFavorite, sendTap, TAP_EMOJIS, type TapE
 import { sendWoof, hasWoofed } from "@/lib/ads";
 import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 
 export const Route = createFileRoute("/discover")({
