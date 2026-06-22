@@ -28,12 +28,12 @@ export function UniquesCard() {
     if (!user) return;
     setPinSet(hasPin());
     supabase.from("profiles")
-      .select("pronouns, friends_only_mode, preferred_language")
+      .select("pronouns_custom, friends_only_mode, preferred_language")
       .eq("id", user.id).maybeSingle()
       .then(({ data }) => {
         if (!data) return;
         setPrefs({
-          pronouns: data.pronouns ?? "",
+          pronouns: data.pronouns_custom ?? "",
           friends_only_mode: !!data.friends_only_mode,
           preferred_language: data.preferred_language ?? "ro",
         });
@@ -45,7 +45,11 @@ export function UniquesCard() {
     const merged = { ...prefs, ...next };
     setPrefs(merged);
     setSaving(true);
-    const { error } = await supabase.from("profiles").update(merged).eq("id", user.id);
+    const { error } = await supabase.from("profiles").update({
+      pronouns_custom: merged.pronouns,
+      friends_only_mode: merged.friends_only_mode,
+      preferred_language: merged.preferred_language,
+    }).eq("id", user.id);
     setSaving(false);
     if (error) toast.error(error.message);
   }
