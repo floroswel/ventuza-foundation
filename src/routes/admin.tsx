@@ -338,6 +338,57 @@ function AdminDashboard() {
           })}
         </ul>
       ))}
+
+      {tab === "biz" && (bizApps.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
+          Nicio cerere B2B în așteptare.
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {bizApps.map((b) => (
+            <li key={b.id} className="rounded-2xl border border-border bg-surface p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary">{b.entity_type}</span>
+                    <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-400">{b.status}</span>
+                    {b.city && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px]">{b.city}</span>}
+                    {!b.user_id && <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] text-red-400">fără cont user</span>}
+                  </div>
+                  <p className="mt-2 text-sm font-semibold">{b.legal_name}{b.brand_name && ` · ${b.brand_name}`}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {b.cui && `CUI: ${b.cui} · `}{b.category ?? "—"}{b.monthly_budget_eur ? ` · ${b.monthly_budget_eur}€/lună` : ""}
+                  </p>
+                  <p className="mt-1 text-[11px]">
+                    {b.contact_name} — <a href={`mailto:${b.contact_email}`} className="text-primary">{b.contact_email}</a>
+                    {b.contact_phone && ` · ${b.contact_phone}`}
+                  </p>
+                  {b.website && <a href={b.website} target="_blank" rel="noopener" className="text-[11px] text-primary">{b.website}</a>}
+                  <p className="mt-2 whitespace-pre-wrap text-xs text-foreground/80">{b.goals}</p>
+                  <p className="mt-1 text-[10px] text-muted-foreground">Trimisă: {new Date(b.created_at).toLocaleString("ro-RO")}</p>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  disabled={busy || !b.user_id}
+                  title={!b.user_id ? "Aplicantul nu are cont — cere-i să se înregistreze cu email-ul de contact" : ""}
+                  onClick={() => setBizStatus(b.id, "approved")}
+                  className="rounded-full bg-green-500/15 px-3 py-1.5 text-xs font-medium text-green-500 hover:bg-green-500/25 disabled:opacity-50">
+                  <Check className="mr-1 inline size-3" /> Aprobă (acordă rol B2B)
+                </button>
+                <button disabled={busy} onClick={() => setBizStatus(b.id, "reviewing")}
+                  className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-surface disabled:opacity-50">
+                  În analiză
+                </button>
+                <button disabled={busy} onClick={() => setBizStatus(b.id, "rejected")}
+                  className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/25 disabled:opacity-50">
+                  <X className="mr-1 inline size-3" /> Respinge
+                </button>
+              </div>
+            </li>
+          ))}
+        </ul>
+      ))}
     </main>
 
   );
