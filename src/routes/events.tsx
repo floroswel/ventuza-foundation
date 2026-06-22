@@ -128,7 +128,7 @@ function EventsPage() {
           <EmptyState
             icon={CalendarHeart}
             title="Niciun eveniment în curând"
-            body="Fii primul — creează unul cu butonul Host."
+            body="Evenimentele pot fi create doar de organizatorii verificați. Aplică pentru cont Business ca să găzduiești."
           />
         ) : view === "map" ? (
 
