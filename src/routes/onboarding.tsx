@@ -201,9 +201,9 @@ function Onboarding() {
       <header className="px-6 pt-6">
         <div className="flex items-center justify-between">
           <button onClick={back} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
-            <ArrowLeft className="size-4" /> Back
+            <ArrowLeft className="size-4" /> Înapoi
           </button>
-          <span className="text-xs text-muted-foreground">Step {step + 1} of {STEPS.length}</span>
+          <span className="text-xs text-muted-foreground">{STEP_LABELS[current]} · {step + 1}/{STEPS.length}</span>
         </div>
         <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-surface">
           <div
