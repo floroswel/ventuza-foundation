@@ -429,7 +429,7 @@ function ChipGrid({ options, selected, onToggle }: { options: string[]; selected
   );
 }
 
-function PromptsStep({ data, setData }: { data: Data; setData: (d: Data) => void }) {
+function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => void }) {
   const slots = [0, 1, 2];
   function setPrompt(i: number, p: Partial<Prompt>) {
     const next = [...data.prompts];
@@ -439,7 +439,8 @@ function PromptsStep({ data, setData }: { data: Data; setData: (d: Data) => void
   const used = data.prompts.map((p) => p?.question);
 
   return (
-    <Field title="Three prompts, in your words." hint="Choose three. Make them sound like you.">
+    <div className="space-y-3">
+      <Label>3 prompts în cuvintele tale</Label>
       {slots.map((i) => {
         const cur = data.prompts[i];
         return (
@@ -449,7 +450,7 @@ function PromptsStep({ data, setData }: { data: Data; setData: (d: Data) => void
               onChange={(e) => setPrompt(i, { question: e.target.value })}
               className="h-11 w-full rounded-md bg-surface-elevated px-3 text-sm text-foreground border border-border"
             >
-              <option value="">Choose a prompt…</option>
+              <option value="">Alege un prompt…</option>
               {PROMPT_OPTIONS.map((q) => (
                 <option key={q} value={q} disabled={used.includes(q) && cur?.question !== q}>{q}</option>
               ))}
@@ -459,14 +460,14 @@ function PromptsStep({ data, setData }: { data: Data; setData: (d: Data) => void
               onChange={(e) => setPrompt(i, { answer: e.target.value })}
               rows={2}
               maxLength={200}
-              placeholder="Your answer…"
+              placeholder="Răspunsul tău…"
               className="bg-background border-border"
               disabled={!cur?.question}
             />
           </div>
         );
       })}
-    </Field>
+    </div>
   );
 }
 
