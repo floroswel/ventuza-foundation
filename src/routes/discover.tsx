@@ -21,6 +21,8 @@ import {
   type DiscoverFilters, type DiscoverProfile,
 } from "@/lib/discover";
 import { addFavorite, isFavorite, removeFavorite, sendTap, TAP_EMOJIS, type TapEmoji } from "@/lib/social";
+import { sendWoof, hasWoofed } from "@/lib/ads";
+import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
 
 
@@ -530,8 +532,13 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
   const [fav, setFav] = useState(false);
   const [busy, setBusy] = useState(false);
   const [tapped, setTapped] = useState<TapEmoji | null>(null);
+  const [woofed, setWoofed] = useState(false);
 
-  useEffect(() => { isFavorite(targetId).then(setFav).catch(() => {}); setTapped(null); }, [targetId]);
+  useEffect(() => {
+    isFavorite(targetId).then(setFav).catch(() => {});
+    hasWoofed(targetId).then(setWoofed).catch(() => {});
+    setTapped(null);
+  }, [targetId]);
 
   async function toggleFav() {
     setBusy(true);
@@ -540,6 +547,13 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
       else { await addFavorite(targetId); setFav(true); toast.success("Adăugat la favorite"); }
     } catch (e) { toast.error((e as Error).message); }
     finally { setBusy(false); }
+  }
+
+  async function woof() {
+    if (woofed) return;
+    setWoofed(true);
+    try { await sendWoof(targetId); toast.success(`🐻 Woof trimis lui ${targetName}`); }
+    catch (e) { setWoofed(false); toast.error((e as Error).message); }
   }
 
   async function tap(emoji: TapEmoji) {
@@ -555,17 +569,31 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
         <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
           <Hand className="mr-1 inline size-3" /> Trimite un Tap
         </p>
-        <button
-          onClick={toggleFav}
-          disabled={busy}
-          aria-label={fav ? "Elimină de la favorite" : "Adaugă la favorite"}
-          className={cn(
-            "flex size-8 items-center justify-center rounded-full border transition-colors",
-            fav ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:text-primary",
-          )}
-        >
-          <Star className={cn("size-4", fav && "fill-primary")} />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            onClick={woof}
+            disabled={woofed}
+            aria-label="Woof"
+            title="Woof — un salut prietenos, fără presiune"
+            className={cn(
+              "flex h-8 items-center gap-1 rounded-full border px-2.5 text-xs transition-colors",
+              woofed ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:text-primary",
+            )}
+          >
+            🐻 <span>Woof</span>
+          </button>
+          <button
+            onClick={toggleFav}
+            disabled={busy}
+            aria-label={fav ? "Elimină de la favorite" : "Adaugă la favorite"}
+            className={cn(
+              "flex size-8 items-center justify-center rounded-full border transition-colors",
+              fav ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:text-primary",
+            )}
+          >
+            <Star className={cn("size-4", fav && "fill-primary")} />
+          </button>
+        </div>
       </div>
       <div className="flex flex-wrap gap-1.5">
         {TAP_EMOJIS.map((e) => (
@@ -588,6 +616,7 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
     </div>
   );
 }
+
 
 function TagBlock({ label, values, gold }: { label: string; values: string[]; gold?: boolean }) {
   return (
