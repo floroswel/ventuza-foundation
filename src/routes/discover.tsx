@@ -179,6 +179,24 @@ function DiscoverPage() {
             </p>
           </div>
           <div className="flex items-center gap-1">
+            <div className="mr-1 flex items-center rounded-full border border-border bg-surface p-0.5">
+              <button
+                onClick={() => pickView("grid")}
+                aria-label="Grid"
+                title="Grilă (Grindr/Scruff)"
+                className={cn("flex size-8 items-center justify-center rounded-full transition", view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+              >
+                <LayoutGrid className="size-4" />
+              </button>
+              <button
+                onClick={() => pickView("swipe")}
+                aria-label="Swipe"
+                title="Swipe (Tinder)"
+                className={cn("flex size-8 items-center justify-center rounded-full transition", view === "swipe" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+              >
+                <Layers className="size-4" />
+              </button>
+            </div>
             <Link
               to="/cruise"
               aria-label="Cruise · Right Now"
@@ -212,6 +230,8 @@ function DiscoverPage() {
         <CenterMessage icon={<Loader2 className="size-6 animate-spin text-primary" />} title="Finding people…" />
       ) : visible.length === 0 ? (
         <EmptyState onRefresh={() => load()} hasLocation={locStatus === "granted"} />
+      ) : view === "swipe" ? (
+        <SwipeDeck profiles={visible} onDecision={handleDecision} onOpen={setSelected} />
       ) : (
         <>
           <OnlineRow profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)} onOpen={setSelected} />
