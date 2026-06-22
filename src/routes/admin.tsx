@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-import { Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck, Megaphone, Play, Pause } from "lucide-react";
+import { Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck, Megaphone, Play, Pause, Building2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Moderation — Ventuza" }, { name: "robots", content: "noindex" }] }),
@@ -40,10 +40,11 @@ function AdminDashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [isMod, setIsMod] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<"reports" | "risk" | "ads">("reports");
+  const [tab, setTab] = useState<"reports" | "risk" | "ads" | "biz">("reports");
   const [reports, setReports] = useState<Report[]>([]);
   const [risk, setRisk] = useState<RiskRow[]>([]);
   const [ads, setAds] = useState<Array<{ id: string; title: string; body: string | null; placement: string; status: string; city: string | null; cta_url: string | null; image_url: string | null; starts_at: string; ends_at: string; budget_cents: number; impressions: number; clicks: number; advertiser_id: string; brand_name?: string | null }>>([]);
+  const [bizApps, setBizApps] = useState<Array<{ id: string; entity_type: string; legal_name: string; brand_name: string | null; cui: string | null; contact_name: string; contact_email: string; contact_phone: string | null; website: string | null; city: string | null; category: string | null; goals: string; monthly_budget_eur: number | null; status: string; user_id: string | null; created_at: string }>>([]);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -53,7 +54,7 @@ function AdminDashboard() {
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       const ok = roles?.some((r) => r.role === "admin" || r.role === "moderator") ?? false;
       setIsMod(ok);
-      if (ok) { loadReports(); loadRisk(); loadAds(); }
+      if (ok) { loadReports(); loadRisk(); loadAds(); loadBiz(); }
     })();
   }, [user, loading]);
 
@@ -101,6 +102,26 @@ function AdminDashboard() {
     if (error) return toast.error(error.message);
     toast.success(`Status: ${status}`);
     loadAds();
+  }
+
+  async function loadBiz() {
+    const { data, error } = await supabase
+      .from("business_applications")
+      .select("id, entity_type, legal_name, brand_name, cui, contact_name, contact_email, contact_phone, website, city, category, goals, monthly_budget_eur, status, user_id, created_at")
+      .in("status", ["pending", "reviewing"])
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) { toast.error(error.message); return; }
+    setBizApps((data ?? []) as typeof bizApps);
+  }
+
+  async function setBizStatus(id: string, status: "approved" | "rejected" | "reviewing") {
+    setBusy(true);
+    const { error } = await supabase.from("business_applications").update({ status }).eq("id", id);
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success(status === "approved" ? "Aprobat — rol business acordat" : `Status: ${status}`);
+    loadBiz();
   }
 
   async function suspend(userId: string, hours: number, reason: string) {
@@ -185,6 +206,10 @@ function AdminDashboard() {
           <button onClick={() => setTab("ads")}
             className={`rounded-full px-4 py-1.5 font-medium ${tab === "ads" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
             <Megaphone className="mr-1 inline size-3" /> Ads ({ads.filter(a => a.status === "pending").length})
+          </button>
+          <button onClick={() => setTab("biz")}
+            className={`rounded-full px-4 py-1.5 font-medium ${tab === "biz" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
+            <Building2 className="mr-1 inline size-3" /> B2B ({bizApps.length})
           </button>
         </div>
       </header>
@@ -311,6 +336,57 @@ function AdminDashboard() {
               </li>
             );
           })}
+        </ul>
+      ))}
+
+      {tab === "biz" && (bizApps.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
+          Nicio cerere B2B în așteptare.
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {bizApps.map((b) => (
+            <li key={b.id} className="rounded-2xl border border-border bg-surface p-4">
+              <div className="flex items-start justify-between gap-2">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-primary">{b.entity_type}</span>
+                    <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-semibold uppercase text-amber-400">{b.status}</span>
+                    {b.city && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px]">{b.city}</span>}
+                    {!b.user_id && <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] text-red-400">fără cont user</span>}
+                  </div>
+                  <p className="mt-2 text-sm font-semibold">{b.legal_name}{b.brand_name && ` · ${b.brand_name}`}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {b.cui && `CUI: ${b.cui} · `}{b.category ?? "—"}{b.monthly_budget_eur ? ` · ${b.monthly_budget_eur}€/lună` : ""}
+                  </p>
+                  <p className="mt-1 text-[11px]">
+                    {b.contact_name} — <a href={`mailto:${b.contact_email}`} className="text-primary">{b.contact_email}</a>
+                    {b.contact_phone && ` · ${b.contact_phone}`}
+                  </p>
+                  {b.website && <a href={b.website} target="_blank" rel="noopener" className="text-[11px] text-primary">{b.website}</a>}
+                  <p className="mt-2 whitespace-pre-wrap text-xs text-foreground/80">{b.goals}</p>
+                  <p className="mt-1 text-[10px] text-muted-foreground">Trimisă: {new Date(b.created_at).toLocaleString("ro-RO")}</p>
+                </div>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  disabled={busy || !b.user_id}
+                  title={!b.user_id ? "Aplicantul nu are cont — cere-i să se înregistreze cu email-ul de contact" : ""}
+                  onClick={() => setBizStatus(b.id, "approved")}
+                  className="rounded-full bg-green-500/15 px-3 py-1.5 text-xs font-medium text-green-500 hover:bg-green-500/25 disabled:opacity-50">
+                  <Check className="mr-1 inline size-3" /> Aprobă (acordă rol B2B)
+                </button>
+                <button disabled={busy} onClick={() => setBizStatus(b.id, "reviewing")}
+                  className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-surface disabled:opacity-50">
+                  În analiză
+                </button>
+                <button disabled={busy} onClick={() => setBizStatus(b.id, "rejected")}
+                  className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/25 disabled:opacity-50">
+                  <X className="mr-1 inline size-3" /> Respinge
+                </button>
+              </div>
+            </li>
+          ))}
         </ul>
       ))}
     </main>
