@@ -42,7 +42,7 @@ async function routeAfterAuth(userId: string, navigate: ReturnType<typeof useNav
     .select("onboarding_completed")
     .eq("id", userId)
     .maybeSingle();
-  if (data?.onboarding_completed) navigate({ to: "/discover", replace: true });
+  if (data?.onboarding_completed) navigate({ to: "/cruise", replace: true });
   else navigate({ to: "/onboarding", replace: true });
 }
 
