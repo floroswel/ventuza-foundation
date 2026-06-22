@@ -395,6 +395,11 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/0 to-transparent" />
+            {unread > 0 && (
+              <span className="absolute left-1.5 top-1.5 z-10 flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white shadow-[0_0_10px_rgba(244,63,94,0.75)] ring-2 ring-black/40">
+                <MessageCircle className="mr-0.5 size-2.5" />{unread > 9 ? "9+" : unread}
+              </span>
+            )}
             {online && (
               <span
                 aria-label="online"
