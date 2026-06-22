@@ -229,6 +229,96 @@ export type Database = {
         }
         Relationships: []
       }
+      business_applications: {
+        Row: {
+          accepts_dpa: boolean
+          accepts_lgbt_charter: boolean
+          accepts_terms: boolean
+          address: string | null
+          admin_notes: string | null
+          brand_name: string | null
+          category: string | null
+          city: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          contact_role: string | null
+          country: string
+          created_at: string
+          cui: string | null
+          entity_type: Database["public"]["Enums"]["business_entity_type"]
+          goals: string
+          id: string
+          legal_name: string
+          monthly_budget_eur: number | null
+          reg_com: string | null
+          social_links: string | null
+          status: Database["public"]["Enums"]["business_app_status"]
+          updated_at: string
+          user_id: string | null
+          vat_number: string | null
+          website: string | null
+        }
+        Insert: {
+          accepts_dpa?: boolean
+          accepts_lgbt_charter?: boolean
+          accepts_terms?: boolean
+          address?: string | null
+          admin_notes?: string | null
+          brand_name?: string | null
+          category?: string | null
+          city?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          contact_role?: string | null
+          country?: string
+          created_at?: string
+          cui?: string | null
+          entity_type: Database["public"]["Enums"]["business_entity_type"]
+          goals: string
+          id?: string
+          legal_name: string
+          monthly_budget_eur?: number | null
+          reg_com?: string | null
+          social_links?: string | null
+          status?: Database["public"]["Enums"]["business_app_status"]
+          updated_at?: string
+          user_id?: string | null
+          vat_number?: string | null
+          website?: string | null
+        }
+        Update: {
+          accepts_dpa?: boolean
+          accepts_lgbt_charter?: boolean
+          accepts_terms?: boolean
+          address?: string | null
+          admin_notes?: string | null
+          brand_name?: string | null
+          category?: string | null
+          city?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          contact_role?: string | null
+          country?: string
+          created_at?: string
+          cui?: string | null
+          entity_type?: Database["public"]["Enums"]["business_entity_type"]
+          goals?: string
+          id?: string
+          legal_name?: string
+          monthly_budget_eur?: number | null
+          reg_com?: string | null
+          social_links?: string | null
+          status?: Database["public"]["Enums"]["business_app_status"]
+          updated_at?: string
+          user_id?: string | null
+          vat_number?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
@@ -2474,6 +2564,18 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      business_app_status: "pending" | "reviewing" | "approved" | "rejected"
+      business_entity_type:
+        | "srl"
+        | "pfa"
+        | "ii"
+        | "sa"
+        | "ong"
+        | "asociatie"
+        | "fundatie"
+        | "brand"
+        | "organizator_eveniment"
+        | "altul"
       event_type: "party" | "bar" | "pride" | "private" | "meetup" | "other"
       notification_type:
         | "match"
@@ -2621,6 +2723,19 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "moderator", "user"],
+      business_app_status: ["pending", "reviewing", "approved", "rejected"],
+      business_entity_type: [
+        "srl",
+        "pfa",
+        "ii",
+        "sa",
+        "ong",
+        "asociatie",
+        "fundatie",
+        "brand",
+        "organizator_eveniment",
+        "altul",
+      ],
       event_type: ["party", "bar", "pride", "private", "meetup", "other"],
       notification_type: [
         "match",
