@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useSyncExternalStore, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 
@@ -10,71 +10,91 @@ type UnreadState = {
 
 const EMPTY: UnreadState = { total: 0, bySender: {}, byConversation: {} };
 
-/**
- * Tracks unread 1:1 messages for the current user.
- * - `total`: total unread count
- * - `bySender`: unread count keyed by the sender's user id (useful for grid badges)
- * - `byConversation`: unread count keyed by conversation id
- */
+// Singleton store — shared by all hook consumers, single realtime channel.
+let state: UnreadState = EMPTY;
+let currentUserId: string | null = null;
+let channel: ReturnType<typeof supabase.channel> | null = null;
+let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+let inflight: Promise<void> | null = null;
+const listeners = new Set<() => void>();
+
+function emit() {
+  for (const l of listeners) l();
+}
+
+async function doRefresh(userId: string) {
+  const { data: convs } = await supabase
+    .from("conversations")
+    .select("id, user_a, user_b")
+    .or(`user_a.eq.${userId},user_b.eq.${userId}`);
+  if (!convs?.length) {
+    state = EMPTY;
+    emit();
+    return;
+  }
+  const convIds = convs.map((c) => c.id);
+  const { data: unread } = await supabase
+    .from("messages")
+    .select("conversation_id, sender_id")
+    .in("conversation_id", convIds)
+    .neq("sender_id", userId)
+    .is("read_at", null);
+  const bySender: Record<string, number> = {};
+  const byConversation: Record<string, number> = {};
+  for (const m of (unread ?? []) as Array<{ conversation_id: string; sender_id: string }>) {
+    bySender[m.sender_id] = (bySender[m.sender_id] ?? 0) + 1;
+    byConversation[m.conversation_id] = (byConversation[m.conversation_id] ?? 0) + 1;
+  }
+  state = { total: unread?.length ?? 0, bySender, byConversation };
+  emit();
+}
+
+function scheduleRefresh(userId: string) {
+  if (refreshTimer) clearTimeout(refreshTimer);
+  refreshTimer = setTimeout(() => {
+    if (inflight) return;
+    inflight = doRefresh(userId).finally(() => { inflight = null; });
+  }, 250);
+}
+
+function ensureChannel(userId: string) {
+  if (currentUserId === userId && channel) return;
+  if (channel) {
+    supabase.removeChannel(channel);
+    channel = null;
+  }
+  currentUserId = userId;
+  channel = supabase
+    .channel(`unread-msgs-${userId}`)
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => scheduleRefresh(userId))
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" }, () => scheduleRefresh(userId))
+    .subscribe();
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
+}
+
+function getSnapshot() { return state; }
+
 export function useUnreadMessages() {
   const { user } = useAuth();
-  const [state, setState] = useState<UnreadState>(EMPTY);
+  const snap = useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
 
-  const refresh = useCallback(async () => {
+  useEffect(() => {
     if (!user) {
-      setState(EMPTY);
+      if (channel) { supabase.removeChannel(channel); channel = null; currentUserId = null; }
+      if (state !== EMPTY) { state = EMPTY; emit(); }
       return;
     }
-    // Get my conversations
-    const { data: convs } = await supabase
-      .from("conversations")
-      .select("id, user_a, user_b")
-      .or(`user_a.eq.${user.id},user_b.eq.${user.id}`);
-    if (!convs?.length) {
-      setState(EMPTY);
-      return;
-    }
-    const convIds = convs.map((c) => c.id);
-    const otherByConv = new Map<string, string>();
-    for (const c of convs) {
-      otherByConv.set(c.id, c.user_a === user.id ? c.user_b : c.user_a);
-    }
-    const { data: unread } = await supabase
-      .from("messages")
-      .select("conversation_id, sender_id")
-      .in("conversation_id", convIds)
-      .neq("sender_id", user.id)
-      .is("read_at", null);
-    const bySender: Record<string, number> = {};
-    const byConversation: Record<string, number> = {};
-    for (const m of (unread ?? []) as Array<{ conversation_id: string; sender_id: string }>) {
-      bySender[m.sender_id] = (bySender[m.sender_id] ?? 0) + 1;
-      byConversation[m.conversation_id] = (byConversation[m.conversation_id] ?? 0) + 1;
-    }
-    setState({ total: unread?.length ?? 0, bySender, byConversation });
+    ensureChannel(user.id);
+    void doRefresh(user.id);
   }, [user]);
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  const refresh = useCallback(async () => {
+    if (user) await doRefresh(user.id);
+  }, [user]);
 
-  useEffect(() => {
-    if (!user) return;
-    const ch = supabase
-      .channel(`unread-msgs-${user.id}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        () => { void refresh(); },
-      )
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "messages" },
-        () => { void refresh(); },
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(ch); };
-  }, [user, refresh]);
-
-  return { ...state, refresh };
+  return { ...snap, refresh };
 }

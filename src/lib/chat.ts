@@ -38,6 +38,7 @@ export type ConversationListItem = {
   last_message_preview: string | null;
   last_message_at: string;
   unread: boolean;
+  unread_count: number;
 };
 
 async function signPhoto(path: string | null): Promise<string | null> {
@@ -53,6 +54,21 @@ export async function getOrCreateConversation(otherUserId: string): Promise<stri
   return data as string;
 }
 
+export async function fetchPublicProfiles(ids: string[]): Promise<Map<string, { name: string | null; photo: string | null }>> {
+  const map = new Map<string, { name: string | null; photo: string | null }>();
+  if (!ids.length) return map;
+  const { data, error } = await supabase.rpc("get_public_profiles", { _ids: ids });
+  if (error) {
+    console.error("get_public_profiles failed", error);
+    return map;
+  }
+  const rows = (data ?? []) as Array<{ id: string; display_name: string | null; photos: string[] | null }>;
+  await Promise.all(rows.map(async (p) => {
+    map.set(p.id, { name: p.display_name, photo: await signPhoto(p.photos?.[0] ?? null) });
+  }));
+  return map;
+}
+
 export async function fetchConversations(meId: string): Promise<ConversationListItem[]> {
   const { data: convs, error } = await supabase
     .from("conversations")
@@ -64,27 +80,24 @@ export async function fetchConversations(meId: string): Promise<ConversationList
   if (rows.length === 0) return [];
 
   const otherIds = Array.from(new Set(rows.map((r) => (r.user_a === meId ? r.user_b : r.user_a))));
-  const { data: profs } = await supabase
-    .from("profiles")
-    .select("id, display_name, photos")
-    .in("id", otherIds);
-  const map = new Map<string, { name: string | null; photo: string | null }>();
-  for (const p of (profs ?? []) as Array<{ id: string; display_name: string | null; photos: string[] | null }>) {
-    map.set(p.id, { name: p.display_name, photo: await signPhoto(p.photos?.[0] ?? null) });
-  }
+  const profMap = await fetchPublicProfiles(otherIds);
 
-  // Unread: any message in conv where sender != me and read_at IS NULL
+  // Unread: count messages in conv where sender != me and read_at IS NULL
   const { data: unread } = await supabase
     .from("messages")
     .select("conversation_id")
     .in("conversation_id", rows.map((r) => r.id))
     .neq("sender_id", meId)
     .is("read_at", null);
-  const unreadSet = new Set<string>((unread ?? []).map((u: { conversation_id: string }) => u.conversation_id));
+  const unreadCounts = new Map<string, number>();
+  for (const u of (unread ?? []) as Array<{ conversation_id: string }>) {
+    unreadCounts.set(u.conversation_id, (unreadCounts.get(u.conversation_id) ?? 0) + 1);
+  }
 
   return rows.map((r) => {
     const oid = r.user_a === meId ? r.user_b : r.user_a;
-    const info = map.get(oid);
+    const info = profMap.get(oid);
+    const count = unreadCounts.get(r.id) ?? 0;
     return {
       id: r.id,
       other_id: oid,
@@ -92,7 +105,8 @@ export async function fetchConversations(meId: string): Promise<ConversationList
       other_photo: info?.photo ?? null,
       last_message_preview: r.last_message_preview,
       last_message_at: r.last_message_at,
-      unread: unreadSet.has(r.id),
+      unread: count > 0,
+      unread_count: count,
     };
   });
 }

@@ -1866,6 +1866,34 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       get_or_create_conversation: { Args: { _other: string }; Returns: string }
+      get_public_profiles: {
+        Args: { _ids: string[] }
+        Returns: {
+          bio: string
+          birthdate: string
+          body_type: string
+          boost_until: string
+          display_name: string
+          gender: string
+          height_cm: number
+          hide_age: boolean
+          hide_distance: boolean
+          hide_online: boolean
+          id: string
+          incognito: boolean
+          interests: string[]
+          last_seen: string
+          looking_now_until: string
+          photos: string[]
+          position: string
+          profile_slug: string
+          pronouns: string
+          travel_city: string
+          travel_until: string
+          tribes: string[]
+          verified: boolean
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       has_active_subscription: { Args: { _user: string }; Returns: boolean }
       has_role: {
