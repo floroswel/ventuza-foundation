@@ -207,6 +207,10 @@ function AdminDashboard() {
             className={`rounded-full px-4 py-1.5 font-medium ${tab === "ads" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
             <Megaphone className="mr-1 inline size-3" /> Ads ({ads.filter(a => a.status === "pending").length})
           </button>
+          <button onClick={() => setTab("biz")}
+            className={`rounded-full px-4 py-1.5 font-medium ${tab === "biz" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
+            <Building2 className="mr-1 inline size-3" /> B2B ({bizApps.length})
+          </button>
         </div>
       </header>
 
