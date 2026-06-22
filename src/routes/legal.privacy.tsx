@@ -62,13 +62,24 @@ function PrivacyPage() {
           <li>NU vindem datele tale către terți pentru publicitate.</li>
         </ul>
 
-        <h2 className="mt-6 text-base font-semibold">4. Cât timp păstrăm datele</h2>
+        <h2 className="mt-6 text-base font-semibold">4. Perioade de retenție</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
-          <li>Profil activ — pe durata existenței contului.</li>
-          <li>După ștergere — eliminare definitivă în maximum 30 de zile.</li>
-          <li>Conturi inactive {">"} 24 luni — anonimizate automat.</li>
-          <li>Logs de securitate — 90 de zile.</li>
+          <li><strong>Profil activ</strong> — pe durata existenței contului.</li>
+          <li><strong>După ștergere</strong> — eliminare definitivă în maximum 30 de zile (backup-uri rotite în 90 zile).</li>
+          <li><strong>Conturi inactive</strong> {">"} 24 luni — anonimizate automat (email și fotografii șterse).</li>
+          <li><strong>Mesaje private</strong> — păstrate cât există conversația; ștergerea contului le elimină.</li>
+          <li><strong>SOS events (locație panică)</strong> — 12 luni, apoi anonimizate.</li>
+          <li><strong>Logs autentificare și rate-limit</strong> — 90 de zile (interes legitim, securitate).</li>
+          <li><strong>Rapoarte abuz și moderare</strong> — 24 luni (obligație legală DSA).</li>
+          <li><strong>Facturi Premium și advertiseri</strong> — 10 ani (obligație fiscală RO).</li>
         </ul>
+
+        <h2 className="mt-6 text-base font-semibold">4.1. Contact DSA (Digital Services Act)</h2>
+        <p className="mt-2 text-foreground/85">
+          Punct unic de contact pentru autorități și utilizatori conform DSA Art. 11-12:
+          <a className="text-primary" href="mailto:dsa@ventuza.app"> dsa@ventuza.app</a>. Răspundem în limba română și engleză.
+          Vezi și <Link className="text-primary" to="/legal/dsa">pagina DSA dedicată</Link>.
+        </p>
 
         <h2 className="mt-6 text-base font-semibold">5. Drepturile tale GDPR</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
