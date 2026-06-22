@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Flame, Hand, Heart, Loader2, MapPin, MessageCircle, Plane, Radar, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Flame, Hand, Heart, LayoutGrid, Layers, Loader2, MapPin, MessageCircle, Plane, Radar, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
+import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
 import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
@@ -37,6 +38,10 @@ function DiscoverPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("nearby");
+  const [view, setView] = useState<"grid" | "swipe">(() => {
+    if (typeof window === "undefined") return "grid";
+    return (localStorage.getItem("vz_discover_view") as "grid" | "swipe") || "grid";
+  });
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [debouncedFilters, setDebouncedFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -45,6 +50,11 @@ function DiscoverPage() {
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
   const [match, setMatch] = useState<{ name: string; photo: string | null } | null>(null);
   const [selected, setSelected] = useState<DiscoverProfile | null>(null);
+
+  function pickView(next: "grid" | "swipe") {
+    setView(next);
+    if (typeof window !== "undefined") localStorage.setItem("vz_discover_view", next);
+  }
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
@@ -169,6 +179,24 @@ function DiscoverPage() {
             </p>
           </div>
           <div className="flex items-center gap-1">
+            <div className="mr-1 flex items-center rounded-full border border-border bg-surface p-0.5">
+              <button
+                onClick={() => pickView("grid")}
+                aria-label="Grid"
+                title="Grilă (Grindr/Scruff)"
+                className={cn("flex size-8 items-center justify-center rounded-full transition", view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+              >
+                <LayoutGrid className="size-4" />
+              </button>
+              <button
+                onClick={() => pickView("swipe")}
+                aria-label="Swipe"
+                title="Swipe (Tinder)"
+                className={cn("flex size-8 items-center justify-center rounded-full transition", view === "swipe" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+              >
+                <Layers className="size-4" />
+              </button>
+            </div>
             <Link
               to="/cruise"
               aria-label="Cruise · Right Now"
@@ -202,6 +230,8 @@ function DiscoverPage() {
         <CenterMessage icon={<Loader2 className="size-6 animate-spin text-primary" />} title="Finding people…" />
       ) : visible.length === 0 ? (
         <EmptyState onRefresh={() => load()} hasLocation={locStatus === "granted"} />
+      ) : view === "swipe" ? (
+        <SwipeDeck profiles={visible} onDecision={handleDecision} onOpen={setSelected} />
       ) : (
         <>
           <OnlineRow profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)} onOpen={setSelected} />
@@ -238,6 +268,49 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     >
       {children}
     </button>
+  );
+}
+
+function SwipeDeck({
+  profiles,
+  onDecision,
+  onOpen,
+}: {
+  profiles: DiscoverProfile[];
+  onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
+  onOpen: (p: DiscoverProfile) => void;
+}) {
+  // Render the top 3 cards as a stack (Tinder-style).
+  const stack = profiles.slice(0, 3);
+  const top = stack[0];
+  if (!top) return null;
+  return (
+    <div className="px-4 pt-3">
+      <div
+        className="relative mx-auto w-full max-w-md"
+        style={{ aspectRatio: "3 / 4.5" }}
+        onClick={(e) => {
+          // Tap (no drag) opens the profile sheet.
+          if ((e.target as HTMLElement).closest("button")) return;
+          onOpen(top);
+        }}
+      >
+        {stack.map((p, i) => (
+          <SwipeCard
+            key={p.id}
+            profile={p}
+            stackIndex={i}
+            onDecision={(a) => onDecision(p, a)}
+          />
+        ))}
+      </div>
+      <div className="mt-5 mx-auto max-w-md">
+        <SwipeActions onAction={(a) => onDecision(top, a)} />
+        <p className="mt-3 text-center text-[11px] text-muted-foreground">
+          Glisează → like · ← pass · ↑ super · sau apasă butoanele
+        </p>
+      </div>
+    </div>
   );
 }
 function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p: DiscoverProfile) => void }) {
