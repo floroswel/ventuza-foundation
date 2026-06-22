@@ -32,10 +32,12 @@ import { Route as USlugRouteImport } from './routes/u.$slug'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalSubprocessorsRouteImport } from './routes/legal.subprocessors'
+import { Route as LegalSecurityIncidentsRouteImport } from './routes/legal.security-incidents'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalDsaRouteImport } from './routes/legal.dsa'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalCommunityRouteImport } from './routes/legal.community'
+import { Route as LegalBusinessTermsRouteImport } from './routes/legal.business-terms'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
@@ -156,6 +158,11 @@ const LegalSubprocessorsRoute = LegalSubprocessorsRouteImport.update({
   path: '/legal/subprocessors',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalSecurityIncidentsRoute = LegalSecurityIncidentsRouteImport.update({
+  id: '/legal/security-incidents',
+  path: '/legal/security-incidents',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   id: '/legal/privacy',
   path: '/legal/privacy',
@@ -174,6 +181,11 @@ const LegalCookiesRoute = LegalCookiesRouteImport.update({
 const LegalCommunityRoute = LegalCommunityRouteImport.update({
   id: '/legal/community',
   path: '/legal/community',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalBusinessTermsRoute = LegalBusinessTermsRouteImport.update({
+  id: '/legal/business-terms',
+  path: '/legal/business-terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsIdRoute = GroupsIdRouteImport.update({
@@ -219,10 +231,12 @@ export interface FileRoutesByFullPath {
   '/advertise/new': typeof AdvertiseNewRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
+  '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
@@ -252,10 +266,12 @@ export interface FileRoutesByTo {
   '/advertise/new': typeof AdvertiseNewRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
+  '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
@@ -286,10 +302,12 @@ export interface FileRoutesById {
   '/advertise/new': typeof AdvertiseNewRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
+  '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
@@ -321,10 +339,12 @@ export interface FileRouteTypes {
     | '/advertise/new'
     | '/events/$id'
     | '/groups/$id'
+    | '/legal/business-terms'
     | '/legal/community'
     | '/legal/cookies'
     | '/legal/dsa'
     | '/legal/privacy'
+    | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/messages/$id'
@@ -354,10 +374,12 @@ export interface FileRouteTypes {
     | '/advertise/new'
     | '/events/$id'
     | '/groups/$id'
+    | '/legal/business-terms'
     | '/legal/community'
     | '/legal/cookies'
     | '/legal/dsa'
     | '/legal/privacy'
+    | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/messages/$id'
@@ -387,10 +409,12 @@ export interface FileRouteTypes {
     | '/advertise/new'
     | '/events/$id'
     | '/groups/$id'
+    | '/legal/business-terms'
     | '/legal/community'
     | '/legal/cookies'
     | '/legal/dsa'
     | '/legal/privacy'
+    | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/messages/$id'
@@ -418,10 +442,12 @@ export interface RootRouteChildren {
   SafetyRoute: typeof SafetyRoute
   SettingsRoute: typeof SettingsRoute
   VisitorsRoute: typeof VisitorsRoute
+  LegalBusinessTermsRoute: typeof LegalBusinessTermsRoute
   LegalCommunityRoute: typeof LegalCommunityRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
   LegalDsaRoute: typeof LegalDsaRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalSecurityIncidentsRoute: typeof LegalSecurityIncidentsRoute
   LegalSubprocessorsRoute: typeof LegalSubprocessorsRoute
   LegalTermsRoute: typeof LegalTermsRoute
   MessagesIdRoute: typeof MessagesIdRoute
@@ -593,6 +619,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalSubprocessorsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/security-incidents': {
+      id: '/legal/security-incidents'
+      path: '/legal/security-incidents'
+      fullPath: '/legal/security-incidents'
+      preLoaderRoute: typeof LegalSecurityIncidentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/privacy': {
       id: '/legal/privacy'
       path: '/legal/privacy'
@@ -619,6 +652,13 @@ declare module '@tanstack/react-router' {
       path: '/legal/community'
       fullPath: '/legal/community'
       preLoaderRoute: typeof LegalCommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/business-terms': {
+      id: '/legal/business-terms'
+      path: '/legal/business-terms'
+      fullPath: '/legal/business-terms'
+      preLoaderRoute: typeof LegalBusinessTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/groups/$id': {
@@ -705,10 +745,12 @@ const rootRouteChildren: RootRouteChildren = {
   SafetyRoute: SafetyRoute,
   SettingsRoute: SettingsRoute,
   VisitorsRoute: VisitorsRoute,
+  LegalBusinessTermsRoute: LegalBusinessTermsRoute,
   LegalCommunityRoute: LegalCommunityRoute,
   LegalCookiesRoute: LegalCookiesRoute,
   LegalDsaRoute: LegalDsaRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalSecurityIncidentsRoute: LegalSecurityIncidentsRoute,
   LegalSubprocessorsRoute: LegalSubprocessorsRoute,
   LegalTermsRoute: LegalTermsRoute,
   MessagesIdRoute: MessagesIdRoute,
