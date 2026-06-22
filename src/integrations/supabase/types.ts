@@ -14,6 +14,155 @@ export type Database = {
   }
   public: {
     Tables: {
+      ad_campaigns: {
+        Row: {
+          advertiser_id: string
+          body: string | null
+          budget_cents: number
+          city: string | null
+          clicks: number
+          created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          ends_at: string
+          id: string
+          image_url: string | null
+          impressions: number
+          placement: string
+          starts_at: string
+          status: string
+          target_event_id: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          advertiser_id: string
+          body?: string | null
+          budget_cents?: number
+          city?: string | null
+          clicks?: number
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          ends_at: string
+          id?: string
+          image_url?: string | null
+          impressions?: number
+          placement?: string
+          starts_at?: string
+          status?: string
+          target_event_id?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          advertiser_id?: string
+          body?: string | null
+          budget_cents?: number
+          city?: string | null
+          clicks?: number
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          ends_at?: string
+          id?: string
+          image_url?: string | null
+          impressions?: number
+          placement?: string
+          starts_at?: string
+          status?: string
+          target_event_id?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_campaigns_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "advertisers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ad_campaigns_target_event_id_fkey"
+            columns: ["target_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ad_events: {
+        Row: {
+          campaign_id: string
+          created_at: string
+          id: number
+          kind: string
+          user_id: string | null
+        }
+        Insert: {
+          campaign_id: string
+          created_at?: string
+          id?: number
+          kind: string
+          user_id?: string | null
+        }
+        Update: {
+          campaign_id?: string
+          created_at?: string
+          id?: number
+          kind?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ad_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ad_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      advertisers: {
+        Row: {
+          brand_name: string
+          category: string
+          contact_email: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          owner_id: string
+          updated_at: string
+          verified: boolean
+          website: string | null
+        }
+        Insert: {
+          brand_name: string
+          category?: string
+          contact_email: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          owner_id: string
+          updated_at?: string
+          verified?: boolean
+          website?: string | null
+        }
+        Update: {
+          brand_name?: string
+          category?: string
+          contact_email?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          owner_id?: string
+          updated_at?: string
+          verified?: boolean
+          website?: string | null
+        }
+        Relationships: []
+      }
       album_requests: {
         Row: {
           created_at: string
@@ -1123,6 +1272,27 @@ export type Database = {
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
+        }
+        Relationships: []
+      }
+      woofs: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
         }
         Relationships: []
       }

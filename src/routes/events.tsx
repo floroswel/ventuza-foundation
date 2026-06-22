@@ -7,6 +7,7 @@ import { listUpcomingEvents, eventTypeLabel, formatEventDate, type EventType, ty
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { NotificationBell } from "@/components/NotificationBell";
 import { EventsMap } from "@/components/EventsMap";
+import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { EmptyState } from "@/components/EmptyState";
 import { toast } from "sonner";
 
@@ -105,7 +106,9 @@ function EventsPage() {
 
       </header>
 
-      <div className="flex-1 px-3 py-3">
+      <div className="flex-1 px-3 py-3 space-y-3">
+        <SponsoredBanner placement="events_banner" city={city} />
+
         {loading ? (
           <div className="flex items-center justify-center py-24 text-muted-foreground">
             <Loader2 className="size-5 animate-spin" />
