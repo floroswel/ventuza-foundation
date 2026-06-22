@@ -52,6 +52,8 @@ type Data = {
   prompts: Prompt[];
   bio: string;
   photos: string[];
+  health_consent: boolean;
+  terms_accepted: boolean;
 };
 
 const empty: Data = {
@@ -75,6 +77,8 @@ const empty: Data = {
   prompts: [],
   bio: "",
   photos: [],
+  health_consent: false,
+  terms_accepted: false,
 };
 
 const STEPS = [
@@ -131,11 +135,11 @@ function Onboarding() {
       case "looking_for": return data.looking_for.length > 0;
       case "tribes": return true; // optional
       case "stats": return true; // optional
-      case "health": return true; // optional but encouraged
+      case "health": return !data.hiv_status || data.health_consent;
       case "interests": return data.interests.length >= 3;
       case "prompts": return data.prompts.length === 3 && data.prompts.every((p) => p.answer.trim().length > 0);
       case "bio": return data.bio.trim().length >= 20;
-      case "photos": return data.photos.length >= 1;
+      case "photos": return data.photos.length >= 1 && data.terms_accepted;
     }
   }, [current, data]);
 
@@ -168,6 +172,11 @@ function Onboarding() {
       bio: data.bio.trim(),
       prompts: data.prompts,
       photos: data.photos,
+      health_data_consent_at: data.hiv_status && data.health_consent ? new Date().toISOString() : null,
+      terms_accepted_version: "2026-06-22",
+      terms_accepted_at: new Date().toISOString(),
+      privacy_accepted_version: "2026-06-22",
+      privacy_accepted_at: new Date().toISOString(),
       onboarding_completed: true,
     }).eq("id", user.id);
     setSaving(false);
