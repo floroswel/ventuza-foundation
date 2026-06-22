@@ -237,163 +237,166 @@ function StepView({
   user?: string;
 }) {
   switch (step) {
-    case "name":
+    case "basics":
       return (
-        <Field title="What should we call you?" hint="Use a name your matches will see.">
-          <Input
-            autoFocus
-            value={data.display_name}
-            onChange={(e) => setData({ ...data, display_name: e.target.value })}
-            placeholder="Your name"
-            className="h-14 bg-surface border-border text-lg"
-          />
-        </Field>
-      );
-    case "birthdate":
-      return (
-        <Field title="When were you born?" hint="You must be 18 or older to use Ventuza.">
-          <Input
-            type="date"
-            value={data.birthdate}
-            onChange={(e) => setData({ ...data, birthdate: e.target.value })}
-            max={new Date().toISOString().split("T")[0]}
-            className="h-14 bg-surface border-border text-lg"
-          />
-          {data.birthdate && calcAge(data.birthdate) < 18 && (
-            <p className="text-sm text-destructive">You must be 18 or older.</p>
-          )}
-        </Field>
-      );
-    case "gender":
-      return (
-        <Field title="How do you identify?" hint="Pick any that fit. You can add your own.">
-          <ChipGrid options={GENDER_OPTIONS} selected={data.gender} onToggle={(v) => setData({ ...data, gender: toggle(data.gender, v) })} />
-          <div className="mt-4 space-y-2">
-            <Label>Custom (optional)</Label>
-            <Input value={data.gender_custom} onChange={(e) => setData({ ...data, gender_custom: e.target.value })} placeholder="Describe in your words" className="h-12 bg-surface border-border" />
+        <div className="mx-auto w-full max-w-lg space-y-6">
+          <div>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Să te cunoaștem</h2>
+            <p className="mt-2 text-muted-foreground">Numele și data nașterii. Trebuie să ai 18+.</p>
           </div>
-        </Field>
-      );
-    case "pronouns":
-      return (
-        <Field title="Your pronouns" hint="Pick any that fit.">
-          <ChipGrid options={PRONOUN_OPTIONS} selected={data.pronouns} onToggle={(v) => setData({ ...data, pronouns: toggle(data.pronouns, v) })} />
-          <div className="mt-4 space-y-2">
-            <Label>Custom (optional)</Label>
-            <Input value={data.pronouns_custom} onChange={(e) => setData({ ...data, pronouns_custom: e.target.value })} placeholder="e.g. ze/zir" className="h-12 bg-surface border-border" />
+          <div className="space-y-2">
+            <Label>Cum te numești?</Label>
+            <Input
+              autoFocus
+              value={data.display_name}
+              onChange={(e) => setData({ ...data, display_name: e.target.value })}
+              placeholder="Numele tău"
+              className="h-14 bg-surface border-border text-lg"
+            />
           </div>
-        </Field>
+          <div className="space-y-2">
+            <Label>Data nașterii</Label>
+            <Input
+              type="date"
+              value={data.birthdate}
+              onChange={(e) => setData({ ...data, birthdate: e.target.value })}
+              max={new Date().toISOString().split("T")[0]}
+              className="h-14 bg-surface border-border text-lg"
+            />
+            {data.birthdate && calcAge(data.birthdate) < 18 && (
+              <p className="text-sm text-destructive">Trebuie să ai cel puțin 18 ani.</p>
+            )}
+          </div>
+        </div>
       );
-    case "orientation":
+
+    case "identity":
       return (
-        <Field title="Your orientation" hint="Pick any that fit.">
-          <ChipGrid options={ORIENTATION_OPTIONS} selected={data.orientation} onToggle={(v) => setData({ ...data, orientation: toggle(data.orientation, v) })} />
-        </Field>
+        <div className="mx-auto w-full max-w-lg space-y-8">
+          <div>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Identitatea ta</h2>
+            <p className="mt-2 text-muted-foreground">Gen, pronume și orientare. Alege orice ți se potrivește.</p>
+          </div>
+          <div className="space-y-3">
+            <Label>Gen</Label>
+            <ChipGrid options={GENDER_OPTIONS} selected={data.gender} onToggle={(v) => setData({ ...data, gender: toggle(data.gender, v) })} />
+            <Input value={data.gender_custom} onChange={(e) => setData({ ...data, gender_custom: e.target.value })} placeholder="Personalizat (opțional)" className="h-11 bg-surface border-border" />
+          </div>
+          <div className="space-y-3">
+            <Label>Pronume</Label>
+            <ChipGrid options={PRONOUN_OPTIONS} selected={data.pronouns} onToggle={(v) => setData({ ...data, pronouns: toggle(data.pronouns, v) })} />
+            <Input value={data.pronouns_custom} onChange={(e) => setData({ ...data, pronouns_custom: e.target.value })} placeholder="ex: ze/zir (opțional)" className="h-11 bg-surface border-border" />
+          </div>
+          <div className="space-y-3">
+            <Label>Orientare</Label>
+            <ChipGrid options={ORIENTATION_OPTIONS} selected={data.orientation} onToggle={(v) => setData({ ...data, orientation: toggle(data.orientation, v) })} />
+          </div>
+        </div>
       );
-    case "looking_for":
+
+    case "intent":
       return (
-        <Field title="What are you looking for?" hint="Pick all that apply.">
-          <ChipGrid options={LOOKING_FOR_OPTIONS} selected={data.looking_for} onToggle={(v) => setData({ ...data, looking_for: toggle(data.looking_for, v) })} />
-        </Field>
+        <div className="mx-auto w-full max-w-lg space-y-8">
+          <div>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Ce cauți?</h2>
+            <p className="mt-2 text-muted-foreground">Alege orice se potrivește. Triburile sunt opționale.</p>
+          </div>
+          <div className="space-y-3">
+            <Label>Caut</Label>
+            <ChipGrid options={LOOKING_FOR_OPTIONS} selected={data.looking_for} onToggle={(v) => setData({ ...data, looking_for: toggle(data.looking_for, v) })} />
+          </div>
+          <div className="space-y-3">
+            <Label>Triburi <span className="text-muted-foreground font-normal">(opțional)</span></Label>
+            <ChipGrid options={TRIBE_OPTIONS} selected={data.tribes} onToggle={(v) => setData({ ...data, tribes: toggle(data.tribes, v) })} />
+          </div>
+        </div>
       );
-    case "tribes":
-      return (
-        <Field title="Your tribes" hint="Optional. Helps people who share your vibe find you.">
-          <ChipGrid options={TRIBE_OPTIONS} selected={data.tribes} onToggle={(v) => setData({ ...data, tribes: toggle(data.tribes, v) })} />
-        </Field>
-      );
+
     case "stats":
       return (
-        <Field title="Stats" hint="Optional. Show only what you want.">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Body type</Label>
-              <ChipGrid options={BODY_TYPE_OPTIONS} selected={data.body_type ? [data.body_type] : []} onToggle={(v) => setData({ ...data, body_type: data.body_type === v ? "" : v })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Position</Label>
-              <ChipGrid options={POSITION_OPTIONS} selected={data.position ? [data.position] : []} onToggle={(v) => setData({ ...data, position: data.position === v ? "" : v })} />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Height (cm)</Label>
-                <Input type="number" min={140} max={220} value={data.height_cm ?? ""}
-                  onChange={(e) => setData({ ...data, height_cm: e.target.value ? Number(e.target.value) : null })}
-                  className="h-12 bg-surface border-border" />
-              </div>
-              <div className="space-y-2">
-                <Label>Weight (kg)</Label>
-                <Input type="number" min={40} max={200} value={data.weight_kg ?? ""}
-                  onChange={(e) => setData({ ...data, weight_kg: e.target.value ? Number(e.target.value) : null })}
-                  className="h-12 bg-surface border-border" />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Ethnicity</Label>
-              <ChipGrid options={ETHNICITY_OPTIONS} selected={data.ethnicity ? [data.ethnicity] : []} onToggle={(v) => setData({ ...data, ethnicity: data.ethnicity === v ? "" : v })} />
-            </div>
-            <div className="space-y-2">
-              <Label>Relationship status</Label>
-              <ChipGrid options={RELATIONSHIP_STATUS_OPTIONS} selected={data.relationship_status ? [data.relationship_status] : []} onToggle={(v) => setData({ ...data, relationship_status: data.relationship_status === v ? "" : v })} />
-            </div>
+        <div className="mx-auto w-full max-w-lg space-y-6">
+          <div>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Profilul tău fizic</h2>
+            <p className="mt-2 text-muted-foreground">Totul este opțional. Arată doar ce vrei tu.</p>
           </div>
-        </Field>
-      );
-    case "health":
-      return (
-        <Field title="Sexual health" hint="Optional. Honesty builds trust — your status is yours to share.">
           <div className="space-y-2">
-            <Label>HIV status</Label>
-            <ChipGrid options={HIV_STATUS_OPTIONS} selected={data.hiv_status ? [data.hiv_status] : []} onToggle={(v) => setData({ ...data, hiv_status: data.hiv_status === v ? "" : v })} />
+            <Label>Tip corp</Label>
+            <ChipGrid options={BODY_TYPE_OPTIONS} selected={data.body_type ? [data.body_type] : []} onToggle={(v) => setData({ ...data, body_type: data.body_type === v ? "" : v })} />
           </div>
-          {data.hiv_status && (
-            <label className="mt-4 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-950/20 p-3">
-              <input
-                type="checkbox"
-                className="mt-1"
-                checked={data.health_consent}
-                onChange={(e) => setData({ ...data, health_consent: e.target.checked })}
-              />
-              <span className="text-xs leading-relaxed text-foreground/85">
-                <strong>Consimțământ explicit (GDPR Art. 9):</strong> Sunt de acord ca Ventuza
-                să proceseze și să afișeze statusul meu HIV pe profilul meu, ca dată sensibilă.
-                Pot retrage acest consimțământ oricând din Setări → Confidențialitate, iar
-                câmpul va fi șters.
-              </span>
-            </label>
-          )}
-        </Field>
+          <div className="space-y-2">
+            <Label>Poziție</Label>
+            <ChipGrid options={POSITION_OPTIONS} selected={data.position ? [data.position] : []} onToggle={(v) => setData({ ...data, position: data.position === v ? "" : v })} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Înălțime (cm)</Label>
+              <Input type="number" min={140} max={220} value={data.height_cm ?? ""}
+                onChange={(e) => setData({ ...data, height_cm: e.target.value ? Number(e.target.value) : null })}
+                className="h-12 bg-surface border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label>Greutate (kg)</Label>
+              <Input type="number" min={40} max={200} value={data.weight_kg ?? ""}
+                onChange={(e) => setData({ ...data, weight_kg: e.target.value ? Number(e.target.value) : null })}
+                className="h-12 bg-surface border-border" />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>Etnie</Label>
+            <ChipGrid options={ETHNICITY_OPTIONS} selected={data.ethnicity ? [data.ethnicity] : []} onToggle={(v) => setData({ ...data, ethnicity: data.ethnicity === v ? "" : v })} />
+          </div>
+          <div className="space-y-2">
+            <Label>Status relație</Label>
+            <ChipGrid options={RELATIONSHIP_STATUS_OPTIONS} selected={data.relationship_status ? [data.relationship_status] : []} onToggle={(v) => setData({ ...data, relationship_status: data.relationship_status === v ? "" : v })} />
+          </div>
+          <div className="space-y-2 pt-2 border-t border-border/50">
+            <Label>Status HIV <span className="text-muted-foreground font-normal">(opțional)</span></Label>
+            <ChipGrid options={HIV_STATUS_OPTIONS} selected={data.hiv_status ? [data.hiv_status] : []} onToggle={(v) => setData({ ...data, hiv_status: data.hiv_status === v ? "" : v })} />
+            {data.hiv_status && (
+              <label className="mt-3 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-950/20 p-3">
+                <input type="checkbox" className="mt-1" checked={data.health_consent}
+                  onChange={(e) => setData({ ...data, health_consent: e.target.checked })} />
+                <span className="text-xs leading-relaxed text-foreground/85">
+                  <strong>Consimțământ explicit (GDPR Art. 9):</strong> sunt de acord ca Ventuza
+                  să afișeze statusul meu HIV pe profil. Pot retrage oricând din Setări.
+                </span>
+              </label>
+            )}
+          </div>
+        </div>
       );
-    case "interests":
+
+    case "personality":
       return (
-        <Field title="What do you love?" hint="Pick at least 3 interests.">
-          <ChipGrid options={INTEREST_OPTIONS} selected={data.interests} onToggle={(v) => setData({ ...data, interests: toggle(data.interests, v) })} />
-        </Field>
+        <div className="mx-auto w-full max-w-lg space-y-8">
+          <div>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Cine ești</h2>
+            <p className="mt-2 text-muted-foreground">Interese, 3 prompts și o scurtă bio.</p>
+          </div>
+          <div className="space-y-3">
+            <Label>Interese <span className="text-muted-foreground font-normal">(min. 3)</span></Label>
+            <ChipGrid options={INTEREST_OPTIONS} selected={data.interests} onToggle={(v) => setData({ ...data, interests: toggle(data.interests, v) })} />
+          </div>
+          <PromptsInline data={data} setData={setData} />
+          <div className="space-y-2">
+            <Label>Bio scurt</Label>
+            <Textarea value={data.bio} onChange={(e) => setData({ ...data, bio: e.target.value })} rows={5} maxLength={500} placeholder="Câteva rânduri despre tine…" className="bg-surface border-border" />
+            <p className="text-right text-xs text-muted-foreground">{data.bio.length}/500 (min. 20)</p>
+          </div>
+        </div>
       );
-    case "prompts":
-      return <PromptsStep data={data} setData={setData} />;
-    case "bio":
-      return (
-        <Field title="A short bio" hint="A few lines. Be yourself.">
-          <Textarea value={data.bio} onChange={(e) => setData({ ...data, bio: e.target.value })} rows={6} maxLength={500} placeholder="What makes you, you…" className="bg-surface border-border" />
-          <p className="text-right text-xs text-muted-foreground">{data.bio.length}/500</p>
-        </Field>
-      );
+
     case "photos":
       return (
         <div className="space-y-6">
           <PhotosStep data={data} setData={setData} user={user} />
           <label className="mx-auto flex w-full max-w-lg items-start gap-3 rounded-xl border border-border bg-surface/40 p-3">
-            <input
-              type="checkbox"
-              className="mt-1"
-              checked={data.terms_accepted}
-              onChange={(e) => setData({ ...data, terms_accepted: e.target.checked })}
-            />
+            <input type="checkbox" className="mt-1" checked={data.terms_accepted}
+              onChange={(e) => setData({ ...data, terms_accepted: e.target.checked })} />
             <span className="text-xs leading-relaxed text-foreground/85">
               Am citit și accept{" "}
-              <a href="/legal/terms" target="_blank" className="text-primary underline">Termenii și Condițiile</a>,{" "}
-              <a href="/legal/privacy" target="_blank" className="text-primary underline">Politica de Confidențialitate</a>{" "}
+              <a href="/legal/terms" target="_blank" className="text-primary underline">Termenii</a>,{" "}
+              <a href="/legal/privacy" target="_blank" className="text-primary underline">Confidențialitatea</a>{" "}
               și{" "}
               <a href="/legal/community" target="_blank" className="text-primary underline">Regulile Comunității</a>.
               Confirm că am cel puțin 18 ani.
