@@ -1,7 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Flame, Hand, Heart, Loader2, MapPin, MessageCircle, Plane, Radar, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Flame, Hand, Heart, LayoutGrid, Layers, Loader2, MapPin, MessageCircle, Plane, Radar, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
+import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
 import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
@@ -37,6 +38,10 @@ function DiscoverPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("nearby");
+  const [view, setView] = useState<"grid" | "swipe">(() => {
+    if (typeof window === "undefined") return "grid";
+    return (localStorage.getItem("vz_discover_view") as "grid" | "swipe") || "grid";
+  });
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [debouncedFilters, setDebouncedFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -45,6 +50,11 @@ function DiscoverPage() {
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
   const [match, setMatch] = useState<{ name: string; photo: string | null } | null>(null);
   const [selected, setSelected] = useState<DiscoverProfile | null>(null);
+
+  function pickView(next: "grid" | "swipe") {
+    setView(next);
+    if (typeof window !== "undefined") localStorage.setItem("vz_discover_view", next);
+  }
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
