@@ -521,6 +521,16 @@ function ThreadPage() {
         </div>
       )}
 
+      {blockedFirstMessage && (
+        <div className="border-t border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
+          <p className="font-medium text-amber-700 dark:text-amber-400">Verifică-ți profilul pentru a trimite primul mesaj</p>
+          <p className="mt-1 text-xs text-muted-foreground">Un selfie rapid confirmă că ești o persoană reală. Reduce fake-urile pentru toți.</p>
+          <Link to="/profile" className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-medium text-white">
+            Verifică-mă acum
+          </Link>
+        </div>
+      )}
+
       <form
         onSubmit={handleSend}
         className="sticky bottom-0 flex items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur"
@@ -528,7 +538,7 @@ function ThreadPage() {
         <button
           type="button"
           onClick={handleWingman}
-          disabled={wingmanLoading}
+          disabled={wingmanLoading || blockedFirstMessage}
           aria-label="Wingman AI"
           className="flex size-11 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary disabled:opacity-50"
         >
@@ -536,18 +546,20 @@ function ThreadPage() {
         </button>
         <ChatComposerExtras
           conversationId={id}
+          disabled={blockedFirstMessage}
           onSent={(m) => setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))}
         />
         <input
           value={text}
           onChange={(e) => { setText(e.target.value); sendTypingPing(); }}
-          placeholder="Type a message…"
+          placeholder={blockedFirstMessage ? "Verifică-te pentru a scrie…" : "Type a message…"}
           maxLength={4000}
-          className="flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+          disabled={blockedFirstMessage}
+          className="flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary disabled:opacity-60"
         />
         <button
           type="submit"
-          disabled={!text.trim()}
+          disabled={!text.trim() || blockedFirstMessage}
           className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
         >
           <Send className="size-4" />
