@@ -25,6 +25,7 @@ import { addFavorite, isFavorite, removeFavorite, sendTap, TAP_EMOJIS, type TapE
 import { sendWoof, hasWoofed } from "@/lib/ads";
 import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
+import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 
 export const Route = createFileRoute("/discover")({
@@ -315,6 +316,7 @@ function SwipeDeck({
 }
 function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p: DiscoverProfile) => void }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const { bySender } = useUnreadMessages();
   useEffect(() => {
     const paths = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
     if (paths.length) signPhotos(paths).then(setUrls);
@@ -330,10 +332,11 @@ function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: 
         {profiles.map((p) => {
           const path = p.photos?.[0];
           const url = path ? urls[path] : null;
+          const unread = bySender[p.id] ?? 0;
           return (
             <button key={p.id} onClick={() => onOpen(p)} className="group flex shrink-0 flex-col items-center gap-1">
-              <span className="relative block size-[66px] rounded-full p-[2px] bg-gradient-to-tr from-primary via-primary-glow to-primary">
-                <span className="block size-full overflow-hidden rounded-full bg-surface ring-2 ring-background">
+              <span className={cn("relative block size-[66px] rounded-full p-[2px]", unread > 0 ? "snake-border bg-transparent" : "bg-gradient-to-tr from-primary via-primary-glow to-primary")}>
+                <span className="relative z-[3] block size-full overflow-hidden rounded-full bg-surface ring-2 ring-background">
                   {url ? (
                     <img src={url} alt={p.display_name ?? ""} className="size-full object-cover" />
                   ) : (
@@ -342,7 +345,12 @@ function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: 
                     </span>
                   )}
                 </span>
-                <span className="absolute bottom-0 right-0.5 size-3 rounded-full bg-emerald-400 ring-2 ring-background shadow-[0_0_6px_rgb(52,211,153)]" />
+                <span className="absolute bottom-0 right-0.5 z-[4] size-3 rounded-full bg-emerald-400 ring-2 ring-background shadow-[0_0_6px_rgb(52,211,153)]" />
+                {unread > 0 && (
+                  <span className="absolute -top-1 -right-1 z-[4] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white shadow-[0_0_8px_rgba(244,63,94,0.7)] ring-2 ring-background">
+                    {unread > 9 ? "9+" : unread}
+                  </span>
+                )}
               </span>
               <span className="max-w-[68px] truncate text-[10px] text-foreground/80">{p.display_name}</span>
             </button>
@@ -356,6 +364,7 @@ function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: 
 
 function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p: DiscoverProfile) => void }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const { bySender } = useUnreadMessages();
   useEffect(() => {
     const paths = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
     if (paths.length) signPhotos(paths).then(setUrls);
@@ -368,11 +377,15 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
         const url = path ? urls[path] : null;
         const online = isOnline(p.last_seen);
         const age = ageFrom(p.birthdate);
+        const unread = bySender[p.id] ?? 0;
         return (
           <button
             key={p.id}
             onClick={() => onOpen(p)}
-            className="group relative aspect-square overflow-hidden bg-surface focus:outline-none"
+            className={cn(
+              "group relative aspect-square overflow-hidden bg-surface focus:outline-none rounded-md",
+              unread > 0 && "snake-border",
+            )}
           >
             {url ? (
               <img src={url} alt={p.display_name ?? ""} loading="lazy" className="size-full object-cover transition-transform group-active:scale-95" />
@@ -382,6 +395,11 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
               </div>
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/0 to-transparent" />
+            {unread > 0 && (
+              <span className="absolute left-1.5 top-1.5 z-10 flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white shadow-[0_0_10px_rgba(244,63,94,0.75)] ring-2 ring-black/40">
+                <MessageCircle className="mr-0.5 size-2.5" />{unread > 9 ? "9+" : unread}
+              </span>
+            )}
             {online && (
               <span
                 aria-label="online"
