@@ -87,6 +87,12 @@ function Welcome() {
           <Link to="/legal/terms" className="text-primary hover:underline">Terms</Link> and{" "}
           <Link to="/legal/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
         </p>
+
+        <div className="mt-10 flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+          <Link to="/business" className="hover:text-primary">Pentru parteneri →</Link>
+          <span className="opacity-30">·</span>
+          <Link to="/safety" className="hover:text-primary">Siguranță</Link>
+        </div>
       </section>
     </main>
   );
