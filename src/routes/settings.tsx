@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { ChevronLeft, EyeOff, Flame, Loader2, LogOut, Mail, ShieldOff, Shield, Star, Trash2 } from "lucide-react";
+import { ChevronLeft, EyeOff, Flame, Loader2, LogOut, Mail, Megaphone, ShieldOff, Shield, Star, Trash2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
@@ -293,6 +293,19 @@ function SettingsPage() {
             </Link>
           </div>
         </section>
+
+        {/* Pentru businessuri */}
+        <section className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-surface to-surface p-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Pentru businessuri</h2>
+          <Link to="/advertise" className="mt-3 flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+            <Megaphone className="size-4 text-primary" /> Promovează-ți businessul pe Ventuza
+          </Link>
+          <p className="mt-1 text-[11px] text-muted-foreground">
+            Ai un club, bar sau eveniment LGBTQ-friendly? Ajunge la mii de utilizatori.
+          </p>
+        </section>
+
+
 
         {/* Legal */}
         <section className="rounded-2xl border border-border bg-surface p-4">
