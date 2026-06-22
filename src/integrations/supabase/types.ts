@@ -548,6 +548,7 @@ export type Database = {
           expectations: string[] | null
           gender: string[] | null
           gender_custom: string | null
+          health_data_consent_at: string | null
           height_cm: number | null
           hide_age: boolean
           hide_distance: boolean
@@ -565,6 +566,7 @@ export type Database = {
           looking_for: string[] | null
           looking_now_intent: string | null
           looking_now_until: string | null
+          marketing_consent_at: string | null
           meet_at: string[] | null
           notification_prefs: Json
           onboarding_completed: boolean
@@ -576,6 +578,8 @@ export type Database = {
           prep_status: string | null
           prev_location: unknown
           prev_location_at: string | null
+          privacy_accepted_at: string | null
+          privacy_accepted_version: string | null
           profile_slug: string | null
           prompts: Json | null
           pronouns: string[] | null
@@ -594,6 +598,8 @@ export type Database = {
           smoking: string | null
           suspended_reason: string | null
           suspended_until: string | null
+          terms_accepted_at: string | null
+          terms_accepted_version: string | null
           top_artists: Json | null
           travel_city: string | null
           travel_location: unknown
@@ -642,6 +648,7 @@ export type Database = {
           expectations?: string[] | null
           gender?: string[] | null
           gender_custom?: string | null
+          health_data_consent_at?: string | null
           height_cm?: number | null
           hide_age?: boolean
           hide_distance?: boolean
@@ -659,6 +666,7 @@ export type Database = {
           looking_for?: string[] | null
           looking_now_intent?: string | null
           looking_now_until?: string | null
+          marketing_consent_at?: string | null
           meet_at?: string[] | null
           notification_prefs?: Json
           onboarding_completed?: boolean
@@ -670,6 +678,8 @@ export type Database = {
           prep_status?: string | null
           prev_location?: unknown
           prev_location_at?: string | null
+          privacy_accepted_at?: string | null
+          privacy_accepted_version?: string | null
           profile_slug?: string | null
           prompts?: Json | null
           pronouns?: string[] | null
@@ -688,6 +698,8 @@ export type Database = {
           smoking?: string | null
           suspended_reason?: string | null
           suspended_until?: string | null
+          terms_accepted_at?: string | null
+          terms_accepted_version?: string | null
           top_artists?: Json | null
           travel_city?: string | null
           travel_location?: unknown
@@ -736,6 +748,7 @@ export type Database = {
           expectations?: string[] | null
           gender?: string[] | null
           gender_custom?: string | null
+          health_data_consent_at?: string | null
           height_cm?: number | null
           hide_age?: boolean
           hide_distance?: boolean
@@ -753,6 +766,7 @@ export type Database = {
           looking_for?: string[] | null
           looking_now_intent?: string | null
           looking_now_until?: string | null
+          marketing_consent_at?: string | null
           meet_at?: string[] | null
           notification_prefs?: Json
           onboarding_completed?: boolean
@@ -764,6 +778,8 @@ export type Database = {
           prep_status?: string | null
           prev_location?: unknown
           prev_location_at?: string | null
+          privacy_accepted_at?: string | null
+          privacy_accepted_version?: string | null
           profile_slug?: string | null
           prompts?: Json | null
           pronouns?: string[] | null
@@ -782,6 +798,8 @@ export type Database = {
           smoking?: string | null
           suspended_reason?: string | null
           suspended_until?: string | null
+          terms_accepted_at?: string | null
+          terms_accepted_version?: string | null
           top_artists?: Json | null
           travel_city?: string | null
           travel_location?: unknown

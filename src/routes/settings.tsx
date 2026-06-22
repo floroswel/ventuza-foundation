@@ -306,6 +306,21 @@ function SettingsPage() {
             <Link to="/legal/privacy" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
               <Shield className="size-4" /> Politica de confidențialitate
             </Link>
+            <Link to="/legal/cookies" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+              <Shield className="size-4" /> Politica de cookie-uri
+            </Link>
+            <Link to="/legal/community" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+              <Shield className="size-4" /> Reguli comunitate
+            </Link>
+            <Link to="/legal/subprocessors" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+              <Shield className="size-4" /> Subprocesatori
+            </Link>
+            <Link to="/legal/dsa" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+              <Shield className="size-4" /> Transparență DSA
+            </Link>
+            <a href="mailto:privacy@ventuza.app" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+              <Mail className="size-4" /> Contact privacy / DPO
+            </a>
             <a href="mailto:support@ventuza.app" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
               <Mail className="size-4" /> Contact suport
             </a>

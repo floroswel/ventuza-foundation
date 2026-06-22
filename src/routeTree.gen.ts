@@ -30,7 +30,11 @@ import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as USlugRouteImport } from './routes/u.$slug'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalSubprocessorsRouteImport } from './routes/legal.subprocessors'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
+import { Route as LegalDsaRouteImport } from './routes/legal.dsa'
+import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
+import { Route as LegalCommunityRouteImport } from './routes/legal.community'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
@@ -140,9 +144,29 @@ const LegalTermsRoute = LegalTermsRouteImport.update({
   path: '/legal/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalSubprocessorsRoute = LegalSubprocessorsRouteImport.update({
+  id: '/legal/subprocessors',
+  path: '/legal/subprocessors',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   id: '/legal/privacy',
   path: '/legal/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalDsaRoute = LegalDsaRouteImport.update({
+  id: '/legal/dsa',
+  path: '/legal/dsa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalCookiesRoute = LegalCookiesRouteImport.update({
+  id: '/legal/cookies',
+  path: '/legal/cookies',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalCommunityRoute = LegalCommunityRouteImport.update({
+  id: '/legal/community',
+  path: '/legal/community',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsIdRoute = GroupsIdRouteImport.update({
@@ -181,7 +205,11 @@ export interface FileRoutesByFullPath {
   '/visitors': typeof VisitorsRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
+  '/legal/community': typeof LegalCommunityRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/u/$slug': typeof USlugRoute
@@ -208,7 +236,11 @@ export interface FileRoutesByTo {
   '/visitors': typeof VisitorsRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
+  '/legal/community': typeof LegalCommunityRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/u/$slug': typeof USlugRoute
@@ -236,7 +268,11 @@ export interface FileRoutesById {
   '/visitors': typeof VisitorsRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
+  '/legal/community': typeof LegalCommunityRoute
+  '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/u/$slug': typeof USlugRoute
@@ -265,7 +301,11 @@ export interface FileRouteTypes {
     | '/visitors'
     | '/events/$id'
     | '/groups/$id'
+    | '/legal/community'
+    | '/legal/cookies'
+    | '/legal/dsa'
     | '/legal/privacy'
+    | '/legal/subprocessors'
     | '/legal/terms'
     | '/messages/$id'
     | '/u/$slug'
@@ -292,7 +332,11 @@ export interface FileRouteTypes {
     | '/visitors'
     | '/events/$id'
     | '/groups/$id'
+    | '/legal/community'
+    | '/legal/cookies'
+    | '/legal/dsa'
     | '/legal/privacy'
+    | '/legal/subprocessors'
     | '/legal/terms'
     | '/messages/$id'
     | '/u/$slug'
@@ -319,7 +363,11 @@ export interface FileRouteTypes {
     | '/visitors'
     | '/events/$id'
     | '/groups/$id'
+    | '/legal/community'
+    | '/legal/cookies'
+    | '/legal/dsa'
     | '/legal/privacy'
+    | '/legal/subprocessors'
     | '/legal/terms'
     | '/messages/$id'
     | '/u/$slug'
@@ -345,7 +393,11 @@ export interface RootRouteChildren {
   SafetyRoute: typeof SafetyRoute
   SettingsRoute: typeof SettingsRoute
   VisitorsRoute: typeof VisitorsRoute
+  LegalCommunityRoute: typeof LegalCommunityRoute
+  LegalCookiesRoute: typeof LegalCookiesRoute
+  LegalDsaRoute: typeof LegalDsaRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalSubprocessorsRoute: typeof LegalSubprocessorsRoute
   LegalTermsRoute: typeof LegalTermsRoute
   MessagesIdRoute: typeof MessagesIdRoute
   USlugRoute: typeof USlugRoute
@@ -502,11 +554,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/subprocessors': {
+      id: '/legal/subprocessors'
+      path: '/legal/subprocessors'
+      fullPath: '/legal/subprocessors'
+      preLoaderRoute: typeof LegalSubprocessorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/privacy': {
       id: '/legal/privacy'
       path: '/legal/privacy'
       fullPath: '/legal/privacy'
       preLoaderRoute: typeof LegalPrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/dsa': {
+      id: '/legal/dsa'
+      path: '/legal/dsa'
+      fullPath: '/legal/dsa'
+      preLoaderRoute: typeof LegalDsaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/cookies': {
+      id: '/legal/cookies'
+      path: '/legal/cookies'
+      fullPath: '/legal/cookies'
+      preLoaderRoute: typeof LegalCookiesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/community': {
+      id: '/legal/community'
+      path: '/legal/community'
+      fullPath: '/legal/community'
+      preLoaderRoute: typeof LegalCommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/groups/$id': {
@@ -573,7 +653,11 @@ const rootRouteChildren: RootRouteChildren = {
   SafetyRoute: SafetyRoute,
   SettingsRoute: SettingsRoute,
   VisitorsRoute: VisitorsRoute,
+  LegalCommunityRoute: LegalCommunityRoute,
+  LegalCookiesRoute: LegalCookiesRoute,
+  LegalDsaRoute: LegalDsaRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalSubprocessorsRoute: LegalSubprocessorsRoute,
   LegalTermsRoute: LegalTermsRoute,
   MessagesIdRoute: MessagesIdRoute,
   USlugRoute: USlugRoute,
