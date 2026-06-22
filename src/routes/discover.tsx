@@ -270,6 +270,49 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
     </button>
   );
 }
+
+function SwipeDeck({
+  profiles,
+  onDecision,
+  onOpen,
+}: {
+  profiles: DiscoverProfile[];
+  onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
+  onOpen: (p: DiscoverProfile) => void;
+}) {
+  // Render the top 3 cards as a stack (Tinder-style).
+  const stack = profiles.slice(0, 3);
+  const top = stack[0];
+  if (!top) return null;
+  return (
+    <div className="px-4 pt-3">
+      <div
+        className="relative mx-auto w-full max-w-md"
+        style={{ aspectRatio: "3 / 4.5" }}
+        onClick={(e) => {
+          // Tap (no drag) opens the profile sheet.
+          if ((e.target as HTMLElement).closest("button")) return;
+          onOpen(top);
+        }}
+      >
+        {stack.map((p, i) => (
+          <SwipeCard
+            key={p.id}
+            profile={p}
+            stackIndex={i}
+            onDecision={(a) => onDecision(p, a)}
+          />
+        ))}
+      </div>
+      <div className="mt-5 mx-auto max-w-md">
+        <SwipeActions onAction={(a) => onDecision(top, a)} />
+        <p className="mt-3 text-center text-[11px] text-muted-foreground">
+          Glisează → like · ← pass · ↑ super · sau apasă butoanele
+        </p>
+      </div>
+    </div>
+  );
+}
 function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p: DiscoverProfile) => void }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   useEffect(() => {
