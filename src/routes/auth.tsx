@@ -43,7 +43,7 @@ async function routeAfterAuth(userId: string, navigate: ReturnType<typeof useNav
     .eq("id", userId)
     .maybeSingle();
   if (data?.onboarding_completed) navigate({ to: "/cruise", replace: true });
-  else navigate({ to: "/onboarding", replace: true });
+  else navigate({ to: "/n", replace: true });
 }
 
 function AuthPage() {
@@ -92,7 +92,7 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email: emailParsed.data,
           password: passParsed.data,
-          options: { emailRedirectTo: `${window.location.origin}/onboarding` },
+          options: { emailRedirectTo: `${window.location.origin}/n` },
         });
         if (error) {
           toast.error(error.message);

@@ -141,7 +141,7 @@ function ProfilePage() {
       const p = data as Profile | null;
       setProfile(p);
       setLoading(false);
-      if (p && !p.onboarding_completed) navigate({ to: "/onboarding" });
+      if (p && !p.onboarding_completed) navigate({ to: "/n" });
       if (p?.photos?.length) {
         const out: Record<string, string> = {};
         for (const path of p.photos) {
