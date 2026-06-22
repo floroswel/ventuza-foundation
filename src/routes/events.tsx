@@ -62,12 +62,21 @@ function EventsPage() {
           <h1 className="text-lg font-semibold tracking-tight">Events</h1>
           <div className="flex items-center gap-1">
             <NotificationBell />
-            <button
-              onClick={() => setCreating(true)}
-              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-[0_0_18px_-6px_var(--primary)] hover:opacity-90"
-            >
-              <Plus className="size-3.5" /> Host
-            </button>
+            {canHostEvents ? (
+              <button
+                onClick={() => setCreating(true)}
+                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-[0_0_18px_-6px_var(--primary)] hover:opacity-90"
+              >
+                <Plus className="size-3.5" /> Host
+              </button>
+            ) : (
+              <Link
+                to="/business/apply"
+                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+              >
+                <Plus className="size-3.5" /> Business
+              </Link>
+            )}
           </div>
         </div>
         <div className="mt-3 flex gap-2">
