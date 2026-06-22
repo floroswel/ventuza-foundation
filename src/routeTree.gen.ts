@@ -22,6 +22,7 @@ import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as CruiseRouteImport } from './routes/cruise'
+import { Route as BusinessRouteImport } from './routes/business'
 import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdvertiseRouteImport } from './routes/advertise'
@@ -106,6 +107,11 @@ const DiscoverRoute = DiscoverRouteImport.update({
 const CruiseRoute = CruiseRouteImport.update({
   id: '/cruise',
   path: '/cruise',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BusinessRoute = BusinessRouteImport.update({
+  id: '/business',
+  path: '/business',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BlockedRoute = BlockedRouteImport.update({
@@ -215,6 +221,7 @@ export interface FileRoutesByFullPath {
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
+  '/business': typeof BusinessRoute
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
+  '/business': typeof BusinessRoute
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
@@ -286,6 +294,7 @@ export interface FileRoutesById {
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
+  '/business': typeof BusinessRoute
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
@@ -323,6 +332,7 @@ export interface FileRouteTypes {
     | '/advertise'
     | '/auth'
     | '/blocked'
+    | '/business'
     | '/cruise'
     | '/discover'
     | '/events'
@@ -358,6 +368,7 @@ export interface FileRouteTypes {
     | '/advertise'
     | '/auth'
     | '/blocked'
+    | '/business'
     | '/cruise'
     | '/discover'
     | '/events'
@@ -393,6 +404,7 @@ export interface FileRouteTypes {
     | '/advertise'
     | '/auth'
     | '/blocked'
+    | '/business'
     | '/cruise'
     | '/discover'
     | '/events'
@@ -429,6 +441,7 @@ export interface RootRouteChildren {
   AdvertiseRoute: typeof AdvertiseRouteWithChildren
   AuthRoute: typeof AuthRoute
   BlockedRoute: typeof BlockedRoute
+  BusinessRoute: typeof BusinessRoute
   CruiseRoute: typeof CruiseRoute
   DiscoverRoute: typeof DiscoverRoute
   EventsRoute: typeof EventsRouteWithChildren
@@ -547,6 +560,13 @@ declare module '@tanstack/react-router' {
       path: '/cruise'
       fullPath: '/cruise'
       preLoaderRoute: typeof CruiseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/business': {
+      id: '/business'
+      path: '/business'
+      fullPath: '/business'
+      preLoaderRoute: typeof BusinessRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/blocked': {
@@ -732,6 +752,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdvertiseRoute: AdvertiseRouteWithChildren,
   AuthRoute: AuthRoute,
   BlockedRoute: BlockedRoute,
+  BusinessRoute: BusinessRoute,
   CruiseRoute: CruiseRoute,
   DiscoverRoute: DiscoverRoute,
   EventsRoute: EventsRouteWithChildren,
