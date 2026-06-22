@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
-import { Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck } from "lucide-react";
+import { Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck, Megaphone, Play, Pause } from "lucide-react";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Moderation — Ventuza" }, { name: "robots", content: "noindex" }] }),
@@ -40,9 +40,10 @@ function AdminDashboard() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [isMod, setIsMod] = useState<boolean | null>(null);
-  const [tab, setTab] = useState<"reports" | "risk">("reports");
+  const [tab, setTab] = useState<"reports" | "risk" | "ads">("reports");
   const [reports, setReports] = useState<Report[]>([]);
   const [risk, setRisk] = useState<RiskRow[]>([]);
+  const [ads, setAds] = useState<Array<{ id: string; title: string; body: string | null; placement: string; status: string; city: string | null; cta_url: string | null; image_url: string | null; starts_at: string; ends_at: string; budget_cents: number; impressions: number; clicks: number; advertiser_id: string; brand_name?: string | null }>>([]);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -52,7 +53,7 @@ function AdminDashboard() {
       const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       const ok = roles?.some((r) => r.role === "admin" || r.role === "moderator") ?? false;
       setIsMod(ok);
-      if (ok) { loadReports(); loadRisk(); }
+      if (ok) { loadReports(); loadRisk(); loadAds(); }
     })();
   }, [user, loading]);
 
@@ -75,6 +76,31 @@ function AdminDashboard() {
     const { data, error } = await supabase.rpc("admin_risk_queue", { _limit: 100 });
     if (error) { toast.error(error.message); return; }
     setRisk((data ?? []) as RiskRow[]);
+  }
+
+  async function loadAds() {
+    const { data, error } = await supabase
+      .from("ad_campaigns")
+      .select("id, title, body, placement, status, city, cta_url, image_url, starts_at, ends_at, budget_cents, impressions, clicks, advertiser_id")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) { toast.error(error.message); return; }
+    const advIds = Array.from(new Set((data ?? []).map((c) => c.advertiser_id)));
+    const brandMap = new Map<string, string>();
+    if (advIds.length) {
+      const { data: advs } = await supabase.from("advertisers").select("id, brand_name").in("id", advIds);
+      advs?.forEach((a) => brandMap.set(a.id, a.brand_name));
+    }
+    setAds((data ?? []).map((c) => ({ ...c, brand_name: brandMap.get(c.advertiser_id) ?? null })));
+  }
+
+  async function setAdStatus(id: string, status: string) {
+    setBusy(true);
+    const { error } = await supabase.from("ad_campaigns").update({ status }).eq("id", id);
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    toast.success(`Status: ${status}`);
+    loadAds();
   }
 
   async function suspend(userId: string, hours: number, reason: string) {
@@ -155,6 +181,10 @@ function AdminDashboard() {
           <button onClick={() => setTab("risk")}
             className={`rounded-full px-4 py-1.5 font-medium ${tab === "risk" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
             Risc & Catfishing ({risk.length})
+          </button>
+          <button onClick={() => setTab("ads")}
+            className={`rounded-full px-4 py-1.5 font-medium ${tab === "ads" ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground"}`}>
+            <Megaphone className="mr-1 inline size-3" /> Ads ({ads.filter(a => a.status === "pending").length})
           </button>
         </div>
       </header>
@@ -244,6 +274,46 @@ function AdminDashboard() {
           })}
         </ul>
       ))}
+
+      {tab === "ads" && (ads.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
+          Nicio campanie încă.
+        </div>
+      ) : (
+        <ul className="space-y-3">
+          {ads.map((a) => {
+            const isActive = a.status === "active";
+            const isPending = a.status === "pending";
+            const statusColor = isActive ? "bg-green-500/15 text-green-500" : isPending ? "bg-amber-500/15 text-amber-500" : "bg-muted text-muted-foreground";
+            return (
+              <li key={a.id} className="rounded-2xl border border-border bg-surface p-4">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${statusColor}`}>{a.status}</span>
+                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">{a.placement.replace("_", " ")}</span>
+                      {a.city && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px]">{a.city}</span>}
+                    </div>
+                    <p className="mt-2 text-sm font-medium">{a.title}</p>
+                    <p className="text-[10px] text-muted-foreground">{a.brand_name ?? a.advertiser_id.slice(0, 8)} · {a.budget_cents / 100} RON · {a.impressions} impresii · {a.clicks} click-uri</p>
+                    {a.body && <p className="mt-1 text-xs text-muted-foreground">{a.body}</p>}
+                    {a.cta_url && <a href={a.cta_url} target="_blank" rel="noopener" className="mt-1 inline-block break-all text-[10px] text-primary">{a.cta_url}</a>}
+                    <p className="mt-1 text-[10px] text-muted-foreground">{new Date(a.starts_at).toLocaleDateString("ro-RO")} → {new Date(a.ends_at).toLocaleDateString("ro-RO")}</p>
+                  </div>
+                  {a.image_url && <img src={a.image_url} alt="" className="size-16 rounded-lg object-cover" />}
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {!isActive && <button disabled={busy} onClick={() => setAdStatus(a.id, "active")} className="rounded-full bg-green-500/15 px-3 py-1.5 text-xs font-medium text-green-500 hover:bg-green-500/25 disabled:opacity-50"><Play className="mr-1 inline size-3" /> Activează</button>}
+                  {isActive && <button disabled={busy} onClick={() => setAdStatus(a.id, "paused")} className="rounded-full bg-yellow-500/15 px-3 py-1.5 text-xs font-medium text-yellow-500 hover:bg-yellow-500/25 disabled:opacity-50"><Pause className="mr-1 inline size-3" /> Pauză</button>}
+                  <button disabled={busy} onClick={() => setAdStatus(a.id, "rejected")} className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs font-medium text-red-500 hover:bg-red-500/25 disabled:opacity-50"><X className="mr-1 inline size-3" /> Respinge</button>
+                  <button disabled={busy} onClick={() => setAdStatus(a.id, "ended")} className="rounded-full border border-border px-3 py-1.5 text-xs font-medium hover:bg-surface disabled:opacity-50">Termină</button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ))}
     </main>
+
   );
 }
