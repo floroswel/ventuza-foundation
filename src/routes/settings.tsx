@@ -339,6 +339,15 @@ function SettingsPage() {
             <Link to="/legal/dsa" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
               <Shield className="size-4" /> Transparență DSA
             </Link>
+            <Link to="/legal/security-incidents" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+              <Shield className="size-4" /> Incidente de securitate
+            </Link>
+            <Link to="/legal/business-terms" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+              <Shield className="size-4" /> Termeni B2B (advertiseri)
+            </Link>
+            <Link to="/business" className="flex items-center gap-2 py-1.5 text-primary hover:text-primary/80">
+              <Shield className="size-4" /> Devino partener B2B →
+            </Link>
             <a href="mailto:privacy@ventuza.app" className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
               <Mail className="size-4" /> Contact privacy / DPO
             </a>
