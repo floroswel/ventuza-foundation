@@ -1499,222 +1499,6 @@ export type Database = {
         }
         Relationships: []
       }
-      public_profiles: {
-        Row: {
-          accept_nsfw_photos: boolean | null
-          anthem: Json | null
-          ask_me_about: string[] | null
-          bio: string | null
-          birthdate: string | null
-          body_type: string | null
-          boost_until: string | null
-          cannabis: string | null
-          children: string | null
-          company: string | null
-          created_at: string | null
-          dealbreakers: string[] | null
-          diet: string | null
-          display_name: string | null
-          drinking: string | null
-          drugs: string | null
-          education: string | null
-          ethnicity: string | null
-          expectations: string[] | null
-          friends_only_mode: boolean | null
-          gender: string[] | null
-          gender_custom: string | null
-          height_cm: number | null
-          hide_age: boolean | null
-          hide_distance: boolean | null
-          hide_online: boolean | null
-          id: string | null
-          ideal_match: string | null
-          incognito: boolean | null
-          interests: string[] | null
-          job_title: string | null
-          languages: string[] | null
-          last_seen: string | null
-          looking_for: string[] | null
-          looking_now_intent: string | null
-          looking_now_until: string | null
-          meet_at: string[] | null
-          orientation: string[] | null
-          pets: string[] | null
-          photos: string[] | null
-          politics: string | null
-          position: string | null
-          preferred_language: string | null
-          profile_slug: string | null
-          prompts: Json | null
-          pronouns: string[] | null
-          pronouns_custom: string | null
-          relationship_status: string | null
-          religion: string | null
-          scenes: string[] | null
-          school: string | null
-          sleep_schedule: string | null
-          smoking: string | null
-          top_artists: Json | null
-          travel_city: string | null
-          travel_until: string | null
-          tribes: string[] | null
-          updated_at: string | null
-          verified: boolean | null
-          verified_at: string | null
-          video_clip_path: string | null
-          voice_bio_duration_sec: number | null
-          voice_bio_url: string | null
-          voice_prompt_duration_sec: number | null
-          voice_prompt_path: string | null
-          voice_prompt_question: string | null
-          weight_kg: number | null
-          workout: string | null
-          zodiac: string | null
-        }
-        Insert: {
-          accept_nsfw_photos?: boolean | null
-          anthem?: Json | null
-          ask_me_about?: string[] | null
-          bio?: string | null
-          birthdate?: string | null
-          body_type?: string | null
-          boost_until?: string | null
-          cannabis?: string | null
-          children?: string | null
-          company?: string | null
-          created_at?: string | null
-          dealbreakers?: string[] | null
-          diet?: string | null
-          display_name?: string | null
-          drinking?: string | null
-          drugs?: string | null
-          education?: string | null
-          ethnicity?: string | null
-          expectations?: string[] | null
-          friends_only_mode?: boolean | null
-          gender?: string[] | null
-          gender_custom?: string | null
-          height_cm?: number | null
-          hide_age?: boolean | null
-          hide_distance?: boolean | null
-          hide_online?: boolean | null
-          id?: string | null
-          ideal_match?: string | null
-          incognito?: boolean | null
-          interests?: string[] | null
-          job_title?: string | null
-          languages?: string[] | null
-          last_seen?: string | null
-          looking_for?: string[] | null
-          looking_now_intent?: string | null
-          looking_now_until?: string | null
-          meet_at?: string[] | null
-          orientation?: string[] | null
-          pets?: string[] | null
-          photos?: string[] | null
-          politics?: string | null
-          position?: string | null
-          preferred_language?: string | null
-          profile_slug?: string | null
-          prompts?: Json | null
-          pronouns?: string[] | null
-          pronouns_custom?: string | null
-          relationship_status?: string | null
-          religion?: string | null
-          scenes?: string[] | null
-          school?: string | null
-          sleep_schedule?: string | null
-          smoking?: string | null
-          top_artists?: Json | null
-          travel_city?: string | null
-          travel_until?: string | null
-          tribes?: string[] | null
-          updated_at?: string | null
-          verified?: boolean | null
-          verified_at?: string | null
-          video_clip_path?: string | null
-          voice_bio_duration_sec?: number | null
-          voice_bio_url?: string | null
-          voice_prompt_duration_sec?: number | null
-          voice_prompt_path?: string | null
-          voice_prompt_question?: string | null
-          weight_kg?: number | null
-          workout?: string | null
-          zodiac?: string | null
-        }
-        Update: {
-          accept_nsfw_photos?: boolean | null
-          anthem?: Json | null
-          ask_me_about?: string[] | null
-          bio?: string | null
-          birthdate?: string | null
-          body_type?: string | null
-          boost_until?: string | null
-          cannabis?: string | null
-          children?: string | null
-          company?: string | null
-          created_at?: string | null
-          dealbreakers?: string[] | null
-          diet?: string | null
-          display_name?: string | null
-          drinking?: string | null
-          drugs?: string | null
-          education?: string | null
-          ethnicity?: string | null
-          expectations?: string[] | null
-          friends_only_mode?: boolean | null
-          gender?: string[] | null
-          gender_custom?: string | null
-          height_cm?: number | null
-          hide_age?: boolean | null
-          hide_distance?: boolean | null
-          hide_online?: boolean | null
-          id?: string | null
-          ideal_match?: string | null
-          incognito?: boolean | null
-          interests?: string[] | null
-          job_title?: string | null
-          languages?: string[] | null
-          last_seen?: string | null
-          looking_for?: string[] | null
-          looking_now_intent?: string | null
-          looking_now_until?: string | null
-          meet_at?: string[] | null
-          orientation?: string[] | null
-          pets?: string[] | null
-          photos?: string[] | null
-          politics?: string | null
-          position?: string | null
-          preferred_language?: string | null
-          profile_slug?: string | null
-          prompts?: Json | null
-          pronouns?: string[] | null
-          pronouns_custom?: string | null
-          relationship_status?: string | null
-          religion?: string | null
-          scenes?: string[] | null
-          school?: string | null
-          sleep_schedule?: string | null
-          smoking?: string | null
-          top_artists?: Json | null
-          travel_city?: string | null
-          travel_until?: string | null
-          tribes?: string[] | null
-          updated_at?: string | null
-          verified?: boolean | null
-          verified_at?: string | null
-          video_clip_path?: string | null
-          voice_bio_duration_sec?: number | null
-          voice_bio_url?: string | null
-          voice_prompt_duration_sec?: number | null
-          voice_prompt_path?: string | null
-          voice_prompt_question?: string | null
-          weight_kg?: number | null
-          workout?: string | null
-          zodiac?: string | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
       _postgis_deprecate: {
@@ -2082,6 +1866,34 @@ export type Database = {
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
       get_or_create_conversation: { Args: { _other: string }; Returns: string }
+      get_public_profiles: {
+        Args: { _ids: string[] }
+        Returns: {
+          bio: string
+          birthdate: string
+          body_type: string
+          boost_until: string
+          display_name: string
+          gender: string
+          height_cm: number
+          hide_age: boolean
+          hide_distance: boolean
+          hide_online: boolean
+          id: string
+          incognito: boolean
+          interests: string[]
+          last_seen: string
+          looking_now_until: string
+          photos: string[]
+          position: string
+          profile_slug: string
+          pronouns: string
+          travel_city: string
+          travel_until: string
+          tribes: string[]
+          verified: boolean
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       has_active_subscription: { Args: { _user: string }; Returns: boolean }
       has_role: {
