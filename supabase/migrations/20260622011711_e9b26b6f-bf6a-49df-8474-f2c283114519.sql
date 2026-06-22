@@ -1,0 +1,1 @@
+ALTER TABLE public.swipes ADD COLUMN IF NOT EXISTS match_score smallint; CREATE INDEX IF NOT EXISTS idx_swipes_match_score ON public.swipes(swiper_id, match_score DESC);

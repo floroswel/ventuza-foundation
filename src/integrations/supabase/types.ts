@@ -1277,6 +1277,7 @@ export type Database = {
           action: string
           created_at: string
           id: string
+          match_score: number | null
           swiper_id: string
           target_id: string
         }
@@ -1284,6 +1285,7 @@ export type Database = {
           action: string
           created_at?: string
           id?: string
+          match_score?: number | null
           swiper_id: string
           target_id: string
         }
@@ -1291,6 +1293,7 @@ export type Database = {
           action?: string
           created_at?: string
           id?: string
+          match_score?: number | null
           swiper_id?: string
           target_id?: string
         }

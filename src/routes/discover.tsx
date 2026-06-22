@@ -751,7 +751,16 @@ function CenterMessage({ icon, title, desc, action }: { icon: React.ReactNode; t
 function MatchScoreBadge({ target }: { target: DiscoverProfile }) {
   const { user } = useAuth();
   const score = useServerFn(matchScore);
-  const [result, setResult] = useState<{ score: number; reason: string } | null>(null);
+  const cacheKey = user ? `vz_ms_${user.id}_${target.id}` : "";
+  const [result, setResult] = useState<{ score: number; reason: string } | null>(() => {
+    if (typeof window === "undefined" || !cacheKey) return null;
+    try {
+      const raw = sessionStorage.getItem(cacheKey);
+      return raw ? (JSON.parse(raw) as { score: number; reason: string }) : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(false);
 
   async function run() {
@@ -789,6 +798,7 @@ function MatchScoreBadge({ target }: { target: DiscoverProfile }) {
         },
       });
       setResult(res);
+      try { if (cacheKey) sessionStorage.setItem(cacheKey, JSON.stringify(res)); } catch { /* ignore */ }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "AI eșuat");
     } finally {
