@@ -141,8 +141,6 @@ function Onboarding() {
         return !data.hiv_status || data.health_consent;
       case "personality":
         return data.interests.length >= 3
-          && data.prompts.length === 3
-          && data.prompts.every((p) => p.answer.trim().length > 0)
           && data.bio.trim().length >= 20;
       case "photos":
         return data.photos.length >= 1 && data.terms_accepted;
