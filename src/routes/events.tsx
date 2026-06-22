@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { CalendarHeart, Loader2, MapPin, Map as MapIcon, Plus, Users, Clock, List } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useUserRoles } from "@/hooks/useUserRole";
 import { BottomNav } from "@/components/BottomNav";
 import { listUpcomingEvents, eventTypeLabel, formatEventDate, type EventType, type EventWithMeta } from "@/lib/events";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
