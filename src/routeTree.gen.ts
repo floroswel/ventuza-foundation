@@ -15,8 +15,8 @@ import { Route as SafetyRouteImport } from './routes/safety'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PremiumRouteImport } from './routes/premium'
-import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as NRouteImport } from './routes/n'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as EventsRouteImport } from './routes/events'
@@ -74,14 +74,14 @@ const PremiumRoute = PremiumRouteImport.update({
   path: '/premium',
   getParentRoute: () => rootRouteImport,
 } as any)
-const OnboardingRoute = OnboardingRouteImport.update({
-  id: '/onboarding',
-  path: '/onboarding',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const NotificationsRoute = NotificationsRouteImport.update({
   id: '/notifications',
   path: '/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NRoute = NRouteImport.update({
+  id: '/n',
+  path: '/n',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsRoute = GroupsRouteImport.update({
@@ -227,8 +227,8 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/n': typeof NRoute
   '/notifications': typeof NotificationsRoute
-  '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -263,8 +263,8 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/n': typeof NRoute
   '/notifications': typeof NotificationsRoute
-  '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -300,8 +300,8 @@ export interface FileRoutesById {
   '/events': typeof EventsRouteWithChildren
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/n': typeof NRoute
   '/notifications': typeof NotificationsRoute
-  '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/reset-password': typeof ResetPasswordRoute
@@ -338,8 +338,8 @@ export interface FileRouteTypes {
     | '/events'
     | '/favorites'
     | '/groups'
+    | '/n'
     | '/notifications'
-    | '/onboarding'
     | '/premium'
     | '/profile'
     | '/reset-password'
@@ -374,8 +374,8 @@ export interface FileRouteTypes {
     | '/events'
     | '/favorites'
     | '/groups'
+    | '/n'
     | '/notifications'
-    | '/onboarding'
     | '/premium'
     | '/profile'
     | '/reset-password'
@@ -410,8 +410,8 @@ export interface FileRouteTypes {
     | '/events'
     | '/favorites'
     | '/groups'
+    | '/n'
     | '/notifications'
-    | '/onboarding'
     | '/premium'
     | '/profile'
     | '/reset-password'
@@ -447,8 +447,8 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRouteWithChildren
   FavoritesRoute: typeof FavoritesRoute
   GroupsRoute: typeof GroupsRouteWithChildren
+  NRoute: typeof NRoute
   NotificationsRoute: typeof NotificationsRoute
-  OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
@@ -513,18 +513,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PremiumRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/onboarding': {
-      id: '/onboarding'
-      path: '/onboarding'
-      fullPath: '/onboarding'
-      preLoaderRoute: typeof OnboardingRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/notifications': {
       id: '/notifications'
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/n': {
+      id: '/n'
+      path: '/n'
+      fullPath: '/n'
+      preLoaderRoute: typeof NRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/groups': {
@@ -758,8 +758,8 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRouteWithChildren,
   FavoritesRoute: FavoritesRoute,
   GroupsRoute: GroupsRouteWithChildren,
+  NRoute: NRoute,
   NotificationsRoute: NotificationsRoute,
-  OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
   ResetPasswordRoute: ResetPasswordRoute,
