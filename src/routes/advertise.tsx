@@ -32,6 +32,8 @@ function AdvertisePage() {
   const [adv, setAdv] = useState<Advertiser | null>(null);
   const [campaigns, setCampaigns] = useState<AdCampaign[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isBusiness, setIsBusiness] = useState<boolean | null>(null);
+  const [pendingApp, setPendingApp] = useState<{ status: string } | null>(null);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
@@ -41,9 +43,31 @@ function AdvertisePage() {
     if (!user) return;
     (async () => {
       setLoading(true);
-      const a = await getMyAdvertiser();
-      setAdv(a);
-      if (a) setCampaigns(await listMyCampaigns(a.id));
+      // Check business role
+      const { data: roleRow } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "business")
+        .maybeSingle();
+      const hasBusinessRole = !!roleRow;
+      setIsBusiness(hasBusinessRole);
+
+      if (hasBusinessRole) {
+        const a = await getMyAdvertiser();
+        setAdv(a);
+        if (a) setCampaigns(await listMyCampaigns(a.id));
+      } else {
+        // Check if they already submitted an application
+        const { data: app } = await supabase
+          .from("business_applications")
+          .select("status")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        setPendingApp(app);
+      }
       setLoading(false);
     })();
   }, [user]);
@@ -68,11 +92,57 @@ function AdvertisePage() {
       </header>
 
       <div className="mx-auto max-w-md space-y-6 px-4 py-6">
-        {!adv ? <OnboardAdvertiser onCreated={setAdv} /> : <AdvertiserDashboard adv={adv} campaigns={campaigns} />}
+        {isBusiness === false ? (
+          <BusinessGate pendingApp={pendingApp} />
+        ) : !adv ? (
+          <OnboardAdvertiser onCreated={setAdv} />
+        ) : (
+          <AdvertiserDashboard adv={adv} campaigns={campaigns} />
+        )}
       </div>
 
       <BottomNav />
     </div>
+  );
+}
+
+function BusinessGate({ pendingApp }: { pendingApp: { status: string } | null }) {
+  const statusLabel: Record<string, string> = {
+    pending: "În așteptare — evaluăm cererea ta",
+    reviewing: "În analiză de echipa Ventuza",
+    rejected: "Respinsă — contactează business@ventuza.app",
+  };
+  return (
+    <section className="rounded-2xl border border-border bg-gradient-to-br from-primary/15 via-surface to-surface p-5">
+      <Megaphone className="size-7 text-primary" />
+      <h2 className="mt-2 text-lg font-semibold">Cont B2B necesar</h2>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Reclamele și evenimentele promovate sunt rezervate <span className="font-semibold text-foreground">partenerilor B2B aprobați</span>{" "}
+        (firme, branduri, ONG-uri, organizatori). Utilizatorii obișnuiți pot folosi gratuit toate funcțiile aplicației,
+        dar nu pot publica anunțuri comerciale.
+      </p>
+
+      {pendingApp ? (
+        <div className="mt-4 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs text-amber-200">
+          <p className="font-semibold">Cererea ta a fost trimisă</p>
+          <p className="mt-1">{statusLabel[pendingApp.status] ?? `Status: ${pendingApp.status}`}</p>
+          <p className="mt-2 text-[10px] text-amber-200/70">
+            Te contactăm pe email în max 3 zile lucrătoare. După aprobare, acces automat la dashboard Ads.
+          </p>
+        </div>
+      ) : (
+        <Link
+          to="/business"
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground"
+        >
+          Înscrie-te ca partener B2B
+        </Link>
+      )}
+
+      <p className="mt-3 text-center text-[10px] text-muted-foreground">
+        Sau scrie la <a href="mailto:business@ventuza.app" className="text-primary">business@ventuza.app</a>
+      </p>
+    </section>
   );
 }
 
