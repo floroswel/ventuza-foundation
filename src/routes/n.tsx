@@ -369,13 +369,12 @@ function StepView({
         <div className="mx-auto w-full max-w-lg space-y-8">
           <div>
             <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Cine ești</h2>
-            <p className="mt-2 text-muted-foreground">Interese, 3 prompts și o scurtă bio.</p>
+            <p className="mt-2 text-muted-foreground">Interese și o scurtă bio.</p>
           </div>
           <div className="space-y-3">
             <Label>Interese <span className="text-muted-foreground font-normal">(min. 3)</span></Label>
             <ChipGrid options={INTEREST_OPTIONS} selected={data.interests} onToggle={(v) => setData({ ...data, interests: toggle(data.interests, v) })} />
           </div>
-          <PromptsInline data={data} setData={setData} />
           <div className="space-y-2">
             <Label>Bio scurt</Label>
             <Textarea value={data.bio} onChange={(e) => setData({ ...data, bio: e.target.value })} rows={5} maxLength={500} placeholder="Câteva rânduri despre tine…" className="bg-surface border-border" />
