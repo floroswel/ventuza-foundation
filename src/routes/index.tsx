@@ -33,7 +33,7 @@ function Welcome() {
         .eq("id", user.id)
         .maybeSingle();
       navigate({
-        to: data?.onboarding_completed ? "/discover" : "/onboarding",
+        to: data?.onboarding_completed ? "/discover" : "/n",
         replace: true,
       });
     })();
