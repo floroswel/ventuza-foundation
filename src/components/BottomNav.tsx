@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Compass, MessageCircle, CalendarHeart, Users } from "lucide-react";
+import { Compass, MessageCircle, CalendarHeart, Users, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
@@ -8,6 +8,7 @@ export function BottomNav() {
   const { total: unreadTotal } = useUnreadMessages();
   const items = [
     { to: "/discover", label: "Discover", Icon: Compass },
+    { to: "/quests", label: "Quests", Icon: Trophy },
     { to: "/events", label: "Events", Icon: CalendarHeart },
     { to: "/groups", label: "Squads", Icon: Users },
     { to: "/messages", label: "Messages", Icon: MessageCircle, badge: unreadTotal },
@@ -18,7 +19,7 @@ export function BottomNav() {
         {items.map((item) => {
           const { to, label, Icon } = item;
           const badge = "badge" in item ? item.badge : 0;
-          const active = pathname === to || (to === "/events" && pathname.startsWith("/events")) || (to === "/groups" && pathname.startsWith("/groups")) || (to === "/messages" && pathname.startsWith("/messages"));
+          const active = pathname === to || (to === "/events" && pathname.startsWith("/events")) || (to === "/groups" && pathname.startsWith("/groups")) || (to === "/messages" && pathname.startsWith("/messages")) || (to === "/quests" && pathname.startsWith("/quests"));
           return (
             <Link
               key={to}
