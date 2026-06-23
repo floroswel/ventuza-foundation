@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Compass, MessageCircle, User, CalendarHeart, Users } from "lucide-react";
+import { Compass, MessageCircle, CalendarHeart, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
@@ -11,7 +11,6 @@ export function BottomNav() {
     { to: "/events", label: "Events", Icon: CalendarHeart },
     { to: "/groups", label: "Squads", Icon: Users },
     { to: "/messages", label: "Messages", Icon: MessageCircle, badge: unreadTotal },
-    { to: "/profile", label: "Profile", Icon: User },
   ] as const;
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/85 backdrop-blur">
