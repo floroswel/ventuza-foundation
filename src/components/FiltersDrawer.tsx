@@ -45,10 +45,6 @@ export function FiltersDrawer({
             <span className="mr-1.5 inline-block size-1.5 animate-pulse rounded-full bg-rose-500 shadow-[0_0_6px_rgb(244,63,94)]" />
             Right now
           </Toggle>
-          <Toggle active={draft.onlineOnly} onClick={() => setDraft({ ...draft, onlineOnly: !draft.onlineOnly })}>
-            <span className="mr-1.5 inline-block size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />
-            Online only
-          </Toggle>
           <Toggle active={draft.verifiedOnly} onClick={() => setDraft({ ...draft, verifiedOnly: !draft.verifiedOnly })}>
             ✓ Verified only
           </Toggle>
