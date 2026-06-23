@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
-  AlertCircle, Check, CheckCheck, ChevronLeft, Clock, CornerUpLeft, Languages,
-  Loader2, MoreVertical, Send, Smile, Sparkles, Trash2, X as XIcon,
+  AlertCircle, BadgeCheck, Check, CheckCheck, ChevronLeft, Clock, CornerUpLeft, Languages,
+  Loader2, MoreVertical, Send, ShieldCheck, Smile, Sparkles, Trash2, X as XIcon,
 } from "lucide-react";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import {
   type MessageRow,
 } from "@/lib/chat";
 import { generateOpener, translateText } from "@/lib/ai.functions";
+import { verifySelfie } from "@/lib/verification.functions";
 import { REACTION_EMOJIS, toggleMessageReaction, type ReactionEmoji } from "@/lib/social";
 import { ChatComposerExtras } from "@/components/ChatComposerExtras";
 import { ChatMediaBubble } from "@/components/ChatMediaBubble";
@@ -49,24 +50,67 @@ function ThreadPage() {
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
   const [meVerified, setMeVerified] = useState<boolean | null>(null);
+  const [myMainPhoto, setMyMainPhoto] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const selfieInputRef = useRef<HTMLInputElement>(null);
   const genOpener = useServerFn(generateOpener);
   const tr = useServerFn(translateText);
+  const verifyFn = useServerFn(verifySelfie);
 
-  // Load my verification status once
+  // Load my verification status + main photo path once
   useEffect(() => {
     if (!user) return;
     void supabase
       .from("profiles")
-      .select("verified")
+      .select("verified, photos")
       .eq("id", user.id)
       .maybeSingle()
-      .then(({ data }) => setMeVerified(!!data?.verified));
+      .then(({ data }) => {
+        setMeVerified(!!data?.verified);
+        const photos = (data?.photos ?? []) as string[];
+        setMyMainPhoto(photos[0] ?? null);
+      });
   }, [user]);
 
   const hasInbound = messages.some((m) => m.sender_id && m.sender_id !== user?.id);
-  // Verificarea este 100% opțională — nu blocăm trimiterea de mesaje. Badge-ul rămâne un bonus.
   void meVerified; void hasInbound;
   const blockedFirstMessage = false;
+
+  async function handleVerifyFile(file: File) {
+    if (!user) return;
+    if (!myMainPhoto) {
+      toast.error("Adaugă întâi o poză principală în profil.");
+      return;
+    }
+    setVerifying(true);
+    try {
+      const path = `${user.id}/selfie-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage
+        .from("profile-photos")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const [{ data: sa }, { data: sb }] = await Promise.all([
+        supabase.storage.from("profile-photos").createSignedUrl(path, 600),
+        supabase.storage.from("profile-photos").createSignedUrl(myMainPhoto, 600),
+      ]);
+      if (!sa?.signedUrl || !sb?.signedUrl) throw new Error("Nu am putut accesa pozele.");
+      await supabase.from("profiles").update({
+        verification_selfie_path: path,
+        verification_status: "pending",
+      }).eq("id", user.id);
+      const res = await verifyFn({ data: { selfieUrl: sa.signedUrl, mainPhotoUrl: sb.signedUrl } });
+      if (res.verified) {
+        setMeVerified(true);
+        toast.success("Verificat ✓ — ai badge-ul oficial.");
+      } else {
+        toast.error(`Verificare eșuată: ${res.reason ?? "încearcă din nou"}`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Verificare eșuată");
+    } finally {
+      setVerifying(false);
+    }
+  }
 
   async function handleReact(msgId: string, emoji: ReactionEmoji) {
     setReactionPickerFor(null);
@@ -308,6 +352,47 @@ function ThreadPage() {
             {otherTyping ? <span className="text-primary">typing…</span> : connected ? "online" : "reconnecting…"}
           </p>
         </div>
+        <input
+          ref={selfieInputRef}
+          type="file"
+          accept="image/*"
+          capture="user"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void handleVerifyFile(f);
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            if (verifying) return;
+            if (meVerified) {
+              toast.success("Profilul tău e deja verificat ✓");
+              return;
+            }
+            selfieInputRef.current?.click();
+          }}
+          disabled={verifying}
+          aria-label={meVerified ? "Verificat" : "Verifică-te"}
+          className={cn(
+            "flex size-9 items-center justify-center rounded-full transition-colors",
+            meVerified
+              ? "bg-primary/15 text-primary"
+              : "border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20",
+            verifying && "opacity-60",
+          )}
+          title={meVerified ? "Verificat" : "Fă selfie de verificare"}
+        >
+          {verifying ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : meVerified ? (
+            <BadgeCheck className="size-4" />
+          ) : (
+            <ShieldCheck className="size-4" />
+          )}
+        </button>
         {other?.id && (
           <ReportBlockDialog
             targetUserId={other.id}
