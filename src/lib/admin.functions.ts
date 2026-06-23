@@ -59,7 +59,7 @@ export const adminGetOverview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
 
     const since24h = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
     const since7d = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
@@ -137,7 +137,7 @@ export const adminListTables = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const results = await Promise.all(
       ALLOWED_TABLES.map(async (t) => {
         const { count } = await supabaseAdmin.from(t).select("*", { count: "exact", head: true });
@@ -163,7 +163,7 @@ export const adminListRows = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ListInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const limit = data.limit ?? 50;
     const offset = data.offset ?? 0;
     let q: any = supabaseAdmin.from(data.table).select("*", { count: "exact" });
@@ -199,7 +199,7 @@ export const adminUpdateRow = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => UpdateInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const idCol = data.idColumn ?? "id";
     const { error } = await supabaseAdmin.from(data.table).update(data.patch).eq(idCol, data.id);
     if (error) throw new Error(error.message);
@@ -218,7 +218,7 @@ export const adminDeleteRow = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => DeleteInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const idCol = data.idColumn ?? "id";
     const { error } = await supabaseAdmin.from(data.table).delete().eq(idCol, data.id);
     if (error) throw new Error(error.message);
@@ -236,7 +236,7 @@ export const adminInsertRow = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => InsertInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const { data: row, error } = await supabaseAdmin.from(data.table).insert(data.values).select().single();
     if (error) throw new Error(error.message);
     return { row };
@@ -250,7 +250,7 @@ export const adminSearchUsers = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => SearchUsersInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const limit = data.limit ?? 50;
     let q: any = supabaseAdmin
       .from("profiles")
@@ -291,7 +291,7 @@ export const adminGrantRole = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => RoleInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const { error } = await supabaseAdmin
       .from("user_roles")
       .upsert({ user_id: data.userId, role: data.role }, { onConflict: "user_id,role" });
@@ -305,7 +305,7 @@ export const adminRevokeRole = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => RoleInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const { error } = await supabaseAdmin
       .from("user_roles")
       .delete()
@@ -328,7 +328,7 @@ export const adminBroadcast = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => BroadcastInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
 
     let q: any = supabaseAdmin.from("profiles").select("id");
     if (data.audience === "verified") q = q.eq("verified", true);
@@ -370,7 +370,7 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     if (data.userId === context.userId) throw new Error("Nu te poți șterge pe tine.");
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
     if (error) throw new Error(error.message);
     return { ok: true };
