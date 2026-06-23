@@ -70,7 +70,7 @@ function AdminDashboard() {
     );
   }
 
-  const items: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
+  const allItems: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
     { id: "overview", label: "Overview", icon: LayoutDashboard, adminOnly: true },
     { id: "users", label: "Utilizatori", icon: Users, adminOnly: true },
     { id: "reports", label: "Rapoarte", icon: ShieldAlert },
@@ -79,7 +79,8 @@ function AdminDashboard() {
     { id: "biz", label: "B2B", icon: Building2 },
     { id: "data", label: "Date (toate)", icon: Database, adminOnly: true },
     { id: "broadcast", label: "Broadcast", icon: Send, adminOnly: true },
-  ].filter((i) => !i.adminOnly || isAdmin);
+  ];
+  const items = allItems.filter((i) => !i.adminOnly || isAdmin);
 
   return (
     <div className="min-h-dvh bg-background">
