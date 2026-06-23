@@ -352,6 +352,47 @@ function ThreadPage() {
             {otherTyping ? <span className="text-primary">typing…</span> : connected ? "online" : "reconnecting…"}
           </p>
         </div>
+        <input
+          ref={selfieInputRef}
+          type="file"
+          accept="image/*"
+          capture="user"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            if (f) void handleVerifyFile(f);
+            e.target.value = "";
+          }}
+        />
+        <button
+          type="button"
+          onClick={() => {
+            if (verifying) return;
+            if (meVerified) {
+              toast.success("Profilul tău e deja verificat ✓");
+              return;
+            }
+            selfieInputRef.current?.click();
+          }}
+          disabled={verifying}
+          aria-label={meVerified ? "Verificat" : "Verifică-te"}
+          className={cn(
+            "flex size-9 items-center justify-center rounded-full transition-colors",
+            meVerified
+              ? "bg-primary/15 text-primary"
+              : "border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20",
+            verifying && "opacity-60",
+          )}
+          title={meVerified ? "Verificat" : "Fă selfie de verificare"}
+        >
+          {verifying ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : meVerified ? (
+            <BadgeCheck className="size-4" />
+          ) : (
+            <ShieldCheck className="size-4" />
+          )}
+        </button>
         {other?.id && (
           <ReportBlockDialog
             targetUserId={other.id}
