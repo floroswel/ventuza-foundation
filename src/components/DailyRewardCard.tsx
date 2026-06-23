@@ -57,15 +57,10 @@ export function DailyRewardCard() {
     }
   }
 
-  if (loading || !state) {
-    return (
-      <div className="mx-3 mt-2 flex h-[88px] items-center justify-center rounded-2xl border border-border/50 bg-card/40">
-        <Loader2 className="size-4 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
+  if (loading || !state) return null;
+  if (state.claimed_today) return null;
 
-  const nextDay = state.claimed_today ? Math.min(7, ((state.streak_days) % 7) + 1) : Math.min(7, ((state.streak_days) % 7) + 1);
+  const nextDay = Math.min(7, ((state.streak_days) % 7) + 1);
   const xpInLevel = state.xp - state.level_xp_start;
   const xpForNext = state.level_xp_end - state.level_xp_start;
   const pct = Math.min(100, Math.round((xpInLevel / Math.max(1, xpForNext)) * 100));
