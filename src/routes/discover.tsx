@@ -41,10 +41,12 @@ function DiscoverPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>("nearby");
-  const [view, setView] = useState<"grid" | "swipe">(() => {
-    if (typeof window === "undefined") return "grid";
-    return (localStorage.getItem("vz_discover_view") as "grid" | "swipe") || "grid";
-  });
+  const [view, setView] = useState<"grid" | "swipe">("grid");
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const v = localStorage.getItem("vz_discover_view");
+    if (v === "swipe" || v === "grid") setView(v);
+  }, []);
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [debouncedFilters, setDebouncedFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
