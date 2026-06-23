@@ -117,12 +117,6 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="ro" suppressHydrationWarning>
       <head>
         <HeadContent />
-        <script
-          async
-          dangerouslySetInnerHTML={{
-            __html: `try{var l=(navigator.language||'ro').toLowerCase();document.documentElement.lang=l.startsWith('ro')?'ro':l.split('-')[0];}catch(e){}`,
-          }}
-        />
       </head>
       <body>
         {children}
@@ -136,6 +130,9 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {
+    const lang = (navigator.language || "ro").toLowerCase();
+    document.documentElement.lang = lang.startsWith("ro") ? "ro" : lang.split("-")[0];
+
     // Re-apply discreet mode (icon/title swap) chosen by user on previous session.
     import("@/lib/discreet-mode").then(({ loadDiscreetMode, applyDiscreetMode }) => {
       const skin = loadDiscreetMode();
