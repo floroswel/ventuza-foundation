@@ -220,7 +220,7 @@ function DiscoverPage() {
 
         <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
           <TabBtn active={tab === "nearby"} onClick={() => setTab("nearby")}>Nearby</TabBtn>
-          <TabBtn active={tab === "online"} onClick={() => setTab("online")}>Online</TabBtn>
+          
           <TabBtn active={tab === "fresh"} onClick={() => setTab("fresh")}>Fresh</TabBtn>
         </div>
 
