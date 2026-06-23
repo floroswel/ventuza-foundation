@@ -114,7 +114,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ro">
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `try{var l=(navigator.language||'ro').toLowerCase();document.documentElement.lang=l.startsWith('ro')?'ro':l.split('-')[0];}catch(e){}`,
+        }}
+      />
       <head>
         <HeadContent />
       </head>
