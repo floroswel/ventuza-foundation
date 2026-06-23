@@ -1,27 +1,33 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, MapPin, Mic, Plus, Square, Timer, X } from "lucide-react";
 import { toast } from "sonner";
-import { sendMediaMessage, type MessageRow } from "@/lib/chat";
+import { sendMediaMessage, updateLiveLocationMessage, type MessageRow } from "@/lib/chat";
 import { cn } from "@/lib/utils";
 
 type Props = {
   conversationId: string;
   onSent: (m: MessageRow) => void;
+  onUpdated?: (m: MessageRow) => void;
   disabled?: boolean;
 };
 
-export function ChatComposerExtras({ conversationId, onSent, disabled }: Props) {
+export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled }: Props) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
+  const [liveLocationId, setLiveLocationId] = useState<string | null>(null);
   const [recElapsed, setRecElapsed] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const fileOnceRef = useRef<HTMLInputElement>(null);
   const recRef = useRef<{ mr: MediaRecorder; chunks: BlobPart[]; startedAt: number; stream: MediaStream } | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const geoWatchRef = useRef<number | null>(null);
+  const liveMessageIdRef = useRef<string | null>(null);
+  const lastLocationUpdateRef = useRef(0);
 
   useEffect(() => () => {
     if (tickRef.current) clearInterval(tickRef.current);
+    if (geoWatchRef.current != null) navigator.geolocation.clearWatch(geoWatchRef.current);
     recRef.current?.stream.getTracks().forEach((t) => t.stop());
   }, []);
 
@@ -47,21 +53,44 @@ export function ChatComposerExtras({ conversationId, onSent, disabled }: Props) 
   async function shareLocation() {
     setOpen(false);
     if (!("geolocation" in navigator)) return toast.error("Locația nu e disponibilă");
+    if (geoWatchRef.current != null) {
+      navigator.geolocation.clearWatch(geoWatchRef.current);
+      geoWatchRef.current = null;
+      liveMessageIdRef.current = null;
+      setLiveLocationId(null);
+      toast.success("Locația live a fost oprită");
+      return;
+    }
     setBusy(true);
-    navigator.geolocation.getCurrentPosition(
+    geoWatchRef.current = navigator.geolocation.watchPosition(
       async (pos) => {
         try {
-          const m = await sendMediaMessage(conversationId, {
-            kind: "location",
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-          });
-          onSent(m);
+          const now = Date.now();
+          if (liveMessageIdRef.current && now - lastLocationUpdateRef.current < 5000) return;
+          lastLocationUpdateRef.current = now;
+          const next = { kind: "location" as const, lat: pos.coords.latitude, lng: pos.coords.longitude };
+          if (!liveMessageIdRef.current) {
+            const m = await sendMediaMessage(conversationId, next);
+            liveMessageIdRef.current = m.id;
+            setLiveLocationId(m.id);
+            onSent(m);
+            toast.success("Locația live este activă");
+          } else {
+            const m = await updateLiveLocationMessage(liveMessageIdRef.current, next.lat, next.lng);
+            onUpdated?.(m);
+          }
         } catch (err) { toast.error((err as Error).message); }
         finally { setBusy(false); }
       },
-      (err) => { setBusy(false); toast.error(err.message); },
-      { enableHighAccuracy: true, timeout: 10_000 },
+      (err) => {
+        setBusy(false);
+        if (geoWatchRef.current != null) navigator.geolocation.clearWatch(geoWatchRef.current);
+        geoWatchRef.current = null;
+        liveMessageIdRef.current = null;
+        setLiveLocationId(null);
+        toast.error(err.message);
+      },
+      { enableHighAccuracy: true, maximumAge: 5000, timeout: 15_000 },
     );
   }
 
@@ -141,7 +170,7 @@ export function ChatComposerExtras({ conversationId, onSent, disabled }: Props) 
             <MenuItem icon={<Camera className="size-4" />} label="Foto" onClick={() => pickPhoto(false)} />
             <MenuItem icon={<Timer className="size-4" />} label="Foto view-once" onClick={() => pickPhoto(true)} />
             <MenuItem icon={<Mic className="size-4" />} label="Voice note" onClick={startRecording} />
-            <MenuItem icon={<MapPin className="size-4" />} label="Trimite locația" onClick={shareLocation} />
+            <MenuItem icon={<MapPin className="size-4" />} label={liveLocationId ? "Oprește locația live" : "Locație live"} onClick={shareLocation} />
           </div>
         )}
       </div>
