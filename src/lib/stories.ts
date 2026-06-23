@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { moderatePhoto } from "@/lib/verification.functions";
 
 export type Story = {
   id: string;
@@ -34,6 +35,30 @@ export async function uploadStory(file: File, caption?: string): Promise<Story> 
   });
   if (upErr) throw upErr;
 
+  // Moderare AI obligatorie pentru poze din story (conținut public).
+  // Doar imagini — video-urile trec (nu avem moderare video încă).
+  const isImage = (file.type || "").startsWith("image/");
+  if (isImage) {
+    try {
+      const { data: signedData } = await supabase.storage.from(STORIES_BUCKET).createSignedUrl(path, 300);
+      if (signedData?.signedUrl) {
+        const mod = await moderatePhoto({ data: { photoUrl: signedData.signedUrl } });
+        if (!mod.allowed) {
+          await supabase.storage.from(STORIES_BUCKET).remove([path]);
+          throw new Error(
+            `Story respins: ${mod.reason || "conținut nepermis public"}. Pozele nud/explicite sunt permise doar în Albumul privat.`,
+          );
+        }
+      }
+    } catch (e) {
+      // dacă e eroarea noastră de respingere, propagăm
+      if ((e as Error).message?.startsWith("Story respins")) throw e;
+      // altfel: ștergem și cerem retry — safety first
+      await supabase.storage.from(STORIES_BUCKET).remove([path]);
+      throw new Error(`Nu am putut verifica story-ul: ${(e as Error).message}. Încearcă din nou.`);
+    }
+  }
+
   const { data, error } = await supabase
     .from("stories")
     .insert({ user_id: u.user.id, media_path: path, caption: caption ?? null })
@@ -42,6 +67,7 @@ export async function uploadStory(file: File, caption?: string): Promise<Story> 
   if (error) throw error;
   return data as Story;
 }
+
 
 export async function deleteStory(id: string) {
   const { data: u } = await supabase.auth.getUser();
