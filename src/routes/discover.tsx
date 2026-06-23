@@ -178,9 +178,6 @@ function DiscoverPage() {
             <QuickProfileDrawer />
             <div className="min-w-0">
               <h1 className="wordmark truncate text-2xl font-medium leading-none">Nearby</h1>
-              <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                {visible.length} {visible.length === 1 ? "person" : "people"}
-              </p>
             </div>
           </div>
           <div className="flex items-center gap-1">
