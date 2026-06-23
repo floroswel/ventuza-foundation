@@ -140,8 +140,7 @@ function Onboarding() {
       case "stats":
         return !data.hiv_status || data.health_consent;
       case "personality":
-        return data.interests.length >= 3
-          && data.bio.trim().length >= 20;
+        return data.interests.length >= 3;
       case "photos":
         return data.photos.length >= 1 && data.terms_accepted;
     }
