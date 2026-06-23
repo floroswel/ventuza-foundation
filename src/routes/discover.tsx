@@ -173,12 +173,15 @@ function DiscoverPage() {
   return (
     <main className="relative min-h-dvh bg-background pb-28">
       <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 px-4 pb-2 pt-4 backdrop-blur">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="wordmark text-2xl font-medium leading-none">Nearby</h1>
-            <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-              {visible.length} {visible.length === 1 ? "person" : "people"}
-            </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <QuickProfileDrawer />
+            <div className="min-w-0">
+              <h1 className="wordmark truncate text-2xl font-medium leading-none">Nearby</h1>
+              <p className="mt-1 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
+                {visible.length} {visible.length === 1 ? "person" : "people"}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <div className="mr-1 flex items-center rounded-full border border-border bg-surface p-0.5">
