@@ -52,6 +52,24 @@ function DiscoverPage() {
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
   const [match, setMatch] = useState<{ name: string; photo: string | null } | null>(null);
   const [selected, setSelected] = useState<DiscoverProfile | null>(null);
+  const [stats, setStats] = useState<{ total: number; online: number } | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    const fetchStats = async () => {
+      const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const [totalRes, onlineRes] = await Promise.all([
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("profiles").select("id", { count: "exact", head: true }).gte("last_seen", since),
+      ]);
+      if (!alive) return;
+      setStats({ total: totalRes.count ?? 0, online: onlineRes.count ?? 0 });
+    };
+    void fetchStats();
+    const t = setInterval(fetchStats, 60_000);
+    return () => { alive = false; clearInterval(t); };
+  }, [user]);
 
   function pickView(next: "grid" | "swipe") {
     setView(next);
