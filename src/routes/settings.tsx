@@ -10,6 +10,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { setLookingNow } from "@/lib/social";
 import { UniquesCard } from "@/components/UniquesCard";
 import { SosCard } from "@/components/SosCard";
+import { EnablePushButton } from "@/components/EnablePushButton";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
@@ -222,6 +223,12 @@ function SettingsPage() {
                   className="size-4 accent-primary" />
               </label>
             ))}
+          </div>
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-[11px] text-muted-foreground mb-2">
+              Notificări push pe acest dispozitiv (mesaje, taps, woofs, match-uri).
+            </p>
+            <EnablePushButton />
           </div>
         </section>
 
