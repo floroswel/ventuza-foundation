@@ -499,6 +499,7 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
 
   async function save() {
     setSaving(true);
+    const f = form as unknown as Profile & { hide_age?: boolean };
     const { data, error } = await supabase.from("profiles").update({
       display_name: form.display_name,
       bio: form.bio,
@@ -525,6 +526,7 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
       vaccinations: form.vaccinations ?? [],
       prep_status: form.prep_status,
       accept_nsfw_photos: form.accept_nsfw_photos ?? false,
+      hide_age: f.hide_age ?? false,
     }).eq("id", profile.id).select("*").maybeSingle();
     setSaving(false);
     if (error || !data) return toast.error(error?.message ?? "Failed");
