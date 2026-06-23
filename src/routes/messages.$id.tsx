@@ -95,15 +95,16 @@ function ThreadPage() {
         if (error) throw error;
         if (!conv) throw new Error("Conversation not found");
         const oid = conv.user_a === user!.id ? conv.user_b : conv.user_a;
-        const [msgs, prof, extra] = await Promise.all([
+        const [msgs, prof, extraRes] = await Promise.all([
           fetchMessages(id),
           fetchOtherProfile(oid),
-          supabase.from("profiles").select("bio, interests").eq("id", oid).maybeSingle(),
+          supabase.rpc("get_public_profiles", { _ids: [oid] }),
         ]);
         if (!alive) return;
         setMessages(msgs);
         setHasMore(msgs.length >= MESSAGES_PAGE);
-        setOther({ ...prof, bio: extra.data?.bio ?? null, interests: extra.data?.interests ?? null });
+        const extra = ((extraRes.data ?? []) as Array<{ bio: string | null; interests: string[] | null }>)[0] ?? null;
+        setOther({ ...prof, bio: extra?.bio ?? null, interests: extra?.interests ?? null });
         await markRead(id, user!.id);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't open chat");
