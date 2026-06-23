@@ -69,10 +69,10 @@ export function FiltersDrawer({
             <span className="text-sm text-primary">{draft.minAge} – {draft.maxAge}</span>
           </div>
           <div className="flex items-center gap-3">
-            <input type="range" min={18} max={99} value={draft.minAge}
+            <input type="range" min={18} max={120} value={draft.minAge}
               onChange={(e) => setDraft({ ...draft, minAge: Math.min(Number(e.target.value), draft.maxAge) })}
               className="accent-[var(--primary)] w-full" />
-            <input type="range" min={18} max={99} value={draft.maxAge}
+            <input type="range" min={18} max={120} value={draft.maxAge}
               onChange={(e) => setDraft({ ...draft, maxAge: Math.max(Number(e.target.value), draft.minAge) })}
               className="accent-[var(--primary)] w-full" />
           </div>
