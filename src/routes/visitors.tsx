@@ -85,10 +85,8 @@ function VisitorsPage() {
         const ids = Array.from(map.keys());
         if (ids.length === 0) { if (alive) { setVisitors([]); setLoading(false); } return; }
 
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("id, display_name, photos, birthdate")
-          .in("id", ids);
+        const { data: profs, error: pErr } = await supabase.rpc("get_public_profiles", { _ids: ids });
+        if (pErr) throw pErr;
         type Prow = { id: string; display_name: string | null; photos: string[] | null; birthdate: string | null };
         const profMap = new Map<string, Prow>();
         for (const p of ((profs ?? []) as Prow[])) profMap.set(p.id, p);

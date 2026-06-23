@@ -47,7 +47,7 @@ function GroupChatPage() {
       const memberIds = ((mems ?? []) as { user_id: string }[]).map((m) => m.user_id);
       setIsMember(memberIds.includes(user.id));
       if (memberIds.length) {
-        const { data: profs } = await supabase.from("profiles").select("id, display_name").in("id", memberIds);
+        const { data: profs } = await supabase.rpc("get_public_profiles", { _ids: memberIds });
         const map: Record<string, Member> = {};
         for (const p of (profs ?? []) as { id: string; display_name: string | null }[]) {
           map[p.id] = { user_id: p.id, display_name: p.display_name };
