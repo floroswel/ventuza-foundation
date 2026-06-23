@@ -367,6 +367,39 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_rewards: {
+        Row: {
+          claimed_on: string
+          created_at: string
+          id: string
+          reward_amount: number
+          reward_kind: string
+          streak_day: number
+          user_id: string
+          xp_awarded: number
+        }
+        Insert: {
+          claimed_on?: string
+          created_at?: string
+          id?: string
+          reward_amount: number
+          reward_kind: string
+          streak_day: number
+          user_id: string
+          xp_awarded: number
+        }
+        Update: {
+          claimed_on?: string
+          created_at?: string
+          id?: string
+          reward_amount?: number
+          reward_kind?: string
+          streak_day?: number
+          user_id?: string
+          xp_awarded?: number
+        }
+        Relationships: []
+      }
       device_fingerprints: {
         Row: {
           fingerprint: string
@@ -829,6 +862,7 @@ export type Database = {
           birthdate: string | null
           body_type: string | null
           boost_until: string | null
+          boosts_balance: number
           cannabis: string | null
           children: string | null
           company: string | null
@@ -859,7 +893,9 @@ export type Database = {
           interests: string[] | null
           job_title: string | null
           languages: string[] | null
+          last_check_in_at: string | null
           last_seen: string
+          level: number
           location: unknown
           looking_for: string[] | null
           looking_now_intent: string | null
@@ -897,6 +933,8 @@ export type Database = {
           sleep_schedule: string | null
           smoking: string | null
           sos_contacts: Json
+          streak_days: number
+          super_taps_balance: number
           suspended_reason: string | null
           suspended_until: string | null
           terms_accepted_at: string | null
@@ -923,6 +961,7 @@ export type Database = {
           warned_reason: string | null
           weight_kg: number | null
           workout: string | null
+          xp: number
           zodiac: string | null
         }
         Insert: {
@@ -936,6 +975,7 @@ export type Database = {
           birthdate?: string | null
           body_type?: string | null
           boost_until?: string | null
+          boosts_balance?: number
           cannabis?: string | null
           children?: string | null
           company?: string | null
@@ -966,7 +1006,9 @@ export type Database = {
           interests?: string[] | null
           job_title?: string | null
           languages?: string[] | null
+          last_check_in_at?: string | null
           last_seen?: string
+          level?: number
           location?: unknown
           looking_for?: string[] | null
           looking_now_intent?: string | null
@@ -1004,6 +1046,8 @@ export type Database = {
           sleep_schedule?: string | null
           smoking?: string | null
           sos_contacts?: Json
+          streak_days?: number
+          super_taps_balance?: number
           suspended_reason?: string | null
           suspended_until?: string | null
           terms_accepted_at?: string | null
@@ -1030,6 +1074,7 @@ export type Database = {
           warned_reason?: string | null
           weight_kg?: number | null
           workout?: string | null
+          xp?: number
           zodiac?: string | null
         }
         Update: {
@@ -1043,6 +1088,7 @@ export type Database = {
           birthdate?: string | null
           body_type?: string | null
           boost_until?: string | null
+          boosts_balance?: number
           cannabis?: string | null
           children?: string | null
           company?: string | null
@@ -1073,7 +1119,9 @@ export type Database = {
           interests?: string[] | null
           job_title?: string | null
           languages?: string[] | null
+          last_check_in_at?: string | null
           last_seen?: string
+          level?: number
           location?: unknown
           looking_for?: string[] | null
           looking_now_intent?: string | null
@@ -1111,6 +1159,8 @@ export type Database = {
           sleep_schedule?: string | null
           smoking?: string | null
           sos_contacts?: Json
+          streak_days?: number
+          super_taps_balance?: number
           suspended_reason?: string | null
           suspended_until?: string | null
           terms_accepted_at?: string | null
@@ -1137,6 +1187,7 @@ export type Database = {
           warned_reason?: string | null
           weight_kg?: number | null
           workout?: string | null
+          xp?: number
           zodiac?: string | null
         }
         Relationships: []
@@ -1518,6 +1569,33 @@ export type Database = {
         }
         Relationships: []
       }
+      xp_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          meta: Json
+          user_id: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          meta?: Json
+          user_id: string
+          xp: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          meta?: Json
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       geography_columns: {
@@ -1708,6 +1786,11 @@ export type Database = {
           verified: boolean
         }[]
       }
+      award_xp: {
+        Args: { _kind: string; _meta?: Json; _user_id: string; _xp: number }
+        Returns: undefined
+      }
+      claim_daily_reward: { Args: never; Returns: Json }
       compute_profile_completion: {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: number
@@ -1932,6 +2015,7 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_my_gamification: { Args: never; Returns: Json }
       get_or_create_conversation: { Args: { _other: string }; Returns: string }
       get_public_profiles: {
         Args: { _ids: string[] }
