@@ -7,7 +7,7 @@ import { moderatePhoto } from "@/lib/verification.functions";
 import { cn } from "@/lib/utils";
 import { computePhash } from "@/lib/phash";
 
-const MAX_PHOTOS = 9;
+const MAX_PHOTOS = 6;
 const MAX_SIZE_MB = 8;
 
 type Props = {
