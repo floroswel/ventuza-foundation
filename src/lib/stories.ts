@@ -67,12 +67,12 @@ export async function fetchActiveStoryGroups(): Promise<StoryGroup[]> {
 
   const userIds = Array.from(new Set(stories.map((s) => s.user_id)));
   const [{ data: profs }, { data: seenRows }] = await Promise.all([
-    supabase.from("profiles").select("id, display_name, photos").in("id", userIds),
+    supabase.rpc("get_public_profiles", { _ids: userIds }),
     supabase.from("story_views").select("story_id").eq("viewer_id", u.user.id).in("story_id", stories.map((s) => s.id)),
   ]);
   const profMap = new Map<string, { display_name: string | null; photos: string[] | null }>();
   (profs ?? []).forEach((p) =>
-    profMap.set(p.id as string, {
+    profMap.set((p as { id: string }).id, {
       display_name: (p as { display_name: string | null }).display_name,
       photos: (p as { photos: string[] | null }).photos,
     }),
