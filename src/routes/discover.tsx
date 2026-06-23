@@ -387,7 +387,7 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
             key={p.id}
             onClick={() => onOpen(p)}
             className={cn(
-              "group relative aspect-square overflow-hidden bg-surface focus:outline-none rounded-md",
+              "group relative aspect-square overflow-hidden bg-surface focus:outline-none",
               unread > 0 && "snake-border",
             )}
           >
