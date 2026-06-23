@@ -50,24 +50,67 @@ function ThreadPage() {
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
   const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
   const [meVerified, setMeVerified] = useState<boolean | null>(null);
+  const [myMainPhoto, setMyMainPhoto] = useState<string | null>(null);
+  const [verifying, setVerifying] = useState(false);
+  const selfieInputRef = useRef<HTMLInputElement>(null);
   const genOpener = useServerFn(generateOpener);
   const tr = useServerFn(translateText);
+  const verifyFn = useServerFn(verifySelfie);
 
-  // Load my verification status once
+  // Load my verification status + main photo path once
   useEffect(() => {
     if (!user) return;
     void supabase
       .from("profiles")
-      .select("verified")
+      .select("verified, photos")
       .eq("id", user.id)
       .maybeSingle()
-      .then(({ data }) => setMeVerified(!!data?.verified));
+      .then(({ data }) => {
+        setMeVerified(!!data?.verified);
+        const photos = (data?.photos ?? []) as string[];
+        setMyMainPhoto(photos[0] ?? null);
+      });
   }, [user]);
 
   const hasInbound = messages.some((m) => m.sender_id && m.sender_id !== user?.id);
-  // Verificarea este 100% opțională — nu blocăm trimiterea de mesaje. Badge-ul rămâne un bonus.
   void meVerified; void hasInbound;
   const blockedFirstMessage = false;
+
+  async function handleVerifyFile(file: File) {
+    if (!user) return;
+    if (!myMainPhoto) {
+      toast.error("Adaugă întâi o poză principală în profil.");
+      return;
+    }
+    setVerifying(true);
+    try {
+      const path = `${user.id}/selfie-${Date.now()}.jpg`;
+      const { error: upErr } = await supabase.storage
+        .from("profile-photos")
+        .upload(path, file, { upsert: true, contentType: file.type });
+      if (upErr) throw upErr;
+      const [{ data: sa }, { data: sb }] = await Promise.all([
+        supabase.storage.from("profile-photos").createSignedUrl(path, 600),
+        supabase.storage.from("profile-photos").createSignedUrl(myMainPhoto, 600),
+      ]);
+      if (!sa?.signedUrl || !sb?.signedUrl) throw new Error("Nu am putut accesa pozele.");
+      await supabase.from("profiles").update({
+        verification_selfie_path: path,
+        verification_status: "pending",
+      }).eq("id", user.id);
+      const res = await verifyFn({ data: { selfieUrl: sa.signedUrl, mainPhotoUrl: sb.signedUrl } });
+      if (res.verified) {
+        setMeVerified(true);
+        toast.success("Verificat ✓ — ai badge-ul oficial.");
+      } else {
+        toast.error(`Verificare eșuată: ${res.reason ?? "încearcă din nou"}`);
+      }
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Verificare eșuată");
+    } finally {
+      setVerifying(false);
+    }
+  }
 
   async function handleReact(msgId: string, emoji: ReactionEmoji) {
     setReactionPickerFor(null);
