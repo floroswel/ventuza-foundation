@@ -17,6 +17,7 @@ import { Toaster } from "sonner";
 import { CookieBanner } from "@/components/CookieBanner";
 import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
+import { SessionGuards } from "@/components/SessionGuards";
 
 function NotFoundComponent() {
   return (
@@ -140,6 +141,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <NotificationsProvider>
+          <SessionGuards />
           <Outlet />
           <CookieBanner />
           <TravelWarning />

@@ -148,6 +148,34 @@ export async function sendMessage(conversationId: string, body: string, replyToI
     .select("*")
     .single();
   if (error) throw error;
+
+  // Fire-and-forget Web Push to the recipient
+  void (async () => {
+    try {
+      const { data: conv } = await supabase
+        .from("conversations")
+        .select("user_a,user_b")
+        .eq("id", conversationId)
+        .maybeSingle();
+      if (!conv) return;
+      const toUserId = conv.user_a === u.user!.id ? conv.user_b : conv.user_a;
+      if (!toUserId || toUserId === u.user!.id) return;
+      const { data: me } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", u.user!.id)
+        .maybeSingle();
+      const { sendPushToUser } = await import("@/lib/push.functions");
+      await sendPushToUser({ data: {
+        toUserId,
+        title: (me as { display_name?: string } | null)?.display_name || "Mesaj nou",
+        body: trimmed.slice(0, 140),
+        url: `/messages/${conversationId}`,
+        tag: `msg:${conversationId}`,
+      } });
+    } catch { /* best-effort */ }
+  })();
+
   return data as MessageRow;
 }
 
