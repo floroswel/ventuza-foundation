@@ -10,6 +10,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { setLookingNow } from "@/lib/social";
 import { UniquesCard } from "@/components/UniquesCard";
 import { SosCard } from "@/components/SosCard";
+import { EnablePushButton } from "@/components/EnablePushButton";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
