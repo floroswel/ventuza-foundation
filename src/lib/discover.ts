@@ -20,9 +20,9 @@ export type DiscoverFilters = {
 };
 
 export const DEFAULT_FILTERS: DiscoverFilters = {
-  maxDistanceKm: 100,
+  maxDistanceKm: 500,
   minAge: 18,
-  maxAge: 60,
+  maxAge: 99,
   lookingFor: [],
   gender: [],
   orientation: [],
