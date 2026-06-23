@@ -111,8 +111,8 @@ function DiscoverPage() {
     if (!user) return;
     const refresh = () => { void load(); };
     const ch = supabase
-      .channel(`discover-profiles-${user.id}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, refresh)
+      .channel(`discover-profiles:${user.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "profile_live_events" }, refresh)
       .subscribe();
     const t = setInterval(refresh, 20_000);
     return () => {
