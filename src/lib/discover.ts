@@ -128,7 +128,7 @@ export async function requestAndStoreLocation(): Promise<{ ok: boolean; error?: 
         else resolve({ ok: true });
       },
       (err) => resolve({ ok: false, error: err.message }),
-      { enableHighAccuracy: false, maximumAge: 5 * 60 * 1000, timeout: 10_000 },
+      { enableHighAccuracy: true, maximumAge: 5 * 60 * 1000, timeout: 15_000 },
     );
   });
 }
