@@ -230,15 +230,12 @@ export async function markMediaViewed(messageId: string): Promise<void> {
 
 
 export async function fetchOtherProfile(otherId: string): Promise<{ id: string; name: string | null; photo: string | null }> {
-  const { data } = await supabase
-    .from("profiles")
-    .select("id, display_name, photos")
-    .eq("id", otherId)
-    .maybeSingle();
-  const row = data as { display_name: string | null; photos: string[] | null } | null;
+  const { data } = await supabase.rpc("get_public_profiles", { _ids: [otherId] });
+  const row = ((data ?? []) as Array<{ display_name: string | null; photos: string[] | null }>)[0] ?? null;
   return {
     id: otherId,
     name: row?.display_name ?? null,
     photo: await signPhoto(row?.photos?.[0] ?? null),
   };
 }
+
