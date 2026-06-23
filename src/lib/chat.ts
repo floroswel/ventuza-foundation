@@ -246,6 +246,17 @@ export async function sendMediaMessage(conversationId: string, payload: MediaPay
   return data as MessageRow;
 }
 
+export async function updateLiveLocationMessage(messageId: string, lat: number, lng: number): Promise<MessageRow> {
+  const { data, error } = await supabase
+    .from("messages")
+    .update({ location_lat: lat, location_lng: lng })
+    .eq("id", messageId)
+    .select("*")
+    .single();
+  if (error) throw error;
+  return data as MessageRow;
+}
+
 export async function signChatMedia(path: string | null | undefined): Promise<string | null> {
   if (!path) return null;
   const { data } = await supabase.storage.from("chat-media").createSignedUrl(path, 3600);
