@@ -52,6 +52,24 @@ function DiscoverPage() {
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
   const [match, setMatch] = useState<{ name: string; photo: string | null } | null>(null);
   const [selected, setSelected] = useState<DiscoverProfile | null>(null);
+  const [stats, setStats] = useState<{ total: number; online: number } | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    const fetchStats = async () => {
+      const since = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+      const [totalRes, onlineRes] = await Promise.all([
+        supabase.from("profiles").select("id", { count: "exact", head: true }),
+        supabase.from("profiles").select("id", { count: "exact", head: true }).gte("last_seen", since),
+      ]);
+      if (!alive) return;
+      setStats({ total: totalRes.count ?? 0, online: onlineRes.count ?? 0 });
+    };
+    void fetchStats();
+    const t = setInterval(fetchStats, 60_000);
+    return () => { alive = false; clearInterval(t); };
+  }, [user]);
 
   function pickView(next: "grid" | "swipe") {
     setView(next);
@@ -225,6 +243,19 @@ function DiscoverPage() {
           <TabBtn active={tab === "online"} onClick={() => setTab("online")}>Online</TabBtn>
           <TabBtn active={tab === "fresh"} onClick={() => setTab("fresh")}>Fresh</TabBtn>
         </div>
+
+        {stats && (
+          <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />
+              <span className="font-medium text-foreground">{stats.online.toLocaleString()}</span> online acum
+            </span>
+            <span className="text-border">•</span>
+            <span>
+              <span className="font-medium text-foreground">{stats.total.toLocaleString()}</span> membri
+            </span>
+          </div>
+        )}
 
         <QuickFiltersStrip value={filters} onChange={setFilters} />
       </header>
