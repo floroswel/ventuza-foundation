@@ -499,6 +499,7 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
 
   async function save() {
     setSaving(true);
+    const f = form as unknown as Profile & { hide_age?: boolean };
     const { data, error } = await supabase.from("profiles").update({
       display_name: form.display_name,
       bio: form.bio,
@@ -525,6 +526,7 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
       vaccinations: form.vaccinations ?? [],
       prep_status: form.prep_status,
       accept_nsfw_photos: form.accept_nsfw_photos ?? false,
+      hide_age: f.hide_age ?? false,
     }).eq("id", profile.id).select("*").maybeSingle();
     setSaving(false);
     if (error || !data) return toast.error(error?.message ?? "Failed");
@@ -551,69 +553,136 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
         <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground">
           <X className="size-5" />
         </button>
-        <h2 className="font-display text-lg">Edit profile</h2>
+        <h2 className="font-display text-lg">Edit Profile</h2>
         <Button onClick={save} variant="hero" size="sm" disabled={saving}>
           {saving && <Loader2 className="size-3 animate-spin" />} Save
         </Button>
       </header>
 
-      <div className="flex-1 space-y-6 overflow-y-auto px-6 py-6">
-        <div className="space-y-2">
-          <Label>Display name</Label>
-          <Input value={form.display_name ?? ""} onChange={(e) => setForm({ ...form, display_name: e.target.value })} className="h-12 bg-surface border-border" />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label>Bio</Label>
-            <AiBioButton form={form} setForm={setForm} />
-          </div>
-          <Textarea value={form.bio ?? ""} onChange={(e) => setForm({ ...form, bio: e.target.value })} rows={5} maxLength={500} className="bg-surface border-border" />
-        </div>
-        <EditChips label="Tribes" options={TRIBE_OPTIONS} value={form.tribes ?? []} onChange={(v) => setForm({ ...form, tribes: v })} />
-
-        <div className="grid grid-cols-2 gap-3">
+      <div className="flex-1 overflow-y-auto pb-10">
+        {/* About */}
+        <EditSection>
           <div className="space-y-2">
-            <Label>Height (cm)</Label>
-            <Input type="number" min={140} max={220} value={form.height_cm ?? ""} onChange={(e) => setForm({ ...form, height_cm: e.target.value ? Number(e.target.value) : null })} className="h-12 bg-surface border-border" />
+            <Label>Display Name</Label>
+            <Input
+              value={form.display_name ?? ""}
+              onChange={(e) => setForm({ ...form, display_name: e.target.value })}
+              placeholder="Everyone will see this on the grid…"
+              maxLength={15}
+              className="h-12 bg-surface border-border"
+            />
+            <p className="text-right text-[10px] text-muted-foreground">{(form.display_name ?? "").length}/15</p>
           </div>
           <div className="space-y-2">
-            <Label>Weight (kg)</Label>
-            <Input type="number" min={40} max={200} value={form.weight_kg ?? ""} onChange={(e) => setForm({ ...form, weight_kg: e.target.value ? Number(e.target.value) : null })} className="h-12 bg-surface border-border" />
+            <div className="flex items-center justify-between">
+              <Label>About Me</Label>
+              <AiBioButton form={form} setForm={setForm} />
+            </div>
+            <Textarea
+              value={form.bio ?? ""}
+              onChange={(e) => setForm({ ...form, bio: e.target.value })}
+              rows={4}
+              maxLength={255}
+              placeholder="Tell people who you are and what you're looking for (not what you're not looking for)"
+              className="bg-surface border-border"
+            />
+            <p className="text-right text-[10px] text-muted-foreground">{(form.bio ?? "").length}/255</p>
           </div>
-        </div>
+          <EditChips label="My Tags" options={INTEREST_OPTIONS} value={form.interests ?? []} onChange={(v) => setForm({ ...form, interests: v })} />
+        </EditSection>
 
-        {single("body_type", BODY_TYPE_OPTIONS)}
-        {single("position", POSITION_OPTIONS)}
-        {single("ethnicity", ETHNICITY_OPTIONS)}
-        {single("relationship_status", RELATIONSHIP_STATUS_OPTIONS)}
-        {single("hiv_status", HIV_STATUS_OPTIONS)}
-        {single("prep_status", PREP_STATUS_OPTIONS)}
-
-        <EditChips label="Expectations" options={EXPECTATIONS_OPTIONS} value={form.expectations ?? []} onChange={(v) => setForm({ ...form, expectations: v })} />
-        <EditChips label="Meet at" options={MEET_AT_OPTIONS} value={form.meet_at ?? []} onChange={(v) => setForm({ ...form, meet_at: v })} />
-        <EditChips label="Scenes" options={SCENES_OPTIONS} value={form.scenes ?? []} onChange={(v) => setForm({ ...form, scenes: v })} />
-        <EditChips label="Safer play" options={SAFETY_OPTIONS} value={form.safety_practices ?? []} onChange={(v) => setForm({ ...form, safety_practices: v })} />
-        <EditChips label="Vaccinations" options={VACCINATION_OPTIONS} value={form.vaccinations ?? []} onChange={(v) => setForm({ ...form, vaccinations: v })} />
-
-        <label className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
-          <div>
-            <p className="text-sm font-medium">Accept NSFW photos</p>
-            <p className="text-xs text-muted-foreground">Allow matches to send adult content in DMs.</p>
-          </div>
-          <input
-            type="checkbox"
-            checked={!!form.accept_nsfw_photos}
-            onChange={(e) => setForm({ ...form, accept_nsfw_photos: e.target.checked })}
-            className="size-5 accent-primary"
+        {/* Stats */}
+        <SectionDivider label="Stats" />
+        <EditSection>
+          <ToggleRow
+            label="Show Age"
+            checked={!(form as unknown as { hide_age?: boolean }).hide_age}
+            onChange={(on) => setForm({ ...form, ...({ hide_age: !on } as Partial<Profile>) } as Profile)}
+            help="When on, this appears on your profile and allows other users to filter for you."
           />
-        </label>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>Height (cm)</Label>
+              <Input type="number" min={140} max={220} value={form.height_cm ?? ""} onChange={(e) => setForm({ ...form, height_cm: e.target.value ? Number(e.target.value) : null })} className="h-12 bg-surface border-border" />
+            </div>
+            <div className="space-y-2">
+              <Label>Weight (kg)</Label>
+              <Input type="number" min={40} max={200} value={form.weight_kg ?? ""} onChange={(e) => setForm({ ...form, weight_kg: e.target.value ? Number(e.target.value) : null })} className="h-12 bg-surface border-border" />
+            </div>
+          </div>
+          {single("ethnicity", ETHNICITY_OPTIONS)}
+          {single("body_type", BODY_TYPE_OPTIONS)}
+          {single("position", POSITION_OPTIONS)}
+          {single("relationship_status", RELATIONSHIP_STATUS_OPTIONS)}
+        </EditSection>
 
-        <EditChips label="Gender" options={GENDER_OPTIONS} value={form.gender ?? []} onChange={(v) => setForm({ ...form, gender: v })} />
-        <EditChips label="Pronouns" options={PRONOUN_OPTIONS} value={form.pronouns ?? []} onChange={(v) => setForm({ ...form, pronouns: v })} />
-        <EditChips label="Orientation" options={ORIENTATION_OPTIONS} value={form.orientation ?? []} onChange={(v) => setForm({ ...form, orientation: v })} />
-        <EditChips label="Looking for" options={LOOKING_FOR_OPTIONS} value={form.looking_for ?? []} onChange={(v) => setForm({ ...form, looking_for: v })} />
-        <EditChips label="Interests" options={INTEREST_OPTIONS} value={form.interests ?? []} onChange={(v) => setForm({ ...form, interests: v })} />
+        {/* Preferences */}
+        <SectionDivider label="Preferences" />
+        <EditSection>
+          <EditChips label="My Tribes" options={TRIBE_OPTIONS} value={form.tribes ?? []} onChange={(v) => setForm({ ...form, tribes: v })} />
+          <EditChips label="Looking For" options={LOOKING_FOR_OPTIONS} value={form.looking_for ?? []} onChange={(v) => setForm({ ...form, looking_for: v })} />
+          <EditChips label="Meet At" options={MEET_AT_OPTIONS} value={form.meet_at ?? []} onChange={(v) => setForm({ ...form, meet_at: v })} />
+          <EditChips label="Expectations" options={EXPECTATIONS_OPTIONS} value={form.expectations ?? []} onChange={(v) => setForm({ ...form, expectations: v })} />
+          <EditChips label="Scenes" options={SCENES_OPTIONS} value={form.scenes ?? []} onChange={(v) => setForm({ ...form, scenes: v })} />
+
+          <label className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
+            <div>
+              <p className="text-sm font-medium">Accept NSFW Pics</p>
+              <p className="text-xs text-muted-foreground">Allow matches to send adult content in DMs.</p>
+            </div>
+            <input
+              type="checkbox"
+              checked={!!form.accept_nsfw_photos}
+              onChange={(e) => setForm({ ...form, accept_nsfw_photos: e.target.checked })}
+              className="size-5 accent-primary"
+            />
+          </label>
+        </EditSection>
+
+        {/* Identity */}
+        <SectionDivider label="Identity" />
+        <EditSection>
+          <EditChips label="Gender" options={GENDER_OPTIONS} value={form.gender ?? []} onChange={(v) => setForm({ ...form, gender: v })} />
+          <EditChips label="Pronouns" options={PRONOUN_OPTIONS} value={form.pronouns ?? []} onChange={(v) => setForm({ ...form, pronouns: v })} />
+          <EditChips label="Orientation" options={ORIENTATION_OPTIONS} value={form.orientation ?? []} onChange={(v) => setForm({ ...form, orientation: v })} />
+        </EditSection>
+
+        {/* Health */}
+        <SectionDivider label="Health" />
+        <EditSection>
+          {single("hiv_status", HIV_STATUS_OPTIONS)}
+          {single("prep_status", PREP_STATUS_OPTIONS)}
+          <EditChips label="Health Practices" options={SAFETY_OPTIONS} value={form.safety_practices ?? []} onChange={(v) => setForm({ ...form, safety_practices: v })} />
+          <EditChips label="Vaccinations" options={VACCINATION_OPTIONS} value={form.vaccinations ?? []} onChange={(v) => setForm({ ...form, vaccinations: v })} />
+          <p className="rounded-xl border border-border/50 bg-surface/50 p-3 text-[11px] leading-relaxed text-muted-foreground">
+            <strong className="text-foreground/80">Sexual Health FAQ.</strong> Learn more about HIV, PrEP, getting tested for STIs and our commitment to privacy regarding this information.
+          </p>
+        </EditSection>
       </div>
+    </div>
+  );
+}
+
+function EditSection({ children }: { children: React.ReactNode }) {
+  return <div className="space-y-6 bg-surface/40 px-6 py-6">{children}</div>;
+}
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div className="border-y border-border bg-background px-6 py-4">
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{label}</p>
+    </div>
+  );
+}
+
+function ToggleRow({ label, checked, onChange, help }: { label: string; checked: boolean; onChange: (v: boolean) => void; help?: string }) {
+  return (
+    <div>
+      <label className="flex items-center justify-between">
+        <span className="text-sm font-medium">{label}</span>
+        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-5 accent-primary" />
+      </label>
+      {help && <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">{help}</p>}
     </div>
   );
 }
