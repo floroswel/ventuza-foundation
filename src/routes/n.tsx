@@ -375,9 +375,9 @@ function StepView({
             <ChipGrid options={INTEREST_OPTIONS} selected={data.interests} onToggle={(v) => setData({ ...data, interests: toggle(data.interests, v) })} />
           </div>
           <div className="space-y-2">
-            <Label>Bio scurt</Label>
+            <Label>Bio scurt <span className="text-muted-foreground font-normal">(opțional)</span></Label>
             <Textarea value={data.bio} onChange={(e) => setData({ ...data, bio: e.target.value })} rows={5} maxLength={500} placeholder="Câteva rânduri despre tine…" className="bg-surface border-border" />
-            <p className="text-right text-xs text-muted-foreground">{data.bio.length}/500 (min. 20)</p>
+            <p className="text-right text-xs text-muted-foreground">{data.bio.length}/500</p>
           </div>
         </div>
       );
