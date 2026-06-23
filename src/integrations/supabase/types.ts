@@ -895,6 +895,7 @@ export type Database = {
           languages: string[] | null
           last_check_in_at: string | null
           last_seen: string
+          leaderboard_opt_in: boolean
           level: number
           location: unknown
           looking_for: string[] | null
@@ -1008,6 +1009,7 @@ export type Database = {
           languages?: string[] | null
           last_check_in_at?: string | null
           last_seen?: string
+          leaderboard_opt_in?: boolean
           level?: number
           location?: unknown
           looking_for?: string[] | null
@@ -1121,6 +1123,7 @@ export type Database = {
           languages?: string[] | null
           last_check_in_at?: string | null
           last_seen?: string
+          leaderboard_opt_in?: boolean
           level?: number
           location?: unknown
           looking_for?: string[] | null
@@ -1231,6 +1234,45 @@ export type Database = {
           platform?: string | null
           user_agent?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      quest_templates: {
+        Row: {
+          bonus_amount: number | null
+          bonus_kind: string | null
+          description: string
+          icon: string
+          id: string
+          metric: string
+          sort_order: number
+          target: number
+          title: string
+          xp_reward: number
+        }
+        Insert: {
+          bonus_amount?: number | null
+          bonus_kind?: string | null
+          description: string
+          icon?: string
+          id: string
+          metric: string
+          sort_order?: number
+          target: number
+          title: string
+          xp_reward: number
+        }
+        Update: {
+          bonus_amount?: number | null
+          bonus_kind?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          metric?: string
+          sort_order?: number
+          target?: number
+          title?: string
+          xp_reward?: number
         }
         Relationships: []
       }
@@ -1527,6 +1569,47 @@ export type Database = {
         }
         Relationships: []
       }
+      user_quests: {
+        Row: {
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          progress: number
+          quest_id: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number
+          quest_id: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number
+          quest_id?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_quests_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "quest_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1791,10 +1874,12 @@ export type Database = {
         Returns: undefined
       }
       claim_daily_reward: { Args: never; Returns: Json }
+      claim_quest_reward: { Args: { _quest_id: string }; Returns: Json }
       compute_profile_completion: {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: number
       }
+      current_week_start: { Args: never; Returns: string }
       disablelongtransactions: { Args: never; Returns: string }
       discover_profiles:
         | {
@@ -2015,7 +2100,36 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_local_leaderboard: {
+        Args: { _radius_km?: number }
+        Returns: {
+          display_name: string
+          level: number
+          photo_url: string
+          rank: number
+          streak_days: number
+          user_id: string
+          weekly_xp: number
+        }[]
+      }
       get_my_gamification: { Args: never; Returns: Json }
+      get_my_quests: {
+        Args: never
+        Returns: {
+          bonus_amount: number
+          bonus_kind: string
+          claimed: boolean
+          completed: boolean
+          description: string
+          icon: string
+          id: string
+          metric: string
+          progress: number
+          target: number
+          title: string
+          xp_reward: number
+        }[]
+      }
       get_or_create_conversation: { Args: { _other: string }; Returns: string }
       get_public_profiles: {
         Args: { _ids: string[] }
@@ -2053,6 +2167,10 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      increment_quest_progress: {
+        Args: { _delta?: number; _metric: string; _user_id: string }
+        Returns: undefined
       }
       is_conversation_participant: {
         Args: { _conv_id: string; _user_id: string }

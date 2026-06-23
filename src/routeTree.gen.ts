@@ -13,6 +13,7 @@ import { Route as VisitorsRouteImport } from './routes/visitors'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SafetyRouteImport } from './routes/safety'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
+import { Route as QuestsRouteImport } from './routes/quests'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -63,6 +64,11 @@ const SafetyRoute = SafetyRouteImport.update({
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
   id: '/reset-password',
   path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QuestsRoute = QuestsRouteImport.update({
+  id: '/quests',
+  path: '/quests',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -238,6 +244,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
+  '/quests': typeof QuestsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
@@ -275,6 +282,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
+  '/quests': typeof QuestsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
+  '/quests': typeof QuestsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
@@ -352,6 +361,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/premium'
     | '/profile'
+    | '/quests'
     | '/reset-password'
     | '/safety'
     | '/settings'
@@ -389,6 +399,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/premium'
     | '/profile'
+    | '/quests'
     | '/reset-password'
     | '/safety'
     | '/settings'
@@ -426,6 +437,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/premium'
     | '/profile'
+    | '/quests'
     | '/reset-password'
     | '/safety'
     | '/settings'
@@ -464,6 +476,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
+  QuestsRoute: typeof QuestsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SafetyRoute: typeof SafetyRoute
   SettingsRoute: typeof SettingsRoute
@@ -510,6 +523,13 @@ declare module '@tanstack/react-router' {
       path: '/reset-password'
       fullPath: '/reset-password'
       preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/quests': {
+      id: '/quests'
+      path: '/quests'
+      fullPath: '/quests'
+      preLoaderRoute: typeof QuestsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -783,6 +803,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
+  QuestsRoute: QuestsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SafetyRoute: SafetyRoute,
   SettingsRoute: SettingsRoute,
