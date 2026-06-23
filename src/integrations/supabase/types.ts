@@ -208,6 +208,27 @@ export type Database = {
         }
         Relationships: []
       }
+      banned_fingerprints: {
+        Row: {
+          banned_at: string
+          banned_by: string | null
+          fingerprint: string
+          reason: string | null
+        }
+        Insert: {
+          banned_at?: string
+          banned_by?: string | null
+          fingerprint: string
+          reason?: string | null
+        }
+        Update: {
+          banned_at?: string
+          banned_by?: string | null
+          fingerprint?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       blocks: {
         Row: {
           blocked_id: string
@@ -343,6 +364,33 @@ export type Database = {
           last_message_preview?: string | null
           user_a?: string
           user_b?: string
+        }
+        Relationships: []
+      }
+      device_fingerprints: {
+        Row: {
+          fingerprint: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          fingerprint: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          fingerprint?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          user_agent?: string | null
+          user_id?: string
         }
         Relationships: []
       }
@@ -831,6 +879,7 @@ export type Database = {
           prev_location_at: string | null
           privacy_accepted_at: string | null
           privacy_accepted_version: string | null
+          profile_completion: number
           profile_slug: string | null
           prompts: Json | null
           pronouns: string[] | null
@@ -937,6 +986,7 @@ export type Database = {
           prev_location_at?: string | null
           privacy_accepted_at?: string | null
           privacy_accepted_version?: string | null
+          profile_completion?: number
           profile_slug?: string | null
           prompts?: Json | null
           pronouns?: string[] | null
@@ -1043,6 +1093,7 @@ export type Database = {
           prev_location_at?: string | null
           privacy_accepted_at?: string | null
           privacy_accepted_version?: string | null
+          profile_completion?: number
           profile_slug?: string | null
           prompts?: Json | null
           pronouns?: string[] | null
@@ -1092,28 +1143,40 @@ export type Database = {
       }
       push_subscriptions: {
         Row: {
+          auth: string | null
           created_at: string
+          endpoint: string | null
           fcm_token: string
           id: string
+          kind: string
           last_seen_at: string
+          p256dh: string | null
           platform: string | null
           user_agent: string | null
           user_id: string
         }
         Insert: {
+          auth?: string | null
           created_at?: string
+          endpoint?: string | null
           fcm_token: string
           id?: string
+          kind?: string
           last_seen_at?: string
+          p256dh?: string | null
           platform?: string | null
           user_agent?: string | null
           user_id: string
         }
         Update: {
+          auth?: string | null
           created_at?: string
+          endpoint?: string | null
           fcm_token?: string
           id?: string
+          kind?: string
           last_seen_at?: string
+          p256dh?: string | null
           platform?: string | null
           user_agent?: string | null
           user_id?: string
@@ -1645,6 +1708,10 @@ export type Database = {
           verified: boolean
         }[]
       }
+      compute_profile_completion: {
+        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
+        Returns: number
+      }
       disablelongtransactions: { Args: never; Returns: string }
       discover_profiles:
         | {
@@ -1907,6 +1974,7 @@ export type Database = {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
       }
+      is_fingerprint_banned: { Args: { _fp: string }; Returns: boolean }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
@@ -1982,6 +2050,10 @@ export type Database = {
       record_photo_hash: {
         Args: { _path: string; _phash: string }
         Returns: undefined
+      }
+      register_device_fingerprint: {
+        Args: { _fp: string; _ua: string }
+        Returns: boolean
       }
       set_looking_now: {
         Args: { _hours: number; _intent?: string }
