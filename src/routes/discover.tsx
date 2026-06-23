@@ -106,6 +106,21 @@ function DiscoverPage() {
     return () => clearInterval(t);
   }, [user]);
 
+  // Realtime location/discover refresh: profile location changes reorder nearby people.
+  useEffect(() => {
+    if (!user) return;
+    const refresh = () => { void load(); };
+    const ch = supabase
+      .channel(`discover-profiles-${user.id}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "profiles" }, refresh)
+      .subscribe();
+    const t = setInterval(refresh, 20_000);
+    return () => {
+      clearInterval(t);
+      supabase.removeChannel(ch);
+    };
+  }, [user, load]);
+
   // Realtime: new match notifications (when someone else likes me back)
   useEffect(() => {
     if (!user) return;
