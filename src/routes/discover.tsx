@@ -27,6 +27,7 @@ import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
+import { DailyRewardCard } from "@/components/DailyRewardCard";
 
 
 export const Route = createFileRoute("/discover")({
@@ -228,6 +229,7 @@ function DiscoverPage() {
         <QuickFiltersStrip value={filters} onChange={setFilters} />
       </header>
 
+      <DailyRewardCard />
       <StoriesStrip />
       <div className="px-3 pt-2"><SponsoredBanner placement="discover_card" /></div>
       {loading ? (
