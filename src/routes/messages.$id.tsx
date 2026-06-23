@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
-  AlertCircle, Check, CheckCheck, ChevronLeft, Clock, CornerUpLeft, Languages,
-  Loader2, MoreVertical, Send, Smile, Sparkles, Trash2, X as XIcon,
+  AlertCircle, BadgeCheck, Check, CheckCheck, ChevronLeft, Clock, CornerUpLeft, Languages,
+  Loader2, MoreVertical, Send, ShieldCheck, Smile, Sparkles, Trash2, X as XIcon,
 } from "lucide-react";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { toast } from "sonner";
@@ -14,6 +14,7 @@ import {
   type MessageRow,
 } from "@/lib/chat";
 import { generateOpener, translateText } from "@/lib/ai.functions";
+import { verifySelfie } from "@/lib/verification.functions";
 import { REACTION_EMOJIS, toggleMessageReaction, type ReactionEmoji } from "@/lib/social";
 import { ChatComposerExtras } from "@/components/ChatComposerExtras";
 import { ChatMediaBubble } from "@/components/ChatMediaBubble";
