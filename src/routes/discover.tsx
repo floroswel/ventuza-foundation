@@ -14,6 +14,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
 import { StoriesStrip } from "@/components/StoriesStrip";
+import { GoldenHourBadge } from "@/components/GoldenHourBadge";
 import { QuickFiltersStrip } from "@/components/QuickFiltersStrip";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
