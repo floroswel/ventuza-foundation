@@ -14,6 +14,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
 import { StoriesStrip } from "@/components/StoriesStrip";
+import { GoldenHourBadge } from "@/components/GoldenHourBadge";
 import { QuickFiltersStrip } from "@/components/QuickFiltersStrip";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
@@ -196,6 +197,7 @@ function DiscoverPage() {
             <QuickProfileDrawer />
             <div className="min-w-0">
               <h1 className="wordmark truncate text-2xl font-medium leading-none">Nearby</h1>
+              <GoldenHourBadge className="mt-1.5" />
             </div>
           </div>
           <div className="flex items-center gap-1">
