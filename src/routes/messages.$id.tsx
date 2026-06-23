@@ -64,7 +64,9 @@ function ThreadPage() {
   }, [user]);
 
   const hasInbound = messages.some((m) => m.sender_id && m.sender_id !== user?.id);
-  const blockedFirstMessage = meVerified === false && !hasInbound;
+  // Verificarea este 100% opțională — nu blocăm trimiterea de mesaje. Badge-ul rămâne un bonus.
+  void meVerified; void hasInbound;
+  const blockedFirstMessage = false;
 
   async function handleReact(msgId: string, emoji: ReactionEmoji) {
     setReactionPickerFor(null);
