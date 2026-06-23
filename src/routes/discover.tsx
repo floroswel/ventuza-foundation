@@ -494,10 +494,10 @@ function ProfileSheet({
   const heightStr = formatHeight(profile.height_cm);
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end justify-center bg-black/70 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/80 backdrop-blur-sm sm:items-end" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative max-h-[92dvh] w-full max-w-md overflow-y-auto rounded-t-3xl border border-border bg-surface"
+        className="relative h-full w-full overflow-y-auto border-border bg-surface sm:h-auto sm:max-h-[92dvh] sm:max-w-md sm:rounded-t-3xl sm:border"
       >
         {/* Carousel */}
         <div className="relative aspect-square w-full bg-background">
