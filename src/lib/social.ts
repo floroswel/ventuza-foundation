@@ -111,13 +111,10 @@ export async function listBlocked(): Promise<BlockedUser[]> {
   if (error) throw error;
   const ids = (bls ?? []).map((b) => b.blocked_id);
   if (!ids.length) return [];
-  const { data: profs } = await supabase
-    .from("profiles")
-    .select("id, display_name, photos")
-    .in("id", ids);
+  const { data: profs } = await supabase.rpc("get_public_profiles", { _ids: ids });
   const map = new Map<string, { display_name: string | null; photos: string[] | null }>();
   (profs ?? []).forEach((p) =>
-    map.set(p.id as string, {
+    map.set((p as { id: string }).id, {
       display_name: (p as { display_name: string | null }).display_name,
       photos: (p as { photos: string[] | null }).photos,
     }),
