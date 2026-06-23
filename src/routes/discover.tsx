@@ -375,7 +375,7 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
   }, [profiles]);
 
   return (
-    <div className="grid grid-cols-3 gap-[2px] p-[2px]">
+    <div className="grid grid-cols-3 gap-[1px] bg-border/40">
       {profiles.map((p) => {
         const path = p.photos?.[0];
         const url = path ? urls[path] : null;
