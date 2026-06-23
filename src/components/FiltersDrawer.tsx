@@ -45,10 +45,6 @@ export function FiltersDrawer({
             <span className="mr-1.5 inline-block size-1.5 animate-pulse rounded-full bg-rose-500 shadow-[0_0_6px_rgb(244,63,94)]" />
             Right now
           </Toggle>
-          <Toggle active={draft.onlineOnly} onClick={() => setDraft({ ...draft, onlineOnly: !draft.onlineOnly })}>
-            <span className="mr-1.5 inline-block size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />
-            Online only
-          </Toggle>
           <Toggle active={draft.verifiedOnly} onClick={() => setDraft({ ...draft, verifiedOnly: !draft.verifiedOnly })}>
             ✓ Verified only
           </Toggle>
@@ -73,10 +69,10 @@ export function FiltersDrawer({
             <span className="text-sm text-primary">{draft.minAge} – {draft.maxAge}</span>
           </div>
           <div className="flex items-center gap-3">
-            <input type="range" min={18} max={99} value={draft.minAge}
+            <input type="range" min={18} max={120} value={draft.minAge}
               onChange={(e) => setDraft({ ...draft, minAge: Math.min(Number(e.target.value), draft.maxAge) })}
               className="accent-[var(--primary)] w-full" />
-            <input type="range" min={18} max={99} value={draft.maxAge}
+            <input type="range" min={18} max={120} value={draft.maxAge}
               onChange={(e) => setDraft({ ...draft, maxAge: Math.max(Number(e.target.value), draft.minAge) })}
               className="accent-[var(--primary)] w-full" />
           </div>
