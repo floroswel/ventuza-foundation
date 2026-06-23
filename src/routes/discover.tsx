@@ -26,6 +26,7 @@ import { sendWoof, hasWoofed } from "@/lib/ads";
 import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 
 
 export const Route = createFileRoute("/discover")({
