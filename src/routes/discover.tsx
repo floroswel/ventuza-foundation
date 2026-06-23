@@ -226,18 +226,7 @@ function DiscoverPage() {
           <TabBtn active={tab === "fresh"} onClick={() => setTab("fresh")}>Fresh</TabBtn>
         </div>
 
-        {stats && (
-          <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <span className="size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />
-              <span className="font-medium text-foreground">{stats.online.toLocaleString()}</span> online acum
-            </span>
-            <span className="text-border">•</span>
-            <span>
-              <span className="font-medium text-foreground">{stats.total.toLocaleString()}</span> membri
-            </span>
-          </div>
-        )}
+
 
         <QuickFiltersStrip value={filters} onChange={setFilters} />
       </header>
