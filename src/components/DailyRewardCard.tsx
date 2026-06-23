@@ -86,7 +86,52 @@ export function DailyRewardCard() {
   const pct = Math.min(100, Math.round((xpInLevel / Math.max(1, xpForNext)) * 100));
 
   return (
-    <div className="mx-3 mt-2 overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-rose-500/10 to-fuchsia-500/15 p-3 shadow-[0_8px_24px_-12px_rgba(244,114,182,0.5)]">
+    <div
+      className={cn(
+        "relative mx-3 mt-2 overflow-hidden rounded-2xl border border-amber-500/30 bg-gradient-to-br from-amber-500/15 via-rose-500/10 to-fuchsia-500/15 p-3 shadow-[0_8px_24px_-12px_rgba(244,114,182,0.5)] transition-transform",
+        justAvailable && "animate-[reward-bounce_1.2s_ease-out] ring-2 ring-amber-400/60",
+        burst && "animate-[reward-pulse_0.7s_ease-out]",
+      )}
+    >
+      <style>{`
+        @keyframes reward-bounce {
+          0% { transform: scale(0.7); opacity: 0; }
+          40% { transform: scale(1.08); opacity: 1; }
+          70% { transform: scale(0.96); }
+          100% { transform: scale(1); }
+        }
+        @keyframes reward-pulse {
+          0% { box-shadow: 0 0 0 0 rgba(251,191,36,0.7); }
+          100% { box-shadow: 0 0 0 32px rgba(251,191,36,0); }
+        }
+        @keyframes reward-confetti {
+          0% { transform: translate(0,0) scale(0.6); opacity: 1; }
+          100% { transform: translate(var(--tx), var(--ty)) scale(1); opacity: 0; }
+        }
+      `}</style>
+      {burst && (
+        <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center">
+          {Array.from({ length: 14 }).map((_, i) => {
+            const angle = (i / 14) * Math.PI * 2;
+            const dist = 60 + Math.random() * 40;
+            const tx = `${Math.cos(angle) * dist}px`;
+            const ty = `${Math.sin(angle) * dist}px`;
+            const colors = ["#fbbf24", "#f43f5e", "#d946ef", "#22d3ee", "#34d399"];
+            return (
+              <span
+                key={i}
+                className="absolute size-2 rounded-full"
+                style={{
+                  background: colors[i % colors.length],
+                  ["--tx" as string]: tx,
+                  ["--ty" as string]: ty,
+                  animation: "reward-confetti 800ms ease-out forwards",
+                }}
+              />
+            );
+          })}
+        </div>
+      )}
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <div className="flex size-10 items-center justify-center rounded-full bg-gradient-to-br from-amber-400 to-rose-500 shadow-[0_0_16px_rgba(251,191,36,0.5)]">
