@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Flame, Gift, Loader2, Sparkles, Zap, Star } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -23,32 +23,52 @@ export function DailyRewardCard() {
   const [state, setState] = useState<GamificationState | null>(null);
   const [loading, setLoading] = useState(true);
   const [claiming, setClaiming] = useState(false);
+  const [burst, setBurst] = useState(false);
+  const [justAvailable, setJustAvailable] = useState(false);
+  const prevClaimed = useRef<boolean | null>(null);
+
+  async function refresh() {
+    const fresh = await fetchGamification();
+    setState(fresh);
+    setLoading(false);
+  }
 
   useEffect(() => {
-    let alive = true;
-    void fetchGamification().then((g) => {
-      if (alive) {
-        setState(g);
-        setLoading(false);
-      }
-    });
-    return () => {
-      alive = false;
-    };
+    void refresh();
+    const t = setInterval(() => { void refresh(); }, 60_000);
+    return () => clearInterval(t);
   }, []);
+
+  // Detect transition from "claimed" -> "available again" and play a bounce-in.
+  useEffect(() => {
+    if (!state) return;
+    if (prevClaimed.current === true && state.claimed_today === false) {
+      setJustAvailable(true);
+      toast.success("🎁 Recompensa zilnică e disponibilă din nou!");
+      const t = setTimeout(() => setJustAvailable(false), 1400);
+      return () => clearTimeout(t);
+    }
+    prevClaimed.current = state.claimed_today;
+  }, [state]);
 
   async function handleClaim() {
     if (!state || state.claimed_today || claiming) return;
     setClaiming(true);
     try {
       const res = await claimDailyReward();
-      toast.success(`🔥 Ziua ${res.streak} — ai primit ${rewardLabel(res.reward_kind, res.reward_amount)} + ${res.xp} XP`);
-      const fresh = await fetchGamification();
-      setState(fresh);
+      setBurst(true);
+      setTimeout(() => setBurst(false), 900);
+      toast.success(
+        `🔥 Ziua ${res.streak} — ai primit ${rewardLabel(res.reward_kind, res.reward_amount)} + ${res.xp} XP`,
+        { duration: 3500 },
+      );
+      // Brief delay so the user sees the burst before the card collapses.
+      setTimeout(() => { void refresh(); }, 700);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Eroare";
       if (msg.includes("already_claimed")) {
         toast.info("Recompensa de azi a fost deja revendicată.");
+        void refresh();
       } else {
         toast.error(msg);
       }
