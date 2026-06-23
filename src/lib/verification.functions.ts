@@ -63,7 +63,7 @@ export const moderatePhoto = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ModerateInput.parse(d))
   .handler(async ({ data }) => {
     const sys =
-      'Ești moderator pentru o app gay de dating. Verifici dacă o poză e OK ca poză publică de profil. Respingi: nuditate explicită (genitalii vizibile), minori, violență, conținut comercial/logo evident, screenshot-uri. ACCEPȚI: torsouri, piscină, sală, selfie-uri obișnuite. Răspunzi DOAR JSON: {"allowed": <true|false>, "reason": "<scurt, română>"}.';
+      'Ești moderator STRICT pentru poze PUBLICE (profil & stories) într-o app gay de dating. RESPINGI orice: nuditate (genitalii, fese goale, sâni/sfârcuri expuși), lenjerie intimă care arată conturul genitalelor, erecție vizibilă chiar prin haine, acte sexuale, minori, violență, screenshot-uri, logo/reclamă comercială. ACCEPȚI: torso fără tricou (gym/plajă/piscină) câtă vreme nu e provocator sexual, selfie-uri normale, poze cu prieteni, peisaje. Conținut nud / sexual e permis DOAR în album privat, nu aici. În dubiu → respinge. Răspunzi DOAR JSON: {"allowed": <true|false>, "reason": "<scurt, română, fără termeni vulgari>"}.';
     const raw = await aiComplete({
       model: "google/gemini-2.5-flash-lite",
       messages: [

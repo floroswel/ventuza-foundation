@@ -65,19 +65,22 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           .upload(path, file, { upsert: false, contentType: file.type });
         if (error) { toast.error(error.message); continue; }
 
-        // AI moderation pass — best effort, don't block on failure
+        // AI moderation — BLOCKING. Conținut nud/sexual nu e permis pe profil public.
         try {
           const { data: signedData } = await supabase.storage.from("profile-photos").createSignedUrl(path, 300);
           if (signedData?.signedUrl) {
             const mod = await moderate({ data: { photoUrl: signedData.signedUrl } });
             if (!mod.allowed) {
               await supabase.storage.from("profile-photos").remove([path]);
-              toast.error(`Poza respinsă: ${mod.reason || "conținut nepermis"}`);
+              toast.error(`Poză respinsă: ${mod.reason || "conținut nepermis pe profilul public"}. Pozele nud / explicite merg doar în Albumul privat.`);
               continue;
             }
           }
-        } catch {
-          // moderation failure shouldn't block upload
+        } catch (modErr) {
+          // dacă moderarea pică, NU lăsăm poza — blocăm by default pentru siguranță
+          await supabase.storage.from("profile-photos").remove([path]);
+          toast.error(`Nu am putut verifica poza (${(modErr as Error).message}). Încearcă din nou.`);
+          continue;
         }
 
         // Perceptual hash → server (catfishing detection)
