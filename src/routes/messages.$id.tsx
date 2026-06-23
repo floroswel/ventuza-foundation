@@ -636,6 +636,7 @@ function ThreadPage() {
           conversationId={id}
           disabled={blockedFirstMessage}
           onSent={(m) => setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))}
+          onUpdated={(m) => setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)))}
         />
         <input
           value={text}
