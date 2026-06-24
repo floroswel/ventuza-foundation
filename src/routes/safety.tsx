@@ -1,14 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Shield, Eye, MessageCircle, MapPin, Phone, AlertTriangle, ChevronLeft } from "lucide-react";
+import { Shield, Eye, MessageCircle, MapPin, Phone, AlertTriangle, ChevronLeft, Lock, ShieldCheck, EyeOff, Fingerprint, Ban, Image as ImageIcon } from "lucide-react";
 import { PanicToolsCard } from "@/components/PanicToolsCard";
 import { HealthReminderCard } from "@/components/HealthReminderCard";
 
 
 export const Route = createFileRoute("/safety")({
+  ssr: true,
   head: () => ({
     meta: [
-      { title: "Centrul de siguranță — Ventuza" },
-      { name: "description", content: "Sfaturi de siguranță, resurse de urgență și instrumente pentru a-ți proteja experiența pe Ventuza." },
+      { title: "Cum te protejăm — Centrul de siguranță Ventuza" },
+      { name: "description", content: "Cum te protejează Ventuza: verificare 18+, anti-screenshot, locație aproximativă, Quick Exit, moderare AI și resurse de urgență." },
+      { property: "og:title", content: "Cum te protejăm — Ventuza" },
+      { property: "og:description", content: "Verificare 18+, anti-triangulare locație, blur reciproc, Quick Exit, raportare rapidă. Siguranța ta pe primul loc." },
+      { property: "og:type", content: "website" },
     ],
   }),
   component: SafetyCenter,
@@ -22,11 +26,25 @@ function SafetyCenter() {
       </Link>
       <header className="mb-6">
         <Shield className="size-8 text-primary" />
-        <h1 className="mt-2 text-2xl font-semibold">Centrul de siguranță</h1>
+        <h1 className="mt-2 text-2xl font-semibold">Cum te protejăm</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          Siguranța ta este pe primul loc. Iată cum o protejăm — și cum o poți proteja tu.
+          Siguranța ta este pe primul loc. Iată exact ce facem pentru tine — și cum te poți proteja și tu.
         </p>
       </header>
+
+      <section className="mb-6 space-y-3">
+        <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Ce facem noi pentru tine</h2>
+        <Tip icon={<ShieldCheck />} title="Verificare 18+ obligatorie" body="Folosim Didit (verificare reală cu act de identitate) pentru a ne asigura că platforma este doar pentru adulți. Datele documentelor nu rămân la noi." />
+        <Tip icon={<MapPin />} title="Locație aproximativă (anti-triangulare)" body="Distanța față de alți utilizatori e afișată în bucket-uri (~500m, ~2km, ~5km...). Nimeni nu poate calcula adresa ta exactă." />
+        <Tip icon={<ImageIcon />} title="Anti-screenshot & blur reciproc" body="Pozele explicite sunt blurate până la tap. Watermark cu ID-ul vizitatorului descurajează redistribuirea, iar la print/PDF imaginile dispar." />
+        <Tip icon={<EyeOff />} title="Quick Exit & Mod incognito" body="Buton flotant care te scoate instant din aplicație (sau apasă ESC de 3 ori). Modul Incognito îți ascunde vizibilitatea în Discover." />
+        <Tip icon={<Lock />} title="Album privat criptat" body="Pozele intime stau într-un bucket privat — accesul se acordă manual, per persoană, și se poate revoca oricând." />
+        <Tip icon={<Ban />} title="Moderare AI + CSAM blocking" body="Toate pozele trec prin moderare AI înainte de publicare. Hash-urile CSAM cunoscute sunt blocate și raportate." />
+        <Tip icon={<Fingerprint />} title="Anti-fraud & fingerprinting" body="Detectăm conturi duplicate, boți și dispozitive banate. Logout automat la inactivitate pe sesiuni sensibile." />
+      </section>
+
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Ce poți face tu</h2>
+
 
       <section className="space-y-4">
         <Tip icon={<Eye />} title="Verifică profilul" body="Cere o poză spontană sau un video-apel scurt înainte să te întâlnești. Pozele furate sunt cel mai comun semn de scam." />
