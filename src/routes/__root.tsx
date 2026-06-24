@@ -153,6 +153,7 @@ function RootComponent() {
           <TravelWarning />
           <PinLockGate />
           <Toaster theme="dark" position="top-center" richColors />
+          <QuickExitFab />
         </NotificationsProvider>
       </AuthProvider>
     </QueryClientProvider>
