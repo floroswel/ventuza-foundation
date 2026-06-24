@@ -70,6 +70,10 @@ function SettingsPage() {
   useEffect(() => {
     if (!user) return;
     setEmail(user.email ?? "");
+    // Keep tz offset in sync with the device so quiet hours line up with local time.
+    // (Date#getTimezoneOffset returns minutes to add to local to get UTC, so negate.)
+    const tzOffsetMinutes = -new Date().getTimezoneOffset();
+    void supabase.from("profiles").update({ tz_offset_minutes: tzOffsetMinutes }).eq("id", user.id);
     supabase.from("profiles")
       .select("notification_prefs, hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent, read_receipts_enabled, auto_share_album_on_match")
       .eq("id", user.id).maybeSingle()
