@@ -19,6 +19,7 @@ import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
 import { SessionGuards } from "@/components/SessionGuards";
 import { AgeGate } from "@/components/AgeGate";
+import { QuickExitFab } from "@/components/QuickExitFab";
 
 function NotFoundComponent() {
   return (
