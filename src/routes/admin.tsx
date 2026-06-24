@@ -20,6 +20,10 @@ import {
   PoliciesPanel, SecurityPanel,
 } from "@/components/admin/EnterpriseSections";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
+import { AnalyticsPanel } from "@/components/AnalyticsPanel";
+import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
+import { ExperimentsPanel } from "@/components/admin/ExperimentsPanel";
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Ventuza" }, { name: "robots", content: "noindex" }] }),
@@ -182,12 +186,16 @@ function OverviewPanel() {
 
   return (
     <div className="space-y-6">
+      <AnalyticsPanel />
+      <FeedbackInbox />
+      <ExperimentsPanel />
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Privire de ansamblu</h2>
         <button onClick={load} className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-surface">
           <RefreshCw className="mr-1 inline size-3" /> Reîncarcă
         </button>
       </div>
+
 
       <section>
         <h3 className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Utilizatori</h3>

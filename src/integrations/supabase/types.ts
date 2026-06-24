@@ -885,6 +885,93 @@ export type Database = {
         }
         Relationships: []
       }
+      experiment_assignments: {
+        Row: {
+          assigned_at: string
+          experiment_key: string
+          id: string
+          user_id: string
+          variant: string
+        }
+        Insert: {
+          assigned_at?: string
+          experiment_key: string
+          id?: string
+          user_id: string
+          variant: string
+        }
+        Update: {
+          assigned_at?: string
+          experiment_key?: string
+          id?: string
+          user_id?: string
+          variant?: string
+        }
+        Relationships: []
+      }
+      experiment_events: {
+        Row: {
+          created_at: string
+          event: string
+          experiment_key: string
+          id: number
+          user_id: string | null
+          value: number | null
+          variant: string
+        }
+        Insert: {
+          created_at?: string
+          event: string
+          experiment_key: string
+          id?: number
+          user_id?: string | null
+          value?: number | null
+          variant: string
+        }
+        Update: {
+          created_at?: string
+          event?: string
+          experiment_key?: string
+          id?: number
+          user_id?: string | null
+          value?: number | null
+          variant?: string
+        }
+        Relationships: []
+      }
+      experiments: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          status: string
+          updated_at: string
+          variants: Json
+          weights: Json
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          status?: string
+          updated_at?: string
+          variants?: Json
+          weights?: Json
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          status?: string
+          updated_at?: string
+          variants?: Json
+          weights?: Json
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -903,6 +990,39 @@ export type Database = {
           favorite_id?: string
           id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      feedback: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          message: string
+          page: string | null
+          status: string
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          message: string
+          page?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string
+          page?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -1759,6 +1879,75 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: number
+          user_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: number
+          user_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          owner_id: string
+          uses_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          uses_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          uses_count?: number
+        }
+        Relationships: []
+      }
+      referral_redemptions: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
           created_at: string
@@ -2114,6 +2303,39 @@ export type Database = {
         }
         Relationships: []
       }
+      web_vitals: {
+        Row: {
+          created_at: string
+          id: number
+          metric: string
+          path: string | null
+          rating: string | null
+          user_agent: string | null
+          user_id: string | null
+          value: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          metric: string
+          path?: string | null
+          rating?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          value: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          metric?: string
+          path?: string | null
+          rating?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
       woofs: {
         Row: {
           created_at: string
@@ -2335,6 +2557,7 @@ export type Database = {
             }
             Returns: string
           }
+      admin_analytics_summary: { Args: never; Returns: Json }
       admin_risk_queue: {
         Args: { _limit?: number }
         Returns: {
@@ -2357,6 +2580,10 @@ export type Database = {
         Returns: undefined
       }
       bucket_distance_m: { Args: { d: number }; Returns: number }
+      check_rate_limit: {
+        Args: { _action: string; _max: number; _window_seconds: number }
+        Returns: boolean
+      }
       claim_daily_reward: { Args: never; Returns: Json }
       claim_quest_reward: { Args: { _quest_id: string }; Returns: Json }
       compute_profile_completion: {
@@ -2485,6 +2712,7 @@ export type Database = {
         | { Args: { schema_name: string; table_name: string }; Returns: string }
         | { Args: { table_name: string }; Returns: string }
       enablelongtransactions: { Args: never; Returns: string }
+      ensure_referral_code: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       geometry: { Args: { "": string }; Returns: unknown }
       geometry_above: {
@@ -2756,6 +2984,7 @@ export type Database = {
         Args: { _path: string; _phash: string }
         Returns: undefined
       }
+      redeem_referral: { Args: { _code: string }; Returns: Json }
       register_device_fingerprint: {
         Args: { _fp: string; _ua: string }
         Returns: boolean
