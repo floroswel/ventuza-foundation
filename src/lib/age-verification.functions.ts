@@ -40,7 +40,12 @@ export const startAgeVerification = createServerFn({ method: "POST" })
     const raw = await res.text();
     if (!res.ok) {
       console.error("[age-start] Didit error", res.status, raw);
-      throw new Error(`Didit session creation failed (${res.status})`);
+      let detail = "";
+      try { detail = (JSON.parse(raw) as { detail?: string }).detail ?? ""; } catch { /* ignore */ }
+      if (/credits/i.test(detail)) {
+        throw new Error("Serviciul de verificare a vârstei este temporar indisponibil (credite epuizate la furnizor). Te rugăm încearcă mai târziu.");
+      }
+      throw new Error(detail || `Didit session creation failed (${res.status})`);
     }
 
     let json: { url?: string; session_id?: string };
