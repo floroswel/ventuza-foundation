@@ -124,6 +124,174 @@ export type Database = {
           },
         ]
       }
+      admin_alerts: {
+        Row: {
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          body: string | null
+          created_at: string
+          id: number
+          kind: string
+          severity: string
+          target_id: string | null
+          target_table: string | null
+          title: string
+        }
+        Insert: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          body?: string | null
+          created_at?: string
+          id?: number
+          kind: string
+          severity?: string
+          target_id?: string | null
+          target_table?: string | null
+          title: string
+        }
+        Update: {
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          body?: string | null
+          created_at?: string
+          id?: number
+          kind?: string
+          severity?: string
+          target_id?: string | null
+          target_table?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      admin_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string
+          id: number
+          ip: unknown
+          justification: string | null
+          severity: string
+          target_id: string | null
+          target_table: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          id?: number
+          ip?: unknown
+          justification?: string | null
+          severity?: string
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          id?: number
+          ip?: unknown
+          justification?: string | null
+          severity?: string
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
+      admin_ip_allowlist: {
+        Row: {
+          cidr: string
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string | null
+        }
+        Insert: {
+          cidr: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+        }
+        Update: {
+          cidr?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+        }
+        Relationships: []
+      }
+      admin_login_attempts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: number
+          ip: unknown
+          reason: string | null
+          success: boolean
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: number
+          ip?: unknown
+          reason?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: number
+          ip?: unknown
+          reason?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      admin_mfa_status: {
+        Row: {
+          enrolled: boolean
+          enrolled_at: string | null
+          last_verified_at: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          enrolled?: boolean
+          enrolled_at?: string | null
+          last_verified_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          enrolled?: boolean
+          enrolled_at?: string | null
+          last_verified_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       advertisers: {
         Row: {
           brand_name: string
@@ -250,6 +418,54 @@ export type Database = {
         }
         Relationships: []
       }
+      breach_incidents: {
+        Row: {
+          affected_users_count: number | null
+          authority_notified_at: string | null
+          created_at: string
+          created_by: string | null
+          data_categories: string[] | null
+          description: string | null
+          discovered_at: string
+          dpo_contact: string | null
+          id: string
+          notify_deadline: string
+          status: string
+          title: string
+          users_notified_at: string | null
+        }
+        Insert: {
+          affected_users_count?: number | null
+          authority_notified_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_categories?: string[] | null
+          description?: string | null
+          discovered_at?: string
+          dpo_contact?: string | null
+          id?: string
+          notify_deadline?: string
+          status?: string
+          title: string
+          users_notified_at?: string | null
+        }
+        Update: {
+          affected_users_count?: number | null
+          authority_notified_at?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_categories?: string[] | null
+          description?: string | null
+          discovered_at?: string
+          dpo_contact?: string | null
+          id?: string
+          notify_deadline?: string
+          status?: string
+          title?: string
+          users_notified_at?: string | null
+        }
+        Relationships: []
+      }
       business_applications: {
         Row: {
           accepts_dpa: boolean
@@ -340,6 +556,39 @@ export type Database = {
         }
         Relationships: []
       }
+      consent_log: {
+        Row: {
+          accepted: boolean
+          created_at: string
+          id: number
+          ip: unknown
+          kind: string
+          user_agent: string | null
+          user_id: string
+          version: string
+        }
+        Insert: {
+          accepted: boolean
+          created_at?: string
+          id?: number
+          ip?: unknown
+          kind: string
+          user_agent?: string | null
+          user_id: string
+          version: string
+        }
+        Update: {
+          accepted?: boolean
+          created_at?: string
+          id?: number
+          ip?: unknown
+          kind?: string
+          user_agent?: string | null
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
           created_at: string
@@ -364,6 +613,63 @@ export type Database = {
           last_message_preview?: string | null
           user_a?: string
           user_b?: string
+        }
+        Relationships: []
+      }
+      csam_hash_blocklist: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          hash: string
+          source: string | null
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          hash: string
+          source?: string | null
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          hash?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
+      csam_reports: {
+        Row: {
+          hash: string | null
+          id: string
+          match_source: string | null
+          ncmec_report_id: string | null
+          notes: string | null
+          photo_url: string | null
+          reported_at: string
+          status: string
+          user_id: string | null
+        }
+        Insert: {
+          hash?: string | null
+          id?: string
+          match_source?: string | null
+          ncmec_report_id?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          reported_at?: string
+          status?: string
+          user_id?: string | null
+        }
+        Update: {
+          hash?: string | null
+          id?: string
+          match_source?: string | null
+          ncmec_report_id?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          reported_at?: string
+          status?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -397,6 +703,36 @@ export type Database = {
           streak_day?: number
           user_id?: string
           xp_awarded?: number
+        }
+        Relationships: []
+      }
+      deletion_requests: {
+        Row: {
+          id: string
+          processed_at: string | null
+          reason: string | null
+          requested_at: string
+          scheduled_for: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          scheduled_for?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          scheduled_for?: string
+          status?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -637,6 +973,54 @@ export type Database = {
         }
         Relationships: []
       }
+      illegal_content_reports: {
+        Row: {
+          category: string
+          content_type: string | null
+          content_url: string | null
+          created_at: string
+          description: string
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          legal_basis: string | null
+          reporter_email: string | null
+          reporter_user_id: string | null
+          resolution: string | null
+          status: string
+        }
+        Insert: {
+          category: string
+          content_type?: string | null
+          content_url?: string | null
+          created_at?: string
+          description: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          legal_basis?: string | null
+          reporter_email?: string | null
+          reporter_user_id?: string | null
+          resolution?: string | null
+          status?: string
+        }
+        Update: {
+          category?: string
+          content_type?: string | null
+          content_url?: string | null
+          created_at?: string
+          description?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          legal_basis?: string | null
+          reporter_email?: string | null
+          reporter_user_id?: string | null
+          resolution?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           created_at: string
@@ -784,24 +1168,63 @@ export type Database = {
       photo_hashes: {
         Row: {
           created_at: string
+          csam_match: boolean
           id: string
+          nudity_score: number | null
           phash: string
           photo_path: string
+          quarantined_at: string | null
+          scan_status: string
           user_id: string
         }
         Insert: {
           created_at?: string
+          csam_match?: boolean
           id?: string
+          nudity_score?: number | null
           phash: string
           photo_path: string
+          quarantined_at?: string | null
+          scan_status?: string
           user_id: string
         }
         Update: {
           created_at?: string
+          csam_match?: boolean
           id?: string
+          nudity_score?: number | null
           phash?: string
           photo_path?: string
+          quarantined_at?: string | null
+          scan_status?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      policy_versions: {
+        Row: {
+          content_url: string | null
+          created_by: string | null
+          effective_at: string
+          id: string
+          kind: string
+          version: string
+        }
+        Insert: {
+          content_url?: string | null
+          created_by?: string | null
+          effective_at?: string
+          id?: string
+          kind: string
+          version: string
+        }
+        Update: {
+          content_url?: string | null
+          created_by?: string | null
+          effective_at?: string
+          id?: string
+          kind?: string
+          version?: string
         }
         Relationships: []
       }
@@ -2176,6 +2599,13 @@ export type Database = {
       }
       gettransactionid: { Args: never; Returns: unknown }
       has_active_subscription: { Args: { _user: string }; Returns: boolean }
+      has_any_role: {
+        Args: {
+          _roles: Database["public"]["Enums"]["app_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -2187,6 +2617,7 @@ export type Database = {
         Args: { _delta?: number; _metric: string; _user_id: string }
         Returns: undefined
       }
+      is_admin_or_above: { Args: { _user_id: string }; Returns: boolean }
       is_conversation_participant: {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
@@ -2196,6 +2627,7 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
       mark_message_viewed: { Args: { _msg_id: string }; Returns: undefined }
       moderator_ban_user: {
@@ -2880,7 +3312,14 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "moderator" | "user" | "business"
+      app_role:
+        | "admin"
+        | "moderator"
+        | "user"
+        | "business"
+        | "super_admin"
+        | "support"
+        | "auditor"
       business_app_status: "pending" | "reviewing" | "approved" | "rejected"
       business_entity_type:
         | "srl"
@@ -3039,7 +3478,15 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "moderator", "user", "business"],
+      app_role: [
+        "admin",
+        "moderator",
+        "user",
+        "business",
+        "super_admin",
+        "support",
+        "auditor",
+      ],
       business_app_status: ["pending", "reviewing", "approved", "rejected"],
       business_entity_type: [
         "srl",

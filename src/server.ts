@@ -37,12 +37,30 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   });
 }
 
+function applySecurityHeaders(response: Response, url: URL): Response {
+  // Skip for non-HTML/asset responses we don't own
+  const headers = new Headers(response.headers);
+  headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
+  headers.set("X-Content-Type-Options", "nosniff");
+  headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  headers.set("X-Frame-Options", "SAMEORIGIN");
+  headers.set("Permissions-Policy", "camera=(self), microphone=(self), geolocation=(self), payment=()");
+  // Admin route stays out of search engines
+  if (url.pathname.startsWith("/admin")) {
+    headers.set("X-Robots-Tag", "noindex, nofollow");
+    headers.set("Cache-Control", "no-store");
+  }
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
+    const url = new URL(request.url);
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
-      return await normalizeCatastrophicSsrResponse(response);
+      const normalized = await normalizeCatastrophicSsrResponse(response);
+      return applySecurityHeaders(normalized, url);
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {

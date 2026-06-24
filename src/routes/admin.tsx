@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -8,12 +8,18 @@ import {
   Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck,
   Megaphone, Play, Pause, Building2, LayoutDashboard, Users, Database, Send,
   Trash2, Save, Search, RefreshCw, ChevronLeft, ChevronRight, Crown,
+  ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon,
 } from "lucide-react";
 import {
   adminGetOverview, adminListTables, adminListRows, adminUpdateRow, adminDeleteRow,
   adminInsertRow, adminSearchUsers, adminGrantRole, adminRevokeRole, adminBroadcast,
   adminDeleteUser, ADMIN_TABLES,
 } from "@/lib/admin.functions";
+import {
+  AuditLogPanel, AlertsPanel, DsaPanel, CsamPanel, GdprPanel, BreachPanel,
+  PoliciesPanel, SecurityPanel,
+} from "@/components/admin/EnterpriseSections";
+import { useIdleLogout } from "@/hooks/useIdleLogout";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Ventuza" }, { name: "robots", content: "noindex" }] }),
@@ -22,7 +28,8 @@ export const Route = createFileRoute("/admin")({
 
 type Section =
   | "overview" | "users" | "reports" | "risk" | "ads" | "biz"
-  | "data" | "broadcast";
+  | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
+  | "gdpr" | "breach" | "policies" | "security";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -78,15 +85,32 @@ function AdminDashboard() {
     );
   }
 
+  // Auto-logout după 15 min de inactivitate
+  const onIdle = useCallback(async () => {
+    if (!isAdmin && !isMod) return;
+    toast.warning("Sesiune admin expirată după 15 min inactivitate");
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  }, [isAdmin, isMod, navigate]);
+  useIdleLogout(15, onIdle, isAdmin === true || isMod);
+
   const allItems: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
     { id: "overview", label: "Overview", icon: LayoutDashboard, adminOnly: true },
+    { id: "alerts", label: "Alerte", icon: Bell },
     { id: "users", label: "Utilizatori", icon: Users, adminOnly: true },
     { id: "reports", label: "Rapoarte", icon: ShieldAlert },
     { id: "risk", label: "Risc", icon: AlertTriangle },
+    { id: "csam", label: "CSAM", icon: ShieldAlert, adminOnly: true },
+    { id: "dsa", label: "DSA", icon: FileWarning },
+    { id: "gdpr", label: "GDPR", icon: Download, adminOnly: true },
+    { id: "breach", label: "Breșe", icon: AlertOctagon, adminOnly: true },
+    { id: "policies", label: "Politici", icon: FileText },
+    { id: "audit", label: "Audit", icon: ScrollText },
     { id: "ads", label: "Ads", icon: Megaphone },
     { id: "biz", label: "B2B", icon: Building2 },
     { id: "data", label: "Date (toate)", icon: Database, adminOnly: true },
     { id: "broadcast", label: "Broadcast", icon: Send, adminOnly: true },
+    { id: "security", label: "Securitate", icon: KeyRound },
   ];
   const items = allItems.filter((i) => !i.adminOnly || isAdmin);
 
@@ -96,7 +120,7 @@ function AdminDashboard() {
         <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
           <Crown className="size-5 text-primary" />
           <h1 className="text-base font-semibold">Admin Control Center</h1>
-          <span className="ml-auto text-xs text-muted-foreground">{isAdmin ? "ADMIN" : "MOD"}</span>
+          <span className="ml-auto text-xs text-muted-foreground">{isAdmin ? "ADMIN" : "MOD"} · idle-out 15m</span>
         </div>
         <nav className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-2 pb-2 scrollbar-none">
           {items.map((it) => (
@@ -112,13 +136,21 @@ function AdminDashboard() {
 
       <main className="mx-auto max-w-7xl px-4 py-6">
         {section === "overview" && isAdmin && <OverviewPanel />}
+        {section === "alerts" && <AlertsPanel />}
         {section === "users" && isAdmin && <UsersPanel meId={user!.id} />}
         {section === "reports" && <ReportsPanel meId={user!.id} />}
         {section === "risk" && <RiskPanel />}
+        {section === "csam" && isAdmin && <CsamPanel />}
+        {section === "dsa" && <DsaPanel />}
+        {section === "gdpr" && isAdmin && <GdprPanel />}
+        {section === "breach" && isAdmin && <BreachPanel />}
+        {section === "policies" && <PoliciesPanel />}
+        {section === "audit" && <AuditLogPanel />}
         {section === "ads" && <AdsPanel />}
         {section === "biz" && <BizPanel />}
         {section === "data" && isAdmin && <DataExplorerPanel />}
         {section === "broadcast" && isAdmin && <BroadcastPanel />}
+        {section === "security" && <SecurityPanel />}
       </main>
     </div>
   );
