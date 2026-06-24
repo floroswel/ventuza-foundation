@@ -18,6 +18,7 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
 import { SessionGuards } from "@/components/SessionGuards";
+import { AgeGate } from "@/components/AgeGate";
 
 function NotFoundComponent() {
   return (
@@ -146,6 +147,7 @@ function RootComponent() {
         <NotificationsProvider>
           <SessionGuards />
           <Outlet />
+          <AgeGate />
           <CookieBanner />
           <TravelWarning />
           <PinLockGate />
