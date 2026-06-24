@@ -47,24 +47,32 @@ function AdminDashboard() {
     if (loading) return;
     if (!user) { navigate({ to: "/auth" }); return; }
     (async () => {
-      const { data: roles } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      const { data: roles, error } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
+      if (error) {
+        toast.error("Nu am putut verifica rolul: " + error.message);
+        setIsAdmin(false);
+        setIsMod(false);
+        return;
+      }
       const admin = roles?.some((r) => r.role === "admin") ?? false;
       const mod = roles?.some((r) => r.role === "admin" || r.role === "moderator") ?? false;
       setIsAdmin(admin);
       setIsMod(mod);
+      if (!admin && !mod) toast.error("Acces interzis: rol admin necesar");
     })();
   }, [user, loading, navigate]);
 
   if (loading || isAdmin === null) {
     return <div className="flex min-h-dvh items-center justify-center"><Loader2 className="size-6 animate-spin" /></div>;
   }
-  if (!isMod) {
+  if (!isAdmin && !isMod) {
     return (
       <div className="flex min-h-dvh items-center justify-center px-6 text-center">
         <div>
-          <ShieldAlert className="mx-auto size-12 text-muted-foreground" />
+          <ShieldAlert className="mx-auto size-12 text-destructive" />
           <h1 className="mt-3 text-lg font-semibold">Acces interzis</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Doar admin/moderator pot vedea această pagină.</p>
+          <p className="mt-1 text-sm text-muted-foreground">Ai nevoie de rol admin pentru această pagină.</p>
+          <button onClick={() => navigate({ to: "/" })} className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">Înapoi acasă</button>
         </div>
       </div>
     );
