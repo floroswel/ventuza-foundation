@@ -32,7 +32,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       linkedRef.current = uid;
       // Fire-and-forget; safe if no orphan apps exist.
       linkOrphanBusinessApps().catch(() => {});
+      // Auto-redeem pending referral captured before sign-up
+      try {
+        const pending = localStorage.getItem("pending_ref");
+        if (pending) {
+          localStorage.removeItem("pending_ref");
+          import("@/lib/referrals").then(({ redeemReferral }) =>
+            redeemReferral(pending).then((res) => {
+              if (res.ok) {
+                import("sonner").then(({ toast }) => toast.success(`+${res.reward_xp ?? 100} XP de la prietenul tău!`));
+              }
+            }).catch(() => {})
+          );
+        }
+      } catch {/* ignore */}
     };
+
 
     // Listener first so we never miss an event.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
