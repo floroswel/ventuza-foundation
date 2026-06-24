@@ -242,6 +242,20 @@ function DiscoverPage() {
                 <Layers className="size-4" />
               </button>
             </div>
+            <button
+              onClick={toggleIncognito}
+              disabled={incognitoBusy}
+              aria-label={incognito ? "Dezactivează incognito" : "Activează incognito"}
+              title={incognito ? "Ești invizibil — apasă ca să revii la vizibil" : "Mod incognito — ascunde-ți profilul din Discover"}
+              className={cn(
+                "flex size-10 items-center justify-center rounded-full border transition",
+                incognito
+                  ? "border-amber-500/60 bg-amber-500/15 text-amber-400 hover:bg-amber-500/25"
+                  : "border-border bg-surface text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {incognitoBusy ? <Loader2 className="size-4 animate-spin" /> : incognito ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </button>
             <Link
               to="/cruise"
               aria-label="Cruise · Right Now"
