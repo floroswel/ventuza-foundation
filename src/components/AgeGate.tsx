@@ -16,6 +16,7 @@ type Status = "unverified" | "pending" | "verified" | "failed" | "expired" | nul
 export function AgeGate() {
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
+  const { t } = useTranslation();
   const [status, setStatus] = useState<Status>(null);
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
