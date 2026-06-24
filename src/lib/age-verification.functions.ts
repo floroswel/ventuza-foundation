@@ -3,8 +3,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 /**
  * Starts a Didit age verification session.
- * - Marks profile age_status='pending' via RPC start_age_verification()
  * - Creates a Didit session and returns the hosted verification URL.
+ * - Marks profile age_status='pending' only after Didit returns a valid session.
  */
 export const startAgeVerification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -20,8 +20,6 @@ export const startAgeVerification = createServerFn({ method: "POST" })
     if (!apiKey || !workflowId) {
       return { ok: false as const, error: "not_configured", message: "Verificarea de vârstă nu este configurată." };
     }
-
-    await context.supabase.rpc("start_age_verification");
 
     let res: Response;
     try {
@@ -56,6 +54,12 @@ export const startAgeVerification = createServerFn({ method: "POST" })
     }
     if (!json.url) {
       return { ok: false as const, error: "no_url", message: "Răspuns incomplet de la furnizor." };
+    }
+
+    const { error: pendingError } = await context.supabase.rpc("start_age_verification");
+    if (pendingError) {
+      console.error("[age-start] pending status error", pendingError);
+      return { ok: false as const, error: "status_update", message: "Nu am putut actualiza statusul verificării. Încearcă din nou." };
     }
 
     return { ok: true as const, url: json.url, sessionId: json.session_id ?? null };
