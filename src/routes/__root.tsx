@@ -169,6 +169,8 @@ function RootComponent() {
           <PinLockGate />
           <Toaster theme="dark" position="top-center" richColors />
           <QuickExitFab />
+          <FeedbackWidget />
+
         </NotificationsProvider>
       </AuthProvider>
     </QueryClientProvider>
