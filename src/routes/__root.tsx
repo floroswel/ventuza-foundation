@@ -132,8 +132,10 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {
-    const lang = (navigator.language || "ro").toLowerCase();
-    document.documentElement.lang = lang.startsWith("ro") ? "ro" : lang.split("-")[0];
+    // Initialize i18n (auto-detects RO/EN from localStorage > navigator).
+    void import("@/lib/i18n").then((mod) => {
+      document.documentElement.lang = mod.default.language || "ro";
+    });
 
     // Re-apply discreet mode (icon/title swap) chosen by user on previous session.
     import("@/lib/discreet-mode").then(({ loadDiscreetMode, applyDiscreetMode }) => {

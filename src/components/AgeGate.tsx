@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
+import { useTranslation } from "react-i18next";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -15,6 +16,7 @@ type Status = "unverified" | "pending" | "verified" | "failed" | "expired" | nul
 export function AgeGate() {
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
+  const { t } = useTranslation();
   const [status, setStatus] = useState<Status>(null);
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -84,23 +86,19 @@ export function AgeGate() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">Confirmă-ți vârsta</h1>
-          <p className="text-sm text-muted-foreground leading-relaxed">
-            Pentru siguranța comunității, trebuie să confirmi că ai peste 18 ani.
-          </p>
+          <h1 className="text-2xl font-semibold tracking-tight">{t("age.title")}</h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">{t("age.desc")}</p>
         </div>
 
         {status === "pending" && (
           <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Verificare în curs...
+            {t("age.pending")}
           </div>
         )}
 
         {status === "failed" && (
-          <p className="text-sm text-destructive">
-            Verificarea anterioară nu a reușit. Încearcă din nou.
-          </p>
+          <p className="text-sm text-destructive">{t("age.failed")}</p>
         )}
 
         <button
@@ -111,12 +109,12 @@ export function AgeGate() {
           {submitting ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Se deschide...
+              {t("age.opening")}
             </>
           ) : status === "pending" ? (
-            "Reia verificarea"
+            t("age.resume")
           ) : (
-            "Verifică vârsta"
+            t("age.cta")
           )}
         </button>
 
@@ -125,7 +123,7 @@ export function AgeGate() {
             onClick={() => void refresh(user.id)}
             className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
           >
-            Am terminat — verifică statusul
+            {t("age.check")}
           </button>
         )}
       </div>
