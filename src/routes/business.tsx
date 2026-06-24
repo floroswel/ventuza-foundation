@@ -217,14 +217,20 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
       {savedStatus && (
         <div className="mb-6 flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
           <Clock className="size-5 shrink-0 text-primary" />
-          <div className="text-sm">
+          <div className="flex-1 text-sm">
             <p className="font-medium">Ai deja o cerere în curs.</p>
             <p className="text-xs text-muted-foreground">
               Status: <span className="font-medium text-primary">{statusLabel(savedStatus)}</span>. Te contactăm pe email.
             </p>
+            {savedStatus === "approved" && (
+              <Link to="/business/dashboard" className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
+                Deschide panoul Business →
+              </Link>
+            )}
           </div>
         </div>
       )}
+
 
       <div className="flex items-center gap-3">
         <div className="flex size-12 items-center justify-center rounded-2xl border border-primary/30 bg-surface glow-gold">
