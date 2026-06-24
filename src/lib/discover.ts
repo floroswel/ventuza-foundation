@@ -80,12 +80,21 @@ export function ageFrom(iso?: string | null) {
   return a;
 }
 
+/**
+ * Approximate distance display (anti-triangulation).
+ * Server-side already buckets the distance — we render the bucket label,
+ * never an exact figure, so 3 readings can't be triangulated into an address.
+ */
 export function formatDistance(meters: number | null): string {
-  if (meters == null) return "Nearby";
-  const km = meters / 1000;
-  if (km < 1) return `${Math.max(1, Math.round(meters / 100) * 100)} m away`;
-  if (km < 10) return `${km.toFixed(1)} km away`;
-  return `${Math.round(km)} km away`;
+  if (meters == null) return "În apropiere";
+  if (meters <= 500) return "< 1 km";
+  if (meters <= 2000) return "~ 2 km";
+  if (meters <= 4000) return "~ 4 km";
+  if (meters <= 8000) return "~ 8 km";
+  if (meters <= 20000) return "~ 20 km";
+  if (meters <= 40000) return "~ 40 km";
+  if (meters <= 80000) return "~ 80 km";
+  return `${Math.round(meters / 10000) * 10} km+`;
 }
 
 export function isOnline(lastSeen: string): boolean {
