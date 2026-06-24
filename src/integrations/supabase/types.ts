@@ -2353,6 +2353,7 @@ export type Database = {
         Args: { _kind: string; _meta?: Json; _user_id: string; _xp: number }
         Returns: undefined
       }
+      bucket_distance_m: { Args: { d: number }; Returns: number }
       claim_daily_reward: { Args: never; Returns: Json }
       claim_quest_reward: { Args: { _quest_id: string }; Returns: Json }
       compute_profile_completion: {
