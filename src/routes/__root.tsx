@@ -144,7 +144,18 @@ function RootComponent() {
       const skin = loadDiscreetMode();
       if (skin !== "off") applyDiscreetMode(skin);
     });
+    // Web Vitals → DB
+    import("@/lib/web-vitals").then(({ initWebVitals }) => initWebVitals());
+    // Capture ?ref=CODE on first load for later redemption after sign-up
+    try {
+      const url = new URL(window.location.href);
+      const ref = url.searchParams.get("ref");
+      if (ref && !localStorage.getItem("pending_ref")) {
+        localStorage.setItem("pending_ref", ref.toUpperCase());
+      }
+    } catch {/* ignore */}
   }, []);
+
 
   return (
     <QueryClientProvider client={queryClient}>
