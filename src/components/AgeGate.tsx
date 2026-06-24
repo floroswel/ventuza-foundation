@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useLocation, useServerFn } from "@tanstack/react-router";
+import { useLocation } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";

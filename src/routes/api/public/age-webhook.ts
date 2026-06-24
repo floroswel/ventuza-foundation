@@ -100,7 +100,7 @@ export const Route = createFileRoute("/api/public/age-webhook")({
           const { error } = await supabaseAdmin.rpc("record_age_verification", {
             p_user_id: vendorData,
             p_result: result,
-            p_estimated_age: estimatedAge,
+            p_estimated_age: estimatedAge ?? undefined,
             p_didit_session: sessionId,
             p_status_raw: status,
           });

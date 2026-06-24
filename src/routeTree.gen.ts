@@ -45,6 +45,7 @@ import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
+import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
 
 const VisitorsRoute = VisitorsRouteImport.update({
   id: '/visitors',
@@ -226,6 +227,11 @@ const ApiPublicGooglePlayRtdnRoute = ApiPublicGooglePlayRtdnRouteImport.update({
   path: '/api/public/google-play-rtdn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAgeWebhookRoute = ApiPublicAgeWebhookRouteImport.update({
+  id: '/api/public/age-webhook',
+  path: '/api/public/age-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -263,6 +269,7 @@ export interface FileRoutesByFullPath {
   '/messages/$id': typeof MessagesIdRoute
   '/u/$slug': typeof USlugRoute
   '/messages/': typeof MessagesIndexRoute
+  '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
 export interface FileRoutesByTo {
@@ -301,6 +308,7 @@ export interface FileRoutesByTo {
   '/messages/$id': typeof MessagesIdRoute
   '/u/$slug': typeof USlugRoute
   '/messages': typeof MessagesIndexRoute
+  '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
 export interface FileRoutesById {
@@ -340,6 +348,7 @@ export interface FileRoutesById {
   '/messages/$id': typeof MessagesIdRoute
   '/u/$slug': typeof USlugRoute
   '/messages/': typeof MessagesIndexRoute
+  '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
 export interface FileRouteTypes {
@@ -380,6 +389,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/u/$slug'
     | '/messages/'
+    | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -418,6 +428,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/u/$slug'
     | '/messages'
+    | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
   id:
     | '__root__'
@@ -456,6 +467,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/u/$slug'
     | '/messages/'
+    | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
   fileRoutesById: FileRoutesById
 }
@@ -492,6 +504,7 @@ export interface RootRouteChildren {
   MessagesIdRoute: typeof MessagesIdRoute
   USlugRoute: typeof USlugRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
+  ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
 }
 
@@ -749,6 +762,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicGooglePlayRtdnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/age-webhook': {
+      id: '/api/public/age-webhook'
+      path: '/api/public/age-webhook'
+      fullPath: '/api/public/age-webhook'
+      preLoaderRoute: typeof ApiPublicAgeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -819,6 +839,7 @@ const rootRouteChildren: RootRouteChildren = {
   MessagesIdRoute: MessagesIdRoute,
   USlugRoute: USlugRoute,
   MessagesIndexRoute: MessagesIndexRoute,
+  ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
 }
 export const routeTree = rootRouteImport
