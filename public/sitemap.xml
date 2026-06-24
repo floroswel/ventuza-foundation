@@ -3,9 +3,16 @@
   <url><loc>https://ventuza-foundation.lovable.app/</loc><changefreq>weekly</changefreq><priority>1.0</priority></url>
   <url><loc>https://ventuza-foundation.lovable.app/auth</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://ventuza-foundation.lovable.app/premium</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
-  <url><loc>https://ventuza-foundation.lovable.app/safety</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/safety</loc><changefreq>monthly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/business</loc><changefreq>monthly</changefreq><priority>0.7</priority></url>
   <url><loc>https://ventuza-foundation.lovable.app/events</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
   <url><loc>https://ventuza-foundation.lovable.app/groups</loc><changefreq>weekly</changefreq><priority>0.6</priority></url>
   <url><loc>https://ventuza-foundation.lovable.app/legal/terms</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
   <url><loc>https://ventuza-foundation.lovable.app/legal/privacy</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/legal/cookies</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/legal/community</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/legal/dsa</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/legal/security-incidents</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/legal/subprocessors</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/legal/business-terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
