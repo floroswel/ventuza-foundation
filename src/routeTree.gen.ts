@@ -43,6 +43,7 @@ import { Route as LegalCommunityRouteImport } from './routes/legal.community'
 import { Route as LegalBusinessTermsRouteImport } from './routes/legal.business-terms'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
+import { Route as BusinessDashboardRouteImport } from './routes/business.dashboard'
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
@@ -217,6 +218,11 @@ const EventsIdRoute = EventsIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => EventsRoute,
 } as any)
+const BusinessDashboardRoute = BusinessDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => BusinessRoute,
+} as any)
 const AdvertiseNewRoute = AdvertiseNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -239,7 +245,7 @@ export interface FileRoutesByFullPath {
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
-  '/business': typeof BusinessRoute
+  '/business': typeof BusinessRouteWithChildren
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
@@ -256,6 +262,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
+  '/business/dashboard': typeof BusinessDashboardRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
   '/legal/business-terms': typeof LegalBusinessTermsRoute
@@ -278,7 +285,7 @@ export interface FileRoutesByTo {
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
-  '/business': typeof BusinessRoute
+  '/business': typeof BusinessRouteWithChildren
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
@@ -295,6 +302,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
+  '/business/dashboard': typeof BusinessDashboardRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
   '/legal/business-terms': typeof LegalBusinessTermsRoute
@@ -318,7 +326,7 @@ export interface FileRoutesById {
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
-  '/business': typeof BusinessRoute
+  '/business': typeof BusinessRouteWithChildren
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
@@ -335,6 +343,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
+  '/business/dashboard': typeof BusinessDashboardRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
   '/legal/business-terms': typeof LegalBusinessTermsRoute
@@ -376,6 +385,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/visitors'
     | '/advertise/new'
+    | '/business/dashboard'
     | '/events/$id'
     | '/groups/$id'
     | '/legal/business-terms'
@@ -415,6 +425,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/visitors'
     | '/advertise/new'
+    | '/business/dashboard'
     | '/events/$id'
     | '/groups/$id'
     | '/legal/business-terms'
@@ -454,6 +465,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/visitors'
     | '/advertise/new'
+    | '/business/dashboard'
     | '/events/$id'
     | '/groups/$id'
     | '/legal/business-terms'
@@ -477,7 +489,7 @@ export interface RootRouteChildren {
   AdvertiseRoute: typeof AdvertiseRouteWithChildren
   AuthRoute: typeof AuthRoute
   BlockedRoute: typeof BlockedRoute
-  BusinessRoute: typeof BusinessRoute
+  BusinessRoute: typeof BusinessRouteWithChildren
   CruiseRoute: typeof CruiseRoute
   DiscoverRoute: typeof DiscoverRoute
   EventsRoute: typeof EventsRouteWithChildren
@@ -748,6 +760,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof EventsIdRouteImport
       parentRoute: typeof EventsRoute
     }
+    '/business/dashboard': {
+      id: '/business/dashboard'
+      path: '/dashboard'
+      fullPath: '/business/dashboard'
+      preLoaderRoute: typeof BusinessDashboardRouteImport
+      parentRoute: typeof BusinessRoute
+    }
     '/advertise/new': {
       id: '/advertise/new'
       path: '/new'
@@ -784,6 +803,18 @@ const AdvertiseRouteWithChildren = AdvertiseRoute._addFileChildren(
   AdvertiseRouteChildren,
 )
 
+interface BusinessRouteChildren {
+  BusinessDashboardRoute: typeof BusinessDashboardRoute
+}
+
+const BusinessRouteChildren: BusinessRouteChildren = {
+  BusinessDashboardRoute: BusinessDashboardRoute,
+}
+
+const BusinessRouteWithChildren = BusinessRoute._addFileChildren(
+  BusinessRouteChildren,
+)
+
 interface EventsRouteChildren {
   EventsIdRoute: typeof EventsIdRoute
 }
@@ -812,7 +843,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdvertiseRoute: AdvertiseRouteWithChildren,
   AuthRoute: AuthRoute,
   BlockedRoute: BlockedRoute,
-  BusinessRoute: BusinessRoute,
+  BusinessRoute: BusinessRouteWithChildren,
   CruiseRoute: CruiseRoute,
   DiscoverRoute: DiscoverRoute,
   EventsRoute: EventsRouteWithChildren,
