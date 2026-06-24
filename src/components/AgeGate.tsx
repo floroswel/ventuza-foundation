@@ -62,8 +62,13 @@ export function AgeGate() {
     setSubmitting(true);
     try {
       const callbackUrl = `${window.location.origin}${location.pathname}`;
-      const { url } = await startFn({ data: { callbackUrl } });
-      window.location.href = url;
+      const result = await startFn({ data: { callbackUrl } });
+      if (!result.ok) {
+        toast.error(result.message ?? "Nu am putut porni verificarea.");
+        setSubmitting(false);
+        return;
+      }
+      window.location.href = result.url;
     } catch (err) {
       console.error(err);
       toast.error("Nu am putut porni verificarea. Încearcă din nou.");
