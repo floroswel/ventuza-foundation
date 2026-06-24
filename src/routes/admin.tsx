@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -8,12 +8,18 @@ import {
   Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck,
   Megaphone, Play, Pause, Building2, LayoutDashboard, Users, Database, Send,
   Trash2, Save, Search, RefreshCw, ChevronLeft, ChevronRight, Crown,
+  ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon,
 } from "lucide-react";
 import {
   adminGetOverview, adminListTables, adminListRows, adminUpdateRow, adminDeleteRow,
   adminInsertRow, adminSearchUsers, adminGrantRole, adminRevokeRole, adminBroadcast,
   adminDeleteUser, ADMIN_TABLES,
 } from "@/lib/admin.functions";
+import {
+  AuditLogPanel, AlertsPanel, DsaPanel, CsamPanel, GdprPanel, BreachPanel,
+  PoliciesPanel, SecurityPanel,
+} from "@/components/admin/EnterpriseSections";
+import { useIdleLogout } from "@/hooks/useIdleLogout";
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Ventuza" }, { name: "robots", content: "noindex" }] }),
@@ -22,7 +28,8 @@ export const Route = createFileRoute("/admin")({
 
 type Section =
   | "overview" | "users" | "reports" | "risk" | "ads" | "biz"
-  | "data" | "broadcast";
+  | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
+  | "gdpr" | "breach" | "policies" | "security";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
