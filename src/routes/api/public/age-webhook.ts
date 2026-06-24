@@ -1,11 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 /**
  * Didit age verification webhook.
- * - PUBLIC endpoint (no JWT). Security is enforced by HMAC signature.
+ * - PUBLIC endpoint (no JWT). Security enforced by HMAC signature.
  * - Never parses JSON before verifying the signature.
  * - Idempotent on session_id.
+ * - Always returns 200 after signature passes, so Didit doesn't retry on
+ *   malformed/test payloads.
  */
 export const Route = createFileRoute("/api/public/age-webhook")({
   server: {
@@ -24,9 +29,13 @@ export const Route = createFileRoute("/api/public/age-webhook")({
 
         const rawBody = await request.text();
 
-        // Verify HMAC-SHA256(secret, rawBody) === x-signature (hex).
-        const expectedHex = createHmac("sha256", secret).update(rawBody).digest("hex");
-        const provided = signatureHeader.trim().toLowerCase().replace(/^sha256=/, "");
+        const expectedHex = createHmac("sha256", secret)
+          .update(rawBody)
+          .digest("hex");
+        const provided = signatureHeader
+          .trim()
+          .toLowerCase()
+          .replace(/^sha256=/, "");
 
         const a = Buffer.from(provided, "utf8");
         const b = Buffer.from(expectedHex, "utf8");
@@ -35,58 +44,67 @@ export const Route = createFileRoute("/api/public/age-webhook")({
           return new Response("Invalid signature", { status: 401 });
         }
 
-        // Signature OK — safe to parse.
-        let payload: Record<string, unknown>;
+        // Signature OK. From here on, never return 500 — log and ack.
         try {
-          payload = JSON.parse(rawBody) as Record<string, unknown>;
-        } catch {
-          return new Response("Invalid JSON", { status: 400 });
-        }
+          let payload: Record<string, unknown> = {};
+          try {
+            payload = JSON.parse(rawBody) as Record<string, unknown>;
+          } catch {
+            console.warn("[age-webhook] invalid JSON body, skipped");
+            return new Response("ok", { status: 200 });
+          }
 
-        const vendorData =
-          (payload.vendor_data as string | undefined) ??
-          ((payload.session as Record<string, unknown> | undefined)?.vendor_data as
-            | string
-            | undefined);
+          const session = (payload.session ?? {}) as Record<string, unknown>;
+          const decision = (payload.decision ?? {}) as Record<string, unknown>;
 
-        const sessionId =
-          (payload.session_id as string | undefined) ??
-          ((payload.session as Record<string, unknown> | undefined)?.session_id as
-            | string
-            | undefined) ??
-          (payload.id as string | undefined);
+          const vendorData =
+            (payload.vendor_data as string | undefined) ??
+            (session.vendor_data as string | undefined) ??
+            "";
 
-        const status =
-          (payload.status as string | undefined) ??
-          ((payload.decision as Record<string, unknown> | undefined)?.status as
-            | string
-            | undefined) ??
-          "";
+          const sessionId =
+            (payload.session_id as string | undefined) ??
+            (session.session_id as string | undefined) ??
+            (payload.id as string | undefined) ??
+            "";
 
-        // Age estimation: try a few common shapes.
-        let estimatedAge: number | null = null;
-        const decision = (payload.decision ?? {}) as Record<string, unknown>;
-        const ageEst =
-          (decision.age_estimation as Record<string, unknown> | undefined) ??
-          (payload.age_estimation as Record<string, unknown> | undefined);
-        if (ageEst) {
-          const v = (ageEst.age as number | undefined) ?? (ageEst.value as number | undefined);
-          if (typeof v === "number") estimatedAge = Math.round(v);
-        }
+          const statusRaw =
+            (payload.status as string | undefined) ??
+            (decision.status as string | undefined) ??
+            "";
 
-        if (!vendorData || !sessionId) {
-          console.warn("[age-webhook] missing vendor_data or session_id");
-          // Acknowledge to prevent retries on malformed payloads.
-          return new Response("ok", { status: 200 });
-        }
+          // Age estimation — try common shapes.
+          let estimatedAge: number | null = null;
+          const ageEst =
+            (decision.age_estimation as Record<string, unknown> | undefined) ??
+            (payload.age_estimation as Record<string, unknown> | undefined);
+          if (ageEst) {
+            const v =
+              (ageEst.age as number | undefined) ??
+              (ageEst.value as number | undefined);
+            if (typeof v === "number") estimatedAge = Math.round(v);
+          }
 
-        const normalized = status.toLowerCase();
-        const result: "pass" | "fail" = normalized === "approved" ? "pass" : "fail";
+          if (!vendorData || !UUID_RE.test(vendorData)) {
+            console.log(
+              `[age-webhook] test or invalid vendor_data, skipped (got: ${JSON.stringify(vendorData)})`,
+            );
+            return new Response("ok", { status: 200 });
+          }
 
-        try {
-          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+          if (!sessionId) {
+            console.warn("[age-webhook] missing session_id, skipped");
+            return new Response("ok", { status: 200 });
+          }
 
-          // Idempotency: if we already recorded this session_id, skip.
+          const result: "pass" | "fail" =
+            statusRaw.toLowerCase() === "approved" ? "pass" : "fail";
+
+          const { supabaseAdmin } = await import(
+            "@/integrations/supabase/client.server"
+          );
+
+          // Idempotency on session_id.
           const { data: existing } = await supabaseAdmin
             .from("age_verifications")
             .select("id")
@@ -97,24 +115,30 @@ export const Route = createFileRoute("/api/public/age-webhook")({
             return new Response("ok", { status: 200 });
           }
 
-          const { error } = await supabaseAdmin.rpc("record_age_verification", {
-            p_user_id: vendorData,
-            p_result: result,
-            p_estimated_age: estimatedAge ?? undefined,
-            p_didit_session: sessionId,
-            p_status_raw: status,
-          });
+          const { error } = await supabaseAdmin.rpc(
+            "record_age_verification",
+            {
+              p_user_id: vendorData,
+              p_result: result,
+              p_estimated_age: estimatedAge ?? undefined,
+              p_didit_session: sessionId,
+              p_status_raw: statusRaw,
+            },
+          );
 
           if (error) {
-            console.error("[age-webhook] record_age_verification error", error);
-            return new Response("DB error", { status: 500 });
+            console.error(
+              "[age-webhook] record_age_verification error",
+              error,
+            );
+            return new Response("ok", { status: 200 });
           }
+
+          return new Response("ok", { status: 200 });
         } catch (err) {
           console.error("[age-webhook] handler error", err);
-          return new Response("Server error", { status: 500 });
+          return new Response("ok", { status: 200 });
         }
-
-        return new Response("ok", { status: 200 });
       },
     },
   },
