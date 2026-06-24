@@ -56,6 +56,29 @@ function DiscoverPage() {
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
   const [match, setMatch] = useState<{ name: string; photo: string | null } | null>(null);
   const [selected, setSelected] = useState<DiscoverProfile | null>(null);
+  const [incognito, setIncognito] = useState(false);
+  const [incognitoBusy, setIncognitoBusy] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("incognito").eq("id", user.id).maybeSingle()
+      .then(({ data }) => { if (data) setIncognito(!!data.incognito); });
+  }, [user]);
+
+  const toggleIncognito = useCallback(async () => {
+    if (!user || incognitoBusy) return;
+    const next = !incognito;
+    setIncognitoBusy(true);
+    setIncognito(next);
+    const { error } = await supabase.from("profiles").update({ incognito: next }).eq("id", user.id);
+    setIncognitoBusy(false);
+    if (error) {
+      setIncognito(!next);
+      toast.error(error.message);
+    } else {
+      toast.success(next ? "Mod incognito activat — profilul tău e ascuns" : "Ești din nou vizibil");
+    }
+  }, [user, incognito, incognitoBusy]);
 
   function pickView(next: "grid" | "swipe") {
     setView(next);
