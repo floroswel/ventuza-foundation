@@ -236,9 +236,12 @@ export function PrivateAlbumViewer({ ownerId, currentUserId }: { ownerId: string
         </p>
         <div className="grid grid-cols-3 gap-1.5">
           {photos.map((p) => (
-            <div key={p} className="aspect-square overflow-hidden rounded-lg bg-background">
-              {signed[p] && <img src={signed[p]} className="size-full object-cover" alt="" />}
-            </div>
+            <ProtectedImage
+              key={p}
+              src={signed[p] ?? ""}
+              watermark={`Ventuza · ${currentUserId.slice(0, 8)}`}
+              className="aspect-square rounded-lg bg-background"
+            />
           ))}
         </div>
       </div>
