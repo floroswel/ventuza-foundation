@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Flame, Hand, Heart, LayoutGrid, Layers, Loader2, MapPin, MessageCircle, Plane, Radar, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Eye, EyeOff, Flame, Hand, Heart, LayoutGrid, Layers, Loader2, MapPin, MessageCircle, Plane, Radar, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
 import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
@@ -56,6 +56,29 @@ function DiscoverPage() {
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
   const [match, setMatch] = useState<{ name: string; photo: string | null } | null>(null);
   const [selected, setSelected] = useState<DiscoverProfile | null>(null);
+  const [incognito, setIncognito] = useState(false);
+  const [incognitoBusy, setIncognitoBusy] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("incognito").eq("id", user.id).maybeSingle()
+      .then(({ data }) => { if (data) setIncognito(!!data.incognito); });
+  }, [user]);
+
+  const toggleIncognito = useCallback(async () => {
+    if (!user || incognitoBusy) return;
+    const next = !incognito;
+    setIncognitoBusy(true);
+    setIncognito(next);
+    const { error } = await supabase.from("profiles").update({ incognito: next }).eq("id", user.id);
+    setIncognitoBusy(false);
+    if (error) {
+      setIncognito(!next);
+      toast.error(error.message);
+    } else {
+      toast.success(next ? "Mod incognito activat — profilul tău e ascuns" : "Ești din nou vizibil");
+    }
+  }, [user, incognito, incognitoBusy]);
 
   function pickView(next: "grid" | "swipe") {
     setView(next);
@@ -219,6 +242,20 @@ function DiscoverPage() {
                 <Layers className="size-4" />
               </button>
             </div>
+            <button
+              onClick={toggleIncognito}
+              disabled={incognitoBusy}
+              aria-label={incognito ? "Dezactivează incognito" : "Activează incognito"}
+              title={incognito ? "Ești invizibil — apasă ca să revii la vizibil" : "Mod incognito — ascunde-ți profilul din Discover"}
+              className={cn(
+                "flex size-10 items-center justify-center rounded-full border transition",
+                incognito
+                  ? "border-amber-500/60 bg-amber-500/15 text-amber-400 hover:bg-amber-500/25"
+                  : "border-border bg-surface text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {incognitoBusy ? <Loader2 className="size-4 animate-spin" /> : incognito ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+            </button>
             <Link
               to="/cruise"
               aria-label="Cruise · Right Now"
