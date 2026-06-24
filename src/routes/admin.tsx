@@ -20,6 +20,10 @@ import {
   PoliciesPanel, SecurityPanel,
 } from "@/components/admin/EnterpriseSections";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
+import { AnalyticsPanel } from "@/components/AnalyticsPanel";
+import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
+import { ExperimentsPanel } from "@/components/admin/ExperimentsPanel";
+
 
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: "Admin — Ventuza" }, { name: "robots", content: "noindex" }] }),
