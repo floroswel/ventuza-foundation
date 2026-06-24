@@ -18,24 +18,26 @@ export const startAgeVerification = createServerFn({ method: "POST" })
     const apiKey = process.env.DIDIT_API_KEY;
     const workflowId = process.env.DIDIT_WORKFLOW_ID;
     if (!apiKey || !workflowId) {
-      throw new Error("Didit not configured");
+      return { ok: false as const, error: "not_configured", message: "Verificarea de vârstă nu este configurată." };
     }
 
-    // Mark pending (best-effort).
     await context.supabase.rpc("start_age_verification");
 
-    const res = await fetch("https://verification.didit.me/v3/session/", {
-      method: "POST",
-      headers: {
-        "x-api-key": apiKey,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        workflow_id: workflowId,
-        vendor_data: context.userId,
-        callback: data.callbackUrl,
-      }),
-    });
+    let res: Response;
+    try {
+      res = await fetch("https://verification.didit.me/v3/session/", {
+        method: "POST",
+        headers: { "x-api-key": apiKey, "content-type": "application/json" },
+        body: JSON.stringify({
+          workflow_id: workflowId,
+          vendor_data: context.userId,
+          callback: data.callbackUrl,
+        }),
+      });
+    } catch (e) {
+      console.error("[age-start] network error", e);
+      return { ok: false as const, error: "network", message: "Nu am putut contacta serviciul de verificare. Încearcă mai târziu." };
+    }
 
     const raw = await res.text();
     if (!res.ok) {
@@ -43,21 +45,18 @@ export const startAgeVerification = createServerFn({ method: "POST" })
       let detail = "";
       try { detail = (JSON.parse(raw) as { detail?: string }).detail ?? ""; } catch { /* ignore */ }
       if (/credits/i.test(detail)) {
-        throw new Error("Serviciul de verificare a vârstei este temporar indisponibil (credite epuizate la furnizor). Te rugăm încearcă mai târziu.");
+        return { ok: false as const, error: "no_credits", message: "Serviciul de verificare a vârstei este temporar indisponibil. Te rugăm încearcă mai târziu." };
       }
-      throw new Error(detail || `Didit session creation failed (${res.status})`);
+      return { ok: false as const, error: "provider", message: detail || `Verificare indisponibilă (${res.status}).` };
     }
 
     let json: { url?: string; session_id?: string };
-    try {
-      json = JSON.parse(raw);
-    } catch {
-      throw new Error("Didit returned invalid JSON");
+    try { json = JSON.parse(raw); } catch {
+      return { ok: false as const, error: "bad_response", message: "Răspuns invalid de la furnizor." };
     }
-
     if (!json.url) {
-      throw new Error("Didit response missing session url");
+      return { ok: false as const, error: "no_url", message: "Răspuns incomplet de la furnizor." };
     }
 
-    return { url: json.url, sessionId: json.session_id ?? null };
+    return { ok: true as const, url: json.url, sessionId: json.session_id ?? null };
   });
