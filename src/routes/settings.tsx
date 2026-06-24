@@ -19,8 +19,14 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type Prefs = { matches: boolean; messages: boolean; likes: boolean; events: boolean; marketing: boolean };
-const DEFAULT_PREFS: Prefs = { matches: true, messages: true, likes: true, events: true, marketing: false };
+type Prefs = {
+  matches: boolean; messages: boolean; likes: boolean; events: boolean; marketing: boolean;
+  master_push: boolean; quiet_enabled: boolean; quiet_start: number; quiet_end: number;
+};
+const DEFAULT_PREFS: Prefs = {
+  matches: true, messages: true, likes: true, events: true, marketing: false,
+  master_push: true, quiet_enabled: false, quiet_start: 23, quiet_end: 7,
+};
 
 function SettingsPage() {
   const { user, loading, signOut } = useAuth();
