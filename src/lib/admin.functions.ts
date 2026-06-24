@@ -254,11 +254,11 @@ export const adminSearchUsers = createServerFn({ method: "POST" })
     const limit = data.limit ?? 50;
     let q: any = supabaseAdmin
       .from("profiles")
-      .select("id, display_name, city, verified, banned_at, suspended_until, report_count, level, xp, created_at")
+      .select("id, display_name, travel_city, verified, banned_at, suspended_until, report_count, level, xp, created_at")
       .order("created_at", { ascending: false })
       .limit(limit);
     if (data.q) {
-      q = q.or(`display_name.ilike.%${data.q}%,city.ilike.%${data.q}%,id.eq.${isUuid(data.q) ? data.q : "00000000-0000-0000-0000-000000000000"}`);
+      q = q.or(`display_name.ilike.%${data.q}%,travel_city.ilike.%${data.q}%,id.eq.${isUuid(data.q) ? data.q : "00000000-0000-0000-0000-000000000000"}`);
     }
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
