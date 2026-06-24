@@ -172,6 +172,7 @@ export async function sendMessage(conversationId: string, body: string, replyToI
         body: trimmed.slice(0, 140),
         url: `/messages/${conversationId}`,
         tag: `msg:${conversationId}`,
+        category: "messages",
       } });
     } catch { /* best-effort */ }
   })();

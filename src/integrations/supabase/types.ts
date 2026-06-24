@@ -1419,6 +1419,7 @@ export type Database = {
           travel_location: unknown
           travel_until: string | null
           tribes: string[]
+          tz_offset_minutes: number
           updated_at: string
           vaccinations: string[] | null
           verification_reason: string | null
@@ -1536,6 +1537,7 @@ export type Database = {
           travel_location?: unknown
           travel_until?: string | null
           tribes?: string[]
+          tz_offset_minutes?: number
           updated_at?: string
           vaccinations?: string[] | null
           verification_reason?: string | null
@@ -1653,6 +1655,7 @@ export type Database = {
           travel_location?: unknown
           travel_until?: string | null
           tribes?: string[]
+          tz_offset_minutes?: number
           updated_at?: string
           vaccinations?: string[] | null
           verification_reason?: string | null

@@ -1,10 +1,22 @@
 User-agent: *
 Allow: /
+Allow: /safety
+Allow: /premium
+Allow: /business
+Allow: /events
+Allow: /groups
+Allow: /legal/
+
 Disallow: /auth
 Disallow: /onboarding
 Disallow: /messages
 Disallow: /settings
 Disallow: /visitors
 Disallow: /notifications
+Disallow: /admin
+Disallow: /favorites
+Disallow: /quests
+Disallow: /api/
+Disallow: /u/
 
 Sitemap: https://ventuza-foundation.lovable.app/sitemap.xml

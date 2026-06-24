@@ -19,8 +19,14 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type Prefs = { matches: boolean; messages: boolean; likes: boolean; events: boolean; marketing: boolean };
-const DEFAULT_PREFS: Prefs = { matches: true, messages: true, likes: true, events: true, marketing: false };
+type Prefs = {
+  matches: boolean; messages: boolean; likes: boolean; events: boolean; marketing: boolean;
+  master_push: boolean; quiet_enabled: boolean; quiet_start: number; quiet_end: number;
+};
+const DEFAULT_PREFS: Prefs = {
+  matches: true, messages: true, likes: true, events: true, marketing: false,
+  master_push: true, quiet_enabled: false, quiet_start: 23, quiet_end: 7,
+};
 
 function SettingsPage() {
   const { user, loading, signOut } = useAuth();
@@ -64,6 +70,10 @@ function SettingsPage() {
   useEffect(() => {
     if (!user) return;
     setEmail(user.email ?? "");
+    // Keep tz offset in sync with the device so quiet hours line up with local time.
+    // (Date#getTimezoneOffset returns minutes to add to local to get UTC, so negate.)
+    const tzOffsetMinutes = -new Date().getTimezoneOffset();
+    void supabase.from("profiles").update({ tz_offset_minutes: tzOffsetMinutes }).eq("id", user.id);
     supabase.from("profiles")
       .select("notification_prefs, hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent, read_receipts_enabled, auto_share_album_on_match")
       .eq("id", user.id).maybeSingle()
@@ -212,7 +222,19 @@ function SettingsPage() {
           <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
             Notificări {savingPrefs && <Loader2 className="ml-2 inline size-3 animate-spin" />}
           </h2>
-          <div className="mt-3 divide-y divide-border">
+
+          {/* Master toggle */}
+          <label className="mt-3 flex items-center justify-between rounded-xl border border-border bg-background px-3 py-2.5 text-sm">
+            <span className="font-medium">Notificări push (general)</span>
+            <input
+              type="checkbox"
+              checked={prefs.master_push}
+              onChange={(e) => savePrefs({ ...prefs, master_push: e.target.checked })}
+              className="size-4 accent-primary"
+            />
+          </label>
+
+          <div className={`mt-3 divide-y divide-border ${prefs.master_push ? "" : "pointer-events-none opacity-50"}`}>
             {([
               ["matches", "Match-uri noi"],
               ["messages", "Mesaje noi"],
@@ -227,6 +249,51 @@ function SettingsPage() {
               </label>
             ))}
           </div>
+
+          {/* Quiet hours */}
+          <div className="mt-4 rounded-xl border border-border bg-background p-3">
+            <label className="flex items-center justify-between text-sm">
+              <span className="font-medium">Ore liniștite (Do Not Disturb)</span>
+              <input
+                type="checkbox"
+                checked={prefs.quiet_enabled}
+                onChange={(e) => savePrefs({ ...prefs, quiet_enabled: e.target.checked })}
+                className="size-4 accent-primary"
+              />
+            </label>
+            {prefs.quiet_enabled && (
+              <div className="mt-3 grid grid-cols-2 gap-3">
+                <label className="text-xs text-muted-foreground">
+                  De la
+                  <select
+                    value={prefs.quiet_start}
+                    onChange={(e) => savePrefs({ ...prefs, quiet_start: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
+                  >
+                    {Array.from({ length: 24 }, (_, h) => (
+                      <option key={h} value={h}>{String(h).padStart(2, "0")}:00</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-xs text-muted-foreground">
+                  Până la
+                  <select
+                    value={prefs.quiet_end}
+                    onChange={(e) => savePrefs({ ...prefs, quiet_end: Number(e.target.value) })}
+                    className="mt-1 w-full rounded-lg border border-border bg-surface px-2 py-1.5 text-sm text-foreground"
+                  >
+                    {Array.from({ length: 24 }, (_, h) => (
+                      <option key={h} value={h}>{String(h).padStart(2, "0")}:00</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            )}
+            <p className="mt-2 text-[11px] text-muted-foreground">
+              Nu primești push-uri în acest interval (ora ta locală). Mesajele rămân în aplicație.
+            </p>
+          </div>
+
           <div className="mt-4 border-t border-border pt-4">
             <p className="text-[11px] text-muted-foreground mb-2">
               Notificări push pe acest dispozitiv (mesaje, taps, woofs, match-uri).
@@ -234,6 +301,7 @@ function SettingsPage() {
             <EnablePushButton />
           </div>
         </section>
+
 
         {/* Right Now */}
         <section className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4">

@@ -54,7 +54,32 @@ const SendInput = z.object({
   body: z.string().min(1).max(300),
   url: z.string().max(500).optional(),
   tag: z.string().max(80).optional(),
+  /** Logical category — checked against recipient's notification_prefs. */
+  category: z.enum(["matches", "messages", "likes", "events", "marketing"]).optional(),
 });
+
+type Prefs = {
+  matches?: boolean;
+  messages?: boolean;
+  likes?: boolean;
+  events?: boolean;
+  marketing?: boolean;
+  master_push?: boolean;
+  quiet_enabled?: boolean;
+  quiet_start?: number;
+  quiet_end?: number;
+};
+
+function inQuietWindow(prefs: Prefs, tzOffsetMinutes: number): boolean {
+  if (!prefs?.quiet_enabled) return false;
+  const start = Number(prefs.quiet_start ?? 23);
+  const end = Number(prefs.quiet_end ?? 7);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || start === end) return false;
+  const nowLocal = new Date(Date.now() + (tzOffsetMinutes ?? 0) * 60_000);
+  const h = nowLocal.getUTCHours();
+  // Window wraps midnight (e.g. 23 → 7) vs. same-day (e.g. 13 → 14).
+  return start < end ? h >= start && h < end : h >= start || h < end;
+}
 
 /** Send a push to another user (used internally on message/tap/woof/match). */
 export const sendPushToUser = createServerFn({ method: "POST" })
@@ -62,9 +87,25 @@ export const sendPushToUser = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => SendInput.parse(d))
   .handler(async ({ data, context }) => {
     // Don't ping yourself.
-    if (data.toUserId === context.userId) return { delivered: 0 };
+    if (data.toUserId === context.userId) return { delivered: 0, skipped: "self" as const };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { sendOne } = await import("./web-push.server");
+
+    // Respect recipient preferences (master toggle, per-category, quiet hours).
+    const { data: profile } = await supabaseAdmin
+      .from("profiles")
+      .select("notification_prefs, tz_offset_minutes")
+      .eq("id", data.toUserId)
+      .maybeSingle();
+
+    const prefs = (profile?.notification_prefs ?? {}) as Prefs;
+    if (prefs.master_push === false) return { delivered: 0, skipped: "master_off" as const };
+    if (data.category && prefs[data.category] === false) {
+      return { delivered: 0, skipped: "category_off" as const };
+    }
+    if (inQuietWindow(prefs, profile?.tz_offset_minutes ?? 0)) {
+      return { delivered: 0, skipped: "quiet_hours" as const };
+    }
 
     const { data: subs } = await supabaseAdmin
       .from("push_subscriptions")
@@ -89,3 +130,4 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     }
     return { delivered };
   });
+
