@@ -2591,6 +2591,7 @@ export type Database = {
         Returns: number
       }
       current_week_start: { Args: never; Returns: string }
+      detect_admin_anomalies: { Args: never; Returns: number }
       disablelongtransactions: { Args: never; Returns: string }
       discover_profiles:
         | {
