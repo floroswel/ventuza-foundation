@@ -175,6 +175,9 @@ function SettingsPage() {
 
       <div className="mx-auto max-w-md space-y-6 px-4 py-6">
         <LanguageSwitcher />
+        <ReferralCard />
+
+
 
         {/* Account */}
         <section className="rounded-2xl border border-border bg-surface p-4">
