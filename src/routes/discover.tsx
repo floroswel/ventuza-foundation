@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Flame, Hand, Heart, LayoutGrid, Layers, Loader2, MapPin, MessageCircle, Plane, Radar, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
+import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Eye, EyeOff, Flame, Hand, Heart, LayoutGrid, Layers, Loader2, MapPin, MessageCircle, Plane, Radar, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
 import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
