@@ -331,6 +331,39 @@ export type Database = {
         }
         Relationships: []
       }
+      age_verifications: {
+        Row: {
+          created_at: string
+          didit_session_id: string | null
+          estimated_age: number | null
+          id: string
+          provider: string
+          result: string
+          status_raw: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          didit_session_id?: string | null
+          estimated_age?: number | null
+          id?: string
+          provider?: string
+          result: string
+          status_raw?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          didit_session_id?: string | null
+          estimated_age?: number | null
+          id?: string
+          provider?: string
+          result?: string
+          status_raw?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       album_requests: {
         Row: {
           created_at: string
@@ -1291,6 +1324,9 @@ export type Database = {
       profiles: {
         Row: {
           accept_nsfw_photos: boolean | null
+          age_provider: string | null
+          age_status: Database["public"]["Enums"]["age_status"]
+          age_verified_at: string | null
           anthem: Json | null
           ask_me_about: string[] | null
           auto_share_album_on_match: boolean
@@ -1405,6 +1441,9 @@ export type Database = {
         }
         Insert: {
           accept_nsfw_photos?: boolean | null
+          age_provider?: string | null
+          age_status?: Database["public"]["Enums"]["age_status"]
+          age_verified_at?: string | null
           anthem?: Json | null
           ask_me_about?: string[] | null
           auto_share_album_on_match?: boolean
@@ -1519,6 +1558,9 @@ export type Database = {
         }
         Update: {
           accept_nsfw_photos?: boolean | null
+          age_provider?: string | null
+          age_status?: Database["public"]["Enums"]["age_status"]
+          age_verified_at?: string | null
           anthem?: Json | null
           ask_me_about?: string[] | null
           auto_share_album_on_match?: boolean
@@ -2696,6 +2738,16 @@ export type Database = {
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
       recompute_risk_score: { Args: { _uid: string }; Returns: number }
+      record_age_verification: {
+        Args: {
+          p_didit_session?: string
+          p_estimated_age?: number
+          p_result: string
+          p_status_raw?: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       record_photo_hash: {
         Args: { _path: string; _phash: string }
         Returns: undefined
@@ -3289,6 +3341,7 @@ export type Database = {
         Args: { geom: unknown; move: number; wrap: number }
         Returns: unknown
       }
+      start_age_verification: { Args: never; Returns: undefined }
       toggle_message_reaction: {
         Args: { _emoji: string; _msg_id: string }
         Returns: Json
@@ -3312,6 +3365,7 @@ export type Database = {
       }
     }
     Enums: {
+      age_status: "unverified" | "pending" | "verified" | "failed" | "expired"
       app_role:
         | "admin"
         | "moderator"
@@ -3478,6 +3532,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      age_status: ["unverified", "pending", "verified", "failed", "expired"],
       app_role: [
         "admin",
         "moderator",
