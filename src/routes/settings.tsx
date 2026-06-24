@@ -164,6 +164,8 @@ function SettingsPage() {
       </header>
 
       <div className="mx-auto max-w-md space-y-6 px-4 py-6">
+        <LanguageSwitcher />
+
         {/* Account */}
         <section className="rounded-2xl border border-border bg-surface p-4">
           <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Cont</h2>
