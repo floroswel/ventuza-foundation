@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Lock, Loader2, Plus, X, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ProtectedImage } from "@/components/ProtectedImage";
 
 const MAX = 12;
 const MAX_SIZE_MB = 8;
