@@ -159,3 +159,8 @@ html {
     filter: drop-shadow(0 0 6px rgba(255, 45, 85, 0.55));
   }
 }
+
+/* Anti-screenshot hint: hide protected media when printing or in screen-capture */
+@media print {
+  img, video { visibility: hidden !important; }
+}

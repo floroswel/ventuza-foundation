@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Lock, Loader2, Plus, X, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ProtectedImage } from "@/components/ProtectedImage";
 
 const MAX = 12;
 const MAX_SIZE_MB = 8;
@@ -235,9 +236,12 @@ export function PrivateAlbumViewer({ ownerId, currentUserId }: { ownerId: string
         </p>
         <div className="grid grid-cols-3 gap-1.5">
           {photos.map((p) => (
-            <div key={p} className="aspect-square overflow-hidden rounded-lg bg-background">
-              {signed[p] && <img src={signed[p]} className="size-full object-cover" alt="" />}
-            </div>
+            <ProtectedImage
+              key={p}
+              src={signed[p] ?? ""}
+              watermark={`Ventuza · ${currentUserId.slice(0, 8)}`}
+              className="aspect-square rounded-lg bg-background"
+            />
           ))}
         </div>
       </div>
