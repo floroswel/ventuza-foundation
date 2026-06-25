@@ -1,0 +1,11 @@
+Contact: mailto:security@ventuza.app
+Expires: 2027-01-01T00:00:00.000Z
+Preferred-Languages: ro, en
+Canonical: https://ventuza-foundation.lovable.app/.well-known/security.txt
+Policy: https://ventuza-foundation.lovable.app/legal/security-incidents
+Acknowledgments: https://ventuza-foundation.lovable.app/safety
+
+# Vulnerability disclosure
+# Please report security issues responsibly to security@ventuza.app.
+# Do NOT test against real user accounts. Use throwaway accounts only.
+# We aim to acknowledge within 72 hours.
