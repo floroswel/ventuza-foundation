@@ -167,6 +167,9 @@ function RootComponent() {
       }
     } catch {/* ignore */}
     return () => window.removeEventListener("ventuza:consent", onConsent);
+  }, []);
+
+
 
 
   return (
