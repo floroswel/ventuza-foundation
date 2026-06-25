@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VisitorsRouteImport } from './routes/visitors'
+import { Route as StatusRouteImport } from './routes/status'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SafetyRouteImport } from './routes/safety'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -51,6 +52,11 @@ import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age
 const VisitorsRoute = VisitorsRouteImport.update({
   id: '/visitors',
   path: '/visitors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StatusRoute = StatusRouteImport.update({
+  id: '/status',
+  path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SettingsRoute = SettingsRouteImport.update({
@@ -260,6 +266,7 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
+  '/status': typeof StatusRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/business/dashboard': typeof BusinessDashboardRoute
@@ -300,6 +307,7 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
+  '/status': typeof StatusRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/business/dashboard': typeof BusinessDashboardRoute
@@ -341,6 +349,7 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/safety': typeof SafetyRoute
   '/settings': typeof SettingsRoute
+  '/status': typeof StatusRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/business/dashboard': typeof BusinessDashboardRoute
@@ -383,6 +392,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/safety'
     | '/settings'
+    | '/status'
     | '/visitors'
     | '/advertise/new'
     | '/business/dashboard'
@@ -423,6 +433,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/safety'
     | '/settings'
+    | '/status'
     | '/visitors'
     | '/advertise/new'
     | '/business/dashboard'
@@ -463,6 +474,7 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/safety'
     | '/settings'
+    | '/status'
     | '/visitors'
     | '/advertise/new'
     | '/business/dashboard'
@@ -504,6 +516,7 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SafetyRoute: typeof SafetyRoute
   SettingsRoute: typeof SettingsRoute
+  StatusRoute: typeof StatusRoute
   VisitorsRoute: typeof VisitorsRoute
   LegalBusinessTermsRoute: typeof LegalBusinessTermsRoute
   LegalCommunityRoute: typeof LegalCommunityRoute
@@ -527,6 +540,13 @@ declare module '@tanstack/react-router' {
       path: '/visitors'
       fullPath: '/visitors'
       preLoaderRoute: typeof VisitorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/status': {
+      id: '/status'
+      path: '/status'
+      fullPath: '/status'
+      preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/settings': {
@@ -858,6 +878,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SafetyRoute: SafetyRoute,
   SettingsRoute: SettingsRoute,
+  StatusRoute: StatusRoute,
   VisitorsRoute: VisitorsRoute,
   LegalBusinessTermsRoute: LegalBusinessTermsRoute,
   LegalCommunityRoute: LegalCommunityRoute,
@@ -876,13 +897,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
