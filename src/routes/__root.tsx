@@ -144,8 +144,20 @@ function RootComponent() {
       const skin = loadDiscreetMode();
       if (skin !== "off") applyDiscreetMode(skin);
     });
-    // Web Vitals → DB
-    import("@/lib/web-vitals").then(({ initWebVitals }) => initWebVitals());
+    // Web Vitals → DB — only after analytics consent
+    const maybeInitVitals = () => {
+      try {
+        const raw = localStorage.getItem("ventuza_cookie_consent_v2");
+        if (!raw) return;
+        const c = JSON.parse(raw);
+        if (c?.analytics) {
+          import("@/lib/web-vitals").then(({ initWebVitals }) => initWebVitals());
+        }
+      } catch {/* ignore */}
+    };
+    maybeInitVitals();
+    const onConsent = () => maybeInitVitals();
+    window.addEventListener("ventuza:consent", onConsent);
     // Capture ?ref=CODE on first load for later redemption after sign-up
     try {
       const url = new URL(window.location.href);
@@ -154,7 +166,10 @@ function RootComponent() {
         localStorage.setItem("pending_ref", ref.toUpperCase());
       }
     } catch {/* ignore */}
+    return () => window.removeEventListener("ventuza:consent", onConsent);
   }, []);
+
+
 
 
   return (
