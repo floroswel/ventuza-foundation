@@ -166,7 +166,7 @@ function RootComponent() {
         localStorage.setItem("pending_ref", ref.toUpperCase());
       }
     } catch {/* ignore */}
-  }, []);
+    return () => window.removeEventListener("ventuza:consent", onConsent);
 
 
   return (
