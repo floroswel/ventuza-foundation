@@ -15,4 +15,5 @@
   <url><loc>https://ventuza-foundation.lovable.app/legal/security-incidents</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://ventuza-foundation.lovable.app/legal/subprocessors</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://ventuza-foundation.lovable.app/legal/business-terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/status</loc><changefreq>always</changefreq><priority>0.5</priority></url>
 </urlset>
