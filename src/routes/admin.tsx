@@ -187,6 +187,7 @@ function AdminDashboard() {
         {section === "biz" && <BizPanel />}
         {section === "data" && isAdmin && <DataExplorerPanel />}
         {section === "broadcast" && isAdmin && <BroadcastPanel />}
+        {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
         {section === "security" && <SecurityPanel />}
       </main>
     </div>
