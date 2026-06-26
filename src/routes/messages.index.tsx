@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { fetchConversations, type ConversationListItem } from "@/lib/chat";
+import { StoriesStrip } from "@/components/StoriesStrip";
 import { cn } from "@/lib/utils";
 
 
