@@ -142,6 +142,11 @@ function AdminDashboard() {
         </nav>
       </header>
 
+      {/* AGE-GATE WARNING BANNER — vizibil dacă flag age_verification e OFF în non-prod.
+          TODO[age-gate]: la reactivare (toggle ON din admin → Securitate/Feature flags),
+          banner-ul dispare automat. Producția forțează ON via age-gate-policy. */}
+      <AgeGateDevBanner />
+
       <main className="mx-auto max-w-7xl px-4 py-6">
         {section === "overview" && isAdmin && <OverviewPanel />}
         {section === "alerts" && <AlertsPanel />}
