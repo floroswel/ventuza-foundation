@@ -22,6 +22,7 @@ import {
 import {
   UserDetailDrawer, GdprOpsPanel, BreakGlassLogPanel,
 } from "@/components/admin/Wave1Sections";
+import { PartnersModerationPanel } from "@/components/admin/PartnersModerationPanel";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
 import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
