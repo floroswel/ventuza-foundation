@@ -57,8 +57,8 @@ export type DiscoverProfile = {
   weight_kg: number | null;
   ethnicity: string | null;
   position: string | null;
-  hiv_status: string | null;
-  hiv_test_date: string | null;
+  // hiv_status / hiv_test_date NU mai sunt returnate de RPC (GDPR Art. 9 — date de sănătate).
+  // Rămân doar pe propriul profil (profile.tsx). Filtrarea după HIV se face server-side.
   relationship_status: string | null;
   verified: boolean;
   distance_m: number | null;
