@@ -18,6 +18,7 @@ export type ConsentKind =
   | "age_verification"
   | "ai_features"
   | "push_notifications"
+  | "background_location"
   | "marketing";
 
 export interface ConsentMeta {
