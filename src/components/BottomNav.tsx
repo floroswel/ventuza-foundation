@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Compass, MessageCircle, CalendarHeart, Users, Trophy } from "lucide-react";
+import { Compass, MessageCircle, CalendarHeart, Users, Trophy, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
@@ -8,6 +8,7 @@ export function BottomNav() {
   const { total: unreadTotal } = useUnreadMessages();
   const items = [
     { to: "/discover", label: "Discover", Icon: Compass },
+    { to: "/nearby", label: "Nearby", Icon: MapPin },
     { to: "/quests", label: "Quests", Icon: Trophy },
     { to: "/events", label: "Events", Icon: CalendarHeart },
     { to: "/groups", label: "Squads", Icon: Users },
@@ -15,11 +16,11 @@ export function BottomNav() {
   ] as const;
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/85 backdrop-blur">
-      <div className="mx-auto flex max-w-md items-center justify-around px-4 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="mx-auto flex max-w-md items-center justify-around px-2 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
         {items.map((item) => {
           const { to, label, Icon } = item;
           const badge = "badge" in item ? item.badge : 0;
-          const active = pathname === to || (to === "/events" && pathname.startsWith("/events")) || (to === "/groups" && pathname.startsWith("/groups")) || (to === "/messages" && pathname.startsWith("/messages")) || (to === "/quests" && pathname.startsWith("/quests"));
+          const active = pathname === to || (to === "/events" && pathname.startsWith("/events")) || (to === "/groups" && pathname.startsWith("/groups")) || (to === "/messages" && pathname.startsWith("/messages")) || (to === "/quests" && pathname.startsWith("/quests")) || (to === "/nearby" && (pathname.startsWith("/nearby") || pathname.startsWith("/venues") || pathname.startsWith("/offers")));
           return (
             <Link
               key={to}
