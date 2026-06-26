@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { BadgeCheck, Crown, Eye, EyeOff, Pencil, Settings as SettingsIcon, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
+import { useConsent } from "@/lib/use-consent";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
