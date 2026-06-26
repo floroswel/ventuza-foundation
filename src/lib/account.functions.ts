@@ -30,10 +30,10 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
   });
 
 /**
- * Verify a Google Play purchase token server-side.
- * Stub: when GOOGLE_PLAY_SERVICE_ACCOUNT secret is configured, this will call
- * androidpublisher.purchases.subscriptions.get and persist the result.
- * For now records pending row so UI can show "verification in progress".
+ * Verify a Google Play purchase token server-side and persist the subscription.
+ *
+ * Folosește Android Publisher API v3 prin JWT RS256 semnat cu Web Crypto
+ * (Cloudflare Workers-compatible). Vezi `src/lib/google-play.server.ts`.
  */
 export const recordGooglePlayPurchase = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -42,15 +42,33 @@ export const recordGooglePlayPurchase = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { verifyGooglePlayPurchase } = await import("./google-play.server");
 
-    const serviceAccount = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT;
-    let status: "pending" | "active" = "pending";
+    let status: "pending" | "active" | "expired" | "cancelled" = "pending";
     let expiresAt: string | null = null;
     let raw: unknown = null;
+    let message: string | undefined;
 
-    if (serviceAccount) {
-      // TODO: full implementation with google-auth-library + androidpublisher API
-      // Left as `pending` until service account is provided & wired.
+    try {
+      const result = await verifyGooglePlayPurchase({
+        productId: data.productId,
+        purchaseToken: data.purchaseToken,
+      });
+      raw = result.raw;
+      if (result.valid) {
+        status = "active";
+        expiresAt =
+          result.expiresAt ??
+          // One-time produs: derivăm o expirare convențională (1 an monthly = N/A,
+          // dar pentru one-time setăm 100 ani ca să nu expire).
+          new Date(Date.now() + 100 * 365 * 24 * 60 * 60 * 1000).toISOString();
+      } else {
+        status = "pending";
+        message = result.reason ?? "Verificare eșuată";
+      }
+    } catch (e) {
+      status = "pending";
+      message = e instanceof Error ? e.message : "Eroare verificare Google Play";
     }
 
     const { error } = await supabaseAdmin.from("subscriptions").upsert(
@@ -68,8 +86,10 @@ export const recordGooglePlayPurchase = createServerFn({ method: "POST" })
     );
     if (error) throw new Error(error.message);
 
-    return { status };
+    return { success: status === "active", status, expiresAt, message };
   });
+
+
 
 /**
  * GDPR Right to Data Portability — export all user data as JSON.
