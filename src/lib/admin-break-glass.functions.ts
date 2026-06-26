@@ -62,6 +62,12 @@ export const adminBreakGlassReveal = createServerFn({ method: "POST" })
       const r = Array.isArray(row) ? row[0] : row;
       payload = { hiv_status: r?.hiv_status ?? null, hiv_test_date: r?.hiv_test_date ?? null };
       fields = ["hiv_status", "hiv_test_date"];
+    } else if (data.kind === "orientation") {
+      const { data: p } = await sa.from("profiles")
+        .select("id, orientation, gender, gender_custom, pronouns, pronouns_custom, tribes")
+        .eq("id", data.targetUserId).maybeSingle();
+      payload = { profile: p ?? null };
+      fields = ["orientation", "gender", "gender_custom", "pronouns", "pronouns_custom", "tribes"];
     } else if (data.kind === "location") {
       const { data: p } = await sa.from("profiles")
         .select("id, travel_city, last_active_at, location")
