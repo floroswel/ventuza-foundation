@@ -2878,6 +2878,10 @@ export type Database = {
         }[]
       }
       gettransactionid: { Args: never; Returns: unknown }
+      has_active_health_consent: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
       has_active_subscription: { Args: { _user: string }; Returns: boolean }
       has_any_role: {
         Args: {
@@ -2893,6 +2897,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      health_gated_columns: { Args: never; Returns: string[] }
       increment_quest_progress: {
         Args: { _delta?: number; _metric: string; _user_id: string }
         Returns: undefined
@@ -3603,6 +3608,10 @@ export type Database = {
           table_name: string
         }
         Returns: string
+      }
+      withdraw_health_consent: {
+        Args: { _version?: string }
+        Returns: undefined
       }
     }
     Enums: {
