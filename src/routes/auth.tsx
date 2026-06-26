@@ -101,6 +101,15 @@ function AuthPage() {
           toast.error("Please confirm the two checkboxes to continue.");
           return;
         }
+        const age = ageFromBirthDate(birthDate);
+        if (age === null) {
+          toast.error("Te rog introdu data nașterii.");
+          return;
+        }
+        if (age < 18) {
+          toast.error("Trebuie să ai cel puțin 18 ani pentru a folosi Ventuza.");
+          return;
+        }
         const { data, error } = await supabase.auth.signUp({
           email: emailParsed.data,
           password: passParsed.data,
@@ -109,6 +118,13 @@ function AuthPage() {
         if (error) {
           toast.error(error.message);
           return;
+        }
+        // Persist birth_date on profile (trigger enforces 18+ server-side too).
+        if (data.user) {
+          await supabase
+            .from("profiles")
+            .update({ birth_date: birthDate })
+            .eq("id", data.user.id);
         }
         if (data.session) {
           toast.success("Welcome to Ventuza.");
