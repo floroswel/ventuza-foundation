@@ -137,7 +137,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {
-    // Initialize i18n (auto-detects RO/EN from localStorage > navigator).
+    // i18n e deja inițializat de import eager; aici doar setăm <html lang>.
     void import("@/lib/i18n").then((mod) => {
       document.documentElement.lang = mod.default.language || "ro";
     });
