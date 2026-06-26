@@ -134,6 +134,11 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function ProximityWatcherMount() {
+  useProximityForegroundWatcher();
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
