@@ -22,6 +22,7 @@ import {
 import {
   UserDetailDrawer, GdprOpsPanel, BreakGlassLogPanel,
 } from "@/components/admin/Wave1Sections";
+import { PartnersModerationPanel } from "@/components/admin/PartnersModerationPanel";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
 import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
@@ -56,7 +57,8 @@ export const Route = createFileRoute("/admin")({
 type Section =
   | "overview" | "users" | "reports" | "risk" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
-  | "gdpr" | "breakglass" | "breach" | "policies" | "security";
+  | "gdpr" | "breakglass" | "breach" | "policies" | "security"
+  | "partners";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -136,6 +138,7 @@ function AdminDashboard() {
     { id: "audit", label: "Audit", icon: ScrollText },
     { id: "ads", label: "Ads", icon: Megaphone },
     { id: "biz", label: "B2B", icon: Building2 },
+    { id: "partners", label: "Parteneri & Moderare", icon: ShieldCheck },
     { id: "data", label: "Date (toate)", icon: Database, adminOnly: true },
     { id: "broadcast", label: "Broadcast", icon: Send, adminOnly: true },
     { id: "security", label: "Securitate", icon: KeyRound },
@@ -184,6 +187,7 @@ function AdminDashboard() {
         {section === "biz" && <BizPanel />}
         {section === "data" && isAdmin && <DataExplorerPanel />}
         {section === "broadcast" && isAdmin && <BroadcastPanel />}
+        {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
         {section === "security" && <SecurityPanel />}
       </main>
     </div>

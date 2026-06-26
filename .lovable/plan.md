@@ -1,134 +1,92 @@
+# Modul Admin — Venues / Events / Oferte & Parteneri
 
-# Nearby — Descoperă lângă tine
+Construit deasupra fundației existente: RBAC (`has_role`, `is_staff`, `is_admin_or_above`), `admin_audit_log`, break-glass, sistemul nearby (`venues`, `events`, `offers`, `offer_claims`, `nearby_points`), rolul `business`/`partner` și `business_applications`.
 
-Notă: în DB există doar `public.events` (cu `lat`/`lng`/`venue` text). NU există încă tabele `venues` și `offers`. Acest plan le creează ca parte din livrare. Spune-mi dacă vrei să le sar (atunci feature-ul se va limita la `events`).
+## A) Rol & onboarding partener
 
-## Confirmări de conformitate (înainte de cod)
+**DB (migrare):**
+- Reutilizez rolul `business` ca rol partener (există deja în enum). Nu adaug rol nou.
+- `business_applications` deja există (27 coloane, status pending/approved/rejected). Extind cu: `venue_type text`, `proof_url text`, `reviewer_notes text`, `suspended_at timestamptz`.
+- Trigger `on_business_application_approved`: la `status='approved'` → upsert `user_roles(business)` + creează venue draft legat (`venues.owner_id = applicant`).
+- Funcție `admin_suspend_partner(user_id, reason)` → setează `suspended_at`, revocă `business` role, marchează `venues.status='hidden'` și `offers.status='hidden'` pentru toate resursele owner-ului (ASCUNDERE INSTANT).
 
-a) **Locația precisă a userului NU pleacă la server.** Serverul primește doar un `geo_bucket_id` calculat client-side (grilă ~5 km, derivată din coordonate rotunjite — exact aceeași filozofie ca `bucket_distance_m`). RPC-ul `nearby_points` întoarce toate punctele publice din bucket-ul cerut + bucket-urile vecine (3×3). Distanța exactă față de venue se calculează pe device.
+**Server fns (`src/lib/admin-partners.functions.ts`):**
+- `adminListBusinessApplications({ status })` — listă cu filtrare.
+- `adminReviewBusinessApplication({ id, decision: 'approved'|'rejected'|'changes_requested', notes })` — audit, notifică owner.
+- `adminListPartners({ q })` — owneri cu rol `business` + count venues/offers + status.
+- `adminSuspendPartner({ userId, reason })` / `adminReinstatePartner({ userId })`.
 
-b) **Harta NU introduce procesator nou.** Folosim **MapLibre GL JS** cu tile-uri **OpenStreetMap** (`tile.openstreetmap.org`) — fără cheie API, fără tracking SDK. OSM este deja un procesator "neutru" pentru date tehnice (IP la fetch de tile), dar pentru claritate îl adaug în `legal.subprocessors.tsx` ca P10 — categorie: tile-uri hartă, doar IP + tile bbox, fără PII, fără date Art. 9. Niciun Google Maps, niciun Mapbox.
+## B) Coadă unificată de moderare
 
-c) **Ofertele respectă minimizarea.** `offer_claims` reține: `offer_id`, `claimed_at`, `redemption_code` (random per claim). NU expune `user_id` partenerului în UI — partenerul vede DOAR `count(*)` și (opțional) `redemption_code` pentru validare la fața locului. Tabela are RLS: userul își vede claim-urile lui, partenerul vede agregate prin RPC `offer_stats(offer_id)`.
+**DB:**
+- Asigur coloana `status` pe `venues`, `events`, `offers` cu valori: `draft|pending|approved|rejected|changes_requested|hidden|expired`. Default la insert by owner = `pending`. RLS existent deja interzice owner-ului să seteze `approved`.
+- View `admin_moderation_queue` care UNION-uiește cele trei cu coloanele comune (`kind, id, owner_id, name, status, created_at, updated_at, cover_url, city`).
 
-## Model de date (migrare)
+**Server fns (`src/lib/admin-moderation.functions.ts`):**
+- `adminListModerationQueue({ kind?, status?, limit, offset })`.
+- `adminGetModerationItem({ kind, id })` — full payload (text, imagini, lat/lng pentru hartă admin — admin **are** voie să vadă coords venue, NU coords user; venues sunt date publice).
+- `adminModerateItem({ kind, id, decision, reason?, notification_radius_m? })`. Audit `critical`-ish; la `approved` setează `approved_at, approved_by`.
+- `adminFlagItem({ kind, id, reason })` — re-trimite în coadă după raport user.
 
-```sql
--- venues: locuri publice (baruri, cluburi, cafenele queer-friendly)
-create table public.venues (
-  id uuid primary key default gen_random_uuid(),
-  owner_id uuid references auth.users,        -- partener care îl administrează (opțional)
-  name text not null,
-  slug text unique,
-  category text not null,                     -- 'bar','club','cafe','sauna','shop','other'
-  description text,
-  cover_url text,
-  address text,
-  city text,
-  lat double precision not null,
-  lng double precision not null,
-  geo_bucket_id text not null,                -- generat de trigger din lat/lng (grilă 5km)
-  opening_hours jsonb,                        -- {mon:[["18:00","02:00"]],...}
-  website text, phone_e164 text,
-  is_published boolean default false,         -- moderare obligatorie
-  moderated_by uuid, moderated_at timestamptz,
-  created_at timestamptz default now(),
-  updated_at timestamptz default now()
-);
+## C) Control per punct
 
--- offers: promoții ale unui venue
-create table public.offers (
-  id uuid primary key default gen_random_uuid(),
-  venue_id uuid not null references public.venues on delete cascade,
-  title text not null,
-  description text,
-  terms text,
-  valid_from timestamptz, valid_to timestamptz,
-  max_claims_per_user int default 1,
-  is_published boolean default false,
-  moderated_by uuid, moderated_at timestamptz,
-  created_at timestamptz default now()
-);
+**DB:**
+- Coloane pe `venues`/`events`/`offers`: `notification_radius_m int default 2000`, `is_official boolean default false` (event al aplicației → priority_access), `max_notifications_per_day int default 1`.
+- `events.ends_at` deja există — cron/expirare prin trigger `expire_old_events()` (job pg_cron sau check on-read în `nearby_points`).
+- `partner_limits` în `app_settings`: `partner_max_venues`, `partner_max_active_offers`, `partner_max_notifications_per_day`.
 
--- claim-uri (minimizare: doar ce e necesar)
-create table public.offer_claims (
-  id uuid primary key default gen_random_uuid(),
-  offer_id uuid not null references public.offers on delete cascade,
-  user_id uuid not null references auth.users on delete cascade,
-  redemption_code text not null,              -- random per claim, validabil la venue
-  claimed_at timestamptz default now(),
-  redeemed_at timestamptz,
-  unique (offer_id, user_id, claimed_at)
-);
+**Server fns:**
+- `adminUpdatePoint({ kind, id, patch })` — patch validat (radius, is_official, schedule, status).
+- `adminEnforcePartnerLimits(ownerId)` — verifică limita înainte de aprobare.
 
--- events: adăugăm geo_bucket_id pe tabela existentă
-alter table public.events add column geo_bucket_id text;
+## D) Oferte — moderare specifică
+
+- În `adminGetModerationItem` pentru `kind='offer'` includ: titlu, descriere, condiții, valabilitate, cod redemption (masked), `offer_stats` (claims/redeemed — fără identități; folosesc RPC existent `offer_stats`).
+- Checklist UI: "valabilitate clară", "condiții legitime", "nu e înșelătorie".
+
+## E) Anti-abuz & siguranță
+
+- Suspendare partener → trigger SQL ascunde tot conținutul (status='hidden'). `nearby_points` filtrează DOAR `status='approved'`.
+- Tabel `nearby_user_reports` (raport user pe venue/offer): `reporter_id, kind, target_id, reason, created_at`. Insert din user UI; admin vede în coadă. RLS: insert authenticated, select staff.
+- Notificări: tabel `partner_notification_log` + RPC `partner_can_send_notification(owner_id)` → verifică limita zilnică din `app_settings`. Trigger pe `notifications` (când partener emite push pentru venue) blochează peste limită.
+- Toate acțiunile (review, suspend, moderate, flag, update limits) → `admin_audit_log`.
+
+## UI (`src/components/admin/PartnersSections.tsx` + integrare în `src/routes/admin.tsx`)
+
+Tab nou **"Parteneri & Locuri"** cu sub-secțiuni:
+1. **Aplicații parteneri** — tabel cu Aprobă/Respinge/Cere modificări + modal review.
+2. **Coadă moderare** — tabs Venues/Events/Offers/Toate, card cu imagine, hartă embed (MapLibre reused), text, owner, butoane Aprobă/Respinge (motiv obligatoriu)/Cere modificări + control radius notificare + toggle `is_official`.
+3. **Parteneri activi** — listă cu Suspendă/Reactivează, count resurse, link la audit.
+4. **Rapoarte useri** — coadă rapoarte pe venues/offers cu acțiune rapidă.
+5. **Limite anti-spam** — formular legat de `app_settings` (citește/scrie prin `admin_update_setting`).
+
+## AGENTS.md — regulă nouă
+
+```
+## REGULĂ — MODERARE VENUES/EVENTS/OFERTE (permanentă)
+1. Owner NU poate seta status='approved' pe venues/events/offers (RLS + verificare server).
+2. Doar staff (moderator/admin/super_admin) prin adminModerateItem.
+3. nearby_points returnează DOAR status='approved' AND owner suspended_at IS NULL.
+4. Suspend partener → cascade status='hidden' pe toate resursele (trigger DB), instant.
+5. Notificări push partener → gate prin partner_can_send_notification(owner_id) cu limită din app_settings.
+6. Toate acțiunile (approve/reject/suspend/reinstate/limits update) → admin_audit_log.
+7. Code review automat REFUZĂ orice diff care: ocolește gate-ul de status pe nearby_points, dă GRANT EXECUTE pe admin_* fns către anon/authenticated, sau permite owner-ului să modifice status la 'approved'.
 ```
 
-Triggere: `set_geo_bucket_id` pe `venues` și `events` (BEFORE INSERT/UPDATE OF lat,lng) — calculează bucket-ul din `(floor(lat*20)::text || ':' || floor(lng*20)::text)` (≈5 km lat).
+## Confirmări finale (după implementare)
 
-RLS:
-- `venues`: SELECT TO anon, authenticated WHERE `is_published=true`; owner poate update; super_admin moderează.
-- `offers`: SELECT public unde `is_published` și `venue.is_published`; owner CRUD pe ofertele venue-ului lui.
-- `offer_claims`: user vede DOAR rândurile lui (`user_id = auth.uid()`); owner-ul venue-ului NU vede direct (vede prin RPC agregat).
+(a) Owner nu publică singur — RLS + status enum + admin-only RPC.
+(b) Suspendare → cascade `status='hidden'` în aceeași tranzacție, `nearby_points` filtrează imediat.
+(c) Limite anti-spam → `partner_can_send_notification` + `app_settings`.
+(d) Moderare pre-publicare → coada blochează tot `pending` din `nearby_points`.
 
-GRANT-uri standard (anon SELECT pe venues/offers publice; authenticated CRUD pe claims; service_role ALL).
+## Ordine de execuție
 
-## RPC-uri server-side
+1. Migrare DB (extinderi coloane, view, triggere suspend/expire, RPCs, app_settings keys).
+2. Server fns (partners + moderation).
+3. UI Admin (PartnersSections + integrare admin.tsx).
+4. UI user: buton "Raportează" pe `venues.$id.tsx` / `offers.$id.tsx`.
+5. AGENTS.md regulă nouă.
+6. Typecheck + verificare în preview.
 
-- `nearby_points(p_bucket_id text, p_kinds text[])` — SECURITY DEFINER, anon+authenticated. Returnează în 3×3 buckets în jur: `(kind, id, name, lat, lng, category, cover_url, starts_at, distance_bucket_label_to_center)`. NU primește lat/lng userului. NU loghează nimic identificabil.
-- `claim_offer(p_offer_id uuid)` — authenticated. Verifică `max_claims_per_user`, generează `redemption_code`, întoarce codul.
-- `offer_stats(p_offer_id uuid)` — owner-only. Întoarce `{claim_count, redeemed_count}`.
-
-Rate limit ad-hoc pe `nearby_points` (per user/IP, in-memory în handler — backend-ul nu are primitivă standard, e ok ca soft-limit).
-
-## Cod client
-
-### Helper locație (device-only)
-`src/lib/geo-bucket.ts`
-- `getCurrentBucket()` — citește `navigator.geolocation` (sau cache 60s), rotunjește la grila 5km, întoarce `bucket_id` + `lat`/`lng` păstrate DOAR în memorie locală.
-- `distanceMeters(a, b)` — Haversine pe device.
-- `formatDistance(m)` — "450m" / "1.2km".
-
-### Server fn
-`src/lib/nearby.functions.ts`
-- `getNearbyPoints({ bucketId, kinds })` — publishable client → RPC `nearby_points`. Niciun user lat/lng în payload.
-- `claimOffer({ offerId })` — `requireSupabaseAuth` → RPC `claim_offer`.
-
-### UI
-`src/routes/nearby.tsx` — ruta principală.
-- Tab principal nou în nav (între Discover și Events).
-- Header: toggle **Listă / Hartă**, tab-uri **Evenimente / Localuri / Oferte**, selector rază (2/5/10 km, default 2).
-- Listă: `NearbyCard` cu poster, nume, categorie, distanță exactă (calculată client), CTA (Detalii / RSVP / Revendică).
-- Hartă: `NearbyMap` cu MapLibre + OSM tiles. Marker user-pin (poziție DOAR locală, nu trimisă). Pini venues/events. Tap pin → bottom-sheet card.
-- Stare goală: "Nimic în {raza}km. Extinde la 5/10 km" + buton "Anunță-mă când apare ceva" (creează preferință push — necesită consimțământ `push_notifications` deja existent).
-- Refresh: `watchPosition` cu prag 250m (mișcare semnificativă), throttle 30s pe `getNearbyPoints`.
-
-`src/routes/venues.$id.tsx` și `src/routes/offers.$id.tsx` — pagini detaliu (program, hartă mică, buton "Direcții" → `geo:` URI / Google/Apple Maps deep-link, RSVP/Claim).
-
-Founders: badge "Acces prioritar" pe `EventCard` când userul are `is_founder=true`; RSVP-ul lor primește flag `priority=true` în `event_rsvps` (coloană nouă mică).
-
-### Subprocesatori
-Actualizez `src/routes/legal.subprocessors.tsx` cu **P10 — OpenStreetMap Foundation** (UK, GDPR adequacy, doar IP+bbox la fetch tile-uri, fără PII, fără Art. 9). Actualizez `docs/gdpr-art-30-register.md` cu activitatea "Descoperire locuri/evenimente lângă tine" (temei Art. 6(1)(b) — executare contract, fără Art. 9, fără locație precisă transmisă).
-
-## Tehnic — pachete
-
-- `maplibre-gl` (~200KB, MIT, fără tracking).
-- Fără `@capacitor/geolocation` nou — folosim `navigator.geolocation` care funcționează deja în WebView Capacitor cu permisiuni native existente.
-
-## Out of scope (le confirm separat)
-
-- Geofencing nativ (notificări push la apropiere de venue) — necesită background tracking + permisiune extra. Doar UI-ul "Anunță-mă" e inclus; logica server o livrez în sprint următor.
-- Panou admin venues/events (CRUD partener, moderare) — există deja structura admin; integrarea efectivă a venues/offers în modulul admin e sprint separat.
-- Sistem de plată pentru oferte premium / vouchere plătite.
-
-## Livrabile (în ordine)
-
-1. Migrare DB (venues, offers, offer_claims, geo_bucket triggers, RPC-uri, RLS, GRANT-uri).
-2. `geo-bucket.ts`, `nearby.functions.ts`.
-3. `src/routes/nearby.tsx` + componente (`NearbyList`, `NearbyMap`, `NearbyCard`, `EmptyState`).
-4. `src/routes/venues.$id.tsx`, `src/routes/offers.$id.tsx`.
-5. Update `legal.subprocessors.tsx` + `docs/gdpr-art-30-register.md`.
-6. Link în nav principal.
-
-Confirmă și încep cu migrarea.
+**Nu trec mai departe până nu confirmi.**

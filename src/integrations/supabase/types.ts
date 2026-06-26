@@ -938,10 +938,17 @@ export type Database = {
           geo_bucket_id: string | null
           host_id: string
           id: string
+          is_official: boolean
           is_private: boolean
+          is_published: boolean
           lat: number | null
           lng: number | null
           max_attendees: number | null
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_status: Database["public"]["Enums"]["moderation_status"]
+          notification_radius_m: number
+          rejection_reason: string | null
           starts_at: string
           title: string
           updated_at: string
@@ -957,10 +964,17 @@ export type Database = {
           geo_bucket_id?: string | null
           host_id: string
           id?: string
+          is_official?: boolean
           is_private?: boolean
+          is_published?: boolean
           lat?: number | null
           lng?: number | null
           max_attendees?: number | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          notification_radius_m?: number
+          rejection_reason?: string | null
           starts_at: string
           title: string
           updated_at?: string
@@ -976,10 +990,17 @@ export type Database = {
           geo_bucket_id?: string | null
           host_id?: string
           id?: string
+          is_official?: boolean
           is_private?: boolean
+          is_published?: boolean
           lat?: number | null
           lng?: number | null
           max_attendees?: number | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          notification_radius_m?: number
+          rejection_reason?: string | null
           starts_at?: string
           title?: string
           updated_at?: string
@@ -1414,6 +1435,42 @@ export type Database = {
           },
         ]
       }
+      nearby_user_reports: {
+        Row: {
+          created_at: string
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          kind: string
+          reason: string
+          reporter_id: string
+          status: string
+          target_id: string
+        }
+        Insert: {
+          created_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          kind: string
+          reason: string
+          reporter_id: string
+          status?: string
+          target_id: string
+        }
+        Update: {
+          created_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          kind?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           actor_id: string | null
@@ -1497,6 +1554,8 @@ export type Database = {
           max_claims_per_user: number
           moderated_at: string | null
           moderated_by: string | null
+          moderation_status: Database["public"]["Enums"]["moderation_status"]
+          rejection_reason: string | null
           terms: string | null
           title: string
           updated_at: string
@@ -1512,6 +1571,8 @@ export type Database = {
           max_claims_per_user?: number
           moderated_at?: string | null
           moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          rejection_reason?: string | null
           terms?: string | null
           title: string
           updated_at?: string
@@ -1527,6 +1588,8 @@ export type Database = {
           max_claims_per_user?: number
           moderated_at?: string | null
           moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          rejection_reason?: string | null
           terms?: string | null
           title?: string
           updated_at?: string
@@ -1543,6 +1606,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      partner_notification_log: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          partner_id: string
+          recipient_count: number
+          target_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          partner_id: string
+          recipient_count?: number
+          target_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          partner_id?: string
+          recipient_count?: number
+          target_id?: string | null
+        }
+        Relationships: []
       }
       photo_hashes: {
         Row: {
@@ -1728,6 +1818,8 @@ export type Database = {
           notification_prefs: Json
           onboarding_completed: boolean
           orientation: string[] | null
+          partner_suspended_at: string | null
+          partner_suspension_reason: string | null
           pets: string[] | null
           photos: string[] | null
           politics: string | null
@@ -1848,6 +1940,8 @@ export type Database = {
           notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
+          partner_suspended_at?: string | null
+          partner_suspension_reason?: string | null
           pets?: string[] | null
           photos?: string[] | null
           politics?: string | null
@@ -1968,6 +2062,8 @@ export type Database = {
           notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
+          partner_suspended_at?: string | null
+          partner_suspension_reason?: string | null
           pets?: string[] | null
           photos?: string[] | null
           politics?: string | null
@@ -2545,15 +2641,19 @@ export type Database = {
           description: string | null
           geo_bucket_id: string
           id: string
+          is_official: boolean
           is_published: boolean
           lat: number
           lng: number
           moderated_at: string | null
           moderated_by: string | null
+          moderation_status: Database["public"]["Enums"]["moderation_status"]
           name: string
+          notification_radius_m: number
           opening_hours: Json | null
           owner_id: string | null
           phone_e164: string | null
+          rejection_reason: string | null
           slug: string | null
           updated_at: string
           website: string | null
@@ -2567,15 +2667,19 @@ export type Database = {
           description?: string | null
           geo_bucket_id?: string
           id?: string
+          is_official?: boolean
           is_published?: boolean
           lat: number
           lng: number
           moderated_at?: string | null
           moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
           name: string
+          notification_radius_m?: number
           opening_hours?: Json | null
           owner_id?: string | null
           phone_e164?: string | null
+          rejection_reason?: string | null
           slug?: string | null
           updated_at?: string
           website?: string | null
@@ -2589,15 +2693,19 @@ export type Database = {
           description?: string | null
           geo_bucket_id?: string
           id?: string
+          is_official?: boolean
           is_published?: boolean
           lat?: number
           lng?: number
           moderated_at?: string | null
           moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
           name?: string
+          notification_radius_m?: number
           opening_hours?: Json | null
           owner_id?: string | null
           phone_e164?: string | null
+          rejection_reason?: string | null
           slug?: string | null
           updated_at?: string
           website?: string | null
@@ -2687,6 +2795,25 @@ export type Database = {
       }
     }
     Views: {
+      admin_moderation_queue: {
+        Row: {
+          city: string | null
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_published: boolean | null
+          kind: string | null
+          moderation_status:
+            | Database["public"]["Enums"]["moderation_status"]
+            | null
+          owner_id: string | null
+          rejection_reason: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
       geography_columns: {
         Row: {
           coord_dimension: number | null
@@ -2864,6 +2991,18 @@ export type Database = {
         Returns: boolean
       }
       admin_get_my_role: { Args: never; Returns: string }
+      admin_moderate_item: {
+        Args: {
+          p_decision: string
+          p_id: string
+          p_is_official?: boolean
+          p_kind: string
+          p_notification_radius_m?: number
+          p_reason?: string
+        }
+        Returns: Json
+      }
+      admin_reinstate_partner: { Args: { p_user_id: string }; Returns: Json }
       admin_risk_queue: {
         Args: { _limit?: number }
         Returns: {
@@ -2880,6 +3019,10 @@ export type Database = {
           user_id: string
           verified: boolean
         }[]
+      }
+      admin_suspend_partner: {
+        Args: { p_reason: string; p_user_id: string }
+        Returns: Json
       }
       admin_update_setting: {
         Args: { _actor: string; _key: string; _value: Json }
@@ -3301,6 +3444,10 @@ export type Database = {
           claim_count: number
           redeemed_count: number
         }[]
+      }
+      partner_can_send_notification: {
+        Args: { p_partner_id: string }
+        Returns: boolean
       }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
@@ -4007,6 +4154,11 @@ export type Database = {
         | "organizator_eveniment"
         | "altul"
       event_type: "party" | "bar" | "pride" | "private" | "meetup" | "other"
+      moderation_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "changes_requested"
       notification_type:
         | "match"
         | "message"
@@ -4177,6 +4329,12 @@ export const Constants = {
         "altul",
       ],
       event_type: ["party", "bar", "pride", "private", "meetup", "other"],
+      moderation_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "changes_requested",
+      ],
       notification_type: [
         "match",
         "message",
