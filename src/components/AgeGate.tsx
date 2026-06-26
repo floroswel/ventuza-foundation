@@ -20,6 +20,9 @@ export function AgeGate() {
   const [status, setStatus] = useState<Status>(null);
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  // GDPR Art. 9 — selfie-ul biometric e date sensibile; consimțământul e opt-in,
+  // distinct de terms/privacy. Vezi src/lib/consent-registry.ts (kind=age_verification).
+  const [consent, setConsent] = useState(false);
   const startFn = useServerFn(startAgeVerification);
 
   const isGated = GATED_PREFIXES.some((p) => location.pathname.startsWith(p));
