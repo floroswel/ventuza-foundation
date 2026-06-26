@@ -56,6 +56,7 @@ function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [over18, setOver18] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [birthDate, setBirthDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<"google" | "apple" | null>(null);
 
@@ -65,7 +66,18 @@ function AuthPage() {
     }
   }, [authLoading, user, navigate, search.redirect]);
 
-  const signupDisabled = mode === "signup" && (!over18 || !acceptTerms);
+  function ageFromBirthDate(iso: string): number | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+    return age;
+  }
+
+  const signupDisabled = mode === "signup" && (!over18 || !acceptTerms || (ageFromBirthDate(birthDate) ?? 0) < 18);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
