@@ -285,3 +285,35 @@ sau tabele cu prefix `admin_*`.
      `app_settings`,
 
    trebuie REFUZAT.
+
+## REGULĂ — CSAM NO-RENDER (permanentă)
+
+Conținut suspectat CSAM **NU se randează niciodată** în UI (admin sau user):
+- `adminGetCsamReports` exclude `photo_url` la nivel server (vezi
+  `src/lib/admin-enterprise.functions.ts`). `photo_url` este în
+  `SENSITIVE_COLUMNS.csam_reports`.
+- UI admin afișează doar: `perceptual_hash`, `sha256`, `status`,
+  `description`, `created_at`. Acțiunile sunt: escaladare la autorități,
+  blocare hash global, ban user. NU există buton/preview/link care să
+  reconstruiască imaginea.
+- Orice diff care introduce `<img src={photo_url}>` sau echivalent pe
+  `csam_reports` / coloane derivate trebuie REFUZAT.
+- Hash-uri de blocare globale → `csam_blocklist` (perceptual + sha256);
+  matching la upload se face server-side, fără a expune originalul.
+
+## REGULĂ — RAPOARTE DSA ANONIME (permanentă)
+
+`illegal_content_reports` este anonim by design:
+- `reporter_email` și `reporter_user_id` sunt în `SENSITIVE_COLUMNS` și
+  STRIPPED din toate proiectiile admin (`adminGetDsaReports`,
+  `adminListRows`). UI nu randează identitatea raportorului indiferent
+  de rol.
+
+## REGULĂ — ORIENTARE / IDENTITATE (permanentă)
+
+Pe app queer, `orientation`, `gender`, `gender_custom`, `pronouns`,
+`pronouns_custom`, `tribes` sunt date Art. 9 (viața sexuală). Sunt în
+`SENSITIVE_COLUMNS.profiles` și accesibile DOAR via
+`adminBreakGlassReveal({ kind: 'orientation' })` care cere `super_admin`
+prin `admin_can_access_sensitive`. Discover / matching nu expun aceste
+câmpuri sub formă brută între useri (vezi RPC `discover_profiles`).
