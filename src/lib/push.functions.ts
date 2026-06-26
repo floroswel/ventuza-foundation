@@ -124,7 +124,7 @@ export const sendPushToUser = createServerFn({ method: "POST" })
       if (s.kind !== "webpush" || !s.endpoint) continue;
       const r = await sendOne(
         { id: s.id, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
-        { title: data.title, body: data.body, url: data.url, tag: data.tag },
+        { title, body, url: profile?.discrete_mode ? undefined : data.url, tag: data.tag },
       );
       if (r.ok) delivered++;
       else if (r.gone) expired.push(s.id);
