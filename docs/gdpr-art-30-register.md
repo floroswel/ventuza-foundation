@@ -352,6 +352,23 @@ Identificate la generarea acestui registru, din analiza schemei reale:
 
 ---
 
+## A18. Descoperă lângă tine (venues / events / offers)
+
+| Câmp | Valoare |
+|---|---|
+| **Activitate** | Listare publică de localuri, evenimente și oferte din apropierea userului ("Aproape de tine"). |
+| **Scop** | Executare contract: a oferi utilizatorului conținut local relevant (localuri queer-friendly, evenimente, promoții). |
+| **Persoane vizate** | Utilizatori autentificați și anonimi (browsing). |
+| **Categorii de date** | (a) Locație **aproximativă** a userului — bucket de grilă ~5 km, calculat **pe device**; serverul nu primește lat/lng exacte. (b) Coordonate publice ale venues/events/offers (date publice ale partenerilor moderate). (c) `offer_claims`: id user + cod random + timestamp (minimizare — fără PII suplimentar către partener). |
+| **Categorii Art. 9** | **Nu.** Funcția nu procesează date Art. 9. Niciun consent_log dedicat necesar. |
+| **Temei Art. 6** | 6(1)(b) executare contract (utilizatorul folosește feature-ul descoperire). Pentru claims: 6(1)(b) + 6(1)(f) (interes legitim al partenerului de a-și măsura promoțiile, fără a expune identitatea revendicatorului). |
+| **Destinatari** | Niciun procesator nou pentru funcționalitate (totul on-device + DB internă). **Tile-uri hartă:** P10 — OpenStreetMap Foundation (UK adequacy; primește doar IP + bbox tile, fără identitate user). |
+| **Transferuri extra-UE** | UK (OSM) — adequacy decision EC 2021/1772. Nu se transferă lat/lng userului către OSM (harta cere doar tile-uri pe zona vizualizată). |
+| **Termen retenție** | `venues` / `offers`: indefinit cât e activ partenerul; `offer_claims`: 24 luni de la `claimed_at` (pentru audit anti-abuz), apoi anonimizate (păstrăm `count`, ștergem `user_id`). |
+| **Măsuri tehnice** | (1) **Bucketizare pe device** — RPC `nearby_points(p_bucket_id)` refuză apel fără bucket valid; nu acceptă lat/lng. (2) Filtrare la rază exactă (≤2/5/10 km) **pe device**, prin Haversine. (3) Owner venue nu poate auto-publica (RLS `is_published=false` la INSERT/UPDATE owner). (4) Claim-urile sunt vizibile DOAR userului propriu (RLS) — partenerul vede agregate prin RPC `offer_stats` (count, fără identitate). (5) Hartă MapLibre + OSM raster (no API key, no SDK tracking). |
+
+---
+
 # Documente conexe
 
 - `/legal/privacy`, `/legal/terms`, `/legal/cookies`, `/legal/subprocessors`
