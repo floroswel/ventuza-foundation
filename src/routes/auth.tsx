@@ -334,6 +334,23 @@ function AuthPage() {
 
           {mode === "signup" && (
             <div className="space-y-3 rounded-xl border border-border bg-surface/60 p-4">
+              <div>
+                <Label htmlFor="birthdate" className="mb-1 block text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  Data nașterii
+                </Label>
+                <Input
+                  id="birthdate"
+                  type="date"
+                  required
+                  max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().slice(0, 10)}
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="w-full"
+                />
+                {birthDate && (ageFromBirthDate(birthDate) ?? 0) < 18 && (
+                  <p className="mt-1 text-xs text-destructive">Trebuie să ai cel puțin 18 ani.</p>
+                )}
+              </div>
               <label className="flex cursor-pointer items-start gap-3 text-sm text-foreground">
                 <input
                   type="checkbox"
