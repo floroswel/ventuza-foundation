@@ -26,6 +26,8 @@ export function isProductionHost(hostname = typeof window !== "undefined" ? wind
   if (h.startsWith("id-preview--")) return false;        // Lovable in-editor preview
   if (h.endsWith("-dev.lovable.app")) return false;      // Lovable preview stable URL
   if (h.endsWith("--dev.lovable.app")) return false;
+  if (h.endsWith(".lovableproject.com")) return false;   // Lovable sandbox preview (editor iframe)
+  if (h.endsWith(".lovable.dev")) return false;          // Lovable dev preview
   // Orice altceva (custom domain, *.lovable.app publicat) = PROD
   return true;
 }
