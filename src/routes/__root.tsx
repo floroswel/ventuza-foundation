@@ -19,7 +19,7 @@ import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
 import { SessionGuards } from "@/components/SessionGuards";
 import { AgeGate } from "@/components/AgeGate";
-import { QuickExitFab } from "@/components/QuickExitFab";
+
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 
 
@@ -183,7 +183,7 @@ function RootComponent() {
           <TravelWarning />
           <PinLockGate />
           <Toaster theme="dark" position="top-center" richColors />
-          <QuickExitFab />
+          
           <FeedbackWidget />
 
         </NotificationsProvider>
