@@ -181,6 +181,7 @@ function RootComponent() {
       <AuthProvider>
         <NotificationsProvider>
           <SessionGuards />
+          <ProximityWatcherMount />
           <Outlet />
           <AgeGate />
           <CookieBanner />
