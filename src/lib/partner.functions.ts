@@ -3,7 +3,7 @@
  *
  * SECURITY:
  * - Every handler enforces `assertPartner` (has 'business' role + not suspended).
- * - All listings go through `context.supabase` so owner-only RLS applies.
+ * - All listings go through `(context.supabase as any)` so owner-only RLS applies.
  * - Create/update strip `is_published`, `is_official`, `moderation_status`,
  *   `moderated_*` from input. The DB triggers (*_no_self_publish) enforce this
  *   too, but we never even let it reach SQL.
@@ -65,7 +65,7 @@ export const partnerListMyItems = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertPartner(context);
-    const sb = context.supabase;
+    const sb = (context.supabase as any);
     const [v, e, o] = await Promise.all([
       sb
         .from("venues" as any)
@@ -99,7 +99,7 @@ export const partnerGetQuota = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertPartner(context);
-    const { data, error } = await (context.supabase as any).rpc("partner_get_quota_usage", {
+    const { data, error } = await ((context.supabase as any) as any).rpc("partner_get_quota_usage", {
       p_user: context.userId,
     });
     if (error) throw new Error(error.message);
@@ -166,7 +166,7 @@ export const partnerCreateVenue = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertPartner(context);
     await checkQuota(context, "venue");
-    const { data: row, error } = await context.supabase
+    const { data: row, error } = await ((context.supabase as any) as any)
       .from("venues" as any)
       .insert({
         ...data,
@@ -189,7 +189,7 @@ export const partnerUpdateVenue = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     await assertPartner(context);
-    const { data: cur, error: gErr } = await context.supabase
+    const { data: cur, error: gErr } = await ((context.supabase as any) as any)
       .from("venues" as any)
       .select("id,owner_id,moderation_status")
       .eq("id", data.id)
@@ -206,7 +206,7 @@ export const partnerUpdateVenue = createServerFn({ method: "POST" })
       patch.is_published = false;
       patch.rejection_reason = null;
     }
-    const { error } = await (context.supabase as any).from("venues").update(patch).eq("id", data.id);
+    const { error } = await ((context.supabase as any) as any).from("venues").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     await audit(context.userId, reMod ? "partner_edit_venue_remoderation" : "partner_edit_venue", "venues", data.id, {});
     return { ok: true, re_moderation: reMod };
@@ -235,7 +235,7 @@ export const partnerCreateEvent = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertPartner(context);
     await checkQuota(context, "event");
-    const { data: row, error } = await context.supabase
+    const { data: row, error } = await ((context.supabase as any) as any)
       .from("events" as any)
       .insert({
         ...data,
@@ -259,7 +259,7 @@ export const partnerUpdateEvent = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     await assertPartner(context);
-    const { data: cur, error: gErr } = await context.supabase
+    const { data: cur, error: gErr } = await ((context.supabase as any) as any)
       .from("events" as any)
       .select("id,host_id,moderation_status")
       .eq("id", data.id)
@@ -276,7 +276,7 @@ export const partnerUpdateEvent = createServerFn({ method: "POST" })
       patch.is_published = false;
       patch.rejection_reason = null;
     }
-    const { error } = await (context.supabase as any).from("events").update(patch).eq("id", data.id);
+    const { error } = await ((context.supabase as any) as any).from("events").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     await audit(context.userId, reMod ? "partner_edit_event_remoderation" : "partner_edit_event", "events", data.id, {});
     return { ok: true, re_moderation: reMod };
@@ -311,7 +311,7 @@ export const partnerCreateOffer = createServerFn({ method: "POST" })
     await assertPartner(context);
     await assertVenueOwnership(context, data.venue_id);
     await checkQuota(context, "offer");
-    const { data: row, error } = await context.supabase
+    const { data: row, error } = await ((context.supabase as any) as any)
       .from("offers" as any)
       .insert({ ...data, moderation_status: "pending", is_published: false })
       .select("id")
@@ -328,7 +328,7 @@ export const partnerUpdateOffer = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     await assertPartner(context);
-    const { data: cur, error: gErr } = await context.supabase
+    const { data: cur, error: gErr } = await ((context.supabase as any) as any)
       .from("offers" as any)
       .select("id,venue_id,moderation_status,venues!inner(owner_id)")
       .eq("id", data.id)
@@ -345,7 +345,7 @@ export const partnerUpdateOffer = createServerFn({ method: "POST" })
       patch.is_published = false;
       patch.rejection_reason = null;
     }
-    const { error } = await (context.supabase as any).from("offers").update(patch).eq("id", data.id);
+    const { error } = await ((context.supabase as any) as any).from("offers").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     await audit(context.userId, reMod ? "partner_edit_offer_remoderation" : "partner_edit_offer", "offers", data.id, {});
     return { ok: true, re_moderation: reMod };
@@ -357,14 +357,14 @@ export const partnerGetOfferStats = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertPartner(context);
     // Verify ownership before exposing stats.
-    const { data: row, error } = await context.supabase
+    const { data: row, error } = await ((context.supabase as any) as any)
       .from("offers" as any)
       .select("id,venue_id,venues!inner(owner_id)")
       .eq("id", data.offer_id)
       .maybeSingle();
     if (error) throw new Error(error.message);
     if (!row || (row as any).venues?.owner_id !== context.userId) throw new Error("not_found");
-    const { data: stats, error: sErr } = await context.supabase
+    const { data: stats, error: sErr } = await ((context.supabase as any) as any)
       .rpc("offer_stats", { p_offer_id: data.offer_id })
       .single<{ claim_count: number; redeemed_count: number }>();
     if (sErr) throw new Error(sErr.message);
