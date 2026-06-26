@@ -68,21 +68,21 @@ export const partnerListMyItems = createServerFn({ method: "POST" })
     const sb = context.supabase;
     const [v, e, o] = await Promise.all([
       sb
-        .from("venues")
+        .from("venues" as any)
         .select(
           "id,name,slug,category,city,cover_url,is_published,moderation_status,rejection_reason,created_at,updated_at",
         )
         .eq("owner_id", context.userId)
         .order("updated_at", { ascending: false }),
       sb
-        .from("events")
+        .from("events" as any)
         .select(
           "id,title,city,venue,starts_at,ends_at,cover_url,is_published,moderation_status,rejection_reason,is_official,created_at",
         )
         .eq("host_id", context.userId)
         .order("starts_at", { ascending: false }),
       sb
-        .from("offers")
+        .from("offers" as any)
         .select(
           "id,venue_id,title,valid_from,valid_to,is_published,moderation_status,rejection_reason,created_at,venues!inner(owner_id,name)",
         )
@@ -167,7 +167,7 @@ export const partnerCreateVenue = createServerFn({ method: "POST" })
     await assertPartner(context);
     await checkQuota(context, "venue");
     const { data: row, error } = await context.supabase
-      .from("venues")
+      .from("venues" as any)
       .insert({
         ...data,
         owner_id: context.userId,
@@ -190,7 +190,7 @@ export const partnerUpdateVenue = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertPartner(context);
     const { data: cur, error: gErr } = await context.supabase
-      .from("venues")
+      .from("venues" as any)
       .select("id,owner_id,moderation_status")
       .eq("id", data.id)
       .maybeSingle();
@@ -236,7 +236,7 @@ export const partnerCreateEvent = createServerFn({ method: "POST" })
     await assertPartner(context);
     await checkQuota(context, "event");
     const { data: row, error } = await context.supabase
-      .from("events")
+      .from("events" as any)
       .insert({
         ...data,
         host_id: context.userId,
@@ -260,7 +260,7 @@ export const partnerUpdateEvent = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertPartner(context);
     const { data: cur, error: gErr } = await context.supabase
-      .from("events")
+      .from("events" as any)
       .select("id,host_id,moderation_status")
       .eq("id", data.id)
       .maybeSingle();
@@ -296,7 +296,7 @@ const offerInput = z.object({
 
 async function assertVenueOwnership(ctx: Ctx, venueId: string) {
   const { data, error } = await ctx.supabase
-    .from("venues")
+    .from("venues" as any)
     .select("id,owner_id")
     .eq("id", venueId)
     .maybeSingle();
@@ -312,7 +312,7 @@ export const partnerCreateOffer = createServerFn({ method: "POST" })
     await assertVenueOwnership(context, data.venue_id);
     await checkQuota(context, "offer");
     const { data: row, error } = await context.supabase
-      .from("offers")
+      .from("offers" as any)
       .insert({ ...data, moderation_status: "pending", is_published: false })
       .select("id")
       .single();
@@ -329,7 +329,7 @@ export const partnerUpdateOffer = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertPartner(context);
     const { data: cur, error: gErr } = await context.supabase
-      .from("offers")
+      .from("offers" as any)
       .select("id,venue_id,moderation_status,venues!inner(owner_id)")
       .eq("id", data.id)
       .maybeSingle();
@@ -358,7 +358,7 @@ export const partnerGetOfferStats = createServerFn({ method: "POST" })
     await assertPartner(context);
     // Verify ownership before exposing stats.
     const { data: row, error } = await context.supabase
-      .from("offers")
+      .from("offers" as any)
       .select("id,venue_id,venues!inner(owner_id)")
       .eq("id", data.offer_id)
       .maybeSingle();
