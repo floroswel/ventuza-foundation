@@ -85,14 +85,22 @@ function PartnerPortal() {
   const listFn = useServerFn(partnerListMyItems);
   const quotaFn = useServerFn(partnerGetQuota);
 
+  const [suspendedMsg, setSuspendedMsg] = useState<string | null>(null);
+
   const refresh = async () => {
     setLoading(true);
-    try {
-      const [i, q] = await Promise.all([listFn({ data: undefined }), quotaFn({ data: undefined })]);
-      setItems(i);
-      setQuota(q);
-    } catch (e: any) {
-      toast.error(e.message ?? "Eroare la încărcare");
+    setSuspendedMsg(null);
+    const [iRes, qRes] = await Promise.allSettled([
+      listFn({ data: undefined }),
+      quotaFn({ data: undefined }),
+    ]);
+    if (iRes.status === "fulfilled") setItems(iRes.value);
+    if (qRes.status === "fulfilled") setQuota(qRes.value);
+    const err = (iRes.status === "rejected" && iRes.reason) || (qRes.status === "rejected" && qRes.reason);
+    if (err) {
+      const msg = (err as Error).message ?? "Eroare la încărcare";
+      if (msg.startsWith("suspended:")) setSuspendedMsg(msg.replace(/^suspended:\s*/, ""));
+      else toast.error(msg);
     } finally {
       setLoading(false);
     }
