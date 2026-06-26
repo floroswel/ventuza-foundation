@@ -212,3 +212,76 @@ Orice PR care:
 - nu oprește/șterge la retragere,
 
 trebuie REFUZAT.
+
+## REGULĂ — ADMIN (permanentă)
+
+Panoul admin este o suprafață cu privilegii înalte și o țintă probabilă.
+Aceste reguli se aplică automat oricărui diff care atinge `/admin/*`,
+`src/lib/admin*.functions.ts`, RPC-uri SECURITY DEFINER cu prefix `admin_`,
+sau tabele cu prefix `admin_*`.
+
+1. **RBAC enforced server-side, nu doar UI.** Rolurile valide:
+   `super_admin`, `admin`, `auditor`, `moderator`, `support`, `read_only`.
+   Fiecare server fn admin verifică rolul prin `has_role` / `has_any_role` /
+   `is_staff` / `is_admin_or_above` ÎNAINTE de orice acces la `supabaseAdmin`.
+   Ascunderea în UI nu este suficientă. Niciun handler nu se bazează pe
+   payload-ul clientului pentru a-și verifica drepturile.
+
+2. **Toate acțiunile admin se loghează în `admin_audit_log`** (actor, acțiune,
+   target, before/after, IP, user-agent, severitate). Fără excepții. Tabela
+   este append-only (trigger `prevent_audit_mutation`).
+
+3. **Date sensibile MASCATE by default.** Listingul generic
+   (`adminListRows`) NU proiectează: `profiles.hiv_status_enc`,
+   `hiv_test_date_enc`, `health_data_consent_at`, `location`, `prev_location`,
+   `travel_location`, `phone_e164`, `pin_hash`; `messages.body / media_url /
+   voice_url / caption`; `age_verifications.selfie_url / document_url /
+   raw_payload`; `push_subscriptions.endpoint / auth / p256dh`;
+   `device_fingerprints.fingerprint / user_agent / ip`. Orice coloană nouă
+   sensibilă se adaugă în `SENSITIVE_COLUMNS` și în `safeColumnsFor`.
+
+4. **Break-glass obligatoriu pentru dezvăluire.** Singura cale pentru a vedea
+   datele sensibile listate mai sus este `adminBreakGlassReveal` cu:
+   `targetUserId`, `kind ∈ {health, location, selfie, messages}`,
+   `justification ≥ 10 caractere`. Server-side se verifică
+   `admin_can_access_sensitive(actor, kind)`:
+   - `health`   → DOAR `super_admin`
+   - `location` → DOAR `super_admin`
+   - `selfie`   → `admin` sau `super_admin`
+   - `messages` → `admin` sau `super_admin`
+   Apelul scrie automat în `admin_sensitive_access_log` (append-only, vizibil
+   doar pentru `super_admin` și `auditor`) ȘI în `admin_audit_log` cu
+   severitate `critical`. Moderatorul, supportul și `read_only` NU pot ajunge
+   niciodată la HIV, locație precisă, selfie de verificare sau conținut de
+   mesaj brut.
+
+5. **2FA obligatoriu pentru `admin` și `super_admin`.** Status în
+   `admin_mfa_status`. Server-side nu execută acțiuni distructive sau
+   break-glass dacă MFA nu este înrolat. UI cere înrolarea la primul login.
+
+6. **Acțiuni distructive = soft-delete reversibil** unde se poate (ban
+   reversibil prin `adminUnbanUser`, ștergere user prin
+   `adminProcessDeletion` cu marcare `deletion_requests`). Ștergerea hard
+   directă (`auth.admin.deleteUser`) e rezervată `super_admin` și e logată
+   `critical`.
+
+7. **Parametrii de business NU se hardcodează.** Sursa autoritativă este
+   `public.app_settings` (citită de app la runtime). Modificare DOAR prin
+   `admin_update_setting` (versionare + istoric în `app_settings_history` +
+   audit). Activare/dezactivare funcții = `public.feature_flags` editat prin
+   `adminUpsertFlag`. Orice constantă de tip prag/scor/limită/cost adăugată
+   în cod trebuie să trăiască în `app_settings` și să fie citită la runtime.
+
+8. **Code review automat:** orice diff care
+   - adaugă o coloană sensibilă (Art. 9, locație, mesaj brut, biometric,
+     fingerprint, token push) și nu o introduce în `SENSITIVE_COLUMNS`,
+   - returnează o coloană din lista de mai sus prin `adminListRows`,
+     `adminListTables`, sau un nou server fn fără gate break-glass,
+   - introduce un server fn admin fără verificare server-side a rolului,
+   - omite scrierea în `admin_audit_log` pentru o acțiune cu efect,
+   - dă GRANT EXECUTE pe `admin_update_setting` /
+     `admin_can_access_sensitive` / `admin_get_my_role` către `anon`,
+   - hardcodează un parametru de business în loc să-l citească din
+     `app_settings`,
+
+   trebuie REFUZAT.
