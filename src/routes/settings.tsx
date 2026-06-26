@@ -59,7 +59,7 @@ function SettingsPage() {
   const [newPwd, setNewPwd] = useState("");
   const [confirmDelete, setConfirmDelete] = useState("");
   const [deleting, setDeleting] = useState(false);
-  const [privacy, setPrivacy] = useState({ hide_age: false, hide_distance: false, hide_online: false, read_receipts_enabled: true, auto_share_album_on_match: false });
+  const [privacy, setPrivacy] = useState({ hide_age: false, hide_distance: false, hide_online: false, read_receipts_enabled: true, auto_share_album_on_match: false, discrete_mode: false });
   const [savingPrivacy, setSavingPrivacy] = useState(false);
   const [lookingUntil, setLookingUntil] = useState<string | null>(null);
   const [intent, setIntent] = useState("");
