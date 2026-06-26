@@ -15,6 +15,25 @@ export const startAgeVerification = createServerFn({ method: "POST" })
     return data;
   })
   .handler(async ({ data, context }) => {
+    // GDPR Art. 9 — selfie-ul biometric pleacă spre Didit. Verifică consimțământul
+    // `age_verification` ÎNAINTE de orice apel extern. Vezi AGENTS.md.
+    const { data: hasConsent, error: consentErr } = await context.supabase.rpc("has_active_consent", {
+      _user_id: context.userId,
+      _kind: "age_verification",
+    });
+    if (consentErr) {
+      console.error("[age-start] consent check error", consentErr);
+      return { ok: false as const, error: "consent_check", message: "Nu am putut verifica consimțământul." };
+    }
+    if (hasConsent !== true) {
+      return {
+        ok: false as const,
+        error: "consent_required",
+        message:
+          "Pentru verificarea vârstei trebuie să accepți explicit procesarea unei imagini biometrice (selfie) prin Didit. Bifează consimțământul și încearcă din nou.",
+      };
+    }
+
     const apiKey = process.env.DIDIT_API_KEY;
     const workflowId = process.env.DIDIT_WORKFLOW_ID;
     if (!apiKey || !workflowId) {
