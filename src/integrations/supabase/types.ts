@@ -2686,6 +2686,7 @@ export type Database = {
               weight_kg: number
             }[]
           }
+      distance_bucket_label: { Args: { d: number }; Returns: string }
       dropgeometrycolumn:
         | {
             Args: {
