@@ -60,8 +60,8 @@ export const setMyHealth = createServerFn({ method: "POST" })
     const testDate = data.hiv_test_date ?? null;
     const { error } = await supabaseAdmin.rpc("set_user_health", {
       _user_id: context.userId,
-      _status: status,
-      _date: testDate,
+      _status: status as unknown as string,
+      _date: testDate as unknown as string,
       _key: readKey(),
     });
     if (error) {
