@@ -40,3 +40,45 @@ sesiuni viitoare, fără excepție, fără a aștepta confirmare.
    pin"). Verificarea: `auth.uid() = profiles.id`.
 
 Dacă ai dubii, default = nu expui locația.
+
+## REGULĂ — DATE DE SĂNĂTATE (permanentă)
+
+GDPR Art. 9 — date din categorii speciale. Această regulă se aplică automat,
+fără a aștepta confirmare.
+
+1. **Câmpurile health-gated** sunt definite EXCLUSIV în funcția SQL
+   `public.health_gated_columns()`. Astăzi: `hiv_status`, `hiv_test_date`.
+   Când adaugi un câmp nou de sănătate (`prep_status`, `std_status`, etc.):
+   - îl adaugi în array-ul returnat de `health_gated_columns()`,
+   - îl adaugi în triggerul `enforce_health_consent_on_profile()` (verificare
+     INSERT + UPDATE OF ...), și
+   - îl adaugi în triggerul `cascade_health_consent_withdrawal()` (NULL la
+     retragere).
+   Trei locuri, în aceeași migrare. Nimic altundeva.
+2. **Scrierea este BLOCATĂ la nivel DB** prin triggerul `enforce_health_consent`
+   pe `public.profiles`. Fără consimțământ `health_data` activ în `consent_log`
+   (`accepted=true` în cea mai recentă înregistrare pentru kind=`health_data`),
+   orice INSERT/UPDATE cu valoare non-NULL pe un câmp health-gated întoarce
+   `health_consent_required`. UI nu este sursa de adevăr — DB este.
+3. **Retragerea consimțământului = ștergerea datelor.** Triggerul
+   `cascade_health_consent_withdrawal` pe `consent_log` (AFTER INSERT) setează
+   automat câmpurile health-gated pe NULL și `health_data_consent_at=NULL`
+   pentru userul respectiv, în aceeași tranzacție. Funcția
+   `public.withdraw_health_consent(version)` este endpoint-ul curat din UI.
+4. **Niciodată nu populezi un câmp health-gated prin default, seed, import,
+   migrare de date sau backfill** fără consimțământ înregistrat anterior în
+   `consent_log` pentru fiecare user vizat. Seed-urile demo nu pun valori pe
+   coloanele health-gated.
+5. **Onboarding și editare profil:** consimțământul `health_data` se inserează
+   în `consent_log` ÎNAINTE de scrierea pe `profiles` (altfel triggerul refuză).
+   Dacă userul deselectează câmpul în UI, fluxul trebuie să cheme
+   `withdraw_health_consent` — nu doar să trimită NULL pe coloană.
+6. **Code review automat:** orice diff care:
+   - adaugă o coloană de sănătate pe `profiles` fără a o include în
+     `health_gated_columns()` + ambele triggere,
+   - scrie direct pe `hiv_status` / `hiv_test_date` (sau pe oricare câmp din
+     `health_gated_columns()`) fără să insereze înainte consimțământul, sau
+   - dezactivează / dă DROP unuia din cele două triggere,
+   trebuie REFUZAT.
+
+Default: niciun câmp de sănătate populat fără urmă de consimțământ explicit.
