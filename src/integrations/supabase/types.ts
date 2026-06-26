@@ -3653,6 +3653,7 @@ export type Database = {
         | "super_admin"
         | "support"
         | "auditor"
+        | "read_only"
       business_app_status: "pending" | "reviewing" | "approved" | "rejected"
       business_entity_type:
         | "srl"
@@ -3820,6 +3821,7 @@ export const Constants = {
         "super_admin",
         "support",
         "auditor",
+        "read_only",
       ],
       business_app_status: ["pending", "reviewing", "approved", "rejected"],
       business_entity_type: [
