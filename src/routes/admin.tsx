@@ -138,6 +138,7 @@ function AdminDashboard() {
     { id: "audit", label: "Audit", icon: ScrollText },
     { id: "ads", label: "Ads", icon: Megaphone },
     { id: "biz", label: "B2B", icon: Building2 },
+    { id: "partners", label: "Parteneri & Moderare", icon: ShieldCheck },
     { id: "data", label: "Date (toate)", icon: Database, adminOnly: true },
     { id: "broadcast", label: "Broadcast", icon: Send, adminOnly: true },
     { id: "security", label: "Securitate", icon: KeyRound },
