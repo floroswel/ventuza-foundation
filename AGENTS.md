@@ -103,3 +103,29 @@ Pentru date din categorii speciale (Art. 9 — sănătate, orientare, locație
 precisă), procesatorul trebuie justificat explicit; default-ul este să NU
 trimiți astfel de date către procesatori care nu le cer prin funcționalitatea
 lor centrală.
+
+## REGULĂ — REGISTRU ART. 30 (permanentă)
+
+Orice activitate de prelucrare nouă (tabelă nouă cu date personale, scop nou,
+procesator nou, flux nou care atinge date deja existente într-un scop diferit)
+se adaugă în registrul Art. 30 — `docs/gdpr-art-30-register.md` ȘI în pagina
+sumar `src/routes/legal.records-of-processing.tsx` — cu temei legal explicit
+(Art. 6 literă + Art. 9 literă dacă e cazul), categorii de persoane vizate,
+categorii de date, destinatari (mapați pe inventarul de procesatori P1–P9),
+transferuri extra-UE și termen de retenție, în aceeași migrare/PR.
+
+Datele din categorii speciale (Art. 9 — sănătate, viață sexuală/orientare,
+biometrice, convingeri, etnie) necesită un temei Art. 9 explicit MAPAT
+**înainte** de implementare. Dacă temeiul nu poate fi identificat clar
+(consimțământ explicit înregistrat în `consent_log`, interes public
+substanțial cu act normativ care îl autorizează, interese vitale, etc.),
+implementarea se OPREȘTE până când temeiul este documentat.
+
+Orice diff care:
+- adaugă o coloană / tabel cu date personale fără a actualiza registrul,
+- introduce un scop nou pentru date existente fără mapare Art. 6,
+- procesează date Art. 9 fără temei Art. 9 înregistrat în registru,
+- adaugă un destinatar (procesator sau operator) fără linie nouă în registru,
+trebuie REFUZAT.
+
+Versiunea documentului se incrementează la fiecare modificare materială.

@@ -37,6 +37,7 @@ import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalSubprocessorsRouteImport } from './routes/legal.subprocessors'
 import { Route as LegalSecurityIncidentsRouteImport } from './routes/legal.security-incidents'
+import { Route as LegalRecordsOfProcessingRouteImport } from './routes/legal.records-of-processing'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalDsaRouteImport } from './routes/legal.dsa'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
@@ -189,6 +190,12 @@ const LegalSecurityIncidentsRoute = LegalSecurityIncidentsRouteImport.update({
   path: '/legal/security-incidents',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalRecordsOfProcessingRoute =
+  LegalRecordsOfProcessingRouteImport.update({
+    id: '/legal/records-of-processing',
+    path: '/legal/records-of-processing',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   id: '/legal/privacy',
   path: '/legal/privacy',
@@ -277,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -318,6 +326,7 @@ export interface FileRoutesByTo {
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -360,6 +369,7 @@ export interface FileRoutesById {
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
+  '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
@@ -403,6 +413,7 @@ export interface FileRouteTypes {
     | '/legal/cookies'
     | '/legal/dsa'
     | '/legal/privacy'
+    | '/legal/records-of-processing'
     | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
@@ -444,6 +455,7 @@ export interface FileRouteTypes {
     | '/legal/cookies'
     | '/legal/dsa'
     | '/legal/privacy'
+    | '/legal/records-of-processing'
     | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
@@ -485,6 +497,7 @@ export interface FileRouteTypes {
     | '/legal/cookies'
     | '/legal/dsa'
     | '/legal/privacy'
+    | '/legal/records-of-processing'
     | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
@@ -523,6 +536,7 @@ export interface RootRouteChildren {
   LegalCookiesRoute: typeof LegalCookiesRoute
   LegalDsaRoute: typeof LegalDsaRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
+  LegalRecordsOfProcessingRoute: typeof LegalRecordsOfProcessingRoute
   LegalSecurityIncidentsRoute: typeof LegalSecurityIncidentsRoute
   LegalSubprocessorsRoute: typeof LegalSubprocessorsRoute
   LegalTermsRoute: typeof LegalTermsRoute
@@ -731,6 +745,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalSecurityIncidentsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/records-of-processing': {
+      id: '/legal/records-of-processing'
+      path: '/legal/records-of-processing'
+      fullPath: '/legal/records-of-processing'
+      preLoaderRoute: typeof LegalRecordsOfProcessingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/privacy': {
       id: '/legal/privacy'
       path: '/legal/privacy'
@@ -885,6 +906,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalCookiesRoute: LegalCookiesRoute,
   LegalDsaRoute: LegalDsaRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
+  LegalRecordsOfProcessingRoute: LegalRecordsOfProcessingRoute,
   LegalSecurityIncidentsRoute: LegalSecurityIncidentsRoute,
   LegalSubprocessorsRoute: LegalSubprocessorsRoute,
   LegalTermsRoute: LegalTermsRoute,
