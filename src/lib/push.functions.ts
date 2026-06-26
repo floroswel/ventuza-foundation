@@ -35,7 +35,7 @@ export const savePushSubscription = createServerFn({ method: "POST" })
     // Loghează consimțământul push (acordare). Vezi consent-registry + AGENTS.md.
     await context.supabase.rpc("record_consent", {
       _kind: "push_notifications",
-      _version: null,
+      _version: undefined,
       _accepted: true,
     });
     return { ok: true };
@@ -54,7 +54,7 @@ export const removePushSubscription = createServerFn({ method: "POST" })
     // Loghează retragerea consimțământului push.
     await context.supabase.rpc("record_consent", {
       _kind: "push_notifications",
-      _version: null,
+      _version: undefined,
       _accepted: false,
     });
     return { ok: true };
