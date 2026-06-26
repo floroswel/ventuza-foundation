@@ -37,13 +37,16 @@ const TTL_MS = 60_000;
 
 /**
  * Returnează `true` dacă AgeGate trebuie să blocheze efectiv user-ul.
- * - Producție → always true (override hard, ignoră flag-ul).
- * - Non-producție → respectă `feature_flags.age_verification.enabled`.
- *   Default safe: dacă flag-ul lipsește sau citirea eșuează → true.
+ *
+ * ⚠️ KILL-SWITCH TEMPORAR ACTIV (cerut explicit de owner):
+ * Override-ul hard de producție este DEZACTIVAT momentan. Atât în preview cât
+ * și în producție, enforcement-ul respectă `feature_flags.age_verification.enabled`.
+ * Pentru reactivare la publicarea finală: toggle flag-ul pe ON din admin
+ * SAU re-introdu `if (isProductionHost()) return true;` la începutul funcției.
+ *
+ * Fail-safe: dacă flag-ul lipsește sau citirea eșuează → enforcement ON.
  */
 export async function shouldEnforceAgeGate(): Promise<boolean> {
-  if (isProductionHost()) return true;
-
   const now = Date.now();
   if (_cache && now - _cache.at < TTL_MS) return _cache.value;
 
