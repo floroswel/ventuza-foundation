@@ -154,6 +154,27 @@ function Onboarding() {
     }
     if (!user) return;
     setSaving(true);
+
+    // GDPR: ÎNTÂI înregistrăm consimțământul (inclusiv health_data dacă userul a acceptat),
+    // pentru ca triggerul `enforce_health_consent` de pe `profiles` să accepte scrierea
+    // câmpurilor health-gated în aceeași tranzacție logică. Vezi AGENTS.md.
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 400) : null;
+    const consents: Array<{ kind: string; version: string; accepted: boolean }> = [
+      { kind: "terms", version: "2026-06-22", accepted: true },
+      { kind: "privacy", version: "2026-06-22", accepted: true },
+    ];
+    const wantsHealth = Boolean(data.hiv_status) && data.health_consent;
+    if (wantsHealth) {
+      consents.push({ kind: "health_data", version: "2026-06-22", accepted: true });
+    }
+    const { error: consentError } = await supabase.from("consent_log").insert(
+      consents.map((c) => ({ user_id: user.id, ...c, user_agent: ua })),
+    );
+    if (consentError) {
+      setSaving(false);
+      return toast.error(consentError.message);
+    }
+
     const { error } = await supabase.from("profiles").update({
       display_name: data.display_name.trim(),
       birthdate: data.birthdate,
@@ -169,13 +190,15 @@ function Onboarding() {
       weight_kg: data.weight_kg,
       ethnicity: data.ethnicity || null,
       position: data.position || null,
-      hiv_status: data.hiv_status || null,
+      // Doar dacă userul a dat consimțământ explicit health_data; altfel rămâne NULL
+      // (triggerul DB ar bloca scrierea oricum).
+      hiv_status: wantsHealth ? (data.hiv_status || null) : null,
       relationship_status: data.relationship_status || null,
       interests: data.interests,
       bio: data.bio.trim(),
       prompts: data.prompts,
       photos: data.photos,
-      health_data_consent_at: data.hiv_status && data.health_consent ? new Date().toISOString() : null,
+      health_data_consent_at: wantsHealth ? new Date().toISOString() : null,
       terms_accepted_version: "2026-06-22",
       terms_accepted_at: new Date().toISOString(),
       privacy_accepted_version: "2026-06-22",
@@ -184,19 +207,6 @@ function Onboarding() {
     }).eq("id", user.id);
     setSaving(false);
     if (error) return toast.error(error.message);
-
-    // GDPR: înregistrare consimțământ explicit, separat de profile.
-    const ua = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 400) : null;
-    const consents: Array<{ kind: string; version: string; accepted: boolean }> = [
-      { kind: "terms", version: "2026-06-22", accepted: true },
-      { kind: "privacy", version: "2026-06-22", accepted: true },
-    ];
-    if (data.hiv_status && data.health_consent) {
-      consents.push({ kind: "health_data", version: "2026-06-22", accepted: true });
-    }
-    await supabase.from("consent_log").insert(
-      consents.map((c) => ({ user_id: user.id, ...c, user_agent: ua })),
-    );
 
     toast.success("Your profile is ready.");
     navigate({ to: "/profile" });
