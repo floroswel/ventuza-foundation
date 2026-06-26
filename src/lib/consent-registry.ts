@@ -104,6 +104,16 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
     gates: ["push_subscriptions"],
     processor: "P4 — Push services (FCM/APNs)",
   },
+  background_location: {
+    kind: "background_location",
+    currentVersion: "2026-06-26",
+    required: false,
+    art9: false,
+    label: "Locație în fundal (geofencing)",
+    description:
+      "Pentru a te anunța când treci pe lângă un eveniment sau local aprobat — chiar și cu aplicația închisă — avem nevoie de permisiunea pentru locație în fundal. Calculul se face pe dispozitiv; coordonatele tale exacte NU pleacă la server și NU stocăm traseul tău. Poți retrage oricând din Setări.",
+    gates: ["proximity_background_geofence"],
+  },
   marketing: {
     kind: "marketing",
     currentVersion: "2026-06-22",
