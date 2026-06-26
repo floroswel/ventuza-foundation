@@ -53,8 +53,12 @@ function MessagesPage() {
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 px-5 py-4 backdrop-blur">
         <h1 className="text-xl font-semibold tracking-tight">Messages</h1>
       </header>
+      <div className="border-b border-border/40 px-2 py-2">
+        <StoriesStrip />
+      </div>
 
       <div className="flex-1 px-3 py-3">
+
         {loading ? (
           <div className="flex items-center justify-center py-24 text-muted-foreground">
             <Loader2 className="size-5 animate-spin" />
