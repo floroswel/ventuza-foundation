@@ -120,7 +120,7 @@ function PartnerPortal() {
 
   if (!user) return null;
 
-  const isPartner = roles.includes("business") || roles.includes("admin") || roles.includes("super_admin");
+  const isPartner = roles.includes("business") || roles.includes("admin");
   if (!isPartner) {
     return (
       <div className="max-w-xl mx-auto p-6 space-y-4">
