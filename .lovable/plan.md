@@ -1,92 +1,75 @@
-# Modul Admin — Venues / Events / Oferte & Parteneri
+# Portal Partener — `/partner/*`
 
-Construit deasupra fundației existente: RBAC (`has_role`, `is_staff`, `is_admin_or_above`), `admin_audit_log`, break-glass, sistemul nearby (`venues`, `events`, `offers`, `offer_claims`, `nearby_points`), rolul `business`/`partner` și `business_applications`.
+Construit deasupra modulului de moderare existent (`admin_moderate_item`, triggere `*_no_self_publish`, `admin_suspend_partner`, RLS owner-only, `partner_quotas` din `app_settings`). Respectă REGULA MODERARE OBLIGATORIE din AGENTS.md.
 
-## A) Rol & onboarding partener
+## A) Acces
 
-**DB (migrare):**
-- Reutilizez rolul `business` ca rol partener (există deja în enum). Nu adaug rol nou.
-- `business_applications` deja există (27 coloane, status pending/approved/rejected). Extind cu: `venue_type text`, `proof_url text`, `reviewer_notes text`, `suspended_at timestamptz`.
-- Trigger `on_business_application_approved`: la `status='approved'` → upsert `user_roles(business)` + creează venue draft legat (`venues.owner_id = applicant`).
-- Funcție `admin_suspend_partner(user_id, reason)` → setează `suspended_at`, revocă `business` role, marchează `venues.status='hidden'` și `offers.status='hidden'` pentru toate resursele owner-ului (ASCUNDERE INSTANT).
+- Rută layout pathless: `src/routes/_partner.tsx` (`ssr: false`) — guard client: `supabase.auth.getUser()` + `has_role(uid, 'partner')` + verifică `profiles.partner_suspended_at`. Dacă suspendat → afișează banner read-only în tot subtree-ul.
+- Toate server fns adaugă `assertPartner(supabase, userId)` (verifică rol + not suspended) ÎNAINTE de orice mutație.
 
-**Server fns (`src/lib/admin-partners.functions.ts`):**
-- `adminListBusinessApplications({ status })` — listă cu filtrare.
-- `adminReviewBusinessApplication({ id, decision: 'approved'|'rejected'|'changes_requested', notes })` — audit, notifică owner.
-- `adminListPartners({ q })` — owneri cu rol `business` + count venues/offers + status.
-- `adminSuspendPartner({ userId, reason })` / `adminReinstatePartner({ userId })`.
+## B) Rute
 
-## B) Coadă unificată de moderare
+- `/_partner/dashboard` — listă combinată venues+events+offers proprii, status moderare cu badge color-coded, motiv respingere afișat inline; widget quota (venues used/max, offers active/max) din nou RPC `partner_get_quota_usage()`.
+- `/_partner/venues` listă + `/_partner/venues/new` + `/_partner/venues/$id/edit`.
+- `/_partner/events` + `/_partner/events/new` + `/_partner/events/$id/edit` (select din venues proprii pentru legare).
+- `/_partner/offers` + `/_partner/offers/new` + `/_partner/offers/$id/edit` (select venue propriu + buton "Vezi stats" → modal cu `offer_stats` agregat).
 
-**DB:**
-- Asigur coloana `status` pe `venues`, `events`, `offers` cu valori: `draft|pending|approved|rejected|changes_requested|hidden|expired`. Default la insert by owner = `pending`. RLS existent deja interzice owner-ului să seteze `approved`.
-- View `admin_moderation_queue` care UNION-uiește cele trei cu coloanele comune (`kind, id, owner_id, name, status, created_at, updated_at, cover_url, city`).
+## C) Server fns — `src/lib/partner.functions.ts`
 
-**Server fns (`src/lib/admin-moderation.functions.ts`):**
-- `adminListModerationQueue({ kind?, status?, limit, offset })`.
-- `adminGetModerationItem({ kind, id })` — full payload (text, imagini, lat/lng pentru hartă admin — admin **are** voie să vadă coords venue, NU coords user; venues sunt date publice).
-- `adminModerateItem({ kind, id, decision, reason?, notification_radius_m? })`. Audit `critical`-ish; la `approved` setează `approved_at, approved_by`.
-- `adminFlagItem({ kind, id, reason })` — re-trimite în coadă după raport user.
+Toate cu `requireSupabaseAuth` + `assertPartner`:
+- `partnerListMyItems()` — venues/events/offers ale owner-ului prin `supabase` (RLS aplică automat).
+- `partnerGetQuotaUsage()` — citește `app_settings.partner_quotas` + count items.
+- `partnerCreateVenue/Event/Offer({...})` — validează Zod, **enforcement quota server-side** (throw `quota_exceeded` dacă > limită), rate-limit (max 5 drafts / oră / partner prin `rate_limit_log`), insert cu `moderation_status='pending'`. Câmpurile `is_published`, `is_official`, `moderated_*` NU sunt acceptate de validator — sunt stripped.
+- `partnerUpdateVenue/Event/Offer({id, patch})` — verifică ownership, validează patch (exclude `is_published`/`is_official`/`moderation_status`), iar dacă itemul era `approved` resetează la `pending` + setează `is_published=false` (re-moderare obligatorie). Loghează în `admin_audit_log`.
+- `partnerGetOfferStats({offerId})` — proxy la RPC `offer_stats` (doar count agregat).
 
-## C) Control per punct
+## D) DB — migrare minimă
 
-**DB:**
-- Coloane pe `venues`/`events`/`offers`: `notification_radius_m int default 2000`, `is_official boolean default false` (event al aplicației → priority_access), `max_notifications_per_day int default 1`.
-- `events.ends_at` deja există — cron/expirare prin trigger `expire_old_events()` (job pg_cron sau check on-read în `nearby_points`).
-- `partner_limits` în `app_settings`: `partner_max_venues`, `partner_max_active_offers`, `partner_max_notifications_per_day`.
+```sql
+-- helper quota
+CREATE OR REPLACE FUNCTION public.partner_get_quota_usage(p_user uuid)
+RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path=public AS $$
+  SELECT jsonb_build_object(
+    'venues', (SELECT count(*) FROM venues WHERE owner_id=p_user),
+    'events', (SELECT count(*) FROM events WHERE host_id=p_user),
+    'offers', (SELECT count(*) FROM offers o JOIN venues v ON v.id=o.venue_id WHERE v.owner_id=p_user),
+    'quotas', (SELECT value FROM app_settings WHERE key='partner_quotas')
+  )
+$$;
+GRANT EXECUTE ON FUNCTION public.partner_get_quota_usage(uuid) TO authenticated;
 
-**Server fns:**
-- `adminUpdatePoint({ kind, id, patch })` — patch validat (radius, is_official, schedule, status).
-- `adminEnforcePartnerLimits(ownerId)` — verifică limita înainte de aprobare.
-
-## D) Oferte — moderare specifică
-
-- În `adminGetModerationItem` pentru `kind='offer'` includ: titlu, descriere, condiții, valabilitate, cod redemption (masked), `offer_stats` (claims/redeemed — fără identități; folosesc RPC existent `offer_stats`).
-- Checklist UI: "valabilitate clară", "condiții legitime", "nu e înșelătorie".
-
-## E) Anti-abuz & siguranță
-
-- Suspendare partener → trigger SQL ascunde tot conținutul (status='hidden'). `nearby_points` filtrează DOAR `status='approved'`.
-- Tabel `nearby_user_reports` (raport user pe venue/offer): `reporter_id, kind, target_id, reason, created_at`. Insert din user UI; admin vede în coadă. RLS: insert authenticated, select staff.
-- Notificări: tabel `partner_notification_log` + RPC `partner_can_send_notification(owner_id)` → verifică limita zilnică din `app_settings`. Trigger pe `notifications` (când partener emite push pentru venue) blochează peste limită.
-- Toate acțiunile (review, suspend, moderate, flag, update limits) → `admin_audit_log`.
-
-## UI (`src/components/admin/PartnersSections.tsx` + integrare în `src/routes/admin.tsx`)
-
-Tab nou **"Parteneri & Locuri"** cu sub-secțiuni:
-1. **Aplicații parteneri** — tabel cu Aprobă/Respinge/Cere modificări + modal review.
-2. **Coadă moderare** — tabs Venues/Events/Offers/Toate, card cu imagine, hartă embed (MapLibre reused), text, owner, butoane Aprobă/Respinge (motiv obligatoriu)/Cere modificări + control radius notificare + toggle `is_official`.
-3. **Parteneri activi** — listă cu Suspendă/Reactivează, count resurse, link la audit.
-4. **Rapoarte useri** — coadă rapoarte pe venues/offers cu acțiune rapidă.
-5. **Limite anti-spam** — formular legat de `app_settings` (citește/scrie prin `admin_update_setting`).
-
-## AGENTS.md — regulă nouă
-
-```
-## REGULĂ — MODERARE VENUES/EVENTS/OFERTE (permanentă)
-1. Owner NU poate seta status='approved' pe venues/events/offers (RLS + verificare server).
-2. Doar staff (moderator/admin/super_admin) prin adminModerateItem.
-3. nearby_points returnează DOAR status='approved' AND owner suspended_at IS NULL.
-4. Suspend partener → cascade status='hidden' pe toate resursele (trigger DB), instant.
-5. Notificări push partener → gate prin partner_can_send_notification(owner_id) cu limită din app_settings.
-6. Toate acțiunile (approve/reject/suspend/reinstate/limits update) → admin_audit_log.
-7. Code review automat REFUZĂ orice diff care: ocolește gate-ul de status pe nearby_points, dă GRANT EXECUTE pe admin_* fns către anon/authenticated, sau permite owner-ului să modifice status la 'approved'.
+-- seed default quotas dacă lipsesc
+INSERT INTO app_settings(key,value,description)
+VALUES ('partner_quotas',
+  '{"max_venues":10,"max_events":50,"max_active_offers":20,"max_drafts_per_hour":5}'::jsonb,
+  'Limite per partener (creare resurse)')
+ON CONFLICT (key) DO NOTHING;
 ```
 
-## Confirmări finale (după implementare)
+(Triggerele `*_no_self_publish` și suspendarea cascade există deja — nu le modificăm.)
 
-(a) Owner nu publică singur — RLS + status enum + admin-only RPC.
-(b) Suspendare → cascade `status='hidden'` în aceeași tranzacție, `nearby_points` filtrează imediat.
-(c) Limite anti-spam → `partner_can_send_notification` + `app_settings`.
-(d) Moderare pre-publicare → coada blochează tot `pending` din `nearby_points`.
+## E) UI
 
-## Ordine de execuție
+- `src/components/partner/PartnerLayout.tsx` — sidebar (Dashboard/Venues/Events/Offers), badge quota, banner suspendat.
+- `src/components/partner/VenueForm.tsx` — folosește `NearbyMap` existent (MapLibre) pentru a pune pin-ul; câmpuri: name, category, description, address, city, lat/lng (pin), cover_url (upload bucket existent `venues` sau `public-uploads`), opening_hours (JSON simplu), website, phone.
+- `src/components/partner/EventForm.tsx` — title, description, event_type, venue_id (select propriu), starts_at, ends_at, max_attendees, cover_url. **Fără `is_official`**.
+- `src/components/partner/OfferForm.tsx` — venue_id, title, description, terms, valid_from/to, max_claims_per_user. Buton "Stats" → `partnerGetOfferStats` (claim_count/redeemed_count, fără identități).
+- `src/components/partner/ModerationStatusBadge.tsx` — pill cu culoare + motiv respingere.
+- Upload imagini: validare client (tip image/*, max 5MB), upload Supabase Storage într-un bucket public; ulterior moderarea staff vede imaginea.
 
-1. Migrare DB (extinderi coloane, view, triggere suspend/expire, RPCs, app_settings keys).
-2. Server fns (partners + moderation).
-3. UI Admin (PartnersSections + integrare admin.tsx).
-4. UI user: buton "Raportează" pe `venues.$id.tsx` / `offers.$id.tsx`.
-5. AGENTS.md regulă nouă.
-6. Typecheck + verificare în preview.
+## F) Confirmări la final
 
-**Nu trec mai departe până nu confirmi.**
+(a) Formularele NU expun `is_published`/`is_official`; validator-ul Zod le strip-uiește; triggerele DB blochează oricum.
+(b) `partnerUpdate*` pe item `approved` → forțează `moderation_status='pending'` + `is_published=false`. Loghează în audit `re_moderation_required`.
+(c) `partnerCreate*` verifică `partner_get_quota_usage` server-side + rate-limit pe `rate_limit_log` — throw înainte de insert.
+(d) Toate listările folosesc clientul `requireSupabaseAuth` (NU `supabaseAdmin`), deci RLS owner-only se aplică. `partnerGetOfferStats` întoarce doar `{claim_count, redeemed_count}`.
+
+## Ordine
+
+1. Migrare DB (quota helper + seed `app_settings`).
+2. `src/lib/partner.functions.ts`.
+3. Rute `_partner/*` + componente form.
+4. Link din `/business.dashboard` către `/partner/dashboard` pentru utilizatori cu rol partener.
+5. Typecheck + smoke test în preview.
+
+**Aștept confirmarea ta înainte să implementez.**
