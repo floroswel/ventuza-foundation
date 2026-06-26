@@ -20,7 +20,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 type Ctx = { supabase: any; userId: string };
 
 async function assertPartner({ supabase, userId }: Ctx) {
-  const { data: isBiz, error } = await supabase.rpc("has_role", {
+  const { data: isBiz, error } = await (supabase as any).rpc("has_role", {
     _user_id: userId,
     _role: "business",
   });
@@ -99,7 +99,7 @@ export const partnerGetQuota = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertPartner(context);
-    const { data, error } = await context.supabase.rpc("partner_get_quota_usage", {
+    const { data, error } = await (context.supabase as any).rpc("partner_get_quota_usage", {
       p_user: context.userId,
     });
     if (error) throw new Error(error.message);
@@ -121,7 +121,7 @@ export const partnerGetQuota = createServerFn({ method: "POST" })
 /* -------------------------------- QUOTA CHECK ----------------------------- */
 
 async function checkQuota(ctx: Ctx, kind: "venue" | "event" | "offer") {
-  const { data, error } = await ctx.supabase.rpc("partner_get_quota_usage", {
+  const { data, error } = await (ctx.supabase as any).rpc("partner_get_quota_usage", {
     p_user: ctx.userId,
   });
   if (error) throw new Error(error.message);
@@ -206,7 +206,7 @@ export const partnerUpdateVenue = createServerFn({ method: "POST" })
       patch.is_published = false;
       patch.rejection_reason = null;
     }
-    const { error } = await context.supabase.from("venues").update(patch).eq("id", data.id);
+    const { error } = await (context.supabase as any).from("venues").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     await audit(context.userId, reMod ? "partner_edit_venue_remoderation" : "partner_edit_venue", "venues", data.id, {});
     return { ok: true, re_moderation: reMod };
@@ -276,7 +276,7 @@ export const partnerUpdateEvent = createServerFn({ method: "POST" })
       patch.is_published = false;
       patch.rejection_reason = null;
     }
-    const { error } = await context.supabase.from("events").update(patch).eq("id", data.id);
+    const { error } = await (context.supabase as any).from("events").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     await audit(context.userId, reMod ? "partner_edit_event_remoderation" : "partner_edit_event", "events", data.id, {});
     return { ok: true, re_moderation: reMod };
@@ -345,7 +345,7 @@ export const partnerUpdateOffer = createServerFn({ method: "POST" })
       patch.is_published = false;
       patch.rejection_reason = null;
     }
-    const { error } = await context.supabase.from("offers").update(patch).eq("id", data.id);
+    const { error } = await (context.supabase as any).from("offers").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
     await audit(context.userId, reMod ? "partner_edit_offer_remoderation" : "partner_edit_offer", "offers", data.id, {});
     return { ok: true, re_moderation: reMod };
