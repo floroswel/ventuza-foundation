@@ -17,6 +17,7 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as QuestsRouteImport } from './routes/quests'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PremiumRouteImport } from './routes/premium'
+import { Route as PartnerRouteImport } from './routes/partner'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as NearbyRouteImport } from './routes/nearby'
@@ -91,6 +92,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const PremiumRoute = PremiumRouteImport.update({
   id: '/premium',
   path: '/premium',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PartnerRoute = PartnerRouteImport.update({
+  id: '/partner',
+  path: '/partner',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -286,6 +292,7 @@ export interface FileRoutesByFullPath {
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
+  '/partner': typeof PartnerRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -331,6 +338,7 @@ export interface FileRoutesByTo {
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
+  '/partner': typeof PartnerRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -377,6 +385,7 @@ export interface FileRoutesById {
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
+  '/partner': typeof PartnerRoute
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -424,6 +433,7 @@ export interface FileRouteTypes {
     | '/nearby'
     | '/notifications'
     | '/onboarding'
+    | '/partner'
     | '/premium'
     | '/profile'
     | '/quests'
@@ -469,6 +479,7 @@ export interface FileRouteTypes {
     | '/nearby'
     | '/notifications'
     | '/onboarding'
+    | '/partner'
     | '/premium'
     | '/profile'
     | '/quests'
@@ -514,6 +525,7 @@ export interface FileRouteTypes {
     | '/nearby'
     | '/notifications'
     | '/onboarding'
+    | '/partner'
     | '/premium'
     | '/profile'
     | '/quests'
@@ -560,6 +572,7 @@ export interface RootRouteChildren {
   NearbyRoute: typeof NearbyRoute
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
+  PartnerRoute: typeof PartnerRoute
   PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
   QuestsRoute: typeof QuestsRoute
@@ -642,6 +655,13 @@ declare module '@tanstack/react-router' {
       path: '/premium'
       fullPath: '/premium'
       preLoaderRoute: typeof PremiumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/partner': {
+      id: '/partner'
+      path: '/partner'
+      fullPath: '/partner'
+      preLoaderRoute: typeof PartnerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -954,6 +974,7 @@ const rootRouteChildren: RootRouteChildren = {
   NearbyRoute: NearbyRoute,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
+  PartnerRoute: PartnerRoute,
   PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
   QuestsRoute: QuestsRoute,
