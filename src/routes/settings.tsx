@@ -13,6 +13,7 @@ import { SosCard } from "@/components/SosCard";
 import { EnablePushButton } from "@/components/EnablePushButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ReferralCard } from "@/components/ReferralCard";
+import { ConsentsCard } from "@/components/settings/ConsentsCard";
 
 
 export const Route = createFileRoute("/settings")({
