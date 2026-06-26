@@ -108,3 +108,34 @@ Sau Google Play Billing direct prin `@capacitor-community/in-app-purchases`. Spu
 - **Deep links** (ex: `ventuza://match/123`): config în `AndroidManifest.xml` + handler în root route.
 
 Toate sunt opționale pentru lansarea v1 — îmi spui când vrei să le adăugăm.
+
+## Age Verification — bypass DEV / forțat ON în producție
+
+**Status curent (DEV):** `feature_flags.age_verification.enabled = false`.
+AgeGate-ul Didit este OCOLIT pe `localhost`, `id-preview--*.lovable.app` și
+`*-dev.lovable.app`. Codul Didit (server fn, webhook, triggere DB) NU a fost
+șters — doar componenta UI `AgeGate` nu afișează modalul când flag-ul e OFF
+ȘI host-ul e non-prod.
+
+**Producția**: `src/lib/age-gate-policy.ts → shouldEnforceAgeGate()` întoarce
+`true` necondiționat pe orice host care NU e dev/preview. Nu există cale să
+publici cu age gate dezactivat — chiar dacă flag-ul rămâne OFF în DB,
+producția forțează `enforce=true`.
+
+### Reactivare la publicare
+
+1. Intră în **Admin → Securitate → Feature flags** (sau direct
+   `adminUpsertFlag({ key: 'age_verification', enabled: true })`).
+2. Toggle `age_verification` pe **ON**. Banner-ul galben din admin dispare.
+3. Verifică pe preview (`id-preview--*.lovable.app`) că modalul Didit reapare
+   pentru un user `age_status = 'unverified'`.
+4. Publică. Producția funcționează identic, dar overriding-ul hard
+   garantează că nici flag-ul setat greșit pe OFF nu poate dezactiva gate-ul
+   în mediul live.
+
+### Atenție
+
+- Nu modifica `isProductionHost` să recunoască domenii noi ca fiind „dev"
+  fără un PR explicit (vezi AGENTS.md → REGULĂ — AGE GATE).
+- Dacă adaugi un custom domain de staging care trebuie tratat ca dev,
+  adaugă-l explicit în `isProductionHost` și actualizează regula.
