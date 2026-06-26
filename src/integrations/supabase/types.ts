@@ -1453,6 +1453,7 @@ export type Database = {
           banned_at: string | null
           banned_reason: string | null
           bio: string | null
+          birth_date: string | null
           birthdate: string | null
           body_type: string | null
           boost_until: string | null
@@ -1465,6 +1466,7 @@ export type Database = {
           deleted_at: string | null
           diet: string | null
           discreet_mode_enabled: boolean
+          discrete_mode: boolean
           display_name: string | null
           drinking: string | null
           drugs: string | null
@@ -1571,6 +1573,7 @@ export type Database = {
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
+          birth_date?: string | null
           birthdate?: string | null
           body_type?: string | null
           boost_until?: string | null
@@ -1583,6 +1586,7 @@ export type Database = {
           deleted_at?: string | null
           diet?: string | null
           discreet_mode_enabled?: boolean
+          discrete_mode?: boolean
           display_name?: string | null
           drinking?: string | null
           drugs?: string | null
@@ -1689,6 +1693,7 @@ export type Database = {
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
+          birth_date?: string | null
           birthdate?: string | null
           body_type?: string | null
           boost_until?: string | null
@@ -1701,6 +1706,7 @@ export type Database = {
           deleted_at?: string | null
           diet?: string | null
           discreet_mode_enabled?: boolean
+          discrete_mode?: boolean
           display_name?: string | null
           drinking?: string | null
           drugs?: string | null
