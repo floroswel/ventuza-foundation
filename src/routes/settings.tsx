@@ -358,6 +358,7 @@ function SettingsPage() {
               ["hide_online", "Ascunde statusul online / „Active …"],
               ["read_receipts_enabled", "Trimite confirmări de citire (read receipts)"],
               ["auto_share_album_on_match", "Auto-share album privat la match"],
+              ["discrete_mode", "Mod Discret (notificările nu arată preview)"],
             ] as const).map(([key, label]) => (
               <label key={key} className="flex items-center justify-between py-2.5 text-sm">
                 <span>{label}</span>
