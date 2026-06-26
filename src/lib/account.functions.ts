@@ -10,18 +10,18 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Audit trail: înregistrăm cererea înainte de a o procesa (immediate-purge).
+    // GDPR Art. 17 — anulăm explicit abonamentul RevenueCat ÎNAINTE de a
+    // șterge contul, ca să nu mai fie taxat utilizatorul. Eșecul nu blochează
+    // ștergerea (loggăm în deletion_requests.reason pentru audit).
+    let rcNote = "";
     try {
-      await supabaseAdmin.from("deletion_requests").insert({
-        user_id: context.userId,
-        requested_at: new Date().toISOString(),
-        scheduled_for: new Date().toISOString(),
-        reason: "user_self_service",
-        status: "processed",
-        processed_at: new Date().toISOString(),
-      });
-    } catch {
-      // Continuăm chiar dacă log-ul eșuează — dreptul la ștergere prevalează.
+      const { cancelRevenueCatForUser } = await import("./revenuecat.server");
+      const rc = await cancelRevenueCatForUser(context.userId);
+      rcNote = rc.ok
+        ? `revenuecat=ok(${rc.status ?? "200"})`
+        : `revenuecat=fail:${rc.reason ?? "unknown"}`;
+    } catch (e) {
+      rcNote = `revenuecat=throw:${e instanceof Error ? e.message : "?"}`;
     }
 
     // Best-effort: ștergem fișierele din storage (cascade nu acoperă storage).
@@ -36,6 +36,20 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       }
     } catch {
       // ignore cleanup errors
+    }
+
+    // Audit trail (după RC, ca să prindem și rezultatul anulării).
+    try {
+      await supabaseAdmin.from("deletion_requests").insert({
+        user_id: context.userId,
+        requested_at: new Date().toISOString(),
+        scheduled_for: new Date().toISOString(),
+        reason: `user_self_service; ${rcNote}`,
+        status: "processed",
+        processed_at: new Date().toISOString(),
+      });
+    } catch {
+      // Continuăm chiar dacă log-ul eșuează — dreptul la ștergere prevalează.
     }
 
     // Cascade către profiles, swipes, matches, messages, subscriptions etc.
