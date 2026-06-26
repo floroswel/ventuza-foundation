@@ -101,9 +101,8 @@ function PartnerPortal() {
       const msg = (err as Error).message ?? "Eroare la încărcare";
       if (msg.startsWith("suspended:")) setSuspendedMsg(msg.replace(/^suspended:\s*/, ""));
       else toast.error(msg);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
   useEffect(() => {
