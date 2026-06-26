@@ -1,6 +1,21 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { aiComplete } from "./ai.server";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
+
+/**
+ * Toate funcțiile AI sunt gated de consimțământul `ai_features` în consent_log.
+ * Vezi AGENTS.md "REGULĂ — CONSIMȚĂMINTE (permanentă)" și src/lib/consent-registry.ts.
+ */
+async function requireAiConsent(supabase: SupabaseClient<Database>, userId: string) {
+  const { data, error } = await supabase.rpc("has_active_consent", { _user_id: userId, _kind: "ai_features" });
+  if (error) throw new Error("Nu am putut verifica consimțământul AI.");
+  if (data !== true) {
+    throw new Error("ai_consent_required: activează „Funcții AI” din Setări → Confidențialitate pentru a folosi această funcție.");
+  }
+}
 
 // ---------- Bio writer ----------
 const BioInput = z.object({
@@ -13,8 +28,10 @@ const BioInput = z.object({
 });
 
 export const generateBio = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => BioInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireAiConsent(context.supabase, context.userId);
     const sys =
       "Ești un copywriter pentru o app gay de dating (Ventuza). Scrii bio-uri scurte, autentice, fără clișee, fără emoji excesive, fără hashtag-uri. Max 280 caractere. Răspunzi DOAR cu bio-ul, fără ghilimele.";
     const facts = [
@@ -46,8 +63,10 @@ const OpenerInput = z.object({
 });
 
 export const generateOpener = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => OpenerInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireAiConsent(context.supabase, context.userId);
     const sys =
       'Ești Wingman AI într-o app gay de dating. Generezi 3 mesaje de deschidere SCURTE (max 140 caractere fiecare), personalizate pe bio-ul/interesele celuilalt. Nu folosi "Salut" generic. Fără emoji excesiv. Răspunzi DOAR cu cele 3 opțiuni numerotate 1., 2., 3., fără explicații.';
     const facts = [
@@ -79,8 +98,10 @@ const TranslateInput = z.object({
 });
 
 export const translateText = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => TranslateInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireAiConsent(context.supabase, context.userId);
     const text = await aiComplete({
       messages: [
         { role: "system", content: `Traduci mesaje de chat în ${data.targetLang}. Răspunzi DOAR cu traducerea, păstrând tonul.` },
@@ -98,8 +119,10 @@ const PhotoCoachInput = z.object({
 });
 
 export const photoCoach = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => PhotoCoachInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireAiConsent(context.supabase, context.userId);
     const sys =
       "Ești un photo coach pentru o app gay de dating. Analizezi pozele și dai feedback concret, prietenos, în română. Pentru fiecare poză: 1 punct forte + 1 sugestie. La final: o recomandare globală (ce poză ar fi cea principală, ce să adauge/scoată). Ton: încurajator, direct, fără clișee. Max 600 caractere total. Fără markdown.";
     const content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
@@ -130,8 +153,10 @@ const ProfileSummary = z.object({
 const MatchInput = z.object({ me: ProfileSummary, them: ProfileSummary });
 
 export const matchScore = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => MatchInput.parse(d))
-  .handler(async ({ data }) => {
+  .handler(async ({ data, context }) => {
+    await requireAiConsent(context.supabase, context.userId);
     const sys =
       'Evaluezi compatibilitatea între doi useri pe app gay de dating. Răspunzi DOAR JSON valid: {"score": <0-100>, "reason": "<o frază scurtă în română, max 120 caractere, care explică DE CE>"}. Bazează-te pe interese comune, ce caută fiecare, triburi, vibe-ul bio-ului. Fii realist — nu da 90+ fără motive solide.';
     const fmt = (p: z.infer<typeof ProfileSummary>) =>

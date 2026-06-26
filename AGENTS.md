@@ -129,3 +129,50 @@ Orice diff care:
 trebuie REFUZAT.
 
 Versiunea documentului se incrementează la fiecare modificare materială.
+
+## REGULĂ — CONSIMȚĂMINTE (permanentă)
+
+Orice prelucrare care necesită consimțământul utilizatorului (Art. 9 GDPR — date
+de sănătate, biometrice; AI / decizii automate Art. 22; transferuri biometrice;
+push, marketing) trece printr-un singur registru de consimțăminte:
+
+- **SQL — sursa autoritativă:** `public.consent_kinds()` (returnează kind,
+  current_version, required, art9, description).
+- **TS — mirror pentru UI și gate-uri server:** `src/lib/consent-registry.ts`
+  (`CONSENT_REGISTRY`).
+- **Verificare:** RPC `public.has_active_consent(user_id, kind)`.
+- **Scriere (acordare + retragere):** RPC `public.record_consent(kind, version,
+  accepted)` — refuză orice kind nedeclarat în `consent_kinds()`.
+
+Reguli obligatorii:
+
+1. Consimțământul se înregistrează în `consent_log` **ÎNAINTE** de prelucrare
+   (înainte de apelul către Didit, AI Gateway, înregistrare push etc.).
+2. Toate consimțămintele opționale sunt **opt-in** explicit (nu opt-out, nu
+   pre-bifate).
+3. **Retragerea oprește prelucrarea și șterge datele unde se aplică:**
+   - `health_data` → triggerul `cascade_health_consent_withdrawal` setează
+     coloanele HIV pe NULL.
+   - `age_verification` → blochează `startAgeVerification` (nu re-trimite selfie
+     la Didit).
+   - `ai_features` → blochează toate server-fn-urile din `src/lib/ai.functions.ts`.
+   - `push_notifications` → UI-ul dezabonează `pushManager.subscription`.
+4. UI-ul afișează clar **cine procesează** (procesatorul din
+   `src/routes/legal.subprocessors.tsx`) și **ce categorii** (Art. 9 marcat
+   vizibil).
+5. **Niciun kind nou hardcodat în afara registrului.** Adăugarea unui nou kind
+   = PR care modifică *în aceeași migrare/commit*:
+   - `public.consent_kinds()` (SQL),
+   - `CONSENT_REGISTRY` din `src/lib/consent-registry.ts` (TS),
+   - registrul Art. 30 (`docs/gdpr-art-30-register.md` + pagina UI),
+   - documentul de subprocesatori dacă apare un procesator nou.
+
+Orice PR care:
+
+- introduce un `consent_log.kind` nou fără actualizarea ambelor registre,
+- apelează un serviciu extern care procesează date opt-in fără gate
+  `has_active_consent`,
+- pre-bifează un consimțământ opțional,
+- nu oprește/șterge la retragere,
+
+trebuie REFUZAT.

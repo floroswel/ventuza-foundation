@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { BadgeCheck, Crown, Eye, EyeOff, Pencil, Settings as SettingsIcon, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
+import { useConsent } from "@/lib/use-consent";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -702,8 +703,12 @@ function EditChips({ label, options, value, onChange }: { label: string; options
 
 function AiBioButton({ form, setForm }: { form: Profile; setForm: (p: Profile) => void }) {
   const gen = useServerFn(generateBio);
+  const aiConsent = useConsent("ai_features");
   const [loading, setLoading] = useState(false);
   async function run() {
+    // Opt-in obligatoriu pentru funcții AI — vezi AGENTS.md "REGULĂ — CONSIMȚĂMINTE".
+    const ok = await aiConsent.ensure();
+    if (!ok) return;
     setLoading(true);
     try {
       const a = form.birthdate ? age(form.birthdate) ?? undefined : undefined;
@@ -728,20 +733,26 @@ function AiBioButton({ form, setForm }: { form: Profile; setForm: (p: Profile) =
     }
   }
   return (
-    <button
-      type="button"
-      onClick={run}
-      disabled={loading}
-      className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/20 disabled:opacity-60"
-    >
-      {loading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
-      AI bio
-    </button>
+    <div className="flex flex-col items-end gap-1">
+      <button
+        type="button"
+        onClick={run}
+        disabled={loading}
+        className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/20 disabled:opacity-60"
+      >
+        {loading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+        AI bio
+      </button>
+      <span className="text-[10px] text-muted-foreground">
+        Textul e procesat de un serviciu AI extern (Lovable AI Gateway).
+      </span>
+    </div>
   );
 }
 
 function PhotoCoachButton({ photos }: { photos: string[] }) {
   const coach = useServerFn(photoCoach);
+  const aiConsent = useConsent("ai_features");
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   async function run() {
@@ -749,6 +760,9 @@ function PhotoCoachButton({ photos }: { photos: string[] }) {
       toast.message("Adaugă cel puțin o poză.");
       return;
     }
+    // Opt-in obligatoriu pentru funcții AI — vezi AGENTS.md "REGULĂ — CONSIMȚĂMINTE".
+    const ok = await aiConsent.ensure();
+    if (!ok) return;
     setLoading(true);
     setFeedback(null);
     try {
@@ -779,6 +793,9 @@ function PhotoCoachButton({ photos }: { photos: string[] }) {
         {loading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
         AI photo coach
       </button>
+      <p className="mt-1 text-[10px] text-muted-foreground">
+        Pozele sunt analizate de un serviciu AI extern (Lovable AI Gateway).
+      </p>
       {feedback && (
         <div className="mt-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
           {feedback}

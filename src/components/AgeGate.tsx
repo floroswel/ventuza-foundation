@@ -20,6 +20,9 @@ export function AgeGate() {
   const [status, setStatus] = useState<Status>(null);
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  // GDPR Art. 9 — selfie-ul biometric e date sensibile; consimțământul e opt-in,
+  // distinct de terms/privacy. Vezi src/lib/consent-registry.ts (kind=age_verification).
+  const [consent, setConsent] = useState(false);
   const startFn = useServerFn(startAgeVerification);
 
   const isGated = GATED_PREFIXES.some((p) => location.pathname.startsWith(p));
@@ -61,8 +64,19 @@ export function AgeGate() {
   if (status === "verified") return null;
 
   const handleStart = async () => {
+    if (!consent) {
+      toast.error("Trebuie să accepți procesarea imaginii biometrice de către Didit.");
+      return;
+    }
     setSubmitting(true);
     try {
+      // Înregistrează consimțământul ÎNAINTE de a porni Didit. Vezi AGENTS.md.
+      const { error: consentErr } = await supabase.rpc("record_consent", {
+        _kind: "age_verification",
+        _accepted: true,
+      });
+      if (consentErr) throw consentErr;
+
       const callbackUrl = `${window.location.origin}${location.pathname}`;
       const result = await startFn({ data: { callbackUrl } });
       if (!result.ok) {
@@ -101,9 +115,23 @@ export function AgeGate() {
           <p className="text-sm text-destructive">{t("age.failed")}</p>
         )}
 
+        <label className="flex items-start gap-2 text-left text-xs text-muted-foreground leading-relaxed cursor-pointer">
+          <input
+            type="checkbox"
+            checked={consent}
+            onChange={(e) => setConsent(e.target.checked)}
+            className="mt-0.5 h-4 w-4 rounded border-border"
+          />
+          <span>
+            Sunt de acord ca un selfie biometric să fie trimis către{" "}
+            <a href="https://didit.me/privacy-policy" target="_blank" rel="noreferrer" className="underline">Didit</a>
+            {" "}pentru estimarea vârstei. Imaginea este prelucrată conform politicii Didit (păstrată maxim 30 zile) și nu este folosită în alte scopuri. Pot retrage acest consimțământ din Setări → Confidențialitate.
+          </span>
+        </label>
+
         <button
           onClick={handleStart}
-          disabled={submitting}
+          disabled={submitting || !consent}
           className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
         >
           {submitting ? (
