@@ -331,6 +331,7 @@ function UsersPanel({ meId }: { meId: string }) {
           <li className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Niciun rezultat.</li>
         )}
       </ul>
+      {detailId && <UserDetailDrawer userId={detailId} onClose={() => { setDetailId(null); load(q); }} />}
     </div>
   );
 }
