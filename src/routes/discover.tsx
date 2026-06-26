@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
-import { StoriesStrip } from "@/components/StoriesStrip";
+
 import { GoldenHourBadge } from "@/components/GoldenHourBadge";
 import { QuickFiltersStrip } from "@/components/QuickFiltersStrip";
 import { NotificationBell } from "@/components/NotificationBell";
@@ -286,7 +286,7 @@ function DiscoverPage() {
       </header>
 
       <DailyRewardCard />
-      <StoriesStrip />
+      
       <div className="px-3 pt-2"><SponsoredBanner placement="discover_card" /></div>
       {loading ? (
         <CenterMessage icon={<Loader2 className="size-6 animate-spin text-primary" />} title="Finding people…" />
