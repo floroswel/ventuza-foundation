@@ -1835,6 +1835,7 @@ export type Database = {
           prompts: Json | null
           pronouns: string[] | null
           pronouns_custom: string | null
+          proximity_notifications_enabled: boolean
           read_receipts_enabled: boolean
           relationship_status: string | null
           religion: string | null
@@ -1957,6 +1958,7 @@ export type Database = {
           prompts?: Json | null
           pronouns?: string[] | null
           pronouns_custom?: string | null
+          proximity_notifications_enabled?: boolean
           read_receipts_enabled?: boolean
           relationship_status?: string | null
           religion?: string | null
@@ -2079,6 +2081,7 @@ export type Database = {
           prompts?: Json | null
           pronouns?: string[] | null
           pronouns_custom?: string | null
+          proximity_notifications_enabled?: boolean
           read_receipts_enabled?: boolean
           relationship_status?: string | null
           religion?: string | null
@@ -2123,6 +2126,33 @@ export type Database = {
           workout?: string | null
           xp?: number
           zodiac?: string | null
+        }
+        Relationships: []
+      }
+      proximity_notification_log: {
+        Row: {
+          id: string
+          layer: string
+          point_id: string
+          point_kind: string
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          layer: string
+          point_id: string
+          point_kind: string
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          layer?: string
+          point_id?: string
+          point_kind?: string
+          sent_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -4110,6 +4140,10 @@ export type Database = {
         Returns: Json
       }
       touch_last_seen: { Args: never; Returns: undefined }
+      try_record_proximity_hit: {
+        Args: { p_id: string; p_kind: string; p_layer?: string }
+        Returns: Json
+      }
       unlockrows: { Args: { "": string }; Returns: number }
       unsend_message: { Args: { _message_id: string }; Returns: undefined }
       update_my_location: {

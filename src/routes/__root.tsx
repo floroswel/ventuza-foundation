@@ -19,6 +19,7 @@ import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
 import { SessionGuards } from "@/components/SessionGuards";
 import { AgeGate } from "@/components/AgeGate";
+import { useProximityForegroundWatcher } from "@/lib/proximity-watcher";
 // Init i18n eagerly — useTranslation() în orice rută/child are nevoie de
 // instanță înainte de prima randare (altfel NO_I18NEXT_INSTANCE).
 import "@/lib/i18n";
@@ -133,6 +134,11 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function ProximityWatcherMount() {
+  useProximityForegroundWatcher();
+  return null;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -180,6 +186,7 @@ function RootComponent() {
       <AuthProvider>
         <NotificationsProvider>
           <SessionGuards />
+          <ProximityWatcherMount />
           <Outlet />
           <AgeGate />
           <CookieBanner />

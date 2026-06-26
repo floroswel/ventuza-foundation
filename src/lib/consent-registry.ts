@@ -18,6 +18,7 @@ export type ConsentKind =
   | "age_verification"
   | "ai_features"
   | "push_notifications"
+  | "background_location"
   | "marketing";
 
 export interface ConsentMeta {
@@ -102,6 +103,16 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
       "Trimitem notificări push prin browser/OS (FCM/APNs) când primești mesaje, match-uri sau evenimente relevante. Activarea și dezactivarea sunt înregistrate.",
     gates: ["push_subscriptions"],
     processor: "P4 — Push services (FCM/APNs)",
+  },
+  background_location: {
+    kind: "background_location",
+    currentVersion: "2026-06-26",
+    required: false,
+    art9: false,
+    label: "Locație în fundal (geofencing)",
+    description:
+      "Pentru a te anunța când treci pe lângă un eveniment sau local aprobat — chiar și cu aplicația închisă — avem nevoie de permisiunea pentru locație în fundal. Calculul se face pe dispozitiv; coordonatele tale exacte NU pleacă la server și NU stocăm traseul tău. Poți retrage oricând din Setări.",
+    gates: ["proximity_background_geofence"],
   },
   marketing: {
     kind: "marketing",

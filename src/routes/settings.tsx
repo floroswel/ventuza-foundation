@@ -14,6 +14,7 @@ import { EnablePushButton } from "@/components/EnablePushButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ReferralCard } from "@/components/ReferralCard";
 import { ConsentsCard } from "@/components/settings/ConsentsCard";
+import { ProximityNotificationsCard } from "@/components/settings/ProximityNotificationsCard";
 
 
 export const Route = createFileRoute("/settings")({
@@ -372,6 +373,9 @@ function SettingsPage() {
 
         {/* GDPR consents (single source of truth = src/lib/consent-registry.ts) */}
         <ConsentsCard />
+
+        {/* Proximity notifications (Strat 1 + Strat 2 opt-in) */}
+        <ProximityNotificationsCard />
 
         {/* Unique features: pronouns, friends-only, language, PIN, discreet mode */}
         <UniquesCard />

@@ -369,6 +369,23 @@ Identificate la generarea acestui registru, din analiza schemei reale:
 
 ---
 
+## A19. Notificări de proximitate (foreground + background opt-in)
+
+| Câmp | Valoare |
+|---|---|
+| **Activitate** | Avertizare locală când userul se află în raza (≤2 km default) unui venue/event aprobat și publicat. Două straturi: **Strat 1** foreground (app deschis, fără permisiune de fundal); **Strat 2** background geofencing (Capacitor, opt-in explicit). |
+| **Scop** | Executare contract: notificări locale relevante pentru descoperire venues/events. |
+| **Persoane vizate** | Utilizatori autentificați care au activat notificările de proximitate. |
+| **Categorii de date** | (a) Coordonate user — **rămân pe device**, NU pleacă la server; folosite doar pentru bucket + Haversine local. (b) `proximity_notification_log`: `user_id`, `point_id`, `point_kind`, `layer`, `sent_at` (ledger anti-spam — NU traseu). (c) Pentru Strat 2: permisiune OS background location (consent registrat ca `background_location`). |
+| **Categorii Art. 9** | **Nu.** Coordonatele sunt prelucrate doar local și nu sunt stocate ca istoric. |
+| **Temei Art. 6** | Strat 1: 6(1)(b) executare contract. Strat 2 (background): 6(1)(a) consimțământ explicit (`background_location`). |
+| **Destinatari** | Niciun procesator nou. Refolosește P4 (push services) pentru notificări native când e cazul; pe web rămâne local (Notification API). |
+| **Transferuri extra-UE** | Niciunul nou. |
+| **Termen retenție** | `proximity_notification_log`: 30 zile (suficient pentru cooldown 24h + audit anti-abuz), apoi purge automat. |
+| **Măsuri tehnice** | (1) **Coordonatele user NU pleacă la server** — calcul Haversine pe device peste lista bucket. (2) Gate server `try_record_proximity_hit`: cooldown 24h per (user, punct), plafon zilnic 8 notificări, ore liniștite 22:00–08:00 (configurabile în `app_settings.proximity_notifications`). (3) Doar venues/events cu `moderation_status='approved' AND is_published=true AND partner_suspended_at IS NULL` declanșează — verificat în SQL. (4) Toggle granular `profiles.proximity_notifications_enabled` (independent de push). (5) Strat 2 cere `has_active_consent(user, 'background_location')`; retragerea consimțământului blochează imediat server-gate. (6) **Niciun istoric de traseu** stocat — log-ul conține doar evenimentul "am notificat", nu poziții. (7) Refresh la mișcare semnificativă ≥250 m (`watchSignificantMovement`). |
+
+---
+
 # Documente conexe
 
 - `/legal/privacy`, `/legal/terms`, `/legal/cookies`, `/legal/subprocessors`
