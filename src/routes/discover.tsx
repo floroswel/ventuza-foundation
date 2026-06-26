@@ -215,15 +215,12 @@ function DiscoverPage() {
   return (
     <main className="relative min-h-dvh bg-background pb-28">
       <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 px-4 pb-2 pt-4 backdrop-blur">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex min-w-0 items-center gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-2">
             <QuickProfileDrawer />
-            <div className="min-w-0">
-              <h1 className="wordmark truncate text-2xl font-medium leading-none">Nearby</h1>
-              <GoldenHourBadge className="mt-1.5" />
-            </div>
+            <h1 className="wordmark truncate text-2xl font-medium leading-none">Nearby</h1>
           </div>
-          <div className="flex items-center gap-1">
+          <div className="flex flex-shrink-0 items-center gap-1">
             <div className="mr-1 flex items-center rounded-full border border-border bg-surface p-0.5">
               <button
                 onClick={() => pickView("grid")}
@@ -248,7 +245,7 @@ function DiscoverPage() {
               aria-label={incognito ? "Dezactivează incognito" : "Activează incognito"}
               title={incognito ? "Ești invizibil — apasă ca să revii la vizibil" : "Mod incognito — ascunde-ți profilul din Discover"}
               className={cn(
-                "flex size-10 items-center justify-center rounded-full border transition",
+                "flex size-9 items-center justify-center rounded-full border transition",
                 incognito
                   ? "border-amber-500/60 bg-amber-500/15 text-amber-400 hover:bg-amber-500/25"
                   : "border-border bg-surface text-muted-foreground hover:text-foreground",
@@ -259,7 +256,7 @@ function DiscoverPage() {
             <Link
               to="/cruise"
               aria-label="Cruise · Right Now"
-              className="flex size-10 items-center justify-center rounded-full border border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
+              className="flex size-9 items-center justify-center rounded-full border border-rose-500/40 bg-rose-500/10 text-rose-400 hover:bg-rose-500/20"
             >
               <Radar className="size-4" />
             </Link>
@@ -267,17 +264,17 @@ function DiscoverPage() {
             <button
               onClick={() => setFiltersOpen(true)}
               aria-label="Filters"
-              className="flex size-10 items-center justify-center rounded-full border border-border bg-surface text-primary hover:bg-primary/10"
+              className="flex size-9 items-center justify-center rounded-full border border-border bg-surface text-primary hover:bg-primary/10"
             >
               <SlidersHorizontal className="size-4" />
             </button>
           </div>
         </div>
 
-        <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+        <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
           <TabBtn active={tab === "nearby"} onClick={() => setTab("nearby")}>Nearby</TabBtn>
-          
           <TabBtn active={tab === "fresh"} onClick={() => setTab("fresh")}>Fresh</TabBtn>
+          <GoldenHourBadge className="ml-1 flex-shrink-0" />
         </div>
 
 
