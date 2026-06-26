@@ -2596,6 +2596,16 @@ export type Database = {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: number
       }
+      consent_kinds: {
+        Args: never
+        Returns: {
+          art9: boolean
+          current_version: string
+          description: string
+          kind: string
+          required: boolean
+        }[]
+      }
       current_week_start: { Args: never; Returns: string }
       detect_admin_anomalies: { Args: never; Returns: number }
       disablelongtransactions: { Args: never; Returns: string }
@@ -2878,6 +2888,10 @@ export type Database = {
         }[]
       }
       gettransactionid: { Args: never; Returns: unknown }
+      has_active_consent: {
+        Args: { _kind: string; _user_id: string }
+        Returns: boolean
+      }
       has_active_health_consent: {
         Args: { _user_id: string }
         Returns: boolean
@@ -2991,6 +3005,10 @@ export type Database = {
           p_status_raw?: string
           p_user_id: string
         }
+        Returns: undefined
+      }
+      record_consent: {
+        Args: { _accepted?: boolean; _kind: string; _version?: string }
         Returns: undefined
       }
       record_photo_hash: {
