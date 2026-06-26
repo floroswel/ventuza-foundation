@@ -10,7 +10,21 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    // Best-effort: remove storage files first
+    // Audit trail: înregistrăm cererea înainte de a o procesa (immediate-purge).
+    try {
+      await supabaseAdmin.from("deletion_requests").insert({
+        user_id: context.userId,
+        requested_at: new Date().toISOString(),
+        scheduled_for: new Date().toISOString(),
+        reason: "user_self_service",
+        status: "processed",
+        processed_at: new Date().toISOString(),
+      });
+    } catch {
+      // Continuăm chiar dacă log-ul eșuează — dreptul la ștergere prevalează.
+    }
+
+    // Best-effort: ștergem fișierele din storage (cascade nu acoperă storage).
     try {
       const { data: files } = await supabaseAdmin.storage
         .from("profile-photos")
@@ -24,6 +38,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
       // ignore cleanup errors
     }
 
+    // Cascade către profiles, swipes, matches, messages, subscriptions etc.
     const { error } = await supabaseAdmin.auth.admin.deleteUser(context.userId);
     if (error) throw new Error(error.message);
     return { ok: true };

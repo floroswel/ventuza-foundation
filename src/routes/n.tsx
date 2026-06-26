@@ -184,6 +184,20 @@ function Onboarding() {
     }).eq("id", user.id);
     setSaving(false);
     if (error) return toast.error(error.message);
+
+    // GDPR: înregistrare consimțământ explicit, separat de profile.
+    const ua = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 400) : null;
+    const consents: Array<{ kind: string; version: string; accepted: boolean }> = [
+      { kind: "terms", version: "2026-06-22", accepted: true },
+      { kind: "privacy", version: "2026-06-22", accepted: true },
+    ];
+    if (data.hiv_status && data.health_consent) {
+      consents.push({ kind: "health_data", version: "2026-06-22", accepted: true });
+    }
+    await supabase.from("consent_log").insert(
+      consents.map((c) => ({ user_id: user.id, ...c, user_agent: ua })),
+    );
+
     toast.success("Your profile is ready.");
     navigate({ to: "/profile" });
   }
