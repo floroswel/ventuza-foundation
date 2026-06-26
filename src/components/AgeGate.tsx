@@ -23,7 +23,18 @@ export function AgeGate() {
   const [submitting, setSubmitting] = useState(false);
   // Feature-flag gate (DEV-only bypass). PRODUCȚIA forțează enforcement = true.
   // Vezi src/lib/age-gate-policy.ts + AGENTS.md → REGULĂ AGE GATE.
-  const [enforce, setEnforce] = useState<boolean>(true);
+  // Default initial = isProductionHost() ca să evităm flash de modal în preview
+  // înainte ca citirea flag-ului async să termine.
+  const [enforce, setEnforce] = useState<boolean>(() => {
+    if (typeof window === "undefined") return true;
+    const h = window.location.hostname.toLowerCase();
+    if (h === "localhost" || h === "127.0.0.1" || h.endsWith(".local")) return false;
+    if (h.startsWith("id-preview--")) return false;
+    if (h.endsWith("-dev.lovable.app") || h.endsWith("--dev.lovable.app")) return false;
+    if (h.endsWith(".lovableproject.com")) return false;
+    if (h.endsWith(".lovable.dev")) return false;
+    return true;
+  });
   // GDPR Art. 9 — selfie-ul biometric e date sensibile; consimțământul e opt-in,
   // distinct de terms/privacy. Vezi src/lib/consent-registry.ts (kind=age_verification).
   const [consent, setConsent] = useState(false);
