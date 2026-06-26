@@ -21,6 +21,9 @@ export function AgeGate() {
   const [status, setStatus] = useState<Status>(null);
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  // Feature-flag gate (DEV-only bypass). PRODUCȚIA forțează enforcement = true.
+  // Vezi src/lib/age-gate-policy.ts + AGENTS.md → REGULĂ AGE GATE.
+  const [enforce, setEnforce] = useState<boolean>(true);
   // GDPR Art. 9 — selfie-ul biometric e date sensibile; consimțământul e opt-in,
   // distinct de terms/privacy. Vezi src/lib/consent-registry.ts (kind=age_verification).
   const [consent, setConsent] = useState(false);
