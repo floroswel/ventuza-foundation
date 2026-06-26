@@ -3449,6 +3449,7 @@ export type Database = {
         Args: { p_partner_id: string }
         Returns: boolean
       }
+      partner_get_quota_usage: { Args: { p_user: string }; Returns: Json }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
         | { Args: { use_typmod?: boolean }; Returns: string }
