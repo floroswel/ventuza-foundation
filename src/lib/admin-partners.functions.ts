@@ -29,10 +29,10 @@ async function assertAdmin(supabase: any, userId: string) {
 
 export const adminListBusinessApplications = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(z.object({
+  .inputValidator((d: unknown) => z.object({
     status: z.enum(["pending", "reviewing", "approved", "rejected", "all"]).default("pending"),
     limit: z.number().int().min(1).max(200).default(50),
-  }))
+  }).parse(d))
   .handler(async ({ context, data }) => {
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -48,11 +48,11 @@ export const adminListBusinessApplications = createServerFn({ method: "POST" })
 
 export const adminDecideBusinessApplication = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(z.object({
+  .inputValidator((d: unknown) => z.object({
     id: z.string().uuid(),
     decision: z.enum(["approved", "rejected"]),
     notes: z.string().max(1000).optional(),
-  }))
+  }).parse(d))
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -81,11 +81,11 @@ export const adminDecideBusinessApplication = createServerFn({ method: "POST" })
 
 export const adminListPartners = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(z.object({
+  .inputValidator((d: unknown) => z.object({
     filter: z.enum(["active", "suspended", "all"]).default("all"),
     search: z.string().max(120).optional(),
     limit: z.number().int().min(1).max(200).default(100),
-  }))
+  }).parse(d))
   .handler(async ({ context, data }) => {
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -131,7 +131,7 @@ export const adminListPartners = createServerFn({ method: "POST" })
 
 export const adminSuspendPartner = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(z.object({ user_id: z.string().uuid(), reason: z.string().min(3).max(500) }))
+  .inputValidator((d: unknown) => z.object({ user_id: z.string().uuid(), reason: z.string().min(3).max(500) }).parse(d))
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -144,7 +144,7 @@ export const adminSuspendPartner = createServerFn({ method: "POST" })
 
 export const adminReinstatePartner = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(z.object({ user_id: z.string().uuid() }))
+  .inputValidator((d: unknown) => z.object({ user_id: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }) => {
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -159,11 +159,11 @@ export const adminReinstatePartner = createServerFn({ method: "POST" })
 
 export const adminListModerationQueue = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(z.object({
+  .inputValidator((d: unknown) => z.object({
     kind: z.enum(["venue", "event", "offer", "all"]).default("all"),
     status: z.enum(["pending", "changes_requested", "rejected", "approved", "all"]).default("pending"),
     limit: z.number().int().min(1).max(200).default(100),
-  }))
+  }).parse(d))
   .handler(async ({ context, data }) => {
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -180,7 +180,7 @@ export const adminListModerationQueue = createServerFn({ method: "POST" })
 
 export const adminGetModerationItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(z.object({ kind: z.enum(["venue", "event", "offer"]), id: z.string().uuid() }))
+  .inputValidator((d: unknown) => z.object({ kind: z.enum(["venue", "event", "offer"]), id: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }) => {
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -192,14 +192,14 @@ export const adminGetModerationItem = createServerFn({ method: "POST" })
 
 export const adminModerateItem = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(z.object({
+  .inputValidator((d: unknown) => z.object({
     kind: z.enum(["venue", "event", "offer"]),
     id: z.string().uuid(),
     decision: z.enum(["approved", "rejected", "changes_requested"]),
     reason: z.string().max(1000).optional(),
     notification_radius_m: z.number().int().min(100).max(20000).optional(),
     is_official: z.boolean().optional(),
-  }))
+  }).parse(d))
   .handler(async ({ context, data }) => {
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -219,7 +219,7 @@ export const adminModerateItem = createServerFn({ method: "POST" })
 
 export const adminOfferStats = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .validator(z.object({ offer_id: z.string().uuid() }))
+  .inputValidator((d: unknown) => z.object({ offer_id: z.string().uuid() }).parse(d))
   .handler(async ({ context, data }) => {
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
