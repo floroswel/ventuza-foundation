@@ -30,7 +30,7 @@ async function reqMeta() {
 
 const RevealInput = z.object({
   targetUserId: z.string().uuid(),
-  kind: z.enum(["health", "location", "selfie", "messages"]),
+  kind: z.enum(["health", "orientation", "location", "selfie", "messages"]),
   justification: z.string().min(10).max(500),
   conversationId: z.string().uuid().optional(),
   limit: z.number().int().min(1).max(100).optional(),
