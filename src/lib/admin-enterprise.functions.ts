@@ -250,8 +250,12 @@ export const adminGetCsamReports = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
     const sa = _sa as any;
+    // REGULĂ CSAM — NEVER RENDER. Conținutul suspectat NU părăsește
+    // server-ul ca URL/blob: proiectăm DOAR hash + status + meta. UI
+    // afișează doar hash (referință), nu imagine.
     const { data, error } = await sa.from("csam_reports")
-      .select("*").order("reported_at", { ascending: false }).limit(200);
+      .select("id, user_id, hash, match_source, ncmec_report_id, reported_at, status, notes")
+      .order("reported_at", { ascending: false }).limit(200);
     if (error) throw new Error(error.message);
     return data ?? [];
   });
