@@ -104,7 +104,7 @@ function PartnerPortal() {
       navigate({ to: "/auth", search: { mode: "login" } });
       return;
     }
-    if (!roles.includes("business") && !roles.includes("admin") && !roles.includes("super_admin")) {
+    if (!roles.includes("business") && !roles.includes("admin")) {
       return;
     }
     refresh();
