@@ -16,9 +16,12 @@ import {
   adminDeleteUser, ADMIN_TABLES,
 } from "@/lib/admin.functions";
 import {
-  AuditLogPanel, AlertsPanel, DsaPanel, CsamPanel, GdprPanel, BreachPanel,
+  AuditLogPanel, AlertsPanel, DsaPanel, CsamPanel, BreachPanel,
   PoliciesPanel, SecurityPanel,
 } from "@/components/admin/EnterpriseSections";
+import {
+  UserDetailDrawer, GdprOpsPanel, BreakGlassLogPanel,
+} from "@/components/admin/Wave1Sections";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
 import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
