@@ -124,6 +124,17 @@ const ROWS: Row[] = [
     dpa: "https://www.anaf.ro (operator independent — nu procesator)",
     codeRef: "src/lib/anaf.functions.ts",
   },
+  {
+    name: "OpenStreetMap Foundation",
+    purpose: "Tile-uri raster pentru harta din feature-ul „Aproape de tine” (descoperire localuri/evenimente/oferte).",
+    data: "IP-ul dispozitivului și bounding box-ul tile-urilor cerute. Fără PII, fără cont, fără date Art. 9. NU primește coordonatele exacte ale userului — harta cere doar tile-uri pe zona vizualizată.",
+    sensitive: false,
+    region: "UK (UE adequacy)",
+    extraEU: true,
+    transfer: "UK adequacy decision (EC 2021/1772).",
+    dpa: "https://wiki.osmfoundation.org/wiki/Privacy_Policy",
+    codeRef: "src/components/nearby/NearbyMap.tsx (MapLibre GL + tile.openstreetmap.org)",
+  },
 ];
 
 function SubsPage() {
