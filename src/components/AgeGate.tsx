@@ -6,6 +6,7 @@ import { ShieldCheck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { startAgeVerification } from "@/lib/age-verification.functions";
+import { shouldEnforceAgeGate } from "@/lib/age-gate-policy";
 import { toast } from "sonner";
 
 // Routes that require a verified age before access.
@@ -20,6 +21,9 @@ export function AgeGate() {
   const [status, setStatus] = useState<Status>(null);
   const [checking, setChecking] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  // Feature-flag gate (DEV-only bypass). PRODUCȚIA forțează enforcement = true.
+  // Vezi src/lib/age-gate-policy.ts + AGENTS.md → REGULĂ AGE GATE.
+  const [enforce, setEnforce] = useState<boolean>(true);
   // GDPR Art. 9 — selfie-ul biometric e date sensibile; consimțământul e opt-in,
   // distinct de terms/privacy. Vezi src/lib/consent-registry.ts (kind=age_verification).
   const [consent, setConsent] = useState(false);
@@ -37,6 +41,11 @@ export function AgeGate() {
     setStatus((data?.age_status as Status) ?? "unverified");
     setChecking(false);
   };
+
+  useEffect(() => {
+    // Recheck policy on every nav (TTL cache în age-gate-policy).
+    void shouldEnforceAgeGate().then(setEnforce);
+  }, [location.pathname]);
 
   useEffect(() => {
     if (!user) {
@@ -60,6 +69,17 @@ export function AgeGate() {
   }, [user?.id]);
 
   if (authLoading || !user || !isGated) return null;
+  // DEV BYPASS: dacă enforcement-ul e oprit (feature flag OFF + host non-prod),
+  // nu afișăm modal și nu pornim Didit. Codul Didit rămâne intact, doar UI-ul
+  // de blocare e ocolit. Producția forțează enforce=true în age-gate-policy.
+  if (!enforce) {
+    if (typeof window !== "undefined" && !(window as any).__ageGateDevWarned) {
+      (window as any).__ageGateDevWarned = true;
+      // eslint-disable-next-line no-console
+      console.warn("⚠️ [DEV] AGE VERIFICATION DEZACTIVAT prin feature_flags.age_verification. Se reactivează automat în producție.");
+    }
+    return null;
+  }
   if (checking || status === null) return null;
   if (status === "verified") return null;
 

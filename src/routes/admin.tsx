@@ -26,6 +26,26 @@ import { useIdleLogout } from "@/hooks/useIdleLogout";
 import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
 import { ExperimentsPanel } from "@/components/admin/ExperimentsPanel";
+import { isProductionHost, shouldEnforceAgeGate, clearAgeGatePolicyCache } from "@/lib/age-gate-policy";
+
+
+function AgeGateDevBanner() {
+  const [enforce, setEnforce] = useState<boolean | null>(null);
+  useEffect(() => {
+    clearAgeGatePolicyCache();
+    shouldEnforceAgeGate().then(setEnforce);
+  }, []);
+  if (enforce === null || enforce === true) return null;
+  return (
+    <div className="border-b border-yellow-500/40 bg-yellow-500/10 px-4 py-2 text-center text-xs text-yellow-300">
+      ⚠️ <b>AGE VERIFICATION DEZACTIVAT</b> (feature_flags.age_verification = OFF) —
+      DOAR în non-producție ({typeof window !== "undefined" ? window.location.hostname : "?"}).
+      În build de producție se forțează ON automat indiferent de flag.
+      Reactivează din <b>Securitate → Feature flags</b> → toggle <code>age_verification</code>.
+      <span className="ml-1 opacity-70">isProductionHost: {String(isProductionHost())}</span>
+    </div>
+  );
+}
 
 
 export const Route = createFileRoute("/admin")({
@@ -141,6 +161,11 @@ function AdminDashboard() {
           ))}
         </nav>
       </header>
+
+      {/* AGE-GATE WARNING BANNER — vizibil dacă flag age_verification e OFF în non-prod.
+          TODO[age-gate]: la reactivare (toggle ON din admin → Securitate/Feature flags),
+          banner-ul dispare automat. Producția forțează ON via age-gate-policy. */}
+      <AgeGateDevBanner />
 
       <main className="mx-auto max-w-7xl px-4 py-6">
         {section === "overview" && isAdmin && <OverviewPanel />}

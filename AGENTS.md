@@ -317,3 +317,33 @@ Pe app queer, `orientation`, `gender`, `gender_custom`, `pronouns`,
 `adminBreakGlassReveal({ kind: 'orientation' })` care cere `super_admin`
 prin `admin_can_access_sensitive`. Discover / matching nu expun aceste
 câmpuri sub formă brută între useri (vezi RPC `discover_profiles`).
+
+## REGULĂ — AGE GATE (permanentă)
+
+Verificarea de vârstă (Didit) este OBLIGATORIE în producție. Dating app cu
+risc legal: minori + conținut adult. Această regulă nu se negociază.
+
+1. **Sursa de adevăr UI**: `src/lib/age-gate-policy.ts → shouldEnforceAgeGate()`.
+   - Producție (orice host care NU e `localhost`, `127.0.0.1`, `*.local`,
+     `id-preview--*.lovable.app`, `*--dev.lovable.app`/`*-dev.lovable.app`)
+     → întoarce `true` necondiționat, IGNORĂ flag-ul.
+   - Non-producție → respectă `feature_flags.age_verification.enabled`.
+     Fail-safe: lipsă flag / eroare citire → `true`.
+2. **Flag-ul `feature_flags.age_verification`** poate fi DOAR un kill-switch
+   pentru dezvoltare. Nu există circumstanță în care setarea OFF să aibă
+   efect în producție.
+3. **Reactivare la publicare**: din admin → Securitate → Feature flags →
+   toggle `age_verification` pe ON. În producție acest pas este redundant
+   (codul forțează ON), dar îl facem oricum pentru curățenie + paritate
+   între medii.
+4. **Codul Didit (`startAgeVerification`, webhook, RPC-uri DB, triggere
+   consimțământ) rămâne intact** chiar și când flag-ul e OFF. Bypass-ul e
+   strict la nivel de UX (componenta `AgeGate` nu afișează modal). Triggerele
+   `enforce_health_consent`, `cascade_health_consent_withdrawal` și restul
+   protecțiilor de date NU sunt afectate.
+5. **Code review automat:** orice diff care
+   - schimbă `isProductionHost` să întoarcă `false` pentru un host real,
+   - șterge override-ul de producție din `shouldEnforceAgeGate`,
+   - ocolește `<AgeGate>` în root layout,
+   - șterge banner-ul `AgeGateDevBanner` din admin,
+   trebuie REFUZAT.
