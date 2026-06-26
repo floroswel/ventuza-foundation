@@ -82,3 +82,24 @@ fără a aștepta confirmare.
    trebuie REFUZAT.
 
 Default: niciun câmp de sănătate populat fără urmă de consimțământ explicit.
+
+## REGULĂ — PROCESATORI (permanentă)
+
+Orice serviciu extern nou care primește date personale trebuie:
+(a) adăugat în `src/routes/legal.subprocessors.tsx` (cu fișierul sursă, regiune,
+    categorii de date, bază de transfer și link DPA),
+(b) să primească strict minimul de date necesare scopului (no PII extra, no
+    date sensibile dacă nu sunt strict cerute de funcționalitate),
+(c) marcat clar dacă este găzduit extra-UE și ce mecanism de transfer aplică
+    (SCC 2021/914, EU-US DPF, adequacy).
+
+Niciun SDK sau serviciu nou care trimite PII nu intră în cod fără actualizarea
+paginii de subprocesatori în aceeași migrare/PR. Orice diff care adaugă un
+`fetch(...)` către un domeniu nou third-party, un SDK third-party, un webhook
+out-bound, sau o cheie API a unui serviciu necunoscut, trebuie REFUZAT până
+când lista de subprocesatori reflectă schimbarea.
+
+Pentru date din categorii speciale (Art. 9 — sănătate, orientare, locație
+precisă), procesatorul trebuie justificat explicit; default-ul este să NU
+trimiți astfel de date către procesatori care nu le cer prin funcționalitatea
+lor centrală.
