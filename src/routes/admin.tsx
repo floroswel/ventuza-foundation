@@ -306,6 +306,9 @@ function UsersPanel({ meId }: { meId: string }) {
                 <p className="mt-0.5 text-[10px] text-muted-foreground">{u.id} · {u.city ?? "—"} · Lv{u.level} · {u.xp} XP · {u.report_count ?? 0} rapoarte</p>
               </div>
               <div className="flex flex-wrap gap-1">
+                <button onClick={() => setDetailId(u.id)} className="rounded-full bg-primary/15 px-2 py-1 text-[10px] font-medium text-primary">
+                  Detalii / break-glass
+                </button>
                 {(["admin", "moderator", "business"] as const).map((r) => {
                   const has = u.roles.includes(r);
                   return (
