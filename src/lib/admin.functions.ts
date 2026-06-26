@@ -157,7 +157,42 @@ const ListInput = z.object({
   offset: z.number().int().min(0).optional(),
 });
 
-/** Generic list rows from any allowed table. */
+/**
+ * Coloane MASCATE by default în panoul admin. Datele Art. 9 / locație precisă /
+ * mesaje brute / selfie verificare NU sunt proiectate prin listingul generic
+ * — vezi `adminBreakGlassReveal` și AGENTS.md → "REGULĂ — ADMIN".
+ */
+const SENSITIVE_COLUMNS: Record<string, string[]> = {
+  profiles: [
+    "hiv_status_enc", "hiv_test_date_enc", "health_data_consent_at",
+    "location", "prev_location", "travel_location",
+    "phone_e164", "email_hash", "pin_hash", "pin_lock_until",
+  ],
+  messages: ["body", "media_url", "voice_url", "caption"],
+  group_messages: ["body", "media_url"],
+  age_verifications: ["selfie_url", "document_url", "raw_payload"],
+  push_subscriptions: ["endpoint", "auth", "p256dh"],
+  device_fingerprints: ["fingerprint", "user_agent", "ip"],
+};
+
+function safeColumnsFor(table: string): string {
+  if (table === "messages" || table === "group_messages") {
+    return "id, conversation_id, sender_id, created_at, deleted_at";
+  }
+  if (table === "age_verifications") {
+    return "id, user_id, status, created_at, completed_at";
+  }
+  if (table === "profiles") {
+    return [
+      "id","display_name","travel_city","verified","banned_at","suspended_until",
+      "report_count","level","xp","created_at","updated_at","last_active_at",
+      "is_premium","gender","age",
+    ].join(",");
+  }
+  return "*";
+}
+
+/** Generic list rows. Sensitive columns are stripped by default. */
 export const adminListRows = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => ListInput.parse(d))
@@ -166,24 +201,26 @@ export const adminListRows = createServerFn({ method: "POST" })
     const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const limit = data.limit ?? 50;
     const offset = data.offset ?? 0;
-    let q: any = supabaseAdmin.from(data.table).select("*", { count: "exact" });
+    const projection = safeColumnsFor(data.table);
     if (data.search && data.searchColumn) {
-      q = q.ilike(data.searchColumn, `%${data.search}%`);
+      const denied = SENSITIVE_COLUMNS[data.table] ?? [];
+      if (denied.includes(data.searchColumn)) throw new Error("forbidden_column");
     }
+    let q: any = supabaseAdmin.from(data.table).select(projection, { count: "exact" });
+    if (data.search && data.searchColumn) q = q.ilike(data.searchColumn, `%${data.search}%`);
     const orderBy = data.orderBy ?? "created_at";
     const orderDir = data.orderDir ?? "desc";
     q = q.order(orderBy, { ascending: orderDir === "asc", nullsFirst: false });
     q = q.range(offset, offset + limit - 1);
     const { data: rows, count, error } = await q;
     if (error) {
-      // Retry without ordering if column doesn't exist
-      let q2: any = supabaseAdmin.from(data.table).select("*", { count: "exact" }).range(offset, offset + limit - 1);
+      let q2: any = supabaseAdmin.from(data.table).select(projection, { count: "exact" }).range(offset, offset + limit - 1);
       if (data.search && data.searchColumn) q2 = q2.ilike(data.searchColumn, `%${data.search}%`);
       const r2 = await q2;
       if (r2.error) throw new Error(r2.error.message);
-      return { rows: r2.data ?? [], count: r2.count ?? 0 };
+      return { rows: r2.data ?? [], count: r2.count ?? 0, masked: true };
     }
-    return { rows: rows ?? [], count: count ?? 0 };
+    return { rows: rows ?? [], count: count ?? 0, masked: true };
   });
 
 const UpdateInput = z.object({
