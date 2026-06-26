@@ -64,8 +64,19 @@ export function AgeGate() {
   if (status === "verified") return null;
 
   const handleStart = async () => {
+    if (!consent) {
+      toast.error("Trebuie să accepți procesarea imaginii biometrice de către Didit.");
+      return;
+    }
     setSubmitting(true);
     try {
+      // Înregistrează consimțământul ÎNAINTE de a porni Didit. Vezi AGENTS.md.
+      const { error: consentErr } = await supabase.rpc("record_consent", {
+        _kind: "age_verification",
+        _accepted: true,
+      });
+      if (consentErr) throw consentErr;
+
       const callbackUrl = `${window.location.origin}${location.pathname}`;
       const result = await startFn({ data: { callbackUrl } });
       if (!result.ok) {
