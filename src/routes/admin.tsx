@@ -150,7 +150,8 @@ function AdminDashboard() {
         {section === "risk" && <RiskPanel />}
         {section === "csam" && isAdmin && <CsamPanel />}
         {section === "dsa" && <DsaPanel />}
-        {section === "gdpr" && isAdmin && <GdprPanel />}
+        {section === "gdpr" && isAdmin && <GdprOpsPanel />}
+        {section === "breakglass" && isAdmin && <BreakGlassLogPanel />}
         {section === "breach" && isAdmin && <BreachPanel />}
         {section === "policies" && <PoliciesPanel />}
         {section === "audit" && <AuditLogPanel />}
