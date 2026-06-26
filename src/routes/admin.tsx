@@ -16,9 +16,12 @@ import {
   adminDeleteUser, ADMIN_TABLES,
 } from "@/lib/admin.functions";
 import {
-  AuditLogPanel, AlertsPanel, DsaPanel, CsamPanel, GdprPanel, BreachPanel,
+  AuditLogPanel, AlertsPanel, DsaPanel, CsamPanel, BreachPanel,
   PoliciesPanel, SecurityPanel,
 } from "@/components/admin/EnterpriseSections";
+import {
+  UserDetailDrawer, GdprOpsPanel, BreakGlassLogPanel,
+} from "@/components/admin/Wave1Sections";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
 import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
@@ -33,7 +36,7 @@ export const Route = createFileRoute("/admin")({
 type Section =
   | "overview" | "users" | "reports" | "risk" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
-  | "gdpr" | "breach" | "policies" | "security";
+  | "gdpr" | "breakglass" | "breach" | "policies" | "security";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -107,6 +110,7 @@ function AdminDashboard() {
     { id: "csam", label: "CSAM", icon: ShieldAlert, adminOnly: true },
     { id: "dsa", label: "DSA", icon: FileWarning },
     { id: "gdpr", label: "GDPR", icon: Download, adminOnly: true },
+    { id: "breakglass", label: "Break-glass", icon: ShieldAlert, adminOnly: true },
     { id: "breach", label: "Breșe", icon: AlertOctagon, adminOnly: true },
     { id: "policies", label: "Politici", icon: FileText },
     { id: "audit", label: "Audit", icon: ScrollText },
@@ -146,7 +150,8 @@ function AdminDashboard() {
         {section === "risk" && <RiskPanel />}
         {section === "csam" && isAdmin && <CsamPanel />}
         {section === "dsa" && <DsaPanel />}
-        {section === "gdpr" && isAdmin && <GdprPanel />}
+        {section === "gdpr" && isAdmin && <GdprOpsPanel />}
+        {section === "breakglass" && isAdmin && <BreakGlassLogPanel />}
         {section === "breach" && isAdmin && <BreachPanel />}
         {section === "policies" && <PoliciesPanel />}
         {section === "audit" && <AuditLogPanel />}
@@ -243,6 +248,7 @@ function UsersPanel({ meId }: { meId: string }) {
   const [q, setQ] = useState("");
   const [rows, setRows] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   const load = async (query = "") => {
     setBusy(true);
@@ -300,6 +306,9 @@ function UsersPanel({ meId }: { meId: string }) {
                 <p className="mt-0.5 text-[10px] text-muted-foreground">{u.id} · {u.city ?? "—"} · Lv{u.level} · {u.xp} XP · {u.report_count ?? 0} rapoarte</p>
               </div>
               <div className="flex flex-wrap gap-1">
+                <button onClick={() => setDetailId(u.id)} className="rounded-full bg-primary/15 px-2 py-1 text-[10px] font-medium text-primary">
+                  Detalii / break-glass
+                </button>
                 {(["admin", "moderator", "business"] as const).map((r) => {
                   const has = u.roles.includes(r);
                   return (
@@ -322,6 +331,7 @@ function UsersPanel({ meId }: { meId: string }) {
           <li className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Niciun rezultat.</li>
         )}
       </ul>
+      {detailId && <UserDetailDrawer userId={detailId} onClose={() => { setDetailId(null); load(q); }} />}
     </div>
   );
 }

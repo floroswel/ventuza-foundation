@@ -190,8 +190,12 @@ export const adminGetDsaReports = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertStaff(context.supabase, context.userId);
+    // illegal_content_reports este ANONIM by design (oricine poate raporta).
+    // Identitatea raportorului nu se proiectează — proiecție explicită fără
+    // reporter_email / reporter_user_id, indiferent de rol.
     const { data, error } = await context.supabase.from("illegal_content_reports")
-      .select("*").order("created_at", { ascending: false }).limit(200);
+      .select("id, category, content_type, content_url, description, legal_basis, status, handled_by, handled_at, resolution, created_at")
+      .order("created_at", { ascending: false }).limit(200);
     if (error) throw new Error(error.message);
     return data ?? [];
   });
@@ -246,8 +250,12 @@ export const adminGetCsamReports = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
     const sa = _sa as any;
+    // REGULĂ CSAM — NEVER RENDER. Conținutul suspectat NU părăsește
+    // server-ul ca URL/blob: proiectăm DOAR hash + status + meta. UI
+    // afișează doar hash (referință), nu imagine.
     const { data, error } = await sa.from("csam_reports")
-      .select("*").order("reported_at", { ascending: false }).limit(200);
+      .select("id, user_id, hash, match_source, ncmec_report_id, reported_at, status, notes")
+      .order("reported_at", { ascending: false }).limit(200);
     if (error) throw new Error(error.message);
     return data ?? [];
   });

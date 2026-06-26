@@ -8,53 +8,8 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 export const deleteMyAccount = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-
-    // GDPR Art. 17 — anulăm explicit abonamentul RevenueCat ÎNAINTE de a
-    // șterge contul, ca să nu mai fie taxat utilizatorul. Eșecul nu blochează
-    // ștergerea (loggăm în deletion_requests.reason pentru audit).
-    let rcNote = "";
-    try {
-      const { cancelRevenueCatForUser } = await import("./revenuecat.server");
-      const rc = await cancelRevenueCatForUser(context.userId);
-      rcNote = rc.ok
-        ? `revenuecat=ok(${rc.status ?? "200"})`
-        : `revenuecat=fail:${rc.reason ?? "unknown"}`;
-    } catch (e) {
-      rcNote = `revenuecat=throw:${e instanceof Error ? e.message : "?"}`;
-    }
-
-    // Best-effort: ștergem fișierele din storage (cascade nu acoperă storage).
-    try {
-      const { data: files } = await supabaseAdmin.storage
-        .from("profile-photos")
-        .list(context.userId);
-      if (files && files.length) {
-        await supabaseAdmin.storage
-          .from("profile-photos")
-          .remove(files.map((f) => `${context.userId}/${f.name}`));
-      }
-    } catch {
-      // ignore cleanup errors
-    }
-
-    // Audit trail (după RC, ca să prindem și rezultatul anulării).
-    try {
-      await supabaseAdmin.from("deletion_requests").insert({
-        user_id: context.userId,
-        requested_at: new Date().toISOString(),
-        scheduled_for: new Date().toISOString(),
-        reason: `user_self_service; ${rcNote}`,
-        status: "processed",
-        processed_at: new Date().toISOString(),
-      });
-    } catch {
-      // Continuăm chiar dacă log-ul eșuează — dreptul la ștergere prevalează.
-    }
-
-    // Cascade către profiles, swipes, matches, messages, subscriptions etc.
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(context.userId);
-    if (error) throw new Error(error.message);
+    const { purgeUserAccount } = await import("./account.server");
+    await purgeUserAccount(context.userId, "user_self_service");
     return { ok: true };
   });
 

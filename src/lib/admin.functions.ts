@@ -164,29 +164,47 @@ const ListInput = z.object({
  */
 const SENSITIVE_COLUMNS: Record<string, string[]> = {
   profiles: [
+    // Sănătate (Art. 9) — DOAR super_admin via break-glass kind='health'
     "hiv_status_enc", "hiv_test_date_enc", "health_data_consent_at",
+    // Orientare / identitate sexuală (Art. 9 — viața sexuală) — break-glass
+    // kind='orientation'. Pe o app queer `gender` + `tribes` + `pronouns` pot
+    // dezvălui orientarea indirect, deci sunt tratate la fel.
+    "orientation", "gender", "gender_custom", "pronouns", "pronouns_custom", "tribes",
+    // Locație precisă — break-glass kind='location' (super_admin)
     "location", "prev_location", "travel_location",
+    // Contact / credențiale
     "phone_e164", "email_hash", "pin_hash", "pin_lock_until",
   ],
   messages: ["body", "media_url", "voice_url", "caption"],
   group_messages: ["body", "media_url"],
+  // CSAM never-render: photo_url NU se proiectează niciodată în UI admin.
+  csam_reports: ["photo_url"],
   age_verifications: ["selfie_url", "document_url", "raw_payload"],
   push_subscriptions: ["endpoint", "auth", "p256dh"],
   device_fingerprints: ["fingerprint", "user_agent", "ip"],
+  // Anonimitatea raportorului DSA — illegal_content_reports este anonim by design.
+  illegal_content_reports: ["reporter_email", "reporter_user_id"],
 };
 
 function safeColumnsFor(table: string): string {
   if (table === "messages" || table === "group_messages") {
     return "id, conversation_id, sender_id, created_at, deleted_at";
   }
+  if (table === "csam_reports") {
+    // Niciodată photo_url. Doar referință/hash + status.
+    return "id, user_id, hash, match_source, ncmec_report_id, reported_at, status, notes";
+  }
   if (table === "age_verifications") {
     return "id, user_id, status, created_at, completed_at";
+  }
+  if (table === "illegal_content_reports") {
+    return "id, category, content_type, content_url, description, legal_basis, status, handled_by, handled_at, resolution, created_at";
   }
   if (table === "profiles") {
     return [
       "id","display_name","travel_city","verified","banned_at","suspended_until",
       "report_count","level","xp","created_at","updated_at","last_active_at",
-      "is_premium","gender","age",
+      "is_premium","age",
     ].join(",");
   }
   return "*";

@@ -229,7 +229,7 @@ export function DsaPanel() {
               </div>
               <p className="mt-2 text-sm">{r.description}</p>
               {r.content_url && <p className="mt-1 text-[10px] break-all text-muted-foreground">{r.content_url}</p>}
-              {r.reporter_email && <p className="text-[10px] text-muted-foreground">reporter: {r.reporter_email}</p>}
+              <p className="text-[10px] text-muted-foreground italic">raport anonim (DSA / illegal_content_reports)</p>
               {r.status === "pending" && (
                 <div className="mt-3 flex flex-wrap gap-2">
                   <button onClick={() => act(r.id, "resolved")} className="rounded-full bg-primary/15 px-3 py-1.5 text-xs text-primary">Rezolvă</button>
