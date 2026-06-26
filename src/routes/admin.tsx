@@ -248,6 +248,7 @@ function UsersPanel({ meId }: { meId: string }) {
   const [q, setQ] = useState("");
   const [rows, setRows] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [detailId, setDetailId] = useState<string | null>(null);
 
   const load = async (query = "") => {
     setBusy(true);
