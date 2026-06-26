@@ -6,6 +6,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { useConsent } from "@/lib/use-consent";
 import { supabase } from "@/integrations/supabase/client";
+import { getMyHealth, setMyHealth } from "@/lib/health.functions";
+
+function withHealth<T extends object>(row: T, h?: { hiv_status: string | null; hiv_test_date: string | null }): Profile {
+  return { ...(row as unknown as Profile), hiv_status: h?.hiv_status ?? null, hiv_test_date: h?.hiv_test_date ?? null };
+}
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
