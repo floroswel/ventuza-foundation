@@ -619,7 +619,7 @@ function ProfileSheet({
               {profile.ethnicity && <Stat label="Ethnicity" value={profile.ethnicity} />}
               {profile.weight_kg && <Stat label="Weight" value={`${profile.weight_kg} kg`} />}
               {profile.relationship_status && <Stat label="Status" value={profile.relationship_status} />}
-              {profile.hiv_status && <Stat label="HIV" value={profile.hiv_status} />}
+              {/* hiv_status nu mai este expus în Discover (date de sănătate / GDPR Art. 9). */}
             </div>
           )}
 
