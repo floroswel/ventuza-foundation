@@ -77,7 +77,7 @@ function SettingsPage() {
     const tzOffsetMinutes = -new Date().getTimezoneOffset();
     void supabase.from("profiles").update({ tz_offset_minutes: tzOffsetMinutes }).eq("id", user.id);
     supabase.from("profiles")
-      .select("notification_prefs, hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent, read_receipts_enabled, auto_share_album_on_match")
+      .select("notification_prefs, hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent, read_receipts_enabled, auto_share_album_on_match, discrete_mode")
       .eq("id", user.id).maybeSingle()
       .then(({ data }) => {
         if (!data) return;
@@ -86,6 +86,7 @@ function SettingsPage() {
           hide_age?: boolean; hide_distance?: boolean; hide_online?: boolean;
           read_receipts_enabled?: boolean; auto_share_album_on_match?: boolean;
           looking_now_until?: string | null; looking_now_intent?: string | null;
+          discrete_mode?: boolean;
         };
         setPrivacy({
           hide_age: !!d.hide_age,
@@ -93,6 +94,7 @@ function SettingsPage() {
           hide_online: !!d.hide_online,
           read_receipts_enabled: d.read_receipts_enabled ?? true,
           auto_share_album_on_match: !!d.auto_share_album_on_match,
+          discrete_mode: !!d.discrete_mode,
         });
         setLookingUntil(d.looking_now_until ?? null);
         setIntent(d.looking_now_intent ?? "");
