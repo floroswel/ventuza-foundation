@@ -366,7 +366,7 @@ export const partnerGetOfferStats = createServerFn({ method: "POST" })
     if (!row || (row as any).venues?.owner_id !== context.userId) throw new Error("not_found");
     const { data: stats, error: sErr } = await ((context.supabase as any) as any)
       .rpc("offer_stats", { p_offer_id: data.offer_id })
-      .single<{ claim_count: number; redeemed_count: number }>();
+      .single();
     if (sErr) throw new Error(sErr.message);
     return stats; // aggregate only — no user identities
   });
