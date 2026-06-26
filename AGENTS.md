@@ -41,6 +41,42 @@ sesiuni viitoare, fără excepție, fără a aștepta confirmare.
 
 Dacă ai dubii, default = nu expui locația.
 
+## REGULĂ — CIFRARE DATE SĂNĂTATE (permanentă)
+
+Câmpurile de sănătate (astăzi: `hiv_status`, `hiv_test_date`) se stochează
+CIFRAT la nivel de coloană cu `pgcrypto` (`pgp_sym_encrypt`), în coloane
+`*_enc bytea` pe `public.profiles`. Plaintext-ul NU mai există în DB.
+
+- Decriptarea / criptarea se fac DOAR prin RPC-urile SECURITY DEFINER
+  `public.get_user_health(uuid, text)` și `public.set_user_health(uuid, text, date, text)`,
+  grant-uite EXCLUSIV pentru `service_role`. Niciun rol client (anon /
+  authenticated) nu poate executa direct aceste funcții.
+- RPC-urile sunt apelate doar din server fns (`src/lib/health.functions.ts`)
+  care folosesc `requireSupabaseAuth` pentru a identifica owner-ul și
+  `supabaseAdmin` pentru a apela RPC-ul cu cheia.
+- Cheia (`HEALTH_COL_KEY`) trăiește într-un secret de infrastructură
+  (Lovable Cloud secret / env server). NU se hardcodează în cod, NU se trimite
+  niciodată la client, NU se loghează.
+- Orice câmp de sănătate nou care se adaugă în `public.health_gated_columns()`
+  se cifrează la fel (coloană `*_enc bytea`, scriere/citire DOAR prin RPC
+  server-side, niciodată proiectat brut).
+- Triggerele `enforce_health_consent` și `cascade_health_consent_withdrawal`
+  operează pe coloanele cifrate — enforcement-ul de consimțământ rămâne
+  intact (verificarea se face pe `*_enc IS NOT NULL`, fără decriptare).
+- Backfill / seed / import: niciodată plaintext în coloane plaintext. Dacă
+  apar useri vechi cu date fără consimțământ înregistrat, strategia este
+  WIPE + cere reconfirmare la următoarea editare (vezi
+  `gdpr_health_backfill_wipe` în `admin_audit_log`).
+
+Orice diff care:
+- adaugă o coloană de sănătate ca plaintext (text/date) pe `profiles`,
+- selectează direct un câmp `*_enc` în client / SQL proiectat la alt user,
+- dă GRANT EXECUTE pe `get_user_health` / `set_user_health` către `anon` sau
+  `authenticated`,
+- hardcodează `HEALTH_COL_KEY` sau o cheie similară în cod,
+
+trebuie REFUZAT.
+
 ## REGULĂ — DATE DE SĂNĂTATE (permanentă)
 
 GDPR Art. 9 — date din categorii speciale. Această regulă se aplică automat,
