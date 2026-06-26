@@ -19,6 +19,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as PremiumRouteImport } from './routes/premium'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
+import { Route as NearbyRouteImport } from './routes/nearby'
 import { Route as NRouteImport } from './routes/n'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as FavoritesRouteImport } from './routes/favorites'
@@ -32,7 +33,9 @@ import { Route as AdvertiseRouteImport } from './routes/advertise'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
+import { Route as VenuesIdRouteImport } from './routes/venues.$id'
 import { Route as USlugRouteImport } from './routes/u.$slug'
+import { Route as OffersIdRouteImport } from './routes/offers.$id'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalSubprocessorsRouteImport } from './routes/legal.subprocessors'
@@ -100,6 +103,11 @@ const NotificationsRoute = NotificationsRouteImport.update({
   path: '/notifications',
   getParentRoute: () => rootRouteImport,
 } as any)
+const NearbyRoute = NearbyRouteImport.update({
+  id: '/nearby',
+  path: '/nearby',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NRoute = NRouteImport.update({
   id: '/n',
   path: '/n',
@@ -165,9 +173,19 @@ const MessagesIndexRoute = MessagesIndexRouteImport.update({
   path: '/messages/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VenuesIdRoute = VenuesIdRouteImport.update({
+  id: '/venues/$id',
+  path: '/venues/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const USlugRoute = USlugRouteImport.update({
   id: '/u/$slug',
   path: '/u/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OffersIdRoute = OffersIdRouteImport.update({
+  id: '/offers/$id',
+  path: '/offers/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MessagesIdRoute = MessagesIdRouteImport.update({
@@ -265,6 +283,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/n': typeof NRoute
+  '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -289,7 +308,9 @@ export interface FileRoutesByFullPath {
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
+  '/offers/$id': typeof OffersIdRoute
   '/u/$slug': typeof USlugRoute
+  '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -307,6 +328,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/n': typeof NRoute
+  '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -331,7 +353,9 @@ export interface FileRoutesByTo {
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
+  '/offers/$id': typeof OffersIdRoute
   '/u/$slug': typeof USlugRoute
+  '/venues/$id': typeof VenuesIdRoute
   '/messages': typeof MessagesIndexRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -350,6 +374,7 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/n': typeof NRoute
+  '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
   '/premium': typeof PremiumRoute
@@ -374,7 +399,9 @@ export interface FileRoutesById {
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
+  '/offers/$id': typeof OffersIdRoute
   '/u/$slug': typeof USlugRoute
+  '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -394,6 +421,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/groups'
     | '/n'
+    | '/nearby'
     | '/notifications'
     | '/onboarding'
     | '/premium'
@@ -418,7 +446,9 @@ export interface FileRouteTypes {
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/messages/$id'
+    | '/offers/$id'
     | '/u/$slug'
+    | '/venues/$id'
     | '/messages/'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
@@ -436,6 +466,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/groups'
     | '/n'
+    | '/nearby'
     | '/notifications'
     | '/onboarding'
     | '/premium'
@@ -460,7 +491,9 @@ export interface FileRouteTypes {
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/messages/$id'
+    | '/offers/$id'
     | '/u/$slug'
+    | '/venues/$id'
     | '/messages'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
@@ -478,6 +511,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/groups'
     | '/n'
+    | '/nearby'
     | '/notifications'
     | '/onboarding'
     | '/premium'
@@ -502,7 +536,9 @@ export interface FileRouteTypes {
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/messages/$id'
+    | '/offers/$id'
     | '/u/$slug'
+    | '/venues/$id'
     | '/messages/'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
@@ -521,6 +557,7 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   GroupsRoute: typeof GroupsRouteWithChildren
   NRoute: typeof NRoute
+  NearbyRoute: typeof NearbyRoute
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
   PremiumRoute: typeof PremiumRoute
@@ -541,7 +578,9 @@ export interface RootRouteChildren {
   LegalSubprocessorsRoute: typeof LegalSubprocessorsRoute
   LegalTermsRoute: typeof LegalTermsRoute
   MessagesIdRoute: typeof MessagesIdRoute
+  OffersIdRoute: typeof OffersIdRoute
   USlugRoute: typeof USlugRoute
+  VenuesIdRoute: typeof VenuesIdRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
@@ -617,6 +656,13 @@ declare module '@tanstack/react-router' {
       path: '/notifications'
       fullPath: '/notifications'
       preLoaderRoute: typeof NotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nearby': {
+      id: '/nearby'
+      path: '/nearby'
+      fullPath: '/nearby'
+      preLoaderRoute: typeof NearbyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/n': {
@@ -710,11 +756,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof MessagesIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/venues/$id': {
+      id: '/venues/$id'
+      path: '/venues/$id'
+      fullPath: '/venues/$id'
+      preLoaderRoute: typeof VenuesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/u/$slug': {
       id: '/u/$slug'
       path: '/u/$slug'
       fullPath: '/u/$slug'
       preLoaderRoute: typeof USlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/offers/$id': {
+      id: '/offers/$id'
+      path: '/offers/$id'
+      fullPath: '/offers/$id'
+      preLoaderRoute: typeof OffersIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/messages/$id': {
@@ -891,6 +951,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   GroupsRoute: GroupsRouteWithChildren,
   NRoute: NRoute,
+  NearbyRoute: NearbyRoute,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
   PremiumRoute: PremiumRoute,
@@ -911,7 +972,9 @@ const rootRouteChildren: RootRouteChildren = {
   LegalSubprocessorsRoute: LegalSubprocessorsRoute,
   LegalTermsRoute: LegalTermsRoute,
   MessagesIdRoute: MessagesIdRoute,
+  OffersIdRoute: OffersIdRoute,
   USlugRoute: USlugRoute,
+  VenuesIdRoute: VenuesIdRoute,
   MessagesIndexRoute: MessagesIndexRoute,
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
