@@ -372,3 +372,33 @@ Orice PR care:
   - ocolește `admin_moderate_item` pentru publicare,
   - lasă conținut vizibil după suspendare,
 trebuie REFUZAT.
+
+## REGULĂ — PORTAL PARTENER (permanentă)
+
+Partenerii își gestionează venues/events/oferte prin `/partner` și
+`src/lib/partner.functions.ts`. Reguli inviolabile:
+
+1. **Niciodată publicare directă**: formularele partener NU expun
+   `is_published` sau `is_official`. Triggerele DB resping orice insert/update
+   în care partenerul setează aceste câmpuri.
+2. **Re-moderare la editare**: orice update pe un item cu `moderation_status =
+   'approved'` resetează `moderation_status = 'pending'` și `is_published =
+   false`. Server-side, nu doar UI.
+3. **Quota enforced server-side**: `assertQuota(kind)` rulează ÎNAINTE de
+   insert. UI doar reflectă starea; refuzul real e în `partner.functions.ts`.
+4. **RLS owner-only**: partenerul vede/editează DOAR resursele cu
+   `owner_id = auth.uid()` (venues) sau `host_id = auth.uid()` (events).
+   Statisticile de ofertă revin doar agregate (count claims / redeemed),
+   niciodată identități.
+5. **Suspendare = read-only**: `assertPartner` aruncă `suspended:` dacă
+   `profiles.partner_suspended_at IS NOT NULL`. UI afișează banner roșu și
+   dezactivează toate acțiunile de scriere.
+6. **Upload imagini**: bucket privat `venue-media` cu RLS `{uid}/*`; tip
+   `image/*`, max 5 MB; imaginile devin publice doar dacă itemul lor e aprobat.
+
+Orice PR care:
+- adaugă `is_published` / `is_official` în formularele partener,
+- ocolește `assertQuota` / `assertPartner`,
+- expune identități pe stats de ofertă,
+- permite editare pe resurse care nu sunt ale userului curent,
+trebuie REFUZAT.
