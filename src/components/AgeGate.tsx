@@ -6,6 +6,7 @@ import { ShieldCheck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { startAgeVerification } from "@/lib/age-verification.functions";
+import { shouldEnforceAgeGate } from "@/lib/age-gate-policy";
 import { toast } from "sonner";
 
 // Routes that require a verified age before access.
