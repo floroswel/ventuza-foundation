@@ -213,6 +213,50 @@ Orice PR care:
 
 trebuie REFUZAT.
 
+## REGULĂ — NOTIFICĂRI DE PROXIMITATE (permanentă)
+
+Notificările care depind de poziția userului față de un venue/event respectă două
+straturi clar separate, plus un set de gate-uri server-side neopționale:
+
+1. **Strat 1 (foreground)** — calcul **pe device** (Haversine peste lista de
+   puncte din bucket-ul curent). Coordonatele exacte ale userului **NU pleacă la
+   server**. Funcționează fără `ACCESS_BACKGROUND_LOCATION` și fără permisiune
+   specială Google Play.
+2. **Strat 2 (background geofencing)** — necesită OBLIGATORIU consimțământ
+   `background_location` înregistrat în `consent_log` ÎNAINTE de a porni
+   geofencing-ul nativ. Retragerea consimțământului oprește imediat
+   geofencing-ul și revocă logic permisiunea.
+3. **Gate server unic:** orice notificare locală (Strat 1 sau 2) trece prin
+   `public.try_record_proximity_hit(kind, id, layer)`. Funcția refuză dacă:
+   punctul nu e `approved AND is_published AND partener nesuspendat`, userul a
+   dezactivat `proximity_notifications_enabled`, este în orele liniștite
+   configurate, a fost notificat pentru același punct în cooldown, sau a depășit
+   plafonul zilnic. UI-ul **nu poate ocoli** acest gate.
+4. **Anti-spam configurabil în `app_settings.proximity_notifications`** —
+   `cooldown_hours`, `daily_cap_per_user`, `quiet_start_hour`, `quiet_end_hour`,
+   `default_radius_m`, `max_radius_m`. Singura sursă de adevăr.
+5. **Niciun istoric de traseu.** Nu se stochează poziții ale userului în DB sau
+   localStorage pentru această funcție. `proximity_notification_log` conține
+   doar evenimentul "am notificat" (user, punct, layer, timestamp), nu lat/lng.
+   Refresh pe device la mișcare semnificativă ≥250 m.
+6. **Payload minim.** Notificarea conține nume punct + distanță bucketizată
+   ("450m", "1.2km"). Niciun atribut sensibil al userului sau al partenerului.
+7. **Doar conținut moderat declanșează.** Draft-urile, itemii respinși și
+   partenerii suspendați nu trec niciodată de `try_record_proximity_hit`.
+   Verificat în SQL, nu în UI.
+8. **Granularitate.** Toggle dedicat `profiles.proximity_notifications_enabled`
+   independent de `push_notifications` și de alte canale.
+
+Orice PR care:
+
+- trimite coordonate user la server pentru proximitate,
+- afișează o notificare de proximitate fără a apela `try_record_proximity_hit`,
+- pornește geofencing background fără consimțământ `background_location`,
+- stochează istoric de poziții pentru această funcție,
+
+trebuie REFUZAT.
+
+
 ## REGULĂ — ADMIN (permanentă)
 
 Panoul admin este o suprafață cu privilegii înalte și o țintă probabilă.
