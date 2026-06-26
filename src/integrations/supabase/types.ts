@@ -897,6 +897,7 @@ export type Database = {
           created_at: string
           event_id: string
           id: string
+          priority: boolean
           status: Database["public"]["Enums"]["rsvp_status"]
           user_id: string
         }
@@ -904,6 +905,7 @@ export type Database = {
           created_at?: string
           event_id: string
           id?: string
+          priority?: boolean
           status?: Database["public"]["Enums"]["rsvp_status"]
           user_id: string
         }
@@ -911,6 +913,7 @@ export type Database = {
           created_at?: string
           event_id?: string
           id?: string
+          priority?: boolean
           status?: Database["public"]["Enums"]["rsvp_status"]
           user_id?: string
         }
@@ -932,6 +935,7 @@ export type Database = {
           description: string | null
           ends_at: string | null
           event_type: Database["public"]["Enums"]["event_type"]
+          geo_bucket_id: string | null
           host_id: string
           id: string
           is_private: boolean
@@ -950,6 +954,7 @@ export type Database = {
           description?: string | null
           ends_at?: string | null
           event_type?: Database["public"]["Enums"]["event_type"]
+          geo_bucket_id?: string | null
           host_id: string
           id?: string
           is_private?: boolean
@@ -968,6 +973,7 @@ export type Database = {
           description?: string | null
           ends_at?: string | null
           event_type?: Database["public"]["Enums"]["event_type"]
+          geo_bucket_id?: string | null
           host_id?: string
           id?: string
           is_private?: boolean
@@ -1446,6 +1452,97 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      offer_claims: {
+        Row: {
+          claimed_at: string
+          id: string
+          offer_id: string
+          redeemed_at: string | null
+          redemption_code: string
+          user_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          id?: string
+          offer_id: string
+          redeemed_at?: string | null
+          redemption_code: string
+          user_id: string
+        }
+        Update: {
+          claimed_at?: string
+          id?: string
+          offer_id?: string
+          redeemed_at?: string | null
+          redemption_code?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_claims_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offers: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          max_claims_per_user: number
+          moderated_at: string | null
+          moderated_by: string | null
+          terms: string | null
+          title: string
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          max_claims_per_user?: number
+          moderated_at?: string | null
+          moderated_by?: string | null
+          terms?: string | null
+          title: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          venue_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          max_claims_per_user?: number
+          moderated_at?: string | null
+          moderated_by?: string | null
+          terms?: string | null
+          title?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       photo_hashes: {
         Row: {
@@ -2438,6 +2535,75 @@ export type Database = {
         }
         Relationships: []
       }
+      venues: {
+        Row: {
+          address: string | null
+          category: string
+          city: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          geo_bucket_id: string
+          id: string
+          is_published: boolean
+          lat: number
+          lng: number
+          moderated_at: string | null
+          moderated_by: string | null
+          name: string
+          opening_hours: Json | null
+          owner_id: string | null
+          phone_e164: string | null
+          slug: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          category?: string
+          city?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          geo_bucket_id?: string
+          id?: string
+          is_published?: boolean
+          lat: number
+          lng: number
+          moderated_at?: string | null
+          moderated_by?: string | null
+          name: string
+          opening_hours?: Json | null
+          owner_id?: string | null
+          phone_e164?: string | null
+          slug?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          category?: string
+          city?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          geo_bucket_id?: string
+          id?: string
+          is_published?: boolean
+          lat?: number
+          lng?: number
+          moderated_at?: string | null
+          moderated_by?: string | null
+          name?: string
+          opening_hours?: Json | null
+          owner_id?: string | null
+          phone_e164?: string | null
+          slug?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       web_vitals: {
         Row: {
           created_at: string
@@ -2729,7 +2895,18 @@ export type Database = {
         Returns: boolean
       }
       claim_daily_reward: { Args: never; Returns: Json }
+      claim_offer: {
+        Args: { p_offer_id: string }
+        Returns: {
+          claim_id: string
+          redemption_code: string
+        }[]
+      }
       claim_quest_reward: { Args: { _quest_id: string }; Returns: Json }
+      compute_geo_bucket_id: {
+        Args: { p_lat: number; p_lng: number }
+        Returns: string
+      }
       compute_profile_completion: {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: number
@@ -3088,6 +3265,24 @@ export type Database = {
         Args: { _reason: string; _target: string }
         Returns: undefined
       }
+      nearby_points: {
+        Args: { p_bucket_id: string; p_kinds?: string[] }
+        Returns: {
+          category: string
+          city: string
+          cover_url: string
+          description: string
+          ends_at: string
+          id: string
+          kind: string
+          lat: number
+          lng: number
+          name: string
+          starts_at: string
+          venue_id: string
+        }[]
+      }
+      neighbour_buckets: { Args: { p_bucket_id: string }; Returns: string[] }
       notify_user: {
         Args: {
           _actor_id: string
@@ -3099,6 +3294,13 @@ export type Database = {
           _user_id: string
         }
         Returns: undefined
+      }
+      offer_stats: {
+        Args: { p_offer_id: string }
+        Returns: {
+          claim_count: number
+          redeemed_count: number
+        }[]
       }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
