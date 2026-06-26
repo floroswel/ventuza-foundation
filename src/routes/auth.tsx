@@ -56,6 +56,7 @@ function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [over18, setOver18] = useState(false);
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [birthDate, setBirthDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<"google" | "apple" | null>(null);
 
@@ -65,7 +66,18 @@ function AuthPage() {
     }
   }, [authLoading, user, navigate, search.redirect]);
 
-  const signupDisabled = mode === "signup" && (!over18 || !acceptTerms);
+  function ageFromBirthDate(iso: string): number | null {
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    const now = new Date();
+    let age = now.getFullYear() - d.getFullYear();
+    const m = now.getMonth() - d.getMonth();
+    if (m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+    return age;
+  }
+
+  const signupDisabled = mode === "signup" && (!over18 || !acceptTerms || (ageFromBirthDate(birthDate) ?? 0) < 18);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -89,6 +101,15 @@ function AuthPage() {
           toast.error("Please confirm the two checkboxes to continue.");
           return;
         }
+        const age = ageFromBirthDate(birthDate);
+        if (age === null) {
+          toast.error("Te rog introdu data nașterii.");
+          return;
+        }
+        if (age < 18) {
+          toast.error("Trebuie să ai cel puțin 18 ani pentru a folosi Ventuza.");
+          return;
+        }
         const { data, error } = await supabase.auth.signUp({
           email: emailParsed.data,
           password: passParsed.data,
@@ -97,6 +118,13 @@ function AuthPage() {
         if (error) {
           toast.error(error.message);
           return;
+        }
+        // Persist birth_date on profile (trigger enforces 18+ server-side too).
+        if (data.user) {
+          await supabase
+            .from("profiles")
+            .update({ birth_date: birthDate })
+            .eq("id", data.user.id);
         }
         if (data.session) {
           toast.success("Welcome to Ventuza.");
@@ -306,6 +334,23 @@ function AuthPage() {
 
           {mode === "signup" && (
             <div className="space-y-3 rounded-xl border border-border bg-surface/60 p-4">
+              <div>
+                <Label htmlFor="birthdate" className="mb-1 block text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  Data nașterii
+                </Label>
+                <Input
+                  id="birthdate"
+                  type="date"
+                  required
+                  max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().slice(0, 10)}
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="w-full"
+                />
+                {birthDate && (ageFromBirthDate(birthDate) ?? 0) < 18 && (
+                  <p className="mt-1 text-xs text-destructive">Trebuie să ai cel puțin 18 ani.</p>
+                )}
+              </div>
               <label className="flex cursor-pointer items-start gap-3 text-sm text-foreground">
                 <input
                   type="checkbox"

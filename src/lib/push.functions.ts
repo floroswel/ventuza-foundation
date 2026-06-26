@@ -91,10 +91,10 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { sendOne } = await import("./web-push.server");
 
-    // Respect recipient preferences (master toggle, per-category, quiet hours).
+    // Respect recipient preferences (master toggle, per-category, quiet hours, discrete mode).
     const { data: profile } = await supabaseAdmin
       .from("profiles")
-      .select("notification_prefs, tz_offset_minutes")
+      .select("notification_prefs, tz_offset_minutes, discrete_mode")
       .eq("id", data.toUserId)
       .maybeSingle();
 
@@ -106,6 +106,10 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     if (inQuietWindow(prefs, profile?.tz_offset_minutes ?? 0)) {
       return { delivered: 0, skipped: "quiet_hours" as const };
     }
+
+    // Discrete mode: strip preview, replace with generic copy.
+    const title = profile?.discrete_mode ? "Ventuza" : data.title;
+    const body = profile?.discrete_mode ? "Ai o notificare nouă" : data.body;
 
     const { data: subs } = await supabaseAdmin
       .from("push_subscriptions")
@@ -120,7 +124,7 @@ export const sendPushToUser = createServerFn({ method: "POST" })
       if (s.kind !== "webpush" || !s.endpoint) continue;
       const r = await sendOne(
         { id: s.id, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
-        { title: data.title, body: data.body, url: data.url, tag: data.tag },
+        { title, body, url: profile?.discrete_mode ? undefined : data.url, tag: data.tag },
       );
       if (r.ok) delivered++;
       else if (r.gone) expired.push(s.id);
