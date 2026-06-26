@@ -69,6 +69,17 @@ export function AgeGate() {
   }, [user?.id]);
 
   if (authLoading || !user || !isGated) return null;
+  // DEV BYPASS: dacă enforcement-ul e oprit (feature flag OFF + host non-prod),
+  // nu afișăm modal și nu pornim Didit. Codul Didit rămâne intact, doar UI-ul
+  // de blocare e ocolit. Producția forțează enforce=true în age-gate-policy.
+  if (!enforce) {
+    if (typeof window !== "undefined" && !(window as any).__ageGateDevWarned) {
+      (window as any).__ageGateDevWarned = true;
+      // eslint-disable-next-line no-console
+      console.warn("⚠️ [DEV] AGE VERIFICATION DEZACTIVAT prin feature_flags.age_verification. Se reactivează automat în producție.");
+    }
+    return null;
+  }
   if (checking || status === null) return null;
   if (status === "verified") return null;
 
