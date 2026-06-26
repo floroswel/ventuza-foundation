@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Loader2, Upload, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { setMyHealth } from "@/lib/health.functions";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -190,9 +191,9 @@ function Onboarding() {
       weight_kg: data.weight_kg,
       ethnicity: data.ethnicity || null,
       position: data.position || null,
-      // Doar dacă userul a dat consimțământ explicit health_data; altfel rămâne NULL
-      // (triggerul DB ar bloca scrierea oricum).
-      hiv_status: wantsHealth ? (data.hiv_status || null) : null,
+      // hiv_status / hiv_test_date sunt cifrate la nivel de coloană și se
+      // scriu DOAR prin setMyHealth (server fn → set_user_health RPC), nu
+      // direct prin update pe profiles. Vezi AGENTS.md "CIFRARE DATE SĂNĂTATE".
       relationship_status: data.relationship_status || null,
       interests: data.interests,
       bio: data.bio.trim(),
@@ -205,8 +206,16 @@ function Onboarding() {
       privacy_accepted_at: new Date().toISOString(),
       onboarding_completed: true,
     }).eq("id", user.id);
+    if (error) { setSaving(false); return toast.error(error.message); }
+
+    if (wantsHealth && data.hiv_status) {
+      const res = await setMyHealth({ data: { hiv_status: data.hiv_status, hiv_test_date: null } });
+      if (!res.ok) {
+        setSaving(false);
+        return toast.error(res.message);
+      }
+    }
     setSaving(false);
-    if (error) return toast.error(error.message);
 
     toast.success("Your profile is ready.");
     navigate({ to: "/profile" });
