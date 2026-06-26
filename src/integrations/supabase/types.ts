@@ -292,6 +292,42 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_sensitive_access_log: {
+        Row: {
+          actor_id: string
+          created_at: string
+          fields: string[]
+          id: number
+          ip: unknown
+          justification: string
+          kind: string
+          target_user_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_id: string
+          created_at?: string
+          fields?: string[]
+          id?: number
+          ip?: unknown
+          justification: string
+          kind: string
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_id?: string
+          created_at?: string
+          fields?: string[]
+          id?: number
+          ip?: unknown
+          justification?: string
+          kind?: string
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       advertisers: {
         Row: {
           brand_name: string
@@ -406,6 +442,66 @@ export type Database = {
           id?: string
           owner_id?: string
           viewer_id?: string
+        }
+        Relationships: []
+      }
+      app_settings: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+          version: number
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+          version?: number
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+          version?: number
+        }
+        Relationships: []
+      }
+      app_settings_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: number
+          key: string
+          value: Json
+          version: number
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: number
+          key: string
+          value: Json
+          version: number
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: number
+          key?: string
+          value?: Json
+          version?: number
         }
         Relationships: []
       }
@@ -990,6 +1086,39 @@ export type Database = {
           favorite_id?: string
           id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      feature_flags: {
+        Row: {
+          created_at: string
+          description: string | null
+          enabled: boolean
+          key: string
+          rollout_pct: number
+          segment: Json
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          key: string
+          rollout_pct?: number
+          segment?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          key?: string
+          rollout_pct?: number
+          segment?: Json
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
@@ -2564,6 +2693,11 @@ export type Database = {
             Returns: string
           }
       admin_analytics_summary: { Args: never; Returns: Json }
+      admin_can_access_sensitive: {
+        Args: { _kind: string; _user_id: string }
+        Returns: boolean
+      }
+      admin_get_my_role: { Args: never; Returns: string }
       admin_risk_queue: {
         Args: { _limit?: number }
         Returns: {
@@ -2580,6 +2714,10 @@ export type Database = {
           user_id: string
           verified: boolean
         }[]
+      }
+      admin_update_setting: {
+        Args: { _actor: string; _key: string; _value: Json }
+        Returns: Json
       }
       award_xp: {
         Args: { _kind: string; _meta?: Json; _user_id: string; _xp: number }
@@ -3653,6 +3791,7 @@ export type Database = {
         | "super_admin"
         | "support"
         | "auditor"
+        | "read_only"
       business_app_status: "pending" | "reviewing" | "approved" | "rejected"
       business_entity_type:
         | "srl"
@@ -3820,6 +3959,7 @@ export const Constants = {
         "super_admin",
         "support",
         "auditor",
+        "read_only",
       ],
       business_app_status: ["pending", "reviewing", "approved", "rejected"],
       business_entity_type: [
