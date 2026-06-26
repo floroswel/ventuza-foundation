@@ -1,13 +1,15 @@
 import { createServerFn } from "@tanstack/react-start";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { aiComplete } from "./ai.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import type { Database } from "@/integrations/supabase/types";
 
 /**
  * Toate funcțiile AI sunt gated de consimțământul `ai_features` în consent_log.
  * Vezi AGENTS.md "REGULĂ — CONSIMȚĂMINTE (permanentă)" și src/lib/consent-registry.ts.
  */
-async function requireAiConsent(supabase: { rpc: (fn: "has_active_consent", args: { _user_id: string; _kind: string }) => Promise<{ data: unknown; error: unknown }> }, userId: string) {
+async function requireAiConsent(supabase: SupabaseClient<Database>, userId: string) {
   const { data, error } = await supabase.rpc("has_active_consent", { _user_id: userId, _kind: "ai_features" });
   if (error) throw new Error("Nu am putut verifica consimțământul AI.");
   if (data !== true) {
