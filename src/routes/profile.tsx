@@ -702,8 +702,12 @@ function EditChips({ label, options, value, onChange }: { label: string; options
 
 function AiBioButton({ form, setForm }: { form: Profile; setForm: (p: Profile) => void }) {
   const gen = useServerFn(generateBio);
+  const aiConsent = useConsent("ai_features");
   const [loading, setLoading] = useState(false);
   async function run() {
+    // Opt-in obligatoriu pentru funcții AI — vezi AGENTS.md "REGULĂ — CONSIMȚĂMINTE".
+    const ok = await aiConsent.ensure();
+    if (!ok) return;
     setLoading(true);
     try {
       const a = form.birthdate ? age(form.birthdate) ?? undefined : undefined;
@@ -728,15 +732,20 @@ function AiBioButton({ form, setForm }: { form: Profile; setForm: (p: Profile) =
     }
   }
   return (
-    <button
-      type="button"
-      onClick={run}
-      disabled={loading}
-      className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/20 disabled:opacity-60"
-    >
-      {loading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
-      AI bio
-    </button>
+    <div className="flex flex-col items-end gap-1">
+      <button
+        type="button"
+        onClick={run}
+        disabled={loading}
+        className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs text-primary hover:bg-primary/20 disabled:opacity-60"
+      >
+        {loading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
+        AI bio
+      </button>
+      <span className="text-[10px] text-muted-foreground">
+        Textul e procesat de un serviciu AI extern (Lovable AI Gateway).
+      </span>
+    </div>
   );
 }
 
