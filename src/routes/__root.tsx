@@ -19,6 +19,9 @@ import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
 import { SessionGuards } from "@/components/SessionGuards";
 import { AgeGate } from "@/components/AgeGate";
+// Init i18n eagerly — useTranslation() în orice rută/child are nevoie de
+// instanță înainte de prima randare (altfel NO_I18NEXT_INSTANCE).
+import "@/lib/i18n";
 
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 
