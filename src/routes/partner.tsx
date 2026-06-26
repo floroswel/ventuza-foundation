@@ -143,7 +143,7 @@ function PartnerPortal() {
     );
   }
 
-  const suspended = !!quota?.suspended;
+  const suspended = !!quota?.suspended || !!suspendedMsg;
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-5 pb-24">
