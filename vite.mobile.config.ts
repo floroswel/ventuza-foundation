@@ -3,47 +3,32 @@
  *
  * Folosire: `bun run build:mobile`
  *
- * Generează `dist/` cu HTML + JS pur client-side (fără SSR / Worker).
- * NU afectează `bun run build` (web cu SSR pe Cloudflare).
+ * Generează `dist/` ca bundle static prin nitro preset `static`, astfel încât
+ * Capacitor să poată împacheta totul fără runtime de Worker.
  *
- * În mobil, toate apelurile către backend trec direct prin clientul Supabase
- * (auth + RLS). Server functions rămân disponibile pe web; pe mobil, dacă
- * vrei sa le folosești, le apelezi prin `fetch` la domeniul published Lovable.
+ * NU afectează `bun run build` (web rămâne SSR pe Cloudflare).
+ *
+ * Pe mobil, codul client folosește direct clientul Supabase (auth + RLS).
+ * Server functions rămân disponibile pe web; pe mobil le poți apela prin
+ * fetch către domeniul published Lovable dacă ai nevoie.
  */
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import tailwindcss from "@tailwindcss/vite";
-import tsconfigPaths from "vite-tsconfig-paths";
-import { TanStackRouterVite } from "@tanstack/router-plugin/vite";
-import path from "node:path";
+import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  plugins: [
-    TanStackRouterVite({
-      target: "react",
-      autoCodeSplitting: true,
-      routesDirectory: "./src/routes",
-      generatedRouteTree: "./src/routeTree.gen.ts",
-    }),
-    react(),
-    tailwindcss(),
-    tsconfigPaths(),
-  ],
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+  tanstackStart: {
+    server: { entry: "server" },
+    spa: {
+      enabled: true,
+      prerender: { outputPath: "/index.html" },
     },
   },
-  define: {
-    // Forțează codul izomorfic să creadă că nu e SSR.
-    "process.env.MOBILE_BUILD": JSON.stringify("1"),
+  nitro: {
+    preset: "static",
+    output: { dir: "dist", publicDir: "dist" },
   },
-  build: {
-    outDir: "dist",
-    emptyOutDir: true,
-    target: "es2020",
-    rollupOptions: {
-      input: path.resolve(__dirname, "index.html"),
+  vite: {
+    define: {
+      "process.env.MOBILE_BUILD": JSON.stringify("1"),
     },
   },
 });
