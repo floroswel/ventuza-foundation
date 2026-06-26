@@ -2910,6 +2910,7 @@ export type Database = {
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       longtransactionsenabled: { Args: never; Returns: boolean }
+      mark_inactive_for_deletion: { Args: never; Returns: number }
       mark_message_viewed: { Args: { _msg_id: string }; Returns: undefined }
       moderator_ban_user: {
         Args: { _reason: string; _target: string }
@@ -2976,6 +2977,7 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      purge_scheduled_deletions: { Args: never; Returns: number }
       recompute_risk_score: { Args: { _uid: string }; Returns: number }
       record_age_verification: {
         Args: {
