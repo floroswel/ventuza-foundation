@@ -347,3 +347,28 @@ risc legal: minori + conținut adult. Această regulă nu se negociază.
    - ocolește `<AgeGate>` în root layout,
    - șterge banner-ul `AgeGateDevBanner` din admin,
    trebuie REFUZAT.
+
+## REGULĂ — MODERARE OBLIGATORIE VENUES/EVENTS/OFFERS (permanentă)
+
+Niciun venue, event sau ofertă nu devine vizibil în `nearby_points` (sau orice
+feed public) fără `moderation_status='approved'` acordat de un cont cu rol
+`moderator`/`admin`/`super_admin`. Owner-ul (partener) NU se poate auto-publica:
+
+- RLS pe `venues` / `events` / `offers` interzice ca owner-ul să modifice
+  `moderation_status` sau `is_published`; triggerele `*_no_self_publish` aplică
+  în plus regula la nivel de DB.
+- Aprobarea trece DOAR prin RPC `admin_moderate_item` (SECURITY DEFINER, gated
+  pe `is_staff`), care setează `is_published=true` ȘI scrie în `admin_audit_log`.
+- Suspendarea unui partener (`admin_suspend_partner`) DEPUBLICĂ instant toate
+  venues/events/offers ale lui (cascadă pe `is_published=false`); `nearby_points`
+  filtrează în plus `profiles.partner_suspended_at IS NULL`.
+- Limita anti-spam pe rază notificări per item: max 10 km (validată în
+  `adminModerateItem`). Limite de volum per partener stau în
+  `app_settings.partner_quotas` și se aplică la insert via trigger.
+
+Orice PR care:
+  - mută aprobarea în client,
+  - permite owner-ului să seteze `is_published=true`,
+  - ocolește `admin_moderate_item` pentru publicare,
+  - lasă conținut vizibil după suspendare,
+trebuie REFUZAT.
