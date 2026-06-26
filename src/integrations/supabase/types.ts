@@ -2666,8 +2666,6 @@ export type Database = {
               ethnicity: string
               gender: string[]
               height_cm: number
-              hiv_status: string
-              hiv_test_date: string
               id: string
               interests: string[]
               last_seen: string
