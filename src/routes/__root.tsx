@@ -19,6 +19,9 @@ import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
 import { SessionGuards } from "@/components/SessionGuards";
 import { AgeGate } from "@/components/AgeGate";
+// Init i18n eagerly — useTranslation() în orice rută/child are nevoie de
+// instanță înainte de prima randare (altfel NO_I18NEXT_INSTANCE).
+import "@/lib/i18n";
 
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 
@@ -134,7 +137,7 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
   useEffect(() => {
-    // Initialize i18n (auto-detects RO/EN from localStorage > navigator).
+    // i18n e deja inițializat de import eager; aici doar setăm <html lang>.
     void import("@/lib/i18n").then((mod) => {
       document.documentElement.lang = mod.default.language || "ro";
     });
