@@ -36,7 +36,7 @@ export const Route = createFileRoute("/admin")({
 type Section =
   | "overview" | "users" | "reports" | "risk" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
-  | "gdpr" | "breach" | "policies" | "security";
+  | "gdpr" | "breakglass" | "breach" | "policies" | "security";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
