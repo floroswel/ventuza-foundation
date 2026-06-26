@@ -752,6 +752,7 @@ function AiBioButton({ form, setForm }: { form: Profile; setForm: (p: Profile) =
 
 function PhotoCoachButton({ photos }: { photos: string[] }) {
   const coach = useServerFn(photoCoach);
+  const aiConsent = useConsent("ai_features");
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   async function run() {
@@ -759,6 +760,9 @@ function PhotoCoachButton({ photos }: { photos: string[] }) {
       toast.message("Adaugă cel puțin o poză.");
       return;
     }
+    // Opt-in obligatoriu pentru funcții AI — vezi AGENTS.md "REGULĂ — CONSIMȚĂMINTE".
+    const ok = await aiConsent.ensure();
+    if (!ok) return;
     setLoading(true);
     setFeedback(null);
     try {
@@ -789,6 +793,9 @@ function PhotoCoachButton({ photos }: { photos: string[] }) {
         {loading ? <Loader2 className="size-3 animate-spin" /> : <Sparkles className="size-3" />}
         AI photo coach
       </button>
+      <p className="mt-1 text-[10px] text-muted-foreground">
+        Pozele sunt analizate de un serviciu AI extern (Lovable AI Gateway).
+      </p>
       {feedback && (
         <div className="mt-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 text-sm leading-relaxed text-foreground/90 whitespace-pre-wrap">
           {feedback}
