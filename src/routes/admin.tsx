@@ -110,6 +110,7 @@ function AdminDashboard() {
     { id: "csam", label: "CSAM", icon: ShieldAlert, adminOnly: true },
     { id: "dsa", label: "DSA", icon: FileWarning },
     { id: "gdpr", label: "GDPR", icon: Download, adminOnly: true },
+    { id: "breakglass", label: "Break-glass", icon: ShieldAlert, adminOnly: true },
     { id: "breach", label: "Breșe", icon: AlertOctagon, adminOnly: true },
     { id: "policies", label: "Politici", icon: FileText },
     { id: "audit", label: "Audit", icon: ScrollText },
