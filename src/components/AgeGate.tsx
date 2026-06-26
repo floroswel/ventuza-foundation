@@ -43,6 +43,11 @@ export function AgeGate() {
   };
 
   useEffect(() => {
+    // Recheck policy on every nav (TTL cache în age-gate-policy).
+    void shouldEnforceAgeGate().then(setEnforce);
+  }, [location.pathname]);
+
+  useEffect(() => {
     if (!user) {
       setStatus(null);
       setChecking(false);
