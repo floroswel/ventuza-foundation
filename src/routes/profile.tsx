@@ -6,6 +6,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { useConsent } from "@/lib/use-consent";
 import { supabase } from "@/integrations/supabase/client";
+import { getMyHealth, setMyHealth } from "@/lib/health.functions";
+
+function withHealth<T extends object>(row: T, h?: { hiv_status: string | null; hiv_test_date: string | null }): Profile {
+  return { ...(row as unknown as Profile), hiv_status: h?.hiv_status ?? null, hiv_test_date: h?.hiv_test_date ?? null };
+}
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,7 +144,11 @@ function ProfilePage() {
     (async () => {
       const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
       if (error) toast.error(error.message);
-      const p = data as Profile | null;
+      let p: Profile | null = null;
+      if (data) {
+        const h = await getMyHealth().catch(() => ({ hiv_status: null, hiv_test_date: null }));
+        p = withHealth(data, h);
+      }
       setProfile(p);
       setLoading(false);
       if (p && !p.onboarding_completed) navigate({ to: "/n" });
@@ -399,7 +408,7 @@ function ProfilePage() {
             lookingNowIntent={profile.looking_now_intent}
             onUpdate={async () => {
               const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
-              if (data) setProfile(data as Profile);
+              if (data) setProfile((prev) => withHealth(data, prev ? { hiv_status: prev.hiv_status, hiv_test_date: prev.hiv_test_date } : undefined));
             }}
           />
           <ProfilePremiumPanel
@@ -411,7 +420,7 @@ function ProfilePage() {
             boostUntil={profile.boost_until}
             onUpdate={async () => {
               const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
-              if (data) setProfile(data as Profile);
+              if (data) setProfile((prev) => withHealth(data, prev ? { hiv_status: prev.hiv_status, hiv_test_date: prev.hiv_test_date } : undefined));
             }}
           />
         </Section>
@@ -518,7 +527,7 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
       weight_kg: form.weight_kg,
       ethnicity: form.ethnicity,
       position: form.position,
-      hiv_status: form.hiv_status,
+      // hiv_status / hiv_test_date — cifrate; scrise prin setMyHealth mai jos.
       relationship_status: form.relationship_status,
       meet_at: form.meet_at ?? [],
       expectations: form.expectations ?? [],
@@ -529,9 +538,21 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
       accept_nsfw_photos: form.accept_nsfw_photos ?? false,
       hide_age: f.hide_age ?? false,
     }).eq("id", profile.id).select("*").maybeSingle();
+    if (error || !data) { setSaving(false); return toast.error(error?.message ?? "Failed"); }
+
+    // Cifrare HIV via server fn. Dacă userul nu are consimțământ activ,
+    // server fn-ul întoarce ok:false (triggerul DB ar bloca scrierea oricum).
+    const wantHiv = form.hiv_status ?? null;
+    const wantDate = form.hiv_test_date ?? null;
+    if (wantHiv !== profile.hiv_status || wantDate !== profile.hiv_test_date) {
+      const res = await setMyHealth({ data: { hiv_status: wantHiv, hiv_test_date: wantDate } });
+      if (!res.ok) {
+        setSaving(false);
+        return toast.error(res.message);
+      }
+    }
     setSaving(false);
-    if (error || !data) return toast.error(error?.message ?? "Failed");
-    onSaved(data as Profile);
+    onSaved(withHealth(data, { hiv_status: wantHiv, hiv_test_date: wantDate }));
   }
 
   function single<K extends keyof Profile>(k: K, options: string[]) {

@@ -1481,8 +1481,8 @@ export type Database = {
           hide_age: boolean
           hide_distance: boolean
           hide_online: boolean
-          hiv_status: string | null
-          hiv_test_date: string | null
+          hiv_status_enc: string | null
+          hiv_test_date_enc: string | null
           id: string
           ideal_match: string | null
           incognito: boolean
@@ -1601,8 +1601,8 @@ export type Database = {
           hide_age?: boolean
           hide_distance?: boolean
           hide_online?: boolean
-          hiv_status?: string | null
-          hiv_test_date?: string | null
+          hiv_status_enc?: string | null
+          hiv_test_date_enc?: string | null
           id: string
           ideal_match?: string | null
           incognito?: boolean
@@ -1721,8 +1721,8 @@ export type Database = {
           hide_age?: boolean
           hide_distance?: boolean
           hide_online?: boolean
-          hiv_status?: string | null
-          hiv_test_date?: string | null
+          hiv_status_enc?: string | null
+          hiv_test_date_enc?: string | null
           id?: string
           ideal_match?: string | null
           incognito?: boolean
@@ -2887,6 +2887,13 @@ export type Database = {
           verified: boolean
         }[]
       }
+      get_user_health: {
+        Args: { _key: string; _user_id: string }
+        Returns: {
+          hiv_status: string
+          hiv_test_date: string
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       has_active_consent: {
         Args: { _kind: string; _user_id: string }
@@ -3022,6 +3029,10 @@ export type Database = {
       }
       set_looking_now: {
         Args: { _hours: number; _intent?: string }
+        Returns: undefined
+      }
+      set_user_health: {
+        Args: { _date: string; _key: string; _status: string; _user_id: string }
         Returns: undefined
       }
       st_3dclosestpoint: {
