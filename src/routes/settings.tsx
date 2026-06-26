@@ -370,6 +370,9 @@ function SettingsPage() {
           </div>
         </section>
 
+        {/* GDPR consents (single source of truth = src/lib/consent-registry.ts) */}
+        <ConsentsCard />
+
         {/* Unique features: pronouns, friends-only, language, PIN, discreet mode */}
         <UniquesCard />
 
