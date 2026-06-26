@@ -51,7 +51,7 @@ export const adminBreakGlassReveal = createServerFn({ method: "POST" })
     if (!allowed) throw new Error("Forbidden: rol insuficient pentru această categorie sensibilă.");
 
     // 2) Pregătim payload-ul cerut.
-    let payload: Record<string, unknown> = {};
+    let payload: any = {};
     let fields: string[] = [];
 
     if (data.kind === "health") {
