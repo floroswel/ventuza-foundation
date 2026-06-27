@@ -97,7 +97,7 @@ export const adminListPartners = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // user_roles holds the partner role grant
     const { data: roleRows, error: rErr } = await (supabaseAdmin as any).from("user_roles")
-      .select("user_id, granted_at").eq("role", "partner").limit(data.limit);
+      .select("user_id, created_at").eq("role", "partner").limit(data.limit);
     if (rErr) throw new Error(rErr.message);
     const ids = (roleRows ?? []).map((r: any) => r.user_id);
     if (ids.length === 0) return [];
