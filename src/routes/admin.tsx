@@ -728,10 +728,14 @@ function ReportsPanel({ meId }: { meId: string }) {
 function RiskPanel() {
   const [risk, setRisk] = useState<RiskRow[]>([]);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
+    setLoading(true); setError(null);
     const { data, error } = await supabase.rpc("admin_risk_queue", { _limit: 100 });
-    if (error) return toast.error(error.message);
+    setLoading(false);
+    if (error) { setError(error.message); toast.error(error.message); return; }
     setRisk((data ?? []) as RiskRow[]);
   };
   useEffect(() => { load(); }, []);
@@ -741,7 +745,9 @@ function RiskPanel() {
   const suspend = async (uid: string, hours: number) => { setBusy(true); const { error } = await supabase.rpc("moderator_suspend_user", { _target: uid, _hours: hours, _reason: "risc" }); setBusy(false); if (error) return toast.error(error.message); toast.success(`Suspend ${hours}h`); load(); };
   const ban = async (uid: string) => { const reason = prompt("Motiv ban:"); if (!reason) return; if (!confirm("Ban permanent?")) return; setBusy(true); const { error } = await supabase.rpc("moderator_ban_user", { _target: uid, _reason: reason }); setBusy(false); if (error) return toast.error(error.message); toast.success("Banat"); load(); };
 
-  if (risk.length === 0) return <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">✅ Niciun risc detectat</div>;
+  if (error) return <AdminPanelError error={error} onRetry={load} />;
+  if (loading) return <AdminPanelEmpty label="Se calculează coada de risc…" />;
+  if (risk.length === 0) return <AdminPanelEmpty label="✅ Niciun risc detectat (empty legitim)." />;
   return (
     <ul className="space-y-3">
       {risk.map((r) => {
