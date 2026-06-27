@@ -152,6 +152,9 @@ function ThreadPage() {
         setHasMore(msgs.length >= MESSAGES_PAGE);
         const extra = ((extraRes.data ?? []) as Array<{ bio: string | null; interests: string[] | null }>)[0] ?? null;
         setOther({ ...prof, bio: extra?.bio ?? null, interests: extra?.interests ?? null });
+        // Bilateral block check (either direction) — server-side via SECURITY DEFINER RPC.
+        const { data: blockedRes } = await supabase.rpc("is_blocked_between" as never, { a: user!.id, b: oid } as never);
+        if (alive) setIsBlocked(Boolean(blockedRes));
         await markRead(id, user!.id);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't open chat");
