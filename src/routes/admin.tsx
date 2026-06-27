@@ -864,7 +864,7 @@ function RiskPanel() {
   if (loading) return <AdminPanelEmpty label="Se calculează coada de risc…" />;
   if (risk.length === 0) return <AdminPanelEmpty label="✅ Niciun risc detectat (empty legitim)." />;
 
-  const riskTone = (n: number) => (n >= 80 ? "rejected" : n >= 60 ? "pending" : "info") as const;
+  const riskTone = (n: number): "rejected" | "pending" | "info" => (n >= 80 ? "rejected" : n >= 60 ? "pending" : "info");
   const cols: Column<RiskRow>[] = [
     {
       key: "score",
