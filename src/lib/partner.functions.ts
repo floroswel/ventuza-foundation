@@ -370,3 +370,43 @@ export const partnerGetOfferStats = createServerFn({ method: "POST" })
     if (sErr) throw new Error(sErr.message);
     return stats; // aggregate only — no user identities
   });
+
+/* --------------------- STATUS NOTIFICATIONS (partner) --------------------- */
+
+export const partnerListStatusNotifications = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertPartner(context);
+    const { data, error } = await (context.supabase as any)
+      .from("partner_status_notifications")
+      .select("id,kind,item_id,item_title,decision,reason,created_at,read_at")
+      .eq("partner_id", context.userId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Array<{
+      id: string;
+      kind: "venue" | "event" | "offer";
+      item_id: string;
+      item_title: string | null;
+      decision: "approved" | "rejected" | "changes_requested";
+      reason: string | null;
+      created_at: string;
+      read_at: string | null;
+    }>;
+  });
+
+export const partnerMarkNotificationsRead = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ ids: z.array(z.string().uuid()).max(100).optional() }).parse(d ?? {}),
+  )
+  .handler(async ({ context, data }) => {
+    await assertPartner(context);
+    const sb = (context.supabase as any).from("partner_status_notifications");
+    const q = sb.update({ read_at: new Date().toISOString() }).eq("partner_id", context.userId).is("read_at", null);
+    const { error } = data.ids?.length ? await q.in("id", data.ids) : await q;
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
