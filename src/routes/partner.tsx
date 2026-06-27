@@ -151,13 +151,19 @@ function PartnerPortal() {
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-5 pb-24">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Button variant="ghost" size="sm" asChild>
           <Link to="/">
             <ChevronLeft className="w-4 h-4" /> Acasă
           </Link>
         </Button>
-        <h1 className="text-2xl font-semibold">Portal Partener</h1>
+        <h1 className="text-2xl font-semibold flex-1">Portal Partener</h1>
+        <StatusNotificationsBell />
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/partner/guide">
+            <BookOpen className="w-4 h-4 mr-1" /> Ghid
+          </Link>
+        </Button>
       </div>
 
       {suspended && (
@@ -175,11 +181,23 @@ function PartnerPortal() {
         </Card>
       )}
 
+      <StatusTiles items={items} />
+
       {quota && <QuotaPanel quota={quota} />}
 
-      <div className="flex justify-end mb-2">
-        <Link to="/partner/billing"><Button variant="outline" size="sm">Facturare & abonament →</Button></Link>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button
+          size="lg"
+          disabled={suspended}
+          onClick={() => setWizardOpen(true)}
+        >
+          <Plus className="w-4 h-4 mr-1" /> Postare nouă (ghidat)
+        </Button>
+        <Link to="/partner/billing">
+          <Button variant="outline" size="sm">Facturare & abonament →</Button>
+        </Link>
       </div>
+
 
       <Tabs defaultValue="venues">
         <TabsList className="grid grid-cols-3 w-full">
