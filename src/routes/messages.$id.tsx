@@ -72,9 +72,10 @@ function ThreadPage() {
       });
   }, [user]);
 
+  const [isBlocked, setIsBlocked] = useState(false);
   const hasInbound = messages.some((m) => m.sender_id && m.sender_id !== user?.id);
   void meVerified; void hasInbound;
-  const blockedFirstMessage = false;
+  const blockedFirstMessage = isBlocked;
 
   async function handleVerifyFile(file: File) {
     if (!user) return;
