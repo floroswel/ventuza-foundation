@@ -115,12 +115,15 @@ export function CreateEventDialog({
 
           <label className="flex items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm">
             <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} className="size-4 accent-primary" />
-            <span>Private — only I can see this event</span>
+            <span>Privat — vizibil doar pentru mine</span>
           </label>
+          <p className="rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            Evenimentul intră la moderare și devine vizibil public după aprobarea unui moderator.
+          </p>
         </div>
         <div className="flex items-center justify-end gap-2 border-t border-border/60 px-4 py-3">
           <button onClick={() => onOpenChange(false)} className="rounded-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
-            Cancel
+            Renunță
           </button>
           <button
             onClick={submit}
@@ -128,7 +131,7 @@ export function CreateEventDialog({
             className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-60"
           >
             {saving && <Loader2 className="size-4 animate-spin" />}
-            Create
+            Trimite spre moderare
           </button>
         </div>
       </div>
