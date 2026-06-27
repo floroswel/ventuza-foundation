@@ -37,7 +37,7 @@ export const adminListBusinessApplications = createServerFn({ method: "POST" })
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let q = (supabaseAdmin as any).from("business_applications")
-      .select("id, user_id, business_name, business_type, contact_name, contact_email, contact_phone, status, created_at, reviewed_at, review_notes")
+      .select("id, user_id, legal_name, brand_name, entity_type, contact_name, contact_email, contact_phone, status, created_at, updated_at, admin_notes")
       .order("created_at", { ascending: false })
       .limit(data.limit);
     if (data.status !== "all") q = q.eq("status", data.status);
