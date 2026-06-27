@@ -60,9 +60,9 @@ export const submitBusinessApplication = createServerFn({ method: "POST" })
     // Optional: attach user_id when caller is signed in (best-effort, never trusted from payload).
     let userId: string | null = null;
     try {
-      const { getWebRequest } = await import("@tanstack/react-start/server");
-      const req = getWebRequest();
-      const auth = req?.headers.get("authorization") ?? "";
+      const { getHeaders } = await import("@tanstack/react-start/server");
+      const headers = getHeaders() as Record<string, string | undefined>;
+      const auth = (headers["authorization"] ?? headers["Authorization"] ?? "") as string;
       const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : "";
       if (token) {
         const { createClient } = await import("@supabase/supabase-js");
