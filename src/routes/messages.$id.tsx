@@ -614,12 +614,9 @@ function ThreadPage() {
       )}
 
       {blockedFirstMessage && (
-        <div className="border-t border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
-          <p className="font-medium text-amber-700 dark:text-amber-400">Verifică-ți profilul pentru a trimite primul mesaj</p>
-          <p className="mt-1 text-xs text-muted-foreground">Un selfie rapid confirmă că ești o persoană reală. Reduce fake-urile pentru toți.</p>
-          <Link to="/profile" className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-medium text-white">
-            Verifică-mă acum
-          </Link>
+        <div className="border-t border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
+          <p className="font-medium text-destructive">Nu poți trimite mesaje acestui utilizator</p>
+          <p className="mt-1 text-xs text-muted-foreground">Există un blocaj între voi (de la tine sau de la cealaltă persoană). Conversația este doar pentru lectură.</p>
         </div>
       )}
 
