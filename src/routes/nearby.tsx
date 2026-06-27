@@ -130,11 +130,14 @@ function NearbyPage() {
   return (
     <div className="container max-w-5xl py-4 px-3 space-y-4">
       <header className="flex items-center justify-between gap-2 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-bold">Aproape de tine</h1>
-          <p className="text-xs text-muted-foreground">
-            Locația ta exactă nu pleacă la server. Filtrarea pe rază se face pe dispozitiv.
-          </p>
+        <div className="flex items-start gap-2">
+          <BackButton className="mt-0.5" />
+          <div>
+            <h1 className="text-2xl font-bold">Aproape de tine</h1>
+            <p className="text-xs text-muted-foreground">
+              Locația ta exactă nu pleacă la server. Filtrarea pe rază se face pe dispozitiv.
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <div className="flex gap-1 bg-muted rounded-md p-1">
