@@ -139,7 +139,7 @@ export const adminUpdateBillingSettings = createServerFn({ method: "POST" })
 export const adminRunBillingTick = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_any_role", {
+    const { data: isAdmin } = await (context.supabase as any).rpc("has_any_role", {
       _user_id: context.userId, _roles: ["admin", "super_admin"],
     });
     if (!isAdmin) throw new Error("forbidden");
