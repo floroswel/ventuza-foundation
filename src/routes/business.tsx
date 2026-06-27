@@ -496,11 +496,18 @@ function DoneScreen({ appId }: { appId: string | null }) {
         Echipa Ventuza analizează cererea ta. Te contactăm pe email în maximum 3 zile lucrătoare.
       </p>
       {appId && (
-        <p className="rounded-full border border-border bg-surface/50 px-3 py-1 text-[11px] text-muted-foreground">
-          ID cerere: <span className="font-mono text-foreground">{appId.slice(0, 8)}</span>
-        </p>
+        <div className="flex items-center gap-2 rounded-full border border-border bg-surface/50 px-3 py-1 text-[11px] text-muted-foreground">
+          <span>ID cerere: <code className="font-mono text-foreground break-all">{appId}</code></span>
+          <button
+            type="button"
+            onClick={() => navigator.clipboard?.writeText(appId)}
+            className="text-primary underline"
+          >
+            copiază
+          </button>
+        </div>
       )}
-      <a href="mailto:business@ventuza.app" className="mt-2 inline-flex items-center gap-2 text-xs text-primary hover:underline">
+      <a href={`mailto:business@ventuza.app?subject=${encodeURIComponent(`Cerere partener ${appId ?? ""}`)}`} className="mt-2 inline-flex items-center gap-2 text-xs text-primary hover:underline">
         <Mail className="size-3.5" /> business@ventuza.app
       </a>
 
