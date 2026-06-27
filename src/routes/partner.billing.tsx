@@ -25,7 +25,7 @@ import { Loader2, Copy, Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 
-export const Route = createFileRoute("/_authenticated/partner/billing")({
+export const Route = createFileRoute("/partner/billing")({
   head: () => ({ meta: [{ title: "Facturare — Ventuza Partners" }, { name: "robots", content: "noindex" }] }),
   component: PartnerBilling,
 });
