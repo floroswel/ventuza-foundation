@@ -31,7 +31,7 @@ function reportBlockErrorMessage(error: unknown) {
     return "Nu îți poți raporta propriul profil.";
   }
   if (message.includes("row-level security") || message.includes("permission denied")) {
-    return "Nu am putut confirma sesiunea. Închide și redeschide aplicația, apoi încearcă din nou.";
+    return "Nu am putut confirma sesiunea pentru această acțiune. Reîncearcă peste câteva secunde.";
   }
 
   return raw || "Nu am putut finaliza acțiunea.";

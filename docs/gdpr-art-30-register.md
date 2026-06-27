@@ -6,8 +6,8 @@
 > cerere (control / investigație). Se actualizează la fiecare schimbare
 > de activitate, scop, procesator sau categorie de date.
 
-- **Versiune:** 2.0
-- **Data:** 2026-06-26
+- **Versiune:** 2.1
+- **Data:** 2026-06-27
 - **Generat din:** schema reală DB (`src/integrations/supabase/types.ts`) + inventar procesatori (`src/routes/legal.subprocessors.tsx`) + cod server (`src/lib/*.functions.ts`, `*.server.ts`).
 - **Responsabil:** _de completat — administrator Ventuza_
 - **DPO:** _de completat (obligatoriu — Art. 37(1)(b)(c): date sănătate + orientare + monitorizare sistematică)_
@@ -346,7 +346,7 @@ Identificate la generarea acestui registru, din analiza schemei reale:
 3. **🟧 A6 — push consent dual**: consimțământul de push este browser-level (Notification API) + opt-in app-level. Lipsește înregistrare în `consent_log` (kind `push_notifications`). **Acțiune:** loghează în `consent_log` la activare/dezactivare.
 4. **🟥 DPIA obligatoriu (Art. 35)**: combinația date sănătate + orientare + locație + monitorizare sistematică + risc minori impune DPIA formal. **Acțiune:** redactare DPIA + anexare la registru înainte de lansare comercială publică.
 5. **🟧 TIA (Transfer Impact Assessment)** post-Schrems II pentru toți procesatorii US (P2, P3, P4, P5, P7, P8). **Acțiune:** redactare TIA și anexare.
-6. **🟧 Cifrare la nivel de coloană pentru `hiv_status` / `hiv_test_date`**: draft pregătit (`docs/migrations-draft/encrypt-hiv-columns.md`), nu este aplicat. **Acțiune:** decide aplicarea sau documentează justificarea respingerii.
+6. **✅ Cifrare la nivel de coloană pentru `hiv_status` / `hiv_test_date` aplicată**: plaintext-ul nu mai există în `profiles`; datele sunt în `hiv_status_enc` / `hiv_test_date_enc`, accesibile doar prin RPC-urile server-side `get_user_health` / `set_user_health`. Test DB anti-regresie: `assert_no_plaintext_hiv_profile_completion()`.
 7. **🟧 DPO desemnat oficial** (Art. 37) — neînregistrat. **Acțiune:** numire formală + notificare ANSPDCP.
 8. **🟧 DPA Didit + RevenueCat + Lovable**: semnate manual din dashboard — confirmă starea fiecăruia și anexează copii.
 

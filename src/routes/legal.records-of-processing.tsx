@@ -59,7 +59,7 @@ const TODOS = [
   "A6 — log push activate/dezactivate în consent_log (kind='push_notifications').",
   "DPIA formal (Art. 35) — combinație sănătate + orientare + locație + minori.",
   "TIA post-Schrems II pentru toți procesatorii US (P2/P3/P4/P5/P7/P8).",
-  "Cifrare la nivel de coloană pentru hiv_status / hiv_test_date (draft pregătit).",
+  "Cifrare HIV aplicată; menține testul DB care blochează revenirea la coloane plaintext.",
   "Desemnare DPO oficial (Art. 37) + contact public.",
   "Confirmare DPA semnate pentru Didit, RevenueCat, Lovable (Supabase).",
 ];
