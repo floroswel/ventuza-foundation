@@ -54,6 +54,7 @@ import { Route as LegalAgePolicyRouteImport } from './routes/legal.age-policy'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as BusinessDashboardRouteImport } from './routes/business.dashboard'
+import { Route as AuthCheckEmailRouteImport } from './routes/auth.check-email'
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
@@ -285,6 +286,11 @@ const BusinessDashboardRoute = BusinessDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => BusinessRoute,
 } as any)
+const AuthCheckEmailRoute = AuthCheckEmailRouteImport.update({
+  id: '/check-email',
+  path: '/check-email',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AdvertiseNewRoute = AdvertiseNewRouteImport.update({
   id: '/new',
   path: '/new',
@@ -311,7 +317,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/advertise': typeof AdvertiseRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/blocked': typeof BlockedRoute
   '/business': typeof BusinessRouteWithChildren
   '/cruise': typeof CruiseRoute
@@ -333,6 +339,7 @@ export interface FileRoutesByFullPath {
   '/status': typeof StatusRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
+  '/auth/check-email': typeof AuthCheckEmailRoute
   '/business/dashboard': typeof BusinessDashboardRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
@@ -362,7 +369,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/advertise': typeof AdvertiseRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/blocked': typeof BlockedRoute
   '/business': typeof BusinessRouteWithChildren
   '/cruise': typeof CruiseRoute
@@ -384,6 +391,7 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
+  '/auth/check-email': typeof AuthCheckEmailRoute
   '/business/dashboard': typeof BusinessDashboardRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
@@ -414,7 +422,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
   '/advertise': typeof AdvertiseRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/blocked': typeof BlockedRoute
   '/business': typeof BusinessRouteWithChildren
   '/cruise': typeof CruiseRoute
@@ -436,6 +444,7 @@ export interface FileRoutesById {
   '/status': typeof StatusRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
+  '/auth/check-email': typeof AuthCheckEmailRoute
   '/business/dashboard': typeof BusinessDashboardRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
@@ -489,6 +498,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/visitors'
     | '/advertise/new'
+    | '/auth/check-email'
     | '/business/dashboard'
     | '/events/$id'
     | '/groups/$id'
@@ -540,6 +550,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/visitors'
     | '/advertise/new'
+    | '/auth/check-email'
     | '/business/dashboard'
     | '/events/$id'
     | '/groups/$id'
@@ -591,6 +602,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/visitors'
     | '/advertise/new'
+    | '/auth/check-email'
     | '/business/dashboard'
     | '/events/$id'
     | '/groups/$id'
@@ -621,7 +633,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRoute
   AdvertiseRoute: typeof AdvertiseRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   BlockedRoute: typeof BlockedRoute
   BusinessRoute: typeof BusinessRouteWithChildren
   CruiseRoute: typeof CruiseRoute
@@ -980,6 +992,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessDashboardRouteImport
       parentRoute: typeof BusinessRoute
     }
+    '/auth/check-email': {
+      id: '/auth/check-email'
+      path: '/check-email'
+      fullPath: '/auth/check-email'
+      preLoaderRoute: typeof AuthCheckEmailRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/advertise/new': {
       id: '/advertise/new'
       path: '/new'
@@ -1022,6 +1041,16 @@ const AdvertiseRouteChildren: AdvertiseRouteChildren = {
 const AdvertiseRouteWithChildren = AdvertiseRoute._addFileChildren(
   AdvertiseRouteChildren,
 )
+
+interface AuthRouteChildren {
+  AuthCheckEmailRoute: typeof AuthCheckEmailRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCheckEmailRoute: AuthCheckEmailRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 
 interface BusinessRouteChildren {
   BusinessDashboardRoute: typeof BusinessDashboardRoute
@@ -1074,7 +1103,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
   AdvertiseRoute: AdvertiseRouteWithChildren,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   BlockedRoute: BlockedRoute,
   BusinessRoute: BusinessRouteWithChildren,
   CruiseRoute: CruiseRoute,
