@@ -1,86 +1,70 @@
 
-# Portal Partener — raport + plan unificat
+# Raport: detecție producție (isProductionHost) — stare actuală
 
-## PARTEA 1 — Verificare lanț cap-coadă (existent)
+## 1. Unde e definită logica
 
-| # | Verigă | Status | Notă |
-|---|---|---|---|
-| 1 | Partener creează venue/event/offer (draft) | ✅ | `partner.functions.ts` → insert cu `moderation_status='pending'`, `is_published=false`. Quota verificată server-side (`checkQuota`). |
-| 2 | Trigger DB blochează auto-publicarea | ✅ | `*_no_self_publish` pe venues/events/offers + RLS owner-only. Partenerul NU poate seta `is_published`/`is_official` (curățat la insert). |
-| 3 | Staff aprobă în admin | ✅ | `adminModerateItem` → RPC `admin_moderate_item` (SECURITY DEFINER, `is_staff` gate), setează `is_published=true`, scrie `admin_audit_log`. |
-| 4 | Apare în Nearby (listă + hartă) | ✅ | `nearby_points` RPC + filtru `is_published AND moderation_status='approved' AND partner_suspended_at IS NULL`. Hartă MapLibre + bucket distanță. |
-| 5 | Notificare proximitate cu plafon/cooldown/quiet | ✅ | `try_record_proximity_hit` validează `app_settings.proximity_notifications` (cooldown, daily cap, quiet hours, rază max). Niciun bypass UI. |
-| 6 | Partener vede status + stats (fără identități) | ✅ parțial | `partnerListMyItems` arată status + `rejection_reason`. `partnerGetOfferStats` întoarce doar `{total, redeemed}`. **LIPSEȘTE**: notificare ACTIVĂ la schimbare de status — userul trebuie să intre singur în portal. |
+**Singur loc:** `src/lib/age-gate-policy.ts`, funcția `isProductionHost(hostname)`.
+Nu există mirror server-side (comentariul din fișier zice "oglindită pe server în `requireAgeGateEnforcement`", dar în `src/lib/age-verification.functions.ts` nu există o astfel de funcție — gardul e doar client-side).
 
-### Verigi rupte / lipsă (toate non-blocante pentru lanțul tehnic, dar incomplete UX)
+Logică actuală (allow-list de NON-prod, restul = prod):
+- `localhost`, `127.0.0.1`, `*.local` → NON-prod
+- `id-preview--*` → NON-prod
+- `*-dev.lovable.app`, `*--dev.lovable.app` → NON-prod
+- `*.lovableproject.com` → NON-prod
+- `*.lovable.dev` → NON-prod
+- **orice altceva → PROD** (inclusiv custom domains și `*.lovable.app` publicat)
 
-- **R1 — Fără notificare push/in-app la decizia moderării**. `admin_moderate_item` actualizează rândul + scrie audit log, dar partenerul nu primește un eveniment dedicat ("Aprobat ✓" / "Respins: motiv X"). Trebuie să verifice manual portalul.
-- **R2 — Fără preview înainte de submit**. Formularul curent salvează direct; partenerul nu vede cum va arăta cardul în Nearby/notificare.
-- **R3 — Fără template-uri/exemple**. Câmpurile sunt goale, fără placeholder-uri instructive, fără lungimi minime sugerate, fără structură ghidată ("ce / când / pentru cine / de ce să vii").
-- **R4 — Fără pagină reguli**. Partenerul nu vede din start ce e permis / interzis / SLA moderare / cum funcționează notificările anti-spam.
-- **R5 — Wizard absent**. Crearea pornește direct de pe dialog tehnic; nu există flux pas-cu-pas care să educe.
+SSR / hostname gol → `true` (fail-safe prod).
 
-**Concluzie: lanțul tehnic funcționează cap-coadă, fără rupturi de date. Lipsa este pur UX: ghidare + feedback la decizie. Restul reparațiilor sunt aditive, nu modifică contractele existente.**
+## 2. ventuza.eu recunoscut ca producție?
 
-## PARTEA 2-5 — Plan implementare
+**DA.** Atât `ventuza.eu` cât și `www.ventuza.eu` nu se potrivesc cu niciun pattern din allow-list-ul de NON-prod, deci cad pe ramura default `return true`. La fel `ventuza-foundation.lovable.app` (publicat).
 
-### A. Notificare status partener (R1)
-- Migrare SQL:
-  - Tabel `partner_status_notifications` (id, partner_id, kind, item_id, item_title, decision, reason, created_at, read_at). RLS: owner-only SELECT; INSERT doar via SECURITY DEFINER.
-  - Modific `admin_moderate_item` să insereze o linie aici după update (în aceeași tranzacție). Owner-ul se ia din venues.owner_id / events.host_id / venues.owner_id via offer.venue_id.
-- Server fn `partnerListStatusNotifications` + `partnerMarkNotificationRead`.
-- UI: badge cu count nemodificat în header portal + dropdown care listează ultimele 20 decizii (Aprobat/Respins/Cere modificări + motiv). Marcare ca citit la click. Toast pe deschiderea portalului dacă există necitite.
-- (Push real opțional — același tabel poate alimenta și push prin worker existent dacă userul are subscription. Faza 1: doar in-app.)
+## 3. Ce depinde de flag
 
-### B. Wizard ghidat de postare (Partea 2)
-- Componentă nouă `src/components/partner/PostingWizard.tsx` cu state machine 5 pași:
-  1. **Tip** — 3 carduri mari (Local / Eveniment / Ofertă) cu explicație + când să folosești fiecare. Verifică quota; dacă e atinsă, blochează cardul și sugerează upgrade plan.
-  2. **Detalii** — formular generat din template (Partea C), cu placeholder real + hint sub fiecare câmp + counter caractere + indicator "obligatoriu".
-  3. **Locație** — `PinMap` existent + slider rază notificare (100m–10km, cu default din `app_settings.proximity_notifications.default_radius_m`). Text live: "Userii la sub Xkm vor fi anunțați (respectând limitele lor anti-spam)."
-  4. **Preview** — randare exactă cum apare în Nearby (`NearbyCardPreview`) + cum apare push-ul ("📍 [Nume] • 450m").
-  5. **Trimitere** — buton "Trimite la moderare" + mesaj final cu SLA 1-2 zile + că va primi notificare în portal.
-- Înlocuiește butoanele "Loc nou / Eveniment nou / Ofertă nouă" cu un singur CTA "+ Postare nouă" care deschide wizard-ul. Dialogurile vechi rămân disponibile pentru editare (rapid, fără wizard).
-- Validări client + server (server e cel din `partner.functions.ts` — neatins).
+a) **Age verification forțat ON** — ⚠️ PARȚIAL. `shouldEnforceAgeGate()` are momentan **kill-switch activ** (comentat explicit în cod): override-ul hard `if (isProductionHost()) return true;` este **DEZACTIVAT**. Acum, și în producție, enforcement-ul respectă `feature_flags.age_verification.enabled` (fail-safe ON dacă flag-ul lipsește / eroare). Deci pe `ventuza.eu`, age gate este ON **doar dacă** flag-ul din DB e ON sau lipsă/eroare. Dacă cineva îl pune OFF, e OFF și în prod. Asta contrazice REGULA — AGE GATE din AGENTS.md.
 
-### C. Template-uri (Partea 3)
-- Fișier `src/lib/partner-templates.ts` cu `VENUE_TEMPLATE`, `EVENT_TEMPLATE`, `OFFER_TEMPLATE`: fiecare cu lista de câmpuri + label + hint + placeholder + min/max + required + opțional `example_value`.
-- Buton "Vezi exemplu real" în pas 2 al wizardului care pre-completează cu un exemplu complet pe care partenerul îl poate edita.
-- Validare zod în client identică cu cea din server (single source: schema declarată în `partner-templates.ts`, reexportată în `partner.functions.ts`).
+b) **Demo seed banner roșu** (`DemoSeedBanner`) — afișat doar dacă `isProductionHost() === true` ȘI există seed. Pe `ventuza.eu` → DA, va apărea avertizarea când există conținut `is_seed`.
 
-### D. Ghid pentru parteneri (Partea 4)
-- Rută nouă `/partner/guide` (`src/routes/partner.guide.tsx`). Conținut secțiuni:
-  - Ce poți posta (Local / Eveniment / Ofertă) — exemple bune și rele.
-  - **Interzis**: escort, conținut sexual explicit, înșelătorie, spam, discriminare, outing involuntar, conținut fără drepturi. Link la termeni.
-  - Formate imagini: jpg/png/webp, max 5 MB, recomandat 1200×800, peisaj.
-  - De ce trecem prin moderare + SLA 1-2 zile lucrătoare.
-  - Cum funcționează notificările de proximitate: cooldown 24h/punct, plafon zilnic per user, ore liniștite — partenerul NU controlează aceste limite.
-  - Cum funcționează respingerea: vezi motivul în portal, corectezi, retrimiti.
-- Link mare "Citește ghidul" pe pagina principală portal + sub fiecare câmp cu "tip" mic.
+c) **Simulator locație** (`DemoSeedPanel` → secțiunea simulează locația) — ascuns/dezactivat dacă `isProductionHost() === true`. Pe `ventuza.eu` → DA, ascuns.
 
-### E. Mesaje respingere clare (Partea 4 final)
-- Deja există `rejection_reason` în UI. Adăugare:
-  - Card dedicat sus în portal: "X postări necesită atenție" cu listă click-to-edit pentru `rejected` / `changes_requested`.
-  - Pre-completare wizard în modul "edit + remoderate" cu motivul vizibil sus + checklist sugerat ("Lipsește descriere ≥50 caractere", etc.) când motivul match-uiește pattern-uri cunoscute.
+d) **Bannere de dev** — în `admin.tsx` se afișează `isProductionHost: true/false` ca text de diagnostic. Nu există alt banner "DEV" condiționat aici. `AgeGate.tsx` are doar un `console.warn` când enforcement-ul e OFF.
 
-### F. Dashboard status (Partea 5)
-- Sus în portal, înlocuim cards inline cu 3 tile-uri:
-  - **Live** (count aprobat + publicat).
-  - **În moderare** (pending).
-  - **Necesită atenție** (rejected + changes_requested), highlight roșu dacă > 0.
-- Click pe tile filtrează lista.
+e) **Altele:** nimic altceva nu depinde de `isProductionHost`. RPC-uri server, RLS, triggere health/locație, moderare, billing — toate independente de flag. Seed demo (`seedDemoContent`) este gated pe `super_admin`, NU pe `isProductionHost` (poate rula în prod dacă super_admin apasă butonul).
 
-### G. AGENTS.md — reguli noi
-Adăugare secțiune **REGULĂ — WIZARD PARTENER (permanentă)**:
-- Toată crearea de venue/event/offer din UI partener trece prin `PostingWizard` (sau prin server fn-urile existente programatic). Nu se introduc forme noi de creare directe care ocolesc preview-ul.
-- Template-urile sunt sursa unică pentru schema câmpurilor în UI partener (`partner-templates.ts`) — sincronizate cu validatorii zod din `partner.functions.ts`.
-- Notificările de status partener trec EXCLUSIV prin `partner_status_notifications` populat de `admin_moderate_item`. Nicio cale paralelă (nici emailuri ad-hoc, nici push direct din UI admin).
+## 4. Ce se întâmplă când ventuza.eu devine live
 
-## Note tehnice
+Pentru că `ventuza.eu` **ESTE** deja recunoscut ca prod:
+- Age verification: depinde **strict** de `feature_flags.age_verification` din DB (din cauza kill-switch-ului). Dacă flag-ul e ON sau lipsește → enforcement ON. Dacă e OFF în DB → **OFF și în prod**. ⚠️ Acesta e singurul risc real de conformitate.
+- Demo seed banner roșu: va apărea când există date `is_seed`.
+- Simulator locație: ascuns.
 
-- Niciun contract server existent nu se modifică (`partner.functions.ts`, `nearby_points`, `try_record_proximity_hit`, RLS, triggere). Wizard-ul e pur UX peste API curent.
-- Singura modificare DB: tabel nou `partner_status_notifications` + extindere `admin_moderate_item` cu un INSERT idempotent. Audit log, moderare obligatorie, quota, anti-spam = NEATINSE.
-- Respect AGENTS.md: moderare obligatorie ✓, quota server-side ✓, fără identități în stats ✓, fără owner self-publish ✓, plafoane user neatinse ✓.
+## 5. capacitor.config.ts
 
-## Confirmare cerută
+Folosește două moduri:
+- `CAPACITOR_DEV=1` → server.url către preview Lovable (`https://31f90140-…lovableproject.com`) pentru hot-reload pe device.
+- Mod prod (default) → încarcă din `dist/` local (bundle împachetat). NU referă `ventuza.eu`, ceea ce e **corect** pentru un APK Google Play (webview citește asset-urile native, nu un domeniu remote).
 
-Confirmi planul? Implementez în această ordine: (A) notificări status → (D+E) ghid + mesaje respingere → (C) template-uri → (B) wizard → (F) dashboard → (G) AGENTS.md.
+Nu trebuie schimbat pentru lansare pe `ventuza.eu`. Singura atenție: build-ul de prod (`bun run build && npx cap sync`) trebuie făcut cu env-uri Lovable Cloud reale (deja sunt în `.env`), nu cu CAPACITOR_DEV.
+
+---
+
+## Recomandare (de aplicat după aprobare)
+
+Pentru a respecta REGULA — AGE GATE din AGENTS.md ("Producție → întoarce `true` necondiționat, IGNORĂ flag-ul"):
+
+1. **Re-introdu hard override-ul** la începutul `shouldEnforceAgeGate()` în `src/lib/age-gate-policy.ts`:
+   ```ts
+   if (isProductionHost()) return true;
+   ```
+   Imediat după declarația funcției, înainte de cache check. Asta restaurează comportamentul documentat: în prod (`ventuza.eu`, `www.ventuza.eu`, `ventuza-foundation.lovable.app`, custom domain) age gate-ul e ON indiferent de flag.
+
+2. **Actualizează comentariul** din header-ul fișierului ca să reflecte că kill-switch-ul a fost dezactivat.
+
+3. **Adăugă explicit `ventuza.eu`** ca prod test în comentariile funcției `isProductionHost` (cosmetic — logica funcționează deja).
+
+4. **Opțional (recomandat):** mirror server-side în `startAgeVerification` care verifică `Origin`/`Referer` și refuză să creeze sesiune Didit dacă vine de la host non-prod cu flag OFF — eliminăm dependența pur client-side.
+
+Nimic altceva nu trebuie schimbat pentru `ventuza.eu`. Capacitor și restul guardurilor sunt OK.
+
+Aprobi să aplic recomandările 1–3 (re-activare hard override + curățare comentarii)? Punctul 4 (mirror server-side) îl propun separat dacă vrei și acel strat de apărare.
