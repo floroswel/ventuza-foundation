@@ -74,7 +74,7 @@ export async function fetchConversations(meId: string): Promise<ConversationList
   // The server-side helper `list_my_block_relations` is the source of truth —
   // RLS on `blocks` only lets me see rows where I'm the blocker, so a client-only
   // filter would miss users who blocked ME.
-  const { data: blocked } = await supabase.rpc("list_my_block_relations");
+  const { data: blocked } = await supabase.rpc("list_my_block_relations" as never);
   const blockedSet = new Set<string>(((blocked ?? []) as Array<string | { list_my_block_relations: string }>).map((r) => typeof r === "string" ? r : r.list_my_block_relations));
 
   const { data: convs, error } = await supabase
