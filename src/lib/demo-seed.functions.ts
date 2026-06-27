@@ -585,6 +585,21 @@ export const deleteDemoContent = createServerFn({ method: "POST" })
     await (supabaseAdmin as any).from("venues").delete().eq("is_seed", true);
     await (supabaseAdmin as any).from("subscriptions").delete().eq("is_seed", true);
 
+    // Admin modules cleanup
+    await (supabaseAdmin as any).from("reports").delete().eq("is_seed", true);
+    await (supabaseAdmin as any).from("illegal_content_reports").delete().eq("is_seed", true);
+    await (supabaseAdmin as any).from("csam_reports").delete().eq("is_seed", true);
+    await (supabaseAdmin as any).from("risk_flags").delete().eq("is_seed", true);
+    await (supabaseAdmin as any).from("breach_incidents").delete().eq("is_seed", true);
+    await (supabaseAdmin as any).from("business_applications").delete().eq("is_seed", true);
+    await (supabaseAdmin as any).from("deletion_requests").delete().eq("is_seed", true);
+    await (supabaseAdmin as any).from("policy_versions").delete().eq("is_seed", true);
+    await (supabaseAdmin as any).from("admin_alerts").delete().eq("is_seed", true);
+    // Append-only tables: filter by sentinel marker.
+    await (supabaseAdmin as any).from("admin_audit_log").delete().eq("actor_email", "seed@ventuza.local");
+    await (supabaseAdmin as any).from("admin_sensitive_access_log").delete().like("justification", "[SEED]%");
+
+
     // Delete seed auth users (cascades profile + user_roles via FKs).
     const { data: seedProfiles } = await (supabaseAdmin as any)
       .from("profiles").select("id").eq("is_seed", true);
