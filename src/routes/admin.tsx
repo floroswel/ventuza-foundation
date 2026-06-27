@@ -312,13 +312,14 @@ function UsersPanel({ meId }: { meId: string }) {
   const [q, setQ] = useState("");
   const [rows, setRows] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
 
   const load = async (query = "") => {
-    setBusy(true);
+    setBusy(true); setError(null);
     try { setRows(await search({ data: { q: query || undefined, limit: 100 } })); }
-    catch (e: any) { toast.error(e.message); }
-    setBusy(false);
+    catch (e: any) { const m = e?.message ?? String(e); setError(m); toast.error(m); }
+    finally { setBusy(false); }
   };
   useEffect(() => { load(); }, []);
 
