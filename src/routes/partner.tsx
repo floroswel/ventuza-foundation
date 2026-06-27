@@ -207,15 +207,6 @@ function PartnerPortal() {
         </TabsList>
 
         <TabsContent value="venues" className="space-y-3">
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              disabled={suspended || (quota ? quota.venues >= quota.quotas.max_venues : false)}
-              onClick={() => setOpenDialog({ kind: "venue" })}
-            >
-              <Plus className="w-4 h-4 mr-1" /> Loc nou
-            </Button>
-          </div>
           {loading ? <Loader2 className="animate-spin" /> : null}
           {items.venues.map((v: any) => (
             <ItemRow
