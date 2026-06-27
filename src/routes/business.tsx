@@ -139,27 +139,13 @@ function BusinessPage() {
         monthly_budget_eur: form.monthly_budget_eur === "" ? undefined : Number(form.monthly_budget_eur),
       };
       const parsed = schema.parse(payload);
-      const { data: sess } = await supabase.auth.getUser();
-      const insertRow = {
-        ...parsed,
-        brand_name: parsed.brand_name || null, cui: parsed.cui || null,
-        reg_com: parsed.reg_com || null, vat_number: parsed.vat_number || null,
-        city: parsed.city || null, address: parsed.address || null,
-        contact_role: parsed.contact_role || null, contact_phone: parsed.contact_phone || null,
-        website: parsed.website || null, social_links: parsed.social_links || null,
-        category: parsed.category || null,
-        monthly_budget_eur: parsed.monthly_budget_eur ?? null,
-        user_id: sess.user?.id ?? null,
-      };
-      const { data, error } = await supabase
-        .from("business_applications")
-        .insert(insertRow)
-        .select("id")
-        .single();
-      if (error) throw error;
-      if (data?.id) {
-        try { localStorage.setItem(STATUS_KEY, JSON.stringify({ id: data.id, at: Date.now() })); } catch {/**/}
-        setSavedAppId(data.id);
+      // Strip the three accepts_* booleans — they're enforced server-side.
+      const { accepts_terms: _t, accepts_dpa: _d, accepts_lgbt_charter: _l, ...rest } = parsed;
+      void _t; void _d; void _l;
+      const res = await submitApp({ data: rest as Parameters<typeof submitApp>[0]["data"] });
+      if (res?.id) {
+        try { localStorage.setItem(STATUS_KEY, JSON.stringify({ id: res.id, at: Date.now() })); } catch {/**/}
+        setSavedAppId(res.id);
         setSavedStatus("pending");
       }
       setView("done");
