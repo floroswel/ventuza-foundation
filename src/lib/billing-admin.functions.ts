@@ -124,12 +124,13 @@ export const adminUpdateBillingSettings = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d) => z.object({ value: z.any() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: isAdmin } = await context.supabase.rpc("has_any_role", {
+    const { data: isAdmin } = await (context.supabase as any).rpc("has_any_role", {
       _user_id: context.userId, _roles: ["admin", "super_admin"],
     });
     if (!isAdmin) throw new Error("forbidden: admin required");
-    const { error } = await (context.supabase as any).rpc("admin_update_setting", {
-      _key: "billing_settings", _value: data.value, _description: null,
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { error } = await (supabaseAdmin as any).rpc("admin_update_setting", {
+      _key: "billing_settings", _value: data.value, _actor: context.userId,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
