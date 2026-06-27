@@ -32,6 +32,7 @@ import { ShareProfileCard } from "@/components/ShareProfileCard";
 import { VideoClipCard } from "@/components/VideoClipCard";
 import { DateVibesCard } from "@/components/DateVibesCard";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
+import { BackButton } from "@/components/BackButton";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
@@ -184,6 +185,9 @@ function ProfilePage() {
             <div className="flex size-full items-center justify-center text-muted-foreground">No photo</div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+        </div>
+        <div className="absolute left-4 top-4">
+          <BackButton fallback="/discover" />
         </div>
 
         <div className="absolute right-4 top-4 flex gap-2">

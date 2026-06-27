@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { CheckCircle2, AlertTriangle, XCircle, Activity } from "lucide-react";
+import { BackButton } from "@/components/BackButton";
 
 export const Route = createFileRoute("/status")({
   component: StatusPage,
@@ -84,10 +85,12 @@ function StatusPage() {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-10">
+      <div className="mb-4"><BackButton fallback="/" /></div>
       <header className="mb-6 flex items-center gap-3">
         <Activity className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-semibold">Status sistem</h1>
       </header>
+
 
       <div className={`mb-6 rounded-2xl border p-5 ${overall === "ok" ? "border-emerald-500/30 bg-emerald-500/5" : overall === "degraded" ? "border-amber-500/30 bg-amber-500/5" : "border-destructive/30 bg-destructive/5"}`}>
         <div className="flex items-center gap-3">
