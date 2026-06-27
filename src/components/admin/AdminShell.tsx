@@ -30,6 +30,14 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [now, setNow] = useState(() => new Date());
+  const [density, setDensity] = useState<"comfortable" | "compact">(() => {
+    if (typeof window === "undefined") return "comfortable";
+    return (localStorage.getItem("admin:density") as "comfortable" | "compact") ?? "comfortable";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem("admin:density", density);
+  }, [density]);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
