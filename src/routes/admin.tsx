@@ -352,6 +352,9 @@ function UsersPanel({ meId }: { meId: string }) {
         </button>
       </div>
 
+      {error && <AdminPanelError error={error} onRetry={() => load(q)} />}
+      {busy && rows.length === 0 && !error && <AdminPanelEmpty label="Se încarcă…" />}
+
       <ul className="space-y-2">
         {rows.map((u) => (
           <li key={u.id} className="rounded-2xl border border-border bg-surface p-3">
