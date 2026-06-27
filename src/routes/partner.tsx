@@ -217,7 +217,7 @@ function PartnerPortal() {
         needs_info: {
           label: "Necesită clarificări",
           cls: "border-orange-500/40 bg-orange-500/5",
-          desc: "Avem nevoie de informații suplimentare. Apasă „Trimite clarificări" — emailul e pre-completat cu ID-ul cererii.",
+          desc: "Avem nevoie de informații suplimentare. Apasă „Trimite clarificări” — emailul e pre-completat cu ID-ul cererii.",
         },
         rejected: {
           label: "Respinsă",
