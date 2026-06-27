@@ -142,7 +142,7 @@ function BusinessPage() {
       // Strip the three accepts_* booleans — they're enforced server-side.
       const { accepts_terms: _t, accepts_dpa: _d, accepts_lgbt_charter: _l, ...rest } = parsed;
       void _t; void _d; void _l;
-      const res = await submitApp({ data: rest as Parameters<typeof submitApp>[0]["data"] });
+      const res = await submitApp({ data: rest as any });
       if (res?.id) {
         try { localStorage.setItem(STATUS_KEY, JSON.stringify({ id: res.id, at: Date.now() })); } catch {/**/}
         setSavedAppId(res.id);
