@@ -68,7 +68,7 @@ export function CreateEventDialog({
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center">
       <div className="w-full max-w-md rounded-t-3xl border border-border bg-background sm:rounded-3xl">
         <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
-          <h2 className="text-base font-semibold">Host an event</h2>
+          <h2 className="text-base font-semibold">Propune un eveniment</h2>
           <button onClick={() => onOpenChange(false)} className="rounded-full p-2 text-muted-foreground hover:text-foreground">
             <X className="size-4" />
           </button>
