@@ -4213,6 +4213,7 @@ export type Database = {
         }
         Returns: string
       }
+      wipe_seed_admin_appendonly: { Args: never; Returns: Json }
       withdraw_health_consent: {
         Args: { _version?: string }
         Returns: undefined
