@@ -66,11 +66,10 @@ export const adminDecideBusinessApplication = createServerFn({ method: "POST" })
     const { error } = await (supabaseAdmin as any).from("business_applications")
       .update({
         status: data.decision,
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: context.userId,
-        review_notes: data.notes ?? null,
+        admin_notes: data.notes ?? null,
       })
       .eq("id", data.id);
+
     if (error) throw new Error(error.message);
     // grant_business_role_on_approval trigger handles role grant on approved.
     await (supabaseAdmin as any).from("admin_audit_log").insert({
