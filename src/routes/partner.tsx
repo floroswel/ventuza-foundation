@@ -84,6 +84,7 @@ function PartnerPortal() {
     | { kind: "offer"; row?: any }
     | { kind: "stats"; offerId: string; title: string }
   >(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const listFn = useServerFn(partnerListMyItems);
   const quotaFn = useServerFn(partnerGetQuota);
