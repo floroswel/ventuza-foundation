@@ -29,6 +29,7 @@ import {
   UserDetailDrawer, GdprOpsPanel, BreakGlassLogPanel,
 } from "@/components/admin/Wave1Sections";
 import { PartnersModerationPanel } from "@/components/admin/PartnersModerationPanel";
+import { BillingAdminPanel } from "@/components/admin/BillingAdminPanel";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
 import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
@@ -65,7 +66,7 @@ type Section =
   | "overview" | "users" | "reports" | "risk" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
-  | "partners" | "demoseed" | "health" | "copilot";
+  | "partners" | "demoseed" | "health" | "copilot" | "billing";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -159,6 +160,7 @@ function AdminDashboard() {
     { id: "ads",      label: "Ads",            icon: Megaphone,   group: "Business" },
     { id: "biz",      label: "B2B",            icon: Building2,   group: "Business" },
     { id: "partners", label: "Parteneri & Moderare", icon: ShieldCheck, group: "Business" },
+    { id: "billing",  label: "Facturare parteneri", icon: FileText,    group: "Business" },
 
     // System
     { id: "health",   label: "System Health", icon: Activity,    group: "System" },
@@ -198,6 +200,7 @@ function AdminDashboard() {
       {section === "data" && isAdmin && <DataExplorerPanel />}
       {section === "broadcast" && isAdmin && <BroadcastPanel />}
       {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
+      {section === "billing" && <BillingAdminPanel isAdmin={!!isAdmin} />}
       {section === "security" && <SecurityPanel />}
       {section === "demoseed" && isAdmin && <DemoSeedPanel isSuperAdmin={isSuper} />}
       {section === "health" && <SystemHealthPanel />}

@@ -173,6 +173,10 @@ function PartnerPortal() {
 
       {quota && <QuotaPanel quota={quota} />}
 
+      <div className="flex justify-end mb-2">
+        <Link to="/partner/billing"><Button variant="outline" size="sm">Facturare & abonament →</Button></Link>
+      </div>
+
       <Tabs defaultValue="venues">
         <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="venues">Locuri ({items.venues.length})</TabsTrigger>

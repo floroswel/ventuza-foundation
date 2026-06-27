@@ -36,6 +36,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as VenuesIdRouteImport } from './routes/venues.$id'
 import { Route as USlugRouteImport } from './routes/u.$slug'
+import { Route as PartnerBillingRouteImport } from './routes/partner.billing'
 import { Route as OffersIdRouteImport } from './routes/offers.$id'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
@@ -53,6 +54,7 @@ import { Route as BusinessDashboardRouteImport } from './routes/business.dashboa
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
+import { Route as ApiPublicHooksBillingTickRouteImport } from './routes/api/public/hooks/billing-tick'
 
 const VisitorsRoute = VisitorsRouteImport.update({
   id: '/visitors',
@@ -189,6 +191,11 @@ const USlugRoute = USlugRouteImport.update({
   path: '/u/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PartnerBillingRoute = PartnerBillingRouteImport.update({
+  id: '/billing',
+  path: '/billing',
+  getParentRoute: () => PartnerRoute,
+} as any)
 const OffersIdRoute = OffersIdRouteImport.update({
   id: '/offers/$id',
   path: '/offers/$id',
@@ -275,6 +282,12 @@ const ApiPublicAgeWebhookRoute = ApiPublicAgeWebhookRouteImport.update({
   path: '/api/public/age-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksBillingTickRoute =
+  ApiPublicHooksBillingTickRouteImport.update({
+    id: '/api/public/hooks/billing-tick',
+    path: '/api/public/hooks/billing-tick',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -292,7 +305,7 @@ export interface FileRoutesByFullPath {
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
-  '/partner': typeof PartnerRoute
+  '/partner': typeof PartnerRouteWithChildren
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -316,11 +329,13 @@ export interface FileRoutesByFullPath {
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
+  '/partner/billing': typeof PartnerBillingRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
+  '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -338,7 +353,7 @@ export interface FileRoutesByTo {
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
-  '/partner': typeof PartnerRoute
+  '/partner': typeof PartnerRouteWithChildren
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -362,11 +377,13 @@ export interface FileRoutesByTo {
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
+  '/partner/billing': typeof PartnerBillingRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages': typeof MessagesIndexRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
+  '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -385,7 +402,7 @@ export interface FileRoutesById {
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
   '/onboarding': typeof OnboardingRoute
-  '/partner': typeof PartnerRoute
+  '/partner': typeof PartnerRouteWithChildren
   '/premium': typeof PremiumRoute
   '/profile': typeof ProfileRoute
   '/quests': typeof QuestsRoute
@@ -409,11 +426,13 @@ export interface FileRoutesById {
   '/legal/terms': typeof LegalTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
+  '/partner/billing': typeof PartnerBillingRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
+  '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -457,11 +476,13 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/messages/$id'
     | '/offers/$id'
+    | '/partner/billing'
     | '/u/$slug'
     | '/venues/$id'
     | '/messages/'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
+    | '/api/public/hooks/billing-tick'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -503,11 +524,13 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/messages/$id'
     | '/offers/$id'
+    | '/partner/billing'
     | '/u/$slug'
     | '/venues/$id'
     | '/messages'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
+    | '/api/public/hooks/billing-tick'
   id:
     | '__root__'
     | '/'
@@ -549,11 +572,13 @@ export interface FileRouteTypes {
     | '/legal/terms'
     | '/messages/$id'
     | '/offers/$id'
+    | '/partner/billing'
     | '/u/$slug'
     | '/venues/$id'
     | '/messages/'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
+    | '/api/public/hooks/billing-tick'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -572,7 +597,7 @@ export interface RootRouteChildren {
   NearbyRoute: typeof NearbyRoute
   NotificationsRoute: typeof NotificationsRoute
   OnboardingRoute: typeof OnboardingRoute
-  PartnerRoute: typeof PartnerRoute
+  PartnerRoute: typeof PartnerRouteWithChildren
   PremiumRoute: typeof PremiumRoute
   ProfileRoute: typeof ProfileRoute
   QuestsRoute: typeof QuestsRoute
@@ -597,6 +622,7 @@ export interface RootRouteChildren {
   MessagesIndexRoute: typeof MessagesIndexRoute
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
+  ApiPublicHooksBillingTickRoute: typeof ApiPublicHooksBillingTickRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -790,6 +816,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof USlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/partner/billing': {
+      id: '/partner/billing'
+      path: '/billing'
+      fullPath: '/partner/billing'
+      preLoaderRoute: typeof PartnerBillingRouteImport
+      parentRoute: typeof PartnerRoute
+    }
     '/offers/$id': {
       id: '/offers/$id'
       path: '/offers/$id'
@@ -909,6 +942,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAgeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/billing-tick': {
+      id: '/api/public/hooks/billing-tick'
+      path: '/api/public/hooks/billing-tick'
+      fullPath: '/api/public/hooks/billing-tick'
+      preLoaderRoute: typeof ApiPublicHooksBillingTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -958,6 +998,17 @@ const GroupsRouteChildren: GroupsRouteChildren = {
 const GroupsRouteWithChildren =
   GroupsRoute._addFileChildren(GroupsRouteChildren)
 
+interface PartnerRouteChildren {
+  PartnerBillingRoute: typeof PartnerBillingRoute
+}
+
+const PartnerRouteChildren: PartnerRouteChildren = {
+  PartnerBillingRoute: PartnerBillingRoute,
+}
+
+const PartnerRouteWithChildren =
+  PartnerRoute._addFileChildren(PartnerRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRoute,
@@ -974,7 +1025,7 @@ const rootRouteChildren: RootRouteChildren = {
   NearbyRoute: NearbyRoute,
   NotificationsRoute: NotificationsRoute,
   OnboardingRoute: OnboardingRoute,
-  PartnerRoute: PartnerRoute,
+  PartnerRoute: PartnerRouteWithChildren,
   PremiumRoute: PremiumRoute,
   ProfileRoute: ProfileRoute,
   QuestsRoute: QuestsRoute,
@@ -999,6 +1050,7 @@ const rootRouteChildren: RootRouteChildren = {
   MessagesIndexRoute: MessagesIndexRoute,
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
+  ApiPublicHooksBillingTickRoute: ApiPublicHooksBillingTickRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -490,3 +490,58 @@ expună **trei stări distincte**:
 - `if (loading) return <Spinner />` fără cale de ieșire pe eroare.
 
 Orice PR care adaugă un panou admin nou TREBUIE să folosească exact acest pattern.
+
+## REGULĂ — FACTURARE PARTENERI (permanentă)
+
+Monetizarea B2B prin transfer bancar (OP) cu confirmare manuală. Zero procesatori
+de plată externi. Banca primește tranzacție B2B, NU date personale ale userilor.
+
+1. **Numerotare facturi neîntreruptă** per `(series, year)` — DOAR prin
+   `public.next_invoice_number(series, year)` (SECURITY DEFINER, lock atomic,
+   GRANT exclusiv `service_role`). Niciun cod care alocă manual numere de
+   factură. Reset anual.
+2. **Activare/extindere abonament partener DOAR prin
+   `admin_confirm_invoice_payment`** (SECURITY DEFINER, gated `is_staff`).
+   Funcția scrie OBLIGATORIU în `admin_audit_log` (actor, invoice_id, sumă,
+   paid_ref, severitate `info`). Nicio cale alternativă de activare
+   (cron, UI, RLS direct) — interzis.
+3. **Preț + TVA + emitent + grace + remindere = `app_settings.billing_settings`**,
+   singura sursă. Modificare doar prin `adminUpdateBillingSettings` →
+   `admin_update_setting` (versionat + audit). Zero hardcode în cod.
+4. **Entitlements per plan citite server-side** prin
+   `public.partner_active_entitlements(owner_id)`. UI le afișează doar
+   informativ. Gate-urile reale (quota, push priority, featured, boost) se
+   verifică server-side ÎNAINTE de orice scriere/notificare.
+5. **Plafoanele USER de notificări** (cooldown 24h, daily cap, quiet hours
+   din `try_record_proximity_hit`) sunt **NEATINSE** de planurile partenerilor.
+   Premium înseamnă DOAR că partenerul ocupă slot prioritar la egalitate de
+   distanță, NU mai multe slot-uri totale per user.
+6. **Degradare la neplată = retrogradare la Free**, NICIODATĂ ștergere
+   conținut. Flow: `active` → (expirat) → `grace` (`grace_until = expiry +
+   grace_days`) → (grace_until depășit) → `free_downgraded` (`plan_code='Free'`).
+   Toate venues/events/oferte rămân în DB; doar entitlements se restrâng.
+   Plata confirmată ulterior restaurează planul (reactivare prin
+   `admin_confirm_invoice_payment`).
+7. **Date fiscale obligatorii înainte de upgrade** (`billing_completed_at` +
+   `billing_email` pe `business_applications`). `partnerStartSubscription`
+   refuză cu `billing_incomplete`.
+8. **Snapshot date fiscale + emitent în factură** (`billing_snapshot` +
+   `issuer_snapshot` JSONB) — imutabile după emitere. Editarea retroactivă a
+   datelor partenerului NU afectează facturile deja emise.
+9. **Niciun procesator de plată extern** (Stripe, RevenueCat B2B, etc.) fără
+   actualizarea `src/routes/legal.subprocessors.tsx` + adăugare în registrul
+   Art. 30. Banca NU este procesator de date personale; primește doar
+   tranzacție B2B (denumire firmă + CUI + IBAN + cod plată).
+
+Orice PR care:
+- adaugă o coloană de preț / VAT / IBAN emitent în cod fără să consume
+  `billing_settings`,
+- alocă numere de factură fără `next_invoice_number`,
+- activează/extinde un abonament fără `admin_confirm_invoice_payment` și
+  fără linie de audit,
+- crește plafoanele USER de notificări pentru parteneri Premium,
+- șterge conținut la neplată,
+- introduce procesator de plată extern fără actualizarea subprocesatori +
+  Art. 30,
+
+trebuie REFUZAT.

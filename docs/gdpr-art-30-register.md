@@ -394,3 +394,17 @@ Identificate la generarea acestui registru, din analiza schemei reale:
 - `/legal/records-of-processing` (pagina publică sumarizată a acestui registru)
 - `docs/migrations-draft/encrypt-hiv-columns.md`
 - `AGENTS.md` — reguli permanente (locație, sănătate, procesatori, Art. 30)
+
+## A20 — Facturare parteneri (Business)
+
+- **Scop:** Emitere facturi proforma/fiscale către parteneri B2B (venues/events/oferte) pentru abonamente lunare și boost-uri one-off, plătite prin transfer bancar (OP) cu confirmare manuală în admin.
+- **Persoane vizate:** Reprezentanți legali ai persoanelor juridice partenere (administratori, persoane de contact pentru facturare). NU se prelucrează date ale userilor finali.
+- **Categorii de date:** Date business (denumire firmă, CUI, Reg.Com., adresă sediu social, IBAN partener — opțional, email facturare) + cod unic de plată generat intern. Snapshot imutabil în factură.
+- **Categorii speciale (Art. 9):** NICIUNA. Date strict business.
+- **Temei legal:** Art. 6(1)(b) GDPR (executare contract de servicii cu partenerul) + Art. 6(1)(c) GDPR (obligație legală de emitere documente fiscale conform Codului Fiscal RO și OUG 28/1999).
+- **Destinatari:** intern (admin staff cu rol `moderator+` pentru lectură, `admin+` pentru confirmare plată); ANAF la control fiscal; contabilitate internă. **Banca NU primește date personale** — doar tranzacție B2B (IBAN, sumă, mențiune cod plată).
+- **Procesatori externi:** NICIUNUL. Stocare exclusiv în Supabase (P1 — Frankfurt, UE). Niciun procesator de plată extern (Stripe / RevenueCat / Pay U etc.).
+- **Transferuri extra-UE:** NU.
+- **Retenție:** 10 ani de la emiterea facturii (obligație fiscală RO — Cod Fiscal art. 25, OUG 28/1999, Legea Contabilității 82/1991).
+- **Măsuri tehnice:** RLS (partenerul vede DOAR facturile proprii); confirmare plată EXCLUSIV prin RPC `admin_confirm_invoice_payment` gated `is_staff` + audit log; numerotare neîntreruptă prin `next_invoice_number` (SECURITY DEFINER atomic); snapshot imutabil al datelor fiscale; preț și TVA centralizate în `app_settings.billing_settings` (versionate).
+- **Drepturi vizați:** acces, rectificare (înainte de emitere; după emitere se generează factură storno), portabilitate (export CSV facturi din portal partener — TBD). Ștergerea NU se aplică din cauza obligației legale de retenție fiscală 10 ani.
