@@ -12,6 +12,8 @@ export function FeedbackWidget() {
   const [sending, setSending] = useState(false);
 
   if (!user) return null;
+  // Ascuns pe home (/discover) — accesibil din alte pagini
+  if (typeof window !== "undefined" && window.location.pathname.startsWith("/discover")) return null;
 
   async function submit() {
     if (!message.trim() || message.length < 5) {
