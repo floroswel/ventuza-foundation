@@ -863,33 +863,65 @@ function RiskPanel() {
   if (error) return <AdminPanelError error={error} onRetry={load} />;
   if (loading) return <AdminPanelEmpty label="Se calculează coada de risc…" />;
   if (risk.length === 0) return <AdminPanelEmpty label="✅ Niciun risc detectat (empty legitim)." />;
-  return (
-    <ul className="space-y-3">
-      {risk.map((r) => {
-        const c = r.risk_score >= 80 ? "text-red-500 bg-red-500/15" : r.risk_score >= 60 ? "text-orange-500 bg-orange-500/15" : "text-yellow-500 bg-yellow-500/10";
-        return (
-          <li key={r.user_id} className="rounded-2xl border border-border bg-surface p-4">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold uppercase ${c}`}>Risc {r.risk_score}</span>
-              {r.verified && <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] text-primary"><BadgeCheck className="mr-0.5 inline size-3" />verificat</span>}
-              {r.duplicate_photo_accounts > 0 && <span className="rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] text-red-500">poză dup × {r.duplicate_photo_accounts}</span>}
-              {r.report_count > 0 && <span className="rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] text-orange-500">{r.report_count} rap</span>}
-              {r.banned_at && <span className="rounded-full bg-red-700/20 px-2 py-0.5 text-[10px] text-red-400">banat</span>}
-            </div>
-            <p className="mt-2 text-sm font-medium">{r.display_name ?? r.user_id.slice(0, 8)}</p>
-            {r.recent_flag_kinds.length > 0 && <p className="mt-1 text-[10px] uppercase text-muted-foreground">{r.recent_flag_kinds.join(" · ")}</p>}
-            <div className="mt-3 flex flex-wrap gap-2">
-              <button disabled={busy} onClick={() => verify(r.user_id)} className="rounded-full bg-primary/15 px-3 py-1.5 text-xs text-primary"><ShieldCheck className="mr-1 inline size-3" />Verifică</button>
-              <button disabled={busy} onClick={() => warn(r.user_id)} className="rounded-full bg-yellow-500/15 px-3 py-1.5 text-xs text-yellow-500"><AlertTriangle className="mr-1 inline size-3" />Warn</button>
-              <button disabled={busy} onClick={() => suspend(r.user_id, 24)} className="rounded-full bg-orange-500/15 px-3 py-1.5 text-xs text-orange-500"><Ban className="mr-1 inline size-3" />24h</button>
-              <button disabled={busy} onClick={() => suspend(r.user_id, 168)} className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs text-red-500"><Ban className="mr-1 inline size-3" />7 zile</button>
-              <button disabled={busy} onClick={() => ban(r.user_id)} className="rounded-full bg-red-700/20 px-3 py-1.5 text-xs text-red-400">Ban</button>
-            </div>
-          </li>
-        );
-      })}
-    </ul>
-  );
+
+  const riskTone = (n: number) => (n >= 80 ? "rejected" : n >= 60 ? "pending" : "info") as const;
+  const cols: Column<RiskRow>[] = [
+    {
+      key: "score",
+      header: "Risc",
+      align: "right",
+      cell: (r) => <StatusBadge tone={riskTone(r.risk_score)}><MonoNumber value={r.risk_score} /></StatusBadge>,
+      sortValue: (r) => r.risk_score,
+    },
+    {
+      key: "user",
+      header: "Utilizator",
+      cell: (r) => (
+        <div className="min-w-0">
+          <div className="flex items-center gap-1 truncate font-medium">
+            {r.display_name ?? "(fără nume)"}
+            {r.verified && <BadgeCheck className="size-3 text-[var(--admin-accent)]" />}
+          </div>
+          <div className="admin-mono truncate text-[10px] text-[var(--admin-text-faint)]">{r.user_id}</div>
+        </div>
+      ),
+      sortValue: (r) => r.display_name ?? "",
+      searchValue: (r) => `${r.display_name ?? ""} ${r.user_id}`,
+    },
+    {
+      key: "flags",
+      header: "Flag-uri",
+      priority: 2,
+      cell: (r) => (
+        <div className="flex flex-wrap gap-1">
+          {r.duplicate_photo_accounts > 0 && <StatusBadge tone="rejected">poză dup ×{r.duplicate_photo_accounts}</StatusBadge>}
+          {r.report_count > 0 && <StatusBadge tone="pending">{r.report_count} rap</StatusBadge>}
+          {r.banned_at && <StatusBadge tone="banned">banat</StatusBadge>}
+        </div>
+      ),
+    },
+    {
+      key: "kinds",
+      header: "Recent",
+      priority: 3,
+      cell: (r) => <span className="text-[10px] uppercase text-[var(--admin-text-faint)]">{r.recent_flag_kinds.join(" · ") || "—"}</span>,
+    },
+    {
+      key: "actions",
+      header: "",
+      align: "right",
+      cell: (r) => (
+        <div className="flex flex-wrap justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+          <button disabled={busy} onClick={() => verify(r.user_id)} className="rounded-md bg-[var(--admin-accent-soft)] px-2 py-1 text-[10px] text-[var(--admin-accent)]"><ShieldCheck className="inline size-3" /></button>
+          <button disabled={busy} onClick={() => warn(r.user_id)} className="rounded-md bg-[var(--admin-warn-soft)] px-2 py-1 text-[10px] text-[var(--admin-warn)]"><AlertTriangle className="inline size-3" /></button>
+          <button disabled={busy} onClick={() => suspend(r.user_id, 24)} className="rounded-md bg-[var(--admin-warn-soft)] px-2 py-1 text-[10px] text-[var(--admin-warn)]">24h</button>
+          <button disabled={busy} onClick={() => suspend(r.user_id, 168)} className="rounded-md bg-[var(--admin-danger-soft)] px-2 py-1 text-[10px] text-[var(--admin-danger)]">7z</button>
+          <button disabled={busy} onClick={() => ban(r.user_id)} className="rounded-md bg-[var(--admin-danger-soft)] px-2 py-1 text-[10px] font-semibold text-[var(--admin-danger)]">Ban</button>
+        </div>
+      ),
+    },
+  ];
+  return <DataTable rows={risk} columns={cols} rowKey={(r) => r.user_id} exportName="risc" searchPlaceholder="Filtrare risc…" />;
 }
 
 /* ---------------- ADS ---------------- */
