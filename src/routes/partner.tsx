@@ -186,6 +186,20 @@ function PartnerPortal() {
         </div>
       );
     }
+    if (pendingError) {
+      return (
+        <div className="max-w-xl mx-auto p-6 space-y-4">
+          <h1 className="text-2xl font-semibold">Portal Partener</h1>
+          <div className="rounded border border-destructive/40 bg-destructive/5 p-4 text-sm">
+            <p className="font-medium text-destructive">Nu am putut verifica statusul cererii tale.</p>
+            <p className="text-xs text-muted-foreground mt-1">{pendingError}</p>
+          </div>
+          <Button onClick={() => { setPendingChecked(false); setPendingError(null); window.location.reload(); }}>
+            Reîncearcă
+          </Button>
+        </div>
+      );
+    }
     if (pendingApp) {
       const statusLabels: Record<string, { label: string; cls: string; desc: string }> = {
         pending: {
