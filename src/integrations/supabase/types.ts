@@ -134,6 +134,7 @@ export type Database = {
           body: string | null
           created_at: string
           id: number
+          is_seed: boolean
           kind: string
           severity: string
           target_id: string | null
@@ -146,6 +147,7 @@ export type Database = {
           body?: string | null
           created_at?: string
           id?: number
+          is_seed?: boolean
           kind: string
           severity?: string
           target_id?: string | null
@@ -158,6 +160,7 @@ export type Database = {
           body?: string | null
           created_at?: string
           id?: number
+          is_seed?: boolean
           kind?: string
           severity?: string
           target_id?: string | null
@@ -564,6 +567,7 @@ export type Database = {
           discovered_at: string
           dpo_contact: string | null
           id: string
+          is_seed: boolean
           notify_deadline: string
           status: string
           title: string
@@ -579,6 +583,7 @@ export type Database = {
           discovered_at?: string
           dpo_contact?: string | null
           id?: string
+          is_seed?: boolean
           notify_deadline?: string
           status?: string
           title: string
@@ -594,6 +599,7 @@ export type Database = {
           discovered_at?: string
           dpo_contact?: string | null
           id?: string
+          is_seed?: boolean
           notify_deadline?: string
           status?: string
           title?: string
@@ -621,6 +627,7 @@ export type Database = {
           entity_type: Database["public"]["Enums"]["business_entity_type"]
           goals: string
           id: string
+          is_seed: boolean
           legal_name: string
           monthly_budget_eur: number | null
           reg_com: string | null
@@ -650,6 +657,7 @@ export type Database = {
           entity_type: Database["public"]["Enums"]["business_entity_type"]
           goals: string
           id?: string
+          is_seed?: boolean
           legal_name: string
           monthly_budget_eur?: number | null
           reg_com?: string | null
@@ -679,6 +687,7 @@ export type Database = {
           entity_type?: Database["public"]["Enums"]["business_entity_type"]
           goals?: string
           id?: string
+          is_seed?: boolean
           legal_name?: string
           monthly_budget_eur?: number | null
           reg_com?: string | null
@@ -776,6 +785,7 @@ export type Database = {
         Row: {
           hash: string | null
           id: string
+          is_seed: boolean
           match_source: string | null
           ncmec_report_id: string | null
           notes: string | null
@@ -787,6 +797,7 @@ export type Database = {
         Insert: {
           hash?: string | null
           id?: string
+          is_seed?: boolean
           match_source?: string | null
           ncmec_report_id?: string | null
           notes?: string | null
@@ -798,6 +809,7 @@ export type Database = {
         Update: {
           hash?: string | null
           id?: string
+          is_seed?: boolean
           match_source?: string | null
           ncmec_report_id?: string | null
           notes?: string | null
@@ -1301,6 +1313,7 @@ export type Database = {
           handled_at: string | null
           handled_by: string | null
           id: string
+          is_seed: boolean
           legal_basis: string | null
           reporter_email: string | null
           reporter_user_id: string | null
@@ -1316,6 +1329,7 @@ export type Database = {
           handled_at?: string | null
           handled_by?: string | null
           id?: string
+          is_seed?: boolean
           legal_basis?: string | null
           reporter_email?: string | null
           reporter_user_id?: string | null
@@ -1331,6 +1345,7 @@ export type Database = {
           handled_at?: string | null
           handled_by?: string | null
           id?: string
+          is_seed?: boolean
           legal_basis?: string | null
           reporter_email?: string | null
           reporter_user_id?: string | null
@@ -1688,6 +1703,7 @@ export type Database = {
           created_by: string | null
           effective_at: string
           id: string
+          is_seed: boolean
           kind: string
           version: string
         }
@@ -1696,6 +1712,7 @@ export type Database = {
           created_by?: string | null
           effective_at?: string
           id?: string
+          is_seed?: boolean
           kind: string
           version: string
         }
@@ -1704,6 +1721,7 @@ export type Database = {
           created_by?: string | null
           effective_at?: string
           id?: string
+          is_seed?: boolean
           kind?: string
           version?: string
         }
@@ -2326,6 +2344,7 @@ export type Database = {
           created_at: string
           details: string | null
           id: string
+          is_seed: boolean
           moderator_notes: string | null
           reason: string
           reported_id: string
@@ -2338,6 +2357,7 @@ export type Database = {
           created_at?: string
           details?: string | null
           id?: string
+          is_seed?: boolean
           moderator_notes?: string | null
           reason: string
           reported_id: string
@@ -2350,6 +2370,7 @@ export type Database = {
           created_at?: string
           details?: string | null
           id?: string
+          is_seed?: boolean
           moderator_notes?: string | null
           reason?: string
           reported_id?: string
