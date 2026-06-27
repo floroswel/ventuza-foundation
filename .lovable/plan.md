@@ -1,153 +1,86 @@
 
-# Sistem facturare parteneri prin transfer bancar (OP)
+# Portal Partener — raport + plan unificat
 
-Construit DEASUPRA: `business_applications` (date fiscale + ANAF), `app_settings` (versionat),
-`admin_audit_log`, `partner.functions.ts` (assertPartner/assertQuota), Art. 30 register.
-ZERO procesatori de plată externi. Banca NU este procesator de date personale user.
+## PARTEA 1 — Verificare lanț cap-coadă (existent)
 
-## Sprint 1 — Schemă DB (o singură migrare)
+| # | Verigă | Status | Notă |
+|---|---|---|---|
+| 1 | Partener creează venue/event/offer (draft) | ✅ | `partner.functions.ts` → insert cu `moderation_status='pending'`, `is_published=false`. Quota verificată server-side (`checkQuota`). |
+| 2 | Trigger DB blochează auto-publicarea | ✅ | `*_no_self_publish` pe venues/events/offers + RLS owner-only. Partenerul NU poate seta `is_published`/`is_official` (curățat la insert). |
+| 3 | Staff aprobă în admin | ✅ | `adminModerateItem` → RPC `admin_moderate_item` (SECURITY DEFINER, `is_staff` gate), setează `is_published=true`, scrie `admin_audit_log`. |
+| 4 | Apare în Nearby (listă + hartă) | ✅ | `nearby_points` RPC + filtru `is_published AND moderation_status='approved' AND partner_suspended_at IS NULL`. Hartă MapLibre + bucket distanță. |
+| 5 | Notificare proximitate cu plafon/cooldown/quiet | ✅ | `try_record_proximity_hit` validează `app_settings.proximity_notifications` (cooldown, daily cap, quiet hours, rază max). Niciun bypass UI. |
+| 6 | Partener vede status + stats (fără identități) | ✅ parțial | `partnerListMyItems` arată status + `rejection_reason`. `partnerGetOfferStats` întoarce doar `{total, redeemed}`. **LIPSEȘTE**: notificare ACTIVĂ la schimbare de status — userul trebuie să intre singur în portal. |
 
-### Tabele noi
+### Verigi rupte / lipsă (toate non-blocante pentru lanțul tehnic, dar incomplete UX)
 
-**`partner_plans`** — catalog planuri (Free/Pro/Premium), seed inițial.
-- `code` (Free|Pro|Premium, PK), `name`, `price_minor` (cenți RON), `vat_rate` (19),
-  `currency` (RON), `entitlements` JSONB:
-  `{ max_venues, max_events, max_offers, push_priority (none|medium|high),
-     featured_in_nearby, badge_verified, can_create_boost, max_notifications_per_day }`
-- `active boolean`, `sort_order`
+- **R1 — Fără notificare push/in-app la decizia moderării**. `admin_moderate_item` actualizează rândul + scrie audit log, dar partenerul nu primește un eveniment dedicat ("Aprobat ✓" / "Respins: motiv X"). Trebuie să verifice manual portalul.
+- **R2 — Fără preview înainte de submit**. Formularul curent salvează direct; partenerul nu vede cum va arăta cardul în Nearby/notificare.
+- **R3 — Fără template-uri/exemple**. Câmpurile sunt goale, fără placeholder-uri instructive, fără lungimi minime sugerate, fără structură ghidată ("ce / când / pentru cine / de ce să vii").
+- **R4 — Fără pagină reguli**. Partenerul nu vede din start ce e permis / interzis / SLA moderare / cum funcționează notificările anti-spam.
+- **R5 — Wizard absent**. Crearea pornește direct de pe dialog tehnic; nu există flux pas-cu-pas care să educe.
 
-**`partner_subscriptions`** — abonament activ per partener (owner_id = profiles.id).
-- `owner_id` UNIQUE, `plan_code`, `status` (active|grace|free_downgraded|cancelled),
-  `current_period_start`, `current_period_end`, `grace_until`, `last_invoice_id`,
-  `auto_invoice boolean` (recurență on/off).
-- Default pentru orice partener aprobat: row cu `plan_code='Free'`, fără perioadă.
+**Concluzie: lanțul tehnic funcționează cap-coadă, fără rupturi de date. Lipsa este pur UX: ghidare + feedback la decizie. Restul reparațiilor sunt aditive, nu modifică contractele existente.**
 
-**`partner_invoices`** — factură proformă/fiscală.
-- `id`, `owner_id`, `series` (ex: 'VTZ'), `number` int, `year`, UNIQUE(series, number, year)
-- `payment_code` text UNIQUE (ex: `VTZ-2026-0001`) = mențiune OP
-- `plan_code`, `period_start`, `period_end` (sau NULL pentru boost one-off)
-- `kind` (subscription|boost)
-- `subtotal_minor`, `vat_minor`, `total_minor`, `currency`
-- `status` (draft|pending_payment|paid|overdue|cancelled|refunded)
-- `issued_at`, `due_at` (issued + 7 zile), `paid_at`, `paid_amount_minor`, `paid_ref` (referință extras OP)
-- Snapshot date fiscale partener la momentul emiterii (JSONB `billing_snapshot`)
-- `confirmed_by` (uuid admin), `notes`
-- `pdf_url` (generat on-demand, nu stocat default)
+## PARTEA 2-5 — Plan implementare
 
-**`partner_invoice_counters`** — contor secvențial **fără goluri** per `(series, year)`.
-- PK (series, year), `next_number int` cu lock + funcție SECURITY DEFINER `next_invoice_number(series, year)`.
+### A. Notificare status partener (R1)
+- Migrare SQL:
+  - Tabel `partner_status_notifications` (id, partner_id, kind, item_id, item_title, decision, reason, created_at, read_at). RLS: owner-only SELECT; INSERT doar via SECURITY DEFINER.
+  - Modific `admin_moderate_item` să insereze o linie aici după update (în aceeași tranzacție). Owner-ul se ia din venues.owner_id / events.host_id / venues.owner_id via offer.venue_id.
+- Server fn `partnerListStatusNotifications` + `partnerMarkNotificationRead`.
+- UI: badge cu count nemodificat în header portal + dropdown care listează ultimele 20 decizii (Aprobat/Respins/Cere modificări + motiv). Marcare ca citit la click. Toast pe deschiderea portalului dacă există necitite.
+- (Push real opțional — același tabel poate alimenta și push prin worker existent dacă userul are subscription. Faza 1: doar in-app.)
 
-**`partner_boost_orders`** — boost one-off per event (top Nearby 48h).
-- `id`, `owner_id`, `event_id`, `invoice_id`, `starts_at`, `ends_at`, `active boolean`.
-- Activat numai la `paid` confirm.
+### B. Wizard ghidat de postare (Partea 2)
+- Componentă nouă `src/components/partner/PostingWizard.tsx` cu state machine 5 pași:
+  1. **Tip** — 3 carduri mari (Local / Eveniment / Ofertă) cu explicație + când să folosești fiecare. Verifică quota; dacă e atinsă, blochează cardul și sugerează upgrade plan.
+  2. **Detalii** — formular generat din template (Partea C), cu placeholder real + hint sub fiecare câmp + counter caractere + indicator "obligatoriu".
+  3. **Locație** — `PinMap` existent + slider rază notificare (100m–10km, cu default din `app_settings.proximity_notifications.default_radius_m`). Text live: "Userii la sub Xkm vor fi anunțați (respectând limitele lor anti-spam)."
+  4. **Preview** — randare exactă cum apare în Nearby (`NearbyCardPreview`) + cum apare push-ul ("📍 [Nume] • 450m").
+  5. **Trimitere** — buton "Trimite la moderare" + mesaj final cu SLA 1-2 zile + că va primi notificare în portal.
+- Înlocuiește butoanele "Loc nou / Eveniment nou / Ofertă nouă" cu un singur CTA "+ Postare nouă" care deschide wizard-ul. Dialogurile vechi rămân disponibile pentru editare (rapid, fără wizard).
+- Validări client + server (server e cel din `partner.functions.ts` — neatins).
 
-### Extensii pe `business_applications`
-- `+ iban text` (opțional), `+ billing_email text`, `+ is_vat_payer boolean default false`,
-  `+ billing_completed_at timestamptz`.
+### C. Template-uri (Partea 3)
+- Fișier `src/lib/partner-templates.ts` cu `VENUE_TEMPLATE`, `EVENT_TEMPLATE`, `OFFER_TEMPLATE`: fiecare cu lista de câmpuri + label + hint + placeholder + min/max + required + opțional `example_value`.
+- Buton "Vezi exemplu real" în pas 2 al wizardului care pre-completează cu un exemplu complet pe care partenerul îl poate edita.
+- Validare zod în client identică cu cea din server (single source: schema declarată în `partner-templates.ts`, reexportată în `partner.functions.ts`).
 
-### `app_settings` (versionat) — nou kind
-- `billing_settings`:
-  ```json
-  {
-    "issuer": { "name": "...", "cui": "...", "reg_com": "...", "address": "...",
-                "iban": "RO00 ...", "bank": "...", "email": "billing@..." },
-    "invoice_series": "VTZ",
-    "vat_rate": 19,
-    "currency": "RON",
-    "grace_days": 7,
-    "reminder_days": [3, 7, 10],
-    "recurring_lead_days": 7,
-    "prices": {
-      "Pro":    { "monthly_minor": 24500 },
-      "Premium":{ "monthly_minor": 74500 },
-      "Boost":  { "min_minor": 4500, "max_minor": 14500 }
-    }
-  }
-  ```
-- Singura sursă de adevăr pentru preț + TVA. Modificare DOAR prin `admin_update_setting` (deja existent).
+### D. Ghid pentru parteneri (Partea 4)
+- Rută nouă `/partner/guide` (`src/routes/partner.guide.tsx`). Conținut secțiuni:
+  - Ce poți posta (Local / Eveniment / Ofertă) — exemple bune și rele.
+  - **Interzis**: escort, conținut sexual explicit, înșelătorie, spam, discriminare, outing involuntar, conținut fără drepturi. Link la termeni.
+  - Formate imagini: jpg/png/webp, max 5 MB, recomandat 1200×800, peisaj.
+  - De ce trecem prin moderare + SLA 1-2 zile lucrătoare.
+  - Cum funcționează notificările de proximitate: cooldown 24h/punct, plafon zilnic per user, ore liniștite — partenerul NU controlează aceste limite.
+  - Cum funcționează respingerea: vezi motivul în portal, corectezi, retrimiti.
+- Link mare "Citește ghidul" pe pagina principală portal + sub fiecare câmp cu "tip" mic.
 
-### RPC-uri / triggere
+### E. Mesaje respingere clare (Partea 4 final)
+- Deja există `rejection_reason` în UI. Adăugare:
+  - Card dedicat sus în portal: "X postări necesită atenție" cu listă click-to-edit pentru `rejected` / `changes_requested`.
+  - Pre-completare wizard în modul "edit + remoderate" cu motivul vizibil sus + checklist sugerat ("Lipsește descriere ≥50 caractere", etc.) când motivul match-uiește pattern-uri cunoscute.
 
-- `next_invoice_number(series, year)` — atomic, ridică `next_number`, fără goluri.
-- `partner_create_invoice(owner_id, plan_code, kind, period_start, period_end, boost_event_id)` — SECURITY DEFINER, calculează sumă din `billing_settings.prices` + TVA, snapshot date fiscale din `business_applications`, alocă `payment_code`.
-- `admin_confirm_invoice_payment(invoice_id, amount_minor, paid_ref, paid_at)` — gated `is_staff`:
-  - marcează `paid`, scrie `confirmed_by`, scrie audit `partner_invoice_confirm_payment`.
-  - dacă `kind=subscription` → activează/extinde `partner_subscriptions` (period_end += 1 lună, `status='active'`).
-  - dacă `kind=boost` → activează `partner_boost_orders` (starts_at=now, ends_at=now+48h).
-- `admin_cancel_invoice(invoice_id, reason)` — gated, audit.
-- `partner_active_entitlements(owner_id) RETURNS jsonb` — întoarce entitlements efective (Free dacă fără sub activ).
-- Trigger `partner_subscriptions_downgrade_on_expire` (verificat de cron, nu trigger).
+### F. Dashboard status (Partea 5)
+- Sus în portal, înlocuim cards inline cu 3 tile-uri:
+  - **Live** (count aprobat + publicat).
+  - **În moderare** (pending).
+  - **Necesită atenție** (rejected + changes_requested), highlight roșu dacă > 0.
+- Click pe tile filtrează lista.
 
-### RLS (toate noile tabele)
-- `partner_plans` SELECT public (catalog).
-- `partner_subscriptions` / `partner_invoices` / `partner_boost_orders`: owner SELECT, staff SELECT, scriere DOAR prin RPC SECURITY DEFINER.
-- GRANT corect pe fiecare (authenticated + service_role).
+### G. AGENTS.md — reguli noi
+Adăugare secțiune **REGULĂ — WIZARD PARTENER (permanentă)**:
+- Toată crearea de venue/event/offer din UI partener trece prin `PostingWizard` (sau prin server fn-urile existente programatic). Nu se introduc forme noi de creare directe care ocolesc preview-ul.
+- Template-urile sunt sursa unică pentru schema câmpurilor în UI partener (`partner-templates.ts`) — sincronizate cu validatorii zod din `partner.functions.ts`.
+- Notificările de status partener trec EXCLUSIV prin `partner_status_notifications` populat de `admin_moderate_item`. Nicio cale paralelă (nici emailuri ad-hoc, nici push direct din UI admin).
 
-## Sprint 2 — Server fns + cron
+## Note tehnice
 
-`src/lib/billing.functions.ts`:
-- `partnerListMyInvoices()` / `partnerListMyPlans()` / `partnerGetActivePlan()`
-- `partnerStartSubscription({ plan_code })` → creează factură proformă, întoarce payment_code + IBAN + sumă.
-- `partnerOrderBoost({ event_id, price_minor })` → factură boost.
-- `partnerGetInvoicePdf(invoice_id)` → HTML→PDF on-demand server-side (jsPDF/react-pdf inline, fără dependențe nesigure).
-- `assertEntitlement(owner_id, key)` helper exportat — folosit de `partner.functions.ts` (înlocuiește `assertQuota` cu wrapper care citește `partner_active_entitlements`).
+- Niciun contract server existent nu se modifică (`partner.functions.ts`, `nearby_points`, `try_record_proximity_hit`, RLS, triggere). Wizard-ul e pur UX peste API curent.
+- Singura modificare DB: tabel nou `partner_status_notifications` + extindere `admin_moderate_item` cu un INSERT idempotent. Audit log, moderare obligatorie, quota, anti-spam = NEATINSE.
+- Respect AGENTS.md: moderare obligatorie ✓, quota server-side ✓, fără identități în stats ✓, fără owner self-publish ✓, plafoane user neatinse ✓.
 
-`src/lib/billing-admin.functions.ts` (gated `is_staff`):
-- `adminListInvoices({ status, owner_id, from, to })` cu paginare.
-- `adminConfirmInvoicePayment` / `adminCancelInvoice`
-- `adminRevenueSummary()` — încasări lună, restanțe, parteneri pe planuri.
-- `adminUpdateBillingSettings` (wraps `admin_update_setting`).
+## Confirmare cerută
 
-**Cron** prin `src/routes/api/public/hooks/billing-tick.ts` (apelat de pg_cron zilnic 03:00):
-- generează facturi recurente la `period_end - recurring_lead_days`,
-- trimite remindere (in-app notification + flag email — fără SMTP nou; coadă pentru future Mailgun),
-- retrogradează abonamente `grace_until < now()` → `status='free_downgraded'`, audit.
-
-## Sprint 3 — UI
-
-**`/partner/billing`** (sub portalul partener):
-- Card "Plan curent" cu plan, perioada, status, buton Upgrade/Schimbă plan.
-- Tabelă facturi (proformă/fiscală) cu status badge + buton Descarcă PDF + buton "Vezi instrucțiuni OP".
-- Modal "Instrucțiuni OP": IBAN, beneficiar, sumă cu TVA, **cod plată** mare/copiabil, mențiunea "se activează în 1-3 zile lucrătoare după confirmare".
-- Formular completare/actualizare date fiscale (IBAN, billing_email, is_vat_payer) — pre-populat cu ANAF.
-
-**`/admin` → modul nou „Facturare parteneri"** (în categoria Business):
-- `InvoicesPanel` (DataTable): status, partener, plan, sumă, payment_code, issued/due/paid + acțiuni inline Confirmă plată / Anulează / PDF.
-- Drawer detaliu cu formular confirmare (sumă, paid_ref, paid_at).
-- `RevenuePanel`: KPI mono (lună curentă confirmată, restanțe, parteneri activi per plan), tabelă agregată.
-- `BillingSettingsPanel`: editor pentru `billing_settings` (issuer, prețuri, grace, reminders) → trece prin `admin_update_setting` (versionat + audit).
-- Banner avertizare dacă issuer incomplet.
-
-## Sprint 4 — Integrare entitlements + Art. 30
-
-- `partner.functions.ts` migrează la `assertEntitlement(owner_id, 'max_venues')`. Free = `partner_quotas` redus (1 venue, 0 events). Pro/Premium = override din plan.
-- `try_record_proximity_hit` adaugă consultarea `partner_active_entitlements` pentru `push_priority`. **Plafonul USER (cooldown 24h, daily cap, quiet hours) neatins** — Premium înseamnă DOAR că partenerul ocupă slot prioritar, NU mai multe slot-uri totale per user.
-- Nearby query sortează `featured_in_nearby` deasupra în acelasi bucket de distanță.
-- `docs/gdpr-art-30-register.md` + `src/routes/legal.records-of-processing.tsx`: activitate nouă **A20 — Facturare parteneri** (Art. 6(1)(b) executare contract + Art. 6(1)(c) obligație legală fiscală RO; categorii: date business + reprezentant; destinatari: ANAF (la control), contabilitate internă; banca **NU** procesează date user, doar tranzacție B2B; retenție: 10 ani conform Cod Fiscal RO).
-
-## Sprint 5 — AGENTS.md
-
-Adaug regulă permanentă „## REGULĂ — FACTURARE PARTENERI (permanentă)":
-- numerotare neîntreruptă per (series, year) DOAR prin `next_invoice_number`,
-- nicio activare/extindere abonament fără `admin_confirm_invoice_payment` (audit obligatoriu),
-- preț + TVA citite DOAR din `app_settings.billing_settings` (zero hardcode),
-- entitlements citite server-side prin `partner_active_entitlements` (UI doar reflectă),
-- plafoanele USER de notificări (cooldown, daily cap, quiet hours) **neatinse** de planuri,
-- degradare = retrogradare la Free, **NICIODATĂ ștergere conținut**,
-- niciun procesator de plată extern fără actualizare subprocesatori + Art. 30.
-
-## Confirmare contract final
-
-(a) Factura include detalii OP (IBAN, beneficiar, bancă, sumă) + `payment_code` unic mențiune.
-(b) `admin_confirm_invoice_payment` activează abonamentul + scrie `admin_audit_log` (severitate `info`, `actor`, `target_invoice`, `before/after`).
-(c) Cron-ul zilnic generează factură recurentă cu `recurring_lead_days` înainte + trimite reminder in-app la `reminder_days`.
-(d) Degradare = `status='free_downgraded'`, conținutul RĂMÂNE vizibil în limitele Free (1 venue rămâne, restul ascunse via `nearby_points` care filtrează după entitlements).
-(e) Numerotare: `next_invoice_number(series, year)` cu lock — secvențial, fără goluri, resetat anual.
-(f) `try_record_proximity_hit` neatins — plafoanele USER rămân absolute.
-
-## Întrebare înainte să încep
-
-Confirmi:
-1. **Emitent factură**: persoană juridică ONG / SRL care va emite — îmi dai datele tale (denumire, CUI, Reg.Com., adresă, IBAN, bancă) **acum în chat** ca să le seed-uiesc în `billing_settings`, **sau** las placeholder „⚠️ Completează în Admin → Billing Settings înainte de a accepta plăți" și le pui tu prin UI?
-2. **Prețuri inițiale RO**: confirm Pro 245 RON/lună (~49€), Premium 745 RON/lună (~149€), Boost 45–145 RON? Sau alte valori?
-3. **Seria facturi**: `VTZ` (Ventuza)? Sau alta?
+Confirmi planul? Implementez în această ordine: (A) notificări status → (D+E) ghid + mesaje respingere → (C) template-uri → (B) wizard → (F) dashboard → (G) AGENTS.md.

@@ -1875,6 +1875,42 @@ export type Database = {
         }
         Relationships: []
       }
+      partner_status_notifications: {
+        Row: {
+          created_at: string
+          decision: string
+          id: string
+          item_id: string
+          item_title: string | null
+          kind: string
+          partner_id: string
+          read_at: string | null
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          decision: string
+          id?: string
+          item_id: string
+          item_title?: string | null
+          kind: string
+          partner_id: string
+          read_at?: string | null
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          decision?: string
+          id?: string
+          item_id?: string
+          item_title?: string | null
+          kind?: string
+          partner_id?: string
+          read_at?: string | null
+          reason?: string | null
+        }
+        Relationships: []
+      }
       partner_subscriptions: {
         Row: {
           auto_invoice: boolean
