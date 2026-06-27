@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  Crown, Search, Command as CmdIcon, Activity, Circle, ChevronLeft,
+  Crown, Search, Command as CmdIcon, Activity, Circle, ChevronLeft, Rows3, Rows4,
   type LucideIcon,
 } from "lucide-react";
 
@@ -30,6 +30,14 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [now, setNow] = useState(() => new Date());
+  const [density, setDensity] = useState<"comfortable" | "compact">(() => {
+    if (typeof window === "undefined") return "comfortable";
+    return (localStorage.getItem("admin:density") as "comfortable" | "compact") ?? "comfortable";
+  });
+
+  useEffect(() => {
+    if (typeof window !== "undefined") localStorage.setItem("admin:density", density);
+  }, [density]);
 
   useEffect(() => {
     const t = setInterval(() => setNow(new Date()), 1000);
@@ -66,7 +74,7 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
   }, [query, visible]);
 
   return (
-    <div className="relative min-h-dvh bg-background text-foreground">
+    <div data-admin data-density={density} className="relative min-h-dvh bg-[var(--admin-bg)] text-[var(--admin-text)]">
       {/* Ambient backdrop */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-32 left-1/2 h-[420px] w-[820px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,oklch(0.82_0.115_85/0.18),transparent_70%)] blur-2xl" />
@@ -175,10 +183,18 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
                 </kbd>
               </button>
 
-              <div className="ml-auto hidden items-center gap-3 lg:flex">
+              <div className="ml-auto hidden items-center gap-2 lg:flex">
+                <button
+                  onClick={() => setDensity((d) => (d === "compact" ? "comfortable" : "compact"))}
+                  title={density === "compact" ? "Treci la densitate confortabilă" : "Treci la densitate compactă"}
+                  className="flex items-center gap-1.5 rounded-full border border-border/60 bg-surface/60 px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground"
+                >
+                  {density === "compact" ? <Rows4 className="size-3.5" /> : <Rows3 className="size-3.5" />}
+                  <span className="hidden xl:inline">{density === "compact" ? "Compact" : "Confort"}</span>
+                </button>
                 <div className="flex items-center gap-2 rounded-full border border-border/60 bg-surface/60 px-3 py-1.5 text-xs text-muted-foreground">
                   <Activity className="size-3.5 text-emerald-400" />
-                  <span className="font-mono">{now.toLocaleTimeString("ro-RO")}</span>
+                  <span className="admin-mono">{now.toLocaleTimeString("ro-RO")}</span>
                 </div>
                 <div className="flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary">
                   <Circle className="size-2 animate-pulse fill-primary text-primary" />
