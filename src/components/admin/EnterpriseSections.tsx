@@ -597,18 +597,24 @@ export function PoliciesPanel() {
           <button onClick={submit} className="rounded-full bg-primary px-3 py-1.5 text-xs text-primary-foreground">Publică</button>
         </div>
       </div>
-      <ul className="space-y-2">
-        {items.map((p) => (
-          <li key={p.id} className="rounded-2xl border border-border bg-surface p-3 text-xs">
-            <div className="flex justify-between">
-              <span><strong>{p.kind}</strong> v{p.version}</span>
-              <span className="text-muted-foreground">{new Date(p.effective_at).toLocaleString("ro-RO")}</span>
-            </div>
-            {p.content_url && <a href={p.content_url} target="_blank" rel="noopener noreferrer" className="text-primary">{p.content_url}</a>}
-          </li>
-        ))}
-        {items.length === 0 && <li className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">Nicio versiune.</li>}
-      </ul>
+      {error ? (
+        <ErrorBanner error={error} onRetry={load} />
+      ) : loading ? (
+        <LoadingBox />
+      ) : (
+        <ul className="space-y-2">
+          {items.map((p) => (
+            <li key={p.id} className="rounded-2xl border border-border bg-surface p-3 text-xs">
+              <div className="flex justify-between">
+                <span><strong>{p.kind}</strong> v{p.version}</span>
+                <span className="text-muted-foreground">{new Date(p.effective_at).toLocaleString("ro-RO")}</span>
+              </div>
+              {p.content_url && <a href={p.content_url} target="_blank" rel="noopener noreferrer" className="text-primary">{p.content_url}</a>}
+            </li>
+          ))}
+          {items.length === 0 && <li className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">Nicio versiune publicată (empty legitim).</li>}
+        </ul>
+      )}
     </div>
   );
 }
