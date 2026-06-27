@@ -43,7 +43,14 @@ export const adminListBusinessApplications = createServerFn({ method: "POST" })
     if (data.status !== "all") q = q.eq("status", data.status);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return rows ?? [];
+    return (rows ?? []).map((r: any) => ({
+      ...r,
+      business_name: r.brand_name ?? r.legal_name,
+      business_type: r.entity_type,
+      reviewed_at: r.updated_at,
+      review_notes: r.admin_notes,
+    }));
+
   });
 
 export const adminDecideBusinessApplication = createServerFn({ method: "POST" })
