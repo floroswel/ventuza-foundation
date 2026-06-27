@@ -322,7 +322,14 @@ export function CsamPanel() {
   const [hash, setHash] = useState("");
   const [source, setSource] = useState("");
 
-  const load = async () => { try { setItems(await get()); } catch (e: any) { toast.error(e.message); } };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const load = async () => {
+    setError(null);
+    try { setItems(await get()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const submit = async () => {
