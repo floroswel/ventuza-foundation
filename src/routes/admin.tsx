@@ -781,20 +781,27 @@ function RiskPanel() {
 function AdsPanel() {
   const [ads, setAds] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    const { data, error } = await supabase
-      .from("ad_campaigns")
-      .select("id, title, body, placement, status, city, cta_url, image_url, starts_at, ends_at, budget_cents, impressions, clicks, advertiser_id")
-      .order("created_at", { ascending: false }).limit(200);
-    if (error) return toast.error(error.message);
-    const ids = Array.from(new Set((data ?? []).map((c) => c.advertiser_id)));
-    const map = new Map<string, string>();
-    if (ids.length) {
-      const { data: advs } = await supabase.from("advertisers").select("id, brand_name").in("id", ids);
-      advs?.forEach((a) => map.set(a.id, a.brand_name));
-    }
-    setAds((data ?? []).map((c) => ({ ...c, brand_name: map.get(c.advertiser_id) ?? null })));
+    setLoading(true); setError(null);
+    try {
+      const { data, error } = await supabase
+        .from("ad_campaigns")
+        .select("id, title, body, placement, status, city, cta_url, image_url, starts_at, ends_at, budget_cents, impressions, clicks, advertiser_id")
+        .order("created_at", { ascending: false }).limit(200);
+      if (error) throw error;
+      const ids = Array.from(new Set((data ?? []).map((c) => c.advertiser_id)));
+      const map = new Map<string, string>();
+      if (ids.length) {
+        const { data: advs } = await supabase.from("advertisers").select("id, brand_name").in("id", ids);
+        advs?.forEach((a) => map.set(a.id, a.brand_name));
+      }
+      setAds((data ?? []).map((c) => ({ ...c, brand_name: map.get(c.advertiser_id) ?? null })));
+    } catch (e: any) {
+      const m = e?.message ?? String(e); setError(m); toast.error(m);
+    } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
@@ -806,7 +813,9 @@ function AdsPanel() {
     toast.success(`Status: ${status}`); load();
   };
 
-  if (ads.length === 0) return <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Nicio campanie.</div>;
+  if (error) return <AdminPanelError error={error} onRetry={load} />;
+  if (loading) return <AdminPanelEmpty label="Se încarcă campaniile…" />;
+  if (ads.length === 0) return <AdminPanelEmpty label="Nicio campanie publicitară (empty legitim — niciun advertiser nu a publicat încă)." />;
   return (
     <ul className="space-y-3">
       {ads.map((a) => {
