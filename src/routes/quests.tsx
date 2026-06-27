@@ -96,6 +96,21 @@ function QuestsList() {
   }
 
   if (loading) return <div className="flex justify-center py-16"><Loader2 className="size-5 animate-spin text-muted-foreground" /></div>;
+  if (error) return (
+    <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-center">
+      <p className="text-sm font-medium text-destructive">Nu am putut încărca misiunile</p>
+      <p className="mt-1 text-xs text-muted-foreground">{error}</p>
+      <button onClick={() => { setLoading(true); void load(); }} className="mt-3 rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground">
+        Reîncearcă
+      </button>
+    </div>
+  );
+  if (quests.length === 0) return (
+    <div className="px-3 py-12 text-center text-sm text-muted-foreground">
+      Săptămâna aceasta nu sunt misiuni active. Revino luni.
+    </div>
+  );
+
 
   return (
     <div className="space-y-2">

@@ -120,7 +120,8 @@ function PartnerPortal() {
     if (!roles.includes("business") && !roles.includes("admin")) {
       // Non-partner — check for a pending application so we can show a real
       // status instead of the same CTA as someone who never applied.
-      void (async () => {
+      let alive = true;
+      const fetchApp = async () => {
         const { data } = await supabase
           .from("business_applications")
           .select("id, status, legal_name")
@@ -128,14 +129,35 @@ function PartnerPortal() {
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
+        if (!alive) return;
         setPendingApp(data ?? null);
         setPendingChecked(true);
-      })();
-      return;
+      };
+      void fetchApp();
+      // Auto-detect approval: poll user_roles every 15s + realtime on insert.
+      const interval = setInterval(async () => {
+        const { data: rolesRow } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id);
+        if (rolesRow?.some((r) => r.role === "business" || r.role === "admin")) {
+          window.location.reload();
+        } else {
+          void fetchApp();
+        }
+      }, 15000);
+      const ch = supabase
+        .channel(`user-roles-${user.id}`)
+        .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_roles", filter: `user_id=eq.${user.id}` }, () => {
+          window.location.reload();
+        })
+        .subscribe();
+      return () => { alive = false; clearInterval(interval); supabase.removeChannel(ch); };
     }
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, roles, authLoading, rolesLoading]);
+
 
   if (authLoading || rolesLoading)
     return (
@@ -197,7 +219,13 @@ function PartnerPortal() {
                 <p className="text-xs text-muted-foreground">{pendingApp.legal_name}</p>
               )}
               <p className="text-sm text-muted-foreground">{s.desc}</p>
+              {pendingApp.status === "approved" && (
+                <p className="text-[11px] text-emerald-600 dark:text-emerald-400">
+                  Detectăm aprobarea automat — pagina se va reîncărca singură.
+                </p>
+              )}
               <p className="text-[11px] text-muted-foreground">
+
                 ID cerere: <span className="font-mono">{pendingApp.id.slice(0, 8)}</span>
               </p>
             </CardContent>
