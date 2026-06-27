@@ -251,14 +251,21 @@ export function DsaPanel() {
   const [items, setItems] = useState<any[]>([]);
   const [filter, setFilter] = useState<"pending" | "all">("pending");
 
-  const load = async () => { try { setItems(await get()); } catch (e: any) { toast.error(e.message); } };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const load = async () => {
+    setError(null);
+    try { setItems(await get()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const act = async (id: string, status: "resolved" | "dismissed" | "escalated") => {
     const resolution = prompt(`Notă rezoluție (${status}):`);
     if (!resolution || resolution.length < 3) return;
     try { await resolve({ data: { id, status, resolution } }); toast.success("Procesat"); load(); }
-    catch (e: any) { toast.error(e.message); }
+    catch (e: any) { toast.error(errMsg(e)); }
   };
 
   const visible = items.filter((r) => filter === "all" || r.status === "pending");
@@ -272,7 +279,11 @@ export function DsaPanel() {
           <option value="pending">Pending</option><option value="all">Toate</option>
         </select>
       </div>
-      {visible.length === 0 ? (
+      {error ? (
+        <ErrorBanner error={error} onRetry={load} />
+      ) : loading ? (
+        <LoadingBox />
+      ) : visible.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Nimic.</div>
       ) : (
         <ul className="space-y-2">
