@@ -57,24 +57,10 @@ function emptyToNull<T extends Record<string, unknown>>(o: T): T {
 export const submitBusinessApplication = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Schema.parse(emptyToNull((d ?? {}) as Record<string, unknown>)))
   .handler(async ({ data }) => {
-    // Optional: attach user_id when caller is signed in (best-effort, never trusted from payload).
-    let userId: string | null = null;
-    try {
-      const { getHeaders } = await import("@tanstack/react-start/server");
-      const headers = getHeaders() as Record<string, string | undefined>;
-      const auth = (headers["authorization"] ?? headers["Authorization"] ?? "") as string;
-      const token = auth.toLowerCase().startsWith("bearer ") ? auth.slice(7) : "";
-      if (token) {
-        const { createClient } = await import("@supabase/supabase-js");
-        const u = process.env.SUPABASE_URL!;
-        const k = process.env.SUPABASE_PUBLISHABLE_KEY!;
-        if (u && k) {
-          const sb = createClient(u, k, { auth: { persistSession: false, autoRefreshToken: false } });
-          const { data: ures } = await sb.auth.getUser(token);
-          userId = ures?.user?.id ?? null;
-        }
-      }
-    } catch { /* anonymous submission is OK */ }
+    // Submission is anonymous by design. When the submitter later signs in with
+    // the same email, `linkOrphanBusinessApps` in src/lib/business.functions.ts
+    // attaches the row to their auth user.
+    const userId: string | null = null;
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const insertRow = {
