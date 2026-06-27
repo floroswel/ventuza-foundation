@@ -37,13 +37,20 @@ export const adminListBusinessApplications = createServerFn({ method: "POST" })
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     let q = (supabaseAdmin as any).from("business_applications")
-      .select("id, user_id, business_name, business_type, contact_name, contact_email, contact_phone, status, created_at, reviewed_at, review_notes")
+      .select("id, user_id, legal_name, brand_name, entity_type, contact_name, contact_email, contact_phone, status, created_at, updated_at, admin_notes")
       .order("created_at", { ascending: false })
       .limit(data.limit);
     if (data.status !== "all") q = q.eq("status", data.status);
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
-    return rows ?? [];
+    return (rows ?? []).map((r: any) => ({
+      ...r,
+      business_name: r.brand_name ?? r.legal_name,
+      business_type: r.entity_type,
+      reviewed_at: r.updated_at,
+      review_notes: r.admin_notes,
+    }));
+
   });
 
 export const adminDecideBusinessApplication = createServerFn({ method: "POST" })
@@ -59,11 +66,10 @@ export const adminDecideBusinessApplication = createServerFn({ method: "POST" })
     const { error } = await (supabaseAdmin as any).from("business_applications")
       .update({
         status: data.decision,
-        reviewed_at: new Date().toISOString(),
-        reviewed_by: context.userId,
-        review_notes: data.notes ?? null,
+        admin_notes: data.notes ?? null,
       })
       .eq("id", data.id);
+
     if (error) throw new Error(error.message);
     // grant_business_role_on_approval trigger handles role grant on approved.
     await (supabaseAdmin as any).from("admin_audit_log").insert({
@@ -91,7 +97,7 @@ export const adminListPartners = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     // user_roles holds the partner role grant
     const { data: roleRows, error: rErr } = await (supabaseAdmin as any).from("user_roles")
-      .select("user_id, granted_at").eq("role", "partner").limit(data.limit);
+      .select("user_id, created_at").eq("role", "partner").limit(data.limit);
     if (rErr) throw new Error(rErr.message);
     const ids = (roleRows ?? []).map((r: any) => r.user_id);
     if (ids.length === 0) return [];
