@@ -132,77 +132,74 @@ function AdminDashboard() {
   }
 
 
-  const allItems: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
-    { id: "overview", label: "Overview", icon: LayoutDashboard, adminOnly: true },
-    { id: "alerts", label: "Alerte", icon: Bell },
-    { id: "users", label: "Utilizatori", icon: Users, adminOnly: true },
-    { id: "reports", label: "Rapoarte", icon: ShieldAlert },
-    { id: "risk", label: "Risc", icon: AlertTriangle },
-    { id: "csam", label: "CSAM", icon: ShieldAlert, adminOnly: true },
-    { id: "dsa", label: "DSA", icon: FileWarning },
-    { id: "gdpr", label: "GDPR", icon: Download, adminOnly: true },
-    { id: "breakglass", label: "Break-glass", icon: ShieldAlert, adminOnly: true },
-    { id: "breach", label: "Breșe", icon: AlertOctagon, adminOnly: true },
-    { id: "policies", label: "Politici", icon: FileText },
-    { id: "audit", label: "Audit", icon: ScrollText },
-    { id: "ads", label: "Ads", icon: Megaphone },
-    { id: "biz", label: "B2B", icon: Building2 },
-    { id: "partners", label: "Parteneri & Moderare", icon: ShieldCheck },
-    { id: "data", label: "Date (toate)", icon: Database, adminOnly: true },
-    { id: "broadcast", label: "Broadcast", icon: Send, adminOnly: true },
-    { id: "security", label: "Securitate", icon: KeyRound },
-    { id: "demoseed", label: "Demo seed", icon: Sparkles, adminOnly: true },
+  const allItems: (NavItem & { id: Section; adminOnly?: boolean })[] = [
+    // Operations
+    { id: "overview", label: "Overview", icon: LayoutDashboard, group: "Operations", adminOnly: true, hint: "KPI, activitate, growth" },
+    { id: "alerts",   label: "Alerte",   icon: Bell,            group: "Operations", hint: "Notificări staff" },
+    { id: "copilot",  label: "Copilot AI", icon: Bot,           group: "Operations", hint: "Asistent procedural" },
+    { id: "broadcast",label: "Broadcast",icon: Send,            group: "Operations", adminOnly: true },
+
+    // Trust & Safety
+    { id: "users",    label: "Utilizatori", icon: Users,        group: "Trust & Safety", adminOnly: true },
+    { id: "reports",  label: "Rapoarte",  icon: ShieldAlert,    group: "Trust & Safety" },
+    { id: "risk",     label: "Risc",      icon: AlertTriangle,  group: "Trust & Safety" },
+    { id: "csam",     label: "CSAM",      icon: ShieldAlert,    group: "Trust & Safety", adminOnly: true },
+    { id: "dsa",      label: "DSA",       icon: FileWarning,    group: "Trust & Safety" },
+
+    // Compliance
+    { id: "gdpr",       label: "GDPR Ops",    icon: Download,    group: "Compliance", adminOnly: true },
+    { id: "breakglass", label: "Break-glass", icon: ShieldAlert, group: "Compliance", adminOnly: true },
+    { id: "breach",     label: "Breșe",       icon: AlertOctagon,group: "Compliance", adminOnly: true },
+    { id: "policies",   label: "Politici",    icon: FileText,    group: "Compliance" },
+    { id: "audit",      label: "Audit",       icon: ScrollText,  group: "Compliance" },
+
+    // Business
+    { id: "ads",      label: "Ads",            icon: Megaphone,   group: "Business" },
+    { id: "biz",      label: "B2B",            icon: Building2,   group: "Business" },
+    { id: "partners", label: "Parteneri & Moderare", icon: ShieldCheck, group: "Business" },
+
+    // System
+    { id: "health",   label: "System Health", icon: Activity,    group: "System" },
+    { id: "security", label: "Securitate",    icon: KeyRound,    group: "System" },
+    { id: "data",     label: "Date (toate)",  icon: Database,    group: "System", adminOnly: true },
+    { id: "demoseed", label: "Demo seed",     icon: Sparkles,    group: "System", adminOnly: true },
   ];
-  const items = allItems.filter((i) => !i.adminOnly || isAdmin);
+  const items: NavItem[] = allItems
+    .filter((i) => !i.adminOnly || isAdmin)
+    .map(({ adminOnly: _a, ...rest }) => rest);
+
+  const roleLabel = isSuper ? "SUPER ADMIN" : isAdmin ? "ADMIN" : "MOD";
 
   return (
-    <div className="min-h-dvh bg-background">
-      <header className="sticky top-0 z-20 border-b border-border bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-3">
-          <Crown className="size-5 text-primary" />
-          <h1 className="text-base font-semibold">Admin Control Center</h1>
-          <span className="ml-auto text-xs text-muted-foreground">{isAdmin ? "ADMIN" : "MOD"} · idle-out 15m</span>
-        </div>
-        <nav className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-2 pb-2 scrollbar-none">
-          {items.map((it) => (
-            <button key={it.id} onClick={() => setSection(it.id)}
-              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                section === it.id ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground hover:bg-surface"
-              }`}>
-              <it.icon className="size-3.5" /> {it.label}
-            </button>
-          ))}
-        </nav>
-      </header>
-
-      {/* AGE-GATE WARNING BANNER — vizibil dacă flag age_verification e OFF în non-prod.
-          TODO[age-gate]: la reactivare (toggle ON din admin → Securitate/Feature flags),
-          banner-ul dispare automat. Producția forțează ON via age-gate-policy. */}
-      <AgeGateDevBanner />
-      <DemoSeedBanner />
-
-      <main className="mx-auto max-w-7xl px-4 py-6">
-        {section === "overview" && isAdmin && <OverviewPanel />}
-        {section === "alerts" && <AlertsPanel />}
-        {section === "users" && isAdmin && <UsersPanel meId={user!.id} />}
-        {section === "reports" && <ReportsPanel meId={user!.id} />}
-        {section === "risk" && <RiskPanel />}
-        {section === "csam" && isAdmin && <CsamPanel />}
-        {section === "dsa" && <DsaPanel />}
-        {section === "gdpr" && isAdmin && <GdprOpsPanel />}
-        {section === "breakglass" && isAdmin && <BreakGlassLogPanel />}
-        {section === "breach" && isAdmin && <BreachPanel />}
-        {section === "policies" && <PoliciesPanel />}
-        {section === "audit" && <AuditLogPanel />}
-        {section === "ads" && <AdsPanel />}
-        {section === "biz" && <BizPanel />}
-        {section === "data" && isAdmin && <DataExplorerPanel />}
-        {section === "broadcast" && isAdmin && <BroadcastPanel />}
-        {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
-        {section === "security" && <SecurityPanel />}
-        {section === "demoseed" && isAdmin && <DemoSeedPanel isSuperAdmin={isSuper} />}
-      </main>
-    </div>
+    <AdminShell
+      items={items}
+      active={section}
+      onSelect={(id) => setSection(id as Section)}
+      roleLabel={roleLabel}
+      banner={<><AgeGateDevBanner /><DemoSeedBanner /></>}
+    >
+      {section === "overview" && isAdmin && <OverviewPanel />}
+      {section === "alerts" && <AlertsPanel />}
+      {section === "copilot" && <AiCopilotPanel />}
+      {section === "users" && isAdmin && <UsersPanel meId={user!.id} />}
+      {section === "reports" && <ReportsPanel meId={user!.id} />}
+      {section === "risk" && <RiskPanel />}
+      {section === "csam" && isAdmin && <CsamPanel />}
+      {section === "dsa" && <DsaPanel />}
+      {section === "gdpr" && isAdmin && <GdprOpsPanel />}
+      {section === "breakglass" && isAdmin && <BreakGlassLogPanel />}
+      {section === "breach" && isAdmin && <BreachPanel />}
+      {section === "policies" && <PoliciesPanel />}
+      {section === "audit" && <AuditLogPanel />}
+      {section === "ads" && <AdsPanel />}
+      {section === "biz" && <BizPanel />}
+      {section === "data" && isAdmin && <DataExplorerPanel />}
+      {section === "broadcast" && isAdmin && <BroadcastPanel />}
+      {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
+      {section === "security" && <SecurityPanel />}
+      {section === "demoseed" && isAdmin && <DemoSeedPanel isSuperAdmin={isSuper} />}
+      {section === "health" && <SystemHealthPanel />}
+    </AdminShell>
   );
 }
 
