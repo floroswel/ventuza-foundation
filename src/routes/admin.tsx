@@ -243,65 +243,99 @@ function OverviewPanel() {
   };
   useEffect(() => { load(); }, []);
 
-  if (loading) return <Loader2 className="mx-auto mt-12 size-6 animate-spin" />;
+  if (loading) return <Loader2 className="mx-auto mt-12 size-6 animate-spin text-[var(--admin-accent)]" />;
   if (error) return <AdminPanelError error={error} onRetry={load} />;
   if (!data) return <AdminPanelEmpty label="Fără date." />;
 
-
-  const Stat = ({ label, value, hint }: { label: string; value: number | string; hint?: string }) => (
-    <div className="rounded-2xl border border-border bg-surface p-4">
-      <p className="text-xs uppercase tracking-wide text-muted-foreground">{label}</p>
-      <p className="mt-1 text-2xl font-bold">{value}</p>
-      {hint && <p className="mt-0.5 text-[10px] text-muted-foreground">{hint}</p>}
-    </div>
-  );
+  const m = data.moderation ?? {};
+  const a = data.activity ?? {};
+  const p = data.profiles ?? {};
+  const attention = [
+    { label: "Rapoarte pending", count: m.reportsPending ?? 0, tone: "warn" as const },
+    { label: "Ads pending", count: m.adsPending ?? 0, tone: "warn" as const },
+    { label: "B2B pending", count: m.bizPending ?? 0, tone: "warn" as const },
+    { label: "SOS 7 zile", count: a.sos7d ?? 0, tone: (a.sos7d ?? 0) > 0 ? "danger" : "neutral" as const },
+  ];
 
   return (
     <div className="space-y-6">
-      <AnalyticsPanel />
-      <FeedbackInbox />
-      <ExperimentsPanel />
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Privire de ansamblu</h2>
-        <button onClick={load} className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-surface">
-          <RefreshCw className="mr-1 inline size-3" /> Reîncarcă
-        </button>
+      {/* KPI band — 8 compact tiles */}
+      <section>
+        <SectionTitle action={
+          <button onClick={load} className="inline-flex items-center gap-1 rounded-full border border-[var(--admin-border)] px-2.5 py-1 text-[10px] text-[var(--admin-text-dim)] hover:border-[var(--admin-accent)]/60 hover:text-[var(--admin-text)]">
+            <RefreshCw className="size-3" /> Reîncarcă
+          </button>
+        }>Indicatori cheie</SectionTitle>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
+          <Kpi label="Useri totali" value={p.total} />
+          <Kpi label="Noi 24h" value={p.last24h} delta={p.last24h ?? null} />
+          <Kpi label="Noi 7 zile" value={p.last7d} />
+          <Kpi label="Verificați" value={p.verified} tone="success" />
+          <Kpi label="Suspendați" value={p.suspended} tone={p.suspended > 0 ? "warn" : "default"} />
+          <Kpi label="Banați" value={p.banned} tone={p.banned > 0 ? "danger" : "default"} />
+          <Kpi label="Mesaje 24h" value={a.messages24h} />
+          <Kpi label="Match-uri 24h" value={a.matches24h} />
+        </div>
+      </section>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+        {/* Main column — analytics + activity */}
+        <div className="space-y-6">
+          <GlassCard padding="p-4">
+            <SectionTitle>Analytics</SectionTitle>
+            <AnalyticsPanel />
+          </GlassCard>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <GlassCard padding="p-3">
+              <SectionTitle>Moderare & Business</SectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <Kpi label="Ads active" value={m.adsActive} />
+                <Kpi label="Ads pending" value={m.adsPending} tone={m.adsPending > 0 ? "warn" : "default"} />
+                <Kpi label="B2B pending" value={m.bizPending} tone={m.bizPending > 0 ? "warn" : "default"} />
+                <Kpi label="Abonamente" value={m.subsActive} tone="success" />
+              </div>
+            </GlassCard>
+            <GlassCard padding="p-3">
+              <SectionTitle>Activitate</SectionTitle>
+              <div className="grid grid-cols-2 gap-2">
+                <Kpi label="Evenimente" value={a.events} />
+                <Kpi label="Eveniment noi 24h" value={a.events24h} />
+                <Kpi label="SOS 7 zile" value={a.sos7d} tone={a.sos7d > 0 ? "danger" : "default"} hint={a.sos7d > 0 ? "verifică urgent" : undefined} />
+                <Kpi label="Rapoarte pending" value={m.reportsPending} tone={m.reportsPending > 0 ? "warn" : "default"} />
+              </div>
+            </GlassCard>
+          </div>
+
+          <GlassCard padding="p-4">
+            <SectionTitle>Inbox & experimente</SectionTitle>
+            <div className="space-y-4">
+              <FeedbackInbox />
+              <ExperimentsPanel />
+            </div>
+          </GlassCard>
+        </div>
+
+        {/* Right column — needs attention */}
+        <aside className="space-y-3">
+          <GlassCard padding="p-4" elevated>
+            <SectionTitle>Necesită atenție</SectionTitle>
+            <ul className="space-y-2">
+              {attention.map((a) => (
+                <li key={a.label} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--admin-border)]/60 bg-[var(--admin-surface-2)] px-3 py-2">
+                  <span className="text-xs text-[var(--admin-text-dim)]">{a.label}</span>
+                  <StatusBadge tone={a.tone === "danger" ? "rejected" : a.tone === "warn" ? "pending" : "neutral"}>
+                    <MonoNumber value={a.count} />
+                  </StatusBadge>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-[10px] text-[var(--admin-text-faint)]">
+              Treci la tab-urile dedicate din sidebar pentru acțiuni.
+            </p>
+          </GlassCard>
+        </aside>
       </div>
-
-
-      <section>
-        <h3 className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Utilizatori</h3>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-6">
-          <Stat label="Total" value={data.profiles.total} />
-          <Stat label="Noi 24h" value={data.profiles.last24h} />
-          <Stat label="Noi 7 zile" value={data.profiles.last7d} />
-          <Stat label="Verificați" value={data.profiles.verified} />
-          <Stat label="Suspendați" value={data.profiles.suspended} />
-          <Stat label="Banați" value={data.profiles.banned} />
-        </div>
-      </section>
-
-      <section>
-        <h3 className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Activitate</h3>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-          <Stat label="Mesaje 24h" value={data.activity.messages24h} />
-          <Stat label="Match-uri 24h" value={data.activity.matches24h} />
-          <Stat label="Evenimente" value={data.activity.events} />
-          <Stat label="Eveniment noi 24h" value={data.activity.events24h} />
-          <Stat label="SOS 7 zile" value={data.activity.sos7d} hint="Verifică urgent" />
-        </div>
-      </section>
-
-      <section>
-        <h3 className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Moderare & Business</h3>
-        <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-          <Stat label="Rapoarte pending" value={data.moderation.reportsPending} />
-          <Stat label="Ads active" value={data.moderation.adsActive} />
-          <Stat label="Ads pending" value={data.moderation.adsPending} />
-          <Stat label="B2B pending" value={data.moderation.bizPending} />
-          <Stat label="Abonamente active" value={data.moderation.subsActive} />
-        </div>
-      </section>
     </div>
   );
 }
