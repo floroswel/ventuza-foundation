@@ -31,9 +31,10 @@ export function AuditLogPanel() {
   const [action, setAction] = useState("");
   const [severity, setSeverity] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    setBusy(true);
+    setBusy(true); setError(null);
     try {
       const r = await fetchLog({ data: {
         action: action || undefined,
@@ -41,8 +42,11 @@ export function AuditLogPanel() {
         limit: 200,
       }});
       setRows(r.rows); setCount(r.count);
-    } catch (e: any) { toast.error(e.message); }
-    setBusy(false);
+    } catch (e: any) {
+      const m = errMsg(e); setError(m); toast.error(m);
+    } finally {
+      setBusy(false);
+    }
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
