@@ -31,10 +31,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, AlertTriangle, MapPin, Image as ImgIcon, BarChart3, ChevronLeft } from "lucide-react";
+import { Loader2, Plus, AlertTriangle, MapPin, Image as ImgIcon, BarChart3, ChevronLeft, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { PostingWizard } from "@/components/partner/PostingWizard";
+import { StatusNotificationsBell } from "@/components/partner/StatusNotificationsBell";
+import { StatusTiles } from "@/components/partner/StatusTiles";
 
 export const Route = createFileRoute("/partner")({
   head: () => ({
