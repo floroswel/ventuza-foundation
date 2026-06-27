@@ -2102,7 +2102,6 @@ export type Database = {
           banned_at: string | null
           banned_reason: string | null
           bio: string | null
-          birth_date: string | null
           birthdate: string | null
           body_type: string | null
           boost_until: string | null
@@ -2226,7 +2225,6 @@ export type Database = {
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
-          birth_date?: string | null
           birthdate?: string | null
           body_type?: string | null
           boost_until?: string | null
@@ -2350,7 +2348,6 @@ export type Database = {
           banned_at?: string | null
           banned_reason?: string | null
           bio?: string | null
-          birth_date?: string | null
           birthdate?: string | null
           body_type?: string | null
           boost_until?: string | null
