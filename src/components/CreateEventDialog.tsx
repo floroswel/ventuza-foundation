@@ -54,11 +54,11 @@ export function CreateEventDialog({
         max_attendees: maxAttendees ? Math.max(1, parseInt(maxAttendees, 10)) : null,
         is_private: isPrivate,
       });
-      toast.success("Event created");
+      toast.success("Trimis spre moderare");
       reset();
       onCreated(id);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Couldn't create event");
+      toast.error(err instanceof Error ? err.message : "Nu s-a putut trimite evenimentul");
     } finally {
       setSaving(false);
     }
