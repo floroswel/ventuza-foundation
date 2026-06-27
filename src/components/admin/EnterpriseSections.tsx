@@ -172,9 +172,14 @@ export function AlertsPanel() {
   const get = useServerFn(adminGetAlerts);
   const ack = useServerFn(adminAckAlert);
   const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    try { setItems(await get()); } catch (e: any) { toast.error(e.message); }
+    setError(null);
+    try { setItems(await get()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
   };
   useEffect(() => {
     load();
@@ -189,7 +194,7 @@ export function AlertsPanel() {
 
   const acknowledge = async (id: number) => {
     try { await ack({ data: { id } }); setItems((c) => c.filter((x) => x.id !== id)); }
-    catch (e: any) { toast.error(e.message); }
+    catch (e: any) { toast.error(errMsg(e)); }
   };
 
   return (
@@ -199,9 +204,13 @@ export function AlertsPanel() {
         <h2 className="text-lg font-semibold">Alerte (live)</h2>
         <span className="ml-auto text-xs text-muted-foreground">{items.length} active</span>
       </div>
-      {items.length === 0 ? (
+      {error ? (
+        <ErrorBanner error={error} onRetry={load} />
+      ) : loading ? (
+        <LoadingBox />
+      ) : items.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
-          ✅ Nicio alertă activă
+          ✅ Nicio alertă activă (empty legitim — apare aici când sistemul detectează un incident)
         </div>
       ) : (
         <ul className="space-y-2">
