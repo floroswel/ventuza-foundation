@@ -28,7 +28,9 @@ export function isProductionHost(hostname = typeof window !== "undefined" ? wind
   if (h.endsWith("--dev.lovable.app")) return false;
   if (h.endsWith(".lovableproject.com")) return false;   // Lovable sandbox preview (editor iframe)
   if (h.endsWith(".lovable.dev")) return false;          // Lovable dev preview
-  // Orice altceva (custom domain, *.lovable.app publicat) = PROD
+  // Orice altceva = PROD. Exemple recunoscute ca PROD:
+  //   ventuza.eu, www.ventuza.eu (custom domain),
+  //   ventuza-foundation.lovable.app (Lovable published URL).
   return true;
 }
 
@@ -38,15 +40,16 @@ const TTL_MS = 60_000;
 /**
  * Returnează `true` dacă AgeGate trebuie să blocheze efectiv user-ul.
  *
- * ⚠️ KILL-SWITCH TEMPORAR ACTIV (cerut explicit de owner):
- * Override-ul hard de producție este DEZACTIVAT momentan. Atât în preview cât
- * și în producție, enforcement-ul respectă `feature_flags.age_verification.enabled`.
- * Pentru reactivare la publicarea finală: toggle flag-ul pe ON din admin
- * SAU re-introdu `if (isProductionHost()) return true;` la începutul funcției.
+ * REGULĂ — AGE GATE (AGENTS.md): în PRODUCȚIE enforcement-ul e FORȚAT ON
+ * indiferent de `feature_flags.age_verification`. Flag-ul rămâne doar
+ * kill-switch pentru dev/preview. Producția nu poate fi dezactivată.
  *
  * Fail-safe: dacă flag-ul lipsește sau citirea eșuează → enforcement ON.
  */
 export async function shouldEnforceAgeGate(): Promise<boolean> {
+  // Hard override PROD — niciun flag nu poate dezactiva age gate-ul în producție.
+  if (isProductionHost()) return true;
+
   const now = Date.now();
   if (_cache && now - _cache.at < TTL_MS) return _cache.value;
 
