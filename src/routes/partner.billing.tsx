@@ -71,6 +71,31 @@ function PartnerBilling() {
   }, [getPlans, getSub, getInvoices, user]);
   useEffect(() => { if (user) load(); }, [load, user]);
 
+  // Polling 30s pe facturi cât există plăți pending — toast la activare.
+  useEffect(() => {
+    const hasPending = invoices.some((i) => i.status === "pending_payment" || i.status === "overdue");
+    if (!hasPending || !user) return;
+    const id = setInterval(async () => {
+      try {
+        const fresh = await getInvoices({});
+        const prev = new Map(invoices.map((i) => [i.id, i.status]));
+        for (const inv of fresh.invoices) {
+          const before = prev.get(inv.id);
+          if (before && before !== "paid" && inv.status === "paid") {
+            toast.success(`Factura ${inv.payment_code} a fost confirmată. Abonamentul tău e activ.`);
+          }
+        }
+        setInvoices(fresh.invoices);
+        // Reîncarcă și subscription dacă s-a activat ceva.
+        if (fresh.invoices.some((i: any) => i.status === "paid" && (prev.get(i.id) ?? "") !== "paid")) {
+          const s = await getSub({});
+          setSub(s.subscription); setEnt(s.entitlements);
+        }
+      } catch { /* silently retry */ }
+    }, 30000);
+    return () => clearInterval(id);
+  }, [invoices, user, getInvoices, getSub]);
+
   const startUpgrade = async (planCode: "Pro" | "Premium") => {
     try {
       const r = await start({ data: { plan_code: planCode } });
@@ -131,8 +156,8 @@ function PartnerBilling() {
         )}
       </div>
 
-      {/* Date fiscale */}
-      <BillingProfileCard biz={bizApp} onSave={async (vals) => {
+      {/* Date fiscale — key forțează remount când bizApp ajunge async */}
+      <BillingProfileCard key={bizApp?.user_id ?? bizApp?.cui ?? "empty"} biz={bizApp} onSave={async (vals) => {
         try { await updateBilling({ data: vals }); toast.success("Date fiscale actualizate"); load(); }
         catch (e: any) { toast.error(e.message); }
       }} />

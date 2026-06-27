@@ -225,9 +225,14 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
               Status: <span className="font-medium text-primary">{statusLabel(savedStatus)}</span>. Te contactăm pe email.
             </p>
             {savedStatus === "approved" && (
-              <Link to="/business/dashboard" className="mt-2 inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
-                Deschide panoul Business →
-              </Link>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Link to="/partner" className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
+                  Portal Partener (locuri & evenimente) →
+                </Link>
+                <Link to="/business/dashboard" className="inline-flex items-center gap-1 rounded-full border border-primary/40 px-3 py-1.5 text-xs font-semibold text-primary">
+                  Campanii publicitare
+                </Link>
+              </div>
             )}
           </div>
         </div>

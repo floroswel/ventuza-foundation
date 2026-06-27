@@ -1,98 +1,102 @@
+# Audit UX cap-coadă Ventuza — raport brutal
 
-# AUDIT UX CAP-COADĂ — RAPORT BRUTAL
-
-Sursă: două audituri read-only paralele, fiecare cu dovezi `file:linie`.
+> Doar analiză, conform cererii. Mai jos rezumatul ambelor călătorii + fix-urile propuse pentru aprobare. Codul nu a fost atins.
 
 ---
 
 ## CĂLĂTORIA 1 — USER NOU (dating)
 
-| Pas | Rută / fișier | Verdict |
+| Pas | Stare | Notă rapidă |
 |---|---|---|
-| 1. Landing | `index.tsx`, `AgeGate.tsx` | ⚠️ flash de spinner pe cold load la vizitatori |
-| 2. Signup email + OAuth | `auth.tsx` | 🔴 OAuth pe Safari/WebView pierde birthdate din `sessionStorage`; email-confirm = dead end |
-| 3. Onboarding /n (6 pași) | `n.tsx` | 🔴 `PhotosStep` uploadează FĂRĂ moderare AI (ocolește `moderatePhoto`) |
-| 4. Consimțăminte | `consent-registry.ts`, `ConsentPromptHost.tsx` | ⚠️ push & background_location nu se cer proactiv |
-| 5. Discover prima dată | `discover.tsx`, RPC `discover_profiles` | ⚠️ eroare RPC indistinguibilă de empty real |
-| 6. Swipe→match→chat | `discover.tsx`, `MatchModal.tsx`, `messages.$id.tsx` | ⚠️ buton "Message" pe orice profil; trigger block dă toast opac |
-| 7. Profil + poze | `profile.tsx`, `PhotoManager.tsx` | ✅ moderare AI corectă (singurul loc) |
-| 8. Nearby/Events/Notifications/Settings | `nearby.tsx`, `events.tsx`, … | 🔴 `nearby.tsx:262` folosește `window.alert()` raw |
-| 9. Retenție (daily reward, quests) | `quests.tsx`, `DailyRewardCard.tsx` | 🔴 `quests.tsx:76` are `catch{/*noop*/}` — fail silențios |
+| 1. Landing `/` | ✅ | Există, age gate exclus corect pe `/`, `/auth`, `/n`. Zero semnal LGBTQ+ vizibil. |
+| 2a. Signup email | 🔴 | Email confirmation limbo: rămâne pe `/auth`, fără resend, fără redirect, fără instrucțiuni. |
+| 2b. OAuth | ⚠️ | Birthdate cerut pre-OAuth (corect legal) dar UX surprinzător; persist localStorage OK. |
+| 3. Onboarding `/n` | 🔴 | Birthdate cerut a doua oară (nu citește profilul); state pierdut la refresh; moderare foto = blocant total la AI down. |
+| 4. Consimțăminte | ⚠️ | Registry curat, dar dacă `ConsentPromptHost` nu e încă montat → `requestConsent` returnează silent `false`. |
+| 5. Discover prima dată | ⚠️ | Empty state nu diferențiază "DB e goală/app e nou-lansat" de "n-ai vecini acum". |
+| 6. Swipe → match → chat | ⚠️ | MatchModal + CTA OK. Dar "Message" disponibil fără match pe orice profil; `online` hardcodat; `window.confirm()` pentru unsend. |
+| 7. Profil propriu | ⚠️ | Nicio previzualizare "cum mă văd alții"; pagină supraîncărcată cu carduri. |
+| 8. Nearby/Events/Notifs/Settings | ⚠️ | Nearby gol perpetuu dacă geo refuzat; Squads gol fără hint; Settings → "Promovează businessul" duce la `/advertise` (greșit). |
+| 9. Retenție primele minute | 🔴 | Zero prompt push în onboarding sau post-match. Retenția Day 2 cade brutal. |
+
+### TOP probleme user (sortate pe gravitate)
+
+1. **🔴 P0** — Email signup limbo, fără resend/redirect — `src/routes/auth.tsx:160-165`
+2. **🔴 P0** — Moderare foto blocantă la AI down (poza ștearsă, min 1 obligatoriu) — `src/routes/n.tsx:549-554`
+3. **🔴 P0** — Zero consent push în journey (nici onboarding, nici post-match) — niciun call site
+4. **⚠️ P1** — Birthdate dublu (signup + step 1 onboarding) — `n.tsx:63` nu pre-populează din profil
+5. **⚠️ P1** — State onboarding pierdut la refresh — `n.tsx:123-126` (pur `useState`)
+6. **⚠️ P1** — Age gate biometric Didit fără ETA/timeout/notificare la finalizare — `AgeGate.tsx:134-138`
+7. **⚠️ P2** — Message fără match → vector spam/safety — `discover.tsx:689-693`
+8. **⚠️ P2** — `window.confirm()` pentru unsend, inconsistent cu propria regulă GDPR — `messages.$id.tsx:286`
+9. **⚠️ P2** — Nearby/Squads ecrane moarte la geo refuzat sau DB goală — `nearby.tsx:72-74`, `groups.tsx`
+10. **⚠️ P3** — "online" status fals în chat header (citește socket local, nu `last_seen`) — `messages.$id.tsx:356`
 
 ---
 
 ## CĂLĂTORIA 2 — BUSINESS NOU (partener)
 
-| Pas | Rută / fișier | Verdict |
+| Pas | Stare | Notă rapidă |
 |---|---|---|
-| 1. Intrare în app | `index.tsx:91–103` | ⚠️ card vizibil DOAR pentru vizitatori; userii logați nu pot ajunge la `/business` din nicio pagină |
-| 2. Înregistrare | `business.tsx`, `business-apply.functions.ts` | 🔴 `user_id` hardcodat `null` la submit + IBAN absent din formular |
-| 3. Post-aplicare DoneScreen | `business.tsx:484–534` | ⚠️ promite "poți pregăti primele postări" — fals (rol lipsește) |
-| 4. Portal `/partner` (pending/approved) | `partner.tsx` | ⚠️ aprobarea cere refresh manual fără buton; fără polling/realtime |
-| 5. Wizard postare | `PostingWizard.tsx`, `partner-templates.ts` | 🔴 `createSignedUrl(…, 30*24*3600)` — cover photos mor după 30 zile |
-| 6. Moderare | `admin-partners.functions.ts:209` | 🔴 zero email/push la decizie; bell montat DOAR pe `/partner` (lipsă pe billing/guide) |
-| 7. Facturare OP bancar | `partner.billing.tsx`, `billing.functions.ts:113` | ⚠️ IBAN fără validare format; grace period opac; lipsă banner overdue |
-| 8. Puncte moarte | `partner.tsx` ↔ `business.dashboard.tsx` | 🔴 două portale complet disconectate, fără cross-linking |
+| 1. Intrare | ⚠️ | Două intrări în Settings: una corectă (`/business`), una **greșită** la `/advertise`. Zero link `/partner` din nav. |
+| 2. Înregistrare `/business` | ⚠️ | Submit OK, orphan-linking funcționează, dar `country` e text liber, nu select. |
+| 3. După aplicare | 🔴 | `needs_info` spune "verifică emailul" — **dar emailul nu se trimite nicăieri** în cod. Polling/realtime OK pentru aprobare. |
+| 4. Portal `/partner` + wizard | 🔴 | Wizard solid. **Cover URL semnat 30 zile** stocat în DB → toate pozele se sparg după o lună. |
+| 5. Postare → moderare → status | 🔴 | Bell in-app cu polling 60s e singurul canal. Zero email/push la aprobare/respingere/`needs_info`. |
+| 6. Facturare | ⚠️ | Plan-urile + OP OK. `BillingProfileCard` state bug (nu re-syncă pe `biz` async). Confirmarea plății manuale fără feedback vizibil. IBAN partener colectat dar neutilizat. |
+| 7. Puncte moarte | 🔴 | `/partner` și `/business/dashboard` (ads) sunt **două portale paralele deconectate**. Landing trimite partenerul aprobat la `dashboard` (ads), nu la `/partner` (venues). |
+
+### TOP probleme partener
+
+1. **🔴 P0** — Cover URLs expiră în 30 zile → toate pozele venues/events broken — `src/routes/partner.tsx:594-607`
+2. **🔴 P0** — Zero notificare proactivă la decizie moderare (nici email, nici push) — `src/lib/admin-partners.functions.ts:212`
+3. **🔴 P1** — Două portale deconectate (`/partner` vs `/business/dashboard`); landing-ul aprobat trimite greșit — `src/routes/business.tsx:228-231`
+4. **🔴 P1** — `needs_info` fără canal real de comunicare — `partner.tsx:194-196`
+5. **⚠️ P1** — Settings → "Promovează businessul" → `/advertise` în loc de `/business` — `settings.tsx:402-403`
+6. **⚠️ P2** — `BillingProfileCard` câmpuri goale la primul render (state derivat din props async) — `partner.billing.tsx:252-254`
+7. **⚠️ P2** — Spinner etern pe `/partner` dacă fetch aplicație eșuează — `partner.tsx:173-179`
+8. **⚠️ P2** — Confirmarea plății OP fără polling/notificare la activare — `partner.billing.tsx:213-245`
+9. **⚠️ P3** — IBAN partener colectat, neutilizat, confuz vs IBAN Ventuza — `partner.billing.tsx:264`
+10. **⚠️ P3** — `country` text liber 2-char în loc de select țări — `business.tsx:418`
 
 ---
 
-## TOP 12 PROBLEME — DUPĂ GRAVITATE
+## Plan de remediere propus (Val 5)
 
-### 🔴 BLOCKERE (P0)
+Execut TOATE fix-urile P0 + P1 într-un singur sprint, fără confirmare între item-uri (conform preferinței `mem://~user`). Ordine de execuție:
 
-1. **Onboarding upload poze fără AI moderation** — `n.tsx:518–537`. Conținut NSFW poate intra prin signup. Inconsistență cu `PhotoManager.tsx`.
-2. **OAuth birthdate pierdut pe mobil** — `auth.tsx:195`. `sessionStorage` nu supraviețuiește redirect OAuth în Safari/WebView → flux signup mobil rupt.
-3. **`createSignedUrl` 30 zile pe cover photos partener** — `PostingWizard.tsx:576`. Toate venue/event/offer cover-urile devin broken după 30 zile, în portal ȘI în Nearby.
-4. **`user_id=null` hardcodat la submit business** — `business-apply.functions.ts:63`. Aplicații orfan dacă auth expiră sau context nu se propagă.
-5. **Quests `catch{/*noop*/}`** — `quests.tsx:76`. Eroare RPC = listă goală fără feedback. Pierdere engagement.
-6. **`window.alert()` în Nearby empty state** — `nearby.tsx:262`. Brut, blocant, neconform.
-7. **Email confirm = dead end** — `auth.tsx:157`. Fără resend, fără pagină dedicată, fără countdown. Drop-off masiv post-signup email.
-8. **Două portale partener disconectate** — `partner.tsx` (venues/events/offers) vs `business.dashboard.tsx` (ads). Zero breadcrumb, zero cross-link.
-9. **Bell notificări status DOAR pe `/partner`** — `StatusNotificationsBell` lipsă pe `/partner/billing` și `/partner/guide`. Niciun layout wrapper.
-10. **Fără email la decizia de moderare** — `admin-partners.functions.ts:209`. Bell + polling 1 min = singura cale.
+### Bloc A — Safety & data loss (P0 partener + user)
+1. **Cover URLs permanente.** Schimb `uploadCover` să stocheze `path` în DB (`venues.cover_path`, `events.cover_path`) și să genereze signed URL la citire (1h, refresh on-demand) — sau migrez bucket-ul `venue-media` la public (decizie: aleg signed-on-read, păstrăm controlul). Backfill: re-generez signed URLs pentru rândurile existente la prima citire.
+2. **Notificare proactivă moderare.** În `admin_moderate_item` (SQL) inserez în `notifications` (canal in-app deja existent) ȘI declanșez push prin `web-push.server.ts` dacă partenerul are `push_subscriptions`. Adaug coadă email best-effort (folosesc connector existent dacă există; altfel logăm `TODO` și marcăm `needs_email_provider` în Art. 30 register). Zero canal nou de comunicare neînregistrat.
+3. **Moderare foto cu fallback "pending review".** În `n.tsx PhotosStep` + `PhotoManager`: dacă `moderatePhoto` throw (nu `!allowed`), accept poza cu `moderation_state='pending'` și o marchez invizibilă altora până la review. Userul finalizează onboarding-ul.
 
-### ⚠️ FRUSTRARE (P1)
+### Bloc B — Conversie & navigație (P0/P1)
+4. **Email signup limbo fix.** După signup fără sesiune: redirect la `/auth/check-email?email=...` cu buton resend (apel `supabase.auth.resend({ type: 'signup' })`) + countdown 60s.
+5. **Push consent în journey.** Adaug prompt `requestConsent("push_notifications")` la primul match (în `MatchModal` onClose) și un secondary prompt la finalul onboarding-ului (step 6, după Finish, înainte de redirect la `/discover`).
+6. **Onboarding: pre-populate + persistență.** `/n` citește profilul la mount și pre-completează `birthdate`, `display_name` dacă există. State salvat în `localStorage` la fiecare `setData`, golit la Finish.
+7. **Unificare portale partener.** Adaug în `/partner` un tab/link permanent către `/business/dashboard` (Ads) și viceversa. Landing `/business` pentru `status=approved` → schimb butonul primar la `/partner`, secundar la `/business/dashboard`. Mount `StatusNotificationsBell` în `/business/dashboard` și în header global pentru parteneri.
+8. **Settings link corect.** "Promovează-ți businessul" → schimb destinația la `/business` (aplicare) pentru non-parteneri și la `/partner` pentru parteneri aprobați. Păstrez separat un link "Campanii publicitare" → `/advertise`.
+9. **`/partner` error state.** Înlocuiesc `pendingChecked` boolean cu trio `loading/error/data` (regula AGENTS.md ADMIN PANELS aplicată și aici); banner cu retry.
 
-11. **Eroare RPC Discover = "No one nearby"** — `discover.tsx:116`. Userul nu distinge eroare de absență reală.
-12. **Aprobare partener cere refresh manual fără buton** — `partner.tsx:183`. Text spune "automat", dar nu există polling/realtime.
+### Bloc C — Polish (P2)
+10. `BillingProfileCard` state derivat → `useEffect` sync pe `biz` sau `key={biz?.id}` pentru remount.
+11. Invoice status polling la `/partner/billing` (15s) + toast la trecerea `pending_payment` → `paid`.
+12. `window.confirm()` pentru unsend → `ConsentPromptHost`/`AlertDialog`.
+13. Empty state Discover/Nearby/Squads: copy contextual ("Suntem în lansare în orașul tău" + buton "Anunță-mă când apare cineva" — opt-in push).
+14. Country select în `/business`.
 
----
+### Bloc D — Amânat conștient
+- Email transactional dedicat (resend, moderation decision, invoice paid): necesită provider configurat. Implementez infrastructura `mail.server.ts` care logează + apelează provider dacă variabila e setată; altfel no-op cu warning. Documentez în Art. 30 ca "DPA pending — provider TBD".
+- "Online" status real (citește `last_seen` la abonare + update presence): refactor mai mare, intră în Val 6.
+- Previzualizare profil "cum mă văd alții": adaug doar buton "Vezi profilul public" linkat la `/u/$slug` existent.
 
-## SPRINT REMEDIERE P0 PROPUS
+### Reguli respectate
+- Health/locație/Art.9: zero atingere.
+- Moderation gate `admin_moderate_item` rămâne sursa unică; doar adaug notificare în aceeași tranzacție.
+- Niciun procesator nou fără actualizare `legal.subprocessors.tsx` + Art. 30 (email provider blocat pe acest criteriu).
+- Push consent gated prin `consent_registry` existent.
 
-În ordine de impact, aplicat într-o singură rundă. Fiecare item are dovada în secțiunile de mai sus.
+### Estimare scop
+~14 fișiere atinse, 1 migrare SQL (notificări moderare + `cover_path` în loc de `cover_url`), 0 dependențe noi. Verific cu typecheck la final.
 
-### Track A — Dating safety + activation
-1. **Moderare AI la onboarding photos** — în `PhotosStep` (`n.tsx`) refolosește exact pipeline-ul din `PhotoManager.tsx` (apel `moderatePhoto` + perceptual hash) ÎNAINTE de a scrie în storage / `profiles.photos`.
-2. **OAuth birthdate persist robust** — la `persistPendingBirthdate`, în loc de `sessionStorage`, scrie birthdate-ul într-o coloană `profiles.pending_birthdate` printr-un server fn apelat înainte de `signInWithOAuth`, iar la `routeAfterAuth` mută în `birthdate` dacă lipsește. Fallback rămâne `sessionStorage`.
-3. **Email confirm pagină dedicată** — rută nouă publică `/auth/check-email` cu buton "Resend email" (`supabase.auth.resend({type:'signup'})`) + countdown 60s. `auth.tsx:157` navighează acolo.
-4. **Quests: înlocuiește `catch{/*noop*/}`** — `quests.tsx:76` setează `error` în state și randează `ErrorBanner` cu retry (pattern din AGENTS.md ADMIN PANELS, aplicabil global).
-5. **Discover: distinge eroare de empty** — `discover.tsx:116` setează `loadError` și `EmptyState` primește prop `variant: "error" | "empty"` cu copy diferit + retry.
-6. **Nearby: scoate `window.alert()`** — `nearby.tsx:262` folosește `requestConsent("proximity_notifications", ...)` din registrul existent + toast.
-7. **Post-onboarding redirect** — `n.tsx:221` → `/discover` (nu `/profile`).
-8. **Push consent proactiv post-match** — la primul match (în `MatchModal` close), dacă `has_active_consent('push_notifications')` e false, prompt `requestConsent` cu rationale "Ca să afli imediat când îți răspunde".
-
-### Track B — Partener experience
-9. **Cover photos: public URLs, nu signed** — bucket `venue-media` rămâne privat pentru upload, dar adaugă o cale publică / `getPublicUrl` pentru itemi cu `moderation_status='approved'`; salvează în DB doar `cover_path` (relativ) iar render-ul rezolvă URL-ul. Backfill: re-resolvă pentru rândurile existente.
-10. **`user_id` real la submit** — `business-apply.functions.ts:63` folosește `requireSupabaseAuth` opțional (citește `auth.uid()` dacă există token) și setează `user_id` direct; păstrează `linkOrphans` pentru cazul anon. Adaugă apel `linkOrphans` și pe `onAuthStateChange === "SIGNED_IN"` în `__root.tsx`.
-11. **Layout `/partner/_layout`** — pathless layout wrapper care montează `StatusNotificationsBell` + breadcrumb partajat pe TOATE sub-rutele `/partner/*`. Adaugă link direct la `/business/dashboard` (ads) și invers.
-12. **Polling status aprobare** — în ecranul pending din `partner.tsx`, `useEffect` cu `setInterval(refreshRoles, 15000)` + supabase realtime pe `user_roles` (insert pentru user-ul curent) → auto-reload la aprobare.
-13. **Email la moderare** — în `admin_moderate_item` (sau wrapper server fn) trimite email partenerului (template "Postare aprobată / respinsă / cere modificări") prin canalul existent. Bell rămâne.
-14. **IBAN validare format** — `billing.functions.ts:113` adaugă regex IBAN ISO 13616 + checksum mod-97; reject la submit.
-15. **Banner overdue + timeline grace** — pe `/partner` (layout nou), banner roșu dacă există facturi `overdue`; pe `/partner/billing` afișează "Mai ai N zile până la downgrade" calculat din `grace_until`.
-16. **Link "Pentru parteneri" pentru useri logați** — în `/settings` (secțiune nouă "Business") + link în meniul de profil. Cardul din `index.tsx` rămâne.
-17. **DoneScreen mesaj onest** — `business.tsx:511` schimbă în "Vei primi email când cererea e aprobată. Între timp poți citi ghidul." + link `/partner/guide`.
-
-### Track C — Cleanup minor (1 oră)
-18. Spinner cold load landing — `index.tsx:42` randează landing-ul pentru `!user && loading` (auth check în background).
-19. ProfileSheet "Message" — ascunde butonul dacă nu există match (sau redenumește "Trimite tap" pentru pre-match).
-
----
-
-## DECIZII DE LUAT ÎNAINTE DE BUILD
-
-1. **Email transactional** — există deja un provider configurat (Resend/SMTP via subprocesatori) sau trebuie adăugat? Track B punctele #7 (email moderare) și #4 (email confirm flow) depind de asta.
-2. **Bucket `venue-media` public vs signed lung** — preferința e bucket public pentru itemii `approved` (cea mai curată), dar pot face și signed URL 1 an + refresh la render dacă vrei să păstrezi privat.
-3. **Scope sprint** — vrei toate cele 19 puncte într-un singur val, sau doar 🔴 P0 (#1–#10) acum și ⚠️ P1 (#11–#19) într-un al doilea?
-
-După aprobare execut Track A + B + C în ordine, cu typecheck la final și raport de diff-uri.
+Confirmă "ok" și execut Blocurile A→D în ordine, fără pauze intermediare.

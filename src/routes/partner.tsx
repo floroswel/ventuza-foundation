@@ -87,6 +87,7 @@ function PartnerPortal() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [pendingApp, setPendingApp] = useState<{ id: string; status: string; legal_name: string | null } | null>(null);
   const [pendingChecked, setPendingChecked] = useState(false);
+  const [pendingError, setPendingError] = useState<string | null>(null);
 
   const listFn = useServerFn(partnerListMyItems);
   const quotaFn = useServerFn(partnerGetQuota);
@@ -122,16 +123,24 @@ function PartnerPortal() {
       // status instead of the same CTA as someone who never applied.
       let alive = true;
       const fetchApp = async () => {
-        const { data } = await supabase
-          .from("business_applications")
-          .select("id, status, legal_name")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (!alive) return;
-        setPendingApp(data ?? null);
-        setPendingChecked(true);
+        try {
+          const { data, error } = await supabase
+            .from("business_applications")
+            .select("id, status, legal_name")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (!alive) return;
+          if (error) throw error;
+          setPendingApp(data ?? null);
+          setPendingError(null);
+        } catch (e: any) {
+          if (!alive) return;
+          setPendingError(e?.message ?? "Nu am putut verifica cererea.");
+        } finally {
+          if (alive) setPendingChecked(true);
+        }
       };
       void fetchApp();
       // Auto-detect approval: poll user_roles every 15s + realtime on insert.
@@ -177,6 +186,20 @@ function PartnerPortal() {
         </div>
       );
     }
+    if (pendingError) {
+      return (
+        <div className="max-w-xl mx-auto p-6 space-y-4">
+          <h1 className="text-2xl font-semibold">Portal Partener</h1>
+          <div className="rounded border border-destructive/40 bg-destructive/5 p-4 text-sm">
+            <p className="font-medium text-destructive">Nu am putut verifica statusul cererii tale.</p>
+            <p className="text-xs text-muted-foreground mt-1">{pendingError}</p>
+          </div>
+          <Button onClick={() => { setPendingChecked(false); setPendingError(null); window.location.reload(); }}>
+            Reîncearcă
+          </Button>
+        </div>
+      );
+    }
     if (pendingApp) {
       const statusLabels: Record<string, { label: string; cls: string; desc: string }> = {
         pending: {
@@ -192,7 +215,7 @@ function PartnerPortal() {
         needs_info: {
           label: "Necesită clarificări",
           cls: "border-orange-500/40 bg-orange-500/5",
-          desc: "Avem nevoie de informații suplimentare. Verifică-ți emailul.",
+          desc: "Avem nevoie de informații suplimentare. Scrie-ne la business@ventuza.app cu ID-ul cererii.",
         },
         rejected: {
           label: "Respinsă",
@@ -601,7 +624,9 @@ async function uploadCover(userId: string, file: File): Promise<string> {
     upsert: false,
   });
   if (error) throw new Error(error.message);
-  const { data } = await supabase.storage.from("venue-media").createSignedUrl(path, 60 * 60 * 24 * 30);
+  // TTL 5 ani — evită spargerea imaginilor după 30 zile. Bucket-ul rămâne privat;
+  // re-semnarea on-read va veni la refactorul `cover_path` (Val 6).
+  const { data } = await supabase.storage.from("venue-media").createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
   if (!data?.signedUrl) throw new Error("Nu s-a putut obține URL.");
   return data.signedUrl;
 }
