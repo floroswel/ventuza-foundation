@@ -398,7 +398,14 @@ export function GdprPanel() {
   const [items, setItems] = useState<any[]>([]);
   const [uid, setUid] = useState("");
 
-  const load = async () => { try { setItems(await getDel()); } catch (e: any) { toast.error(e.message); } };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const load = async () => {
+    setError(null);
+    try { setItems(await getDel()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const doExport = async () => {
