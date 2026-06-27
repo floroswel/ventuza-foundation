@@ -119,7 +119,7 @@ function EventsPage() {
           <EmptyState
             icon={CalendarHeart}
             title="Niciun eveniment în curând"
-            body="Fii primul — apasă „Propune" sus dreapta ca să trimiți un eveniment. Intră la moderare și devine vizibil după aprobare."
+            body={'Fii primul — apasă „Propune" sus dreapta ca să trimiți un eveniment. Intră la moderare și devine vizibil după aprobare.'}
           />
 
         ) : view === "map" ? (
