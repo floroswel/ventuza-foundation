@@ -522,7 +522,7 @@ function DoneScreen({ appId }: { appId: string | null }) {
               Creează cont pentru a urmări statusul →
             </Link>
             <p className="text-[11px] leading-snug text-muted-foreground">
-              Folosește același email ({"contact_email"}) ca să legăm cererea automat.
+              Folosește același email cu cel din cerere ca să legăm aplicația automat.
             </p>
           </>
         )}
