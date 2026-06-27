@@ -3383,6 +3383,7 @@ export type Database = {
         Args: { _actor: string; _key: string; _value: Json }
         Returns: Json
       }
+      app_role_values: { Args: never; Returns: string[] }
       assert_no_plaintext_hiv_profile_completion: {
         Args: never
         Returns: boolean
