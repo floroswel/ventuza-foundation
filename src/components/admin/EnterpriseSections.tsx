@@ -21,6 +21,38 @@ import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
 // uneori cu prefix "Forbidden:" / "denied" → afișăm clar utilizatorului DE CE).
 const errMsg = (e: any): string => e?.message ?? String(e ?? "Eroare necunoscută");
 
+/**
+ * Banner inline standard de eroare pentru panourile admin.
+ * Vezi REGULĂ — ADMIN PANELS în AGENTS.md: query picat afișează eroarea,
+ * NU spinner etern și NU empty state mascat.
+ */
+function ErrorBanner({ error, onRetry }: { error: string; onRetry?: () => void }) {
+  const forbidden = /forbidden|denied|insufficient|not allowed|rol|role/i.test(error);
+  return (
+    <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm">
+      <p className="font-semibold text-red-300">{forbidden ? "Acces refuzat" : "Eroare la încărcare"}</p>
+      <p className="mt-1 break-words text-xs text-red-200/90">{error}</p>
+      {forbidden && (
+        <p className="mt-2 text-[11px] text-red-200/70">
+          Acest panou cere un rol pe care contul tău nu îl are (ex: <code>super_admin</code> / <code>auditor</code>).
+        </p>
+      )}
+      {onRetry && (
+        <button onClick={onRetry} className="mt-2 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/10">
+          Reîncearcă
+        </button>
+      )}
+    </div>
+  );
+}
+function LoadingBox({ label = "Se încarcă…" }: { label?: string }) {
+  return (
+    <div className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface p-8 text-sm text-muted-foreground">
+      <RefreshCw className="size-4 animate-spin" /> {label}
+    </div>
+  );
+}
+
 /* =========================================================
    AUDIT LOG
 ========================================================= */
