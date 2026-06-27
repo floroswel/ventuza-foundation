@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  Crown, Search, Command as CmdIcon, Activity, Circle, ChevronLeft,
+  Crown, Search, Command as CmdIcon, Activity, Circle, ChevronLeft, Rows3, Rows4,
   type LucideIcon,
 } from "lucide-react";
 
