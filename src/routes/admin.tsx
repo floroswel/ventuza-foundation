@@ -12,6 +12,8 @@ import {
   Activity, Bot,
 } from "lucide-react";
 import { AdminShell, type NavItem } from "@/components/admin/AdminShell";
+import { GlassCard, Kpi, MonoNumber, StatusBadge, SectionTitle } from "@/components/admin/ui/primitives";
+import { DataTable, type Column } from "@/components/admin/ui/DataTable";
 import { SystemHealthPanel } from "@/components/admin/SystemHealthPanel";
 import { AiCopilotPanel } from "@/components/admin/AiCopilotPanel";
 import {
