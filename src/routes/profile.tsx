@@ -185,6 +185,8 @@ function ProfilePage() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         </div>
+        <div className="absolute left-4 top-4">
+          <BackButton fallback="/discover" />
 
         <div className="absolute right-4 top-4 flex gap-2">
           <NotificationBell className="size-10 border border-border bg-surface/80 backdrop-blur" />
