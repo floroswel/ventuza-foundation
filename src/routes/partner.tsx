@@ -382,6 +382,7 @@ function PartnerPortal() {
         </TabsContent>
 
         <TabsContent value="events" className="space-y-3">
+          {loading ? <Loader2 className="animate-spin" /> : null}
           {items.events.map((e: any) => (
             <ItemRow
               key={e.id}
@@ -400,9 +401,15 @@ function PartnerPortal() {
         </TabsContent>
 
         <TabsContent value="offers" className="space-y-3">
-          {items.venues.length === 0 && (
+          {loading ? <Loader2 className="animate-spin" /> : null}
+          {!loading && items.venues.length === 0 && (
             <p className="text-sm text-muted-foreground">
               Adaugă întâi un loc înainte să creezi o ofertă.
+            </p>
+          )}
+          {!loading && items.venues.length > 0 && !items.venues.some((v: any) => v.moderation_status === "approved") && (
+            <p className="text-sm text-muted-foreground">
+              Ai locuri adăugate, dar niciunul aprobat încă. Ofertele se pot atașa doar pe locuri aprobate.
             </p>
           )}
           {items.offers.map((o: any) => (
