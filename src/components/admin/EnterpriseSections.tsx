@@ -87,42 +87,48 @@ export function AuditLogPanel() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
-        <table className="w-full text-xs">
-          <thead className="bg-background/50">
-            <tr>
-              <th className="px-2 py-2 text-left">Când</th>
-              <th className="px-2 py-2 text-left">Acțiune</th>
-              <th className="px-2 py-2 text-left">Sev.</th>
-              <th className="px-2 py-2 text-left">Actor</th>
-              <th className="px-2 py-2 text-left">Țintă</th>
-              <th className="px-2 py-2 text-left">Justificare</th>
-              <th className="px-2 py-2 text-left">IP</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => {
-              const sc = r.severity === "critical" ? "bg-red-500/15 text-red-500"
-                : r.severity === "warning" ? "bg-orange-500/15 text-orange-500"
-                : "bg-muted text-muted-foreground";
-              return (
-                <tr key={r.id} className="border-t border-border">
-                  <td className="px-2 py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString("ro-RO")}</td>
-                  <td className="px-2 py-2 font-mono">{r.action}</td>
-                  <td className="px-2 py-2"><span className={`rounded-full px-2 py-0.5 text-[10px] ${sc}`}>{r.severity}</span></td>
-                  <td className="px-2 py-2 font-mono text-[10px]">{r.actor_id?.slice(0, 8) ?? "—"}</td>
-                  <td className="px-2 py-2 text-[10px]">{r.target_table ? `${r.target_table}/${(r.target_id ?? "").slice(0, 8)}` : "—"}</td>
-                  <td className="px-2 py-2 max-w-[280px] truncate">{r.justification ?? "—"}</td>
-                  <td className="px-2 py-2 font-mono text-[10px]">{r.ip ?? "—"}</td>
-                </tr>
-              );
-            })}
-            {rows.length === 0 && !busy && (
-              <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Niciun eveniment.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {error ? (
+        <ErrorBanner error={error} onRetry={load} />
+      ) : busy && rows.length === 0 ? (
+        <LoadingBox />
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+          <table className="w-full text-xs">
+            <thead className="bg-background/50">
+              <tr>
+                <th className="px-2 py-2 text-left">Când</th>
+                <th className="px-2 py-2 text-left">Acțiune</th>
+                <th className="px-2 py-2 text-left">Sev.</th>
+                <th className="px-2 py-2 text-left">Actor</th>
+                <th className="px-2 py-2 text-left">Țintă</th>
+                <th className="px-2 py-2 text-left">Justificare</th>
+                <th className="px-2 py-2 text-left">IP</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => {
+                const sc = r.severity === "critical" ? "bg-red-500/15 text-red-500"
+                  : r.severity === "warning" ? "bg-orange-500/15 text-orange-500"
+                  : "bg-muted text-muted-foreground";
+                return (
+                  <tr key={r.id} className="border-t border-border">
+                    <td className="px-2 py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString("ro-RO")}</td>
+                    <td className="px-2 py-2 font-mono">{r.action}</td>
+                    <td className="px-2 py-2"><span className={`rounded-full px-2 py-0.5 text-[10px] ${sc}`}>{r.severity}</span></td>
+                    <td className="px-2 py-2 font-mono text-[10px]">{r.actor_id?.slice(0, 8) ?? "—"}</td>
+                    <td className="px-2 py-2 text-[10px]">{r.target_table ? `${r.target_table}/${(r.target_id ?? "").slice(0, 8)}` : "—"}</td>
+                    <td className="px-2 py-2 max-w-[280px] truncate">{r.justification ?? "—"}</td>
+                    <td className="px-2 py-2 font-mono text-[10px]">{r.ip ?? "—"}</td>
+                  </tr>
+                );
+              })}
+              {rows.length === 0 && !busy && (
+                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Niciun eveniment înregistrat încă.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
