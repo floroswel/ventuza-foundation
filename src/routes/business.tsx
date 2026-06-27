@@ -68,6 +68,7 @@ function BusinessPage() {
   const [savedStatus, setSavedStatus] = useState<string | null>(null);
   const [anafLoading, setAnafLoading] = useState(false);
   const anafLookup = useServerFn(lookupAnafCui);
+  const submitApp = useServerFn(submitBusinessApplication);
 
   const [form, setForm] = useState({
     entity_type: "srl" as const,
