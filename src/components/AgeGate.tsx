@@ -87,7 +87,15 @@ export function AgeGate() {
     }
     return null;
   }
-  if (checking || status === null) return null;
+  // Cât timp status-ul se încarcă afișăm un overlay opac, NU `null`. Altfel apare
+  // un flash de conținut ne-gated înainte să se randeze modalul.
+  if (checking || status === null) {
+    return (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-xl">
+        <Loader2 className="size-6 animate-spin text-primary" />
+      </div>
+    );
+  }
   if (status === "verified") return null;
 
   const handleStart = async () => {

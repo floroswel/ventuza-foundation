@@ -571,9 +571,10 @@ function FieldRenderer({
                 .from("venue-media")
                 .upload(path, f, { contentType: f.type, upsert: false });
               if (error) return toast.error(error.message);
+              // TTL aliniat cu partner.tsx (5 ani) ca să nu expire cover-urile aprobate.
               const { data } = await supabase.storage
                 .from("venue-media")
-                .createSignedUrl(path, 60 * 60 * 24 * 365);
+                .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
 
               if (data?.signedUrl) onChange(data.signedUrl);
             }}

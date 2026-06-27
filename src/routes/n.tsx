@@ -117,12 +117,52 @@ function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 }
 
+const STORAGE_KEY = "vz_onboarding_v1";
+
 function Onboarding() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [data, setData] = useState<Data>(empty);
   const [saving, setSaving] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
+
+  // Hydrate step + data din localStorage la mount (refresh / kill-app safe).
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as { step?: number; data?: Data; uid?: string };
+        if (parsed.data) setData({ ...empty, ...parsed.data });
+        if (typeof parsed.step === "number") setStep(Math.min(parsed.step, STEPS.length - 1));
+      }
+    } catch { /* corrupt → ignore */ }
+    setHydrated(true);
+  }, []);
+
+  // Persist on every change (după hydrate, ca să nu suprascriem cu empty).
+  useEffect(() => {
+    if (!hydrated || typeof window === "undefined") return;
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, data, uid: user?.id ?? null }));
+    } catch { /* quota → ignore */ }
+  }, [step, data, hydrated, user?.id]);
+
+  // Guard: dacă userul a terminat deja onboarding-ul, redirect către /discover.
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    supabase.from("profiles").select("onboarding_completed").eq("id", user.id).maybeSingle()
+      .then(({ data: row }) => {
+        if (!alive) return;
+        if (row?.onboarding_completed) {
+          try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
+          navigate({ to: "/discover", replace: true });
+        }
+      });
+    return () => { alive = false; };
+  }, [user?.id, navigate]);
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", search: { mode: "login" } });
@@ -220,8 +260,9 @@ function Onboarding() {
     }
     setSaving(false);
 
+    try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
     toast.success("Your profile is ready.");
-    navigate({ to: "/discover" });
+    navigate({ to: "/discover", replace: true });
 
   }
 

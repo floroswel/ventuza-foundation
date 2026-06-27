@@ -157,13 +157,16 @@ function BusinessDashboard() {
   return (
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col bg-background pb-12">
       <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
-        <Link to="/business" className="rounded-full p-2 hover:bg-muted">
+        <Link to="/partner" className="rounded-full p-2 hover:bg-muted" aria-label="Portal Partener">
           <ChevronLeft className="h-5 w-5" />
         </Link>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           <Building2 className="h-5 w-5 text-primary" />
           <h1 className="text-lg font-semibold">Panou Business</h1>
         </div>
+        <Link to="/partner" className="text-xs text-muted-foreground hover:text-foreground underline">
+          Locuri & evenimente
+        </Link>
       </header>
 
       <div className="flex flex-col gap-4 px-4 py-4">
