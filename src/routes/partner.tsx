@@ -192,7 +192,7 @@ function PartnerPortal() {
         needs_info: {
           label: "Necesită clarificări",
           cls: "border-orange-500/40 bg-orange-500/5",
-          desc: "Avem nevoie de informații suplimentare. Verifică-ți emailul.",
+          desc: "Avem nevoie de informații suplimentare. Scrie-ne la business@ventuza.app cu ID-ul cererii.",
         },
         rejected: {
           label: "Respinsă",
@@ -601,7 +601,9 @@ async function uploadCover(userId: string, file: File): Promise<string> {
     upsert: false,
   });
   if (error) throw new Error(error.message);
-  const { data } = await supabase.storage.from("venue-media").createSignedUrl(path, 60 * 60 * 24 * 30);
+  // TTL 5 ani — evită spargerea imaginilor după 30 zile. Bucket-ul rămâne privat;
+  // re-semnarea on-read va veni la refactorul `cover_path` (Val 6).
+  const { data } = await supabase.storage.from("venue-media").createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
   if (!data?.signedUrl) throw new Error("Nu s-a putut obține URL.");
   return data.signedUrl;
 }

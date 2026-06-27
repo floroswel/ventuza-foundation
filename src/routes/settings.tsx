@@ -399,8 +399,11 @@ function SettingsPage() {
         {/* Pentru businessuri */}
         <section className="rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-surface to-surface p-4">
           <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">Pentru businessuri</h2>
-          <Link to="/advertise" className="mt-3 flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
-            <Megaphone className="size-4 text-primary" /> Promovează-ți businessul pe Ventuza
+          <Link to="/business" className="mt-3 flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+            <Megaphone className="size-4 text-primary" /> Devino partener (locuri, evenimente, oferte)
+          </Link>
+          <Link to="/advertise" className="mt-1 flex items-center gap-2 py-1.5 text-foreground hover:text-primary">
+            <Megaphone className="size-4 text-muted-foreground" /> Campanii publicitare (bannere & Discover)
           </Link>
           <p className="mt-1 text-[11px] text-muted-foreground">
             Ai un club, bar sau eveniment LGBTQ-friendly? Ajunge la mii de utilizatori.

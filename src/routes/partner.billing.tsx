@@ -131,8 +131,8 @@ function PartnerBilling() {
         )}
       </div>
 
-      {/* Date fiscale */}
-      <BillingProfileCard biz={bizApp} onSave={async (vals) => {
+      {/* Date fiscale — key forțează remount când bizApp ajunge async */}
+      <BillingProfileCard key={bizApp?.user_id ?? bizApp?.cui ?? "empty"} biz={bizApp} onSave={async (vals) => {
         try { await updateBilling({ data: vals }); toast.success("Date fiscale actualizate"); load(); }
         catch (e: any) { toast.error(e.message); }
       }} />
