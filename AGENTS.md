@@ -469,3 +469,24 @@ tabelele relevante. Reguli:
    - lasă simulatorul de locație activ în producție,
    - introduce o tabelă nouă cu date demo fără coloana `is_seed`,
    trebuie REFUZAT.
+
+## REGULĂ — ADMIN PANELS (permanentă)
+Fiecare panou din `/admin` (Utilizatori, Rapoarte, Risc, CSAM, DSA, GDPR, Break-glass,
+Breșe, Politici, Audit, Ads, B2B, Parteneri, Data Explorer, Overview etc.) trebuie să
+expună **trei stări distincte**:
+
+1. **loading** — indicator vizibil DOAR cât rulează promisiunea. Niciodată "spinner etern".
+2. **error** — captează `try/catch` SAU `{ error }` de la Supabase, salvează în state local
+   și randează un banner (`AdminPanelError` / `ErrorBanner`) cu mesajul real + buton Reîncearcă.
+   Cazurile `forbidden / denied / rol / role / policy / permission` trebuie etichetate
+   "Acces refuzat" și să sugereze rolul lipsă (`super_admin`, `auditor`).
+3. **empty legitim** — zero rânduri trebuie diferențiat de eroare: copy-ul spune explicit
+   "empty legitim" / "nicio cerere în așteptare" etc., NU "Eroare".
+
+**Interzis**:
+- `toast.error` fără să setezi `error` în state (toast-ul dispare → spinner etern).
+- `if (data.length === 0) return <empty />` ÎNAINTE să verifici `error` (eroarea apare ca empty).
+- Promisiuni nepromise (`load()` fără `finally { setLoading(false) }`).
+- `if (loading) return <Spinner />` fără cale de ieșire pe eroare.
+
+Orice PR care adaugă un panou admin nou TREBUIE să folosească exact acest pattern.
