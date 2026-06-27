@@ -337,63 +337,88 @@ export function BreakGlassLogPanel() {
   const list = useServerFn(adminListBreakGlass);
   const [rows, setRows] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    setBusy(true);
+    setBusy(true); setError(null);
     try { const r = await list({ data: { limit: 300 } }); setRows(r.rows); }
-    catch (e: any) { toast.error(e.message); }
-    setBusy(false);
+    catch (e: any) {
+      const m = e?.message ?? String(e); setError(m);
+      // Nu deranjăm cu toast pe acces refuzat — banner-ul explică deja DE CE.
+      if (!/forbidden|denied|rol|role/i.test(m)) toast.error(m);
+    }
+    finally { setBusy(false); }
   };
   useEffect(() => { load(); }, []);
+
+  const forbidden = error && /forbidden|denied|insufficient|rol|role/i.test(error);
 
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <AlertTriangle className="size-4 text-red-500" />
         <h2 className="text-lg font-semibold">Acces date sensibile (break-glass)</h2>
-        <span className="text-xs text-muted-foreground">append-only · super_admin/auditor</span>
+        <span className="text-xs text-muted-foreground">append-only · super_admin / auditor</span>
         <button onClick={load} disabled={busy} className="ml-auto rounded-full border border-border px-3 py-1.5 text-xs">
           <RefreshCw className="mr-1 inline size-3" /> Reîncarcă
         </button>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
-        <table className="w-full text-xs">
-          <thead className="bg-background/50">
-            <tr>
-              <th className="px-2 py-2 text-left">Când</th>
-              <th className="px-2 py-2 text-left">Actor</th>
-              <th className="px-2 py-2 text-left">Țintă</th>
-              <th className="px-2 py-2 text-left">Kind</th>
-              <th className="px-2 py-2 text-left">Câmpuri</th>
-              <th className="px-2 py-2 text-left">Motiv</th>
-              <th className="px-2 py-2 text-left">IP</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => {
-              const kindColor =
-                r.kind === "health" || r.kind === "orientation" ? "bg-red-500/20 text-red-300"
-                : r.kind === "location" ? "bg-orange-500/20 text-orange-400"
-                : "bg-yellow-500/20 text-yellow-400";
-              return (
-                <tr key={r.id} className="border-t border-border">
-                  <td className="px-2 py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString("ro-RO")}</td>
-                  <td className="px-2 py-2 font-mono text-[10px]">{r.actor_id?.slice(0, 8)}</td>
-                  <td className="px-2 py-2 font-mono text-[10px]">{r.target_user_id?.slice(0, 8) ?? "—"}</td>
-                  <td className="px-2 py-2"><span className={`rounded-full px-2 py-0.5 text-[10px] ${kindColor}`}>{r.kind}</span></td>
-                  <td className="px-2 py-2 text-[10px]">{(r.fields ?? []).join(", ")}</td>
-                  <td className="px-2 py-2 max-w-[260px] truncate">{r.justification}</td>
-                  <td className="px-2 py-2 font-mono text-[10px]">{r.ip ?? "—"}</td>
-                </tr>
-              );
-            })}
-            {!rows.length && !busy && (
-              <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Niciun acces sensibil înregistrat.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {error ? (
+        <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm">
+          <p className="font-semibold text-red-300">{forbidden ? "Acces refuzat" : "Eroare la încărcare"}</p>
+          <p className="mt-1 break-words text-xs text-red-200/90">{error}</p>
+          {forbidden && (
+            <p className="mt-2 text-[11px] text-red-200/70">
+              Acest jurnal cere rol <code>super_admin</code> sau <code>auditor</code>.
+              Cere unui super-admin să-ți acorde rolul: <code>SELECT public.grant_user_role('&lt;uid&gt;', 'auditor')</code>.
+            </p>
+          )}
+          <button onClick={load} className="mt-2 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/10">
+            Reîncearcă
+          </button>
+        </div>
+      ) : busy && rows.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">Se încarcă…</div>
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+          <table className="w-full text-xs">
+            <thead className="bg-background/50">
+              <tr>
+                <th className="px-2 py-2 text-left">Când</th>
+                <th className="px-2 py-2 text-left">Actor</th>
+                <th className="px-2 py-2 text-left">Țintă</th>
+                <th className="px-2 py-2 text-left">Kind</th>
+                <th className="px-2 py-2 text-left">Câmpuri</th>
+                <th className="px-2 py-2 text-left">Motiv</th>
+                <th className="px-2 py-2 text-left">IP</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => {
+                const kindColor =
+                  r.kind === "health" || r.kind === "orientation" ? "bg-red-500/20 text-red-300"
+                  : r.kind === "location" ? "bg-orange-500/20 text-orange-400"
+                  : "bg-yellow-500/20 text-yellow-400";
+                return (
+                  <tr key={r.id} className="border-t border-border">
+                    <td className="px-2 py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString("ro-RO")}</td>
+                    <td className="px-2 py-2 font-mono text-[10px]">{r.actor_id?.slice(0, 8)}</td>
+                    <td className="px-2 py-2 font-mono text-[10px]">{r.target_user_id?.slice(0, 8) ?? "—"}</td>
+                    <td className="px-2 py-2"><span className={`rounded-full px-2 py-0.5 text-[10px] ${kindColor}`}>{r.kind}</span></td>
+                    <td className="px-2 py-2 text-[10px]">{(r.fields ?? []).join(", ")}</td>
+                    <td className="px-2 py-2 max-w-[260px] truncate">{r.justification}</td>
+                    <td className="px-2 py-2 font-mono text-[10px]">{r.ip ?? "—"}</td>
+                  </tr>
+                );
+              })}
+              {!rows.length && !busy && (
+                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Niciun acces sensibil înregistrat (empty legitim — apare la prima utilizare a break-glass).</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
