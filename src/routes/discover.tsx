@@ -107,18 +107,23 @@ function DiscoverPage() {
     return () => clearTimeout(t);
   }, [filters]);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await fetchDiscover(debouncedFilters, "distance");
       setProfiles(data);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't load discover");
+      const msg = e instanceof Error ? e.message : "Couldn't load discover";
+      setLoadError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   }, [debouncedFilters, user]);
+
 
   useEffect(() => { void load(); }, [load]);
 
