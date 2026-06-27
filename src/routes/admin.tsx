@@ -853,13 +853,17 @@ function AdsPanel() {
 function BizPanel() {
   const [apps, setApps] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
+    setLoading(true); setError(null);
     const { data, error } = await supabase
       .from("business_applications").select("*")
       .in("status", ["pending", "reviewing"])
       .order("created_at", { ascending: false }).limit(200);
-    if (error) return toast.error(error.message);
+    setLoading(false);
+    if (error) { setError(error.message); toast.error(error.message); return; }
     setApps(data ?? []);
   };
   useEffect(() => { load(); }, []);
@@ -872,7 +876,9 @@ function BizPanel() {
     toast.success(status === "approved" ? "Aprobat — rol business acordat" : status); load();
   };
 
-  if (apps.length === 0) return <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Nicio cerere B2B în așteptare.</div>;
+  if (error) return <AdminPanelError error={error} onRetry={load} />;
+  if (loading) return <AdminPanelEmpty label="Se încarcă cererile B2B…" />;
+  if (apps.length === 0) return <AdminPanelEmpty label="Nicio cerere B2B în așteptare (empty legitim)." />;
   return (
     <ul className="space-y-3">
       {apps.map((a) => (
