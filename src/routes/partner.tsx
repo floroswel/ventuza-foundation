@@ -31,10 +31,13 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, AlertTriangle, MapPin, Image as ImgIcon, BarChart3, ChevronLeft } from "lucide-react";
+import { Loader2, Plus, AlertTriangle, MapPin, Image as ImgIcon, BarChart3, ChevronLeft, BookOpen } from "lucide-react";
 import { toast } from "sonner";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { PostingWizard } from "@/components/partner/PostingWizard";
+import { StatusNotificationsBell } from "@/components/partner/StatusNotificationsBell";
+import { StatusTiles } from "@/components/partner/StatusTiles";
 
 export const Route = createFileRoute("/partner")({
   head: () => ({
@@ -81,6 +84,7 @@ function PartnerPortal() {
     | { kind: "offer"; row?: any }
     | { kind: "stats"; offerId: string; title: string }
   >(null);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const listFn = useServerFn(partnerListMyItems);
   const quotaFn = useServerFn(partnerGetQuota);
@@ -147,13 +151,19 @@ function PartnerPortal() {
 
   return (
     <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-5 pb-24">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <Button variant="ghost" size="sm" asChild>
           <Link to="/">
             <ChevronLeft className="w-4 h-4" /> Acasă
           </Link>
         </Button>
-        <h1 className="text-2xl font-semibold">Portal Partener</h1>
+        <h1 className="text-2xl font-semibold flex-1">Portal Partener</h1>
+        <StatusNotificationsBell />
+        <Button variant="outline" size="sm" asChild>
+          <Link to="/partner/guide">
+            <BookOpen className="w-4 h-4 mr-1" /> Ghid
+          </Link>
+        </Button>
       </div>
 
       {suspended && (
@@ -171,11 +181,23 @@ function PartnerPortal() {
         </Card>
       )}
 
+      <StatusTiles items={items} />
+
       {quota && <QuotaPanel quota={quota} />}
 
-      <div className="flex justify-end mb-2">
-        <Link to="/partner/billing"><Button variant="outline" size="sm">Facturare & abonament →</Button></Link>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <Button
+          size="lg"
+          disabled={suspended}
+          onClick={() => setWizardOpen(true)}
+        >
+          <Plus className="w-4 h-4 mr-1" /> Postare nouă (ghidat)
+        </Button>
+        <Link to="/partner/billing">
+          <Button variant="outline" size="sm">Facturare & abonament →</Button>
+        </Link>
       </div>
+
 
       <Tabs defaultValue="venues">
         <TabsList className="grid grid-cols-3 w-full">
@@ -185,15 +207,6 @@ function PartnerPortal() {
         </TabsList>
 
         <TabsContent value="venues" className="space-y-3">
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              disabled={suspended || (quota ? quota.venues >= quota.quotas.max_venues : false)}
-              onClick={() => setOpenDialog({ kind: "venue" })}
-            >
-              <Plus className="w-4 h-4 mr-1" /> Loc nou
-            </Button>
-          </div>
           {loading ? <Loader2 className="animate-spin" /> : null}
           {items.venues.map((v: any) => (
             <ItemRow
@@ -212,15 +225,6 @@ function PartnerPortal() {
         </TabsContent>
 
         <TabsContent value="events" className="space-y-3">
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              disabled={suspended || (quota ? quota.events >= quota.quotas.max_events : false)}
-              onClick={() => setOpenDialog({ kind: "event" })}
-            >
-              <Plus className="w-4 h-4 mr-1" /> Eveniment nou
-            </Button>
-          </div>
           {items.events.map((e: any) => (
             <ItemRow
               key={e.id}
@@ -239,19 +243,6 @@ function PartnerPortal() {
         </TabsContent>
 
         <TabsContent value="offers" className="space-y-3">
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              disabled={
-                suspended ||
-                items.venues.length === 0 ||
-                (quota ? quota.offers >= quota.quotas.max_active_offers : false)
-              }
-              onClick={() => setOpenDialog({ kind: "offer" })}
-            >
-              <Plus className="w-4 h-4 mr-1" /> Ofertă nouă
-            </Button>
-          </div>
           {items.venues.length === 0 && (
             <p className="text-sm text-muted-foreground">
               Adaugă întâi un loc înainte să creezi o ofertă.
@@ -321,6 +312,14 @@ function PartnerPortal() {
           onClose={() => setOpenDialog(null)}
         />
       )}
+
+      <PostingWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onCreated={() => refresh()}
+        quota={quota as any}
+        myVenues={items.venues as any}
+      />
     </div>
   );
 }

@@ -36,6 +36,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as VenuesIdRouteImport } from './routes/venues.$id'
 import { Route as USlugRouteImport } from './routes/u.$slug'
+import { Route as PartnerGuideRouteImport } from './routes/partner.guide'
 import { Route as PartnerBillingRouteImport } from './routes/partner.billing'
 import { Route as OffersIdRouteImport } from './routes/offers.$id'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
@@ -193,6 +194,11 @@ const USlugRoute = USlugRouteImport.update({
   path: '/u/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PartnerGuideRoute = PartnerGuideRouteImport.update({
+  id: '/guide',
+  path: '/guide',
+  getParentRoute: () => PartnerRoute,
+} as any)
 const PartnerBillingRoute = PartnerBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -344,6 +350,7 @@ export interface FileRoutesByFullPath {
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
   '/partner/billing': typeof PartnerBillingRoute
+  '/partner/guide': typeof PartnerGuideRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
@@ -394,6 +401,7 @@ export interface FileRoutesByTo {
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
   '/partner/billing': typeof PartnerBillingRoute
+  '/partner/guide': typeof PartnerGuideRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages': typeof MessagesIndexRoute
@@ -445,6 +453,7 @@ export interface FileRoutesById {
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
   '/partner/billing': typeof PartnerBillingRoute
+  '/partner/guide': typeof PartnerGuideRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
@@ -497,6 +506,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/offers/$id'
     | '/partner/billing'
+    | '/partner/guide'
     | '/u/$slug'
     | '/venues/$id'
     | '/messages/'
@@ -547,6 +557,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/offers/$id'
     | '/partner/billing'
+    | '/partner/guide'
     | '/u/$slug'
     | '/venues/$id'
     | '/messages'
@@ -597,6 +608,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/offers/$id'
     | '/partner/billing'
+    | '/partner/guide'
     | '/u/$slug'
     | '/venues/$id'
     | '/messages/'
@@ -842,6 +854,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof USlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/partner/guide': {
+      id: '/partner/guide'
+      path: '/guide'
+      fullPath: '/partner/guide'
+      preLoaderRoute: typeof PartnerGuideRouteImport
+      parentRoute: typeof PartnerRoute
+    }
     '/partner/billing': {
       id: '/partner/billing'
       path: '/billing'
@@ -1040,10 +1059,12 @@ const GroupsRouteWithChildren =
 
 interface PartnerRouteChildren {
   PartnerBillingRoute: typeof PartnerBillingRoute
+  PartnerGuideRoute: typeof PartnerGuideRoute
 }
 
 const PartnerRouteChildren: PartnerRouteChildren = {
   PartnerBillingRoute: PartnerBillingRoute,
+  PartnerGuideRoute: PartnerGuideRoute,
 }
 
 const PartnerRouteWithChildren =
