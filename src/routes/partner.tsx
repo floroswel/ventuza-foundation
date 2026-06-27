@@ -243,19 +243,6 @@ function PartnerPortal() {
         </TabsContent>
 
         <TabsContent value="offers" className="space-y-3">
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              disabled={
-                suspended ||
-                items.venues.length === 0 ||
-                (quota ? quota.offers >= quota.quotas.max_active_offers : false)
-              }
-              onClick={() => setOpenDialog({ kind: "offer" })}
-            >
-              <Plus className="w-4 h-4 mr-1" /> Ofertă nouă
-            </Button>
-          </div>
           {items.venues.length === 0 && (
             <p className="text-sm text-muted-foreground">
               Adaugă întâi un loc înainte să creezi o ofertă.
