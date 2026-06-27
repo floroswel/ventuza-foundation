@@ -119,11 +119,12 @@ function AuthPage() {
           toast.error(error.message);
           return;
         }
-        // Persist birth_date on profile (trigger enforces 18+ server-side too).
+        // Persist birthdate on profile (trigger `enforce_min_age` enforces 18+ server-side).
+        // Canonical column is `birthdate` — used by age gate, discover, /n onboarding.
         if (data.user) {
           await supabase
             .from("profiles")
-            .update({ birth_date: birthDate })
+            .update({ birthdate: birthDate })
             .eq("id", data.user.id);
         }
         if (data.session) {

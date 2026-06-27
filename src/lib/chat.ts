@@ -70,13 +70,24 @@ export async function fetchPublicProfiles(ids: string[]): Promise<Map<string, { 
 }
 
 export async function fetchConversations(meId: string): Promise<ConversationListItem[]> {
+  // Exclude any user with whom there is a bilateral block (either direction).
+  // The server-side helper `list_my_block_relations` is the source of truth —
+  // RLS on `blocks` only lets me see rows where I'm the blocker, so a client-only
+  // filter would miss users who blocked ME.
+  const { data: blocked } = await supabase.rpc("list_my_block_relations" as never);
+  const blockedSet = new Set<string>(((blocked ?? []) as Array<string | { list_my_block_relations: string }>).map((r) => typeof r === "string" ? r : r.list_my_block_relations));
+
   const { data: convs, error } = await supabase
     .from("conversations")
     .select("id, user_a, user_b, last_message_at, last_message_preview")
     .or(`user_a.eq.${meId},user_b.eq.${meId}`)
     .order("last_message_at", { ascending: false });
   if (error) throw error;
-  const rows = (convs ?? []) as ConversationRow[];
+  const allRows = (convs ?? []) as ConversationRow[];
+  const rows = allRows.filter((r) => {
+    const oid = r.user_a === meId ? r.user_b : r.user_a;
+    return !blockedSet.has(oid);
+  });
   if (rows.length === 0) return [];
 
   const otherIds = Array.from(new Set(rows.map((r) => (r.user_a === meId ? r.user_b : r.user_a))));

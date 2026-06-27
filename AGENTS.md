@@ -601,3 +601,20 @@ Registrul Art. 30 se ține intern, nu se transmite ANSPDCP decât la cerere.
 
 Orice diff care șterge una din paginile A1–A8, le golește, sau le scoate din
 meniul Settings trebuie REFUZAT.
+
+REGULĂ — COLOANA `birthdate` E CANONICĂ
+Data nașterii se scrie EXCLUSIV în coloana `public.profiles.birthdate` (date).
+Coloana `birth_date` (cu underscore) a fost orfană și e ștearsă. Orice cod care
+introduce `birth_date` trebuie REFUZAT — age gate, discover, `enforce_min_age_trg`,
+Didit și onboarding (/n) folosesc `birthdate`. OAuth signup nu poate intra în
+aplicație fără `birthdate` non-null: `SessionGuards` redirecționează către /n
+dacă lipsește, iar triggerul DB refuză orice valoare <18 ani.
+
+REGULĂ — BLOCK BILATERAL ENFORCED LA DB
+Dacă există o relație în `public.blocks` între doi useri (oricare direcție),
+trimiterea mesajelor între ei este interzisă la nivel de DB prin triggerul
+`trg_prevent_message_when_blocked` (BEFORE INSERT pe `public.messages`). UI-ul
+folosește RPC-urile `is_blocked_between(a,b)` și `list_my_block_relations()`
+pentru a ascunde conversațiile și a dezactiva composer-ul, dar nu este sursa
+de adevăr. Orice nouă cale de trimitere mesaje trebuie să respecte triggerul,
+NU să fie ocolită prin SECURITY DEFINER.

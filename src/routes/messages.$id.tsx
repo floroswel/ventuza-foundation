@@ -72,9 +72,10 @@ function ThreadPage() {
       });
   }, [user]);
 
+  const [isBlocked, setIsBlocked] = useState(false);
   const hasInbound = messages.some((m) => m.sender_id && m.sender_id !== user?.id);
   void meVerified; void hasInbound;
-  const blockedFirstMessage = false;
+  const blockedFirstMessage = isBlocked;
 
   async function handleVerifyFile(file: File) {
     if (!user) return;
@@ -151,6 +152,9 @@ function ThreadPage() {
         setHasMore(msgs.length >= MESSAGES_PAGE);
         const extra = ((extraRes.data ?? []) as Array<{ bio: string | null; interests: string[] | null }>)[0] ?? null;
         setOther({ ...prof, bio: extra?.bio ?? null, interests: extra?.interests ?? null });
+        // Bilateral block check (either direction) — server-side via SECURITY DEFINER RPC.
+        const { data: blockedRes } = await supabase.rpc("is_blocked_between" as never, { a: user!.id, b: oid } as never);
+        if (alive) setIsBlocked(Boolean(blockedRes));
         await markRead(id, user!.id);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't open chat");
@@ -610,12 +614,9 @@ function ThreadPage() {
       )}
 
       {blockedFirstMessage && (
-        <div className="border-t border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm">
-          <p className="font-medium text-amber-700 dark:text-amber-400">Verifică-ți profilul pentru a trimite primul mesaj</p>
-          <p className="mt-1 text-xs text-muted-foreground">Un selfie rapid confirmă că ești o persoană reală. Reduce fake-urile pentru toți.</p>
-          <Link to="/profile" className="mt-2 inline-flex items-center gap-1 rounded-full bg-amber-500 px-3 py-1.5 text-xs font-medium text-white">
-            Verifică-mă acum
-          </Link>
+        <div className="border-t border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
+          <p className="font-medium text-destructive">Nu poți trimite mesaje acestui utilizator</p>
+          <p className="mt-1 text-xs text-muted-foreground">Există un blocaj între voi (de la tine sau de la cealaltă persoană). Conversația este doar pentru lectură.</p>
         </div>
       )}
 
@@ -641,7 +642,7 @@ function ThreadPage() {
         <input
           value={text}
           onChange={(e) => { setText(e.target.value); sendTypingPing(); }}
-          placeholder={blockedFirstMessage ? "Verifică-te pentru a scrie…" : "Type a message…"}
+          placeholder={blockedFirstMessage ? "Nu poți trimite mesaje acestui utilizator" : "Type a message…"}
           maxLength={4000}
           disabled={blockedFirstMessage}
           className="flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary disabled:opacity-60"
