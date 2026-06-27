@@ -364,8 +364,12 @@ export function CsamPanel() {
 
       <div>
         <h3 className="mb-2 text-xs uppercase text-muted-foreground">Rapoarte ({items.length})</h3>
-        {items.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Niciun raport.</div>
+        {error ? (
+          <ErrorBanner error={error} onRetry={load} />
+        ) : loading ? (
+          <LoadingBox />
+        ) : items.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Niciun raport CSAM (empty legitim — apare doar la upload-uri marcate).</div>
         ) : (
           <ul className="space-y-2">
             {items.map((r) => (
