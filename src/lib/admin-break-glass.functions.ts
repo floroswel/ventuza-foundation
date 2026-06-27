@@ -43,6 +43,10 @@ export const adminBreakGlassReveal = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
 
+    // 0) MFA obligatorie — break-glass este cea mai sensibilă acțiune admin.
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
+
     // 1) Verifică server-side dacă rolul este suficient pentru `kind`.
     const { data: allowed, error: roleErr } = await sa.rpc("admin_can_access_sensitive", {
       _user_id: context.userId, _kind: data.kind,

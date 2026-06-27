@@ -346,6 +346,8 @@ export const adminGrantRole = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => RoleInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const { error } = await supabaseAdmin
       .from("user_roles")
@@ -360,6 +362,8 @@ export const adminRevokeRole = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => RoleInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
     const { error } = await supabaseAdmin
       .from("user_roles")

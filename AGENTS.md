@@ -300,8 +300,14 @@ sau tabele cu prefix `admin_*`.
    mesaj brut.
 
 5. **2FA obligatoriu pentru `admin` și `super_admin`.** Status în
-   `admin_mfa_status`. Server-side nu execută acțiuni distructive sau
-   break-glass dacă MFA nu este înrolat. UI cere înrolarea la primul login.
+   `admin_mfa_status`. Enforcement real: `src/lib/admin-mfa-guard.ts` →
+   `assertAdminMfa(actorId)` blochează acțiunile distructive dacă
+   `enrolled=false`. Funcții acoperite acum: `adminBanUser`, `adminUnbanUser`,
+   `adminSuspendUser`, `adminGrantRole`, `adminRevokeRole`,
+   `adminBreakGlassReveal`, `adminPurgeUserAccount`, `adminRunPurgeNow`.
+   Orice funcție nouă care modifică roluri, șterge useri sau accesează date
+   sensibile TREBUIE să cheme `assertAdminMfa` după `assertAdmin/assertStaff`.
+   UI cere înrolarea la primul login.
 
 6. **Acțiuni distructive = soft-delete reversibil** unde se poate (ban
    reversibil prin `adminUnbanUser`, ștergere user prin

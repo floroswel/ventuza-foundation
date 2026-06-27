@@ -54,7 +54,7 @@ function DiscoverPage() {
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
-  const [match, setMatch] = useState<{ name: string; photo: string | null } | null>(null);
+  const [match, setMatch] = useState<{ id: string; name: string; photo: string | null } | null>(null);
   const [selected, setSelected] = useState<DiscoverProfile | null>(null);
   const [incognito, setIncognito] = useState(false);
   const [incognitoBusy, setIncognitoBusy] = useState(false);
@@ -166,7 +166,7 @@ function DiscoverPage() {
             .maybeSingle();
           const path = prof?.photos?.[0];
           const signed = path ? (await signPhotos([path]))[path] : null;
-          setMatch({ name: prof?.display_name ?? "Someone wonderful", photo: signed ?? null });
+          setMatch({ id: otherId, name: prof?.display_name ?? "Someone wonderful", photo: signed ?? null });
         },
       )
       .subscribe();
@@ -207,7 +207,7 @@ function DiscoverPage() {
       if (m) {
         const photoPath = target.photos?.[0];
         const signed = photoPath ? (await signPhotos([photoPath]))[photoPath] : null;
-        setMatch({ name: target.display_name ?? "Someone wonderful", photo: signed ?? null });
+        setMatch({ id: target.id, name: target.display_name ?? "Someone wonderful", photo: signed ?? null });
       }
     }
   }, [user]);
@@ -299,7 +299,21 @@ function DiscoverPage() {
       )}
 
       <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={filters} onApply={setFilters} />
-      <MatchModal open={!!match} onClose={() => setMatch(null)} otherName={match?.name ?? ""} otherPhotoUrl={match?.photo ?? null} />
+      <MatchModal
+        open={!!match}
+        onClose={() => setMatch(null)}
+        otherName={match?.name ?? ""}
+        otherPhotoUrl={match?.photo ?? null}
+        onSendFirstMessage={match ? async () => {
+          try {
+            const cid = await getOrCreateConversation(match.id);
+            setMatch(null);
+            navigate({ to: "/messages/$id", params: { id: cid } });
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Nu am putut deschide conversația");
+          }
+        } : undefined}
+      />
       <ProfileSheet profile={selected} currentUserId={user?.id ?? null} onClose={() => setSelected(null)} onDecision={handleDecision} onMessage={async (p) => {
         try {
           const cid = await getOrCreateConversation(p.id);
