@@ -116,8 +116,8 @@ export function InvoicesPanel() {
                     {inv.billing_snapshot?.legal_name ?? "?"}<br />
                     <span className="text-muted-foreground">CUI {inv.billing_snapshot?.cui ?? "?"}</span>
                   </td>
-                  <td className="p-2 text-right"><MonoNumber>{RON(inv.total_minor)}</MonoNumber></td>
-                  <td className="p-2"><StatusBadge tone={inv.status === "paid" ? "ok" : inv.status === "overdue" ? "danger" : inv.status === "cancelled" ? "muted" : "warn"}>{inv.status}</StatusBadge></td>
+                  <td className="p-2 text-right"><MonoNumber value={RON(inv.total_minor)} /></td>
+                  <td className="p-2"><StatusBadge tone={inv.status === "paid" ? "approved" : inv.status === "overdue" ? "rejected" : inv.status === "cancelled" ? "neutral" : "pending"}>{inv.status}</StatusBadge></td>
                   <td className="p-2 text-xs">{new Date(inv.issued_at).toLocaleDateString("ro-RO")}</td>
                   <td className="p-2 text-xs">{new Date(inv.due_at).toLocaleDateString("ro-RO")}</td>
                   <td className="p-2 flex gap-1">
@@ -185,9 +185,9 @@ function InvoiceDrawer({ invoice, onClose, onChanged }: { invoice: Invoice; onCl
             </div></GlassCard>
           </div>
           <div className="grid grid-cols-3 gap-2 text-sm">
-            <div>Subtotal: <MonoNumber>{RON(invoice.subtotal_minor)}</MonoNumber></div>
-            <div>TVA: <MonoNumber>{RON(invoice.vat_minor)}</MonoNumber></div>
-            <div className="font-bold">Total: <MonoNumber>{RON(invoice.total_minor)}</MonoNumber></div>
+            <div>Subtotal: <MonoNumber value={RON(invoice.subtotal_minor)} /></div>
+            <div>TVA: <MonoNumber value={RON(invoice.vat_minor)} /></div>
+            <div className="font-bold">Total: <MonoNumber value={RON(invoice.total_minor)} /></div>
           </div>
           {invoice.status === "paid" && (
             <div className="rounded bg-green-50 dark:bg-green-950/30 p-3 text-sm">
@@ -240,13 +240,13 @@ export function RevenuePanel() {
         <Kpi label="Încasat (lună)" value={RON(data.paid_month_minor)} />
         <Kpi label="În așteptare" value={`${data.pending_count} · ${RON(data.pending_minor)}`} tone={data.pending_count > 0 ? "warn" : "default"} />
         <Kpi label="Restante" value={`${data.overdue_count} · ${RON(data.overdue_minor)}`} tone={data.overdue_count > 0 ? "danger" : "default"} />
-        <Kpi label="Parteneri activi" value={Object.values(data.partners_by_plan).reduce((a: any, b: any) => a + b, 0)} />
+        <Kpi label="Parteneri activi" value={Object.values<number>(data.partners_by_plan).reduce((a, b) => a + b, 0)} />
       </div>
       <GlassCard><div className="p-4">
         <SectionTitle>Parteneri per plan</SectionTitle>
         <div className="mt-2 flex gap-4 text-sm">
           {["Free", "Pro", "Premium"].map((p) => (
-            <div key={p} className="flex flex-col"><span className="text-muted-foreground text-xs">{p}</span><MonoNumber>{data.partners_by_plan[p] ?? 0}</MonoNumber></div>
+            <div key={p} className="flex flex-col"><span className="text-muted-foreground text-xs">{p}</span><MonoNumber value={data.partners_by_plan[p] ?? 0} /></div>
           ))}
         </div>
       </div></GlassCard>
