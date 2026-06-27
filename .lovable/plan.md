@@ -1,75 +1,124 @@
-# Portal Partener — `/partner/*`
+# Monetizare parteneri — plan de implementare
 
-Construit deasupra modulului de moderare existent (`admin_moderate_item`, triggere `*_no_self_publish`, `admin_suspend_partner`, RLS owner-only, `partner_quotas` din `app_settings`). Respectă REGULA MODERARE OBLIGATORIE din AGENTS.md.
+Sistem complet de monetizare B2B peste portalul partener + moderare + nearby existente. Respectă strict toate regulile din AGENTS.md, în special **plafonul anti-spam al userului rămâne intact**.
 
-## A) Acces
+## Principiu non-negociabil (confirmat în cod)
 
-- Rută layout pathless: `src/routes/_partner.tsx` (`ssr: false`) — guard client: `supabase.auth.getUser()` + `has_role(uid, 'partner')` + verifică `profiles.partner_suspended_at`. Dacă suspendat → afișează banner read-only în tot subtree-ul.
-- Toate server fns adaugă `assertPartner(supabase, userId)` (verifică rol + not suspended) ÎNAINTE de orice mutație.
+Planurile dau partenerului **prioritate** pentru un slot, nu dreptul la sloturi suplimentare. Gate-ul `public.try_record_proximity_hit` (8/zi, cooldown 24h, quiet hours) NU se atinge. Singura interacțiune cu planurile: când userul are sloturi disponibile și mai mulți parteneri concurează, sortarea folosește `plan_priority` ca tie-breaker.
 
-## B) Rute
+## A. Schemă DB (migrare unică)
 
-- `/_partner/dashboard` — listă combinată venues+events+offers proprii, status moderare cu badge color-coded, motiv respingere afișat inline; widget quota (venues used/max, offers active/max) din nou RPC `partner_get_quota_usage()`.
-- `/_partner/venues` listă + `/_partner/venues/new` + `/_partner/venues/$id/edit`.
-- `/_partner/events` + `/_partner/events/new` + `/_partner/events/$id/edit` (select din venues proprii pentru legare).
-- `/_partner/offers` + `/_partner/offers/new` + `/_partner/offers/$id/edit` (select venue propriu + buton "Vezi stats" → modal cu `offer_stats` agregat).
+**Tabele noi:**
+- `partner_plans` — `code` (basic/pro/premium), `name`, `price_eur_cents`, `stripe_price_id`, `entitlements jsonb` (max_venues, push_priority 0-100, badge_verified, stats_level, sort_boost, sponsored_offers, ad_banner), `active`.
+- `partner_subscriptions` — `user_id`, `plan_code`, `status` (active/grace/past_due/canceled), `stripe_customer_id`, `stripe_subscription_id`, `current_period_end`, `grace_until`, `cancel_at`, `started_at`. RLS: owner SELECT, service_role ALL.
+- `partner_boosts` — `id`, `owner_id`, `target_kind` (event/offer/venue), `target_id`, `boost_type`, `starts_at`, `ends_at`, `price_eur_cents`, `stripe_payment_intent_id`, `status`.
+- `partner_invoices` — `user_id`, `stripe_invoice_id`, `amount_cents`, `currency`, `status`, `pdf_url`, `period_start`, `period_end`, `cui`, `business_name` (facturare).
+- `ad_transparency_log` (DSA Art. 39) — `id`, `advertiser_user_id`, `item_kind`, `item_id`, `placement` (sponsored_offer/promoted_banner/top_position/boost), `started_at`, `ended_at`, `paid_cents`, `reason`.
+- `app_settings` key `partner_billing`: `grace_days=7`, `currency=eur`, `boost_prices`, `enforce_eu_vat=true`.
 
-## C) Server fns — `src/lib/partner.functions.ts`
+**Coloane noi pe existente:**
+- `profiles`: `current_plan_code text default 'free'`, `plan_active boolean default false`, `reduce_sponsored boolean default false` (pentru Premium/Founder user toggle).
+- `venues/events/offers`: `is_sponsored boolean generated` derivat din boost activ + plan; `sponsored_label_required boolean` (always true când is_sponsored).
 
-Toate cu `requireSupabaseAuth` + `assertPartner`:
-- `partnerListMyItems()` — venues/events/offers ale owner-ului prin `supabase` (RLS aplică automat).
-- `partnerGetQuotaUsage()` — citește `app_settings.partner_quotas` + count items.
-- `partnerCreateVenue/Event/Offer({...})` — validează Zod, **enforcement quota server-side** (throw `quota_exceeded` dacă > limită), rate-limit (max 5 drafts / oră / partner prin `rate_limit_log`), insert cu `moderation_status='pending'`. Câmpurile `is_published`, `is_official`, `moderated_*` NU sunt acceptate de validator — sunt stripped.
-- `partnerUpdateVenue/Event/Offer({id, patch})` — verifică ownership, validează patch (exclude `is_published`/`is_official`/`moderation_status`), iar dacă itemul era `approved` resetează la `pending` + setează `is_published=false` (re-moderare obligatorie). Loghează în `admin_audit_log`.
-- `partnerGetOfferStats({offerId})` — proxy la RPC `offer_stats` (doar count agregat).
+**Funcții SQL noi:**
+- `partner_active_plan(uid) returns text` — întoarce plan code curent (basic dacă nu plătit / în grace expirat).
+- `partner_entitlement(uid, key) returns jsonb`.
+- `assert_partner_entitlement(uid, key, required)` — RAISE dacă nu îndeplinește.
+- Modificare `nearby_points`: adaugă `plan_priority` în payload (DOAR pentru sortare); NU schimbă cantitatea de items returnate.
+- Modificare `try_record_proximity_hit`: **fără schimbări la plafoane**. Doar log adițional cu `plan_priority` pentru transparență.
 
-## D) DB — migrare minimă
+## B. Stripe (procesator nou)
 
-```sql
--- helper quota
-CREATE OR REPLACE FUNCTION public.partner_get_quota_usage(p_user uuid)
-RETURNS jsonb LANGUAGE sql SECURITY DEFINER SET search_path=public AS $$
-  SELECT jsonb_build_object(
-    'venues', (SELECT count(*) FROM venues WHERE owner_id=p_user),
-    'events', (SELECT count(*) FROM events WHERE host_id=p_user),
-    'offers', (SELECT count(*) FROM offers o JOIN venues v ON v.id=o.venue_id WHERE v.owner_id=p_user),
-    'quotas', (SELECT value FROM app_settings WHERE key='partner_quotas')
-  )
-$$;
-GRANT EXECUTE ON FUNCTION public.partner_get_quota_usage(uuid) TO authenticated;
+- Enable Stripe payments via `enable_stripe_payments` (NU BYOK). Tax handling: `automatic_tax` (RO/EU VAT).
+- Produse: 3 subscription products (Basic/Pro/Premium) + 1-time products pentru boost types.
+- Server fns (`src/lib/partner-billing.functions.ts`):
+  - `createCheckoutSession({plan_code})` — subscription
+  - `createBoostCheckoutSession({target_kind, target_id, boost_type})` — one-time
+  - `cancelSubscription()`, `openCustomerPortal()`, `getMySubscription()`, `getMyInvoices()`.
+- Webhook `/api/public/stripe-webhook` cu verificare signature:
+  - `checkout.session.completed`, `customer.subscription.updated/deleted`, `invoice.paid/payment_failed` → update `partner_subscriptions`, set `current_plan_code` pe profile.
+  - Eșec plată → setează `status='past_due'`, `grace_until=now()+7d`. Cron zilnic retrogradează la Basic după grace.
+- **NU stocăm date card.** Doar `stripe_customer_id`, `stripe_subscription_id`, plan, status.
+- **Separare Google Play**: portal `/partner` e web-only B2B. Verificare în `src/lib/google-play.server.ts` să nu accepte SKU-uri de plan partener. Capacitor build ascunde butoanele de upgrade plan în `/partner` dacă `Capacitor.isNativePlatform()` — redirect "deschide în browser".
 
--- seed default quotas dacă lipsesc
-INSERT INTO app_settings(key,value,description)
-VALUES ('partner_quotas',
-  '{"max_venues":10,"max_events":50,"max_active_offers":20,"max_drafts_per_hour":5}'::jsonb,
-  'Limite per partener (creare resurse)')
-ON CONFLICT (key) DO NOTHING;
-```
+## C. Degradare (retrogradare, nu ștergere)
 
-(Triggerele `*_no_self_publish` și suspendarea cascade există deja — nu le modificăm.)
+- Cron `partner_downgrade_expired()` rulat zilnic: subs în `past_due` cu `grace_until < now()` → set plan `basic`, dezactivează push priority, ascunde locații peste limita Basic (set `is_published=false` pe surplus, ordonate desc după created_at), revocă boost-uri active.
+- Reluare plată → webhook readuce plan-ul; trigger reactivează venues (`is_published=true` PÂNĂ LA `moderation_status='approved'` check; cele care erau aprobate înainte revin publice).
+- Notificări in-app + email la grace start, grace end, retrogradare, reactivare.
 
-## E) UI
+## D. Sponsored — marcaj automat obligatoriu
 
-- `src/components/partner/PartnerLayout.tsx` — sidebar (Dashboard/Venues/Events/Offers), badge quota, banner suspendat.
-- `src/components/partner/VenueForm.tsx` — folosește `NearbyMap` existent (MapLibre) pentru a pune pin-ul; câmpuri: name, category, description, address, city, lat/lng (pin), cover_url (upload bucket existent `venues` sau `public-uploads`), opening_hours (JSON simplu), website, phone.
-- `src/components/partner/EventForm.tsx` — title, description, event_type, venue_id (select propriu), starts_at, ends_at, max_attendees, cover_url. **Fără `is_official`**.
-- `src/components/partner/OfferForm.tsx` — venue_id, title, description, terms, valid_from/to, max_claims_per_user. Buton "Stats" → `partnerGetOfferStats` (claim_count/redeemed_count, fără identități).
-- `src/components/partner/ModerationStatusBadge.tsx` — pill cu culoare + motiv respingere.
-- Upload imagini: validare client (tip image/*, max 5MB), upload Supabase Storage într-un bucket public; ulterior moderarea staff vede imaginea.
+- View SQL `is_sponsored_now(item_kind, item_id)` — true dacă există `partner_boosts.status='active' AND now() BETWEEN starts_at AND ends_at` SAU plan owner are `sponsored_offers=true` și itemul e marcat promoted.
+- Componenta `<SponsoredBadge />` randată **automat** în `NearbyCard`, `OfferCard`, `SponsoredBanner` când `is_sponsored=true`. Eticheta vine din server payload — partenerul nu o poate ascunde.
+- Orice insert în `partner_boosts.status='active'` scrie automat în `ad_transparency_log` (trigger).
+- Pagina publică `/legal/ad-transparency` listează agregat (fără PII user) reclamele active conform DSA Art. 39.
 
-## F) Confirmări la final
+## E. User control (Premium / Founder)
 
-(a) Formularele NU expun `is_published`/`is_official`; validator-ul Zod le strip-uiește; triggerele DB blochează oricum.
-(b) `partnerUpdate*` pe item `approved` → forțează `moderation_status='pending'` + `is_published=false`. Loghează în audit `re_moderation_required`.
-(c) `partnerCreate*` verifică `partner_get_quota_usage` server-side + rate-limit pe `rate_limit_log` — throw înainte de insert.
-(d) Toate listările folosesc clientul `requireSupabaseAuth` (NU `supabaseAdmin`), deci RLS owner-only se aplică. `partnerGetOfferStats` întoarce doar `{claim_count, redeemed_count}`.
+- Toggle în `/settings` → `profiles.reduce_sponsored`. Când true:
+  - `nearby_points` reduce ponderea `plan_priority` la 0 pentru userul ăsta (sortare pur geografică).
+  - `SponsoredBanner` ascuns.
+  - Conținutul organic neatins.
+- Gate: doar useri cu `is_premium` SAU `is_founder`. Verificat server-side.
 
-## Ordine
+## F. Admin dashboard venituri
 
-1. Migrare DB (quota helper + seed `app_settings`).
-2. `src/lib/partner.functions.ts`.
-3. Rute `_partner/*` + componente form.
-4. Link din `/business.dashboard` către `/partner/dashboard` pentru utilizatori cu rol partener.
-5. Typecheck + smoke test în preview.
+- Modul nou `src/components/admin/RevenuePanel.tsx` în `/admin`:
+  - KPI: MRR, parteneri activi/plan, churn 30d, boost-uri vândute, venit total luna.
+  - Listă parteneri cu plan, status, valoare lunară, started_at — **fără date card**.
+  - Editor `partner_plans` (preț, entitlements) → scrie via `admin_update_setting` + audit critical.
+  - Acordare manuală plan: `adminGrantPlan({user_id, plan_code, reason, expires_at})` — audit `critical`, scrie în `partner_subscriptions` cu `stripe_*=null` și flag `manual_grant=true`.
+  - Vizualizare `ad_transparency_log`.
+- Server fns în `src/lib/admin-revenue.functions.ts`, toate gated pe `is_admin_or_above`. Citesc doar metadate; nu apelează Stripe pentru date sensibile.
 
-**Aștept confirmarea ta înainte să implementez.**
+## G. AGENTS.md — reguli noi
+
+- **REGULĂ — MONETIZARE NU SLĂBEȘTE PROTECȚIA USERULUI**: plafoanele `try_record_proximity_hit` (daily_cap, cooldown, quiet hours) nu pot fi schimbate de un plan/boost/entitlement. Orice diff care le citește din plan trebuie REFUZAT.
+- **REGULĂ — SPONSORED MARKING OBLIGATORIU**: orice item cu boost activ sau în slot promoted poartă badge `Sponsorizat` randat server-side. UI partener nu poate dezactiva. Diff care expune un câmp `hide_sponsored` partenerului → REFUZAT.
+- **REGULĂ — PLATĂ PARTENER ≠ GOOGLE PLAY BILLING**: planuri/boost-uri parteneri se vând exclusiv prin Stripe pe web `/partner`. Build mobil nu expune checkout-ul. Diff care adaugă SKU partener în Google Play sau acceptă RTDN pentru plan partener → REFUZAT.
+- **REGULĂ — NEPLATA RETROGRADEAZĂ, NU ȘTERGE**: niciun DELETE pe `venues/events/offers` declanșat de eveniment Stripe. Doar `is_published=false` reversibil.
+
+## H. Legal updates (aceeași migrare)
+
+- `src/routes/legal.subprocessors.tsx`: adaugă Stripe Payments Europe (Irlanda; EU + transfer DPF SUA pentru fraud; date business: nume, email, CUI; **niciodată** date de useri finali; DPA: stripe.com/legal/dpa).
+- `docs/gdpr-art-30-register.md` + `src/routes/legal.records-of-processing.tsx`: activitate nouă "Facturare parteneri B2B" — temei Art. 6(1)(b) executare contract + Art. 6(1)(c) obligație fiscală; nu Art. 9; retenție 10 ani (Cod Fiscal RO).
+- Fără kind nou de consimțământ user (B2B contractual).
+
+## I. Confirmări de cerut la final
+
+(a) `try_record_proximity_hit` rămâne identic — diff zero pe plafoane. ✅
+(b) Stripe = procesator nou declarat; Google Play Billing intact și separat. ✅
+(c) Webhook retrogradează plan + ascunde surplus; nicio ștergere. ✅
+(d) `SponsoredBadge` randat din server payload, automat. ✅
+(e) Admin vede plan/status/MRR, niciodată PAN/CVV/expiry. ✅
+
+---
+
+## Fișiere afectate (estimat)
+
+**Noi (~14):**
+- migrare SQL: plans/subscriptions/boosts/invoices/ad_log/columns/functions/cron
+- `src/lib/partner-billing.functions.ts`, `src/lib/admin-revenue.functions.ts`
+- `src/routes/api/public/stripe-webhook.ts`
+- `src/routes/partner.billing.tsx` (plan picker, invoices, customer portal link)
+- `src/components/partner/PlanPicker.tsx`, `BoostDialog.tsx`, `SubscriptionStatusCard.tsx`
+- `src/components/SponsoredBadge.tsx`, `src/components/admin/RevenuePanel.tsx`
+- `src/lib/sponsored.ts` (helper)
+
+**Modificate (~10):**
+- `src/lib/nearby.functions.ts` (adaugă plan_priority + is_sponsored la payload, fără a crește count)
+- `src/components/nearby/NearbyCard.tsx`, `SponsoredBanner.tsx`, `OfferCard.tsx` (badge auto)
+- `src/routes/partner.tsx` (link la billing + status bar)
+- `src/routes/admin.tsx` (mount RevenuePanel)
+- `src/routes/settings.tsx` (toggle reduce_sponsored pentru Premium/Founder)
+- `src/lib/partner.functions.ts` (assertEntitlement la create/publish)
+- `src/routes/legal.subprocessors.tsx`, `docs/gdpr-art-30-register.md`, `src/routes/legal.records-of-processing.tsx`
+- `AGENTS.md` (+4 reguli)
+
+## Acțiuni manuale necesare din partea ta
+
+1. **Aprobă activarea Stripe Payments** (built-in Lovable, fără cont propriu necesar). După aprobare, definim cele 3 produse subscription + boost-urile.
+2. Confirmi prețurile inițiale (sau le pun placeholder Basic 0€ / Pro 29€/lună / Premium 99€/lună, boost 5€/3zile — modificabile din admin).
+
+Aștept confirmarea ta înainte să încep implementarea.
