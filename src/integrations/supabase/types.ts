@@ -614,6 +614,8 @@ export type Database = {
           accepts_terms: boolean
           address: string | null
           admin_notes: string | null
+          billing_completed_at: string | null
+          billing_email: string | null
           brand_name: string | null
           category: string | null
           city: string | null
@@ -626,8 +628,10 @@ export type Database = {
           cui: string | null
           entity_type: Database["public"]["Enums"]["business_entity_type"]
           goals: string
+          iban: string | null
           id: string
           is_seed: boolean
+          is_vat_payer: boolean
           legal_name: string
           monthly_budget_eur: number | null
           reg_com: string | null
@@ -644,6 +648,8 @@ export type Database = {
           accepts_terms?: boolean
           address?: string | null
           admin_notes?: string | null
+          billing_completed_at?: string | null
+          billing_email?: string | null
           brand_name?: string | null
           category?: string | null
           city?: string | null
@@ -656,8 +662,10 @@ export type Database = {
           cui?: string | null
           entity_type: Database["public"]["Enums"]["business_entity_type"]
           goals: string
+          iban?: string | null
           id?: string
           is_seed?: boolean
+          is_vat_payer?: boolean
           legal_name: string
           monthly_budget_eur?: number | null
           reg_com?: string | null
@@ -674,6 +682,8 @@ export type Database = {
           accepts_terms?: boolean
           address?: string | null
           admin_notes?: string | null
+          billing_completed_at?: string | null
+          billing_email?: string | null
           brand_name?: string | null
           category?: string | null
           city?: string | null
@@ -686,8 +696,10 @@ export type Database = {
           cui?: string | null
           entity_type?: Database["public"]["Enums"]["business_entity_type"]
           goals?: string
+          iban?: string | null
           id?: string
           is_seed?: boolean
+          is_vat_payer?: boolean
           legal_name?: string
           monthly_budget_eur?: number | null
           reg_com?: string | null
@@ -1637,6 +1649,172 @@ export type Database = {
           },
         ]
       }
+      partner_boost_orders: {
+        Row: {
+          active: boolean
+          created_at: string
+          ends_at: string | null
+          event_id: string
+          id: string
+          invoice_id: string
+          is_seed: boolean
+          owner_id: string
+          starts_at: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          ends_at?: string | null
+          event_id: string
+          id?: string
+          invoice_id: string
+          is_seed?: boolean
+          owner_id: string
+          starts_at?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          ends_at?: string | null
+          event_id?: string
+          id?: string
+          invoice_id?: string
+          is_seed?: boolean
+          owner_id?: string
+          starts_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_boost_orders_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "partner_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_invoice_counters: {
+        Row: {
+          next_number: number
+          series: string
+          year: number
+        }
+        Insert: {
+          next_number?: number
+          series: string
+          year: number
+        }
+        Update: {
+          next_number?: number
+          series?: string
+          year?: number
+        }
+        Relationships: []
+      }
+      partner_invoices: {
+        Row: {
+          billing_snapshot: Json
+          boost_event_id: string | null
+          confirmed_by: string | null
+          created_at: string
+          currency: string
+          due_at: string
+          id: string
+          is_seed: boolean
+          issued_at: string
+          issuer_snapshot: Json
+          kind: string
+          notes: string | null
+          number: number
+          owner_id: string
+          paid_amount_minor: number | null
+          paid_at: string | null
+          paid_ref: string | null
+          payment_code: string
+          period_end: string | null
+          period_start: string | null
+          plan_code: string | null
+          series: string
+          status: string
+          subtotal_minor: number
+          total_minor: number
+          updated_at: string
+          vat_minor: number
+          vat_rate: number
+          year: number
+        }
+        Insert: {
+          billing_snapshot: Json
+          boost_event_id?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          currency?: string
+          due_at: string
+          id?: string
+          is_seed?: boolean
+          issued_at?: string
+          issuer_snapshot: Json
+          kind: string
+          notes?: string | null
+          number: number
+          owner_id: string
+          paid_amount_minor?: number | null
+          paid_at?: string | null
+          paid_ref?: string | null
+          payment_code: string
+          period_end?: string | null
+          period_start?: string | null
+          plan_code?: string | null
+          series: string
+          status?: string
+          subtotal_minor: number
+          total_minor: number
+          updated_at?: string
+          vat_minor: number
+          vat_rate?: number
+          year: number
+        }
+        Update: {
+          billing_snapshot?: Json
+          boost_event_id?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          currency?: string
+          due_at?: string
+          id?: string
+          is_seed?: boolean
+          issued_at?: string
+          issuer_snapshot?: Json
+          kind?: string
+          notes?: string | null
+          number?: number
+          owner_id?: string
+          paid_amount_minor?: number | null
+          paid_at?: string | null
+          paid_ref?: string | null
+          payment_code?: string
+          period_end?: string | null
+          period_start?: string | null
+          plan_code?: string | null
+          series?: string
+          status?: string
+          subtotal_minor?: number
+          total_minor?: number
+          updated_at?: string
+          vat_minor?: number
+          vat_rate?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_invoices_plan_code_fkey"
+            columns: ["plan_code"]
+            isOneToOne: false
+            referencedRelation: "partner_plans"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       partner_notification_log: {
         Row: {
           created_at: string
@@ -1663,6 +1841,92 @@ export type Database = {
           target_id?: string | null
         }
         Relationships: []
+      }
+      partner_plans: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          entitlements: Json
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          entitlements?: Json
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          entitlements?: Json
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      partner_subscriptions: {
+        Row: {
+          auto_invoice: boolean
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          grace_until: string | null
+          id: string
+          is_seed: boolean
+          last_invoice_id: string | null
+          owner_id: string
+          plan_code: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          auto_invoice?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          grace_until?: string | null
+          id?: string
+          is_seed?: boolean
+          last_invoice_id?: string | null
+          owner_id: string
+          plan_code?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          auto_invoice?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          grace_until?: string | null
+          id?: string
+          is_seed?: boolean
+          last_invoice_id?: string | null
+          owner_id?: string
+          plan_code?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_subscriptions_plan_code_fkey"
+            columns: ["plan_code"]
+            isOneToOne: false
+            referencedRelation: "partner_plans"
+            referencedColumns: ["code"]
+          },
+        ]
       }
       photo_hashes: {
         Row: {
@@ -3068,6 +3332,19 @@ export type Database = {
         Args: { _kind: string; _user_id: string }
         Returns: boolean
       }
+      admin_cancel_invoice: {
+        Args: { _invoice_id: string; _reason: string }
+        Returns: string
+      }
+      admin_confirm_invoice_payment: {
+        Args: {
+          _amount_minor: number
+          _invoice_id: string
+          _paid_at?: string
+          _paid_ref: string
+        }
+        Returns: string
+      }
       admin_get_my_role: { Args: never; Returns: string }
       admin_moderate_item: {
         Args: {
@@ -3114,6 +3391,7 @@ export type Database = {
         Args: { _kind: string; _meta?: Json; _user_id: string; _xp: number }
         Returns: undefined
       }
+      billing_tick: { Args: never; Returns: Json }
       bucket_distance_m: { Args: { d: number }; Returns: number }
       check_rate_limit: {
         Args: { _action: string; _max: number; _window_seconds: number }
@@ -3508,6 +3786,10 @@ export type Database = {
         }[]
       }
       neighbour_buckets: { Args: { p_bucket_id: string }; Returns: string[] }
+      next_invoice_number: {
+        Args: { _series: string; _year: number }
+        Returns: number
+      }
       notify_user: {
         Args: {
           _actor_id: string
@@ -3527,9 +3809,23 @@ export type Database = {
           redeemed_count: number
         }[]
       }
+      partner_active_entitlements: {
+        Args: { _owner_id: string }
+        Returns: Json
+      }
       partner_can_send_notification: {
         Args: { p_partner_id: string }
         Returns: boolean
+      }
+      partner_create_invoice: {
+        Args: {
+          _boost_event_id?: string
+          _boost_price_minor?: number
+          _kind: string
+          _owner_id: string
+          _plan_code?: string
+        }
+        Returns: string
       }
       partner_get_quota_usage: { Args: { p_user: string }; Returns: Json }
       populate_geometry_columns:

@@ -1,169 +1,153 @@
 
-# Redesign vizual admin — plan
+# Sistem facturare parteneri prin transfer bancar (OP)
 
-## Regula de aur (recitită)
-**Doar prezentare.** Niciun fișier din `src/lib/admin*.functions.ts`, niciun RPC, niciun trigger, niciun `SENSITIVE_COLUMNS`, niciun gate `is_staff`/`has_role`/`admin_can_access_sensitive` nu se atinge. Dacă o decizie vizuală cere atingerea logicii, mă opresc și revin la tine.
+Construit DEASUPRA: `business_applications` (date fiscale + ANAF), `app_settings` (versionat),
+`admin_audit_log`, `partner.functions.ts` (assertPartner/assertQuota), Art. 30 register.
+ZERO procesatori de plată externi. Banca NU este procesator de date personale user.
 
-Tot redesign-ul trăiește în:
-- `src/components/admin/shell/*` (nou) — `AdminShell`, `AdminSidebar`, `AdminTopbar`, `AdminBreadcrumbs`, `AdminCommandPalette`
-- `src/components/admin/ui/*` (nou) — `DataTable`, `Kpi`, `StatusBadge`, `SeverityBadge`, `Art9Badge`, `GlassCard`, `MonoNumber`, `Drawer` wrapper
-- `src/routes/admin.tsx` — doar înlocuire layout (taburi → shell + outlet de panou)
-- `src/styles.css` — tokens nou (vezi §B)
-- panourile existente (`PartnersModerationPanel`, `EnterpriseSections`, `Wave1Sections`, `AdminControlCenter`, etc.) — primesc `DataTable`/`Kpi` în loc de carduri brute, **fără a schimba apelurile către server fn-uri**
+## Sprint 1 — Schemă DB (o singură migrare)
 
-## A. Navigare — sidebar vertical grupat
+### Tabele noi
 
-Sidebar colapsabil (shadcn `Sidebar` + `collapsible="icon"`), 5 grupuri:
+**`partner_plans`** — catalog planuri (Free/Pro/Premium), seed inițial.
+- `code` (Free|Pro|Premium, PK), `name`, `price_minor` (cenți RON), `vat_rate` (19),
+  `currency` (RON), `entitlements` JSONB:
+  `{ max_venues, max_events, max_offers, push_priority (none|medium|high),
+     featured_in_nearby, badge_verified, can_create_boost, max_notifications_per_day }`
+- `active boolean`, `sort_order`
 
-```text
-PREZENTARE
-  • Overview          (LayoutDashboard)
-  • Alerte            (BellRing)         [badge: alerte active]
-  • Analytics         (TrendingUp)
+**`partner_subscriptions`** — abonament activ per partener (owner_id = profiles.id).
+- `owner_id` UNIQUE, `plan_code`, `status` (active|grace|free_downgraded|cancelled),
+  `current_period_start`, `current_period_end`, `grace_until`, `last_invoice_id`,
+  `auto_invoice boolean` (recurență on/off).
+- Default pentru orice partener aprobat: row cu `plan_code='Free'`, fără perioadă.
 
-USERI & MODERARE
-  • Utilizatori       (Users)            [badge: noi 24h]
-  • Rapoarte          (Flag)             [badge: pending]
-  • Risc              (ShieldAlert)      [badge: high+]
-  • CSAM              (AlertOctagon)     [badge: pending]   — no-render păstrat
-  • DSA               (FileWarning)      [badge: pending]   — anonimat păstrat
-  • Breșe             (ShieldX)
+**`partner_invoices`** — factură proformă/fiscală.
+- `id`, `owner_id`, `series` (ex: 'VTZ'), `number` int, `year`, UNIQUE(series, number, year)
+- `payment_code` text UNIQUE (ex: `VTZ-2026-0001`) = mențiune OP
+- `plan_code`, `period_start`, `period_end` (sau NULL pentru boost one-off)
+- `kind` (subscription|boost)
+- `subtotal_minor`, `vat_minor`, `total_minor`, `currency`
+- `status` (draft|pending_payment|paid|overdue|cancelled|refunded)
+- `issued_at`, `due_at` (issued + 7 zile), `paid_at`, `paid_amount_minor`, `paid_ref` (referință extras OP)
+- Snapshot date fiscale partener la momentul emiterii (JSONB `billing_snapshot`)
+- `confirmed_by` (uuid admin), `notes`
+- `pdf_url` (generat on-demand, nu stocat default)
 
-CONFORMITATE
-  • GDPR              (Scale)            [badge: cereri active]
-  • Break-glass       (KeyRound)                            — gate super_admin păstrat
-  • Audit             (FileSearch)
-  • Politici          (BookOpen)
-  • Consimțăminte     (CheckCircle2)
+**`partner_invoice_counters`** — contor secvențial **fără goluri** per `(series, year)`.
+- PK (series, year), `next_number int` cu lock + funcție SECURITY DEFINER `next_invoice_number(series, year)`.
 
-BUSINESS
-  • Parteneri         (Building2)        [badge: aplicații pending]
-  • Ads/Campanii      (Megaphone)
-  • B2B               (Briefcase)        [badge: pending]
-  • Premium           (Crown)
-  • Venituri          (DollarSign)
+**`partner_boost_orders`** — boost one-off per event (top Nearby 48h).
+- `id`, `owner_id`, `event_id`, `invoice_id`, `starts_at`, `ends_at`, `active boolean`.
+- Activat numai la `paid` confirm.
 
-SISTEM
-  • Feature Flags     (ToggleRight)
-  • Settings          (Settings)
-  • Demo Seed         (Sparkles)                            — gate super_admin păstrat
-```
+### Extensii pe `business_applications`
+- `+ iban text` (opțional), `+ billing_email text`, `+ is_vat_payer boolean default false`,
+  `+ billing_completed_at timestamptz`.
 
-- Badge-urile alimentate din **același** `useAdminPanelLoad` care alimentează deja overview-ul; un singur `useQuery('admin-counters')` care apelează RPC-urile *deja existente* (`admin_get_overview_counts` / agregat existent). Dacă lipsește un contor, badge-ul nu apare — nu adaug RPC nou.
-- Grupurile colapsabile (`SidebarGroup` cu `defaultOpen` calculat din ruta curentă).
-- Item activ: subliniere amber + glow subtil.
-- Permisiuni: itemii care depind de rol (Break-glass = super_admin/auditor, Demo Seed = super_admin) sunt **ascunși vizual** cu hook-ul existent `useAdminRole()` — server-side gate-urile rămân singurele autoritare.
+### `app_settings` (versionat) — nou kind
+- `billing_settings`:
+  ```json
+  {
+    "issuer": { "name": "...", "cui": "...", "reg_com": "...", "address": "...",
+                "iban": "RO00 ...", "bank": "...", "email": "billing@..." },
+    "invoice_series": "VTZ",
+    "vat_rate": 19,
+    "currency": "RON",
+    "grace_days": 7,
+    "reminder_days": [3, 7, 10],
+    "recurring_lead_days": 7,
+    "prices": {
+      "Pro":    { "monthly_minor": 24500 },
+      "Premium":{ "monthly_minor": 74500 },
+      "Boost":  { "min_minor": 4500, "max_minor": 14500 }
+    }
+  }
+  ```
+- Singura sursă de adevăr pentru preț + TVA. Modificare DOAR prin `admin_update_setting` (deja existent).
 
-### Topbar
-- Breadcrumbs (`Admin / Grup / Modul`)
-- Search global (deschide command palette)
-- Command palette ⌘K (`cmdk`) — caută printre modulele de mai sus + acțiuni rapide ("Ban user", "Aprobă raport"); fiecare item navighează, nu execută.
-- Indicator rol (`super_admin` cu pill amber), idle-timer existent, toggle densitate (`comfortable` / `compact` — schimbă doar `--row-height`).
+### RPC-uri / triggere
 
-### Rute
-Păstrez ruta unică `/admin` cu state intern `activePanel`. Adaug query param `?panel=users` pentru deep-link + back-button, fără a sparge rutele. Asta nu atinge gate-ul `_authenticated` și nici verificarea de rol din loader.
+- `next_invoice_number(series, year)` — atomic, ridică `next_number`, fără goluri.
+- `partner_create_invoice(owner_id, plan_code, kind, period_start, period_end, boost_event_id)` — SECURITY DEFINER, calculează sumă din `billing_settings.prices` + TVA, snapshot date fiscale din `business_applications`, alocă `payment_code`.
+- `admin_confirm_invoice_payment(invoice_id, amount_minor, paid_ref, paid_at)` — gated `is_staff`:
+  - marcează `paid`, scrie `confirmed_by`, scrie audit `partner_invoice_confirm_payment`.
+  - dacă `kind=subscription` → activează/extinde `partner_subscriptions` (period_end += 1 lună, `status='active'`).
+  - dacă `kind=boost` → activează `partner_boost_orders` (starts_at=now, ends_at=now+48h).
+- `admin_cancel_invoice(invoice_id, reason)` — gated, audit.
+- `partner_active_entitlements(owner_id) RETURNS jsonb` — întoarce entitlements efective (Free dacă fără sub activ).
+- Trigger `partner_subscriptions_downgrade_on_expire` (verificat de cron, nu trigger).
 
-## B. Estetică — dark glass + amber
+### RLS (toate noile tabele)
+- `partner_plans` SELECT public (catalog).
+- `partner_subscriptions` / `partner_invoices` / `partner_boost_orders`: owner SELECT, staff SELECT, scriere DOAR prin RPC SECURITY DEFINER.
+- GRANT corect pe fiecare (authenticated + service_role).
 
-Tokens noi în `src/styles.css` (sub `@theme inline`, scoped la `[data-admin]`):
+## Sprint 2 — Server fns + cron
 
-```css
-[data-admin] {
-  --admin-bg:            oklch(0.16 0.01 60);
-  --admin-surface:       oklch(0.20 0.012 60 / 0.72);   /* glass */
-  --admin-surface-2:     oklch(0.24 0.014 60 / 0.55);
-  --admin-border:        oklch(0.32 0.015 60 / 0.6);
-  --admin-text:          oklch(0.96 0.005 60);
-  --admin-text-dim:      oklch(0.72 0.01 60);
-  --admin-accent:        oklch(0.78 0.14 75);            /* amber */
-  --admin-accent-soft:   oklch(0.78 0.14 75 / 0.18);
-  --admin-success:       oklch(0.78 0.13 155);
-  --admin-warn:          oklch(0.80 0.14 75);
-  --admin-danger:        oklch(0.66 0.20 25);
-  --admin-art9:          oklch(0.70 0.18 320);           /* fuchsia/magenta — Art.9 */
-  --admin-mono: ui-monospace, "JetBrains Mono", "SF Mono", monospace;
-  --row-height: 44px;
-  --shadow-glass: 0 1px 0 oklch(1 0 0 / 0.06) inset,
-                  0 24px 60px -24px oklch(0 0 0 / 0.6);
-  backdrop-filter: blur(14px) saturate(140%);
-}
-[data-admin][data-density="compact"] { --row-height: 32px; }
-```
+`src/lib/billing.functions.ts`:
+- `partnerListMyInvoices()` / `partnerListMyPlans()` / `partnerGetActivePlan()`
+- `partnerStartSubscription({ plan_code })` → creează factură proformă, întoarce payment_code + IBAN + sumă.
+- `partnerOrderBoost({ event_id, price_minor })` → factură boost.
+- `partnerGetInvoicePdf(invoice_id)` → HTML→PDF on-demand server-side (jsPDF/react-pdf inline, fără dependențe nesigure).
+- `assertEntitlement(owner_id, key)` helper exportat — folosit de `partner.functions.ts` (înlocuiește `assertQuota` cu wrapper care citește `partner_active_entitlements`).
 
-Toate componentele admin (și doar ele) primesc `data-admin` pe shell. Nimeni nu folosește hex hardcodat. Restul aplicației rămâne neatins.
+`src/lib/billing-admin.functions.ts` (gated `is_staff`):
+- `adminListInvoices({ status, owner_id, from, to })` cu paginare.
+- `adminConfirmInvoicePayment` / `adminCancelInvoice`
+- `adminRevenueSummary()` — încasări lună, restanțe, parteneri pe planuri.
+- `adminUpdateBillingSettings` (wraps `admin_update_setting`).
 
-`MonoNumber` aplică `font-variant-numeric: tabular-nums` + `var(--admin-mono)` pentru metrici, ID-uri, timestamps, distanțe — efect "Bloomberg".
+**Cron** prin `src/routes/api/public/hooks/billing-tick.ts` (apelat de pg_cron zilnic 03:00):
+- generează facturi recurente la `period_end - recurring_lead_days`,
+- trimite remindere (in-app notification + flag email — fără SMTP nou; coadă pentru future Mailgun),
+- retrogradează abonamente `grace_until < now()` → `status='free_downgraded'`, audit.
 
-Badge-uri:
-- `StatusBadge`: pending (amber outline), approved (success), rejected (danger), active (accent fill).
-- `SeverityBadge`: low/medium (dim), high (warn), critical (danger + glow).
-- `Art9Badge`: pill fuchsia "Art. 9" — marcat distinct pe orientation/HIV/locație, fără să dezvăluie valoarea.
+## Sprint 3 — UI
 
-## C. Tabele enterprise (`DataTable`)
+**`/partner/billing`** (sub portalul partener):
+- Card "Plan curent" cu plan, perioada, status, buton Upgrade/Schimbă plan.
+- Tabelă facturi (proformă/fiscală) cu status badge + buton Descarcă PDF + buton "Vezi instrucțiuni OP".
+- Modal "Instrucțiuni OP": IBAN, beneficiar, sumă cu TVA, **cod plată** mare/copiabil, mențiunea "se activează în 1-3 zile lucrătoare după confirmare".
+- Formular completare/actualizare date fiscale (IBAN, billing_email, is_vat_payer) — pre-populat cu ANAF.
 
-Component nou peste `@tanstack/react-table` (deja sub umbrela shadcn) + virtualizare cu `@tanstack/react-virtual` (instalez dacă lipsește). Pentru fiecare panou listă (Utilizatori, Rapoarte, Risc, CSAM, DSA, Breșe, GDPR, Audit, Parteneri, Ads, B2B, Politici, Consimțăminte, Demo Seed):
+**`/admin` → modul nou „Facturare parteneri"** (în categoria Business):
+- `InvoicesPanel` (DataTable): status, partener, plan, sumă, payment_code, issued/due/paid + acțiuni inline Confirmă plată / Anulează / PDF.
+- Drawer detaliu cu formular confirmare (sumă, paid_ref, paid_at).
+- `RevenuePanel`: KPI mono (lună curentă confirmată, restanțe, parteneri activi per plan), tabelă agregată.
+- `BillingSettingsPanel`: editor pentru `billing_settings` (issuer, prețuri, grace, reminders) → trece prin `admin_update_setting` (versionat + audit).
+- Banner avertizare dacă issuer incomplet.
 
-- coloane configurabile, sortare client-side pe câmpurile deja aduse (nu schimb selectele server)
-- search instant pe coloanele safe (display_name, id, action — niciodată pe coloane sensibile)
-- filtre per coloană (status, severitate, dată)
-- paginare 25/50/100 + virtualizare peste 200 rânduri
-- selecție rânduri + bulk actions **doar** pe acțiunile pe care server fn-urile le acceptă deja (ex: bulk-approve raporturi → cheamă în loop server fn-ul existent; nimic nou)
-- acțiuni inline (dropdown `MoreHorizontal`) reutilizează handler-ele actuale din panouri
-- export CSV pe ce e *deja* afișat în tabel — re-folosesc utilitarul existent din Audit log
+## Sprint 4 — Integrare entitlements + Art. 30
 
-Mascarea rămâne sursa adevărului: tabelul randează doar coloanele întoarse de `adminListRows` / panourile dedicate. Dacă o coloană sensibilă nu vine în payload, nu se inventează. Coloanele Art.9 care apar prin break-glass păstrează `Art9Badge` + valoare ascunsă în spatele unui `Reveal` care reapelează RPC-ul existent — fluxul real e neatins.
+- `partner.functions.ts` migrează la `assertEntitlement(owner_id, 'max_venues')`. Free = `partner_quotas` redus (1 venue, 0 events). Pro/Premium = override din plan.
+- `try_record_proximity_hit` adaugă consultarea `partner_active_entitlements` pentru `push_priority`. **Plafonul USER (cooldown 24h, daily cap, quiet hours) neatins** — Premium înseamnă DOAR că partenerul ocupă slot prioritar, NU mai multe slot-uri totale per user.
+- Nearby query sortează `featured_in_nearby` deasupra în acelasi bucket de distanță.
+- `docs/gdpr-art-30-register.md` + `src/routes/legal.records-of-processing.tsx`: activitate nouă **A20 — Facturare parteneri** (Art. 6(1)(b) executare contract + Art. 6(1)(c) obligație legală fiscală RO; categorii: date business + reprezentant; destinatari: ANAF (la control), contabilitate internă; banca **NU** procesează date user, doar tranzacție B2B; retenție: 10 ani conform Cod Fiscal RO).
 
-## D. Overview — dashboard real
+## Sprint 5 — AGENTS.md
 
-Înlocuiește grila actuală de carduri uriașe cu:
+Adaug regulă permanentă „## REGULĂ — FACTURARE PARTENERI (permanentă)":
+- numerotare neîntreruptă per (series, year) DOAR prin `next_invoice_number`,
+- nicio activare/extindere abonament fără `admin_confirm_invoice_payment` (audit obligatoriu),
+- preț + TVA citite DOAR din `app_settings.billing_settings` (zero hardcode),
+- entitlements citite server-side prin `partner_active_entitlements` (UI doar reflectă),
+- plafoanele USER de notificări (cooldown, daily cap, quiet hours) **neatinse** de planuri,
+- degradare = retrogradare la Free, **NICIODATĂ ștergere conținut**,
+- niciun procesator de plată extern fără actualizare subprocesatori + Art. 30.
 
-1. **Bandă KPI** compactă (8 metrici, fiecare 1/8 lățime): DAU, WAU, MAU, useri noi 24h, rapoarte pending, GDPR cereri active, breșe deschise, MRR partener. Numerele `MonoNumber`, delta vs. ieri în verde/roșu. **Toate vin din `admin_analytics_summary` deja existent.**
-2. **Grafic principal** (recharts existent): useri activi 30 zile + suprapunere rapoarte/zi.
-3. **Coloana "Necesită atenție"** (dreapta): listă scurtă de inbox-uri (Rapoarte deschise, B2B pending, GDPR cereri, Breșe), fiecare cu count + buton "Deschide modulul" care setează `activePanel`.
-4. **Live refresh** existent păstrat 1:1 (același `setInterval` din `AdminControlCenter`).
+## Confirmare contract final
 
-## E. Drawer pattern extins
+(a) Factura include detalii OP (IBAN, beneficiar, bancă, sumă) + `payment_code` unic mențiune.
+(b) `admin_confirm_invoice_payment` activează abonamentul + scrie `admin_audit_log` (severitate `info`, `actor`, `target_invoice`, `before/after`).
+(c) Cron-ul zilnic generează factură recurentă cu `recurring_lead_days` înainte + trimite reminder in-app la `reminder_days`.
+(d) Degradare = `status='free_downgraded'`, conținutul RĂMÂNE vizibil în limitele Free (1 venue rămâne, restul ascunse via `nearby_points` care filtrează după entitlements).
+(e) Numerotare: `next_invoice_number(series, year)` cu lock — secvențial, fără goluri, resetat anual.
+(f) `try_record_proximity_hit` neatins — plafoanele USER rămân absolute.
 
-Drawer-ul de user detail (`Wave1Sections`) e reper. Extrag containerul în `<AdminDetailDrawer>` și îl folosesc pentru:
-- Partener detail (înlocuiește panoul plat actual)
-- Raport detail (DSA / user reports)
-- B2B aplicație detail
-- Campanie ad detail
-- Audit entry detail
+## Întrebare înainte să încep
 
-Structura drawer-ului: header (titlu + status + Art.9 badge dacă e cazul), tab-uri interne (Profil / Acțiuni / Audit / Consimțăminte / Break-glass), footer cu acțiunile primare. Toate acțiunile = handler-ele server fn deja folosite în panouri.
-
-## F. Responsive & polish
-
-- Sidebar `collapsible="icon"` automat pe `<lg` cu `SidebarTrigger` în topbar.
-- DataTable: pe `<md` coloanele secundare se ascund (configurate prin `meta.priority`).
-- Loading / error / empty: păstrez `PanelStatus` + `useAdminPanelLoad` (regula din AGENTS.md). Doar restilizate cu noile tokens.
-- Tranziții: `transition-colors duration-150` pe rânduri/butoane. Fără spring/parallax. Drawer slide 180 ms.
-
-## Ce NU se atinge (checklist înainte de PR)
-- [ ] `src/lib/admin-*.functions.ts` — zero diff
-- [ ] `src/integrations/supabase/*` — zero diff
-- [ ] SQL / migrații — zero diff
-- [ ] `SENSITIVE_COLUMNS`, `safeColumnsFor`, `adminBreakGlassReveal`, `admin_can_access_sensitive` — zero diff
-- [ ] `AgeGate`, regulile din AGENTS.md — neatinse
-- [ ] CSAM: niciun `<img src={photo_url}>`. DSA: `reporter_*` rămâne strip. Orientation/HIV/location: doar prin break-glass existent.
-
-## Detalii tehnice
-
-- Pachete noi (dacă lipsesc): `cmdk` (command palette), `@tanstack/react-table`, `@tanstack/react-virtual`. Verific întâi cu `rg`, instalez doar diferența.
-- Migrare modul cu modul, în 3 sub-livrări pe care le bifez singur fără confirmare între ele:
-  1. Shell (sidebar + topbar + command palette + tokens + `data-admin`) și mutarea taburilor existente neschimbate sub el — nimic nu se sparge.
-  2. `DataTable` + `Kpi` + `StatusBadge` etc., re-cablate pe panourile listă în ordine: Utilizatori → Rapoarte → Parteneri → Ads → GDPR → Audit → restul.
-  3. Overview real + drawer pattern extins.
-- La final: screenshot via Playwright pe `/admin` cu 3 panouri principale (Overview, Utilizatori, Rapoarte) ca dovadă vizuală + verificare în consolă că nu apar erori noi.
-
-## Risc identificat (vreau confirmarea ta)
-Un singur loc unde aș putea atinge logica fără să vreau: **badge-urile de contoare din sidebar**. Dacă nu există deja un RPC agregat care întoarce toate count-urile (rapoarte pending, B2B pending, GDPR active, breșe deschise) într-un apel, am două opțiuni curate:
-- (a) cheamă în paralel RPC-urile existente per modul (mai multe round-trips, zero cod nou pe server),
-- (b) adaug un view/RPC nou `admin_sidebar_counters` (SECURITY DEFINER, gate `is_staff`) — asta ar fi singura schimbare de logică.
-
-**Default-ul meu: (a).** Confirmă sau spune-mi să fac (b).
-
----
-
-Pe scurt: shell nou + tokens + tabele + drawer pattern, panourile existente îmbrăcate în uniformă nouă, zero atingere a securității. Confirmă și pornesc.
+Confirmi:
+1. **Emitent factură**: persoană juridică ONG / SRL care va emite — îmi dai datele tale (denumire, CUI, Reg.Com., adresă, IBAN, bancă) **acum în chat** ca să le seed-uiesc în `billing_settings`, **sau** las placeholder „⚠️ Completează în Admin → Billing Settings înainte de a accepta plăți" și le pui tu prin UI?
+2. **Prețuri inițiale RO**: confirm Pro 245 RON/lună (~49€), Premium 745 RON/lună (~149€), Boost 45–145 RON? Sau alte valori?
+3. **Seria facturi**: `VTZ` (Ventuza)? Sau alta?
