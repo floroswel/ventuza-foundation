@@ -97,7 +97,7 @@ function DiscoverPage() {
     if (!user || locStatus !== "unknown") return;
     requestAndStoreLocation().then((r) => {
       setLocStatus(r.ok ? "granted" : "denied");
-      if (!r.ok) toast.message("Location unavailable", { description: "We'll still show people based on your filters." });
+      if (!r.ok) toast.message("Locație indisponibilă", { id: "loc-unavailable", description: "Îți arătăm rezultate pe baza filtrelor tale." });
     });
   }, [user, locStatus]);
 
