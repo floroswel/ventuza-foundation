@@ -642,7 +642,7 @@ function ThreadPage() {
         <input
           value={text}
           onChange={(e) => { setText(e.target.value); sendTypingPing(); }}
-          placeholder={blockedFirstMessage ? "Verifică-te pentru a scrie…" : "Type a message…"}
+          placeholder={blockedFirstMessage ? "Nu poți trimite mesaje acestui utilizator" : "Type a message…"}
           maxLength={4000}
           disabled={blockedFirstMessage}
           className="flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary disabled:opacity-60"
