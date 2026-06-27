@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX IF NOT EXISTS push_subscriptions_endpoint_key ON public.push_subscriptions (endpoint) WHERE endpoint IS NOT NULL;
