@@ -312,6 +312,14 @@ function PartnerPortal() {
           onClose={() => setOpenDialog(null)}
         />
       )}
+
+      <PostingWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onCreated={() => refresh()}
+        quota={quota as any}
+        myVenues={items.venues as any}
+      />
     </div>
   );
 }
