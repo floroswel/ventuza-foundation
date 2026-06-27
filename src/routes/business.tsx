@@ -540,9 +540,11 @@ function DoneScreen({ appId }: { appId: string | null }) {
             >
               Creează cont pentru a urmări statusul →
             </Link>
-            <p className="text-[11px] leading-snug text-muted-foreground">
-              Folosește același email cu cel din cerere ca să legăm aplicația automat.
-            </p>
+            <div className="rounded-lg border border-orange-500/40 bg-orange-500/5 p-3 text-left text-[11px] leading-snug text-orange-700 dark:text-orange-300">
+              <strong>Important:</strong> creează contul cu <strong>același email</strong> ca în cerere
+              (vom lega aplicația automat). Dacă folosești alt email, salvează ID-ul cererii de mai sus
+              și scrie la business@ventuza.app ca să o legăm manual.
+            </div>
           </>
         )}
         <Link to="/" className="block text-xs text-muted-foreground hover:text-foreground">

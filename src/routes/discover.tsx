@@ -826,15 +826,50 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function EmptyState({ onRefresh, hasLocation }: { onRefresh: () => void; hasLocation: boolean }) {
+function EmptyState({
+  onRefresh,
+  hasLocation,
+  hasFilters,
+  onResetFilters,
+}: {
+  onRefresh: () => void;
+  hasLocation: boolean;
+  hasFilters: boolean;
+  onResetFilters?: () => void;
+}) {
+  if (!hasLocation) {
+    return (
+      <CenterMessage
+        icon={<Compass className="size-8 text-primary" />}
+        title="Activează locația"
+        desc="Avem nevoie de zonă (aproximativă) ca să-ți arătăm cine e prin apropiere. Locația ta exactă rămâne pe device."
+        action={<Button variant="hero" onClick={onRefresh}>Permite locația</Button>}
+      />
+    );
+  }
+  if (hasFilters) {
+    return (
+      <CenterMessage
+        icon={<Compass className="size-8 text-primary" />}
+        title="Filtrele sunt prea stricte"
+        desc="Niciun profil nu se potrivește pe filtrele alese. Relaxează vârsta, distanța sau tribes."
+        action={
+          <div className="flex gap-2">
+            {onResetFilters && (
+              <Button variant="outline" onClick={onResetFilters}>Resetează filtrele</Button>
+            )}
+            <Button variant="hero" onClick={onRefresh}>Reîncarcă</Button>
+          </div>
+        }
+      />
+    );
+  }
   return (
     <CenterMessage
       icon={<Compass className="size-8 text-primary" />}
-      title="No one new nearby right now."
-      desc={hasLocation
-        ? "Try widening your filters — or check back in a little while."
-        : "Enable location for nearby people, or widen your filters."}
-      action={<Button variant="hero" onClick={onRefresh}>Refresh</Button>}
+      title="Nimeni nou prin zonă acum"
+      desc="Comunitatea Ventuza crește. Revino în câteva ore sau extinde raza din filtre."
+      action={<Button variant="hero" onClick={onRefresh}>Reîncarcă</Button>}
     />
   );
 }
