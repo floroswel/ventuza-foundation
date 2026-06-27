@@ -567,13 +567,20 @@ export function PoliciesPanel() {
   const [version, setVersion] = useState("");
   const [url, setUrl] = useState("");
 
-  const load = async () => { try { setItems(await get()); } catch (e: any) { toast.error(e.message); } };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const load = async () => {
+    setError(null);
+    try { setItems(await get()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const submit = async () => {
     if (!version) return toast.error("Versiune obligatorie");
     try { await create({ data: { kind, version, content_url: url || undefined } }); toast.success("Publicat"); setVersion(""); setUrl(""); load(); }
-    catch (e: any) { toast.error(e.message); }
+    catch (e: any) { toast.error(errMsg(e)); }
   };
 
   return (
