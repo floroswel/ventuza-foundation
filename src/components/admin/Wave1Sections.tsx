@@ -214,12 +214,27 @@ export function GdprOpsPanel() {
 
   const [items, setItems] = useState<any[]>([]);
   const [trail, setTrail] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
+    setError(null);
     try {
-      const [d, t] = await Promise.all([getDel(), getTrail({ data: { limit: 200 } })]);
-      setItems(d); setTrail(t);
-    } catch (e: any) { toast.error(e.message); }
+      // Încărcăm separat ca o eroare la trail (poate cere super_admin pe instanțe restricte)
+      // să NU mascheze cererile de ștergere (admin normal le poate vedea).
+      const [delRes, trailRes] = await Promise.allSettled([
+        getDel(),
+        getTrail({ data: { limit: 200 } }),
+      ]);
+      if (delRes.status === "fulfilled") setItems(delRes.value);
+      else throw delRes.reason;
+      if (trailRes.status === "fulfilled") setTrail(trailRes.value);
+      else { setTrail([]); /* trail e secundar, ignorăm */ }
+    } catch (e: any) {
+      const m = e?.message ?? String(e); setError(m); toast.error(m);
+    } finally {
+      setLoading(false);
+    }
   };
   useEffect(() => { load(); }, []);
 
@@ -252,10 +267,20 @@ export function GdprOpsPanel() {
         </button>
       </div>
 
+      {error && (
+        <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-3 text-xs">
+          <p className="font-semibold text-red-300">Eroare la încărcare</p>
+          <p className="mt-1 text-red-200/90 break-words">{error}</p>
+        </div>
+      )}
+      {loading && !error && (
+        <div className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">Se încarcă…</div>
+      )}
+
       <section>
         <h3 className="mb-2 text-xs uppercase text-muted-foreground">Cereri ștergere ({items.length})</h3>
-        {!items.length ? (
-          <div className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">Nicio cerere.</div>
+        {!loading && !items.length ? (
+          <div className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">Nicio cerere de ștergere (empty legitim).</div>
         ) : (
           <ul className="space-y-2">
             {items.map((d) => {
