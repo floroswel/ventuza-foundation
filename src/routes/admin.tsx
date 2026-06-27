@@ -963,37 +963,50 @@ function AdsPanel() {
   if (error) return <AdminPanelError error={error} onRetry={load} />;
   if (loading) return <AdminPanelEmpty label="Se încarcă campaniile…" />;
   if (ads.length === 0) return <AdminPanelEmpty label="Nicio campanie publicitară (empty legitim — niciun advertiser nu a publicat încă)." />;
-  return (
-    <ul className="space-y-3">
-      {ads.map((a) => {
+
+  const statusTone = (s: string): "approved" | "pending" | "rejected" | "neutral" =>
+    s === "active" ? "approved" : s === "pending" ? "pending" : s === "rejected" ? "rejected" : "neutral";
+
+  const cols: Column<any>[] = [
+    { key: "status", header: "Status", cell: (a) => <StatusBadge tone={statusTone(a.status)}>{a.status}</StatusBadge>, sortValue: (a) => a.status },
+    {
+      key: "title",
+      header: "Campanie",
+      cell: (a) => (
+        <div className="flex items-center gap-2">
+          {a.image_url && <img src={a.image_url} alt="" className="size-8 shrink-0 rounded object-cover" />}
+          <div className="min-w-0">
+            <div className="truncate font-medium">{a.title}</div>
+            <div className="truncate text-[10px] text-[var(--admin-text-faint)]">{a.brand_name ?? a.advertiser_id?.slice(0, 8)}</div>
+          </div>
+        </div>
+      ),
+      sortValue: (a) => a.title,
+      searchValue: (a) => `${a.title} ${a.body ?? ""} ${a.brand_name ?? ""}`,
+    },
+    { key: "placement", header: "Plasare", priority: 2, cell: (a) => <StatusBadge tone="info">{a.placement}</StatusBadge>, sortValue: (a) => a.placement },
+    { key: "city", header: "Oraș", priority: 3, cell: (a) => <span className="text-xs text-[var(--admin-text-dim)]">{a.city ?? "—"}</span>, sortValue: (a) => a.city ?? "" },
+    { key: "budget", header: "Buget", align: "right", priority: 2, cell: (a) => <MonoNumber value={(a.budget_cents / 100).toFixed(0)} suffix=" RON" />, sortValue: (a) => a.budget_cents ?? 0 },
+    { key: "imp", header: "Imp", align: "right", priority: 3, cell: (a) => <MonoNumber value={a.impressions} />, sortValue: (a) => a.impressions ?? 0 },
+    { key: "clk", header: "Click", align: "right", priority: 3, cell: (a) => <MonoNumber value={a.clicks} />, sortValue: (a) => a.clicks ?? 0 },
+    {
+      key: "actions",
+      header: "",
+      align: "right",
+      cell: (a) => {
         const isActive = a.status === "active";
-        const sc = isActive ? "bg-green-500/15 text-green-500" : a.status === "pending" ? "bg-amber-500/15 text-amber-500" : "bg-muted text-muted-foreground";
         return (
-          <li key={a.id} className="rounded-2xl border border-border bg-surface p-4">
-            <div className="flex items-start justify-between gap-2">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${sc}`}>{a.status}</span>
-                  <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] text-primary">{a.placement}</span>
-                  {a.city && <span className="rounded-full bg-muted px-2 py-0.5 text-[10px]">{a.city}</span>}
-                </div>
-                <p className="mt-2 text-sm font-medium">{a.title}</p>
-                <p className="text-[10px] text-muted-foreground">{a.brand_name ?? a.advertiser_id.slice(0, 8)} · {a.budget_cents / 100} RON · {a.impressions} imp · {a.clicks} click</p>
-                {a.body && <p className="mt-1 text-xs text-muted-foreground">{a.body}</p>}
-              </div>
-              {a.image_url && <img src={a.image_url} alt="" className="size-16 rounded-lg object-cover" />}
-            </div>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {!isActive && <button disabled={busy} onClick={() => setStatus(a.id, "active")} className="rounded-full bg-green-500/15 px-3 py-1.5 text-xs text-green-500"><Play className="mr-1 inline size-3" />Activează</button>}
-              {isActive && <button disabled={busy} onClick={() => setStatus(a.id, "paused")} className="rounded-full bg-yellow-500/15 px-3 py-1.5 text-xs text-yellow-500"><Pause className="mr-1 inline size-3" />Pauză</button>}
-              <button disabled={busy} onClick={() => setStatus(a.id, "rejected")} className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs text-red-500"><X className="mr-1 inline size-3" />Respinge</button>
-              <button disabled={busy} onClick={() => setStatus(a.id, "ended")} className="rounded-full border border-border px-3 py-1.5 text-xs">Termină</button>
-            </div>
-          </li>
+          <div className="flex flex-wrap justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+            {!isActive && <button disabled={busy} onClick={() => setStatus(a.id, "active")} className="rounded-md bg-[var(--admin-success-soft)] px-2 py-1 text-[10px] text-[var(--admin-success)]"><Play className="inline size-3" /></button>}
+            {isActive && <button disabled={busy} onClick={() => setStatus(a.id, "paused")} className="rounded-md bg-[var(--admin-warn-soft)] px-2 py-1 text-[10px] text-[var(--admin-warn)]"><Pause className="inline size-3" /></button>}
+            <button disabled={busy} onClick={() => setStatus(a.id, "rejected")} className="rounded-md bg-[var(--admin-danger-soft)] px-2 py-1 text-[10px] text-[var(--admin-danger)]"><X className="inline size-3" /></button>
+            <button disabled={busy} onClick={() => setStatus(a.id, "ended")} className="rounded-md border border-[var(--admin-border)] px-2 py-1 text-[10px] text-[var(--admin-text-dim)]">Termină</button>
+          </div>
         );
-      })}
-    </ul>
-  );
+      },
+    },
+  ];
+  return <DataTable rows={ads} columns={cols} rowKey={(a) => a.id} exportName="ads" searchPlaceholder="Filtrare ads…" />;
 }
 
 /* ---------------- BIZ ---------------- */
