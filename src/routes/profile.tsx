@@ -32,6 +32,7 @@ import { ShareProfileCard } from "@/components/ShareProfileCard";
 import { VideoClipCard } from "@/components/VideoClipCard";
 import { DateVibesCard } from "@/components/DateVibesCard";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
+import { BackButton } from "@/components/BackButton";
 import { formatHeight } from "@/lib/discover";
 import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
