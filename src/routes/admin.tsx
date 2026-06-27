@@ -78,6 +78,7 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isMod, setIsMod] = useState(false);
+  const [isSuper, setIsSuper] = useState(false);
   const [section, setSection] = useState<Section>("overview");
 
   useEffect(() => {
@@ -91,10 +92,12 @@ function AdminDashboard() {
         setIsMod(false);
         return;
       }
-      const admin = roles?.some((r) => r.role === "admin") ?? false;
-      const mod = roles?.some((r) => r.role === "admin" || r.role === "moderator") ?? false;
+      const admin = roles?.some((r) => r.role === "admin" || r.role === "super_admin") ?? false;
+      const mod = roles?.some((r) => r.role === "admin" || r.role === "moderator" || r.role === "super_admin") ?? false;
+      const sup = roles?.some((r) => r.role === "super_admin") ?? false;
       setIsAdmin(admin);
       setIsMod(mod);
+      setIsSuper(sup);
       if (!admin && !mod) toast.error("Acces interzis: rol admin necesar");
     })();
   }, [user, loading, navigate]);
