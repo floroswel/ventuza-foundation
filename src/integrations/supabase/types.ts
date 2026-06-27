@@ -28,6 +28,7 @@ export type Database = {
           id: string
           image_url: string | null
           impressions: number
+          is_seed: boolean
           placement: string
           starts_at: string
           status: string
@@ -48,6 +49,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           impressions?: number
+          is_seed?: boolean
           placement?: string
           starts_at?: string
           status?: string
@@ -68,6 +70,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           impressions?: number
+          is_seed?: boolean
           placement?: string
           starts_at?: string
           status?: string
@@ -336,6 +339,7 @@ export type Database = {
           contact_phone: string | null
           created_at: string
           id: string
+          is_seed: boolean
           owner_id: string
           updated_at: string
           verified: boolean
@@ -348,6 +352,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           id?: string
+          is_seed?: boolean
           owner_id: string
           updated_at?: string
           verified?: boolean
@@ -360,6 +365,7 @@ export type Database = {
           contact_phone?: string | null
           created_at?: string
           id?: string
+          is_seed?: boolean
           owner_id?: string
           updated_at?: string
           verified?: boolean
@@ -941,6 +947,7 @@ export type Database = {
           is_official: boolean
           is_private: boolean
           is_published: boolean
+          is_seed: boolean
           lat: number | null
           lng: number | null
           max_attendees: number | null
@@ -967,6 +974,7 @@ export type Database = {
           is_official?: boolean
           is_private?: boolean
           is_published?: boolean
+          is_seed?: boolean
           lat?: number | null
           lng?: number | null
           max_attendees?: number | null
@@ -993,6 +1001,7 @@ export type Database = {
           is_official?: boolean
           is_private?: boolean
           is_published?: boolean
+          is_seed?: boolean
           lat?: number | null
           lng?: number | null
           max_attendees?: number | null
@@ -1551,6 +1560,7 @@ export type Database = {
           description: string | null
           id: string
           is_published: boolean
+          is_seed: boolean
           max_claims_per_user: number
           moderated_at: string | null
           moderated_by: string | null
@@ -1568,6 +1578,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_published?: boolean
+          is_seed?: boolean
           max_claims_per_user?: number
           moderated_at?: string | null
           moderated_by?: string | null
@@ -1585,6 +1596,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_published?: boolean
+          is_seed?: boolean
           max_claims_per_user?: number
           moderated_at?: string | null
           moderated_by?: string | null
@@ -1803,6 +1815,7 @@ export type Database = {
           ideal_match: string | null
           incognito: boolean
           interests: string[] | null
+          is_seed: boolean
           job_title: string | null
           languages: string[] | null
           last_check_in_at: string | null
@@ -1926,6 +1939,7 @@ export type Database = {
           ideal_match?: string | null
           incognito?: boolean
           interests?: string[] | null
+          is_seed?: boolean
           job_title?: string | null
           languages?: string[] | null
           last_check_in_at?: string | null
@@ -2049,6 +2063,7 @@ export type Database = {
           ideal_match?: string | null
           incognito?: boolean
           interests?: string[] | null
+          is_seed?: boolean
           job_title?: string | null
           languages?: string[] | null
           last_check_in_at?: string | null
@@ -2508,6 +2523,7 @@ export type Database = {
           auto_renew: boolean | null
           expires_at: string | null
           id: string
+          is_seed: boolean
           original_transaction_id: string | null
           platform: string
           product_id: string
@@ -2522,6 +2538,7 @@ export type Database = {
           auto_renew?: boolean | null
           expires_at?: string | null
           id?: string
+          is_seed?: boolean
           original_transaction_id?: string | null
           platform: string
           product_id: string
@@ -2536,6 +2553,7 @@ export type Database = {
           auto_renew?: boolean | null
           expires_at?: string | null
           id?: string
+          is_seed?: boolean
           original_transaction_id?: string | null
           platform?: string
           product_id?: string
@@ -2673,6 +2691,7 @@ export type Database = {
           id: string
           is_official: boolean
           is_published: boolean
+          is_seed: boolean
           lat: number
           lng: number
           moderated_at: string | null
@@ -2699,6 +2718,7 @@ export type Database = {
           id?: string
           is_official?: boolean
           is_published?: boolean
+          is_seed?: boolean
           lat: number
           lng: number
           moderated_at?: string | null
@@ -2725,6 +2745,7 @@ export type Database = {
           id?: string
           is_official?: boolean
           is_published?: boolean
+          is_seed?: boolean
           lat?: number
           lng?: number
           moderated_at?: string | null
@@ -3545,6 +3566,7 @@ export type Database = {
         Args: { _fp: string; _ua: string }
         Returns: boolean
       }
+      seed_content_summary: { Args: never; Returns: Json }
       set_looking_now: {
         Args: { _hours: number; _intent?: string }
         Returns: undefined

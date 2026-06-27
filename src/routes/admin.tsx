@@ -8,7 +8,7 @@ import {
   Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck,
   Megaphone, Play, Pause, Building2, LayoutDashboard, Users, Database, Send,
   Trash2, Save, Search, RefreshCw, ChevronLeft, ChevronRight, Crown,
-  ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon,
+  ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon, Sparkles,
 } from "lucide-react";
 import {
   adminGetOverview, adminListTables, adminListRows, adminUpdateRow, adminDeleteRow,
@@ -28,6 +28,7 @@ import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
 import { ExperimentsPanel } from "@/components/admin/ExperimentsPanel";
 import { isProductionHost, shouldEnforceAgeGate, clearAgeGatePolicyCache } from "@/lib/age-gate-policy";
+import { DemoSeedPanel, DemoSeedBanner } from "@/components/admin/DemoSeedPanel";
 
 
 function AgeGateDevBanner() {
@@ -58,7 +59,7 @@ type Section =
   | "overview" | "users" | "reports" | "risk" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
-  | "partners";
+  | "partners" | "demoseed";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -77,6 +78,7 @@ function AdminDashboard() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isMod, setIsMod] = useState(false);
+  const [isSuper, setIsSuper] = useState(false);
   const [section, setSection] = useState<Section>("overview");
 
   useEffect(() => {
@@ -90,10 +92,12 @@ function AdminDashboard() {
         setIsMod(false);
         return;
       }
-      const admin = roles?.some((r) => r.role === "admin") ?? false;
-      const mod = roles?.some((r) => r.role === "admin" || r.role === "moderator") ?? false;
+      const admin = roles?.some((r) => r.role === "admin" || r.role === "super_admin") ?? false;
+      const mod = roles?.some((r) => r.role === "admin" || r.role === "moderator" || r.role === "super_admin") ?? false;
+      const sup = roles?.some((r) => r.role === "super_admin") ?? false;
       setIsAdmin(admin);
       setIsMod(mod);
+      setIsSuper(sup);
       if (!admin && !mod) toast.error("Acces interzis: rol admin necesar");
     })();
   }, [user, loading, navigate]);
@@ -142,6 +146,7 @@ function AdminDashboard() {
     { id: "data", label: "Date (toate)", icon: Database, adminOnly: true },
     { id: "broadcast", label: "Broadcast", icon: Send, adminOnly: true },
     { id: "security", label: "Securitate", icon: KeyRound },
+    { id: "demoseed", label: "Demo seed", icon: Sparkles, adminOnly: true },
   ];
   const items = allItems.filter((i) => !i.adminOnly || isAdmin);
 
@@ -169,6 +174,7 @@ function AdminDashboard() {
           TODO[age-gate]: la reactivare (toggle ON din admin → Securitate/Feature flags),
           banner-ul dispare automat. Producția forțează ON via age-gate-policy. */}
       <AgeGateDevBanner />
+      <DemoSeedBanner />
 
       <main className="mx-auto max-w-7xl px-4 py-6">
         {section === "overview" && isAdmin && <OverviewPanel />}
@@ -189,6 +195,7 @@ function AdminDashboard() {
         {section === "broadcast" && isAdmin && <BroadcastPanel />}
         {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
         {section === "security" && <SecurityPanel />}
+        {section === "demoseed" && isAdmin && <DemoSeedPanel isSuperAdmin={isSuper} />}
       </main>
     </div>
   );
