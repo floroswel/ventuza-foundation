@@ -573,7 +573,8 @@ function FieldRenderer({
               if (error) return toast.error(error.message);
               const { data } = await supabase.storage
                 .from("venue-media")
-                .createSignedUrl(path, 60 * 60 * 24 * 30);
+                .createSignedUrl(path, 60 * 60 * 24 * 365);
+
               if (data?.signedUrl) onChange(data.signedUrl);
             }}
           />

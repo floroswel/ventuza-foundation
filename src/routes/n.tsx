@@ -2,9 +2,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Loader2, Upload, X } from "lucide-react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { setMyHealth } from "@/lib/health.functions";
+import { moderatePhoto } from "@/lib/verification.functions";
 import { useAuth } from "@/lib/auth-context";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -218,7 +221,8 @@ function Onboarding() {
     setSaving(false);
 
     toast.success("Your profile is ready.");
-    navigate({ to: "/profile" });
+    navigate({ to: "/discover" });
+
   }
 
   function back() {
@@ -503,6 +507,7 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
 function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) => void; user?: string }) {
   const [uploading, setUploading] = useState(false);
   const [signed, setSigned] = useState<Record<string, string>>({});
+  const moderate = useServerFn(moderatePhoto);
 
   useEffect(() => {
     (async () => {
@@ -522,19 +527,41 @@ function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) =>
     const added: string[] = [];
     try {
       for (const file of Array.from(files)) {
+        if (file.size > 8 * 1024 * 1024) {
+          toast.error(`${file.name} depășește 8MB.`);
+          continue;
+        }
         const ext = file.name.split(".").pop() || "jpg";
         const path = `${user}/${crypto.randomUUID()}.${ext}`;
         const { error } = await supabase.storage.from("profile-photos").upload(path, file, { upsert: false, contentType: file.type });
-        if (error) throw error;
+        if (error) { toast.error(error.message); continue; }
+
+        // AI moderation BLOCKING — same policy as PhotoManager (deny by default on failure).
+        try {
+          const { data: signedData } = await supabase.storage.from("profile-photos").createSignedUrl(path, 300);
+          if (signedData?.signedUrl) {
+            const mod = await moderate({ data: { photoUrl: signedData.signedUrl } });
+            if (!mod.allowed) {
+              await supabase.storage.from("profile-photos").remove([path]);
+              toast.error(`Poză respinsă: ${mod.reason || "conținut nepermis pe profilul public"}.`);
+              continue;
+            }
+          }
+        } catch (modErr) {
+          await supabase.storage.from("profile-photos").remove([path]);
+          toast.error(`Nu am putut verifica poza (${(modErr as Error).message}). Încearcă din nou.`);
+          continue;
+        }
         added.push(path);
       }
-      setData({ ...data, photos: [...data.photos, ...added] });
+      if (added.length) setData({ ...data, photos: [...data.photos, ...added] });
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Upload failed");
     } finally {
       setUploading(false);
     }
   }
+
 
   async function remove(path: string) {
     await supabase.storage.from("profile-photos").remove([path]);

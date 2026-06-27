@@ -24,6 +24,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Loader2, Copy, Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
+import { StatusNotificationsBell } from "@/components/partner/StatusNotificationsBell";
+
 
 export const Route = createFileRoute("/partner/billing")({
   head: () => ({ meta: [{ title: "Facturare — Ventuza Partners" }, { name: "robots", content: "noindex" }] }),
@@ -92,10 +94,14 @@ function PartnerBilling() {
 
   return (
     <div className="container max-w-4xl py-6 space-y-6">
-      <div className="flex items-center gap-2">
-        <Link to="/partner"><Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1" />Înapoi</Button></Link>
-        <h1 className="text-2xl font-bold">Facturare</h1>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Link to="/partner"><Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1" />Înapoi</Button></Link>
+          <h1 className="text-2xl font-bold">Facturare</h1>
+        </div>
+        <StatusNotificationsBell />
       </div>
+
 
       {!issuerOK && (
         <div className="p-3 rounded bg-yellow-50 dark:bg-yellow-950/30 text-sm">

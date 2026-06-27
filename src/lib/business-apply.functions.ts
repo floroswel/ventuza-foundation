@@ -57,10 +57,24 @@ function emptyToNull<T extends Record<string, unknown>>(o: T): T {
 export const submitBusinessApplication = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Schema.parse(emptyToNull((d ?? {}) as Record<string, unknown>)))
   .handler(async ({ data }) => {
-    // Submission is anonymous by design. When the submitter later signs in with
-    // the same email, `linkOrphanBusinessApps` in src/lib/business.functions.ts
-    // attaches the row to their auth user.
-    const userId: string | null = null;
+    // Dacă submitterul este autentificat, atașăm direct user_id ca să nu
+    // depindem de `linkOrphanBusinessApps` și de matchingul pe email.
+    // Pentru submitteri anonimi, rămâne flow-ul de link la sign-in ulterior.
+    let userId: string | null = null;
+    try {
+      const { getRequestHeader } = await import("@tanstack/react-start/server");
+      const auth = getRequestHeader("authorization") ?? getRequestHeader("Authorization");
+      const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
+      if (token) {
+        const { createClient } = await import("@supabase/supabase-js");
+        const sb = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
+          auth: { persistSession: false, autoRefreshToken: false },
+          global: { headers: { Authorization: `Bearer ${token}` } },
+        });
+        const { data: u } = await sb.auth.getUser();
+        if (u?.user?.id) userId = u.user.id;
+      }
+    } catch { /* anonim */ }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const insertRow = {
@@ -78,3 +92,4 @@ export const submitBusinessApplication = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { id: inserted.id as string };
   });
+

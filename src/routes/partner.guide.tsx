@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, Clock, Bell, Image as ImgIcon, Shield, ChevronLeft } from "lucide-react";
+import { StatusNotificationsBell } from "@/components/partner/StatusNotificationsBell";
+
 
 export const Route = createFileRoute("/partner/guide")({
   head: () => ({
@@ -65,14 +67,18 @@ function GoodBad({ good, bad }: { good: string[]; bad: string[] }) {
 function PartnerGuide() {
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6 space-y-5 pb-24">
-      <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" asChild>
-          <Link to="/partner">
-            <ChevronLeft className="w-4 h-4" /> Portal
-          </Link>
-        </Button>
-        <h1 className="text-2xl font-semibold">Ghid pentru parteneri</h1>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/partner">
+              <ChevronLeft className="w-4 h-4" /> Portal
+            </Link>
+          </Button>
+          <h1 className="text-2xl font-semibold">Ghid pentru parteneri</h1>
+        </div>
+        <StatusNotificationsBell />
       </div>
+
 
       <p className="text-sm text-muted-foreground">
         Citește o dată acest ghid înainte să postezi. Te scutește de respingeri și

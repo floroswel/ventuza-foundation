@@ -107,18 +107,23 @@ function DiscoverPage() {
     return () => clearTimeout(t);
   }, [filters]);
 
+  const [loadError, setLoadError] = useState<string | null>(null);
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
+    setLoadError(null);
     try {
       const data = await fetchDiscover(debouncedFilters, "distance");
       setProfiles(data);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't load discover");
+      const msg = e instanceof Error ? e.message : "Couldn't load discover";
+      setLoadError(msg);
+      toast.error(msg);
     } finally {
       setLoading(false);
     }
   }, [debouncedFilters, user]);
+
 
   useEffect(() => { void load(); }, [load]);
 
@@ -286,8 +291,16 @@ function DiscoverPage() {
       <div className="px-3 pt-2"><SponsoredBanner placement="discover_card" /></div>
       {loading ? (
         <CenterMessage icon={<Loader2 className="size-6 animate-spin text-primary" />} title="Finding people…" />
+      ) : loadError ? (
+        <CenterMessage
+          icon={<Compass className="size-8 text-destructive" />}
+          title="Ceva nu a mers"
+          desc={loadError}
+          action={<Button variant="hero" onClick={() => load()}>Reîncearcă</Button>}
+        />
       ) : visible.length === 0 ? (
         <EmptyState onRefresh={() => load()} hasLocation={locStatus === "granted"} />
+
       ) : view === "swipe" ? (
         <SwipeDeck profiles={visible} onDecision={handleDecision} onOpen={setSelected} />
       ) : (
