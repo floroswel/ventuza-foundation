@@ -201,6 +201,8 @@ function PartnerPortal() {
       );
     }
     if (pendingApp) {
+      const fullId = pendingApp.id;
+      const mailto = `mailto:business@ventuza.app?subject=${encodeURIComponent(`Cerere partener ${fullId}`)}&body=${encodeURIComponent(`Bună,\n\nID cerere: ${fullId}\nDenumire: ${pendingApp.legal_name ?? "—"}\n\n[descrie aici clarificarea]\n\nMulțumesc.`)}`;
       const statusLabels: Record<string, { label: string; cls: string; desc: string }> = {
         pending: {
           label: "În așteptare",
@@ -215,7 +217,7 @@ function PartnerPortal() {
         needs_info: {
           label: "Necesită clarificări",
           cls: "border-orange-500/40 bg-orange-500/5",
-          desc: "Avem nevoie de informații suplimentare. Scrie-ne la business@ventuza.app cu ID-ul cererii.",
+          desc: "Avem nevoie de informații suplimentare. Apasă „Trimite clarificări" — emailul e pre-completat cu ID-ul cererii.",
         },
         rejected: {
           label: "Respinsă",
@@ -247,19 +249,38 @@ function PartnerPortal() {
                   Detectăm aprobarea automat — pagina se va reîncărca singură.
                 </p>
               )}
-              <p className="text-[11px] text-muted-foreground">
-
-                ID cerere: <span className="font-mono">{pendingApp.id.slice(0, 8)}</span>
-              </p>
+              <div className="flex items-center gap-2 pt-1">
+                <p className="text-[11px] text-muted-foreground">ID cerere:</p>
+                <code className="font-mono text-[11px] bg-muted px-1.5 py-0.5 rounded break-all">{fullId}</code>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="h-6 px-2 text-[11px]"
+                  onClick={() => {
+                    navigator.clipboard?.writeText(fullId).then(
+                      () => toast.success("ID copiat"),
+                      () => toast.error("Nu am putut copia"),
+                    );
+                  }}
+                >
+                  Copiază
+                </Button>
+              </div>
             </CardContent>
           </Card>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" asChild>
               <Link to="/partner/guide"><BookOpen className="w-4 h-4 mr-1" /> Vezi ghidul partenerului</Link>
             </Button>
-            <Button variant="ghost" size="sm" asChild>
-              <a href="mailto:business@ventuza.app">Contactează echipa</a>
-            </Button>
+            {pendingApp.status === "needs_info" ? (
+              <Button size="sm" asChild>
+                <a href={mailto}>Trimite clarificări</a>
+              </Button>
+            ) : (
+              <Button variant="ghost" size="sm" asChild>
+                <a href={mailto}>Contactează echipa</a>
+              </Button>
+            )}
           </div>
         </div>
       );
@@ -324,9 +345,14 @@ function PartnerPortal() {
         >
           <Plus className="w-4 h-4 mr-1" /> Postare nouă (ghidat)
         </Button>
-        <Link to="/partner/billing">
-          <Button variant="outline" size="sm">Facturare & abonament →</Button>
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link to="/partner/billing">
+            <Button variant="outline" size="sm">Facturare & abonament →</Button>
+          </Link>
+          <Link to="/business/dashboard">
+            <Button variant="outline" size="sm">Campanii publicitare →</Button>
+          </Link>
+        </div>
       </div>
 
 
