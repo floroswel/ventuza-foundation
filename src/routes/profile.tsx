@@ -187,6 +187,7 @@ function ProfilePage() {
         </div>
         <div className="absolute left-4 top-4">
           <BackButton fallback="/discover" />
+        </div>
 
         <div className="absolute right-4 top-4 flex gap-2">
           <NotificationBell className="size-10 border border-border bg-surface/80 backdrop-blur" />
