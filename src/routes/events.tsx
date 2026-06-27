@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { CalendarHeart, Loader2, MapPin, Map as MapIcon, Plus, Users, Clock, List } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
