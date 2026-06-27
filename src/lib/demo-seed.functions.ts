@@ -595,9 +595,11 @@ export const deleteDemoContent = createServerFn({ method: "POST" })
     await (supabaseAdmin as any).from("deletion_requests").delete().eq("is_seed", true);
     await (supabaseAdmin as any).from("policy_versions").delete().eq("is_seed", true);
     await (supabaseAdmin as any).from("admin_alerts").delete().eq("is_seed", true);
-    // Append-only tables: filter by sentinel marker.
-    await (supabaseAdmin as any).from("admin_audit_log").delete().eq("actor_email", "seed@ventuza.local");
-    await (supabaseAdmin as any).from("admin_sensitive_access_log").delete().like("justification", "[SEED]%");
+    // Append-only tables (admin_audit_log, admin_sensitive_access_log): only
+    // a SECURITY DEFINER RPC can bypass the no-mutation triggers, and ONLY for
+    // rows marked as seed (`seed@ventuza.local` / justification `[SEED]%`).
+    await (supabaseAdmin as any).rpc("wipe_seed_admin_appendonly");
+
 
 
     // Delete seed auth users (cascades profile + user_roles via FKs).
