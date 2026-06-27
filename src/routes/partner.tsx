@@ -225,15 +225,6 @@ function PartnerPortal() {
         </TabsContent>
 
         <TabsContent value="events" className="space-y-3">
-          <div className="flex justify-end">
-            <Button
-              size="sm"
-              disabled={suspended || (quota ? quota.events >= quota.quotas.max_events : false)}
-              onClick={() => setOpenDialog({ kind: "event" })}
-            >
-              <Plus className="w-4 h-4 mr-1" /> Eveniment nou
-            </Button>
-          </div>
           {items.events.map((e: any) => (
             <ItemRow
               key={e.id}
