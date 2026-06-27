@@ -290,7 +290,7 @@ function StepView({
               type="date"
               value={data.birthdate}
               onChange={(e) => setData({ ...data, birthdate: e.target.value })}
-              max={new Date().toISOString().split("T")[0]}
+              max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split("T")[0]}
               className="h-14 bg-surface border-border text-lg"
             />
             {data.birthdate && calcAge(data.birthdate) < 18 && (
@@ -517,7 +517,7 @@ function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) =>
 
   async function handleUpload(files: FileList | null) {
     if (!files || !user) return;
-    if (data.photos.length + files.length > 9) return toast.error("Up to 9 photos.");
+    if (data.photos.length + files.length > 6) return toast.error("Maxim 6 poze.");
     setUploading(true);
     const added: string[] = [];
     try {
@@ -542,7 +542,7 @@ function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) =>
   }
 
   return (
-    <Field title="Add your photos" hint="Up to 9. The first one is your primary.">
+    <Field title="Add your photos" hint="Maxim 6 poze. Prima este principală.">
       <div className="grid grid-cols-3 gap-3">
         {data.photos.map((p, i) => (
           <div key={p} className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-border bg-surface">

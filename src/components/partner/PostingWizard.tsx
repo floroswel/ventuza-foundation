@@ -126,13 +126,22 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
     };
   }, [quota]);
 
+  // Offers can only attach to APPROVED venues. Pending/rejected venues are
+  // hidden from the picker; the type tile is blocked with a clear message.
+  const approvedVenues = useMemo(
+    () => (myVenues ?? []).filter((v: any) => v?.moderation_status === "approved"),
+    [myVenues],
+  );
+
   // Step 1 — pick kind
   if (open && step === 1) {
     const cards = (["venue", "event", "offer"] as const).map((k) => {
       const t = PARTNER_TEMPLATES[k];
       const q = quotaState[k];
       const full = q?.full;
-      const blocked = k === "offer" && myVenues.length === 0;
+      const blockedNoVenue = k === "offer" && myVenues.length === 0;
+      const blockedNoApproved = k === "offer" && !blockedNoVenue && approvedVenues.length === 0;
+      const blocked = blockedNoVenue || blockedNoApproved;
       return (
         <button
           key={k}
@@ -140,12 +149,12 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
           disabled={full || blocked}
           onClick={() => {
             setKind(k);
-            // pre-fill offer with first venue
-            if (k === "offer" && myVenues.length) {
-              setValues({ venue_id: myVenues[0].id });
-              if (myVenues[0].lat && myVenues[0].lng) {
-                setLat(myVenues[0].lat);
-                setLng(myVenues[0].lng);
+            // pre-fill offer with first APPROVED venue
+            if (k === "offer" && approvedVenues.length) {
+              setValues({ venue_id: approvedVenues[0].id });
+              if (approvedVenues[0].lat && approvedVenues[0].lng) {
+                setLat(approvedVenues[0].lat);
+                setLng(approvedVenues[0].lng);
               }
             }
             setStep(2);
@@ -158,7 +167,8 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
               <div className="font-medium flex items-center gap-2">
                 {t.label}
                 {full && <Badge variant="destructive">Limită atinsă</Badge>}
-                {blocked && <Badge variant="secondary">Adaugă întâi un loc</Badge>}
+                {blockedNoVenue && <Badge variant="secondary">Adaugă întâi un loc</Badge>}
+                {blockedNoApproved && <Badge variant="secondary">Așteaptă aprobarea unui loc</Badge>}
               </div>
               <p className="text-sm text-muted-foreground mt-1">{t.shortDescription}</p>
               <p className="text-xs text-muted-foreground mt-1 italic">{t.whenToUse}</p>

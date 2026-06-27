@@ -88,10 +88,25 @@ function Welcome() {
           <Link to="/legal/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
         </p>
 
-        <div className="mt-10 flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-          <Link to="/business" className="hover:text-primary">Pentru parteneri →</Link>
-          <span className="opacity-30">·</span>
-          <Link to="/safety" className="hover:text-primary">Siguranță</Link>
+        <div className="mt-12 flex w-full max-w-xs flex-col items-stretch gap-3">
+          <Link
+            to="/business"
+            className="group inline-flex items-center justify-between rounded-2xl border border-primary/30 bg-surface/60 px-4 py-3 text-left text-xs text-foreground transition-colors hover:border-primary/60 hover:bg-primary/5"
+          >
+            <span>
+              <span className="block text-sm font-medium">Pentru parteneri B2B</span>
+              <span className="block text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
+                Locuri · evenimente · oferte
+              </span>
+            </span>
+            <span className="text-primary transition-transform group-hover:translate-x-0.5">→</span>
+          </Link>
+          <Link
+            to="/safety"
+            className="text-center text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary"
+          >
+            Siguranță & resurse
+          </Link>
         </div>
       </section>
     </main>

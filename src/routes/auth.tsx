@@ -32,6 +32,17 @@ const passwordSchema = z
   .min(8, "At least 8 characters")
   .max(72, "Max 72 characters");
 
+async function persistPendingBirthdate(userId: string) {
+  if (typeof window === "undefined") return;
+  let pending: string | null = null;
+  try { pending = sessionStorage.getItem("vz_pending_birthdate"); } catch { /* ignore */ }
+  if (!pending) return;
+  try {
+    await supabase.from("profiles").update({ birthdate: pending }).eq("id", userId);
+  } catch { /* ignore */ }
+  try { sessionStorage.removeItem("vz_pending_birthdate"); } catch { /* ignore */ }
+}
+
 async function routeAfterAuth(userId: string, navigate: ReturnType<typeof useNavigate>, redirectTo?: string) {
   if (redirectTo && redirectTo.startsWith("/")) {
     navigate({ to: redirectTo, replace: true });
@@ -39,10 +50,18 @@ async function routeAfterAuth(userId: string, navigate: ReturnType<typeof useNav
   }
   const { data } = await supabase
     .from("profiles")
-    .select("onboarding_completed")
+    .select("onboarding_completed, birthdate")
     .eq("id", userId)
     .maybeSingle();
-  if (data?.onboarding_completed) navigate({ to: "/cruise", replace: true });
+  // OAuth signups may not have a birthdate yet — SessionGuards also enforces
+  // this, but we route directly to /n to avoid a flash of /discover.
+  if (!data?.birthdate) {
+    navigate({ to: "/n", replace: true });
+    return;
+  }
+  // Default landing for returning users is /discover (the main feed).
+  // /cruise is the opt-in "Right Now" feed and used to be a confusing default.
+  if (data?.onboarding_completed) navigate({ to: "/discover", replace: true });
   else navigate({ to: "/n", replace: true });
 }
 
@@ -62,7 +81,11 @@ function AuthPage() {
 
   useEffect(() => {
     if (!authLoading && user) {
-      void routeAfterAuth(user.id, navigate, search.redirect);
+      void (async () => {
+        // Catch OAuth round-trips that landed back on /auth.
+        await persistPendingBirthdate(user.id);
+        await routeAfterAuth(user.id, navigate, search.redirect);
+      })();
     }
   }, [authLoading, user, navigate, search.redirect]);
 
@@ -151,9 +174,25 @@ function AuthPage() {
 
   async function onOAuth(provider: "google" | "apple") {
     if (provider === "signup-blocked" as never) return;
-    if (mode === "signup" && (!over18 || !acceptTerms)) {
-      toast.error("Please confirm 18+ and Terms first.");
-      return;
+    if (mode === "signup") {
+      if (!over18 || !acceptTerms) {
+        toast.error("Confirmă cele două bife (18+ și Termeni) înainte de a continua.");
+        return;
+      }
+      // Require a real birthdate before OAuth signup. The trigger
+      // `enforce_min_age_trg` cannot reject NULL, so we enforce here too.
+      const age = ageFromBirthDate(birthDate);
+      if (age === null) {
+        toast.error("Introdu data nașterii înainte de a continua cu Google/Apple.");
+        return;
+      }
+      if (age < 18) {
+        toast.error("Trebuie să ai cel puțin 18 ani.");
+        return;
+      }
+      // Persist the birthdate locally so we can write it onto the profile
+      // immediately after the OAuth round-trip completes.
+      try { sessionStorage.setItem("vz_pending_birthdate", birthDate); } catch { /* ignore */ }
     }
     setOauthBusy(provider);
     try {
@@ -167,7 +206,10 @@ function AuthPage() {
       if (result.redirected) return; // browser navigates
       // session set in place
       const { data } = await supabase.auth.getUser();
-      if (data.user) await routeAfterAuth(data.user.id, navigate, search.redirect);
+      if (data.user) {
+        await persistPendingBirthdate(data.user.id);
+        await routeAfterAuth(data.user.id, navigate, search.redirect);
+      }
     } catch (err) {
       toast.error(err instanceof Error ? err.message : `${provider} sign-in failed`);
     } finally {

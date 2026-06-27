@@ -85,6 +85,8 @@ function PartnerPortal() {
     | { kind: "stats"; offerId: string; title: string }
   >(null);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [pendingApp, setPendingApp] = useState<{ id: string; status: string; legal_name: string | null } | null>(null);
+  const [pendingChecked, setPendingChecked] = useState(false);
 
   const listFn = useServerFn(partnerListMyItems);
   const quotaFn = useServerFn(partnerGetQuota);
@@ -116,6 +118,19 @@ function PartnerPortal() {
       return;
     }
     if (!roles.includes("business") && !roles.includes("admin")) {
+      // Non-partner — check for a pending application so we can show a real
+      // status instead of the same CTA as someone who never applied.
+      void (async () => {
+        const { data } = await supabase
+          .from("business_applications")
+          .select("id, status, legal_name")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        setPendingApp(data ?? null);
+        setPendingChecked(true);
+      })();
       return;
     }
     refresh();
@@ -133,6 +148,71 @@ function PartnerPortal() {
 
   const isPartner = roles.includes("business") || roles.includes("admin");
   if (!isPartner) {
+    if (!pendingChecked) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <Loader2 className="animate-spin" />
+        </div>
+      );
+    }
+    if (pendingApp) {
+      const statusLabels: Record<string, { label: string; cls: string; desc: string }> = {
+        pending: {
+          label: "În așteptare",
+          cls: "border-yellow-500/40 bg-yellow-500/5",
+          desc: "Cererea ta a fost primită. Echipa Ventuza o analizează în maximum 3 zile lucrătoare.",
+        },
+        reviewing: {
+          label: "În analiză",
+          cls: "border-blue-500/40 bg-blue-500/5",
+          desc: "Un membru al echipei verifică documentele tale. Te anunțăm pe email.",
+        },
+        needs_info: {
+          label: "Necesită clarificări",
+          cls: "border-orange-500/40 bg-orange-500/5",
+          desc: "Avem nevoie de informații suplimentare. Verifică-ți emailul.",
+        },
+        rejected: {
+          label: "Respinsă",
+          cls: "border-red-500/40 bg-red-500/5",
+          desc: "Cererea a fost respinsă. Pentru clarificări scrie la business@ventuza.app.",
+        },
+        approved: {
+          label: "Aprobată",
+          cls: "border-emerald-500/40 bg-emerald-500/5",
+          desc: "Reîmprospătează pagina — accesul tău de partener se activează automat.",
+        },
+      };
+      const s = statusLabels[pendingApp.status] ?? statusLabels.pending;
+      return (
+        <div className="max-w-xl mx-auto p-6 space-y-4">
+          <h1 className="text-2xl font-semibold">Portal Partener</h1>
+          <Card className={s.cls}>
+            <CardContent className="pt-6 space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">Cererea ta:</span>
+                <span className="text-sm font-semibold">{s.label}</span>
+              </div>
+              {pendingApp.legal_name && (
+                <p className="text-xs text-muted-foreground">{pendingApp.legal_name}</p>
+              )}
+              <p className="text-sm text-muted-foreground">{s.desc}</p>
+              <p className="text-[11px] text-muted-foreground">
+                ID cerere: <span className="font-mono">{pendingApp.id.slice(0, 8)}</span>
+              </p>
+            </CardContent>
+          </Card>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/partner/guide"><BookOpen className="w-4 h-4 mr-1" /> Vezi ghidul partenerului</Link>
+            </Button>
+            <Button variant="ghost" size="sm" asChild>
+              <a href="mailto:business@ventuza.app">Contactează echipa</a>
+            </Button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div className="max-w-xl mx-auto p-6 space-y-4">
         <h1 className="text-2xl font-semibold">Portal Partener</h1>
