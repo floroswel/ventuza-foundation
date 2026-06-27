@@ -161,7 +161,9 @@ function AuthPage() {
           toast.success("Welcome to Ventuza.");
           await routeAfterAuth(data.user!.id, navigate);
         } else {
-          toast.success("Check your inbox to confirm your email.");
+          // Email confirmation required → ghidăm userul către o pagină dedicată
+          // cu resend + countdown (nu îl lăsăm blocat pe /auth fără feedback).
+          navigate({ to: "/auth/check-email", search: { email: emailParsed.data }, replace: true });
         }
       } else {
         const { data, error } = await supabase.auth.signInWithPassword({
