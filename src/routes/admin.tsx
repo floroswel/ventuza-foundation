@@ -8,7 +8,7 @@ import {
   Loader2, ShieldAlert, Ban, Check, X, AlertTriangle, ShieldCheck, BadgeCheck,
   Megaphone, Play, Pause, Building2, LayoutDashboard, Users, Database, Send,
   Trash2, Save, Search, RefreshCw, ChevronLeft, ChevronRight, Crown,
-  ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon,
+  ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon, Sparkles,
 } from "lucide-react";
 import {
   adminGetOverview, adminListTables, adminListRows, adminUpdateRow, adminDeleteRow,
