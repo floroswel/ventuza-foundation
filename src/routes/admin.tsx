@@ -1039,26 +1039,48 @@ function BizPanel() {
   if (error) return <AdminPanelError error={error} onRetry={load} />;
   if (loading) return <AdminPanelEmpty label="Se încarcă cererile B2B…" />;
   if (apps.length === 0) return <AdminPanelEmpty label="Nicio cerere B2B în așteptare (empty legitim)." />;
-  return (
-    <ul className="space-y-3">
-      {apps.map((a) => (
-        <li key={a.id} className="rounded-2xl border border-border bg-surface p-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] uppercase text-amber-500">{a.status}</span>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-[10px]">{a.entity_type}</span>
-          </div>
-          <p className="mt-2 text-sm font-semibold">{a.brand_name ?? a.legal_name}</p>
-          <p className="text-[10px] text-muted-foreground">{a.legal_name} · CUI {a.cui ?? "—"} · {a.city ?? "—"} · {a.category ?? "—"}</p>
-          <p className="mt-1 text-xs">{a.contact_name} · {a.contact_email} · {a.contact_phone ?? "—"}</p>
-          {a.website && <a href={a.website} target="_blank" rel="noopener" className="text-[10px] text-primary">{a.website}</a>}
-          {a.goals && <p className="mt-1 text-xs text-muted-foreground">{a.goals}</p>}
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button disabled={busy} onClick={() => setStatus(a.id, "approved")} className="rounded-full bg-green-500/15 px-3 py-1.5 text-xs text-green-500"><Check className="mr-1 inline size-3" />Aprobă</button>
-            <button disabled={busy} onClick={() => setStatus(a.id, "reviewing")} className="rounded-full bg-blue-500/15 px-3 py-1.5 text-xs text-blue-500">Reviewing</button>
-            <button disabled={busy} onClick={() => setStatus(a.id, "rejected")} className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs text-red-500"><X className="mr-1 inline size-3" />Respinge</button>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
+
+  const cols: Column<any>[] = [
+    { key: "status", header: "Status", cell: (a) => <StatusBadge tone={a.status === "reviewing" ? "info" : "pending"}>{a.status}</StatusBadge>, sortValue: (a) => a.status },
+    {
+      key: "brand",
+      header: "Companie",
+      cell: (a) => (
+        <div className="min-w-0">
+          <div className="truncate font-medium">{a.brand_name ?? a.legal_name}</div>
+          <div className="truncate text-[10px] text-[var(--admin-text-faint)]">{a.legal_name} · CUI {a.cui ?? "—"}</div>
+        </div>
+      ),
+      sortValue: (a) => a.brand_name ?? a.legal_name ?? "",
+      searchValue: (a) => `${a.brand_name ?? ""} ${a.legal_name ?? ""} ${a.cui ?? ""} ${a.contact_email ?? ""} ${a.city ?? ""}`,
+    },
+    { key: "entity", header: "Tip", priority: 2, cell: (a) => <StatusBadge tone="neutral">{a.entity_type}</StatusBadge>, sortValue: (a) => a.entity_type },
+    { key: "city", header: "Oraș", priority: 3, cell: (a) => <span className="text-xs text-[var(--admin-text-dim)]">{a.city ?? "—"}</span>, sortValue: (a) => a.city ?? "" },
+    { key: "cat", header: "Categ.", priority: 3, cell: (a) => <span className="text-xs text-[var(--admin-text-dim)]">{a.category ?? "—"}</span>, sortValue: (a) => a.category ?? "" },
+    {
+      key: "contact",
+      header: "Contact",
+      priority: 2,
+      cell: (a) => (
+        <div className="min-w-0">
+          <div className="truncate text-xs">{a.contact_name}</div>
+          <a href={`mailto:${a.contact_email}`} className="admin-mono block truncate text-[10px] text-[var(--admin-accent)] hover:underline">{a.contact_email}</a>
+        </div>
+      ),
+      sortValue: (a) => a.contact_email ?? "",
+    },
+    {
+      key: "actions",
+      header: "",
+      align: "right",
+      cell: (a) => (
+        <div className="flex flex-wrap justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+          <button disabled={busy} onClick={() => setStatus(a.id, "approved")} className="rounded-md bg-[var(--admin-success-soft)] px-2 py-1 text-[10px] text-[var(--admin-success)]"><Check className="inline size-3" /> Aprobă</button>
+          <button disabled={busy} onClick={() => setStatus(a.id, "reviewing")} className="rounded-md bg-blue-500/15 px-2 py-1 text-[10px] text-blue-300">Review</button>
+          <button disabled={busy} onClick={() => setStatus(a.id, "rejected")} className="rounded-md bg-[var(--admin-danger-soft)] px-2 py-1 text-[10px] text-[var(--admin-danger)]"><X className="inline size-3" /></button>
+        </div>
+      ),
+    },
+  ];
+  return <DataTable rows={apps} columns={cols} rowKey={(a) => a.id} exportName="b2b" searchPlaceholder="Filtrare cereri B2B…" />;
 }
