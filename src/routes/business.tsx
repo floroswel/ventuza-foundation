@@ -106,6 +106,10 @@ function BusinessPage() {
     setAnafLoading(true);
     try {
       const r = await anafLookup({ data: { cui: form.cui } });
+      if (!r.ok) {
+        toast.error(r.message);
+        return;
+      }
       setForm((f) => ({
         ...f,
         cui: r.cui,

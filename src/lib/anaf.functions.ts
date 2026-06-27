@@ -33,22 +33,41 @@ export const lookupAnafCui = createServerFn({ method: "POST" })
           signal: ctrl.signal,
         },
       );
-      if (!res.ok) throw new Error(`ANAF HTTP ${res.status}`);
+      if (!res.ok) {
+        console.error("ANAF HTTP", res.status);
+        return {
+          ok: false as const,
+          fallback: true as const,
+          message: "Serviciul ANAF nu răspunde acum. Completează manual.",
+        };
+      }
       json = await res.json();
     } catch (e) {
+      console.error("ANAF fetch failed:", e);
+      return {
+        ok: false as const,
+        fallback: true as const,
+        message: "Serviciul ANAF nu răspunde acum. Completează manual.",
+      };
+    } finally {
       clearTimeout(t);
-      throw new Error("Serviciul ANAF nu răspunde acum. Completează manual.");
     }
-    clearTimeout(t);
 
     const found = json?.found?.[0];
-    if (!found) throw new Error("CUI inexistent în registrul ANAF");
+    if (!found) {
+      return {
+        ok: false as const,
+        fallback: false as const,
+        message: "CUI inexistent în registrul ANAF.",
+      };
+    }
 
     const gen = found.date_generale ?? {};
     const tva = found.inregistrare_scop_Tva ?? {};
     const adr = found.adresa_sediu_social ?? {};
 
     return {
+      ok: true as const,
       cui: `RO${data.cui}`,
       legal_name: (gen.denumire ?? "").trim(),
       reg_com: (gen.nrRegCom ?? "").trim(),
