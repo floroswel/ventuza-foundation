@@ -199,6 +199,7 @@ function AdminDashboard() {
       {section === "data" && isAdmin && <DataExplorerPanel />}
       {section === "broadcast" && isAdmin && <BroadcastPanel />}
       {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
+      {section === "billing" && <BillingAdminPanel isAdmin={!!isAdmin} />}
       {section === "security" && <SecurityPanel />}
       {section === "demoseed" && isAdmin && <DemoSeedPanel isSuperAdmin={isSuper} />}
       {section === "health" && <SystemHealthPanel />}
