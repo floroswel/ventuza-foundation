@@ -9,6 +9,7 @@ import {
   Megaphone, HeartHandshake, Search, Clock, FileCheck2, HelpCircle, Mail, ChevronDown,
 } from "lucide-react";
 import { lookupAnafCui } from "@/lib/anaf.functions";
+import { submitBusinessApplication } from "@/lib/business-apply.functions";
 
 export const Route = createFileRoute("/business")({
   head: () => ({
