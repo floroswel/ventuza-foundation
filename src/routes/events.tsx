@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { CalendarHeart, Loader2, MapPin, Map as MapIcon, Plus, Users, Clock, List } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { useUserRoles } from "@/hooks/useUserRole";
 import { BottomNav } from "@/components/BottomNav";
 import { listUpcomingEvents, eventTypeLabel, formatEventDate, type EventType, type EventWithMeta } from "@/lib/events";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
@@ -23,7 +22,7 @@ const TYPES: Array<EventType | "all"> = ["all", "party", "bar", "pride", "meetup
 
 function EventsPage() {
   const { user, loading: authLoading } = useAuth();
-  const { canHostEvents } = useUserRoles();
+  
   const navigate = useNavigate();
   const [events, setEvents] = useState<EventWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,21 +61,13 @@ function EventsPage() {
           <h1 className="text-lg font-semibold tracking-tight">Events</h1>
           <div className="flex items-center gap-1">
             <NotificationBell />
-            {canHostEvents ? (
-              <button
-                onClick={() => setCreating(true)}
-                className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-[0_0_18px_-6px_var(--primary)] hover:opacity-90"
-              >
-                <Plus className="size-3.5" /> Host
-              </button>
-            ) : (
-              <Link
-                to="/business"
-                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground"
-              >
-                <Plus className="size-3.5" /> Business
-              </Link>
-            )}
+            <button
+              onClick={() => setCreating(true)}
+              className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-[0_0_18px_-6px_var(--primary)] hover:opacity-90"
+              title="Propune un eveniment (intră la moderare)"
+            >
+              <Plus className="size-3.5" /> Propune
+            </button>
           </div>
         </div>
         <div className="mt-3 flex gap-2">
