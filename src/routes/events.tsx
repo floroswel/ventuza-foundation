@@ -119,8 +119,9 @@ function EventsPage() {
           <EmptyState
             icon={CalendarHeart}
             title="Niciun eveniment în curând"
-            body="Evenimentele pot fi create doar de organizatorii verificați. Aplică pentru cont Business ca să găzduiești."
+            body="Fii primul — apasă „Propune" sus dreapta ca să trimiți un eveniment. Intră la moderare și devine vizibil după aprobare."
           />
+
         ) : view === "map" ? (
 
           <EventsMap events={events} />
