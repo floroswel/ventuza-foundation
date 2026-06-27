@@ -101,6 +101,8 @@ export const adminBanUser = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ModInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
     const sa = _sa as any;
     const { data: before } = await sa.from("profiles").select("banned_at, banned_reason").eq("id", data.userId).maybeSingle();
@@ -121,6 +123,8 @@ export const adminUnbanUser = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ModInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
     const sa = _sa as any;
     const { error } = await sa.from("profiles").update({ banned_at: null, banned_reason: null }).eq("id", data.userId);
@@ -137,6 +141,8 @@ export const adminSuspendUser = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ModInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const hours = data.hours ?? 24;
     const until = new Date(Date.now() + hours * 3600 * 1000).toISOString();
     const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");

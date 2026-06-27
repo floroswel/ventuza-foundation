@@ -216,6 +216,8 @@ export const adminPurgeUserAccount = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     await assertRole(context.supabase, context.userId, ["super_admin", "admin"]);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     if (data.userId === context.userId) throw new Error("Nu te poți șterge pe tine.");
     const { purgeUserAccount } = await import("./account.server");
     const r = await purgeUserAccount(data.userId, "admin_gdpr", {
@@ -230,6 +232,8 @@ export const adminRunPurgeNow = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ justification: z.string().min(10).max(500) }).parse(d))
   .handler(async ({ data, context }) => {
     await assertRole(context.supabase, context.userId, ["super_admin"]);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: result, error } = await (supabaseAdmin as any).rpc("purge_scheduled_deletions");
     if (error) throw new Error(error.message);
