@@ -22,7 +22,7 @@ const TYPES: Array<EventType | "all"> = ["all", "party", "bar", "pride", "meetup
 
 function EventsPage() {
   const { user, loading: authLoading } = useAuth();
-  const { canHostEvents } = useUserRoles();
+  
   const navigate = useNavigate();
   const [events, setEvents] = useState<EventWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
