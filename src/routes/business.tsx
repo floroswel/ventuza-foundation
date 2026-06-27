@@ -506,8 +506,19 @@ function DoneScreen({ appId }: { appId: string | null }) {
               to="/partner"
               className="block w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground"
             >
-              Deschide Portalul Partener →
+              Vezi statusul cererii →
             </Link>
+            <Link
+              to="/partner/guide"
+              className="block w-full rounded-full border border-border px-6 py-3 text-sm text-foreground hover:bg-surface/60"
+            >
+              Citește ghidul partenerului
+            </Link>
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              Vei primi email când cererea e aprobată. Postările devin disponibile abia după aprobare.
+            </p>
+          </>
+
             <p className="text-[11px] leading-snug text-muted-foreground">
               Vei vedea statusul cererii și vei putea pregăti primele postări (devin vizibile după aprobare).
             </p>

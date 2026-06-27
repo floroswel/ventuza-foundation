@@ -34,14 +34,21 @@ const passwordSchema = z
 
 async function persistPendingBirthdate(userId: string) {
   if (typeof window === "undefined") return;
+  // sessionStorage poate fi pierdut între contexte (Safari ASWebAuthSession,
+  // browser extern pe mobil). Citim din ambele și ștergem după.
   let pending: string | null = null;
   try { pending = sessionStorage.getItem("vz_pending_birthdate"); } catch { /* ignore */ }
+  if (!pending) {
+    try { pending = localStorage.getItem("vz_pending_birthdate"); } catch { /* ignore */ }
+  }
   if (!pending) return;
   try {
     await supabase.from("profiles").update({ birthdate: pending }).eq("id", userId);
   } catch { /* ignore */ }
   try { sessionStorage.removeItem("vz_pending_birthdate"); } catch { /* ignore */ }
+  try { localStorage.removeItem("vz_pending_birthdate"); } catch { /* ignore */ }
 }
+
 
 async function routeAfterAuth(userId: string, navigate: ReturnType<typeof useNavigate>, redirectTo?: string) {
   if (redirectTo && redirectTo.startsWith("/")) {
@@ -190,9 +197,11 @@ function AuthPage() {
         toast.error("Trebuie să ai cel puțin 18 ani.");
         return;
       }
-      // Persist the birthdate locally so we can write it onto the profile
-      // immediately after the OAuth round-trip completes.
+      // Persist în ambele storage-uri ca să supraviețuiască redirect-ului OAuth
+      // (sessionStorage e pierdut pe Safari/WebView; localStorage rămâne).
       try { sessionStorage.setItem("vz_pending_birthdate", birthDate); } catch { /* ignore */ }
+      try { localStorage.setItem("vz_pending_birthdate", birthDate); } catch { /* ignore */ }
+
     }
     setOauthBusy(provider);
     try {

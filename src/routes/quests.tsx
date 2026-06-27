@@ -70,12 +70,15 @@ function TabBtn({ active, onClick, children }: { active: boolean; onClick: () =>
 function QuestsList() {
   const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [claiming, setClaiming] = useState<string | null>(null);
 
   async function load() {
-    try { setQuests(await fetchMyQuests()); } catch (e) { /* noop */ }
+    try { setError(null); setQuests(await fetchMyQuests()); }
+    catch (e) { setError(e instanceof Error ? e.message : "Nu am putut încărca misiunile."); }
     setLoading(false);
   }
+
   useEffect(() => { void load(); }, []);
 
   async function claim(q: Quest) {

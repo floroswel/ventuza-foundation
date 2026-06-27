@@ -258,14 +258,16 @@ function EmptyState({
           variant="outline"
           size="sm"
           onClick={() =>
-            alert(
-              "Vei primi notificare când apare ceva aproape. Asigură-te că ai activat consimțământul pentru notificări în Setări.",
-            )
+            toast.message("Notificări de proximitate", {
+              description:
+                "Activează-le din Setări → Notificări de proximitate (necesită consimțământ explicit).",
+            })
           }
         >
           <BellPlus className="h-4 w-4 mr-1.5" />
           Anunță-mă
         </Button>
+
       </div>
     </Card>
   );
