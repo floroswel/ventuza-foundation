@@ -69,7 +69,7 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
     label: "Date de sănătate (HIV)",
     description:
       "Stocăm statusul HIV și data testului în profilul tău. Vizibil doar conform setărilor tale. Le poți șterge oricând retrăgând consimțământul.",
-    gates: ["profiles.hiv_status", "profiles.hiv_test_date"],
+    gates: ["profiles.hiv_status_enc", "profiles.hiv_test_date_enc", "setMyHealth"],
   },
   age_verification: {
     kind: "age_verification",

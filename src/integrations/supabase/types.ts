@@ -3079,6 +3079,10 @@ export type Database = {
         Args: { _actor: string; _key: string; _value: Json }
         Returns: Json
       }
+      assert_no_plaintext_hiv_profile_completion: {
+        Args: never
+        Returns: boolean
+      }
       award_xp: {
         Args: { _kind: string; _meta?: Json; _user_id: string; _xp: number }
         Returns: undefined
