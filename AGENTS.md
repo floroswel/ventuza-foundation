@@ -446,3 +446,26 @@ Orice PR care:
 - expune identități pe stats de ofertă,
 - permite editare pe resurse care nu sunt ale userului curent,
 trebuie REFUZAT.
+
+## REGULĂ — CONȚINUT DEMO / SEED (permanentă)
+
+Datele demo (parteneri, venues, events, offers, ads, subs) generate prin
+`src/lib/demo-seed.functions.ts` au OBLIGATORIU `is_seed=true` pe toate
+tabelele relevante. Reguli:
+
+1. **Niciun flux ascuns.** Seed-ul intră prin aceleași tabele / RPC-uri ca
+   datele reale. Apare în Nearby/Hartă/Notificări exact ca producția.
+2. **Ștergere într-un singur loc.** `deleteDemoContent` curăță TOT după
+   `is_seed=true` (inclusiv auth.users pentru partenerii demo). Nu se șterge
+   manual din `data explorer` decât în cazuri excepționale.
+3. **Avertizare în producție.** `DemoSeedBanner` afișează roșu în Admin dacă
+   `seed_content_summary()` întoarce >0 pe un host de producție.
+4. **Simulatorul de locație** (`simulateProximity`) folosește RPC-urile reale
+   `nearby_points` + `try_record_proximity_hit`. Gated pe `super_admin` și
+   ascuns/dezactivat în producție (check `isProductionHost()`).
+5. **Code review automat:** orice diff care
+   - adaugă o cale paralelă de seed care nu setează `is_seed=true`,
+   - permite seed-ul fără gate `super_admin`,
+   - lasă simulatorul de locație activ în producție,
+   - introduce o tabelă nouă cu date demo fără coloana `is_seed`,
+   trebuie REFUZAT.
