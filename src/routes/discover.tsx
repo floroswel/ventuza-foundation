@@ -299,7 +299,12 @@ function DiscoverPage() {
           action={<Button variant="hero" onClick={() => load()}>Reîncearcă</Button>}
         />
       ) : visible.length === 0 ? (
-        <EmptyState onRefresh={() => load()} hasLocation={locStatus === "granted"} />
+        <EmptyState
+          onRefresh={() => load()}
+          hasLocation={locStatus === "granted"}
+          hasFilters={JSON.stringify(debouncedFilters) !== JSON.stringify(DEFAULT_FILTERS)}
+          onResetFilters={() => setFilters(DEFAULT_FILTERS)}
+        />
 
       ) : view === "swipe" ? (
         <SwipeDeck profiles={visible} onDecision={handleDecision} onOpen={setSelected} />
