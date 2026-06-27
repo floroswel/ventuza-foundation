@@ -491,7 +491,14 @@ export function BreachPanel() {
   const [desc, setDesc] = useState("");
   const [count, setCount] = useState("");
 
-  const load = async () => { try { setItems(await get()); } catch (e: any) { toast.error(e.message); } };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const load = async () => {
+    setError(null);
+    try { setItems(await get()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const submit = async () => {
@@ -500,7 +507,7 @@ export function BreachPanel() {
       await create({ data: { title, description: desc, affected_users_count: Number(count) || undefined } });
       toast.success("Incident înregistrat — countdown 72h activ");
       setOpen(false); setTitle(""); setDesc(""); setCount(""); load();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(errMsg(e)); }
   };
 
   return (
@@ -520,8 +527,12 @@ export function BreachPanel() {
           <button onClick={submit} className="w-full rounded-full bg-red-500/20 py-1.5 text-xs text-red-400">Salvează</button>
         </div>
       )}
-      {items.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Niciun incident înregistrat. ✅</div>
+      {error ? (
+        <ErrorBanner error={error} onRetry={load} />
+      ) : loading ? (
+        <LoadingBox />
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Niciun incident înregistrat. ✅ (empty legitim)</div>
       ) : (
         <ul className="space-y-2">
           {items.map((b) => {
