@@ -13,12 +13,14 @@ function vibrate(pattern: number | number[]) {
 }
 
 export function MatchModal({
-  open, onClose, otherName, otherPhotoUrl,
+  open, onClose, otherName, otherPhotoUrl, onSendFirstMessage,
 }: {
   open: boolean;
   onClose: () => void;
   otherName: string;
   otherPhotoUrl: string | null;
+  /** Optional CTA. If provided, modal shows "Trimite primul mesaj" button. */
+  onSendFirstMessage?: () => void | Promise<void>;
 }) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [phase, setPhase] = useState<0 | 1 | 2 | 3>(0);
@@ -136,7 +138,22 @@ export function MatchModal({
               animate={phase >= 3 ? { opacity: 1, y: 0 } : {}}
               className="mt-8 flex flex-col gap-2"
             >
-              <Button variant="hero" size="lg" onClick={onClose}>Keep discovering</Button>
+              {onSendFirstMessage && (
+                <Button
+                  variant="hero"
+                  size="lg"
+                  onClick={async () => { await onSendFirstMessage(); }}
+                >
+                  Trimite primul mesaj
+                </Button>
+              )}
+              <Button
+                variant={onSendFirstMessage ? "outline" : "hero"}
+                size="lg"
+                onClick={onClose}
+              >
+                Keep discovering
+              </Button>
             </motion.div>
           </motion.div>
         </motion.div>
