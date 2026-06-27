@@ -779,7 +779,7 @@ function ReportsPanel({ meId }: { meId: string }) {
   if (loading) return <AdminPanelEmpty label="Se încarcă rapoartele…" />;
   if (reports.length === 0) return <AdminPanelEmpty label="🎉 Nimic de moderat (empty legitim — nicio raportare în așteptare)." />;
 
-  const columns: Column<Report & { reported_profile: any }>[] = [
+  const columns: Column<Report>[] = [
     {
       key: "reason",
       header: "Motiv",
