@@ -447,6 +447,36 @@ Orice PR care:
 - permite editare pe resurse care nu sunt ale userului curent,
 trebuie REFUZAT.
 
+## REGULĂ — WIZARD PARTENER & NOTIFICĂRI STATUS (permanentă)
+
+Crearea de venue/event/offer din UI partener trece prin `PostingWizard`
+(`src/components/partner/PostingWizard.tsx`). Editarea poate folosi
+dialogurile rapide existente, dar nu se introduc forme alternative care
+ocolesc preview-ul + ghidarea.
+
+1. **Sursa unică pentru schema UI**: `src/lib/partner-templates.ts`
+   (`VENUE_TEMPLATE`, `EVENT_TEMPLATE`, `OFFER_TEMPLATE`). Adăugarea unui
+   câmp nou în UI partener = update aici + validatorul zod corespunzător
+   din `partner.functions.ts`, în același PR.
+2. **Notificările de status partener** (aprobat / respins / cere modificări)
+   se propagă EXCLUSIV prin tabelul `partner_status_notifications`,
+   populat de `admin_moderate_item` în aceeași tranzacție cu decizia.
+   Nicio cale paralelă (emailuri ad-hoc, push direct din UI admin) — un
+   singur canal autoritativ.
+3. **Wizard-ul nu poate ocoli `partner.functions.ts`**. Quota, re-moderation
+   reset, owner check și anti-spam rămân server-side. UI doar reflectă.
+4. **Ghidul** (`/partner/guide`) este obligatoriu menținut sincronizat cu
+   regulile reale (interzis / SLA / anti-spam). Nu se ascunde, nu se mută
+   sub feature flag.
+
+Orice PR care:
+- adaugă un câmp în UI partener fără actualizare în `partner-templates.ts`,
+- creează un flux paralel de notificare status către partener,
+- expune raza notificării > 10 km (limită server în `admin_moderate_item`),
+- scoate ghidul / wizardul din UI partener,
+trebuie REFUZAT.
+
+
 ## REGULĂ — CONȚINUT DEMO / SEED (permanentă)
 
 Datele demo (parteneri, venues, events, offers, ads, subs) generate prin
