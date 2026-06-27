@@ -15,6 +15,11 @@ import {
   ScrollText, Bell, ShieldAlert, FileWarning, Download, Trash2,
   KeyRound, FileText, RefreshCw, Plus, CheckCircle2, AlertOctagon,
 } from "lucide-react";
+import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+
+// Helper: extrage mesajul de eroare din ce ne dă serverul (server fns aruncă Error,
+// uneori cu prefix "Forbidden:" / "denied" → afișăm clar utilizatorului DE CE).
+const errMsg = (e: any): string => e?.message ?? String(e ?? "Eroare necunoscută");
 
 /* =========================================================
    AUDIT LOG
