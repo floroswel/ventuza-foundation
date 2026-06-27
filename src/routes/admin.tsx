@@ -28,6 +28,7 @@ import { AnalyticsPanel } from "@/components/AnalyticsPanel";
 import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
 import { ExperimentsPanel } from "@/components/admin/ExperimentsPanel";
 import { isProductionHost, shouldEnforceAgeGate, clearAgeGatePolicyCache } from "@/lib/age-gate-policy";
+import { DemoSeedPanel, DemoSeedBanner } from "@/components/admin/DemoSeedPanel";
 
 
 function AgeGateDevBanner() {
