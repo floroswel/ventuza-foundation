@@ -1,8 +1,26 @@
 import { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
+function SendFirstMessageButton({ onSend }: { onSend: () => void | Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <Button
+      variant="hero"
+      size="lg"
+      disabled={busy}
+      onClick={async () => {
+        if (busy) return;
+        setBusy(true);
+        try { await onSend(); } finally { setBusy(false); }
+      }}
+    >
+      {busy ? <><Loader2 className="size-4 animate-spin mr-2" /> Se deschide…</> : "Trimite primul mesaj"}
+    </Button>
+  );
+}
 
 const GOLD_PALETTE = ["#E8C66B", "#F2D98D", "#C9A24A", "#FFFFFF", "#B8860B"];
 
@@ -139,13 +157,7 @@ export function MatchModal({
               className="mt-8 flex flex-col gap-2"
             >
               {onSendFirstMessage && (
-                <Button
-                  variant="hero"
-                  size="lg"
-                  onClick={async () => { await onSendFirstMessage(); }}
-                >
-                  Trimite primul mesaj
-                </Button>
+                <SendFirstMessageButton onSend={onSendFirstMessage} />
               )}
               <Button
                 variant={onSendFirstMessage ? "outline" : "hero"}

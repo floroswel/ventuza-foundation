@@ -69,7 +69,11 @@ function PartnerBilling() {
     } catch (e: any) { setError(e.message); }
     finally { setLoading(false); }
   }, [getPlans, getSub, getInvoices, user]);
-  useEffect(() => { if (user) load(); }, [load, user]);
+  useEffect(() => {
+    if (user) load();
+    // Auth guard: dacă nu e user după ce auth s-a încărcat → nu mai sta în spinner.
+    else setLoading(false);
+  }, [load, user]);
 
   // Polling 30s pe facturi cât există plăți pending — toast la activare.
   useEffect(() => {
@@ -105,6 +109,13 @@ function PartnerBilling() {
     } catch (e: any) { toast.error(e.message.replace(/^Error: /, "")); }
   };
 
+  if (!user) return (
+    <div className="container max-w-md py-12 text-center space-y-3">
+      <h1 className="text-xl font-semibold">Facturare partener</h1>
+      <p className="text-sm text-muted-foreground">Conectează-te ca să vezi planul și facturile.</p>
+      <Button asChild><Link to="/auth" search={{ mode: "login" }}>Conectează-te</Link></Button>
+    </div>
+  );
   if (loading) return <div className="p-12 flex justify-center"><Loader2 className="animate-spin" /></div>;
   if (error) return (
     <div className="container max-w-4xl py-6">
