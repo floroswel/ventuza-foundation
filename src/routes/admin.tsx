@@ -202,21 +202,48 @@ function AdminDashboard() {
   );
 }
 
+/* ---------------- Shared panel state UI ---------------- */
+function AdminPanelError({ error, onRetry, hint }: { error: string; onRetry?: () => void; hint?: string }) {
+  const forbidden = /forbidden|denied|insufficient|not allowed|rol|role|policy|permission/i.test(error);
+  return (
+    <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm">
+      <p className="font-semibold text-red-300">{forbidden ? "Acces refuzat" : "Eroare la încărcare"}</p>
+      <p className="mt-1 break-words text-xs text-red-200/90">{error}</p>
+      {forbidden && (
+        <p className="mt-2 text-[11px] text-red-200/70">
+          Acest panou cere un rol pe care contul tău nu îl are (ex: <code>super_admin</code> / <code>auditor</code>).
+        </p>
+      )}
+      {hint && <p className="mt-1 text-[11px] text-red-200/70">{hint}</p>}
+      {onRetry && (
+        <button onClick={onRetry} className="mt-2 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/10">Reîncearcă</button>
+      )}
+    </div>
+  );
+}
+function AdminPanelEmpty({ label }: { label: string }) {
+  return <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">{label}</div>;
+}
+
 /* ---------------- OVERVIEW ---------------- */
 function OverviewPanel() {
   const getOverview = useServerFn(adminGetOverview);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    setLoading(true);
-    try { setData(await getOverview()); } catch (e: any) { toast.error(e.message); }
-    setLoading(false);
+    setLoading(true); setError(null);
+    try { setData(await getOverview()); }
+    catch (e: any) { const m = e?.message ?? String(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
   if (loading) return <Loader2 className="mx-auto mt-12 size-6 animate-spin" />;
-  if (!data) return null;
+  if (error) return <AdminPanelError error={error} onRetry={load} />;
+  if (!data) return <AdminPanelEmpty label="Fără date." />;
+
 
   const Stat = ({ label, value, hint }: { label: string; value: number | string; hint?: string }) => (
     <div className="rounded-2xl border border-border bg-surface p-4">
@@ -285,13 +312,14 @@ function UsersPanel({ meId }: { meId: string }) {
   const [q, setQ] = useState("");
   const [rows, setRows] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
 
   const load = async (query = "") => {
-    setBusy(true);
+    setBusy(true); setError(null);
     try { setRows(await search({ data: { q: query || undefined, limit: 100 } })); }
-    catch (e: any) { toast.error(e.message); }
-    setBusy(false);
+    catch (e: any) { const m = e?.message ?? String(e); setError(m); toast.error(m); }
+    finally { setBusy(false); }
   };
   useEffect(() => { load(); }, []);
 
@@ -323,6 +351,9 @@ function UsersPanel({ meId }: { meId: string }) {
           Caută
         </button>
       </div>
+
+      {error && <AdminPanelError error={error} onRetry={() => load(q)} />}
+      {busy && rows.length === 0 && !error && <AdminPanelEmpty label="Se încarcă…" />}
 
       <ul className="space-y-2">
         {rows.map((u) => (
@@ -612,20 +643,27 @@ function BroadcastPanel() {
 function ReportsPanel({ meId }: { meId: string }) {
   const [reports, setReports] = useState<Report[]>([]);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    const { data, error } = await supabase
-      .from("reports").select("*").eq("status", "pending")
-      .order("created_at", { ascending: false }).limit(100);
-    if (error) return toast.error(error.message);
-    const ids = Array.from(new Set((data ?? []).map((r) => r.reported_id)));
-    const profilesMap = new Map<string, any>();
-    if (ids.length) {
-      const { data: profs } = await supabase.from("profiles")
-        .select("id, display_name, report_count, suspended_until").in("id", ids);
-      profs?.forEach((p) => profilesMap.set(p.id, p));
-    }
-    setReports((data ?? []).map((r) => ({ ...r, reported_profile: profilesMap.get(r.reported_id) ?? null })) as Report[]);
+    setLoading(true); setError(null);
+    try {
+      const { data, error } = await supabase
+        .from("reports").select("*").eq("status", "pending")
+        .order("created_at", { ascending: false }).limit(100);
+      if (error) throw error;
+      const ids = Array.from(new Set((data ?? []).map((r) => r.reported_id)));
+      const profilesMap = new Map<string, any>();
+      if (ids.length) {
+        const { data: profs } = await supabase.from("profiles")
+          .select("id, display_name, report_count, suspended_until").in("id", ids);
+        profs?.forEach((p) => profilesMap.set(p.id, p));
+      }
+      setReports((data ?? []).map((r) => ({ ...r, reported_profile: profilesMap.get(r.reported_id) ?? null })) as Report[]);
+    } catch (e: any) {
+      const m = e?.message ?? String(e); setError(m); toast.error(m);
+    } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
@@ -655,8 +693,10 @@ function ReportsPanel({ meId }: { meId: string }) {
     setReports((r) => r.filter((x) => x.id !== id));
   };
 
+  if (error) return <AdminPanelError error={error} onRetry={load} />;
+  if (loading) return <AdminPanelEmpty label="Se încarcă rapoartele…" />;
   if (reports.length === 0) {
-    return <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">🎉 Nimic de moderat</div>;
+    return <AdminPanelEmpty label="🎉 Nimic de moderat (empty legitim — nicio raportare în așteptare)." />;
   }
   return (
     <ul className="space-y-3">
@@ -688,10 +728,14 @@ function ReportsPanel({ meId }: { meId: string }) {
 function RiskPanel() {
   const [risk, setRisk] = useState<RiskRow[]>([]);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
+    setLoading(true); setError(null);
     const { data, error } = await supabase.rpc("admin_risk_queue", { _limit: 100 });
-    if (error) return toast.error(error.message);
+    setLoading(false);
+    if (error) { setError(error.message); toast.error(error.message); return; }
     setRisk((data ?? []) as RiskRow[]);
   };
   useEffect(() => { load(); }, []);
@@ -701,7 +745,9 @@ function RiskPanel() {
   const suspend = async (uid: string, hours: number) => { setBusy(true); const { error } = await supabase.rpc("moderator_suspend_user", { _target: uid, _hours: hours, _reason: "risc" }); setBusy(false); if (error) return toast.error(error.message); toast.success(`Suspend ${hours}h`); load(); };
   const ban = async (uid: string) => { const reason = prompt("Motiv ban:"); if (!reason) return; if (!confirm("Ban permanent?")) return; setBusy(true); const { error } = await supabase.rpc("moderator_ban_user", { _target: uid, _reason: reason }); setBusy(false); if (error) return toast.error(error.message); toast.success("Banat"); load(); };
 
-  if (risk.length === 0) return <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">✅ Niciun risc detectat</div>;
+  if (error) return <AdminPanelError error={error} onRetry={load} />;
+  if (loading) return <AdminPanelEmpty label="Se calculează coada de risc…" />;
+  if (risk.length === 0) return <AdminPanelEmpty label="✅ Niciun risc detectat (empty legitim)." />;
   return (
     <ul className="space-y-3">
       {risk.map((r) => {
@@ -735,20 +781,27 @@ function RiskPanel() {
 function AdsPanel() {
   const [ads, setAds] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    const { data, error } = await supabase
-      .from("ad_campaigns")
-      .select("id, title, body, placement, status, city, cta_url, image_url, starts_at, ends_at, budget_cents, impressions, clicks, advertiser_id")
-      .order("created_at", { ascending: false }).limit(200);
-    if (error) return toast.error(error.message);
-    const ids = Array.from(new Set((data ?? []).map((c) => c.advertiser_id)));
-    const map = new Map<string, string>();
-    if (ids.length) {
-      const { data: advs } = await supabase.from("advertisers").select("id, brand_name").in("id", ids);
-      advs?.forEach((a) => map.set(a.id, a.brand_name));
-    }
-    setAds((data ?? []).map((c) => ({ ...c, brand_name: map.get(c.advertiser_id) ?? null })));
+    setLoading(true); setError(null);
+    try {
+      const { data, error } = await supabase
+        .from("ad_campaigns")
+        .select("id, title, body, placement, status, city, cta_url, image_url, starts_at, ends_at, budget_cents, impressions, clicks, advertiser_id")
+        .order("created_at", { ascending: false }).limit(200);
+      if (error) throw error;
+      const ids = Array.from(new Set((data ?? []).map((c) => c.advertiser_id)));
+      const map = new Map<string, string>();
+      if (ids.length) {
+        const { data: advs } = await supabase.from("advertisers").select("id, brand_name").in("id", ids);
+        advs?.forEach((a) => map.set(a.id, a.brand_name));
+      }
+      setAds((data ?? []).map((c) => ({ ...c, brand_name: map.get(c.advertiser_id) ?? null })));
+    } catch (e: any) {
+      const m = e?.message ?? String(e); setError(m); toast.error(m);
+    } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
@@ -760,7 +813,9 @@ function AdsPanel() {
     toast.success(`Status: ${status}`); load();
   };
 
-  if (ads.length === 0) return <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Nicio campanie.</div>;
+  if (error) return <AdminPanelError error={error} onRetry={load} />;
+  if (loading) return <AdminPanelEmpty label="Se încarcă campaniile…" />;
+  if (ads.length === 0) return <AdminPanelEmpty label="Nicio campanie publicitară (empty legitim — niciun advertiser nu a publicat încă)." />;
   return (
     <ul className="space-y-3">
       {ads.map((a) => {
@@ -798,13 +853,17 @@ function AdsPanel() {
 function BizPanel() {
   const [apps, setApps] = useState<any[]>([]);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
+    setLoading(true); setError(null);
     const { data, error } = await supabase
       .from("business_applications").select("*")
       .in("status", ["pending", "reviewing"])
       .order("created_at", { ascending: false }).limit(200);
-    if (error) return toast.error(error.message);
+    setLoading(false);
+    if (error) { setError(error.message); toast.error(error.message); return; }
     setApps(data ?? []);
   };
   useEffect(() => { load(); }, []);
@@ -817,7 +876,9 @@ function BizPanel() {
     toast.success(status === "approved" ? "Aprobat — rol business acordat" : status); load();
   };
 
-  if (apps.length === 0) return <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Nicio cerere B2B în așteptare.</div>;
+  if (error) return <AdminPanelError error={error} onRetry={load} />;
+  if (loading) return <AdminPanelEmpty label="Se încarcă cererile B2B…" />;
+  if (apps.length === 0) return <AdminPanelEmpty label="Nicio cerere B2B în așteptare (empty legitim)." />;
   return (
     <ul className="space-y-3">
       {apps.map((a) => (

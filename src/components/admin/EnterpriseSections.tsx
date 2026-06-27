@@ -15,6 +15,43 @@ import {
   ScrollText, Bell, ShieldAlert, FileWarning, Download, Trash2,
   KeyRound, FileText, RefreshCw, Plus, CheckCircle2, AlertOctagon,
 } from "lucide-react";
+import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+
+// Helper: extrage mesajul de eroare din ce ne dă serverul (server fns aruncă Error,
+// uneori cu prefix "Forbidden:" / "denied" → afișăm clar utilizatorului DE CE).
+const errMsg = (e: any): string => e?.message ?? String(e ?? "Eroare necunoscută");
+
+/**
+ * Banner inline standard de eroare pentru panourile admin.
+ * Vezi REGULĂ — ADMIN PANELS în AGENTS.md: query picat afișează eroarea,
+ * NU spinner etern și NU empty state mascat.
+ */
+function ErrorBanner({ error, onRetry }: { error: string; onRetry?: () => void }) {
+  const forbidden = /forbidden|denied|insufficient|not allowed|rol|role/i.test(error);
+  return (
+    <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm">
+      <p className="font-semibold text-red-300">{forbidden ? "Acces refuzat" : "Eroare la încărcare"}</p>
+      <p className="mt-1 break-words text-xs text-red-200/90">{error}</p>
+      {forbidden && (
+        <p className="mt-2 text-[11px] text-red-200/70">
+          Acest panou cere un rol pe care contul tău nu îl are (ex: <code>super_admin</code> / <code>auditor</code>).
+        </p>
+      )}
+      {onRetry && (
+        <button onClick={onRetry} className="mt-2 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/10">
+          Reîncearcă
+        </button>
+      )}
+    </div>
+  );
+}
+function LoadingBox({ label = "Se încarcă…" }: { label?: string }) {
+  return (
+    <div className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface p-8 text-sm text-muted-foreground">
+      <RefreshCw className="size-4 animate-spin" /> {label}
+    </div>
+  );
+}
 
 /* =========================================================
    AUDIT LOG
@@ -26,9 +63,10 @@ export function AuditLogPanel() {
   const [action, setAction] = useState("");
   const [severity, setSeverity] = useState<string>("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    setBusy(true);
+    setBusy(true); setError(null);
     try {
       const r = await fetchLog({ data: {
         action: action || undefined,
@@ -36,8 +74,11 @@ export function AuditLogPanel() {
         limit: 200,
       }});
       setRows(r.rows); setCount(r.count);
-    } catch (e: any) { toast.error(e.message); }
-    setBusy(false);
+    } catch (e: any) {
+      const m = errMsg(e); setError(m); toast.error(m);
+    } finally {
+      setBusy(false);
+    }
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
@@ -78,42 +119,48 @@ export function AuditLogPanel() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
-        <table className="w-full text-xs">
-          <thead className="bg-background/50">
-            <tr>
-              <th className="px-2 py-2 text-left">Când</th>
-              <th className="px-2 py-2 text-left">Acțiune</th>
-              <th className="px-2 py-2 text-left">Sev.</th>
-              <th className="px-2 py-2 text-left">Actor</th>
-              <th className="px-2 py-2 text-left">Țintă</th>
-              <th className="px-2 py-2 text-left">Justificare</th>
-              <th className="px-2 py-2 text-left">IP</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => {
-              const sc = r.severity === "critical" ? "bg-red-500/15 text-red-500"
-                : r.severity === "warning" ? "bg-orange-500/15 text-orange-500"
-                : "bg-muted text-muted-foreground";
-              return (
-                <tr key={r.id} className="border-t border-border">
-                  <td className="px-2 py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString("ro-RO")}</td>
-                  <td className="px-2 py-2 font-mono">{r.action}</td>
-                  <td className="px-2 py-2"><span className={`rounded-full px-2 py-0.5 text-[10px] ${sc}`}>{r.severity}</span></td>
-                  <td className="px-2 py-2 font-mono text-[10px]">{r.actor_id?.slice(0, 8) ?? "—"}</td>
-                  <td className="px-2 py-2 text-[10px]">{r.target_table ? `${r.target_table}/${(r.target_id ?? "").slice(0, 8)}` : "—"}</td>
-                  <td className="px-2 py-2 max-w-[280px] truncate">{r.justification ?? "—"}</td>
-                  <td className="px-2 py-2 font-mono text-[10px]">{r.ip ?? "—"}</td>
-                </tr>
-              );
-            })}
-            {rows.length === 0 && !busy && (
-              <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Niciun eveniment.</td></tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {error ? (
+        <ErrorBanner error={error} onRetry={load} />
+      ) : busy && rows.length === 0 ? (
+        <LoadingBox />
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+          <table className="w-full text-xs">
+            <thead className="bg-background/50">
+              <tr>
+                <th className="px-2 py-2 text-left">Când</th>
+                <th className="px-2 py-2 text-left">Acțiune</th>
+                <th className="px-2 py-2 text-left">Sev.</th>
+                <th className="px-2 py-2 text-left">Actor</th>
+                <th className="px-2 py-2 text-left">Țintă</th>
+                <th className="px-2 py-2 text-left">Justificare</th>
+                <th className="px-2 py-2 text-left">IP</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => {
+                const sc = r.severity === "critical" ? "bg-red-500/15 text-red-500"
+                  : r.severity === "warning" ? "bg-orange-500/15 text-orange-500"
+                  : "bg-muted text-muted-foreground";
+                return (
+                  <tr key={r.id} className="border-t border-border">
+                    <td className="px-2 py-2 whitespace-nowrap">{new Date(r.created_at).toLocaleString("ro-RO")}</td>
+                    <td className="px-2 py-2 font-mono">{r.action}</td>
+                    <td className="px-2 py-2"><span className={`rounded-full px-2 py-0.5 text-[10px] ${sc}`}>{r.severity}</span></td>
+                    <td className="px-2 py-2 font-mono text-[10px]">{r.actor_id?.slice(0, 8) ?? "—"}</td>
+                    <td className="px-2 py-2 text-[10px]">{r.target_table ? `${r.target_table}/${(r.target_id ?? "").slice(0, 8)}` : "—"}</td>
+                    <td className="px-2 py-2 max-w-[280px] truncate">{r.justification ?? "—"}</td>
+                    <td className="px-2 py-2 font-mono text-[10px]">{r.ip ?? "—"}</td>
+                  </tr>
+                );
+              })}
+              {rows.length === 0 && !busy && (
+                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Niciun eveniment înregistrat încă.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
@@ -125,9 +172,14 @@ export function AlertsPanel() {
   const get = useServerFn(adminGetAlerts);
   const ack = useServerFn(adminAckAlert);
   const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    try { setItems(await get()); } catch (e: any) { toast.error(e.message); }
+    setError(null);
+    try { setItems(await get()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
   };
   useEffect(() => {
     load();
@@ -142,7 +194,7 @@ export function AlertsPanel() {
 
   const acknowledge = async (id: number) => {
     try { await ack({ data: { id } }); setItems((c) => c.filter((x) => x.id !== id)); }
-    catch (e: any) { toast.error(e.message); }
+    catch (e: any) { toast.error(errMsg(e)); }
   };
 
   return (
@@ -152,9 +204,13 @@ export function AlertsPanel() {
         <h2 className="text-lg font-semibold">Alerte (live)</h2>
         <span className="ml-auto text-xs text-muted-foreground">{items.length} active</span>
       </div>
-      {items.length === 0 ? (
+      {error ? (
+        <ErrorBanner error={error} onRetry={load} />
+      ) : loading ? (
+        <LoadingBox />
+      ) : items.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
-          ✅ Nicio alertă activă
+          ✅ Nicio alertă activă (empty legitim — apare aici când sistemul detectează un incident)
         </div>
       ) : (
         <ul className="space-y-2">
@@ -195,14 +251,21 @@ export function DsaPanel() {
   const [items, setItems] = useState<any[]>([]);
   const [filter, setFilter] = useState<"pending" | "all">("pending");
 
-  const load = async () => { try { setItems(await get()); } catch (e: any) { toast.error(e.message); } };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const load = async () => {
+    setError(null);
+    try { setItems(await get()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const act = async (id: string, status: "resolved" | "dismissed" | "escalated") => {
     const resolution = prompt(`Notă rezoluție (${status}):`);
     if (!resolution || resolution.length < 3) return;
     try { await resolve({ data: { id, status, resolution } }); toast.success("Procesat"); load(); }
-    catch (e: any) { toast.error(e.message); }
+    catch (e: any) { toast.error(errMsg(e)); }
   };
 
   const visible = items.filter((r) => filter === "all" || r.status === "pending");
@@ -216,7 +279,11 @@ export function DsaPanel() {
           <option value="pending">Pending</option><option value="all">Toate</option>
         </select>
       </div>
-      {visible.length === 0 ? (
+      {error ? (
+        <ErrorBanner error={error} onRetry={load} />
+      ) : loading ? (
+        <LoadingBox />
+      ) : visible.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Nimic.</div>
       ) : (
         <ul className="space-y-2">
@@ -255,7 +322,14 @@ export function CsamPanel() {
   const [hash, setHash] = useState("");
   const [source, setSource] = useState("");
 
-  const load = async () => { try { setItems(await get()); } catch (e: any) { toast.error(e.message); } };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const load = async () => {
+    setError(null);
+    try { setItems(await get()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const submit = async () => {
@@ -290,8 +364,12 @@ export function CsamPanel() {
 
       <div>
         <h3 className="mb-2 text-xs uppercase text-muted-foreground">Rapoarte ({items.length})</h3>
-        {items.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Niciun raport.</div>
+        {error ? (
+          <ErrorBanner error={error} onRetry={load} />
+        ) : loading ? (
+          <LoadingBox />
+        ) : items.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Niciun raport CSAM (empty legitim — apare doar la upload-uri marcate).</div>
         ) : (
           <ul className="space-y-2">
             {items.map((r) => (
@@ -320,7 +398,14 @@ export function GdprPanel() {
   const [items, setItems] = useState<any[]>([]);
   const [uid, setUid] = useState("");
 
-  const load = async () => { try { setItems(await getDel()); } catch (e: any) { toast.error(e.message); } };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const load = async () => {
+    setError(null);
+    try { setItems(await getDel()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const doExport = async () => {
@@ -364,8 +449,12 @@ export function GdprPanel() {
 
       <div>
         <h3 className="mb-2 text-xs uppercase text-muted-foreground">Cereri ștergere ({items.length})</h3>
-        {items.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Nicio cerere.</div>
+        {error ? (
+          <ErrorBanner error={error} onRetry={load} />
+        ) : loading ? (
+          <LoadingBox />
+        ) : items.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Nicio cerere de ștergere (empty legitim).</div>
         ) : (
           <ul className="space-y-2">
             {items.map((d) => {
@@ -402,7 +491,14 @@ export function BreachPanel() {
   const [desc, setDesc] = useState("");
   const [count, setCount] = useState("");
 
-  const load = async () => { try { setItems(await get()); } catch (e: any) { toast.error(e.message); } };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const load = async () => {
+    setError(null);
+    try { setItems(await get()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const submit = async () => {
@@ -411,7 +507,7 @@ export function BreachPanel() {
       await create({ data: { title, description: desc, affected_users_count: Number(count) || undefined } });
       toast.success("Incident înregistrat — countdown 72h activ");
       setOpen(false); setTitle(""); setDesc(""); setCount(""); load();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) { toast.error(errMsg(e)); }
   };
 
   return (
@@ -431,8 +527,12 @@ export function BreachPanel() {
           <button onClick={submit} className="w-full rounded-full bg-red-500/20 py-1.5 text-xs text-red-400">Salvează</button>
         </div>
       )}
-      {items.length === 0 ? (
-        <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Niciun incident înregistrat. ✅</div>
+      {error ? (
+        <ErrorBanner error={error} onRetry={load} />
+      ) : loading ? (
+        <LoadingBox />
+      ) : items.length === 0 ? (
+        <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Niciun incident înregistrat. ✅ (empty legitim)</div>
       ) : (
         <ul className="space-y-2">
           {items.map((b) => {
@@ -467,13 +567,20 @@ export function PoliciesPanel() {
   const [version, setVersion] = useState("");
   const [url, setUrl] = useState("");
 
-  const load = async () => { try { setItems(await get()); } catch (e: any) { toast.error(e.message); } };
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const load = async () => {
+    setError(null);
+    try { setItems(await get()); }
+    catch (e: any) { const m = errMsg(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
+  };
   useEffect(() => { load(); }, []);
 
   const submit = async () => {
     if (!version) return toast.error("Versiune obligatorie");
     try { await create({ data: { kind, version, content_url: url || undefined } }); toast.success("Publicat"); setVersion(""); setUrl(""); load(); }
-    catch (e: any) { toast.error(e.message); }
+    catch (e: any) { toast.error(errMsg(e)); }
   };
 
   return (
@@ -490,18 +597,24 @@ export function PoliciesPanel() {
           <button onClick={submit} className="rounded-full bg-primary px-3 py-1.5 text-xs text-primary-foreground">Publică</button>
         </div>
       </div>
-      <ul className="space-y-2">
-        {items.map((p) => (
-          <li key={p.id} className="rounded-2xl border border-border bg-surface p-3 text-xs">
-            <div className="flex justify-between">
-              <span><strong>{p.kind}</strong> v{p.version}</span>
-              <span className="text-muted-foreground">{new Date(p.effective_at).toLocaleString("ro-RO")}</span>
-            </div>
-            {p.content_url && <a href={p.content_url} target="_blank" rel="noopener noreferrer" className="text-primary">{p.content_url}</a>}
-          </li>
-        ))}
-        {items.length === 0 && <li className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">Nicio versiune.</li>}
-      </ul>
+      {error ? (
+        <ErrorBanner error={error} onRetry={load} />
+      ) : loading ? (
+        <LoadingBox />
+      ) : (
+        <ul className="space-y-2">
+          {items.map((p) => (
+            <li key={p.id} className="rounded-2xl border border-border bg-surface p-3 text-xs">
+              <div className="flex justify-between">
+                <span><strong>{p.kind}</strong> v{p.version}</span>
+                <span className="text-muted-foreground">{new Date(p.effective_at).toLocaleString("ro-RO")}</span>
+              </div>
+              {p.content_url && <a href={p.content_url} target="_blank" rel="noopener noreferrer" className="text-primary">{p.content_url}</a>}
+            </li>
+          ))}
+          {items.length === 0 && <li className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">Nicio versiune publicată (empty legitim).</li>}
+        </ul>
+      )}
     </div>
   );
 }
