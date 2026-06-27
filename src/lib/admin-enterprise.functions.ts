@@ -49,9 +49,12 @@ const AuditQuery = z.object({
   actorId: z.string().uuid().optional(),
   action: z.string().max(80).optional(),
   targetTable: z.string().max(80).optional(),
+  targetId: z.string().max(120).optional(),
   severity: z.enum(["info", "warning", "critical"]).optional(),
   since: z.string().optional(),
-  limit: z.number().int().min(1).max(500).optional(),
+  until: z.string().optional(),
+  search: z.string().max(200).optional(),
+  limit: z.number().int().min(1).max(1000).optional(),
   offset: z.number().int().min(0).optional(),
 });
 
@@ -72,12 +75,19 @@ export const adminGetAuditLog = createServerFn({ method: "POST" })
     if (data.actorId) q = q.eq("actor_id", data.actorId);
     if (data.action) q = q.ilike("action", `%${data.action}%`);
     if (data.targetTable) q = q.eq("target_table", data.targetTable);
+    if (data.targetId) q = q.eq("target_id", data.targetId);
     if (data.severity) q = q.eq("severity", data.severity);
     if (data.since) q = q.gte("created_at", data.since);
+    if (data.until) q = q.lte("created_at", data.until);
+    if (data.search) {
+      const s = data.search.replace(/[,%()]/g, " ");
+      q = q.or(`action.ilike.%${s}%,justification.ilike.%${s}%,target_table.ilike.%${s}%,target_id.ilike.%${s}%`);
+    }
     const { data: rows, count, error } = await q;
     if (error) throw new Error(error.message);
     return { rows: rows ?? [], count: count ?? 0 };
   });
+
 
 /* ---------------- MODERATION WITH JUSTIFICATION ---------------- */
 const ModInput = z.object({

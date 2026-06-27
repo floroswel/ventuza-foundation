@@ -60,19 +60,35 @@ export function AuditLogPanel() {
   const fetchLog = useServerFn(adminGetAuditLog);
   const [rows, setRows] = useState<any[]>([]);
   const [count, setCount] = useState(0);
+  const [search, setSearch] = useState("");
   const [action, setAction] = useState("");
   const [severity, setSeverity] = useState<string>("");
+  const [targetTable, setTargetTable] = useState("");
+  const [actorId, setActorId] = useState("");
+  const [since, setSince] = useState("");
+  const [until, setUntil] = useState("");
+  const [limit, setLimit] = useState(200);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // helper: convertește input datetime-local (ora locală) la ISO UTC
+  const toIso = (v: string) => (v ? new Date(v).toISOString() : undefined);
+
+  const buildPayload = (overrideLimit?: number) => ({
+    search: search.trim() || undefined,
+    action: action.trim() || undefined,
+    severity: (severity as any) || undefined,
+    targetTable: targetTable.trim() || undefined,
+    actorId: actorId.trim() && /^[0-9a-f-]{36}$/i.test(actorId.trim()) ? actorId.trim() : undefined,
+    since: toIso(since),
+    until: toIso(until),
+    limit: overrideLimit ?? limit,
+  });
 
   const load = async () => {
     setBusy(true); setError(null);
     try {
-      const r = await fetchLog({ data: {
-        action: action || undefined,
-        severity: (severity as any) || undefined,
-        limit: 200,
-      }});
+      const r = await fetchLog({ data: buildPayload() });
       setRows(r.rows); setCount(r.count);
     } catch (e: any) {
       const m = errMsg(e); setError(m); toast.error(m);
@@ -82,17 +98,61 @@ export function AuditLogPanel() {
   };
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
-  const exportCsv = () => {
-    const cols = ["created_at", "actor_id", "action", "severity", "target_table", "target_id", "justification", "ip"];
-    const lines = [cols.join(",")];
-    rows.forEach((r) => {
-      lines.push(cols.map((c) => JSON.stringify(r[c] ?? "")).join(","));
-    });
-    const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const resetFilters = () => {
+    setSearch(""); setAction(""); setSeverity(""); setTargetTable("");
+    setActorId(""); setSince(""); setUntil(""); setLimit(200);
+  };
+
+  const downloadBlob = (content: string, mime: string, ext: string) => {
+    const blob = new Blob([content], { type: mime });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = `audit-${Date.now()}.csv`; a.click();
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `audit-${new Date().toISOString().replace(/[:.]/g, "-")}.${ext}`;
+    a.click();
     URL.revokeObjectURL(url);
   };
+
+  // Export: refetch cu limită mare ca să cuprindă tot ce match-uiește filtrele,
+  // nu doar pagina vizibilă. Plafonat la 1000 (limita serverului).
+  const fetchAllForExport = async () => {
+    const r = await fetchLog({ data: buildPayload(1000) });
+    if (r.rows.length < r.count) {
+      toast.warning(`Export limitat la 1000 din ${r.count} înregistrări. Restrânge filtrul pentru export complet.`);
+    }
+    return r.rows;
+  };
+
+  const exportCsv = async () => {
+    try {
+      setBusy(true);
+      const data = await fetchAllForExport();
+      const cols = ["created_at", "actor_id", "action", "severity", "target_table", "target_id", "justification", "ip", "user_agent"];
+      const esc = (v: any) => {
+        const s = v == null ? "" : typeof v === "object" ? JSON.stringify(v) : String(v);
+        return `"${s.replace(/"/g, '""')}"`;
+      };
+      const lines = [cols.join(",")];
+      data.forEach((r: any) => lines.push(cols.map((c) => esc(r[c])).join(",")));
+      downloadBlob(lines.join("\n"), "text/csv;charset=utf-8", "csv");
+      toast.success(`Exportat ${data.length} înregistrări (CSV)`);
+    } catch (e: any) {
+      toast.error(errMsg(e));
+    } finally { setBusy(false); }
+  };
+
+  const exportJson = async () => {
+    try {
+      setBusy(true);
+      const data = await fetchAllForExport();
+      downloadBlob(JSON.stringify(data, null, 2), "application/json", "json");
+      toast.success(`Exportat ${data.length} înregistrări (JSON)`);
+    } catch (e: any) {
+      toast.error(errMsg(e));
+    } finally { setBusy(false); }
+  };
+
+  const inputCls = "rounded-full border border-border bg-surface px-3 py-1.5 text-xs";
 
   return (
     <div className="space-y-3">
@@ -100,22 +160,74 @@ export function AuditLogPanel() {
         <ScrollText className="size-4 text-primary" />
         <h2 className="text-lg font-semibold">Jurnal audit (imutabil)</h2>
         <span className="text-xs text-muted-foreground">{count} înregistrări</span>
-        <div className="ml-auto flex gap-2">
-          <input value={action} onChange={(e) => setAction(e.target.value)} placeholder="acțiune..."
-            className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs" />
-          <select value={severity} onChange={(e) => setSeverity(e.target.value)}
-            className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs">
+        <div className="ml-auto flex flex-wrap gap-2">
+          <button onClick={exportCsv} disabled={busy} className="rounded-full border border-border px-3 py-1.5 text-xs disabled:opacity-50">
+            <Download className="mr-1 inline size-3" /> CSV
+          </button>
+          <button onClick={exportJson} disabled={busy} className="rounded-full border border-border px-3 py-1.5 text-xs disabled:opacity-50">
+            <Download className="mr-1 inline size-3" /> JSON
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 gap-2 rounded-2xl border border-border bg-surface p-3 sm:grid-cols-2 lg:grid-cols-4">
+        <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          Căutare liberă
+          <input value={search} onChange={(e) => setSearch(e.target.value)}
+            placeholder="acțiune / justificare / țintă..." className={inputCls} />
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          Acțiune (exactă)
+          <input value={action} onChange={(e) => setAction(e.target.value)}
+            placeholder="ex: ban.user" className={inputCls} />
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          Tabel țintă
+          <input value={targetTable} onChange={(e) => setTargetTable(e.target.value)}
+            placeholder="ex: profiles" className={inputCls} />
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          Actor (UUID)
+          <input value={actorId} onChange={(e) => setActorId(e.target.value)}
+            placeholder="00000000-..." className={inputCls} />
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          Severitate
+          <select value={severity} onChange={(e) => setSeverity(e.target.value)} className={inputCls}>
             <option value="">toate severitățile</option>
             <option value="info">info</option>
             <option value="warning">warning</option>
             <option value="critical">critical</option>
           </select>
-          <button onClick={load} disabled={busy} className="rounded-full bg-primary px-3 py-1.5 text-xs text-primary-foreground disabled:opacity-50">
-            <RefreshCw className="mr-1 inline size-3" /> Caută
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          De la
+          <input type="datetime-local" value={since} onChange={(e) => setSince(e.target.value)} className={inputCls} />
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          Până la
+          <input type="datetime-local" value={until} onChange={(e) => setUntil(e.target.value)} className={inputCls} />
+        </label>
+        <label className="flex flex-col gap-1 text-[10px] uppercase tracking-wide text-muted-foreground">
+          Limită rezultate
+          <select value={limit} onChange={(e) => setLimit(Number(e.target.value))} className={inputCls}>
+            <option value={50}>50</option>
+            <option value={100}>100</option>
+            <option value={200}>200</option>
+            <option value={500}>500</option>
+            <option value={1000}>1000</option>
+          </select>
+        </label>
+        <div className="sm:col-span-2 lg:col-span-4 flex flex-wrap items-center gap-2 pt-1">
+          <button onClick={load} disabled={busy} className="rounded-full bg-primary px-4 py-1.5 text-xs text-primary-foreground disabled:opacity-50">
+            <RefreshCw className={`mr-1 inline size-3 ${busy ? "animate-spin" : ""}`} /> Caută
           </button>
-          <button onClick={exportCsv} className="rounded-full border border-border px-3 py-1.5 text-xs">
-            <Download className="mr-1 inline size-3" /> CSV
+          <button onClick={resetFilters} disabled={busy} className="rounded-full border border-border px-3 py-1.5 text-xs disabled:opacity-50">
+            Resetează filtre
           </button>
+          <span className="ml-auto text-[10px] text-muted-foreground">
+            Datele folosesc ora locală • export include filtrele active
+          </span>
         </div>
       </div>
 
@@ -155,7 +267,7 @@ export function AuditLogPanel() {
                 );
               })}
               {rows.length === 0 && !busy && (
-                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Niciun eveniment înregistrat încă.</td></tr>
+                <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">Niciun eveniment pentru filtrele curente.</td></tr>
               )}
             </tbody>
           </table>
@@ -164,6 +276,7 @@ export function AuditLogPanel() {
     </div>
   );
 }
+
 
 /* =========================================================
    ALERTS (realtime)
