@@ -9,7 +9,11 @@ import {
   Megaphone, Play, Pause, Building2, LayoutDashboard, Users, Database, Send,
   Trash2, Save, Search, RefreshCw, ChevronLeft, ChevronRight, Crown,
   ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon, Sparkles,
+  Activity, Bot,
 } from "lucide-react";
+import { AdminShell, type NavItem } from "@/components/admin/AdminShell";
+import { SystemHealthPanel } from "@/components/admin/SystemHealthPanel";
+import { AiCopilotPanel } from "@/components/admin/AiCopilotPanel";
 import {
   adminGetOverview, adminListTables, adminListRows, adminUpdateRow, adminDeleteRow,
   adminInsertRow, adminSearchUsers, adminGrantRole, adminRevokeRole, adminBroadcast,
