@@ -14,6 +14,29 @@ const REASONS = [
   { id: "other", label: "Altceva" },
 ];
 
+function reportBlockErrorMessage(error: unknown) {
+  const raw = error instanceof Error ? error.message : String(error ?? "");
+  const message = raw.toLowerCase();
+
+  if (message.includes("hiv_status") || message.includes("hiv_test_date")) {
+    return "Raportarea a fost blocată de o incompatibilitate veche cu datele de sănătate. Am reparat-o — încearcă din nou.";
+  }
+  if (message.includes("duplicate") || message.includes("unique")) {
+    return "Este deja înregistrat.";
+  }
+  if (message.includes("report rate limit")) {
+    return "Ai atins limita de rapoarte pentru 24h. Revenim cu protecție anti-spam.";
+  }
+  if (message.includes("cannot report yourself")) {
+    return "Nu îți poți raporta propriul profil.";
+  }
+  if (message.includes("row-level security") || message.includes("permission denied")) {
+    return "Nu am putut confirma sesiunea. Închide și redeschide aplicația, apoi încearcă din nou.";
+  }
+
+  return raw || "Nu am putut finaliza acțiunea.";
+}
+
 export function ReportBlockDialog({
   targetUserId,
   targetName,
@@ -33,23 +56,37 @@ export function ReportBlockDialog({
   async function submit(alsoBlock: boolean) {
     if (!reason) return toast.error("Alege un motiv");
     setBusy(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setBusy(false); return toast.error("Nu ești autentificat"); }
-    const { error } = await supabase.from("reports").insert({
-      reporter_id: user.id,
-      reported_id: targetUserId,
-      reason,
-      details: details || null,
-    });
-    if (error) { setBusy(false); return toast.error(error.message); }
-    if (alsoBlock) {
-      await supabase.from("blocks").insert({ blocker_id: user.id, blocked_id: targetUserId });
-      onBlocked?.();
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error("Nu ești autentificat");
+      if (user.id === targetUserId) throw new Error("cannot report yourself");
+
+      const { error: reportError } = await supabase.from("reports").insert({
+        reporter_id: user.id,
+        reported_id: targetUserId,
+        reason,
+        details: details || null,
+      });
+      if (reportError) throw reportError;
+
+      if (alsoBlock) {
+        const { error: blockError } = await supabase
+          .from("blocks")
+          .upsert({ blocker_id: user.id, blocked_id: targetUserId }, { onConflict: "blocker_id,blocked_id" });
+        if (blockError) throw blockError;
+        onBlocked?.();
+      }
+
+      setOpen(false);
+      setReason("");
+      setDetails("");
+      toast.success(alsoBlock ? "Raportat și blocat" : "Mulțumim, am primit raportul");
+    } catch (error) {
+      toast.error(reportBlockErrorMessage(error));
+    } finally {
+      setBusy(false);
     }
-    setBusy(false);
-    setOpen(false);
-    setReason(""); setDetails("");
-    toast.success(alsoBlock ? "Raportat și blocat" : "Mulțumim, am primit raportul");
   }
 
   return (
