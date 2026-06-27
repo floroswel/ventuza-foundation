@@ -159,6 +159,7 @@ function AdminDashboard() {
     { id: "ads",      label: "Ads",            icon: Megaphone,   group: "Business" },
     { id: "biz",      label: "B2B",            icon: Building2,   group: "Business" },
     { id: "partners", label: "Parteneri & Moderare", icon: ShieldCheck, group: "Business" },
+    { id: "billing",  label: "Facturare parteneri", icon: FileText,    group: "Business" },
 
     // System
     { id: "health",   label: "System Health", icon: Activity,    group: "System" },
