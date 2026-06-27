@@ -777,33 +777,66 @@ function ReportsPanel({ meId }: { meId: string }) {
 
   if (error) return <AdminPanelError error={error} onRetry={load} />;
   if (loading) return <AdminPanelEmpty label="Se încarcă rapoartele…" />;
-  if (reports.length === 0) {
-    return <AdminPanelEmpty label="🎉 Nimic de moderat (empty legitim — nicio raportare în așteptare)." />;
-  }
-  return (
-    <ul className="space-y-3">
-      {reports.map((r) => (
-        <li key={r.id} className="rounded-2xl border border-border bg-surface p-4">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full bg-destructive/10 px-2 py-0.5 text-[10px] font-semibold uppercase text-destructive">{r.reason}</span>
-            {r.reported_profile?.report_count && r.reported_profile.report_count >= 3 && (
-              <span className="rounded-full bg-orange-500/10 px-2 py-0.5 text-[10px] font-semibold text-orange-500">{r.reported_profile.report_count} rapoarte</span>
-            )}
-          </div>
-          <p className="mt-2 text-sm font-medium">{r.reported_profile?.display_name ?? r.reported_id.slice(0, 8)}</p>
-          {r.details && <p className="mt-1 text-xs text-muted-foreground">{r.details}</p>}
-          <p className="mt-1 text-[10px] text-muted-foreground">{new Date(r.created_at).toLocaleString("ro-RO")}</p>
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button disabled={busy} onClick={() => suspend(r.reported_id, 24, r.reason)} className="rounded-full bg-orange-500/15 px-3 py-1.5 text-xs text-orange-500"><Ban className="mr-1 inline size-3" />24h</button>
-            <button disabled={busy} onClick={() => suspend(r.reported_id, 168, r.reason)} className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs text-red-500"><Ban className="mr-1 inline size-3" />7 zile</button>
-            <button disabled={busy} onClick={() => ban(r.reported_id)} className="rounded-full bg-red-700/20 px-3 py-1.5 text-xs text-red-400">Ban</button>
-            <button disabled={busy} onClick={() => resolve(r.id, false)} className="rounded-full bg-primary/15 px-3 py-1.5 text-xs text-primary"><Check className="mr-1 inline size-3" />Rezolvat</button>
-            <button disabled={busy} onClick={() => resolve(r.id, true)} className="rounded-full border border-border px-3 py-1.5 text-xs"><X className="mr-1 inline size-3" />Respinge</button>
-          </div>
-        </li>
-      ))}
-    </ul>
-  );
+  if (reports.length === 0) return <AdminPanelEmpty label="🎉 Nimic de moderat (empty legitim — nicio raportare în așteptare)." />;
+
+  const columns: Column<Report & { reported_profile: any }>[] = [
+    {
+      key: "reason",
+      header: "Motiv",
+      cell: (r) => <StatusBadge tone="rejected">{r.reason}</StatusBadge>,
+      sortValue: (r) => r.reason,
+    },
+    {
+      key: "target",
+      header: "Țintă",
+      cell: (r) => (
+        <div className="min-w-0">
+          <div className="truncate font-medium">{r.reported_profile?.display_name ?? "—"}</div>
+          <div className="admin-mono truncate text-[10px] text-[var(--admin-text-faint)]">{r.reported_id}</div>
+        </div>
+      ),
+      sortValue: (r) => r.reported_profile?.display_name ?? "",
+      searchValue: (r) => `${r.reported_profile?.display_name ?? ""} ${r.reported_id}`,
+    },
+    {
+      key: "count",
+      header: "#Rap",
+      align: "right",
+      priority: 2,
+      cell: (r) => <MonoNumber value={r.reported_profile?.report_count ?? 0} className={(r.reported_profile?.report_count ?? 0) >= 3 ? "text-[var(--admin-warn)]" : ""} />,
+      sortValue: (r) => r.reported_profile?.report_count ?? 0,
+    },
+    {
+      key: "details",
+      header: "Detalii",
+      priority: 3,
+      cell: (r) => <span className="line-clamp-2 max-w-[280px] text-[11px] text-[var(--admin-text-dim)]">{r.details ?? "—"}</span>,
+      searchValue: (r) => r.details ?? "",
+    },
+    {
+      key: "when",
+      header: "Când",
+      priority: 2,
+      cell: (r) => <span className="admin-mono text-[10px] text-[var(--admin-text-dim)]">{new Date(r.created_at).toLocaleString("ro-RO")}</span>,
+      sortValue: (r) => r.created_at,
+    },
+    {
+      key: "actions",
+      header: "",
+      align: "right",
+      cell: (r) => (
+        <div className="flex flex-wrap justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+          <button disabled={busy} onClick={() => suspend(r.reported_id, 24, r.reason)} className="rounded-md bg-[var(--admin-warn-soft)] px-2 py-1 text-[10px] text-[var(--admin-warn)]"><Ban className="inline size-3" />24h</button>
+          <button disabled={busy} onClick={() => suspend(r.reported_id, 168, r.reason)} className="rounded-md bg-[var(--admin-danger-soft)] px-2 py-1 text-[10px] text-[var(--admin-danger)]"><Ban className="inline size-3" />7z</button>
+          <button disabled={busy} onClick={() => ban(r.reported_id)} className="rounded-md bg-[var(--admin-danger-soft)] px-2 py-1 text-[10px] font-semibold text-[var(--admin-danger)]">Ban</button>
+          <button disabled={busy} onClick={() => resolve(r.id, false)} className="rounded-md bg-[var(--admin-success-soft)] px-2 py-1 text-[10px] text-[var(--admin-success)]"><Check className="inline size-3" /></button>
+          <button disabled={busy} onClick={() => resolve(r.id, true)} className="rounded-md border border-[var(--admin-border)] px-2 py-1 text-[10px] text-[var(--admin-text-dim)]"><X className="inline size-3" /></button>
+        </div>
+      ),
+    },
+  ];
+
+  return <DataTable rows={reports} columns={columns} rowKey={(r) => r.id} exportName="rapoarte" searchPlaceholder="Filtrare locală rapoarte…" />;
 }
 
 /* ---------------- RISK ---------------- */
