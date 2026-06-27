@@ -36,7 +36,7 @@ export const Route = createFileRoute("/discover")({
   component: DiscoverPage,
 });
 
-type Tab = "nearby" | "online" | "fresh";
+type Tab = "nearby" | "fresh";
 
 function DiscoverPage() {
   const { user, loading: authLoading } = useAuth();
@@ -176,7 +176,6 @@ function DiscoverPage() {
 
 
   const visible = useMemo(() => {
-    if (tab === "online") return profiles.filter((p) => isOnline(p.last_seen));
     if (tab === "fresh") {
       return [...profiles].sort((a, b) => new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime());
     }
