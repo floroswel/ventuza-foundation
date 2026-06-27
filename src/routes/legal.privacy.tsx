@@ -32,13 +32,21 @@ function PrivacyPage() {
         <h2 className="mt-6 text-base font-semibold">1. Date pe care le colectăm</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
           <li><strong>Cont:</strong> email, parolă hash-uită, data nașterii.</li>
-          <li><strong>Profil:</strong> nume afișat, fotografii, descriere, interese, gen, orientare, oraș.</li>
-          <li><strong>Date de sănătate (opționale):</strong> status HIV, data ultimului test — date sensibile Art. 9 GDPR.</li>
-          <li><strong>Locație:</strong> aproximativă (oraș) pentru match-uri în zonă; nu stocăm coordonate GPS precise în istoric.</li>
+          <li><strong>Profil:</strong> nume afișat, fotografii, descriere, interese, oraș.</li>
+          <li>
+            <strong>Date sensibile (Art. 9 GDPR) — opționale, doar cu consimțământ explicit:</strong>
+            <ul className="mt-1 list-[circle] pl-5">
+              <li><strong>Orientare sexuală / identitate de gen</strong> (gen, orientare, pronume, tribes) — Art. 9(1) date privind viața sexuală.</li>
+              <li><strong>Status HIV și data ultimului test</strong> — Art. 9(1) date privind sănătatea, stocate cifrat (pgcrypto).</li>
+              <li><strong>Selfie de verificare 18+</strong> — Art. 9(1) date biometrice, procesate de Didit și șterse după verificare.</li>
+            </ul>
+          </li>
+          <li><strong>Locație:</strong> coordonatele rămân pe dispozitivul tău; serverul filtrează prin <em>bucket-uri geografice</em>, nu prin lat/lng. Alți utilizatori văd doar distanță rotunjită ("~500m", "~2km"), niciodată coordonate precise.</li>
           <li><strong>Activitate:</strong> swipe-uri, match-uri, mesaje, RSVP la evenimente.</li>
           <li><strong>Tehnice:</strong> IP, tip dispozitiv, OS, identificator de notificări push.</li>
           <li><strong>Plăți Premium:</strong> token-ul tranzacției Google Play (nu vedem numărul cardului).</li>
         </ul>
+
 
         <h2 className="mt-6 text-base font-semibold">2. Temei legal (GDPR Art. 6 și 9)</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
