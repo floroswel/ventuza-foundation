@@ -32,6 +32,17 @@ const passwordSchema = z
   .min(8, "At least 8 characters")
   .max(72, "Max 72 characters");
 
+async function persistPendingBirthdate(userId: string) {
+  if (typeof window === "undefined") return;
+  let pending: string | null = null;
+  try { pending = sessionStorage.getItem("vz_pending_birthdate"); } catch { /* ignore */ }
+  if (!pending) return;
+  try {
+    await supabase.from("profiles").update({ birthdate: pending }).eq("id", userId);
+  } catch { /* ignore */ }
+  try { sessionStorage.removeItem("vz_pending_birthdate"); } catch { /* ignore */ }
+}
+
 async function routeAfterAuth(userId: string, navigate: ReturnType<typeof useNavigate>, redirectTo?: string) {
   if (redirectTo && redirectTo.startsWith("/")) {
     navigate({ to: redirectTo, replace: true });

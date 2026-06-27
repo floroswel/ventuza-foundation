@@ -10,7 +10,12 @@ import { shouldEnforceAgeGate } from "@/lib/age-gate-policy";
 import { toast } from "sonner";
 
 // Routes that require a verified age before access.
-const GATED_PREFIXES = ["/discover", "/messages", "/swipe", "/visitors", "/favorites", "/groups", "/events", "/quests"];
+// All adult-content/social surfaces must be gated. /cruise (Right Now feed),
+// /nearby (location-aware list), /visitors, /favorites are explicitly included.
+const GATED_PREFIXES = [
+  "/discover", "/messages", "/swipe", "/visitors", "/favorites",
+  "/groups", "/events", "/quests", "/cruise", "/nearby", "/profile",
+];
 
 type Status = "unverified" | "pending" | "verified" | "failed" | "expired" | null;
 
