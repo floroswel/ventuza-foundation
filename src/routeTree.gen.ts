@@ -53,6 +53,7 @@ import { Route as BusinessDashboardRouteImport } from './routes/business.dashboa
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
+import { Route as AuthenticatedPartnerBillingRouteImport } from './routes/_authenticated.partner.billing'
 
 const VisitorsRoute = VisitorsRouteImport.update({
   id: '/visitors',
@@ -275,6 +276,12 @@ const ApiPublicAgeWebhookRoute = ApiPublicAgeWebhookRouteImport.update({
   path: '/api/public/age-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedPartnerBillingRoute =
+  AuthenticatedPartnerBillingRouteImport.update({
+    id: '/_authenticated/partner/billing',
+    path: '/partner/billing',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -319,6 +326,7 @@ export interface FileRoutesByFullPath {
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
+  '/partner/billing': typeof AuthenticatedPartnerBillingRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
@@ -365,6 +373,7 @@ export interface FileRoutesByTo {
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages': typeof MessagesIndexRoute
+  '/partner/billing': typeof AuthenticatedPartnerBillingRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
@@ -412,6 +421,7 @@ export interface FileRoutesById {
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
+  '/_authenticated/partner/billing': typeof AuthenticatedPartnerBillingRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
 }
@@ -460,6 +470,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/venues/$id'
     | '/messages/'
+    | '/partner/billing'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
   fileRoutesByTo: FileRoutesByTo
@@ -506,6 +517,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/venues/$id'
     | '/messages'
+    | '/partner/billing'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
   id:
@@ -552,6 +564,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/venues/$id'
     | '/messages/'
+    | '/_authenticated/partner/billing'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
   fileRoutesById: FileRoutesById
@@ -595,6 +608,7 @@ export interface RootRouteChildren {
   USlugRoute: typeof USlugRoute
   VenuesIdRoute: typeof VenuesIdRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
+  AuthenticatedPartnerBillingRoute: typeof AuthenticatedPartnerBillingRoute
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
 }
@@ -909,6 +923,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAgeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/partner/billing': {
+      id: '/_authenticated/partner/billing'
+      path: '/partner/billing'
+      fullPath: '/partner/billing'
+      preLoaderRoute: typeof AuthenticatedPartnerBillingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -997,6 +1018,7 @@ const rootRouteChildren: RootRouteChildren = {
   USlugRoute: USlugRoute,
   VenuesIdRoute: VenuesIdRoute,
   MessagesIndexRoute: MessagesIndexRoute,
+  AuthenticatedPartnerBillingRoute: AuthenticatedPartnerBillingRoute,
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
 }
