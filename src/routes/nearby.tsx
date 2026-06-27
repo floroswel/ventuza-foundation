@@ -18,6 +18,8 @@ import { Card } from "@/components/ui/card";
 import { Map, List, RefreshCw, MapPin, BellPlus, Loader2 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { BackButton } from "@/components/BackButton";
+import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/nearby")({
   head: () => ({
