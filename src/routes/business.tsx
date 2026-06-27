@@ -519,10 +519,6 @@ function DoneScreen({ appId }: { appId: string | null }) {
             </p>
           </>
 
-            <p className="text-[11px] leading-snug text-muted-foreground">
-              Vei vedea statusul cererii și vei putea pregăti primele postări (devin vizibile după aprobare).
-            </p>
-          </>
         ) : (
           <>
             <Link
