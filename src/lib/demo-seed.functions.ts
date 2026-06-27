@@ -291,8 +291,278 @@ export const seedDemoContent = createServerFn({ method: "POST" })
     }
     log.push(`ads: ${promotedVenues.length}`);
 
+    // 7) Admin modules — populate each panel with realistic seed data.
+    const adminLog = await seedAdminModules(supabaseAdmin, partnerIds);
+    log.push(...adminLog);
+
     return { ok: true, log, summary: await summary(supabaseAdmin) };
   });
+
+/* ---------------------------- ADMIN MODULES SEED ---------------------------- */
+
+/**
+ * Populează modulele admin cu date demo realiste (toate is_seed=true unde
+ * coloana există; restul marcate prin actor_email='seed@ventuza.local' sau
+ * justification cu prefix '[SEED]' pentru append-only tables).
+ *
+ * CSAM: NICIODATĂ imagini reale. Doar metadate + hash-uri sintetice.
+ */
+async function seedAdminModules(
+  supabaseAdmin: any,
+  partnerIds: Record<string, string>,
+): Promise<string[]> {
+  const log: string[] = [];
+  const partnerArr = Object.values(partnerIds);
+  const pick = <T,>(arr: T[], i: number) => arr[i % arr.length];
+  const now = Date.now();
+
+  // --- A. User reports (reports) ---
+  const reportReasons = ["harassment", "fake_profile", "spam", "underage", "hate_speech", "scam"];
+  const reportStatuses = ["pending", "pending", "pending", "reviewing", "resolved", "dismissed"];
+  for (let i = 0; i < 8; i++) {
+    const reporter = pick(partnerArr, i);
+    const reported = pick(partnerArr, i + 3);
+    if (reporter === reported) continue;
+    await supabaseAdmin.from("reports").insert({
+      reporter_id: reporter,
+      reported_id: reported,
+      reason: pick(reportReasons, i),
+      details: `[SEED] Raport demo #${i + 1} — comportament suspect raportat în chat.`,
+      status: pick(reportStatuses, i),
+      created_at: new Date(now - (i + 1) * 86400_000).toISOString(),
+      is_seed: true,
+    });
+  }
+  log.push("reports: 8");
+
+  // --- B. Illegal content reports (DSA) ---
+  const dsaCategories = ["illegal_hate_speech", "copyright", "csam_suspected", "terrorism", "defamation"];
+  const dsaStatuses = ["pending", "pending", "reviewing", "resolved", "rejected"];
+  for (let i = 0; i < 6; i++) {
+    await supabaseAdmin.from("illegal_content_reports").insert({
+      reporter_email: `reporter${i}@example.test`,
+      reporter_user_id: pick(partnerArr, i),
+      content_url: `https://app.ventuza.test/p/seed-${i}`,
+      content_type: i % 2 === 0 ? "profile" : "message",
+      category: pick(dsaCategories, i),
+      description: `[SEED] Raport DSA demo #${i + 1}.`,
+      legal_basis: "DSA Art. 16",
+      status: pick(dsaStatuses, i),
+      created_at: new Date(now - (i + 1) * 2 * 86400_000).toISOString(),
+      is_seed: true,
+    });
+  }
+  log.push("dsa_reports: 6");
+
+  // --- C. CSAM reports (HASH-ONLY, fără imagini reale) ---
+  const csamStatuses = ["pending_review", "escalated_ncmec", "blocked", "false_positive"];
+  for (let i = 0; i < 4; i++) {
+    const fakeSha = Array.from({ length: 64 }, (_, k) => "0123456789abcdef"[(i * 7 + k) % 16]).join("");
+    const fakePhash = Array.from({ length: 16 }, (_, k) => "0123456789abcdef"[(i * 11 + k) % 16]).join("");
+    await supabaseAdmin.from("csam_reports").insert({
+      user_id: pick(partnerArr, i + 1),
+      photo_url: null, // intenționat NULL — nu stocăm/randăm imagini suspecte
+      hash: `phash:${fakePhash}|sha256:${fakeSha}`,
+      match_source: i === 0 ? "ncmec_hashlist" : i === 1 ? "internal_blocklist" : "perceptual_match",
+      ncmec_report_id: i === 1 ? `NCMEC-SEED-${1000 + i}` : null,
+      status: pick(csamStatuses, i),
+      notes: `[SEED] Caz demo doar pentru UI. Niciodată conținut real.`,
+      reported_at: new Date(now - (i + 1) * 3 * 86400_000).toISOString(),
+      is_seed: true,
+    });
+  }
+  log.push("csam_reports: 4 (hash-only)");
+
+  // --- D. Risk flags + profile risk_score ---
+  const riskKinds = ["velocity_signup", "duplicate_device", "vpn_exit", "report_spike", "ml_score_high"];
+  for (let i = 0; i < 7; i++) {
+    const uid = pick(partnerArr, i);
+    const sev = (i % 4) + 1;
+    await supabaseAdmin.from("risk_flags").insert({
+      user_id: uid,
+      kind: pick(riskKinds, i),
+      severity: sev,
+      details: { source: "seed", note: `demo flag #${i + 1}` },
+      status: i % 3 === 0 ? "open" : i % 3 === 1 ? "reviewing" : "resolved",
+      created_at: new Date(now - i * 36 * 3600_000).toISOString(),
+      is_seed: true,
+    });
+    // boost the partner's risk_score so the Risk panel shows variety
+    await supabaseAdmin.from("profiles").update({
+      risk_score: 20 + i * 11,
+      report_count: i % 3,
+    }).eq("id", uid);
+  }
+  log.push("risk_flags: 7");
+
+  // --- E. Breach incidents (demo) ---
+  for (let i = 0; i < 3; i++) {
+    await supabaseAdmin.from("breach_incidents").insert({
+      title: `[SEED] Incident demo #${i + 1}`,
+      discovered_at: new Date(now - (i + 1) * 5 * 86400_000).toISOString(),
+      notify_deadline: new Date(now - (i + 1) * 5 * 86400_000 + 72 * 3600_000).toISOString(),
+      description: "Eveniment de securitate fictiv, generat pentru testarea UI.",
+      affected_users_count: 10 * (i + 1),
+      data_categories: ["email", i === 0 ? "ip" : "device_fingerprint"],
+      dpo_contact: "dpo@ventuza.test",
+      authority_notified_at: i === 0 ? new Date(now - 4 * 86400_000).toISOString() : null,
+      users_notified_at: i === 0 ? new Date(now - 3 * 86400_000).toISOString() : null,
+      status: i === 0 ? "closed" : i === 1 ? "notified" : "open",
+      is_seed: true,
+    });
+  }
+  log.push("breach_incidents: 3");
+
+  // --- F. Business applications (pending B2B) ---
+  const bizStatuses = ["pending", "pending", "reviewing", "approved", "rejected"];
+  const bizCats = ["venue", "event_organizer", "brand", "media"];
+  for (let i = 0; i < 5; i++) {
+    await supabaseAdmin.from("business_applications").insert({
+      user_id: pick(partnerArr, i + 2),
+      entity_type: i % 2 === 0 ? "srl" : "pfa",
+      legal_name: `[SEED] Demo Business ${i + 1} SRL`,
+      brand_name: `DemoBrand${i + 1}`,
+      cui: `RO${10000000 + i * 137}`,
+      reg_com: `J40/${1000 + i}/2024`,
+      country: "RO",
+      city: pick(["București", "Cluj-Napoca", "Iași", "Timișoara"], i),
+      contact_name: `Persoană Demo ${i + 1}`,
+      contact_email: `biz${i + 1}@seed.ventuza.local`,
+      contact_phone: `+4072000000${i}`,
+      category: pick(bizCats, i),
+      goals: "Vrem să listăm venue și să publicăm oferte pentru comunitate.",
+      monthly_budget_eur: 200 + i * 150,
+      accepts_terms: true,
+      accepts_dpa: true,
+      accepts_lgbt_charter: true,
+      status: pick(bizStatuses, i),
+      is_seed: true,
+    });
+  }
+  log.push("business_applications: 5");
+
+  // --- G. Deletion requests (GDPR) ---
+  const delStatuses = ["pending", "pending", "scheduled", "processed", "cancelled"];
+  for (let i = 0; i < 5; i++) {
+    await supabaseAdmin.from("deletion_requests").insert({
+      user_id: pick(partnerArr, i),
+      requested_at: new Date(now - (i + 1) * 2 * 86400_000).toISOString(),
+      scheduled_for: new Date(now + (30 - i * 5) * 86400_000).toISOString(),
+      reason: i === 0 ? "Nu mai folosesc aplicația." : i === 1 ? "Vreau să-mi șterg datele." : null,
+      status: pick(delStatuses, i),
+      processed_at: i >= 3 ? new Date(now - i * 86400_000).toISOString() : null,
+      is_seed: true,
+    });
+  }
+  log.push("deletion_requests: 5");
+
+  // --- H. Policy versions ---
+  const policyKinds = ["terms", "privacy", "dsa", "cookies"];
+  for (let i = 0; i < policyKinds.length; i++) {
+    await supabaseAdmin.from("policy_versions").insert({
+      kind: policyKinds[i],
+      version: `2026.0${i + 1}-seed`,
+      content_url: `https://ventuza.test/legal/${policyKinds[i]}/seed-${i + 1}`,
+      effective_at: new Date(now - (policyKinds.length - i) * 30 * 86400_000).toISOString(),
+      is_seed: true,
+    });
+  }
+  log.push(`policy_versions: ${policyKinds.length}`);
+
+  // --- I. Admin alerts ---
+  const alertKinds = ["risk_spike", "csam_match", "breach_window_72h", "moderation_backlog"];
+  for (let i = 0; i < 4; i++) {
+    await supabaseAdmin.from("admin_alerts").insert({
+      kind: alertKinds[i],
+      severity: pick(["info", "warning", "critical", "warning"], i),
+      title: `[SEED] Alertă demo: ${alertKinds[i]}`,
+      body: "Notificare generată pentru testarea panoului admin.",
+      target_table: i === 1 ? "csam_reports" : i === 0 ? "risk_flags" : null,
+      created_at: new Date(now - i * 6 * 3600_000).toISOString(),
+      is_seed: true,
+    });
+  }
+  log.push("admin_alerts: 4");
+
+  // --- J. Audit log entries (append-only; marcăm prin justification [SEED]) ---
+  const auditActions = [
+    { action: "user.ban", severity: "warning" },
+    { action: "user.unban", severity: "info" },
+    { action: "moderation.approve_venue", severity: "info" },
+    { action: "moderation.reject_event", severity: "warning" },
+    { action: "settings.update", severity: "info" },
+    { action: "gdpr.process_deletion", severity: "warning" },
+  ];
+  for (let i = 0; i < auditActions.length; i++) {
+    const a = auditActions[i];
+    await supabaseAdmin.from("admin_audit_log").insert({
+      actor_id: pick(partnerArr, i),
+      actor_email: "seed@ventuza.local",
+      action: a.action,
+      target_table: a.action.startsWith("moderation") ? "venues" : "profiles",
+      target_id: pick(partnerArr, i + 1),
+      before_data: { status: "active" },
+      after_data: { status: "modified" },
+      justification: `[SEED] Audit demo pentru acțiunea ${a.action}.`,
+      severity: a.severity,
+      created_at: new Date(now - i * 4 * 3600_000).toISOString(),
+    });
+  }
+  log.push(`audit_log: ${auditActions.length}`);
+
+  // --- K. Break-glass sensitive access log ---
+  const breakKinds: Array<{ kind: string; fields: string[] }> = [
+    { kind: "health", fields: ["hiv_status_enc", "hiv_test_date_enc"] },
+    { kind: "location", fields: ["location"] },
+    { kind: "selfie", fields: ["selfie_url"] },
+    { kind: "messages", fields: ["body", "media_url"] },
+  ];
+  for (let i = 0; i < breakKinds.length; i++) {
+    const bk = breakKinds[i];
+    await supabaseAdmin.from("admin_sensitive_access_log").insert({
+      actor_id: pick(partnerArr, i),
+      target_user_id: pick(partnerArr, i + 2),
+      kind: bk.kind,
+      fields: bk.fields,
+      justification: `[SEED] Acces demo break-glass (${bk.kind}) pentru testare UI.`,
+      created_at: new Date(now - i * 12 * 3600_000).toISOString(),
+    });
+  }
+  log.push(`break_glass: ${breakKinds.length}`);
+
+  // --- L. Pending advertiser + ad campaigns (variate stări) ---
+  const adStatuses = ["pending_review", "active", "paused", "rejected"];
+  for (let i = 0; i < 4; i++) {
+    const owner = pick(partnerArr, i + 1);
+    const { data: adv } = await supabaseAdmin.from("advertisers").insert({
+      owner_id: owner,
+      brand_name: `[SEED] Advertiser Demo ${i + 1}`,
+      contact_email: `advertiser${i}@seed.ventuza.local`,
+      category: pick(["venue", "event", "brand", "app"], i),
+      verified: i % 2 === 0,
+      is_seed: true,
+    }).select("id").single();
+    if (!adv) continue;
+    await supabaseAdmin.from("ad_campaigns").insert({
+      advertiser_id: adv.id,
+      placement: pick(["nearby_top", "discover_inline", "events_banner", "nearby_top"], i),
+      title: `[SEED] Campanie demo #${i + 1}`,
+      body: "Conținut sponsorizat fictiv pentru testarea panoului.",
+      image_url: `https://picsum.photos/seed/adcamp-${i}/640/360`,
+      cta_label: "Vezi oferta",
+      cta_url: "/nearby",
+      city: pick(["București", "Cluj-Napoca", "Iași", "Timișoara"], i),
+      budget_cents: 25000 + i * 15000,
+      starts_at: new Date(now - i * 86400_000).toISOString(),
+      ends_at: new Date(now + (30 - i * 3) * 86400_000).toISOString(),
+      status: pick(adStatuses, i),
+      is_seed: true,
+    });
+  }
+  log.push("ads_pending: 4");
+
+  return log;
+}
 
 async function summary(supabaseAdmin: any) {
   const { data } = await supabaseAdmin.rpc("seed_content_summary");
