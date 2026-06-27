@@ -54,6 +54,7 @@ import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
 import { Route as AuthenticatedPartnerBillingRouteImport } from './routes/_authenticated.partner.billing'
+import { Route as ApiPublicHooksBillingTickRouteImport } from './routes/api/public/hooks/billing-tick'
 
 const VisitorsRoute = VisitorsRouteImport.update({
   id: '/visitors',
@@ -282,6 +283,12 @@ const AuthenticatedPartnerBillingRoute =
     path: '/partner/billing',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksBillingTickRoute =
+  ApiPublicHooksBillingTickRouteImport.update({
+    id: '/api/public/hooks/billing-tick',
+    path: '/api/public/hooks/billing-tick',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -329,6 +336,7 @@ export interface FileRoutesByFullPath {
   '/partner/billing': typeof AuthenticatedPartnerBillingRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
+  '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -376,6 +384,7 @@ export interface FileRoutesByTo {
   '/partner/billing': typeof AuthenticatedPartnerBillingRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
+  '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -424,6 +433,7 @@ export interface FileRoutesById {
   '/_authenticated/partner/billing': typeof AuthenticatedPartnerBillingRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
+  '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -473,6 +483,7 @@ export interface FileRouteTypes {
     | '/partner/billing'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
+    | '/api/public/hooks/billing-tick'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -520,6 +531,7 @@ export interface FileRouteTypes {
     | '/partner/billing'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
+    | '/api/public/hooks/billing-tick'
   id:
     | '__root__'
     | '/'
@@ -567,6 +579,7 @@ export interface FileRouteTypes {
     | '/_authenticated/partner/billing'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
+    | '/api/public/hooks/billing-tick'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -611,6 +624,7 @@ export interface RootRouteChildren {
   AuthenticatedPartnerBillingRoute: typeof AuthenticatedPartnerBillingRoute
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
+  ApiPublicHooksBillingTickRoute: typeof ApiPublicHooksBillingTickRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -930,6 +944,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPartnerBillingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/billing-tick': {
+      id: '/api/public/hooks/billing-tick'
+      path: '/api/public/hooks/billing-tick'
+      fullPath: '/api/public/hooks/billing-tick'
+      preLoaderRoute: typeof ApiPublicHooksBillingTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1021,6 +1042,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedPartnerBillingRoute: AuthenticatedPartnerBillingRoute,
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
+  ApiPublicHooksBillingTickRoute: ApiPublicHooksBillingTickRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
