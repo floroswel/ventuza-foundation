@@ -1,15 +1,43 @@
 import { useDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
 import { useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+
+// Routes a not-yet-onboarded user is allowed to land on. Everything else is
+// hard-redirected to /n so OAuth signups cannot reach the app without supplying
+// a real birthdate (server-side `enforce_min_age_trg` enforces 18+).
+const ALLOWED_WITHOUT_BIRTHDATE = ["/n", "/auth", "/age-gate", "/legal", "/r/"];
 
 /** Invisible component that wires session-scoped background guards. */
 export function SessionGuards() {
   const { user } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const geoWatchRef = useRef<number | null>(null);
   const lastSentRef = useRef(0);
 
   useDeviceFingerprint();
+
+  // Birthdate / onboarding guard — must run on every navigation while signed in.
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select("birthdate, onboarding_completed")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      const path = location.pathname || "/";
+      const exempt = ALLOWED_WITHOUT_BIRTHDATE.some((p) => path.startsWith(p));
+      if (!data?.birthdate && !exempt) {
+        navigate({ to: "/n", replace: true });
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user, location.pathname, navigate]);
 
   useEffect(() => {
     if (!user || !("geolocation" in navigator)) return;
@@ -36,3 +64,4 @@ export function SessionGuards() {
 
   return null;
 }
+
