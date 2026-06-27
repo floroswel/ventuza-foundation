@@ -102,6 +102,15 @@ function AdminDashboard() {
     })();
   }, [user, loading, navigate]);
 
+  // Auto-logout după 15 min de inactivitate — hooks MEREU înainte de early returns
+  const onIdle = useCallback(async () => {
+    if (!isAdmin && !isMod) return;
+    toast.warning("Sesiune admin expirată după 15 min inactivitate");
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  }, [isAdmin, isMod, navigate]);
+  useIdleLogout(15, onIdle, isAdmin === true || isMod);
+
   if (loading || isAdmin === null) {
     return <div className="flex min-h-dvh items-center justify-center"><Loader2 className="size-6 animate-spin" /></div>;
   }
@@ -118,14 +127,6 @@ function AdminDashboard() {
     );
   }
 
-  // Auto-logout după 15 min de inactivitate
-  const onIdle = useCallback(async () => {
-    if (!isAdmin && !isMod) return;
-    toast.warning("Sesiune admin expirată după 15 min inactivitate");
-    await supabase.auth.signOut();
-    navigate({ to: "/auth" });
-  }, [isAdmin, isMod, navigate]);
-  useIdleLogout(15, onIdle, isAdmin === true || isMod);
 
   const allItems: { id: Section; label: string; icon: any; adminOnly?: boolean }[] = [
     { id: "overview", label: "Overview", icon: LayoutDashboard, adminOnly: true },
