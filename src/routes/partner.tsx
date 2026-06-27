@@ -87,6 +87,7 @@ function PartnerPortal() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [pendingApp, setPendingApp] = useState<{ id: string; status: string; legal_name: string | null } | null>(null);
   const [pendingChecked, setPendingChecked] = useState(false);
+  const [pendingError, setPendingError] = useState<string | null>(null);
 
   const listFn = useServerFn(partnerListMyItems);
   const quotaFn = useServerFn(partnerGetQuota);
@@ -122,16 +123,24 @@ function PartnerPortal() {
       // status instead of the same CTA as someone who never applied.
       let alive = true;
       const fetchApp = async () => {
-        const { data } = await supabase
-          .from("business_applications")
-          .select("id, status, legal_name")
-          .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-        if (!alive) return;
-        setPendingApp(data ?? null);
-        setPendingChecked(true);
+        try {
+          const { data, error } = await supabase
+            .from("business_applications")
+            .select("id, status, legal_name")
+            .eq("user_id", user.id)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if (!alive) return;
+          if (error) throw error;
+          setPendingApp(data ?? null);
+          setPendingError(null);
+        } catch (e: any) {
+          if (!alive) return;
+          setPendingError(e?.message ?? "Nu am putut verifica cererea.");
+        } finally {
+          if (alive) setPendingChecked(true);
+        }
       };
       void fetchApp();
       // Auto-detect approval: poll user_roles every 15s + realtime on insert.
