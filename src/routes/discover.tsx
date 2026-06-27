@@ -291,8 +291,16 @@ function DiscoverPage() {
       <div className="px-3 pt-2"><SponsoredBanner placement="discover_card" /></div>
       {loading ? (
         <CenterMessage icon={<Loader2 className="size-6 animate-spin text-primary" />} title="Finding people…" />
+      ) : loadError ? (
+        <CenterMessage
+          icon={<Compass className="size-8 text-destructive" />}
+          title="Ceva nu a mers"
+          desc={loadError}
+          action={<Button variant="hero" onClick={() => load()}>Reîncearcă</Button>}
+        />
       ) : visible.length === 0 ? (
         <EmptyState onRefresh={() => load()} hasLocation={locStatus === "granted"} />
+
       ) : view === "swipe" ? (
         <SwipeDeck profiles={visible} onDecision={handleDecision} onOpen={setSelected} />
       ) : (
