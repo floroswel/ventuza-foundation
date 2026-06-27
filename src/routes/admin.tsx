@@ -643,20 +643,27 @@ function BroadcastPanel() {
 function ReportsPanel({ meId }: { meId: string }) {
   const [reports, setReports] = useState<Report[]>([]);
   const [busy, setBusy] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    const { data, error } = await supabase
-      .from("reports").select("*").eq("status", "pending")
-      .order("created_at", { ascending: false }).limit(100);
-    if (error) return toast.error(error.message);
-    const ids = Array.from(new Set((data ?? []).map((r) => r.reported_id)));
-    const profilesMap = new Map<string, any>();
-    if (ids.length) {
-      const { data: profs } = await supabase.from("profiles")
-        .select("id, display_name, report_count, suspended_until").in("id", ids);
-      profs?.forEach((p) => profilesMap.set(p.id, p));
-    }
-    setReports((data ?? []).map((r) => ({ ...r, reported_profile: profilesMap.get(r.reported_id) ?? null })) as Report[]);
+    setLoading(true); setError(null);
+    try {
+      const { data, error } = await supabase
+        .from("reports").select("*").eq("status", "pending")
+        .order("created_at", { ascending: false }).limit(100);
+      if (error) throw error;
+      const ids = Array.from(new Set((data ?? []).map((r) => r.reported_id)));
+      const profilesMap = new Map<string, any>();
+      if (ids.length) {
+        const { data: profs } = await supabase.from("profiles")
+          .select("id, display_name, report_count, suspended_until").in("id", ids);
+        profs?.forEach((p) => profilesMap.set(p.id, p));
+      }
+      setReports((data ?? []).map((r) => ({ ...r, reported_profile: profilesMap.get(r.reported_id) ?? null })) as Report[]);
+    } catch (e: any) {
+      const m = e?.message ?? String(e); setError(m); toast.error(m);
+    } finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
@@ -686,8 +693,10 @@ function ReportsPanel({ meId }: { meId: string }) {
     setReports((r) => r.filter((x) => x.id !== id));
   };
 
+  if (error) return <AdminPanelError error={error} onRetry={load} />;
+  if (loading) return <AdminPanelEmpty label="Se încarcă rapoartele…" />;
   if (reports.length === 0) {
-    return <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">🎉 Nimic de moderat</div>;
+    return <AdminPanelEmpty label="🎉 Nimic de moderat (empty legitim — nicio raportare în așteptare)." />;
   }
   return (
     <ul className="space-y-3">
