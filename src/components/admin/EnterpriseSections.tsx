@@ -449,8 +449,12 @@ export function GdprPanel() {
 
       <div>
         <h3 className="mb-2 text-xs uppercase text-muted-foreground">Cereri ștergere ({items.length})</h3>
-        {items.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Nicio cerere.</div>
+        {error ? (
+          <ErrorBanner error={error} onRetry={load} />
+        ) : loading ? (
+          <LoadingBox />
+        ) : items.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">Nicio cerere de ștergere (empty legitim).</div>
         ) : (
           <ul className="space-y-2">
             {items.map((d) => {
