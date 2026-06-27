@@ -545,3 +545,29 @@ Orice PR care:
   Art. 30,
 
 trebuie REFUZAT.
+
+## REGULĂ — DOCUMENTE LEGALE P0 (permanentă)
+
+Înainte de orice publicare publică (Google Play, web prod, App Store) trebuie
+să existe ȘI să fie linkate din `/settings` următoarele pagini, fiecare cu
+conținut real (nu placeholder):
+
+1. `/legal/terms` — include clauze 18+, conduită, jurisdicție RO/UE,
+   non-discriminare LGBTQ+ și interzicerea outing-ului involuntar.
+2. `/legal/privacy` — categorii date, baze legale Art. 6 ȘI Art. 9 GDPR
+   (orientare sexuală, HIV, biometrice marcate explicit), procesatori reali
+   (sincron cu `/legal/subprocessors`), drepturi user, DPO, retenție, transferuri.
+3. `/legal/cookies` — categorii + retragere consimțământ.
+4. `/legal/community` — reguli + helpline-uri LGBTQ+ România (ACCEPT, ARAS).
+5. `/safety` — sfaturi întâlniri + 112 + ACCEPT + ARAS.
+6. `/legal/age-policy` — politică 18+ dedicată: mecanisme verificare, ce
+   facem cu minori descoperiți, raportare CSAM.
+7. `/legal/dmca` — procedură notificare + contra-notificare drepturi de autor.
+8. `/legal/dsa` — punct unic de contact DSA + Art. 16, 20.
+
+**ANSPDCP nu se face „înregistrare DPO"** — obligația a dispărut la intrarea
+GDPR (2018). DPO-ul se desemnează și se publică doar în Privacy Policy.
+Registrul Art. 30 se ține intern, nu se transmite ANSPDCP decât la cerere.
+
+Orice diff care șterge una din paginile A1–A8, le golește, sau le scoate din
+meniul Settings trebuie REFUZAT.
