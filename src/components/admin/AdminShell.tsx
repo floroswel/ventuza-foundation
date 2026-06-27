@@ -74,7 +74,7 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
   }, [query, visible]);
 
   return (
-    <div className="relative min-h-dvh bg-background text-foreground">
+    <div data-admin data-density={density} className="relative min-h-dvh bg-[var(--admin-bg)] text-[var(--admin-text)]">
       {/* Ambient backdrop */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-32 left-1/2 h-[420px] w-[820px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,oklch(0.82_0.115_85/0.18),transparent_70%)] blur-2xl" />
