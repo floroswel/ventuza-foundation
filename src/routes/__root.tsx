@@ -25,6 +25,7 @@ import { useProximityForegroundWatcher } from "@/lib/proximity-watcher";
 import "@/lib/i18n";
 
 import { FeedbackWidget } from "@/components/FeedbackWidget";
+import { ConsentPromptHost } from "@/components/ConsentPromptHost";
 
 
 function NotFoundComponent() {
@@ -195,6 +196,9 @@ function RootComponent() {
           <Toaster theme="dark" position="top-center" richColors />
           
           <FeedbackWidget />
+          <ConsentPromptHost />
+
+
 
         </NotificationsProvider>
       </AuthProvider>

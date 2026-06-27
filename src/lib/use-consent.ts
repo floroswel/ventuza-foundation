@@ -45,11 +45,11 @@ export function useConsent(kind: ConsentKind) {
 
   const ensure = useCallback(async (): Promise<boolean> => {
     if (active) return true;
-    const ok = typeof window !== "undefined"
-      ? window.confirm(
-          `${meta.label}\n\n${meta.description}\n\nActivezi acum? Poți retrage oricând din Setări → Consimțăminte.`,
-        )
-      : false;
+    if (typeof window === "undefined") return false;
+    // Folosim registrul unificat (ConsentPromptHost) — interzis window.confirm
+    // pentru consimțăminte GDPR (vezi AGENTS.md).
+    const { requestConsent } = await import("@/components/ConsentPromptHost");
+    const ok = await requestConsent({ label: meta.label, description: meta.description });
     if (!ok) return false;
     return await grant();
   }, [active, grant, meta.label, meta.description]);
