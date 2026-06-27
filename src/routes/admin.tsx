@@ -174,6 +174,7 @@ function AdminDashboard() {
           TODO[age-gate]: la reactivare (toggle ON din admin → Securitate/Feature flags),
           banner-ul dispare automat. Producția forțează ON via age-gate-policy. */}
       <AgeGateDevBanner />
+      <DemoSeedBanner />
 
       <main className="mx-auto max-w-7xl px-4 py-6">
         {section === "overview" && isAdmin && <OverviewPanel />}
@@ -194,6 +195,7 @@ function AdminDashboard() {
         {section === "broadcast" && isAdmin && <BroadcastPanel />}
         {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
         {section === "security" && <SecurityPanel />}
+        {section === "demoseed" && isAdmin && <DemoSeedPanel isSuperAdmin={isSuper} />}
       </main>
     </div>
   );
