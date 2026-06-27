@@ -856,6 +856,7 @@ export type Database = {
       deletion_requests: {
         Row: {
           id: string
+          is_seed: boolean
           processed_at: string | null
           reason: string | null
           requested_at: string
@@ -865,6 +866,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          is_seed?: boolean
           processed_at?: string | null
           reason?: string | null
           requested_at?: string
@@ -874,6 +876,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          is_seed?: boolean
           processed_at?: string | null
           reason?: string | null
           requested_at?: string
@@ -2386,6 +2389,7 @@ export type Database = {
           created_at: string
           details: Json
           id: string
+          is_seed: boolean
           kind: string
           resolved_at: string | null
           resolved_by: string | null
@@ -2397,6 +2401,7 @@ export type Database = {
           created_at?: string
           details?: Json
           id?: string
+          is_seed?: boolean
           kind: string
           resolved_at?: string | null
           resolved_by?: string | null
@@ -2408,6 +2413,7 @@ export type Database = {
           created_at?: string
           details?: Json
           id?: string
+          is_seed?: boolean
           kind?: string
           resolved_at?: string | null
           resolved_by?: string | null
@@ -4207,6 +4213,7 @@ export type Database = {
         }
         Returns: string
       }
+      wipe_seed_admin_appendonly: { Args: never; Returns: Json }
       withdraw_health_consent: {
         Args: { _version?: string }
         Returns: undefined
