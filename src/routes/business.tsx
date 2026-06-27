@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth-context";
 import { toast } from "sonner";
 import {
   Building2, CheckCircle2, ChevronLeft, Loader2, Sparkles, ShieldCheck,
@@ -10,6 +11,7 @@ import {
 } from "lucide-react";
 import { lookupAnafCui } from "@/lib/anaf.functions";
 import { submitBusinessApplication } from "@/lib/business-apply.functions";
+import { linkOrphanBusinessApps } from "@/lib/business.functions";
 
 export const Route = createFileRoute("/business")({
   head: () => ({
@@ -62,6 +64,7 @@ const schema = z.object({
 const STATUS_KEY = "vz_biz_app";
 
 function BusinessPage() {
+  const { user } = useAuth();
   const [view, setView] = useState<"landing" | "form" | "done">("landing");
   const [submitting, setSubmitting] = useState(false);
   const [savedAppId, setSavedAppId] = useState<string | null>(null);
@@ -69,6 +72,7 @@ function BusinessPage() {
   const [anafLoading, setAnafLoading] = useState(false);
   const anafLookup = useServerFn(lookupAnafCui);
   const submitApp = useServerFn(submitBusinessApplication);
+  const linkOrphans = useServerFn(linkOrphanBusinessApps);
 
   const [form, setForm] = useState({
     entity_type: "srl" as const,
@@ -147,6 +151,12 @@ function BusinessPage() {
         try { localStorage.setItem(STATUS_KEY, JSON.stringify({ id: res.id, at: Date.now() })); } catch {/**/}
         setSavedAppId(res.id);
         setSavedStatus("pending");
+        // If submitter is authenticated, link the orphan application to their
+        // user_id immediately so /partner pending state + /partner/billing
+        // profile lookup work without depending on a second sign-in.
+        if (user) {
+          try { await linkOrphans({}); } catch { /* best-effort */ }
+        }
       }
       setView("done");
       toast.success("Cerere trimisă! Te contactăm pe email în 3 zile lucrătoare.");
@@ -472,6 +482,7 @@ function FormView({
 }
 
 function DoneScreen({ appId }: { appId: string | null }) {
+  const { user } = useAuth();
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-6 py-16 text-center">
       <CheckCircle2 className="size-16 text-primary" />
@@ -487,9 +498,38 @@ function DoneScreen({ appId }: { appId: string | null }) {
       <a href="mailto:business@ventuza.app" className="mt-2 inline-flex items-center gap-2 text-xs text-primary hover:underline">
         <Mail className="size-3.5" /> business@ventuza.app
       </a>
-      <Link to="/" className="mt-4 rounded-full bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground">
-        Înapoi acasă
-      </Link>
+
+      <div className="mt-2 w-full space-y-3">
+        {user ? (
+          <>
+            <Link
+              to="/partner"
+              className="block w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground"
+            >
+              Deschide Portalul Partener →
+            </Link>
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              Vei vedea statusul cererii și vei putea pregăti primele postări (devin vizibile după aprobare).
+            </p>
+          </>
+        ) : (
+          <>
+            <Link
+              to="/auth"
+              search={{ mode: "signup" }}
+              className="block w-full rounded-full bg-primary px-6 py-3 text-sm font-medium text-primary-foreground"
+            >
+              Creează cont pentru a urmări statusul →
+            </Link>
+            <p className="text-[11px] leading-snug text-muted-foreground">
+              Folosește același email ({"contact_email"}) ca să legăm cererea automat.
+            </p>
+          </>
+        )}
+        <Link to="/" className="block text-xs text-muted-foreground hover:text-foreground">
+          ← Înapoi acasă
+        </Link>
+      </div>
     </div>
   );
 }
