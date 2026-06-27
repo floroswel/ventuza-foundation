@@ -202,21 +202,48 @@ function AdminDashboard() {
   );
 }
 
+/* ---------------- Shared panel state UI ---------------- */
+function AdminPanelError({ error, onRetry, hint }: { error: string; onRetry?: () => void; hint?: string }) {
+  const forbidden = /forbidden|denied|insufficient|not allowed|rol|role|policy|permission/i.test(error);
+  return (
+    <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm">
+      <p className="font-semibold text-red-300">{forbidden ? "Acces refuzat" : "Eroare la încărcare"}</p>
+      <p className="mt-1 break-words text-xs text-red-200/90">{error}</p>
+      {forbidden && (
+        <p className="mt-2 text-[11px] text-red-200/70">
+          Acest panou cere un rol pe care contul tău nu îl are (ex: <code>super_admin</code> / <code>auditor</code>).
+        </p>
+      )}
+      {hint && <p className="mt-1 text-[11px] text-red-200/70">{hint}</p>}
+      {onRetry && (
+        <button onClick={onRetry} className="mt-2 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/10">Reîncearcă</button>
+      )}
+    </div>
+  );
+}
+function AdminPanelEmpty({ label }: { label: string }) {
+  return <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">{label}</div>;
+}
+
 /* ---------------- OVERVIEW ---------------- */
 function OverviewPanel() {
   const getOverview = useServerFn(adminGetOverview);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const load = async () => {
-    setLoading(true);
-    try { setData(await getOverview()); } catch (e: any) { toast.error(e.message); }
-    setLoading(false);
+    setLoading(true); setError(null);
+    try { setData(await getOverview()); }
+    catch (e: any) { const m = e?.message ?? String(e); setError(m); toast.error(m); }
+    finally { setLoading(false); }
   };
   useEffect(() => { load(); }, []);
 
   if (loading) return <Loader2 className="mx-auto mt-12 size-6 animate-spin" />;
-  if (!data) return null;
+  if (error) return <AdminPanelError error={error} onRetry={load} />;
+  if (!data) return <AdminPanelEmpty label="Fără date." />;
+
 
   const Stat = ({ label, value, hint }: { label: string; value: number | string; hint?: string }) => (
     <div className="rounded-2xl border border-border bg-surface p-4">
