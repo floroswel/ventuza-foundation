@@ -146,6 +146,7 @@ function AdminDashboard() {
     { id: "data", label: "Date (toate)", icon: Database, adminOnly: true },
     { id: "broadcast", label: "Broadcast", icon: Send, adminOnly: true },
     { id: "security", label: "Securitate", icon: KeyRound },
+    { id: "demoseed", label: "Demo seed", icon: Sparkles, adminOnly: true },
   ];
   const items = allItems.filter((i) => !i.adminOnly || isAdmin);
 
