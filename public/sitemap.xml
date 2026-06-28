@@ -16,4 +16,8 @@
   <url><loc>https://ventuza-foundation.lovable.app/legal/subprocessors</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://ventuza-foundation.lovable.app/legal/business-terms</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
   <url><loc>https://ventuza-foundation.lovable.app/status</loc><changefreq>always</changefreq><priority>0.5</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/account-deletion</loc><changefreq>yearly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/legal/age-policy</loc><changefreq>yearly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/legal/dmca</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://ventuza-foundation.lovable.app/legal/records-of-processing</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
 </urlset>
