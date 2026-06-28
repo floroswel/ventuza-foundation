@@ -32,6 +32,7 @@ import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdvertiseRouteImport } from './routes/advertise'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AccountDeletionRouteImport } from './routes/account-deletion'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as VenuesIdRouteImport } from './routes/venues.$id'
@@ -175,6 +176,11 @@ const AdminRoute = AdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AccountDeletionRoute = AccountDeletionRouteImport.update({
+  id: '/account-deletion',
+  path: '/account-deletion',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -315,6 +321,7 @@ const ApiPublicHooksBillingTickRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRoute
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
@@ -367,6 +374,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRoute
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
@@ -420,6 +428,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRoute
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
@@ -474,6 +483,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account-deletion'
     | '/admin'
     | '/advertise'
     | '/auth'
@@ -526,6 +536,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account-deletion'
     | '/admin'
     | '/advertise'
     | '/auth'
@@ -578,6 +589,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account-deletion'
     | '/admin'
     | '/advertise'
     | '/auth'
@@ -631,6 +643,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountDeletionRoute: typeof AccountDeletionRoute
   AdminRoute: typeof AdminRoute
   AdvertiseRoute: typeof AdvertiseRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
@@ -836,6 +849,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account-deletion': {
+      id: '/account-deletion'
+      path: '/account-deletion'
+      fullPath: '/account-deletion'
+      preLoaderRoute: typeof AccountDeletionRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1101,6 +1121,7 @@ const PartnerRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountDeletionRoute: AccountDeletionRoute,
   AdminRoute: AdminRoute,
   AdvertiseRoute: AdvertiseRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
@@ -1147,13 +1168,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
