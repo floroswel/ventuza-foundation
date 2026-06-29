@@ -3432,6 +3432,10 @@ export type Database = {
         Args: { _action: string; _max: number; _window_seconds: number }
         Returns: boolean
       }
+      claim_business_application_by_code: {
+        Args: { _app_id: string }
+        Returns: Json
+      }
       claim_daily_reward: { Args: never; Returns: Json }
       claim_offer: {
         Args: { p_offer_id: string }

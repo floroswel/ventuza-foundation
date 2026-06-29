@@ -3,6 +3,7 @@ import confetti from "canvas-confetti";
 import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { EnablePushButton } from "@/components/EnablePushButton";
 
 function SendFirstMessageButton({ onSend, onDone }: { onSend: () => void | Promise<void>; onDone?: () => void }) {
   const [busy, setBusy] = useState(false);
@@ -171,6 +172,15 @@ export function MatchModal({
               >
                 Keep discovering
               </Button>
+              {/* Prompt push: după primul match, oferim activarea notificărilor
+                  (mesaje viitoare apar instant). EnablePushButton se ascunde
+                  singur dacă userul a acordat deja consimțământul. */}
+              <div className="pt-2">
+                <EnablePushButton className="w-full" />
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Primește notificare când îți răspunde — nimeni nu vede preview-ul (mod discret).
+                </p>
+              </div>
             </motion.div>
           </motion.div>
         </motion.div>

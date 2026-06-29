@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Loader2, Upload, X } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bell, Loader2, Upload, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { setMyHealth } from "@/lib/health.functions";
 import { moderatePhoto } from "@/lib/verification.functions";
 import { useAuth } from "@/lib/auth-context";
+import { EnablePushButton } from "@/components/EnablePushButton";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -126,6 +127,7 @@ function Onboarding() {
   const [data, setData] = useState<Data>(empty);
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [donePush, setDonePush] = useState(false);
 
   // Hydrate step + data din localStorage la mount (refresh / kill-app safe).
   useEffect(() => {
@@ -262,13 +264,37 @@ function Onboarding() {
 
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
     toast.success("Your profile is ready.");
-    navigate({ to: "/discover", replace: true });
-
+    // Înainte de a duce userul în /discover, oferim activarea push (consimțământ
+    // recorded prin EnablePushButton → savePushSubscription → record_consent).
+    setDonePush(true);
   }
 
   function back() {
     if (step === 0) navigate({ to: "/" });
     else setStep(step - 1);
+  }
+
+  if (donePush) {
+    return (
+      <main className="flex min-h-dvh flex-col items-center justify-center gap-6 bg-background px-6 text-center">
+        <div className="flex size-16 items-center justify-center rounded-full border border-primary/40 bg-surface glow-gold">
+          <Bell className="size-7 text-primary" />
+        </div>
+        <div className="space-y-2 max-w-sm">
+          <h2 className="wordmark text-3xl font-medium">Aproape gata</h2>
+          <p className="text-sm text-muted-foreground">
+            Activează notificările ca să afli imediat când ai un match nou sau un mesaj.
+            Mod discret implicit — nimeni nu vede preview-ul.
+          </p>
+        </div>
+        <div className="flex w-full max-w-xs flex-col gap-2">
+          <EnablePushButton className="w-full" />
+          <Button variant="outline" size="lg" onClick={() => navigate({ to: "/discover", replace: true })}>
+            Continuă fără notificări
+          </Button>
+        </div>
+      </main>
+    );
   }
 
   return (

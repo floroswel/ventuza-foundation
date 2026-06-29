@@ -1,5 +1,26 @@
 import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+/**
+ * Claim an orphan business application by its ID (code shown after submit).
+ * Lets users who submitted anonymously and later signed up with a different
+ * email reclaim their request without manual support.
+ */
+export const claimBusinessApplicationByCode = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ appId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    const { data: res, error } = await context.supabase
+      .rpc("claim_business_application_by_code", { _app_id: data.appId });
+    if (error) {
+      const m = error.message || "";
+      if (/already_claimed/.test(m)) throw new Error("Această cerere e deja revendicată de alt cont.");
+      if (/not_found/.test(m)) throw new Error("Cod inexistent. Verifică ID-ul cererii.");
+      throw new Error(m || "Nu am putut revendica cererea.");
+    }
+    return res as { ok: boolean; status: string; legal_name: string | null };
+  });
 
 /**
  * After a user signs up / logs in, link any orphan business_applications

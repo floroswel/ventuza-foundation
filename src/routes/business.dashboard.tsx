@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
 import { useUserRoles } from "@/hooks/useUserRole";
 import { getMyAdvertiser, listMyCampaigns, type Advertiser, type AdCampaign, type AdPlacement } from "@/lib/ads";
+import { createAdvertiser as createAdvertiserFn, createAdCampaign as createAdCampaignFn } from "@/lib/ads.functions";
 import { Building2, Plus, BarChart3, Loader2, ChevronLeft, ExternalLink, Eye, MousePointerClick, CircleDollarSign, ShieldCheck, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
@@ -28,6 +29,8 @@ function BusinessDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { roles, loading: rolesLoading } = useUserRoles();
   const navigate = useNavigate();
+  const createAdvertiserSrv = useServerFn(createAdvertiserFn);
+  const createCampaignSrv = useServerFn(createAdCampaignFn);
   const [advertiser, setAdvertiser] = useState<Advertiser | null>(null);
   const [campaigns, setCampaigns] = useState<AdCampaign[]>([]);
   const [loading, setLoading] = useState(true);
@@ -84,19 +87,13 @@ function BusinessDashboard() {
     if (!user) return;
     setCreating(true);
     try {
-      const { data, error } = await supabase
-        .from("advertisers")
-        .insert({
-          owner_id: user.id,
-          brand_name: String(form.get("brand_name") || "").trim(),
-          contact_email: String(form.get("contact_email") || "").trim(),
-          contact_phone: String(form.get("contact_phone") || "").trim() || null,
-          website: String(form.get("website") || "").trim() || null,
-          category: String(form.get("category") || "venue"),
-        })
-        .select()
-        .single();
-      if (error) throw error;
+      const data = await createAdvertiserSrv({ data: {
+        brand_name: String(form.get("brand_name") || "").trim(),
+        contact_email: String(form.get("contact_email") || "").trim(),
+        contact_phone: String(form.get("contact_phone") || "").trim() || null,
+        website: String(form.get("website") || "").trim() || null,
+        category: String(form.get("category") || "venue") as "venue"|"event"|"brand"|"ngo"|"service",
+      } });
       setAdvertiser(data as Advertiser);
       toast.success("Profilul brand-ului a fost creat");
     } catch (e) {
@@ -110,35 +107,18 @@ function BusinessDashboard() {
     if (!advertiser) return;
     setCreating(true);
     try {
-      const placement = String(form.get("placement") || "events_banner") as AdPlacement;
-      const starts = String(form.get("starts_at"));
-      const ends = String(form.get("ends_at"));
-      const days = Math.max(1, Math.ceil((new Date(ends).getTime() - new Date(starts).getTime()) / 86400000));
-      const price = PRICING[placement];
-      if (days < price.minDays) {
-        toast.error(`Minim ${price.minDays} zile pentru acest placement`);
-        return;
-      }
-      const budgetCents = days * price.perDayEur * 100;
-      const { data, error } = await supabase
-        .from("ad_campaigns")
-        .insert({
-          advertiser_id: advertiser.id,
-          placement,
-          title: String(form.get("title") || "").trim(),
-          body: String(form.get("body") || "").trim() || null,
-          image_url: String(form.get("image_url") || "").trim() || null,
-          cta_label: String(form.get("cta_label") || "Află mai mult").trim(),
-          cta_url: String(form.get("cta_url") || "").trim() || null,
-          city: String(form.get("city") || "").trim() || null,
-          budget_cents: budgetCents,
-          starts_at: new Date(starts).toISOString(),
-          ends_at: new Date(ends).toISOString(),
-          status: "pending",
-        })
-        .select()
-        .single();
-      if (error) throw error;
+      const data = await createCampaignSrv({ data: {
+        advertiser_id: advertiser.id,
+        placement: String(form.get("placement") || "events_banner") as AdPlacement,
+        title: String(form.get("title") || "").trim(),
+        body: String(form.get("body") || "").trim() || null,
+        image_url: String(form.get("image_url") || "").trim() || null,
+        cta_label: String(form.get("cta_label") || "Află mai mult").trim(),
+        cta_url: String(form.get("cta_url") || "").trim() || null,
+        city: String(form.get("city") || "").trim() || null,
+        starts_at: String(form.get("starts_at")),
+        ends_at: String(form.get("ends_at")),
+      } });
       setCampaigns((prev) => [data as AdCampaign, ...prev]);
       setShowForm(false);
       toast.success("Campanie trimisă spre aprobare");
