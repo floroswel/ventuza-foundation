@@ -3417,6 +3417,7 @@ export type Database = {
         Returns: Json
       }
       app_role_values: { Args: never; Returns: string[] }
+      assert_age_verified: { Args: never; Returns: undefined }
       assert_no_plaintext_hiv_profile_completion: {
         Args: never
         Returns: boolean
@@ -3928,10 +3929,9 @@ export type Database = {
         Returns: boolean
       }
       seed_content_summary: { Args: never; Returns: Json }
-      set_looking_now: {
-        Args: { _hours: number; _intent?: string }
-        Returns: undefined
-      }
+      set_looking_now:
+        | { Args: { _hours: number; _intent?: string }; Returns: undefined }
+        | { Args: { _hours: number; _intent: string }; Returns: undefined }
       set_user_health: {
         Args: { _date: string; _key: string; _status: string; _user_id: string }
         Returns: undefined
