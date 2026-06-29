@@ -443,7 +443,7 @@ function FormView({
             <Field label="Email *"><input type="email" className="input" value={form.contact_email} onChange={(e) => set("contact_email", e.target.value)} required /></Field>
             <Field label="Telefon"><input className="input" value={form.contact_phone} onChange={(e) => set("contact_phone", e.target.value)} placeholder="+40 7xx xxx xxx" /></Field>
           </div>
-          <Field label="Website"><input className="input" value={form.website} onChange={(e) => set("website", e.target.value)} placeholder="https://…" /></Field>
+          <Field label="Website"><input type="url" inputMode="url" className="input" value={form.website} onChange={(e) => set("website", e.target.value)} placeholder="https://…" /></Field>
           <Field label="Social media (linkuri, virgulă)">
             <input className="input" value={form.social_links} onChange={(e) => set("social_links", e.target.value)} placeholder="instagram.com/… , facebook.com/…" />
           </Field>
