@@ -98,7 +98,22 @@ export function StatusNotificationsBell() {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto p-0">
         <div className="px-3 py-2 border-b text-sm font-medium">Decizii moderare</div>
-        {items.length === 0 && (
+        {errorMsg && (
+          <div className="px-3 py-2 border-b text-xs text-amber-700 dark:text-amber-300 bg-amber-500/10 flex items-start gap-2">
+            <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <div className="font-medium">Notificările nu s-au putut încărca.</div>
+              <button
+                type="button"
+                onClick={refresh}
+                className="underline mt-0.5"
+              >
+                Reîncearcă
+              </button>
+            </div>
+          </div>
+        )}
+        {items.length === 0 && !errorMsg && (
           <div className="px-3 py-6 text-sm text-muted-foreground text-center">
             Nicio decizie nouă încă.
           </div>
