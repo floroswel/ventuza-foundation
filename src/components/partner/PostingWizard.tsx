@@ -102,6 +102,20 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
     setRadius(DEFAULT_RADIUS);
   }, [open]);
 
+  // Keep offer location in sync with the picked venue's coordinates.
+  // Without this, switching venue in step 2 keeps the București default and
+  // proximity notifications would target the wrong area.
+  useEffect(() => {
+    if (kind !== "offer") return;
+    const vid = values.venue_id;
+    if (!vid) return;
+    const v = myVenues.find((x) => x.id === vid);
+    if (v?.lat && v?.lng) {
+      setLat(v.lat);
+      setLng(v.lng);
+    }
+  }, [kind, values.venue_id, myVenues]);
+
   const template: PartnerTemplate | null = kind ? PARTNER_TEMPLATES[kind] : null;
 
   // Quota check per kind
