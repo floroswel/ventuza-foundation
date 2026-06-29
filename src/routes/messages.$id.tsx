@@ -484,7 +484,7 @@ function ThreadPage() {
                       {mine && !isDeleted && (
                         <div className="order-0 mb-1 hidden gap-1 group-hover:flex">
                           {canUnsend && (
-                            <button type="button" onClick={() => handleUnsend(m)} aria-label="Unsend" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive">
+                            <button type="button" onClick={() => setUnsendTarget(m)} aria-label="Unsend" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive">
                               <Trash2 className="size-3.5" />
                             </button>
                           )}
