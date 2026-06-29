@@ -124,8 +124,23 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   return <NotificationsContext.Provider value={value}>{children}</NotificationsContext.Provider>;
 }
 
+/** Safe fallback — if the provider isn't mounted (e.g. crash in tree above),
+ *  the page renders empty notifications instead of crashing the whole route. */
+const EMPTY_CTX: Ctx = {
+  notifications: [],
+  unread: 0,
+  loading: false,
+  refresh: async () => {},
+  markAllRead: async () => {},
+  markRead: async () => {},
+  remove: async () => {},
+};
+
 export function useNotifications() {
   const ctx = useContext(NotificationsContext);
-  if (!ctx) throw new Error("useNotifications must be used inside NotificationsProvider");
+  if (!ctx) {
+    if (typeof console !== "undefined") console.warn("[notifications] provider missing — using empty fallback");
+    return EMPTY_CTX;
+  }
   return ctx;
 }
