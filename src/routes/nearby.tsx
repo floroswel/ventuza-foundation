@@ -227,7 +227,6 @@ function NearbyPage() {
                 <NearbyCard
                   key={`${p.kind}:${p.id}`}
                   point={p}
-                  isFounder={isFounder}
                   onSelect={handleSelectOnMap}
                 />
               ))}
