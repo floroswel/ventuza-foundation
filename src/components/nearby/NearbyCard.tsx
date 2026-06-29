@@ -8,11 +8,10 @@ import { formatDistance } from "@/lib/geo-bucket";
 
 type Props = {
   point: NearbyPoint & { distanceM: number };
-  isFounder?: boolean;
   onSelect?: (p: NearbyPoint) => void;
 };
 
-export function NearbyCard({ point, isFounder, onSelect }: Props) {
+export function NearbyCard({ point, onSelect }: Props) {
   const isEvent = point.kind === "event";
   const isOffer = point.kind === "offer";
   const isVenue = point.kind === "venue";
@@ -61,11 +60,8 @@ export function NearbyCard({ point, isFounder, onSelect }: Props) {
                   {point.category}
                 </Badge>
               )}
-              {isEvent && isFounder && (
-                <Badge className="text-xs bg-amber-500/20 text-amber-600 border-amber-500/30">
-                  Acces prioritar
-                </Badge>
-              )}
+              {/* "Founder" prioritized-access badge removed — see nearby.tsx
+                  comment. Reintroduce together with a server-backed source. */}
             </div>
             <h3 className="font-semibold text-sm truncate">{point.name}</h3>
             {point.description && (

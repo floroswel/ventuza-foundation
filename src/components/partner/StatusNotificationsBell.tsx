@@ -35,12 +35,22 @@ export function StatusNotificationsBell() {
   const markRead = useServerFn(partnerMarkNotificationsRead);
   const [items, setItems] = useState<Notif[]>([]);
   const [open, setOpen] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const refresh = () => {
     list({ data: undefined })
-      .then(setItems)
-      .catch(() => {
-        /* silent — bell is optional UI */
+      .then((rows) => {
+        setItems(rows);
+        setErrorMsg(null);
+      })
+      .catch((e: unknown) => {
+        // Surface a discrete indicator instead of swallowing the error —
+        // a broken bell that silently shows "0 notificări" misleads partners
+        // into thinking their items are still pending review.
+        const msg = e instanceof Error ? e.message : "Nu am putut încărca notificările.";
+        setErrorMsg(msg);
+        // eslint-disable-next-line no-console
+        console.warn("[StatusNotificationsBell] refresh failed:", msg);
       });
   };
 
@@ -58,8 +68,9 @@ export function StatusNotificationsBell() {
       try {
         await markRead({ data: {} });
         setItems((prev) => prev.map((p) => ({ ...p, read_at: p.read_at ?? new Date().toISOString() })));
-      } catch {
-        /* silent */
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "Marcarea ca citit a eșuat.";
+        setErrorMsg(msg);
       }
     }
   };
@@ -67,9 +78,9 @@ export function StatusNotificationsBell() {
   return (
     <DropdownMenu open={open} onOpenChange={onOpenChange}>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="relative">
+        <Button variant="outline" size="sm" className="relative" title={errorMsg ?? undefined}>
           <Bell className="w-4 h-4" />
-          {unread > 0 && (
+          {unread > 0 && !errorMsg && (
             <Badge
               variant="destructive"
               className="absolute -top-2 -right-2 h-4 min-w-4 px-1 text-[10px]"
@@ -77,11 +88,32 @@ export function StatusNotificationsBell() {
               {unread}
             </Badge>
           )}
+          {errorMsg && (
+            <span
+              aria-label="Notificări indisponibile"
+              className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-background"
+            />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto p-0">
         <div className="px-3 py-2 border-b text-sm font-medium">Decizii moderare</div>
-        {items.length === 0 && (
+        {errorMsg && (
+          <div className="px-3 py-2 border-b text-xs text-amber-700 dark:text-amber-300 bg-amber-500/10 flex items-start gap-2">
+            <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <div className="font-medium">Notificările nu s-au putut încărca.</div>
+              <button
+                type="button"
+                onClick={refresh}
+                className="underline mt-0.5"
+              >
+                Reîncearcă
+              </button>
+            </div>
+          </div>
+        )}
+        {items.length === 0 && !errorMsg && (
           <div className="px-3 py-6 text-sm text-muted-foreground text-center">
             Nicio decizie nouă încă.
           </div>

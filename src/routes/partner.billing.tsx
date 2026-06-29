@@ -156,17 +156,34 @@ function PartnerBilling() {
       {/* Plan curent */}
       <div className="rounded-lg border p-4 space-y-2">
         <div className="text-xs text-muted-foreground uppercase">Plan curent</div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <div className="text-2xl font-bold">{sub?.plan_code ?? "Free"}</div>
-          <span className={`text-xs px-2 py-1 rounded ${sub?.status === "active" ? "bg-green-100 text-green-700" : sub?.status === "grace" ? "bg-yellow-100 text-yellow-700" : "bg-muted"}`}>
-            {sub?.status ?? "—"}
-          </span>
+          {(() => {
+            const meta: Record<string, { label: string; cls: string; hint: string }> = {
+              active: { label: "Activ", cls: "bg-green-100 text-green-700", hint: "Abonament plătit la zi." },
+              grace: { label: "Perioadă de grație", cls: "bg-yellow-100 text-yellow-700", hint: "Plata nu a fost confirmată încă. Funcționalitățile rămân active câteva zile — achită factura ca să eviți retrogradarea la Free." },
+              free_downgraded: { label: "Retrogradat la Free", cls: "bg-orange-100 text-orange-700", hint: "Perioada de grație a expirat fără plată. Conținutul peste limite Free a fost ascuns." },
+              cancelled: { label: "Anulat", cls: "bg-muted text-foreground", hint: "Abonamentul a fost anulat. Poți alege un plan nou oricând." },
+            };
+            const m = meta[sub?.status ?? ""] ?? { label: sub?.status ?? "—", cls: "bg-muted", hint: "" };
+            return (
+              <span className={`text-xs px-2 py-1 rounded ${m.cls}`} title={m.hint}>
+                {m.label}
+              </span>
+            );
+          })()}
           {sub?.current_period_end && (
             <span className="text-sm text-muted-foreground">
               valabil până {new Date(sub.current_period_end).toLocaleDateString("ro-RO")}
             </span>
           )}
         </div>
+        {sub?.status === "grace" && (
+          <p className="text-xs text-yellow-700 dark:text-yellow-300">
+            Achită factura pentru a păstra toate funcționalitățile. După expirarea graței,
+            contul tău trece automat la Free și conținutul peste limite devine ascuns.
+          </p>
+        )}
         {ent && (
           <div className="text-xs text-muted-foreground">
             Max venues: {ent.max_venues} · Events: {ent.max_events} · Push: {ent.push_priority}

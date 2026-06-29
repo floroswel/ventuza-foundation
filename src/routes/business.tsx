@@ -143,10 +143,10 @@ function BusinessPage() {
         monthly_budget_eur: form.monthly_budget_eur === "" ? undefined : Number(form.monthly_budget_eur),
       };
       const parsed = schema.parse(payload);
-      // Strip the three accepts_* booleans — they're enforced server-side.
-      const { accepts_terms: _t, accepts_dpa: _d, accepts_lgbt_charter: _l, ...rest } = parsed;
-      void _t; void _d; void _l;
-      const res = await submitApp({ data: rest as any });
+      // GDPR: trimitem consimțămintele EXPLICIT la server pentru a fi
+      // validate (must === true) și înregistrate în business_applications.
+      // Nu mai sunt forțate la true server-side fără probă din UI.
+      const res = await submitApp({ data: parsed as any });
       if (res?.id) {
         try { localStorage.setItem(STATUS_KEY, JSON.stringify({ id: res.id, at: Date.now() })); } catch {/**/}
         setSavedAppId(res.id);
@@ -269,12 +269,12 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
           perks={["Profil verificat", "Listare evenimente", "Badge ONG", "Suport email"]}
         />
         <Tier
-          name="Starter" price="€149 / lună" highlight
+          name="Starter" price="749 RON / lună" highlight
           desc="Pentru baruri, cluburi, branduri locale gay-friendly."
           perks={["Banner Discover (city-targeted)", "1 eveniment promovat / lună", "Statistici impresii", "Factură cu TVA"]}
         />
         <Tier
-          name="Growth" price="€499 / lună"
+          name="Growth" price="2.490 RON / lună"
           desc="Pentru branduri naționale și organizatori Pride."
           perks={["Banner național + city", "5 evenimente boost", "Stories sponsorizate", "Account manager dedicat"]}
         />
@@ -443,7 +443,7 @@ function FormView({
             <Field label="Email *"><input type="email" className="input" value={form.contact_email} onChange={(e) => set("contact_email", e.target.value)} required /></Field>
             <Field label="Telefon"><input className="input" value={form.contact_phone} onChange={(e) => set("contact_phone", e.target.value)} placeholder="+40 7xx xxx xxx" /></Field>
           </div>
-          <Field label="Website"><input className="input" value={form.website} onChange={(e) => set("website", e.target.value)} placeholder="https://…" /></Field>
+          <Field label="Website"><input type="url" inputMode="url" className="input" value={form.website} onChange={(e) => set("website", e.target.value)} placeholder="https://…" /></Field>
           <Field label="Social media (linkuri, virgulă)">
             <input className="input" value={form.social_links} onChange={(e) => set("social_links", e.target.value)} placeholder="instagram.com/… , facebook.com/…" />
           </Field>
@@ -454,9 +454,9 @@ function FormView({
             <textarea className="input min-h-[120px]" value={form.goals} onChange={(e) => set("goals", e.target.value)}
               placeholder="ex: promovare bar gay-friendly București, recrutare voluntari Pride…" required maxLength={2000} />
           </Field>
-          <Field label="Buget lunar estimat (EUR, opțional)">
+          <Field label="Buget lunar estimat (RON, opțional)">
             <input type="number" min={0} className="input" value={form.monthly_budget_eur}
-              onChange={(e) => set("monthly_budget_eur", e.target.value)} placeholder="500" />
+              onChange={(e) => set("monthly_budget_eur", e.target.value)} placeholder="2500" />
           </Field>
         </Card>
 
@@ -488,6 +488,13 @@ function FormView({
 
 function DoneScreen({ appId }: { appId: string | null }) {
   const { user } = useAuth();
+  // Persistăm codul cererii și aici (pe lângă submit) — anonimii care
+  // închid tabul fără să-l copieze pot să-l recupereze din localStorage
+  // direct din /partner via „Revendică prin cod".
+  useEffect(() => {
+    if (!appId) return;
+    try { localStorage.setItem(STATUS_KEY, JSON.stringify({ id: appId, at: Date.now() })); } catch { /* */ }
+  }, [appId]);
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-6 py-16 text-center">
       <CheckCircle2 className="size-16 text-primary" />
@@ -496,15 +503,25 @@ function DoneScreen({ appId }: { appId: string | null }) {
         Echipa Ventuza analizează cererea ta. Te contactăm pe email în maximum 3 zile lucrătoare.
       </p>
       {appId && (
-        <div className="flex items-center gap-2 rounded-full border border-border bg-surface/50 px-3 py-1 text-[11px] text-muted-foreground">
-          <span>ID cerere: <code className="font-mono text-foreground break-all">{appId}</code></span>
+        <div className="w-full rounded-2xl border border-primary/30 bg-primary/5 p-4 text-left space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+            Codul cererii tale
+          </p>
+          <code className="block w-full break-all rounded bg-background/60 px-2 py-1.5 font-mono text-xs">
+            {appId}
+          </code>
           <button
             type="button"
             onClick={() => navigator.clipboard?.writeText(appId)}
-            className="text-primary underline"
+            className="text-xs text-primary underline"
           >
-            copiază
+            Copiază codul
           </button>
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            <strong>Păstrează acest cod.</strong> Îți va fi cerut dacă scrii la
+            suport sau dacă vrei să revendici cererea dintr-un cont creat ulterior
+            (Portal Partener → „Am deja o cerere").
+          </p>
         </div>
       )}
       <a href={`mailto:business@ventuza.app?subject=${encodeURIComponent(`Cerere partener ${appId ?? ""}`)}`} className="mt-2 inline-flex items-center gap-2 text-xs text-primary hover:underline">

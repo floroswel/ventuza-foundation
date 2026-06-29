@@ -40,6 +40,17 @@ const Schema = z.object({
   category: z.string().trim().max(80).optional().nullable(),
   goals: z.string().trim().min(20).max(2000),
   monthly_budget_eur: z.number().int().min(0).max(1_000_000).optional().nullable(),
+  // GDPR — consimțăminte explicite. Server le validează la `true`; nu mai
+  // sunt forțate ca înainte (când UI-ul putea fi ocolit prin apel direct).
+  accepts_terms: z.literal(true, {
+    errorMap: () => ({ message: "Trebuie să accepți Termenii B2B." }),
+  }),
+  accepts_dpa: z.literal(true, {
+    errorMap: () => ({ message: "Trebuie să accepți Politica de confidențialitate." }),
+  }),
+  accepts_lgbt_charter: z.literal(true, {
+    errorMap: () => ({ message: "Trebuie să confirmi Charta LGBTQ+." }),
+  }),
 }).superRefine((v, ctx) => {
   if (v.country === "RO" && v.cui && !cuiRoRegex.test(v.cui)) {
     ctx.addIssue({ code: "custom", path: ["cui"], message: "CUI invalid (ex: RO12345678)" });
@@ -61,10 +72,17 @@ export const submitBusinessApplication = createServerFn({ method: "POST" })
     // depindem de `linkOrphanBusinessApps` și de matchingul pe email.
     // Pentru submitteri anonimi, rămâne flow-ul de link la sign-in ulterior.
     let userId: string | null = null;
+    let ipAddr: string | null = null;
+    let userAgent: string | null = null;
     try {
       const { getRequestHeader } = await import("@tanstack/react-start/server");
       const auth = getRequestHeader("authorization") ?? getRequestHeader("Authorization");
       const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
+      ipAddr =
+        getRequestHeader("x-forwarded-for")?.split(",")[0]?.trim() ??
+        getRequestHeader("x-real-ip") ??
+        null;
+      userAgent = getRequestHeader("user-agent") ?? null;
       if (token) {
         const { createClient } = await import("@supabase/supabase-js");
         const sb = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_PUBLISHABLE_KEY!, {
@@ -77,11 +95,16 @@ export const submitBusinessApplication = createServerFn({ method: "POST" })
     } catch { /* anonim */ }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const insertRow = {
-      ...data,
+    const consentMeta = {
       accepts_terms: true,
       accepts_dpa: true,
       accepts_lgbt_charter: true,
+      consent_recorded_at: new Date().toISOString(),
+      consent_ip: ipAddr,
+      consent_user_agent: userAgent,
+    };
+    const insertRow = {
+      ...data,
       user_id: userId,
     };
     const { data: inserted, error } = await (supabaseAdmin as any)
@@ -90,6 +113,19 @@ export const submitBusinessApplication = createServerFn({ method: "POST" })
       .select("id")
       .single();
     if (error) throw new Error(error.message);
+
+    // Audit trail: tot ce s-a acceptat, când, de unde. Best-effort —
+    // nu blocăm crearea cererii dacă jurnalul eșuează (de ex. tabel absent).
+    try {
+      await (supabaseAdmin as any).from("admin_audit_log").insert({
+        action: "business_application.consent_recorded",
+        target_type: "business_application",
+        target_id: inserted.id,
+        actor_user_id: userId,
+        metadata: consentMeta,
+      });
+    } catch { /* best-effort */ }
+
     return { id: inserted.id as string };
   });
 
