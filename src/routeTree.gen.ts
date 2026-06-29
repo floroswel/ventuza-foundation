@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as VisitorsRouteImport } from './routes/visitors'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as SalePitchRouteImport } from './routes/sale-pitch'
 import { Route as SafetyRouteImport } from './routes/safety'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as QuestsRouteImport } from './routes/quests'
@@ -74,6 +75,11 @@ const StatusRoute = StatusRouteImport.update({
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SalePitchRoute = SalePitchRouteImport.update({
+  id: '/sale-pitch',
+  path: '/sale-pitch',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SafetyRoute = SafetyRouteImport.update({
@@ -342,6 +348,7 @@ export interface FileRoutesByFullPath {
   '/quests': typeof QuestsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/safety': typeof SafetyRoute
+  '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
   '/visitors': typeof VisitorsRoute
@@ -395,6 +402,7 @@ export interface FileRoutesByTo {
   '/quests': typeof QuestsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/safety': typeof SafetyRoute
+  '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
   '/visitors': typeof VisitorsRoute
@@ -449,6 +457,7 @@ export interface FileRoutesById {
   '/quests': typeof QuestsRoute
   '/reset-password': typeof ResetPasswordRoute
   '/safety': typeof SafetyRoute
+  '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
   '/visitors': typeof VisitorsRoute
@@ -504,6 +513,7 @@ export interface FileRouteTypes {
     | '/quests'
     | '/reset-password'
     | '/safety'
+    | '/sale-pitch'
     | '/settings'
     | '/status'
     | '/visitors'
@@ -557,6 +567,7 @@ export interface FileRouteTypes {
     | '/quests'
     | '/reset-password'
     | '/safety'
+    | '/sale-pitch'
     | '/settings'
     | '/status'
     | '/visitors'
@@ -610,6 +621,7 @@ export interface FileRouteTypes {
     | '/quests'
     | '/reset-password'
     | '/safety'
+    | '/sale-pitch'
     | '/settings'
     | '/status'
     | '/visitors'
@@ -664,6 +676,7 @@ export interface RootRouteChildren {
   QuestsRoute: typeof QuestsRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   SafetyRoute: typeof SafetyRoute
+  SalePitchRoute: typeof SalePitchRoute
   SettingsRoute: typeof SettingsRoute
   StatusRoute: typeof StatusRoute
   VisitorsRoute: typeof VisitorsRoute
@@ -709,6 +722,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sale-pitch': {
+      id: '/sale-pitch'
+      path: '/sale-pitch'
+      fullPath: '/sale-pitch'
+      preLoaderRoute: typeof SalePitchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/safety': {
@@ -1142,6 +1162,7 @@ const rootRouteChildren: RootRouteChildren = {
   QuestsRoute: QuestsRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   SafetyRoute: SafetyRoute,
+  SalePitchRoute: SalePitchRoute,
   SettingsRoute: SettingsRoute,
   StatusRoute: StatusRoute,
   VisitorsRoute: VisitorsRoute,
@@ -1168,13 +1189,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
