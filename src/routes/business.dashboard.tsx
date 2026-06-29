@@ -1,9 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
 import { useUserRoles } from "@/hooks/useUserRole";
 import { getMyAdvertiser, listMyCampaigns, type Advertiser, type AdCampaign, type AdPlacement } from "@/lib/ads";
+import { createAdvertiser as createAdvertiserFn, createAdCampaign as createAdCampaignFn } from "@/lib/ads.functions";
 import { Building2, Plus, BarChart3, Loader2, ChevronLeft, ExternalLink, Eye, MousePointerClick, CircleDollarSign, ShieldCheck, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
