@@ -1,106 +1,103 @@
-## Audit de securitate — RAPORT (zero modificări)
+# Audit de securitate Ventuza — raport verificat + plan remediere
 
-Scop: vulnerabilități reale pentru o aplicație cu date Art. 9 (HIV, orientare), minori și locație. Doar analiză.
+Verificat direct în DB (`discover_profiles`, policies pe `offers`/`illegal_content_reports`/`sos_events`, GRANT-uri pe RPC-uri admin, `get_user_health`/`set_user_health`). Raportul anterior din `.lovable/plan.md` a fost reconfirmat cu o corecție: `discover_profiles` NU returnează `hiv_status` plaintext (sub-agentul a halucinat acel finding — RETURNS TABLE conține doar `birthdate`, `distance_m` bucketizat, `last_seen`, restul publice).
 
----
+## 🔴 CRITIC
 
-### 🔴 CRITICE
-**Niciuna confirmată.** Toate vectorii cu impact direct (escaladare rol, citire HIV/locație altui user, ocolire block, signup minor) sunt blocați la DB prin RLS + triggere + RPC SECURITY DEFINER. Detalii în secțiunile de mai jos.
+**Niciunul confirmat ca scurgere Art. 9.** Datele HIV sunt corect izolate (RPC-urile `get_user_health`/`set_user_health` au GRANT exclusiv pentru `service_role`, coloanele `*_enc` nu apar în nicio proiecție către alți useri). Locația precisă nu pleacă de pe device în `discover_profiles` (doar `bucket_distance_m`). RLS bilateral block este enforced la DB via trigger. Escaladare de rol blocată prin `prevent_profile_privilege_escalation` și `user_roles` RLS strict.
 
----
+## 🟠 MEDIU (toate verificate, exploatabile)
 
-### 🟠 MEDII
+**M1. Age gate ocolibil prin RPC** — `discover_profiles` verifică doar `_viewer = auth.uid()`, NU `me.age_status = 'verified'`. Un user logat cu cont fără Didit poate apela RPC-ul din DevTools/Postman și primește feed-ul complet de profile adulte (incl. poze, vârstă, distanță). AgeGate.tsx este strict UI. Risc legal (minori + conținut adult), nu scurgere Art. 9. Aceeași observație pentru `get_or_create_conversation`, `set_looking_now`.
+Fișier: ultima migrare `discover_profiles`, liniile 9–10.
 
-**M1. Endpoint-uri publice fără rate limit / captcha**
-- `src/lib/business-apply.functions.ts → submitBusinessApplication` — server fn fără `requireSupabaseAuth`. Combinat cu RLS `business_applications` `WITH CHECK (accepts_*)`, oricine poate insera N aplicații/secundă. Impact: poluare tabel, alerte false în admin, costuri storage.
-- `src/lib/anaf.functions.ts → lookupAnafCui` — public, proxy către ANAF. Abuz → IP ban ANAF pentru tot proiectul (DoS auto-inflict).
-- `illegal_content_reports` RLS `INSERT TO public WITH CHECK (true)` (DSA, intenționat anonim) — fără rate limit aplicativ. Spam → coada DSA admin inutilizabilă.
-- **Atacator poate:** umfla cozile admin, bloca lookup CUI pentru parteneri legitimi.
+**M2. `offers` permite owner-ului auto-publicare** — policy „Venue owner manages offers" FOR ALL TO authenticated cu `WITH CHECK (venue.owner_id = auth.uid())` — fără restricția `is_published = false` pe care o au `venues` și `events`. Partener poate publica direct ofertă fără moderare → bypass regulă moderare obligatorie.
 
-**M2. `admin_*` SECURITY DEFINER au `GRANT EXECUTE` și pentru `anon`**
-Verificat în `pg_proc.proacl`: `admin_update_setting`, `admin_confirm_invoice_payment`, `admin_cancel_invoice`, `admin_moderate_item`, `admin_suspend_partner`, `admin_reinstate_partner`, `admin_analytics_summary`, `admin_can_access_sensitive`, `admin_get_my_role` apar cu `anon=X/postgres`.
-Funcțiile verifică intern `has_role`/`is_staff` și aruncă `forbidden`, deci nu sunt exploatabile direct. Dar suprafața de atac este mai largă decât necesar: orice bug viitor în check intern devine RCE-level pentru un user neautentificat. Best practice: `REVOKE EXECUTE ... FROM anon, PUBLIC; GRANT EXECUTE ... TO authenticated;`.
-- **Atacator poate:** azi, doar enumera existența funcției. Dacă o refactorizare scoate accidental `has_role` din vreuna → escaladare instant din anon.
+**M3. `illegal_content_reports` INSERT anon nelimitat** — policy „Anyone files dsa report" cu `polroles={-}` (PUBLIC) și `WITH CHECK (true)`. Niciun rate-limit DB. Atacator anonim poate inunda coada DSA → admin orb.
 
-**M3. `app_settings` și `feature_flags` complet publice către `anon`**
-Politici `USING (true)` pentru ambele tabele.
-- `billing_settings` expune anon: nume firmă, CUI, IBAN, bancă, **email `business@`**, **telefon `+40753326405`**, adresă completă. Telefon + email contact + adresă fizică sunt PII vizibile fără login.
-- `rate_limits.messages_per_min`, `proximity_notifications` (cooldown, daily cap, quiet hours, max radius), `partner_quotas` — un atacator știe exact pragurile anti-spam și le poate evita.
-- `feature_flags` — atacatorul vede ce flag-uri sunt OFF (ex. `age_verification` în staging) și poate ținti acele medii.
-- **Atacator poate:** harvest contact owner pentru phishing/swat, tuning evaziune anti-spam, recon medii non-prod.
+**M4. SECURITY DEFINER admin_* cu GRANT EXECUTE pentru `anon`** — confirmat în `pg_proc.proacl` pentru `admin_update_setting`, `admin_confirm_invoice_payment`, `admin_moderate_item`, `admin_get_my_role`, `admin_can_access_sensitive`, `admin_analytics_summary`. Toate verifică intern rolul prin `has_role`/`is_staff`, deci azi NU sunt exploatabile, dar suprafața de atac e nejustificat de largă: orice refactor care scoate check-ul intern devine RCE-from-anon.
 
-**M4. `policy_versions` permite `SELECT TO public USING (true)` — OK; dar `app_settings_history` are RLS pe staff (OK).** Nu e vulnerabilitate, doar confirmare.
+**M5. `app_settings` SELECT public la `anon`** — expune `billing_settings` (CUI, IBAN, telefon `+40753326405`, email `business@`, adresă fizică), `rate_limits.*` (praguri anti-spam), `proximity_notifications` (quiet hours, cooldown, daily cap, radius). Atacator: harvest contact + evaziune anti-spam fără login.
 
----
+**M6. `sos_events` stochează `latitude`/`longitude` exacte** (nu bucketizat). Tabel citit de `admin`/`moderator` prin policy „mods read all sos". Breach = locație precisă într-un moment de criză (date sensibile contextual). Recomandare: păstrare exactă DOAR pentru durata răspunsului (24h), apoi rotunjit/șters.
 
-### 🟡 MINORE
+**M7. `discover_profiles` returnează `birthdate` exact** (nu doar `age::int` derivat) atunci când `hide_age=false`. Cititor RPC vede data nașterii precisă a altor useri, deși UI afișează doar vârsta. Minor, dar inutil → derivat suficient.
 
-**m1. `spatial_ref_sys` fără RLS** — tabel PostGIS de referință, doar metadate SRID publice. Nicio acțiune.
+## 🟡 MINOR
 
-**m2. `rate_limit_log` are RLS ON dar 0 policies** — efectiv read/write blocat pentru `authenticated`/`anon` (doar `service_role` operează). Sigur acum, dar dacă vreodată muți scrierea din SQL/SECURITY DEFINER în client, se va rupe silent.
+- **m1.** `prevent_profile_privilege_escalation` nu acoperă `incognito` — un cont sancționat poate seta `incognito=true` direct și dispare din moderare/discover.
+- **m2.** OAuth birthdate stocat în `localStorage` ca `vz_pending_birthdate` (`src/routes/auth.tsx:38-49`). XSS minor sau extensie poate suprascrie înainte de callback. Triggerul `enforce_min_age` validează doar >18, nu autenticitatea.
+- **m3.** `rate_limit_log` are RLS ON dar 0 policies — funcțional locked, dar fragil dacă mută cineva scrierea în client.
+- **m4.** `consent_log`/`csam_reports` citibile de staff fără logare „break-glass" per citire (există doar pentru HIV/location/messages/selfie).
+- **m5.** `submitBusinessApplication` și `lookupAnafCui` server-fn fără rate-limit/captcha → abuz ANAF, spam aplicații parteneri.
+- **m6.** `AgeGate` cu `enforce` inițial `false` (chiar dacă `shouldEnforceAgeGate` setează `true` imediat în prod prin `isProductionHost`) — fereastră scurtă de flash pe react-render înainte ca effect-ul async să termine; UI-only, RPC-ul nu e protejat oricum (vezi M1).
 
-**m3. `consent_log` SELECT include `is_admin_or_above`** — adminii pot vedea consimțămintele oricărui user fără break-glass. Conform regulii break-glass, accesul la `messages`/`location`/`health` trece prin RPC dedicat; `consent_log` nu e clasificat la fel. Recomandare: log audit la citirile cross-user (sau restrânge la `auditor`/`super_admin`).
+## ✅ CONFIRMAT SECUR
 
-**m4. `device_fingerprints` SELECT doar owner — OK**, dar `nearby_user_reports`, `risk_flags`, `csam_reports` accesibile staff fără logare audit per-read (logarea există doar pentru break-glass). Recomandare: jurnal de read pe `csam_reports`.
-
-**m5. `business_applications` SELECT include `user_id = auth.uid()`**, dar `business_applications` SELECT pentru aplicațiile **anonime** (cu `user_id IS NULL`) este invizibil userului care le-a trimis până la link prin email. Nu e vuln, dar UX→ poate părea „aplicația mea a dispărut".
-
-**m6. `submitBusinessApplication` — extragerea `userId` din header se face cu `supabase.auth.getUser()` pe client publishable**, fără verificare claims pe `getClaims`. Suficient (Supabase validează tokenul la server), dar dacă tokenul e expirat, `userId` rămâne null fără semnal → aplicație devine orfană silent. Nu e vuln, e edge case UX.
-
-**m7. `enforce_min_age_trg` validează vârsta doar la `birthdate` non-null.** OAuth signup fără birthdate este capturat de `SessionGuards.tsx` care redirecționează către `/n`. Guard-ul rulează în React → util pe web, dar în Capacitor (Android) între relogări poate exista o fereastră scurtă fără verificare. Toate fluxurile sensibile (mesaje, swipe, profil altui user) trec prin RLS/SECURITY DEFINER care nu depind de birthdate, deci impact real = zero, dar e bine de știut.
+- **Locație**: `profiles.location` SELECT RLS owner-only; `discover_profiles` proiectează doar `bucket_distance_m`; `get_or_create_conversation`/`set_looking_now` nu returnează coordonate. Coordonate exacte NU pleacă în payload între useri.
+- **HIV / Art. 9**: `hiv_status_enc`/`hiv_test_date_enc` doar bytea; `get_user_health`/`set_user_health` GRANT EXCLUSIV `service_role` (confirmat în `proacl`); triggere `enforce_health_consent` + `cascade_health_consent_withdrawal` funcționale; nicio proiecție în `discover_profiles`.
+- **Block bilateral**: enforced la DB prin `trg_prevent_message_when_blocked` (BEFORE INSERT pe `messages`) + filtrare în `discover_profiles` (NOT EXISTS pe `blocks`).
+- **Escaladare rol**: `prevent_profile_privilege_escalation` resetează 32 câmpuri sensibile; `user_roles` RLS scoped pe `has_role('admin')`; admin server-fn-urile au `assertAdmin`/`assertStaff` + `assertAdminMfa` pe acțiuni distructive.
+- **Venues/events moderare**: trigger `*_no_self_publish` și WITH CHECK pe RLS împiedică owner-ul (cu excepția `offers` — vezi M2).
+- **CSAM**: `photo_url` strippat în `adminGetCsamReports` (în `SENSITIVE_COLUMNS`), no-render în UI.
+- **Storage**: toate bucketele private, scoped `{uid}/...`.
+- **Audit append-only**: `admin_audit_log` cu trigger `prevent_audit_mutation`.
+- **Webhooks publice** (`api/public/google-play-rtdn`, `age-webhook`): semnătură verificată; `billing-tick` doar cron, fără input user.
+- **Auth**: signup email cu confirmare; OAuth cu `SessionGuards` care forțează `/n` dacă `birthdate IS NULL`; trigger DB refuză <18.
 
 ---
 
-### ✅ CONFIRMAT SIGUR
+## Plan remediere (la aprobare → build mode)
 
-**Locație (regulă permanentă)**
-- `public.profiles.location` SELECT RLS: `auth.uid() = id` (owner-only). Verificat.
-- `discover_profiles` și RPC-urile nearby returnează doar `distance_bucket` (via `bucket_distance_m`). Niciun `ST_X/ST_Y/ST_AsText` proiectat la alt user.
-- `SessionGuards.tsx → update_my_location` trimite coordonatele exclusiv pentru owner → coloana `location` privată.
+### Migrare SQL unică
 
-**Date HIV / Art. 9 (regulă permanentă)**
-- `hiv_status_enc`, `hiv_test_date_enc` (bytea) — RLS profiles owner-only + trigger `prevent_profile_privilege_escalation` blochează scrierea directă (chiar și de owner) pe coloanele enc.
-- Decriptare exclusiv prin `get_user_health(uuid,text)` cu `GRANT EXECUTE TO service_role` only. Verificat în `pg_proc.proacl` — anon/authenticated nu pot apela.
-- `HEALTH_COL_KEY` citit din `process.env` în `health.functions.ts` și `admin-break-glass.functions.ts`. Nu apare hardcodat sau în `import.meta.env`.
-- Triggerul `enforce_health_consent` operează pe `*_enc IS NOT NULL` — fără decriptare la check.
-- Cascade `withdraw_health_consent` setează enc pe NULL în tranzacție.
+```sql
+-- M1: gate age_status în RPC-urile sensibile
+-- adăugare la începutul discover_profiles / get_or_create_conversation / set_looking_now:
+--   IF NOT EXISTS (SELECT 1 FROM profiles WHERE id=auth.uid() AND age_status='verified')
+--   THEN RAISE EXCEPTION 'age_verification_required' USING ERRCODE='42501'
 
-**Escaladare privilegii**
-- `prevent_profile_privilege_escalation` trigger (BEFORE UPDATE) resetează: `verified`, `verified_at`, `age_*`, `banned_*`, `suspended_*`, `warned_*`, `report_count`, `risk_*`, `boost*`, `super_taps_balance`, `xp`, `level`, `streak_days`, `partner_suspended_at`, `health_data_consent_at`, `hiv_*_enc`, `id`, `created_at`, `profile_slug`, `deleted_at`. Doar service_role/postgres bypass.
-- `profiles` nu are coloane `premium_until`, `founder_grant`, `is_admin` (verificat în `information_schema.columns`). Premium-ul se calculează prin `subscriptions` (RLS owner-read), `founder_grants` separat.
-- `user_roles` RLS: insert/update doar prin `has_role('admin')`. User normal NU se poate self-grant.
-- Admin server-fn-urile gated pe `assertAdmin`/`assertStaff` + `assertAdminMfa` pentru cele distructive (ban, suspend, purge, role, break-glass).
+-- M2: offers WITH CHECK (is_published=false AND moderation_status='pending') pentru owner
+DROP POLICY "Venue owner manages offers" ON public.offers;
+CREATE POLICY ... cu restricție is_published=false + trigger offers_no_self_publish
 
-**Block bilateral**
-- Triggerul `trg_prevent_message_when_blocked` BEFORE INSERT pe `messages`. RLS UI vine în plus, dar DB e ground-truth.
+-- M3: illegal_content_reports → TO authenticated (sau menținut public DAR cu trigger rate_limit pe IP)
+DROP POLICY "Anyone files dsa report"; recreate TO authenticated
 
-**Conversații / mesaje / private albums**
-- `messages` RLS scoped la `is_conversation_participant` — owner-only.
-- `conversations` SELECT/INSERT/UPDATE doar `user_a OR user_b`.
-- `private_albums` viewer-only prin `album_unlocks` join.
+-- M4: REVOKE EXECUTE ON FUNCTION admin_* FROM anon, PUBLIC;
+--     GRANT EXECUTE ON FUNCTION admin_* TO authenticated;
 
-**Storage buckets**
-- Verificat anterior: toate private (`public=false`), policies scoped pe `{uid}/...`. `venue-media` read deschis `authenticated` by design (poze venue publice).
+-- M5: app_settings SELECT split — billing_settings + rate_limits → policy is_staff only
+--     Restul (proximity_notifications.default_radius_m, etc.) rămân public minim
 
-**Auth / signup**
-- Supabase email + OAuth Google. `SessionGuards` forțează `/n` dacă birthdate lipsește. `enforce_min_age` refuză <18 la DB.
+-- M6: sos_events — opțiune A: trigger care setează lat/lng pe NULL după 24h
+--     opțiune B: bucketizare imediată + păstrare exactă într-o coloană restrânsă la
+--     emergency_contact_user_id (consent explicit)
 
-**Edge functions**
-- Webhook `api/public/google-play-rtdn` și `age-webhook` au verificare semnătură (HMAC / JWT validation). `billing-tick` rulează cron — nu acceptă input user.
+-- M7: discover_profiles RETURNS TABLE → înlocuiește `birthdate date` cu `age int` derivat;
+--     menține `hide_age` flag pentru a întoarce NULL.
 
-**`admin_audit_log` append-only** — trigger `prevent_audit_mutation` (verificat indirect prin reguli).
+-- m1: extinde prevent_profile_privilege_escalation cu 'incognito'
+--     (acceptat doar dacă userul NU e suspendat/ban; altfel resetat)
 
----
+-- m3: policy explicită pentru rate_limit_log (service_role insert + staff read)
+```
 
-### RECOMANDĂRI ORDONATE DUPĂ ROI
+### Cod frontend
 
-1. **REVOKE EXECUTE ON FUNCTION admin_* FROM anon, PUBLIC;** (M2) — 5 minute, închide o suprafață majoră.
-2. **Restrânge `app_settings` SELECT** — politică nouă: doar `discover.*`, `proximity_notifications.default_radius_m`, `partner_quotas` (read public minim), restul `authenticated`-only sau staff-only. Mută `billing_settings` și `rate_limits.*` în staff. (M3)
-3. **Rate limit la nivel de DB/Edge** pentru `submitBusinessApplication`, `lookupAnafCui`, `illegal_content_reports` (M1). Tabel `rate_limit_log` deja există — folosește `try_rate_limit(kind, key)`.
-4. **Audit log la citirile staff pe `csam_reports`, `nearby_user_reports`, `consent_log` cross-user** (m3, m4).
-5. **Adaugă policy pe `rate_limit_log`** care permite scriere service_role explicit + read staff (m2).
+- **m2 (OAuth birthdate)**: după callback, dacă `profiles.birthdate IS NULL`, forțează re-prompt UI care apelează `confirmPendingBirthdate({birthdate})` server-fn (validează prin trigger DB). Elimină dependența de `localStorage` ca singură sursă.
+- **m5 (rate-limit)**: `submitBusinessApplication` + `lookupAnafCui` → `try_rate_limit(kind, key)` server-side (există deja tabela `rate_limit_log`).
+- **m6 (AgeGate flash)**: state inițial `enforce=true` (fail-closed) până rezolvă `shouldEnforceAgeGate`.
 
----
+### Verificare post-fix
 
-### Verdict
-Aplicația are un nivel de securitate **peste media app-urilor dating LGBTQ+**. Datele Art. 9 (HIV, orientare, locație) sunt corect blindate prin RLS + triggere + RPC SECURITY DEFINER cu cheie pe server. Nu există vector critic exploatabil acum. Cele 4 puncte 🟠 sunt de „surface hardening" — utile înainte de publicare pe Play Store, dar nu blocante legal/securitate.
+- `supabase--linter` clean.
+- Test manual: cont nou fără Didit → `supabase.rpc('discover_profiles', {...})` din DevTools trebuie să întoarcă `42501 age_verification_required`.
+- Test: `discover_profiles` payload nu mai conține `birthdate` (doar `age`).
+- Test: owner partener încearcă `update offers set is_published=true` → refuzat de policy + trigger.
+
+### Update AGENTS.md
+
+- Regulă nouă „RPC GATE": orice SECURITY DEFINER care returnează date de profil ale altor useri TREBUIE să verifice `age_status='verified'` și să NU proiecteze `birthdate` exact / `*_enc` / `distance_m` raw / `location` raw.
+
+Aprobă pentru a trece în build mode.

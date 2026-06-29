@@ -624,3 +624,27 @@ folosește RPC-urile `is_blocked_between(a,b)` și `list_my_block_relations()`
 pentru a ascunde conversațiile și a dezactiva composer-ul, dar nu este sursa
 de adevăr. Orice nouă cale de trimitere mesaje trebuie să respecte triggerul,
 NU să fie ocolită prin SECURITY DEFINER.
+
+REGULĂ — RPC GATE PE DATE DE PROFIL (permanentă)
+Orice RPC SECURITY DEFINER care returnează date despre alți useri sau
+deschide o interacțiune socială (mesaj, conversație, looking-now, swipe,
+match) TREBUIE să apeleze `public.assert_age_verified()` la început.
+Funcția respinge cu `42501 age_verification_required` apelanții care nu au
+`age_status='verified'` în `public.profiles`. Bypass-ul pentru dev/preview
+e controlat de `feature_flags.age_verification`; în producție flag-ul este
+forțat ON din `src/lib/age-gate-policy.ts`. UI-ul (`AgeGate`) NU este sursa
+de adevăr — DB este.
+
+În plus, RPC-urile care proiectează date despre alți useri NU TREBUIE să
+returneze:
+- `birthdate` exact (folosește `make_date(year, 1, 1)` pentru a păstra
+  doar anul, sau întoarce NULL când `hide_age=true`);
+- `*_enc` (date Art. 9 criptate);
+- `distance_m` raw (folosește `public.bucket_distance_m(...)`);
+- `location` / `travel_location` / `prev_location` brute (vezi REGULĂ
+  LOCAȚIE).
+
+Orice diff care adaugă un RPC SECURITY DEFINER nou care returnează date de
+profil ale altor useri fără `PERFORM public.assert_age_verified()` sau care
+proiectează unul din câmpurile interzise de mai sus trebuie REFUZAT.
+
