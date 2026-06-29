@@ -52,6 +52,7 @@ function ThreadPage() {
   const lastTypingSentRef = useRef(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
+  const [unsendTarget, setUnsendTarget] = useState<MessageRow | null>(null);
   const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
   const [meVerified, setMeVerified] = useState<boolean | null>(null);
   const [myMainPhoto, setMyMainPhoto] = useState<string | null>(null);
