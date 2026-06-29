@@ -108,12 +108,31 @@ function DiscoverPage() {
   }, [filters]);
 
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [autoExpanded, setAutoExpanded] = useState<number | null>(null);
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setLoadError(null);
+    setAutoExpanded(null);
     try {
-      const data = await fetchDiscover(debouncedFilters, "distance");
+      let data = await fetchDiscover(debouncedFilters, "distance");
+      // Auto-fallback progresiv: dacă userul nu are NICIUN rezultat la raza
+      // curentă, încercăm trepte 25→50→200→5000 km. Nu modificăm filtrele
+      // userului (nu rescriem `filters`) — doar arătăm rezultate marcate
+      // "raza extinsă". Userul rămâne în control.
+      if (data.length === 0) {
+        const ladder = [25, 50, 200, 5000];
+        const current = debouncedFilters.maxDistanceKm ?? 25;
+        for (const km of ladder) {
+          if (km <= current) continue;
+          const alt = await fetchDiscover({ ...debouncedFilters, maxDistanceKm: km }, "distance");
+          if (alt.length > 0) {
+            data = alt;
+            setAutoExpanded(km);
+            break;
+          }
+        }
+      }
       setProfiles(data);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Couldn't load discover";
