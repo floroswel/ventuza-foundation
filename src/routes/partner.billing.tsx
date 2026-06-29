@@ -139,6 +139,14 @@ function PartnerBilling() {
       </div>
 
 
+      {!bizApp && (
+        <div className="p-4 rounded border border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 text-sm space-y-2">
+          <div className="font-semibold">Nu ai o cerere de business aprobată</div>
+          <p className="text-muted-foreground">Înainte de a face upgrade la un plan plătit, trimite și apoi finalizează cererea de partener. Datele fiscale se completează după aprobare.</p>
+          <Button asChild size="sm" variant="outline"><Link to="/business">Aplică ca partener</Link></Button>
+        </div>
+      )}
+
       {!issuerOK && (
         <div className="p-3 rounded bg-yellow-50 dark:bg-yellow-950/30 text-sm">
           ⚠️ Emitentul nu este complet configurat. Contactează administratorul.

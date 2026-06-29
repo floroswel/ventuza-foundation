@@ -304,7 +304,10 @@ function DiscoverPage() {
           hasLocation={locStatus === "granted"}
           hasFilters={JSON.stringify(debouncedFilters) !== JSON.stringify(DEFAULT_FILTERS)}
           onResetFilters={() => setFilters(DEFAULT_FILTERS)}
+          currentDistanceKm={filters.maxDistanceKm}
+          onExpandDistance={(km) => setFilters({ ...filters, maxDistanceKm: km })}
         />
+
 
       ) : view === "swipe" ? (
         <SwipeDeck profiles={visible} onDecision={handleDecision} onOpen={setSelected} />
@@ -836,18 +839,22 @@ function EmptyState({
   hasLocation,
   hasFilters,
   onResetFilters,
+  onExpandDistance,
+  currentDistanceKm,
 }: {
   onRefresh: () => void;
   hasLocation: boolean;
   hasFilters: boolean;
   onResetFilters?: () => void;
+  onExpandDistance?: (km: number) => void;
+  currentDistanceKm?: number;
 }) {
   if (!hasLocation) {
     return (
       <CenterMessage
         icon={<Compass className="size-8 text-primary" />}
         title="Activează locația"
-        desc="Avem nevoie de zonă (aproximativă) ca să-ți arătăm cine e prin apropiere. Locația ta exactă rămâne pe device."
+        desc="Avem nevoie de zonă (aproximativă) ca să-ți arătăm cine e prin apropiere. Locația ta exactă rămâne pe device. Fără locație nu îți putem arăta oameni potriviți, dar îți putem trimite notificare când apar."
         action={<Button variant="hero" onClick={onRefresh}>Permite locația</Button>}
       />
     );
@@ -859,22 +866,32 @@ function EmptyState({
         title="Filtrele sunt prea stricte"
         desc="Niciun profil nu se potrivește pe filtrele alese. Relaxează vârsta, distanța sau tribes."
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-center gap-2">
             {onResetFilters && (
-              <Button variant="outline" onClick={onResetFilters}>Resetează filtrele</Button>
+              <Button variant="hero" onClick={onResetFilters}>Relaxează filtrele</Button>
             )}
-            <Button variant="hero" onClick={onRefresh}>Reîncarcă</Button>
+            <Button variant="outline" onClick={onRefresh}>Reîncarcă</Button>
           </div>
         }
       />
     );
   }
+  // Nimic în raza curentă — propune progresiv extindere.
+  const next = (currentDistanceKm ?? 0) < 50 ? 50 : (currentDistanceKm ?? 0) < 200 ? 200 : 5000;
+  const nextLabel = next === 5000 ? "toată țara" : `${next} km`;
   return (
     <CenterMessage
       icon={<Compass className="size-8 text-primary" />}
       title="Nimeni nou prin zonă acum"
-      desc="Comunitatea Ventuza crește. Revino în câteva ore sau extinde raza din filtre."
-      action={<Button variant="hero" onClick={onRefresh}>Reîncarcă</Button>}
+      desc="Comunitatea Ventuza crește. Extinde raza ca să vezi cine e mai departe — sau revino în câteva ore."
+      action={
+        <div className="flex flex-wrap justify-center gap-2">
+          {onExpandDistance && (
+            <Button variant="hero" onClick={() => onExpandDistance(next)}>Extinde la {nextLabel}</Button>
+          )}
+          <Button variant="outline" onClick={onRefresh}>Reîncarcă</Button>
+        </div>
+      }
     />
   );
 }

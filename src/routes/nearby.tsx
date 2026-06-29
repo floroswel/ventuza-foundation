@@ -44,7 +44,11 @@ const RADIUS_OPTIONS = [2000, 5000, 10000] as const;
 function NearbyPage() {
   const navigate = useNavigate();
   const auth = useAuth();
-  const isFounder = Boolean((auth as { profile?: { is_founder?: boolean } })?.profile?.is_founder);
+  // Founder gating is not derived from `auth` (no `profile` shape exists there).
+  // For now disabled cleanly; reinstating requires a dedicated `useIsFounder()` hook
+  // backed by a server check (e.g. `founder_grants` table).
+  void auth;
+  const isFounder = false;
 
   const [coords, setCoords] = useState<Coords | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);

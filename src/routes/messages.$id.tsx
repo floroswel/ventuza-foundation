@@ -18,6 +18,10 @@ import { verifySelfie } from "@/lib/verification.functions";
 import { REACTION_EMOJIS, toggleMessageReaction, type ReactionEmoji } from "@/lib/social";
 import { ChatComposerExtras } from "@/components/ChatComposerExtras";
 import { ChatMediaBubble } from "@/components/ChatMediaBubble";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/messages/$id")({
@@ -48,6 +52,7 @@ function ThreadPage() {
   const lastTypingSentRef = useRef(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
+  const [unsendTarget, setUnsendTarget] = useState<MessageRow | null>(null);
   const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
   const [meVerified, setMeVerified] = useState<boolean | null>(null);
   const [myMainPhoto, setMyMainPhoto] = useState<string | null>(null);
@@ -282,8 +287,10 @@ function ThreadPage() {
     }
   }
 
-  async function handleUnsend(m: MessageRow) {
-    if (!confirm("Șterge mesajul pentru toți? Doar în primele 5 minute.")) return;
+  async function confirmUnsend() {
+    const m = unsendTarget;
+    if (!m) return;
+    setUnsendTarget(null);
     try {
       await unsendMessage(m.id);
       setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, deleted_at: new Date().toISOString(), body: "", media_url: null, media_type: "text" } : x)));
@@ -477,7 +484,7 @@ function ThreadPage() {
                       {mine && !isDeleted && (
                         <div className="order-0 mb-1 hidden gap-1 group-hover:flex">
                           {canUnsend && (
-                            <button type="button" onClick={() => handleUnsend(m)} aria-label="Unsend" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive">
+                            <button type="button" onClick={() => setUnsendTarget(m)} aria-label="Unsend" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive">
                               <Trash2 className="size-3.5" />
                             </button>
                           )}
@@ -655,6 +662,21 @@ function ThreadPage() {
           <Send className="size-4" />
         </button>
       </form>
+
+      <AlertDialog open={!!unsendTarget} onOpenChange={(o) => !o && setUnsendTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Șterge mesajul?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Mesajul va fi șters pentru ambele părți. Acțiune disponibilă doar în primele 5 minute.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Renunță</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmUnsend}>Șterge</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
