@@ -28,9 +28,10 @@ export function AgeGate() {
   const [submitting, setSubmitting] = useState(false);
   // Feature-flag gate. ⚠️ KILL-SWITCH TEMPORAR: producția respectă flag-ul.
   // Vezi src/lib/age-gate-policy.ts + AGENTS.md → REGULĂ AGE GATE.
-  // Initial false → evită flash de modal cât timp flag-ul async se încarcă.
-  // Dacă flag = ON, useEffect-ul de mai jos va seta enforce=true imediat.
-  const [enforce, setEnforce] = useState<boolean>(false);
+  // Fail-closed: inițial true → conținut adult nu apare niciodată înainte ca
+  // policy-ul async să-l permită explicit. Loading overlay-ul de mai jos
+  // acoperă flash-ul cât timp `status === null`.
+  const [enforce, setEnforce] = useState<boolean>(true);
   // GDPR Art. 9 — selfie-ul biometric e date sensibile; consimțământul e opt-in,
   // distinct de terms/privacy. Vezi src/lib/consent-registry.ts (kind=age_verification).
   const [consent, setConsent] = useState(false);
