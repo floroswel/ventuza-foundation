@@ -29,6 +29,8 @@ function BusinessDashboard() {
   const { user, loading: authLoading } = useAuth();
   const { roles, loading: rolesLoading } = useUserRoles();
   const navigate = useNavigate();
+  const createAdvertiserSrv = useServerFn(createAdvertiserFn);
+  const createCampaignSrv = useServerFn(createAdCampaignFn);
   const [advertiser, setAdvertiser] = useState<Advertiser | null>(null);
   const [campaigns, setCampaigns] = useState<AdCampaign[]>([]);
   const [loading, setLoading] = useState(true);
