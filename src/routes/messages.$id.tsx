@@ -18,6 +18,10 @@ import { verifySelfie } from "@/lib/verification.functions";
 import { REACTION_EMOJIS, toggleMessageReaction, type ReactionEmoji } from "@/lib/social";
 import { ChatComposerExtras } from "@/components/ChatComposerExtras";
 import { ChatMediaBubble } from "@/components/ChatMediaBubble";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/messages/$id")({
