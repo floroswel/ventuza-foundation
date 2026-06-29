@@ -1112,3 +1112,55 @@ function StatsDialog({ offerId, title, onClose }: { offerId: string; title: stri
     </Dialog>
   );
 }
+
+/* ============================ CLAIM BY CODE ============================== */
+function ClaimByCodeCard({ onClaimed }: { onClaimed: () => void }) {
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+  const claim = useServerFn(
+    (require("@/lib/business.functions") as typeof import("@/lib/business.functions")).claimBusinessApplicationByCode,
+  );
+  // Hidrare opțională din localStorage (vz_biz_app).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("vz_biz_app");
+      if (raw) {
+        const { id } = JSON.parse(raw);
+        if (id && typeof id === "string") setCode(id);
+      }
+    } catch { /* ignore */ }
+  }, []);
+  async function submit() {
+    const id = code.trim();
+    if (!id) return toast.error("Introdu ID-ul cererii.");
+    setBusy(true);
+    try {
+      const res = await claim({ data: { appId: id } });
+      toast.success(`Cerere revendicată: ${res.legal_name ?? id} (${res.status})`);
+      try { localStorage.removeItem("vz_biz_app"); } catch { /* ignore */ }
+      onClaimed();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Eroare");
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base">Ai un cod de cerere?</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <p className="text-xs text-muted-foreground">
+          Dacă ai trimis cererea fără cont (sau cu alt email), introdu aici ID-ul afișat după submit ca să o legăm de contul tău.
+        </p>
+        <div className="flex gap-2">
+          <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="ex: 1a2b3c4d-..." className="font-mono text-xs" />
+          <Button disabled={busy} onClick={submit}>
+            {busy ? <Loader2 className="size-4 animate-spin" /> : "Revendică"}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
