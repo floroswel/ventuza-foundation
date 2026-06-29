@@ -454,9 +454,9 @@ function FormView({
             <textarea className="input min-h-[120px]" value={form.goals} onChange={(e) => set("goals", e.target.value)}
               placeholder="ex: promovare bar gay-friendly București, recrutare voluntari Pride…" required maxLength={2000} />
           </Field>
-          <Field label="Buget lunar estimat (EUR, opțional)">
+          <Field label="Buget lunar estimat (RON, opțional)">
             <input type="number" min={0} className="input" value={form.monthly_budget_eur}
-              onChange={(e) => set("monthly_budget_eur", e.target.value)} placeholder="500" />
+              onChange={(e) => set("monthly_budget_eur", e.target.value)} placeholder="2500" />
           </Field>
         </Card>
 
