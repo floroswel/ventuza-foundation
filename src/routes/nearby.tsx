@@ -44,11 +44,14 @@ const RADIUS_OPTIONS = [2000, 5000, 10000] as const;
 function NearbyPage() {
   const navigate = useNavigate();
   const auth = useAuth();
-  // Founder gating is not derived from `auth` (no `profile` shape exists there).
-  // For now disabled cleanly; reinstating requires a dedicated `useIsFounder()` hook
-  // backed by a server check (e.g. `founder_grants` table).
+  // NOTE: "Founder" prioritized access is not modelled in the database yet
+  // (no `is_founder` column, no `founder_grants` table). The previous code
+  // read `(auth as any).profile.is_founder` which always returned undefined,
+  // so the badge was permanently disabled without any signal. The UI affordance
+  // has been removed entirely instead of relying on a silently-broken flag —
+  // reintroduce it together with a real `useIsFounder()` hook backed by a
+  // server check the day the feature lands.
   void auth;
-  const isFounder = false;
 
   const [coords, setCoords] = useState<Coords | null>(null);
   const [geoError, setGeoError] = useState<string | null>(null);
