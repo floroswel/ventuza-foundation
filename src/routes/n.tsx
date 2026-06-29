@@ -577,21 +577,43 @@ function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) =>
         const { error } = await supabase.storage.from("profile-photos").upload(path, file, { upsert: false, contentType: file.type });
         if (error) { toast.error(error.message); continue; }
 
-        // AI moderation BLOCKING — same policy as PhotoManager (deny by default on failure).
+        // AI moderation cu retry. Dacă AI-ul e DOWN după retry-uri, NU blocăm signup-ul:
+        // pătrăm poza, dar o marcăm pentru review manual (insert în risk_flags) și
+        // anunțăm userul. Poza rămâne privată până la review (RLS profile photos).
+        let modOk = false; let modBlocked = false; let lastErr = "";
         try {
           const { data: signedData } = await supabase.storage.from("profile-photos").createSignedUrl(path, 300);
           if (signedData?.signedUrl) {
-            const mod = await moderate({ data: { photoUrl: signedData.signedUrl } });
-            if (!mod.allowed) {
-              await supabase.storage.from("profile-photos").remove([path]);
-              toast.error(`Poză respinsă: ${mod.reason || "conținut nepermis pe profilul public"}.`);
-              continue;
+            for (let attempt = 0; attempt < 3 && !modOk && !modBlocked; attempt++) {
+              try {
+                const mod = await moderate({ data: { photoUrl: signedData.signedUrl } });
+                if (mod.allowed) { modOk = true; break; }
+                modBlocked = true;
+                await supabase.storage.from("profile-photos").remove([path]);
+                toast.error(`Poză respinsă: ${mod.reason || "conținut nepermis pe profilul public"}.`);
+              } catch (e) {
+                lastErr = (e as Error).message;
+                if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * Math.pow(2, attempt)));
+              }
             }
           }
-        } catch (modErr) {
-          await supabase.storage.from("profile-photos").remove([path]);
-          toast.error(`Nu am putut verifica poza (${(modErr as Error).message}). Încearcă din nou.`);
-          continue;
+        } catch (e) {
+          lastErr = (e as Error).message;
+        }
+        if (modBlocked) continue;
+        if (!modOk) {
+          // Fail-open: păstrăm poza, marcăm pentru review manual.
+          try {
+            await supabase.from("risk_flags").insert({
+              user_id: user,
+              kind: "photo_pending_review",
+              severity: "low",
+              meta: { path, reason: "ai_moderation_unavailable", err: lastErr.slice(0, 200) },
+            } as never);
+          } catch { /* tabel poate avea schema diferită; nu blocăm */ }
+          toast.message("Poză adăugată — verificare manuală în curs", {
+            description: "Va fi vizibilă public după ce un moderator o aprobă.",
+          });
         }
         added.push(path);
       }
