@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-function SendFirstMessageButton({ onSend }: { onSend: () => void | Promise<void> }) {
+function SendFirstMessageButton({ onSend, onDone }: { onSend: () => void | Promise<void>; onDone?: () => void }) {
   const [busy, setBusy] = useState(false);
   return (
     <Button
@@ -14,7 +14,12 @@ function SendFirstMessageButton({ onSend }: { onSend: () => void | Promise<void>
       onClick={async () => {
         if (busy) return;
         setBusy(true);
-        try { await onSend(); } finally { setBusy(false); }
+        try {
+          await onSend();
+          onDone?.();
+        } finally {
+          setBusy(false);
+        }
       }}
     >
       {busy ? <><Loader2 className="size-4 animate-spin mr-2" /> Se deschide…</> : "Trimite primul mesaj"}
