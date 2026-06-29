@@ -287,8 +287,10 @@ function ThreadPage() {
     }
   }
 
-  async function handleUnsend(m: MessageRow) {
-    if (!confirm("Șterge mesajul pentru toți? Doar în primele 5 minute.")) return;
+  async function confirmUnsend() {
+    const m = unsendTarget;
+    if (!m) return;
+    setUnsendTarget(null);
     try {
       await unsendMessage(m.id);
       setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, deleted_at: new Date().toISOString(), body: "", media_url: null, media_type: "text" } : x)));
