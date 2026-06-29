@@ -269,12 +269,12 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
           perks={["Profil verificat", "Listare evenimente", "Badge ONG", "Suport email"]}
         />
         <Tier
-          name="Starter" price="€149 / lună" highlight
+          name="Starter" price="749 RON / lună" highlight
           desc="Pentru baruri, cluburi, branduri locale gay-friendly."
           perks={["Banner Discover (city-targeted)", "1 eveniment promovat / lună", "Statistici impresii", "Factură cu TVA"]}
         />
         <Tier
-          name="Growth" price="€499 / lună"
+          name="Growth" price="2.490 RON / lună"
           desc="Pentru branduri naționale și organizatori Pride."
           perks={["Banner național + city", "5 evenimente boost", "Stories sponsorizate", "Account manager dedicat"]}
         />
