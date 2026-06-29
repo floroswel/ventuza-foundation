@@ -1,17 +1,23 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Compass, MessageCircle, CalendarHeart, Users, Trophy, MapPin } from "lucide-react";
+import { Compass, MessageCircle, CalendarHeart, Users, Trophy, MapPin, Briefcase } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useUserRoles } from "@/hooks/useUserRole";
 
 export function BottomNav() {
   const { pathname } = useLocation();
   const { total: unreadTotal } = useUnreadMessages();
+  const { roles } = useUserRoles();
+  const isPartner = roles.includes("business") || roles.includes("admin") || roles.includes("moderator");
+  // For partners, swap Squads for Partner portal (keep 6 items max for mobile width).
   const items = [
     { to: "/discover", label: "Discover", Icon: Compass },
     { to: "/nearby", label: "Nearby", Icon: MapPin },
     { to: "/quests", label: "Quests", Icon: Trophy },
     { to: "/events", label: "Events", Icon: CalendarHeart },
-    { to: "/groups", label: "Squads", Icon: Users },
+    isPartner
+      ? { to: "/partner", label: "Partner", Icon: Briefcase }
+      : { to: "/groups", label: "Squads", Icon: Users },
     { to: "/messages", label: "Messages", Icon: MessageCircle, badge: unreadTotal },
   ] as const;
   return (
