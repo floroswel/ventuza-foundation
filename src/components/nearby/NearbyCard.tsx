@@ -8,11 +8,10 @@ import { formatDistance } from "@/lib/geo-bucket";
 
 type Props = {
   point: NearbyPoint & { distanceM: number };
-  isFounder?: boolean;
   onSelect?: (p: NearbyPoint) => void;
 };
 
-export function NearbyCard({ point, isFounder, onSelect }: Props) {
+export function NearbyCard({ point, onSelect }: Props) {
   const isEvent = point.kind === "event";
   const isOffer = point.kind === "offer";
   const isVenue = point.kind === "venue";
