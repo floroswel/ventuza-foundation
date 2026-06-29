@@ -295,6 +295,7 @@ function PartnerPortal() {
         <Button asChild>
           <Link to="/business">Aplică pentru cont partener</Link>
         </Button>
+        <ClaimByCodeCard onClaimed={() => window.location.reload()} />
       </div>
     );
   }
