@@ -1118,9 +1118,7 @@ function StatsDialog({ offerId, title, onClose }: { offerId: string; title: stri
 function ClaimByCodeCard({ onClaimed }: { onClaimed: () => void }) {
   const [code, setCode] = useState("");
   const [busy, setBusy] = useState(false);
-  const claim = useServerFn(
-    (require("@/lib/business.functions") as typeof import("@/lib/business.functions")).claimBusinessApplicationByCode,
-  );
+  const claim = useServerFn(claimBusinessApplicationByCode);
   // Hidrare opțională din localStorage (vz_biz_app).
   useEffect(() => {
     try {
