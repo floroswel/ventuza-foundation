@@ -329,7 +329,21 @@ function DiscoverPage() {
 
 
       ) : view === "swipe" ? (
-        <SwipeDeck profiles={visible} onDecision={handleDecision} onOpen={setSelected} />
+        <>
+          {autoExpanded != null && (
+            <div className="mx-3 mt-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
+              N-am găsit nimeni la {filters.maxDistanceKm ?? 25} km. Îți arătăm rezultate
+              până la <span className="font-medium text-primary">{autoExpanded === 5000 ? "nivel național" : `${autoExpanded} km`}</span>.{" "}
+              <button
+                className="underline"
+                onClick={() => setFilters({ ...filters, maxDistanceKm: autoExpanded })}
+              >
+                Setează ca implicit
+              </button>
+            </div>
+          )}
+          <SwipeDeck profiles={visible} onDecision={handleDecision} onOpen={setSelected} />
+        </>
       ) : (
         <>
           <OnlineRow profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)} onOpen={setSelected} />
