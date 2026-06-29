@@ -60,11 +60,8 @@ export function NearbyCard({ point, onSelect }: Props) {
                   {point.category}
                 </Badge>
               )}
-              {isEvent && isFounder && (
-                <Badge className="text-xs bg-amber-500/20 text-amber-600 border-amber-500/30">
-                  Acces prioritar
-                </Badge>
-              )}
+              {/* "Founder" prioritized-access badge removed — see nearby.tsx
+                  comment. Reintroduce together with a server-backed source. */}
             </div>
             <h3 className="font-semibold text-sm truncate">{point.name}</h3>
             {point.description && (
