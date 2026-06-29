@@ -488,6 +488,13 @@ function FormView({
 
 function DoneScreen({ appId }: { appId: string | null }) {
   const { user } = useAuth();
+  // Persistăm codul cererii și aici (pe lângă submit) — anonimii care
+  // închid tabul fără să-l copieze pot să-l recupereze din localStorage
+  // direct din /partner via „Revendică prin cod".
+  useEffect(() => {
+    if (!appId) return;
+    try { localStorage.setItem(STATUS_KEY, JSON.stringify({ id: appId, at: Date.now() })); } catch { /* */ }
+  }, [appId]);
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-6 py-16 text-center">
       <CheckCircle2 className="size-16 text-primary" />
@@ -496,15 +503,25 @@ function DoneScreen({ appId }: { appId: string | null }) {
         Echipa Ventuza analizează cererea ta. Te contactăm pe email în maximum 3 zile lucrătoare.
       </p>
       {appId && (
-        <div className="flex items-center gap-2 rounded-full border border-border bg-surface/50 px-3 py-1 text-[11px] text-muted-foreground">
-          <span>ID cerere: <code className="font-mono text-foreground break-all">{appId}</code></span>
+        <div className="w-full rounded-2xl border border-primary/30 bg-primary/5 p-4 text-left space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+            Codul cererii tale
+          </p>
+          <code className="block w-full break-all rounded bg-background/60 px-2 py-1.5 font-mono text-xs">
+            {appId}
+          </code>
           <button
             type="button"
             onClick={() => navigator.clipboard?.writeText(appId)}
-            className="text-primary underline"
+            className="text-xs text-primary underline"
           >
-            copiază
+            Copiază codul
           </button>
+          <p className="text-[11px] leading-snug text-muted-foreground">
+            <strong>Păstrează acest cod.</strong> Îți va fi cerut dacă scrii la
+            suport sau dacă vrei să revendici cererea dintr-un cont creat ulterior
+            (Portal Partener → „Am deja o cerere").
+          </p>
         </div>
       )}
       <a href={`mailto:business@ventuza.app?subject=${encodeURIComponent(`Cerere partener ${appId ?? ""}`)}`} className="mt-2 inline-flex items-center gap-2 text-xs text-primary hover:underline">
