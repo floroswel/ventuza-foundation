@@ -143,10 +143,10 @@ function BusinessPage() {
         monthly_budget_eur: form.monthly_budget_eur === "" ? undefined : Number(form.monthly_budget_eur),
       };
       const parsed = schema.parse(payload);
-      // Strip the three accepts_* booleans — they're enforced server-side.
-      const { accepts_terms: _t, accepts_dpa: _d, accepts_lgbt_charter: _l, ...rest } = parsed;
-      void _t; void _d; void _l;
-      const res = await submitApp({ data: rest as any });
+      // GDPR: trimitem consimțămintele EXPLICIT la server pentru a fi
+      // validate (must === true) și înregistrate în business_applications.
+      // Nu mai sunt forțate la true server-side fără probă din UI.
+      const res = await submitApp({ data: parsed as any });
       if (res?.id) {
         try { localStorage.setItem(STATUS_KEY, JSON.stringify({ id: res.id, at: Date.now() })); } catch {/**/}
         setSavedAppId(res.id);
