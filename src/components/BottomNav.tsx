@@ -26,7 +26,7 @@ export function BottomNav() {
         {items.map((item) => {
           const { to, label, Icon } = item;
           const badge = "badge" in item ? item.badge : 0;
-          const active = pathname === to || (to === "/events" && pathname.startsWith("/events")) || (to === "/groups" && pathname.startsWith("/groups")) || (to === "/messages" && pathname.startsWith("/messages")) || (to === "/quests" && pathname.startsWith("/quests")) || (to === "/nearby" && (pathname.startsWith("/nearby") || pathname.startsWith("/venues") || pathname.startsWith("/offers")));
+          const active = pathname === to || (to === "/events" && pathname.startsWith("/events")) || (to === "/groups" && pathname.startsWith("/groups")) || (to === "/messages" && pathname.startsWith("/messages")) || (to === "/quests" && pathname.startsWith("/quests")) || (to === "/partner" && pathname.startsWith("/partner")) || (to === "/nearby" && (pathname.startsWith("/nearby") || pathname.startsWith("/venues") || pathname.startsWith("/offers")));
           return (
             <Link
               key={to}
