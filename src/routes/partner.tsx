@@ -14,6 +14,7 @@ import {
   partnerUpdateOffer,
   partnerGetOfferStats,
 } from "@/lib/partner.functions";
+import { claimBusinessApplicationByCode } from "@/lib/business.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
