@@ -304,7 +304,10 @@ function DiscoverPage() {
           hasLocation={locStatus === "granted"}
           hasFilters={JSON.stringify(debouncedFilters) !== JSON.stringify(DEFAULT_FILTERS)}
           onResetFilters={() => setFilters(DEFAULT_FILTERS)}
+          currentDistanceKm={filters.maxDistanceKm}
+          onExpandDistance={(km) => setFilters({ ...filters, maxDistanceKm: km })}
         />
+
 
       ) : view === "swipe" ? (
         <SwipeDeck profiles={visible} onDecision={handleDecision} onOpen={setSelected} />
