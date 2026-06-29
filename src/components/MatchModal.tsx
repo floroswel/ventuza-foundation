@@ -162,7 +162,7 @@ export function MatchModal({
               className="mt-8 flex flex-col gap-2"
             >
               {onSendFirstMessage && (
-                <SendFirstMessageButton onSend={onSendFirstMessage} />
+                <SendFirstMessageButton onSend={onSendFirstMessage} onDone={onClose} />
               )}
               <Button
                 variant={onSendFirstMessage ? "outline" : "hero"}
