@@ -662,6 +662,21 @@ function ThreadPage() {
           <Send className="size-4" />
         </button>
       </form>
+
+      <AlertDialog open={!!unsendTarget} onOpenChange={(o) => !o && setUnsendTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Șterge mesajul?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Mesajul va fi șters pentru ambele părți. Acțiune disponibilă doar în primele 5 minute.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Renunță</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmUnsend}>Șterge</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
