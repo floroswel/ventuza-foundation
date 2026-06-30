@@ -184,7 +184,14 @@ export function RiskReviewQueuePanel() {
     setResolvedIds((s) => { const n = new Set(s); n.add(flagId); return n; });
     try {
       await resolveFn({ data: { flagId, decision, notes: trimmed || undefined } });
-      toast.success(meta.toast, { description: `Flag ${flagId.slice(0, 8)}…` });
+      if (decision === "escalated") {
+        toast.warning("⚠️ Escaladat către Trust & Safety", {
+          description: `${confirm.userLabel} · alertă critică creată în Admin → Alerte`,
+          duration: 8000,
+        });
+      } else {
+        toast.success(meta.toast, { description: `Flag ${flagId.slice(0, 8)}…` });
+      }
       reload();
     } catch (e) {
       // Rollback optimistic hide
