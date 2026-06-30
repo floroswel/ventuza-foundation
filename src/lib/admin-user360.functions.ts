@@ -248,8 +248,8 @@ export const adminPushUnicast = createServerFn({ method: "POST" })
       type: "admin_message",
       title: data.title,
       body: data.body,
-      url: data.url ?? null,
-      sender_id: context.userId,
+      link: data.url ?? null,
+      actor_id: context.userId,
     }).select("id").maybeSingle();
     if (nerr) throw new Error(`notificare in-app eșuată: ${nerr.message}`);
 
