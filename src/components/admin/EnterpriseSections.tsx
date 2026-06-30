@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  adminGetAuditLog, adminGetAlerts, adminAckAlert,
+  adminGetAuditLog, adminGetAlerts, adminAckAlert, adminSnoozeAlert, adminResolveAlert,
   adminGetDsaReports, adminResolveDsa,
   adminGetCsamReports, adminAddCsamHash,
   adminGetDeletionRequests, adminExportUserData, adminProcessDeletion,
@@ -284,9 +284,12 @@ export function AuditLogPanel() {
 export function AlertsPanel() {
   const get = useServerFn(adminGetAlerts);
   const ack = useServerFn(adminAckAlert);
+  const snooze = useServerFn(adminSnoozeAlert);
+  const resolve = useServerFn(adminResolveAlert);
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState<number | null>(null);
 
   const load = async () => {
     setError(null);
@@ -305,9 +308,37 @@ export function AlertsPanel() {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
+  const removeLocal = (id: number) => setItems((c) => c.filter((x) => x.id !== id));
+
   const acknowledge = async (id: number) => {
-    try { await ack({ data: { id } }); setItems((c) => c.filter((x) => x.id !== id)); }
-    catch (e: any) { toast.error(errMsg(e)); }
+    setBusy(id);
+    try {
+      await ack({ data: { id } });
+      setItems((c) => c.map((x) => x.id === id ? { ...x, acknowledged_at: new Date().toISOString() } : x));
+      toast.success("Alertă confirmată");
+    } catch (e: any) { toast.error(errMsg(e)); }
+    finally { setBusy(null); }
+  };
+
+  const doSnooze = async (id: number, minutes: number, label: string) => {
+    setBusy(id);
+    try {
+      await snooze({ data: { id, minutes } });
+      removeLocal(id);
+      toast.success(`Amânată ${label}`);
+    } catch (e: any) { toast.error(errMsg(e)); }
+    finally { setBusy(null); }
+  };
+
+  const doResolve = async (id: number) => {
+    const note = window.prompt("Notă rezolvare (opțional):") ?? undefined;
+    setBusy(id);
+    try {
+      await resolve({ data: { id, note: note || undefined } });
+      removeLocal(id);
+      toast.success("Alertă rezolvată");
+    } catch (e: any) { toast.error(errMsg(e)); }
+    finally { setBusy(null); }
   };
 
   return (
@@ -331,20 +362,52 @@ export function AlertsPanel() {
             const sc = a.severity === "critical" ? "border-red-500/40 bg-red-500/5"
               : a.severity === "warning" ? "border-orange-500/40 bg-orange-500/5"
               : "border-border bg-surface";
+            const isBusy = busy === a.id;
+            const acked = !!a.acknowledged_at;
             return (
               <li key={a.id} className={`rounded-2xl border p-3 ${sc}`}>
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] uppercase">{a.kind}</span>
-                      <span className="text-[10px] text-muted-foreground">{new Date(a.created_at).toLocaleString("ro-RO")}</span>
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] uppercase">{a.kind}</span>
+                        <span className="text-[10px] text-muted-foreground">{new Date(a.created_at).toLocaleString("ro-RO")}</span>
+                        {acked && <span className="rounded-full bg-emerald-500/15 px-2 py-0.5 text-[10px] text-emerald-400">confirmată</span>}
+                      </div>
+                      <p className="mt-1 text-sm font-semibold">{a.title}</p>
+                      {a.body && <p className="mt-0.5 text-xs text-muted-foreground">{a.body}</p>}
                     </div>
-                    <p className="mt-1 text-sm font-semibold">{a.title}</p>
-                    {a.body && <p className="mt-0.5 text-xs text-muted-foreground">{a.body}</p>}
                   </div>
-                  <button onClick={() => acknowledge(a.id)} className="rounded-full bg-primary/15 px-3 py-1.5 text-xs text-primary">
-                    <CheckCircle2 className="mr-1 inline size-3" /> Confirmă
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      disabled={isBusy || acked}
+                      onClick={() => acknowledge(a.id)}
+                      className="rounded-full bg-primary/15 px-3 py-1.5 text-xs text-primary disabled:opacity-40"
+                    >
+                      <CheckCircle2 className="mr-1 inline size-3" /> Confirmă
+                    </button>
+                    <button
+                      disabled={isBusy}
+                      onClick={() => doSnooze(a.id, 60, "1 oră")}
+                      className="rounded-full border border-border px-3 py-1.5 text-xs disabled:opacity-40"
+                    >
+                      Amână 1h
+                    </button>
+                    <button
+                      disabled={isBusy}
+                      onClick={() => doSnooze(a.id, 60 * 24, "24h")}
+                      className="rounded-full border border-border px-3 py-1.5 text-xs disabled:opacity-40"
+                    >
+                      Amână 24h
+                    </button>
+                    <button
+                      disabled={isBusy}
+                      onClick={() => doResolve(a.id)}
+                      className="rounded-full bg-emerald-500/15 px-3 py-1.5 text-xs text-emerald-400 disabled:opacity-40"
+                    >
+                      Marchează rezolvată
+                    </button>
+                  </div>
                 </div>
               </li>
             );
@@ -354,6 +417,7 @@ export function AlertsPanel() {
     </div>
   );
 }
+
 
 /* =========================================================
    DSA reports

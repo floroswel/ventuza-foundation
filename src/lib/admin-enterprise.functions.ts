@@ -179,9 +179,11 @@ export const adminGetAlerts = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertStaff(context.supabase, context.userId);
+    const nowIso = new Date().toISOString();
     const { data, error } = await context.supabase
       .from("admin_alerts").select("*")
-      .is("acknowledged_at", null)
+      .is("resolved_at", null)
+      .or(`snoozed_until.is.null,snoozed_until.lt.${nowIso}`)
       .order("created_at", { ascending: false })
       .limit(100);
     if (error) throw new Error(error.message);
@@ -200,6 +202,38 @@ export const adminAckAlert = createServerFn({ method: "POST" })
     await logAudit({ actorId: context.userId, action: "alert.ack", targetTable: "admin_alerts", targetId: String(data.id) });
     return { ok: true };
   });
+
+export const adminSnoozeAlert = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.number(), minutes: z.number().int().min(5).max(60 * 24 * 7) }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const until = new Date(Date.now() + data.minutes * 60_000).toISOString();
+    const { error } = await context.supabase.from("admin_alerts")
+      .update({ snoozed_until: until, snoozed_by: context.userId })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await logAudit({ actorId: context.userId, action: "alert.snooze", targetTable: "admin_alerts", targetId: String(data.id), after: { until } });
+    return { ok: true, until };
+  });
+
+export const adminResolveAlert = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.number(), note: z.string().max(500).optional() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const { error } = await context.supabase.from("admin_alerts")
+      .update({
+        resolved_at: new Date().toISOString(),
+        resolved_by: context.userId,
+        resolution_note: data.note ?? null,
+      })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await logAudit({ actorId: context.userId, action: "alert.resolve", targetTable: "admin_alerts", targetId: String(data.id), after: { note: data.note ?? null }, severity: "info" });
+    return { ok: true };
+  });
+
 
 /* ---------------- DSA REPORTS ---------------- */
 export const adminGetDsaReports = createServerFn({ method: "POST" })

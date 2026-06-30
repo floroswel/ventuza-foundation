@@ -136,7 +136,12 @@ export type Database = {
           id: number
           is_seed: boolean
           kind: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
           severity: string
+          snoozed_by: string | null
+          snoozed_until: string | null
           target_id: string | null
           target_table: string | null
           title: string
@@ -149,7 +154,12 @@ export type Database = {
           id?: number
           is_seed?: boolean
           kind: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           severity?: string
+          snoozed_by?: string | null
+          snoozed_until?: string | null
           target_id?: string | null
           target_table?: string | null
           title: string
@@ -162,7 +172,12 @@ export type Database = {
           id?: number
           is_seed?: boolean
           kind?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
           severity?: string
+          snoozed_by?: string | null
+          snoozed_until?: string | null
           target_id?: string | null
           target_table?: string | null
           title?: string
