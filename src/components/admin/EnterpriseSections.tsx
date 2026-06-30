@@ -290,6 +290,9 @@ export function AlertsPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<number | null>(null);
+  const [fKind, setFKind] = useState<string>("");
+  const [fSeverity, setFSeverity] = useState<string>("");
+  const [fRange, setFRange] = useState<string>("24h");
 
   const load = async () => {
     setError(null);
