@@ -179,8 +179,7 @@ function AuthPage() {
           },
         });
         if (error) {
-          setCaptchaToken(null);
-          toast.error(error.message);
+          handleAuthError(error);
           return;
         }
         // Persist birthdate on profile (trigger `enforce_min_age` enforces 18+ server-side).
