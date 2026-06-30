@@ -109,6 +109,58 @@ function Content({ stats }: { stats: SignupThrottleStats }) {
         IP-urile sunt stocate hash-uite SHA-256 (sărate) — niciun IP în clar.
       </div>
 
+      {stats.totals.blocks_logged > 0 && (
+        <Section
+          title={`Blocări logate (${stats.totals.blocks_logged})`}
+          icon={<ShieldAlert className="size-4 text-red-300" />}
+        >
+          <div className="mb-2 flex flex-wrap gap-1">
+            {(["ip_hourly_cap","ip_daily_cap","fp_hourly_cap","fp_daily_cap"] as const).map((k) => {
+              const n = stats.blocks_by_reason[k] ?? 0;
+              if (!n) return null;
+              return (
+                <span
+                  key={k}
+                  className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] text-red-300"
+                >
+                  {REASON_LABEL[k]} · {n}
+                </span>
+              );
+            })}
+          </div>
+          <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+            <table className="w-full text-xs">
+              <thead className="bg-background/40 text-[10px] uppercase text-muted-foreground">
+                <tr>
+                  <Th>Când</Th>
+                  <Th>Motiv</Th>
+                  <Th>IP prefix</Th>
+                  <Th>FP prefix</Th>
+                  <Th align="right">IP/h · IP/zi</Th>
+                  <Th align="right">FP/h · FP/zi</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {stats.recent_blocks.map((b, i) => (
+                  <tr key={i} className="border-t border-border">
+                    <Td className="whitespace-nowrap text-muted-foreground">{fmtDate(b.created_at)}</Td>
+                    <Td>
+                      <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] text-red-300">
+                        {REASON_LABEL[b.reason] ?? b.reason}
+                      </span>
+                    </Td>
+                    <Td className="font-mono text-[10px]">{b.ip_hash_prefix ?? "—"}</Td>
+                    <Td className="font-mono text-[10px]">{b.fp_prefix ?? "—"}</Td>
+                    <Td align="right">{b.ip_hour} · {b.ip_day}</Td>
+                    <Td align="right">{b.fp_hour} · {b.fp_day}</Td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Section>
+      )}
+
       <Section title={`Top IP-uri (${stats.top_ips.length})`} icon={<Globe className="size-4" />}>
         <Table
           rows={stats.top_ips}
