@@ -92,12 +92,11 @@ export function RiskReviewQueuePanel() {
 
       <PanelStatus
         state={state}
-        emptyTitle="Nicio cerere în coadă"
-        emptyDescription="empty legitim — niciun cont nou nu a depășit pragul de risc."
-        emptyIcon={<ShieldAlert className="size-8 text-emerald-400" />}
-        onRetry={reload}
+        isEmpty={state.status === "ready" && state.data.length === 0}
+        emptyHint="empty legitim — niciun cont nou nu a depășit pragul de risc."
+        retry={reload}
       >
-        {(rows) => (
+        {state.status === "ready" && state.data.length > 0 && (
           <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-white/5 text-xs uppercase text-muted-foreground">
@@ -112,7 +111,7 @@ export function RiskReviewQueuePanel() {
                 </tr>
               </thead>
               <tbody>
-                {rows.map((r) => (
+                {state.data.map((r) => (
                   <tr key={r.flag_id} className="border-t border-white/5">
                     <td className="px-3 py-2">
                       <div className="font-medium">{r.display_name ?? "(fără nume)"}</div>
