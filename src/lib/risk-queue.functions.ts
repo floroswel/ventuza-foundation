@@ -63,7 +63,7 @@ export type UserRiskDetail = {
     profile_slug: string | null;
     created_at: string;
     risk_score: number;
-    risk_signals: Record<string, unknown> | null;
+    risk_signals: any;
     risk_updated_at: string | null;
     age_status: string | null;
     banned_at: string | null;
@@ -75,7 +75,7 @@ export type UserRiskDetail = {
     kind: string;
     severity: number;
     status: string;
-    details: Record<string, unknown> | null;
+    details: any;
     created_at: string;
     resolved_at: string | null;
     resolved_by: string | null;
@@ -91,6 +91,7 @@ export type UserRiskDetail = {
     justification: string | null;
   }>;
 };
+
 
 /** Detailed risk profile for a single user: score, signals breakdown, full flag timeline. */
 export const adminGetUserRiskDetail = createServerFn({ method: "POST" })
