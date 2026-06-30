@@ -127,6 +127,11 @@ function AuthPage() {
       return;
     }
 
+    if (captchaRequired && !captchaToken) {
+      toast.error("Completează verificarea anti-bot.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       if (mode === "signup") {
@@ -146,9 +151,13 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email: emailParsed.data,
           password: passParsed.data,
-          options: { emailRedirectTo: `${window.location.origin}/n` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/n`,
+            captchaToken: captchaToken ?? undefined,
+          },
         });
         if (error) {
+          setCaptchaToken(null);
           toast.error(error.message);
           return;
         }
@@ -172,8 +181,10 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: emailParsed.data,
           password: passParsed.data,
+          options: { captchaToken: captchaToken ?? undefined },
         });
         if (error) {
+          setCaptchaToken(null);
           toast.error(error.message);
           return;
         }
