@@ -170,6 +170,15 @@ function AuthPage() {
           toast.error("Trebuie să ai cel puțin 18 ani pentru a folosi Ventuza.");
           return;
         }
+        // Server-side disposable email preflight (enforced again by DB trigger
+        // public.enforce_disposable_email_on_profile).
+        const { error: disposableErr } = await supabase.rpc("assert_email_allowed", {
+          _email: emailParsed.data,
+        });
+        if (disposableErr) {
+          handleAuthError(disposableErr);
+          return;
+        }
         const { data, error } = await supabase.auth.signUp({
           email: emailParsed.data,
           password: passParsed.data,
