@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2 } from "lucide-react";
-import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 import {
   adminListNewAccountReviewQueue,
   adminResolveRiskFlag,
