@@ -199,11 +199,11 @@ export function RiskReviewQueuePanel() {
 
       <PanelStatus
         state={state}
-        isEmpty={state.status === "ready" && state.data.length === 0}
+        isEmpty={state.status === "ready" && state.data.filter((r) => !resolvedIds.has(r.flag_id)).length === 0}
         emptyHint="empty legitim — niciun cont nou nu a depășit pragul de risc."
         retry={reload}
       >
-        {state.status === "ready" && state.data.length > 0 && (
+        {state.status === "ready" && state.data.filter((r) => !resolvedIds.has(r.flag_id)).length > 0 && (
           <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-white/5 text-xs uppercase text-muted-foreground">
@@ -218,7 +218,7 @@ export function RiskReviewQueuePanel() {
                 </tr>
               </thead>
               <tbody>
-                {state.data.map((r) => {
+                {state.data.filter((r) => !resolvedIds.has(r.flag_id)).map((r) => {
                   const notes = parseNotes(r.details);
                   const flags = flagsFromDetails(r.details);
                   const signals = signalEntries(r.details);
