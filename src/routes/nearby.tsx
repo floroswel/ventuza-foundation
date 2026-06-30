@@ -224,7 +224,18 @@ function NearbyPage() {
         </TabsList>
 
         <TabsContent value={kind} className="mt-4">
-          {view === "map" ? (
+          {errorKind ? (
+            <ErrorState
+              kind={errorKind}
+              message={String((error as Error)?.message ?? "")}
+              onRetry={() => refetch()}
+              onBrowseAll={() => {
+                if (kind === "event") navigate({ to: "/events" });
+                else if (kind === "offer") navigate({ to: "/offers" });
+                else navigate({ to: "/venues" });
+              }}
+            />
+          ) : view === "map" ? (
             <NearbyMap user={coords} points={filtered} onSelect={(p) => {
               if (p.kind === "event") navigate({ to: "/events/$id", params: { id: p.id } });
               else if (p.kind === "offer") navigate({ to: "/offers/$id", params: { id: p.id } });
