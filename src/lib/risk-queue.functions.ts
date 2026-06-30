@@ -29,7 +29,11 @@ export const adminListNewAccountReviewQueue = createServerFn({ method: "POST" })
       { _limit: data.limit ?? 100 },
     );
     if (error) throw new Error(error.message);
-    return { rows: (rows ?? []) as ReviewQueueRow[] };
+    const normalized: ReviewQueueRow[] = (rows ?? []).map((r: Record<string, unknown>) => ({
+      ...(r as unknown as ReviewQueueRow),
+      details: r.details == null ? null : JSON.stringify(r.details),
+    }));
+    return { rows: normalized };
   });
 
 const ResolveInput = z.object({
@@ -46,7 +50,7 @@ export const adminResolveRiskFlag = createServerFn({ method: "POST" })
     const { error } = await context.supabase.rpc("admin_resolve_risk_flag", {
       _flag_id: data.flagId,
       _decision: data.decision,
-      _notes: data.notes ?? null,
+      _notes: data.notes ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
