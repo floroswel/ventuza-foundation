@@ -528,7 +528,7 @@ function ManualAgeVerifyDialog({ userId, verified, onDone }: { userId: string; v
 
 function BanDialog({ userId, onDone }: { userId: string; onDone: () => void }) {
   const fn = useServerFn(adminBanUser);
-  const m = useMutation({ mutationFn: (j: string) => fn({ data: { userId, reason: j } }) });
+  const m = useMutation({ mutationFn: (j: string) => fn({ data: { userId, justification: j } }) });
   return (
     <ReasonDialog
       trigger={<Button variant="destructive" size="sm"><Ban className="h-4 w-4 mr-1" /> Ban</Button>}
@@ -543,7 +543,7 @@ function BanDialog({ userId, onDone }: { userId: string; onDone: () => void }) {
 
 function UnbanDialog({ userId, onDone }: { userId: string; onDone: () => void }) {
   const fn = useServerFn(adminUnbanUser);
-  const m = useMutation({ mutationFn: (j: string) => fn({ data: { userId, reason: j } }) });
+  const m = useMutation({ mutationFn: (j: string) => fn({ data: { userId, justification: j } }) });
   return (
     <ReasonDialog
       trigger={<Button variant="outline" size="sm"><RotateCcw className="h-4 w-4 mr-1" /> Unban</Button>}
@@ -557,7 +557,7 @@ function UnbanDialog({ userId, onDone }: { userId: string; onDone: () => void })
 function SuspendDialog({ userId, onDone }: { userId: string; onDone: () => void }) {
   const [hours, setHours] = useState<number>(24);
   const fn = useServerFn(adminSuspendUser);
-  const m = useMutation({ mutationFn: (j: string) => fn({ data: { userId, hours, reason: j } }) });
+  const m = useMutation({ mutationFn: (j: string) => fn({ data: { userId, hours, justification: j } }) });
   return (
     <ReasonDialog
       trigger={<Button variant="outline" size="sm"><AlertTriangle className="h-4 w-4 mr-1" /> Suspendă</Button>}
