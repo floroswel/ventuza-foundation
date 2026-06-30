@@ -450,6 +450,10 @@ function UsersPanel({ meId }: { meId: string }) {
       align: "right",
       cell: (u) => (
         <div className="flex flex-wrap justify-end gap-1" onClick={(e) => e.stopPropagation()}>
+          <Link to="/admin/users/$id" params={{ id: u.id }}
+            className="rounded-md bg-[var(--admin-accent)] px-2 py-1 text-[10px] font-semibold text-white hover:brightness-110">
+            360
+          </Link>
           <button onClick={() => setDetailId(u.id)} className="rounded-md bg-[var(--admin-accent-soft)] px-2 py-1 text-[10px] font-semibold text-[var(--admin-accent)] hover:brightness-110">
             Detalii
           </button>
