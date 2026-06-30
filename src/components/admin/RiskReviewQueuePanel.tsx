@@ -103,10 +103,11 @@ export function RiskReviewQueuePanel() {
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
 
+  const autoRefreshMs = useAdminAutoRefresh();
   const [state, reload, lastLoadedAt] = useAdminPanelLoad<ReviewQueueRow[]>(async () => {
     const { rows } = await listFn({ data: { limit: 200 } });
     return rows;
-  }, [], { autoRefreshMs: 30_000 });
+  }, [], { autoRefreshMs });
 
   const baseRows = state.status === "ready" ? state.data.filter((r) => !resolvedIds.has(r.flag_id)) : [];
 
