@@ -3396,6 +3396,7 @@ export type Database = {
       }
       admin_recompute_user_risk: { Args: { _user_id: string }; Returns: Json }
       admin_reinstate_partner: { Args: { p_user_id: string }; Returns: Json }
+      admin_risk_dashboard: { Args: { _window_hours?: number }; Returns: Json }
       admin_risk_queue: {
         Args: { _limit?: number }
         Returns: {
