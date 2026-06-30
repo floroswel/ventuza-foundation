@@ -417,56 +417,89 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
       </Section>
 
       {/* Top users */}
-      <Section title="Top 25 utilizatori după scor de risc" icon={<Users className="size-4" />}>
-        {data.top_users.length === 0 ? <Empty label="✅ Niciun utilizator peste 0." /> : (
-          <div className="max-h-96 overflow-y-auto">
-            <table className="w-full text-xs">
-              <thead className="sticky top-0 bg-surface text-muted-foreground">
-                <tr>
-                  <th className="text-left p-1">Utilizator</th>
-                  <th className="text-right p-1">Scor</th>
-                  <th className="text-right p-1">Rap.</th>
-                  <th className="text-left p-1">Status</th>
-                  <th className="text-left p-1">Creat</th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.top_users.map((u) => (
-                  <tr
-                    key={u.user_id}
-                    onClick={() => onOpenUser(u.user_id)}
-                    className="cursor-pointer border-t border-border/40 transition-colors hover:bg-primary/10"
-                    title="Deschide detaliu risc"
-                  >
-                    <td className="p-1">
-                      <div className="flex items-center gap-1">
-                        {u.display_name ?? "(fără nume)"}
-                        {u.verified && <BadgeCheck className="size-3 text-primary" />}
-                      </div>
-                      <div className="font-mono text-[9px] text-muted-foreground">{u.user_id.slice(0, 12)}…</div>
-                    </td>
-                    <td className="p-1 text-right">
-                      <span className={`rounded border px-2 py-0.5 ${scoreTone(u.risk_score)}`}>{u.risk_score}</span>
-                    </td>
-                    <td className="p-1 text-right">{u.report_count}</td>
-                    <td className="p-1">
-                      {u.banned_at ? <span className="text-red-400">banat</span> :
-                       u.suspended_until ? <span className="text-amber-300">suspendat</span> :
-                       <span className="text-muted-foreground">—</span>}
-                    </td>
-                    <td className="p-1">{fmt(u.created_at)}</td>
+      <Section
+        title={`Top utilizatori după scor de risc — ${filteredUsers.length}/${data.top_users.length}`}
+        icon={<Users className="size-4" />}
+      >
+        {filteredUsers.length === 0 ? (
+          <Empty label={filtersActive ? "Niciun utilizator nu corespunde filtrelor." : "✅ Niciun utilizator peste 0."} />
+        ) : (
+          <>
+            <div className="max-h-96 overflow-y-auto">
+              <table className="w-full text-xs">
+                <thead className="sticky top-0 bg-surface text-muted-foreground">
+                  <tr>
+                    <th className="text-left p-1">Utilizator</th>
+                    <th className="text-right p-1">Scor</th>
+                    <th className="text-right p-1">Rap.</th>
+                    <th className="text-left p-1">Status</th>
+                    <th className="text-left p-1">Creat</th>
                   </tr>
-                ))}
-
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {pagedUsers.map((u) => (
+                    <tr
+                      key={u.user_id}
+                      onClick={() => onOpenUser(u.user_id)}
+                      className="cursor-pointer border-t border-border/40 transition-colors hover:bg-primary/10"
+                      title="Deschide detaliu risc"
+                    >
+                      <td className="p-1">
+                        <div className="flex items-center gap-1">
+                          {u.display_name ?? "(fără nume)"}
+                          {u.verified && <BadgeCheck className="size-3 text-primary" />}
+                        </div>
+                        <div className="font-mono text-[9px] text-muted-foreground">{u.user_id.slice(0, 12)}…</div>
+                      </td>
+                      <td className="p-1 text-right">
+                        <span className={`rounded border px-2 py-0.5 ${scoreTone(u.risk_score)}`}>{u.risk_score}</span>
+                      </td>
+                      <td className="p-1 text-right">{u.report_count}</td>
+                      <td className="p-1">
+                        {u.banned_at ? <span className="text-red-400">banat</span> :
+                         u.suspended_until ? <span className="text-amber-300">suspendat</span> :
+                         <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="p-1">{fmt(u.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-2 flex items-center justify-between text-[10px] text-muted-foreground">
+              <span>
+                Pagina {pageSafe + 1} / {totalPages} ·
+                {" "}{pageSafe * PAGE_SIZE + 1}–{Math.min((pageSafe + 1) * PAGE_SIZE, filteredUsers.length)} din {filteredUsers.length}
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={pageSafe === 0}
+                  className="rounded border border-border px-2 py-0.5 hover:bg-primary/10 disabled:opacity-40"
+                >
+                  <ChevronLeft className="size-3" />
+                </button>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={pageSafe >= totalPages - 1}
+                  className="rounded border border-border px-2 py-0.5 hover:bg-primary/10 disabled:opacity-40"
+                >
+                  <ChevronRight className="size-3" />
+                </button>
+              </div>
+            </div>
+          </>
         )}
       </Section>
 
       {/* Recent flags */}
-      <Section title="Semnale recente (live)" icon={<AlertTriangle className="size-4" />}>
-        {data.recent_flags.length === 0 ? <Empty label="Niciun semnal în fereastră." /> : (
+      <Section
+        title={`Semnale recente (live) — ${filteredFlags.length}/${data.recent_flags.length}`}
+        icon={<AlertTriangle className="size-4" />}
+      >
+        {filteredFlags.length === 0 ? (
+          <Empty label={filtersActive ? "Niciun semnal nu corespunde filtrelor." : "Niciun semnal în fereastră."} />
+        ) : (
           <div className="max-h-96 overflow-y-auto">
             <table className="w-full text-xs">
               <thead className="sticky top-0 bg-surface text-muted-foreground">
@@ -479,7 +512,7 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
                 </tr>
               </thead>
               <tbody>
-                {data.recent_flags.map((f) => (
+                {filteredFlags.map((f) => (
                   <tr
                     key={f.id}
                     onClick={() => onOpenUser(f.user_id)}
@@ -501,12 +534,12 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
                     </td>
                   </tr>
                 ))}
-
               </tbody>
             </table>
           </div>
         )}
       </Section>
+
 
       <div className="text-[10px] text-muted-foreground">
         Generat: {fmt(data.generated_at)} · update live la flag-uri noi sau scor schimbat
