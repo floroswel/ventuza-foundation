@@ -277,7 +277,7 @@ export function RiskReviewQueuePanel() {
                       </td>
                     </tr>
                   )}
-                  </>
+                  </FragmentRow>
                   );
                 })}
 
