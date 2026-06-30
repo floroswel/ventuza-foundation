@@ -419,7 +419,7 @@ export function AlertsPanel() {
         </div>
       ) : (
         <ul className="space-y-2">
-          {items.map((a) => {
+          {filtered.map((a) => {
             const sc = a.severity === "critical" ? "border-red-500/40 bg-red-500/5"
               : a.severity === "warning" ? "border-orange-500/40 bg-orange-500/5"
               : "border-border bg-surface";
