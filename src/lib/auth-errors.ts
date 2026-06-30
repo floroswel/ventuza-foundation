@@ -131,6 +131,26 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
     return { code: "age_required", message: "Trebuie să-ți verifici vârsta înainte de a continua." };
   }
 
+  // SIGNUP THROTTLE (IP / device fingerprint)
+  if (msg.includes("signup_throttled_ip")) {
+    return {
+      code: "signup_throttled",
+      message:
+        "Prea multe conturi create de pe această conexiune. Încearcă din nou peste o oră.",
+      retryAfterSec: 3600,
+      resetCaptcha: true,
+    };
+  }
+  if (msg.includes("signup_throttled_fingerprint") || msg.includes("signup_throttled")) {
+    return {
+      code: "signup_throttled",
+      message:
+        "Prea multe conturi create de pe acest dispozitiv. Încearcă din nou peste o oră.",
+      retryAfterSec: 3600,
+      resetCaptcha: true,
+    };
+  }
+
   // NETWORK
   if (msg.includes("network") || msg.includes("fetch") || msg.includes("failed to fetch")) {
     return { code: "network", message: "Conexiune instabilă. Verifică internetul și reîncearcă." };
