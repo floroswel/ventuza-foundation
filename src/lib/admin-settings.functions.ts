@@ -1,21 +1,22 @@
+/**
+ * MODUL 2 — Settings & Flags (server fns).
+ *
+ * Sursa autoritativă pentru parametri runtime: `public.app_settings`
+ * + `public.feature_flags`. Modificare DOAR prin:
+ *   - `admin_update_setting` (versionat + istoric în `app_settings_history`)
+ *   - upsert pe `feature_flags`
+ * cu justification ≥ 10 + audit log + MFA + RBAC (admin/super_admin).
+ */
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestIP, getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-/**
- * App settings + feature flags — sursa autoritativă pentru parametrii
- * configurabili din panou. Citirea e publică (`app_settings` are policy
- * SELECT pentru anon+authenticated). Scrierea trece DOAR prin RPC
- * `admin_update_setting` (verifică rolul admin/super_admin) și salvează
- * istoricul + audit. Feature flags: scriere prin service_role + audit.
- */
-
 async function reqMeta() {
   let ip: string | null = null;
   let ua: string | null = null;
-  try { ip = getRequestIP({ xForwardedFor: true }) ?? null; } catch {}
-  try { ua = getRequestHeader("user-agent") ?? null; } catch {}
+  try { ip = getRequestIP({ xForwardedFor: true }) ?? null; } catch { /* noop */ }
+  try { ua = getRequestHeader("user-agent") ?? null; } catch { /* noop */ }
   return { ip, ua };
 }
 
@@ -23,7 +24,7 @@ async function assertAdmin(supabase: any, userId: string) {
   const { data } = await supabase.rpc("has_any_role", {
     _user_id: userId, _roles: ["admin", "super_admin"],
   });
-  if (!data) throw new Error("Forbidden");
+  if (!data) throw new Error("Forbidden: rol admin/super_admin necesar");
 }
 
 export const adminListSettings = createServerFn({ method: "GET" })
@@ -37,6 +38,7 @@ export const adminListSettings = createServerFn({ method: "GET" })
 const SetInput = z.object({
   key: z.string().min(1).max(120),
   value: z.any(),
+  justification: z.string().trim().min(10).max(500),
 });
 
 export const adminUpdateSetting = createServerFn({ method: "POST" })
@@ -44,9 +46,13 @@ export const adminUpdateSetting = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => SetInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
-    const { data: before } = await sa.from("app_settings").select("value, version").eq("key", data.key).maybeSingle();
+    const { data: before } = await sa.from("app_settings")
+      .select("value, version").eq("key", data.key).maybeSingle();
     const { data: r, error } = await sa.rpc("admin_update_setting", {
       _key: data.key, _value: data.value, _actor: context.userId,
     });
@@ -55,7 +61,9 @@ export const adminUpdateSetting = createServerFn({ method: "POST" })
     await sa.from("admin_audit_log").insert({
       actor_id: context.userId, action: "settings.update",
       target_table: "app_settings", target_id: data.key,
-      before_data: before ?? null, after_data: { value: data.value },
+      before_data: before ?? null,
+      after_data: { value: data.value },
+      justification: data.justification,
       severity: "info", ip: meta.ip, user_agent: meta.ua,
     });
     return r as any;
@@ -86,6 +94,7 @@ const FlagInput = z.object({
   rollout_pct: z.number().int().min(0).max(100).optional(),
   segment: z.record(z.any()).optional(),
   description: z.string().max(500).optional(),
+  justification: z.string().trim().min(10).max(500),
 });
 
 export const adminUpsertFlag = createServerFn({ method: "POST" })
@@ -93,6 +102,9 @@ export const adminUpsertFlag = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => FlagInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
+
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
     const { data: before } = await sa.from("feature_flags").select("*").eq("key", data.key).maybeSingle();
@@ -108,6 +120,7 @@ export const adminUpsertFlag = createServerFn({ method: "POST" })
       actor_id: context.userId, action: "feature_flag.upsert",
       target_table: "feature_flags", target_id: data.key,
       before_data: before ?? null, after_data: patch,
+      justification: data.justification,
       severity: "info", ip: meta.ip, user_agent: meta.ua,
     });
     return { ok: true as const };

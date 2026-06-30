@@ -41,6 +41,9 @@ import { SecuritySignalsPanel } from "@/components/admin/SecuritySignalsPanel";
 import { RiskDashboardPanel } from "@/components/admin/RiskDashboardPanel";
 import { RiskReviewQueuePanel } from "@/components/admin/RiskReviewQueuePanel";
 import { SignupThrottlePanel } from "@/components/admin/SignupThrottlePanel";
+import { SettingsAndFlagsPanel } from "@/components/admin/SettingsAndFlagsPanel";
+import { StaffManagementPanel } from "@/components/admin/StaffManagementPanel";
+import { AdminToolsPanel } from "@/components/admin/AdminToolsPanel";
 
 
 function AgeGateDevBanner() {
@@ -71,7 +74,8 @@ type Section =
   | "overview" | "users" | "reports" | "risk" | "riskdash" | "riskqueue" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
-  | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle";
+  | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle"
+  | "settings" | "staff" | "tools";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -177,6 +181,9 @@ function AdminDashboard() {
     { id: "signals",  label: "Semnale securitate", icon: ShieldAlert, group: "System" },
     { id: "data",     label: "Date (toate)",  icon: Database,    group: "System", adminOnly: true },
     { id: "demoseed", label: "Demo seed",     icon: Sparkles,    group: "System", adminOnly: true },
+    { id: "settings", label: "Settings & flags", icon: KeyRound,  group: "System", adminOnly: true, hint: "app_settings + feature_flags" },
+    { id: "staff",    label: "Staff & roluri", icon: ShieldCheck, group: "System", adminOnly: true, hint: "RBAC + MFA + IP allowlist" },
+    { id: "tools",    label: "Unelte",          icon: FileText,   group: "System", adminOnly: true, hint: "Redactare mesaj, edit partner, storno factură" },
   ];
   const items: NavItem[] = allItems
     .filter((i) => !i.adminOnly || isAdmin)
@@ -218,6 +225,9 @@ function AdminDashboard() {
       {section === "health" && <SystemHealthPanel />}
       {section === "ratelimit" && <RateLimitPanel />}
       {section === "signupthrottle" && <SignupThrottlePanel />}
+      {section === "settings" && isAdmin && <SettingsAndFlagsPanel />}
+      {section === "staff" && isAdmin && <StaffManagementPanel />}
+      {section === "tools" && isAdmin && <AdminToolsPanel />}
       {section === "signals" && <SecuritySignalsPanel />}
     </AdminShell>
   );
