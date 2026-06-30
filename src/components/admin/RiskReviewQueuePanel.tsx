@@ -30,10 +30,24 @@ function severityLabel(s: number) {
   return s >= 3 ? "Critic" : s >= 2 ? "Înalt" : "Mediu";
 }
 
+type NoteEntry = { actor?: string; at?: string; note?: string; status_change?: { from?: string; to?: string } };
+function parseNotes(details: string | null): NoteEntry[] {
+  if (!details) return [];
+  try {
+    const obj = JSON.parse(details);
+    const log = obj?.notes_log;
+    return Array.isArray(log) ? (log as NoteEntry[]) : [];
+  } catch { return []; }
+}
+
 export function RiskReviewQueuePanel() {
   const listFn = useServerFn(adminListNewAccountReviewQueue);
   const resolveFn = useServerFn(adminResolveRiskFlag);
+  const addNoteFn = useServerFn(adminAddRiskFlagNote);
+  const setStatusFn = useServerFn(adminSetRiskFlagStatus);
   const [busy, setBusy] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
 
   const [state, reload, lastLoadedAt] = useAdminPanelLoad<ReviewQueueRow[]>(async () => {
     const { rows } = await listFn({ data: { limit: 200 } });
@@ -72,6 +86,32 @@ export function RiskReviewQueuePanel() {
       setBusy(null);
     }
   }
+
+  async function markInProgress(flagId: string) {
+    setBusy(flagId);
+    try {
+      await setStatusFn({ data: { flagId, status: "in_progress" } });
+      toast.success("Marcat în curs");
+      reload();
+    } catch (e) {
+      toast.error("Eroare: " + (e instanceof Error ? e.message : String(e)));
+    } finally { setBusy(null); }
+  }
+
+  async function submitNote(flagId: string) {
+    const note = (noteDraft[flagId] ?? "").trim();
+    if (!note) { toast.error("Nota nu poate fi goală"); return; }
+    setBusy(flagId);
+    try {
+      await addNoteFn({ data: { flagId, note } });
+      setNoteDraft((d) => ({ ...d, [flagId]: "" }));
+      toast.success("Notă adăugată");
+      reload();
+    } catch (e) {
+      toast.error("Eroare: " + (e instanceof Error ? e.message : String(e)));
+    } finally { setBusy(null); }
+  }
+
 
   return (
     <div className="space-y-4">
