@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2, MessageSquarePlus, Clock, History, Activity } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
+import { AutoRefreshSelect, useAdminAutoRefresh } from "@/components/admin/AutoRefreshSelect";
 import {
   adminListNewAccountReviewQueue,
   adminResolveRiskFlag,
