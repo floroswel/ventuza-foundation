@@ -158,7 +158,15 @@ export async function sendMessage(conversationId: string, body: string, replyToI
     .insert(insert as never)
     .select("*")
     .single();
-  if (error) throw error;
+  if (error) {
+    const msg = (error.message ?? "").toLowerCase();
+    if (msg.includes("blocked_recipient")) {
+      const e = new Error("Nu poți trimite mesaj acestui utilizator.") as Error & { code: string };
+      e.code = "blocked_recipient";
+      throw e;
+    }
+    throw error;
+  }
 
   // Fire-and-forget Web Push to the recipient
   void (async () => {
