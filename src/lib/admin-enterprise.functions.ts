@@ -213,7 +213,7 @@ export const adminSnoozeAlert = createServerFn({ method: "POST" })
       .update({ snoozed_until: until, snoozed_by: context.userId })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
-    await logAudit({ actorId: context.userId, action: "alert.snooze", targetTable: "admin_alerts", targetId: String(data.id), afterValue: { until } });
+    await logAudit({ actorId: context.userId, action: "alert.snooze", targetTable: "admin_alerts", targetId: String(data.id), after: { until } });
     return { ok: true, until };
   });
 
@@ -230,7 +230,7 @@ export const adminResolveAlert = createServerFn({ method: "POST" })
       })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
-    await logAudit({ actorId: context.userId, action: "alert.resolve", targetTable: "admin_alerts", targetId: String(data.id), afterValue: { note: data.note ?? null }, severity: "info" });
+    await logAudit({ actorId: context.userId, action: "alert.resolve", targetTable: "admin_alerts", targetId: String(data.id), after: { note: data.note ?? null }, severity: "info" });
     return { ok: true };
   });
 
