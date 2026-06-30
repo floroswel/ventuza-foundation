@@ -36,6 +36,7 @@ import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
 import { ExperimentsPanel } from "@/components/admin/ExperimentsPanel";
 import { isProductionHost, shouldEnforceAgeGate, clearAgeGatePolicyCache } from "@/lib/age-gate-policy";
 import { DemoSeedPanel, DemoSeedBanner } from "@/components/admin/DemoSeedPanel";
+import { RateLimitPanel } from "@/components/admin/RateLimitPanel";
 
 
 function AgeGateDevBanner() {
