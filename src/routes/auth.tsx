@@ -99,8 +99,8 @@ function AuthPage() {
     return () => clearTimeout(t);
   }, [retryCountdown]);
 
-  function handleAuthError(err: unknown) {
-    const mapped = mapAuthError(err);
+  function handleAuthError(err: unknown, override?: Partial<FriendlyAuthError>) {
+    const mapped = { ...mapAuthError(err), ...(override ?? {}) };
     setAuthError(mapped);
     if (mapped.retryAfterSec) setRetryCountdown(mapped.retryAfterSec);
     if (mapped.resetCaptcha) {
