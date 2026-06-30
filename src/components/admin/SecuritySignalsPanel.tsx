@@ -26,9 +26,10 @@ function fmt(iso: string | null) {
 export function SecuritySignalsPanel() {
   const get = useServerFn(adminGetSecuritySignals);
   const [windowHours, setWindowHours] = useState(24);
-  const [state, reload] = useAdminPanelLoad<SecuritySignals>(
+  const [state, reload, lastLoadedAt] = useAdminPanelLoad<SecuritySignals>(
     () => get({ data: { windowHours } }),
     [windowHours],
+    { autoRefreshMs: 30_000 },
   );
 
   return (
@@ -36,6 +37,7 @@ export function SecuritySignalsPanel() {
       <div className="flex flex-wrap items-center gap-2">
         <ShieldAlert className="size-4 text-primary" />
         <h2 className="text-lg font-semibold">Semnale de securitate · anti-abuz</h2>
+        <LastCheckBadge at={lastLoadedAt} />
         <div className="ml-auto flex items-center gap-1 rounded-full border border-border bg-surface p-1">
           {WINDOW_OPTIONS.map((o) => (
             <button
@@ -54,6 +56,7 @@ export function SecuritySignalsPanel() {
         <button
           onClick={reload}
           className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-surface"
+          title="Auto-refresh la 30s · click pentru refresh manual"
         >
           <RefreshCw className="mr-1 inline size-3" /> Refresh
         </button>
