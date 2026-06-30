@@ -244,12 +244,15 @@ export function RiskReviewQueuePanel() {
             Auto-flag la scor ≥60 pentru conturi create în ultimele 7 zile. Decide: curăță, fals pozitiv sau escaladează.
           </p>
         </div>
-        <button
-          onClick={() => reload()}
-          className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10 flex items-center gap-1"
-        >
-          <RefreshCw className="size-3.5" /> Reîncarcă
-        </button>
+        <div className="flex items-center gap-2">
+          <AutoRefreshSelect />
+          <button
+            onClick={() => reload()}
+            className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10 flex items-center gap-1"
+          >
+            <RefreshCw className="size-3.5" /> Reîncarcă
+          </button>
+        </div>
       </div>
 
       {/* Filter bar */}
