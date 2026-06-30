@@ -229,11 +229,7 @@ function NearbyPage() {
               kind={errorKind}
               message={String((error as Error)?.message ?? "")}
               onRetry={() => refetch()}
-              onBrowseAll={() => {
-                if (kind === "event") navigate({ to: "/events" });
-                else if (kind === "offer") navigate({ to: "/offers" });
-                else navigate({ to: "/venues" });
-              }}
+              onBrowseAll={() => navigate({ to: "/events" })}
             />
           ) : view === "map" ? (
             <NearbyMap user={coords} points={filtered} onSelect={(p) => {
