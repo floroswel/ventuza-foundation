@@ -205,8 +205,7 @@ function AuthPage() {
           options: { captchaToken: captchaToken ?? undefined },
         });
         if (error) {
-          setCaptchaToken(null);
-          toast.error(error.message);
+          handleAuthError(error);
           return;
         }
         if (data.user) await routeAfterAuth(data.user.id, navigate, search.redirect);
