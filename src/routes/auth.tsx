@@ -459,9 +459,14 @@ function AuthPage() {
             </div>
           )}
 
+          <TurnstileWidget
+            onToken={setCaptchaToken}
+            onExpire={() => setCaptchaToken(null)}
+          />
+
           <Button
             type="submit"
-            disabled={submitting || oauthBusy !== null || signupDisabled}
+            disabled={submitting || oauthBusy !== null || signupDisabled || (captchaRequired && !captchaToken)}
             className="h-12 w-full rounded-full text-sm uppercase tracking-[0.18em]"
           >
             {submitting ? <Loader2 className="size-4 animate-spin" /> : mode === "signup" ? "Create account" : "Log in"}
