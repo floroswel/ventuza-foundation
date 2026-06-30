@@ -648,3 +648,42 @@ Orice diff care adaugă un RPC SECURITY DEFINER nou care returnează date de
 profil ale altor useri fără `PERFORM public.assert_age_verified()` sau care
 proiectează unul din câmpurile interzise de mai sus trebuie REFUZAT.
 
+
+## REGULĂ — ANTI-BOT / TURNSTILE (permanentă)
+
+Toate formularele Supabase Auth (`signUp`, `signInWithPassword`,
+`resetPasswordForEmail`, `auth.resend`) trimit `captchaToken` obținut prin
+`<TurnstileWidget>` (`src/components/TurnstileWidget.tsx`). Site key se
+citește EXCLUSIV din `import.meta.env.VITE_TURNSTILE_SITE_KEY`. Secretul
+Turnstile trăiește în Supabase Dashboard → Auth → Bot protection și NU în
+codul clientului.
+
+Reguli:
+1. Niciun apel nou către `supabase.auth.*` care primește token captcha nu
+   poate omite `captchaToken` când `isTurnstileConfigured()` întoarce true.
+2. OAuth (`lovable.auth.signInWithOAuth`) NU folosește captcha (provider-ul
+   are propria protecție); nu adăuga captcha pe acel flux.
+3. Site key nu se hardcodează — întotdeauna din env var.
+4. Gate-ul de account usability (`public.assert_account_usable()`) este
+   sursa de adevăr server-side pentru email confirmation + age. Orice RPC
+   social nou TREBUIE să-l apeleze (sau `assert_age_verified` care îl
+   delegă). `email_confirmed_at IS NULL` blochează automat toate RPC-urile
+   sociale cu `email_not_confirmed`.
+
+## REGULĂ — RATE LIMIT DISCOVER (permanentă)
+
+`public.discover_profiles`:
+- Hard cap pe page size: max 50 profiluri / cerere (orice valoare > 50 e
+  truncată server-side).
+- Rate limit per user: max 10 cereri / oră (= 500 profiluri / oră / user),
+  enforced prin `public.rate_limit_log` cu acțiunea `'discover_profiles'`.
+- La depășire: `RAISE EXCEPTION 'discover_rate_limited'` cu ERRCODE 53400.
+
+Orice modificare a `discover_profiles` care:
+- crește cap-ul de page size > 50,
+- crește plafonul orar fără justificare scrisă în registru,
+- omite `INSERT INTO public.rate_limit_log`,
+trebuie REFUZATĂ.
+
+Funcția `public.cleanup_rate_limit_log()` (GRANT exclusiv `service_role`)
+șterge intrările > 7 zile — apelabilă din pg_cron sau admin manual.

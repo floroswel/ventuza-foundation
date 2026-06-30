@@ -8,6 +8,7 @@ import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 
 const searchSchema = z.object({
@@ -85,6 +86,8 @@ function AuthPage() {
   const [birthDate, setBirthDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<"google" | "apple" | null>(null);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRequired = isTurnstileConfigured();
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -124,6 +127,11 @@ function AuthPage() {
       return;
     }
 
+    if (captchaRequired && !captchaToken) {
+      toast.error("Completează verificarea anti-bot.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       if (mode === "signup") {
@@ -143,9 +151,13 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signUp({
           email: emailParsed.data,
           password: passParsed.data,
-          options: { emailRedirectTo: `${window.location.origin}/n` },
+          options: {
+            emailRedirectTo: `${window.location.origin}/n`,
+            captchaToken: captchaToken ?? undefined,
+          },
         });
         if (error) {
+          setCaptchaToken(null);
           toast.error(error.message);
           return;
         }
@@ -169,8 +181,10 @@ function AuthPage() {
         const { data, error } = await supabase.auth.signInWithPassword({
           email: emailParsed.data,
           password: passParsed.data,
+          options: { captchaToken: captchaToken ?? undefined },
         });
         if (error) {
+          setCaptchaToken(null);
           toast.error(error.message);
           return;
         }
@@ -234,11 +248,20 @@ function AuthPage() {
       toast.error("Enter your email above first.");
       return;
     }
+    if (captchaRequired && !captchaToken) {
+      toast.error("Completează verificarea anti-bot înainte de a trimite linkul.");
+      return;
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(emailParsed.data, {
       redirectTo: `${window.location.origin}/reset-password`,
+      captchaToken: captchaToken ?? undefined,
     });
-    if (error) toast.error(error.message);
-    else toast.success("Password reset email sent.");
+    if (error) {
+      setCaptchaToken(null);
+      toast.error(error.message);
+    } else {
+      toast.success("Password reset email sent.");
+    }
   }
 
   if (authLoading) {
@@ -436,9 +459,14 @@ function AuthPage() {
             </div>
           )}
 
+          <TurnstileWidget
+            onToken={setCaptchaToken}
+            onExpire={() => setCaptchaToken(null)}
+          />
+
           <Button
             type="submit"
-            disabled={submitting || oauthBusy !== null || signupDisabled}
+            disabled={submitting || oauthBusy !== null || signupDisabled || (captchaRequired && !captchaToken)}
             className="h-12 w-full rounded-full text-sm uppercase tracking-[0.18em]"
           >
             {submitting ? <Loader2 className="size-4 animate-spin" /> : mode === "signup" ? "Create account" : "Log in"}
