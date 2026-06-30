@@ -115,6 +115,7 @@ export function RiskDashboardPanel() {
             </button>
           ))}
         </div>
+        <AutoRefreshSelect />
         <button
           onClick={reload}
           className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-surface"
