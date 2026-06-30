@@ -148,7 +148,8 @@ function AdminDashboard() {
     // Trust & Safety
     { id: "users",    label: "Utilizatori", icon: Users,        group: "Trust & Safety", adminOnly: true },
     { id: "reports",  label: "Rapoarte",  icon: ShieldAlert,    group: "Trust & Safety" },
-    { id: "risk",     label: "Risc",      icon: AlertTriangle,  group: "Trust & Safety" },
+    { id: "risk",     label: "Risc · coadă", icon: AlertTriangle,  group: "Trust & Safety" },
+    { id: "riskdash", label: "Risc · dashboard", icon: Activity,  group: "Trust & Safety", hint: "Distribuție, trend, semnale live" },
     { id: "csam",     label: "CSAM",      icon: ShieldAlert,    group: "Trust & Safety", adminOnly: true },
     { id: "dsa",      label: "DSA",       icon: FileWarning,    group: "Trust & Safety" },
 
