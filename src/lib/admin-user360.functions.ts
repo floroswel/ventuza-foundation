@@ -46,13 +46,14 @@ async function logAudit(opts: {
 }) {
   const meta = await reqMeta();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  // NOTE: coloanele reale sunt before_data / after_data (jsonb).
   await (supabaseAdmin as any).from("admin_audit_log").insert({
     actor_id: opts.actorId,
     action: opts.action,
     target_table: opts.targetTable ?? null,
     target_id: opts.targetId ?? null,
-    before_state: opts.before ?? null,
-    after_state: opts.after ?? null,
+    before_data: opts.before ?? null,
+    after_data: opts.after ?? null,
     justification: opts.justification ?? null,
     severity: opts.severity ?? "info",
     ip: meta.ip, user_agent: meta.ua,
