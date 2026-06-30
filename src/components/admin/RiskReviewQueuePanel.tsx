@@ -12,6 +12,16 @@ import {
   type RiskFlagDetails,
 } from "@/lib/risk-queue.functions";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 
 function fmt(iso: string | null) {
@@ -77,6 +87,13 @@ export function RiskReviewQueuePanel() {
   const [busy, setBusy] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
+  const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set());
+  const [confirm, setConfirm] = useState<null | {
+    flagId: string;
+    decision: "cleared" | "false_positive" | "escalated";
+    userLabel: string;
+    note: string;
+  }>(null);
 
   const [state, reload, lastLoadedAt] = useAdminPanelLoad<ReviewQueueRow[]>(async () => {
     const { rows } = await listFn({ data: { limit: 200 } });
@@ -96,25 +113,42 @@ export function RiskReviewQueuePanel() {
     return () => { supabase.removeChannel(ch); };
   }, [reload]);
 
-  async function resolve(flagId: string, decision: "cleared" | "false_positive" | "escalated") {
-    const notes = decision === "escalated"
-      ? (window.prompt("Note (escaladare):") ?? undefined)
-      : undefined;
-    if (decision === "escalated" && !notes) return;
+  const DECISION_META: Record<"cleared" | "false_positive" | "escalated", { title: string; desc: string; ok: string; toast: string; noteRequired: boolean; tone: "default" | "destructive" }> = {
+    cleared:        { title: "Curăță flag-ul",       desc: "Marchează contul ca legitim. Flag-ul iese din coadă, dar rămâne în istoric.", ok: "Curăță",        toast: "Flag curățat — cont marcat legitim", noteRequired: false, tone: "default" },
+    false_positive: { title: "Marchează fals pozitiv", desc: "Semnalele nu reflectă risc real. Util pentru calibrare ulterioară.",         ok: "Fals pozitiv",  toast: "Marcat ca fals pozitiv",            noteRequired: false, tone: "default" },
+    escalated:      { title: "Escaladează spre Trust & Safety", desc: "Necesită investigație suplimentară. Nota e obligatorie pentru audit.", ok: "Escaladează",   toast: "Escaladat către Trust & Safety",    noteRequired: true,  tone: "destructive" },
+  };
+
+  function openConfirm(flagId: string, decision: "cleared" | "false_positive" | "escalated", userLabel: string) {
+    setConfirm({ flagId, decision, userLabel, note: "" });
+  }
+
+  async function runResolve() {
+    if (!confirm) return;
+    const { flagId, decision, note } = confirm;
+    const meta = DECISION_META[decision];
+    const trimmed = note.trim();
+    if (meta.noteRequired && trimmed.length < 3) {
+      toast.error("Nota e obligatorie pentru escaladare (min. 3 caractere).");
+      return;
+    }
     setBusy(flagId);
+    setConfirm(null);
+    // Optimistic hide
+    setResolvedIds((s) => { const n = new Set(s); n.add(flagId); return n; });
     try {
-      await resolveFn({ data: { flagId, decision, notes } });
-      toast.success(
-        decision === "escalated" ? "Escaladat" :
-        decision === "false_positive" ? "Marcat fals pozitiv" : "Curățat",
-      );
+      await resolveFn({ data: { flagId, decision, notes: trimmed || undefined } });
+      toast.success(meta.toast, { description: `Flag ${flagId.slice(0, 8)}…` });
       reload();
     } catch (e) {
-      toast.error("Eroare: " + (e instanceof Error ? e.message : String(e)));
+      // Rollback optimistic hide
+      setResolvedIds((s) => { const n = new Set(s); n.delete(flagId); return n; });
+      toast.error("Eroare la salvare", { description: e instanceof Error ? e.message : String(e) });
     } finally {
       setBusy(null);
     }
   }
+
 
   async function markInProgress(flagId: string) {
     setBusy(flagId);
@@ -165,11 +199,11 @@ export function RiskReviewQueuePanel() {
 
       <PanelStatus
         state={state}
-        isEmpty={state.status === "ready" && state.data.length === 0}
+        isEmpty={state.status === "ready" && state.data.filter((r) => !resolvedIds.has(r.flag_id)).length === 0}
         emptyHint="empty legitim — niciun cont nou nu a depășit pragul de risc."
         retry={reload}
       >
-        {state.status === "ready" && state.data.length > 0 && (
+        {state.status === "ready" && state.data.filter((r) => !resolvedIds.has(r.flag_id)).length > 0 && (
           <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-white/5 text-xs uppercase text-muted-foreground">
@@ -184,7 +218,7 @@ export function RiskReviewQueuePanel() {
                 </tr>
               </thead>
               <tbody>
-                {state.data.map((r) => {
+                {state.data.filter((r) => !resolvedIds.has(r.flag_id)).map((r) => {
                   const notes = parseNotes(r.details);
                   const flags = flagsFromDetails(r.details);
                   const signals = signalEntries(r.details);
@@ -255,7 +289,7 @@ export function RiskReviewQueuePanel() {
                         </button>
                         <button
                           disabled={busy === r.flag_id}
-                          onClick={() => resolve(r.flag_id, "cleared")}
+                          onClick={() => openConfirm(r.flag_id, "cleared", r.display_name ?? r.user_id)}
                           title="Curăță (legitim)"
                           className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50"
                         >
@@ -263,7 +297,7 @@ export function RiskReviewQueuePanel() {
                         </button>
                         <button
                           disabled={busy === r.flag_id}
-                          onClick={() => resolve(r.flag_id, "false_positive")}
+                          onClick={() => openConfirm(r.flag_id, "false_positive", r.display_name ?? r.user_id)}
                           title="Fals pozitiv"
                           className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs hover:bg-white/10 disabled:opacity-50"
                         >
@@ -271,12 +305,13 @@ export function RiskReviewQueuePanel() {
                         </button>
                         <button
                           disabled={busy === r.flag_id}
-                          onClick={() => resolve(r.flag_id, "escalated")}
+                          onClick={() => openConfirm(r.flag_id, "escalated", r.display_name ?? r.user_id)}
                           title="Escaladează"
                           className="rounded-md border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-300 hover:bg-red-500/20 disabled:opacity-50"
                         >
                           <AlertTriangle className="size-3" />
                         </button>
+
                       </div>
                     </td>
                   </tr>
@@ -379,6 +414,49 @@ export function RiskReviewQueuePanel() {
           </div>
         )}
       </PanelStatus>
+
+      <AlertDialog open={!!confirm} onOpenChange={(o) => { if (!o) setConfirm(null); }}>
+        <AlertDialogContent>
+          {confirm && (() => {
+            const meta = DECISION_META[confirm.decision];
+            return (
+              <>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{meta.title}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Utilizator: <span className="font-medium text-foreground">{confirm.userLabel}</span>
+                    <br />
+                    {meta.desc}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">
+                    Notă {meta.noteRequired ? <span className="text-red-400">(obligatorie)</span> : <span>(opțional)</span>}
+                  </label>
+                  <textarea
+                    autoFocus
+                    value={confirm.note}
+                    onChange={(e) => setConfirm((c) => c ? { ...c, note: e.target.value } : c)}
+                    rows={3}
+                    placeholder={meta.noteRequired ? "Motiv escaladare, context, link investigație..." : "Context intern (opțional)..."}
+                    className="w-full rounded-md border border-white/10 bg-black/30 px-3 py-2 text-sm"
+                  />
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Anulează</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={runResolve}
+                    className={meta.tone === "destructive" ? "bg-red-600 hover:bg-red-700 text-white" : ""}
+                  >
+                    {meta.ok}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </>
+            );
+          })()}
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+
 }
