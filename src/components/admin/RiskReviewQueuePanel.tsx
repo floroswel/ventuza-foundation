@@ -1,7 +1,7 @@
 import { Fragment as FragmentRow, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2, MessageSquarePlus, Clock, History } from "lucide-react";
+import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2, MessageSquarePlus, Clock, History, Activity } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 import {
   adminListNewAccountReviewQueue,
@@ -9,6 +9,7 @@ import {
   adminAddRiskFlagNote,
   adminSetRiskFlagStatus,
   type ReviewQueueRow,
+  type RiskFlagDetails,
 } from "@/lib/risk-queue.functions";
 import { toast } from "sonner";
 
@@ -31,13 +32,41 @@ function severityLabel(s: number) {
 }
 
 type NoteEntry = { actor?: string; at?: string; note?: string; status_change?: { from?: string; to?: string } };
-function parseNotes(details: string | null): NoteEntry[] {
-  if (!details) return [];
-  try {
-    const obj = JSON.parse(details);
-    const log = obj?.notes_log;
-    return Array.isArray(log) ? (log as NoteEntry[]) : [];
-  } catch { return []; }
+function parseNotes(details: RiskFlagDetails | null): NoteEntry[] {
+  const log = details?.notes_log;
+  return Array.isArray(log) ? log : [];
+}
+
+// Friendly labels for risk signal flags emitted by public.compute_user_risk.
+const FLAG_LABEL: Record<string, { label: string; weight: string }> = {
+  duplicate_fingerprint:      { label: "Fingerprint duplicat",       weight: "+15…40" },
+  rapid_signup:               { label: "Signup rapid (24h)",         weight: "+10…25" },
+  no_verification:            { label: "Vârstă neverificată",        weight: "+15"    },
+  no_photos:                  { label: "Fără poze",                  weight: "+10"    },
+  multiple_reports:           { label: "Rapoarte deschise multiple", weight: "+15…40" },
+  spam_messages_new_account:  { label: "Spam mesaje (cont nou)",     weight: "+20"    },
+  spam_messages:              { label: "Spam mesaje",                weight: "+15"    },
+};
+
+const SIGNAL_LABEL: Record<string, string> = {
+  duplicate_fingerprint_users: "useri cu același fingerprint",
+  rapid_signup_24h:            "conturi noi din același device (24h)",
+  age_status:                  "status verificare vârstă",
+  open_reports:                "rapoarte deschise primite",
+  messages_1h:                 "mesaje trimise în ultima oră",
+};
+
+function flagsFromDetails(d: RiskFlagDetails | null): string[] {
+  if (!d) return [];
+  const direct = Array.isArray(d.flags) ? d.flags : [];
+  const nested = Array.isArray(d.signals?.flags) ? (d.signals!.flags as string[]) : [];
+  // Deduplicate while preserving order
+  return Array.from(new Set([...direct, ...nested]));
+}
+
+function signalEntries(d: RiskFlagDetails | null): Array<[string, unknown]> {
+  if (!d?.signals) return [];
+  return Object.entries(d.signals).filter(([k]) => k !== "flags");
 }
 
 export function RiskReviewQueuePanel() {
@@ -157,14 +186,36 @@ export function RiskReviewQueuePanel() {
               <tbody>
                 {state.data.map((r) => {
                   const notes = parseNotes(r.details);
+                  const flags = flagsFromDetails(r.details);
+                  const signals = signalEntries(r.details);
+                  const reason = r.details?.reason ?? null;
+                  const ageH = typeof r.details?.account_age_hours === "number"
+                    ? Math.round((r.details!.account_age_hours as number) * 10) / 10
+                    : null;
                   const isOpen = expanded === r.flag_id;
                   return (
                   <FragmentRow key={r.flag_id}>
                   <tr className="border-t border-white/5">
 
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 align-top">
                       <div className="font-medium">{r.display_name ?? "(fără nume)"}</div>
                       <div className="text-[10px] text-muted-foreground font-mono">{r.user_id}</div>
+                      {flags.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {flags.slice(0, 4).map((f) => (
+                            <span
+                              key={f}
+                              title={FLAG_LABEL[f]?.weight ? `Contribuție scor: ${FLAG_LABEL[f].weight}` : f}
+                              className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-200"
+                            >
+                              {FLAG_LABEL[f]?.label ?? f}
+                            </span>
+                          ))}
+                          {flags.length > 4 && (
+                            <span className="text-[10px] text-muted-foreground">+{flags.length - 4}</span>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td className="px-3 py-2">
                       <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs ${scoreTone(r.risk_score)}`}>
@@ -232,7 +283,49 @@ export function RiskReviewQueuePanel() {
                   {isOpen && (
                     <tr key={r.flag_id + "-notes"} className="border-t border-white/5 bg-black/20">
                       <td colSpan={7} className="px-3 py-3">
-                        <div className="space-y-2">
+                        <div className="space-y-3">
+                          <div className="rounded border border-amber-500/20 bg-amber-500/5 px-3 py-2">
+                            <div className="text-xs font-medium text-amber-200 flex items-center gap-1">
+                              <Activity className="size-3" /> Semnale care au generat alerta
+                            </div>
+                            <div className="mt-1 text-[11px] text-muted-foreground">
+                              Scor calculat: <span className="font-semibold text-foreground">{r.details?.risk_score ?? r.risk_score}</span>
+                              {ageH !== null && <> · vechime cont la flagging: <span className="text-foreground">{ageH}h</span></>}
+                              {reason && <> · {reason}</>}
+                            </div>
+                            {flags.length === 0 ? (
+                              <div className="mt-2 text-[11px] text-muted-foreground italic">
+                                Niciun flag detaliat înregistrat (scor agregat).
+                              </div>
+                            ) : (
+                              <ul className="mt-2 space-y-1">
+                                {flags.map((f) => {
+                                  const meta = FLAG_LABEL[f];
+                                  return (
+                                    <li key={f} className="flex items-center justify-between gap-2 text-[11px]">
+                                      <span className="flex items-center gap-1.5">
+                                        <span className="size-1.5 rounded-full bg-amber-400" />
+                                        <span className="font-medium">{meta?.label ?? f}</span>
+                                        <span className="font-mono text-[10px] text-muted-foreground">{f}</span>
+                                      </span>
+                                      <span className="text-[10px] text-amber-300/80">{meta?.weight ?? ""}</span>
+                                    </li>
+                                  );
+                                })}
+                              </ul>
+                            )}
+                            {signals.length > 0 && (
+                              <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-1">
+                                {signals.map(([k, v]) => (
+                                  <div key={k} className="flex items-center justify-between rounded border border-white/5 bg-black/20 px-2 py-1 text-[11px]">
+                                    <span className="text-muted-foreground">{SIGNAL_LABEL[k] ?? k}</span>
+                                    <span className="font-mono text-foreground">{String(v)}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
                           <div className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                             <History className="size-3" /> Istoric note ({notes.length})
                           </div>

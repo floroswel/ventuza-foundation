@@ -2,6 +2,24 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+
+export type RiskFlagDetails = {
+  risk_score?: number;
+  signals?: { [k: string]: JsonValue };
+  flags?: string[];
+  account_age_hours?: number;
+  queued_at?: string;
+  reason?: string;
+  notes_log?: Array<{
+    actor?: string;
+    at?: string;
+    note?: string;
+    status_change?: { from?: string; to?: string };
+  }>;
+  [k: string]: JsonValue | undefined;
+};
+
 export type ReviewQueueRow = {
   flag_id: string;
   user_id: string;
@@ -10,7 +28,7 @@ export type ReviewQueueRow = {
   flag_created_at: string;
   risk_score: number;
   severity: number;
-  details: string | null;
+  details: RiskFlagDetails | null;
   verified: boolean;
   banned_at: string | null;
   suspended_until: string | null;
@@ -31,7 +49,7 @@ export const adminListNewAccountReviewQueue = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const normalized: ReviewQueueRow[] = (rows ?? []).map((r: Record<string, unknown>) => ({
       ...(r as unknown as ReviewQueueRow),
-      details: r.details == null ? null : JSON.stringify(r.details),
+      details: (r.details ?? null) as RiskFlagDetails | null,
     }));
     return { rows: normalized };
   });
