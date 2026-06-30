@@ -194,6 +194,7 @@ function AdminDashboard() {
       {section === "users" && isAdmin && <UsersPanel meId={user!.id} />}
       {section === "reports" && <ReportsPanel meId={user!.id} />}
       {section === "risk" && <RiskPanel />}
+      {section === "riskdash" && <RiskDashboardPanel />}
       {section === "csam" && isAdmin && <CsamPanel />}
       {section === "dsa" && <DsaPanel />}
       {section === "gdpr" && isAdmin && <GdprOpsPanel />}
