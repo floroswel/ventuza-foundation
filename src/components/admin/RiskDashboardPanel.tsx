@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   AlertTriangle, ShieldAlert, TrendingUp, RefreshCw, Activity, Users, Flag, BadgeCheck,
 } from "lucide-react";
-import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 
 type Bucket = { bucket: string; count: number };
 type Trend = { bucket: string; flags: number; high_risk_users: number };
@@ -60,13 +60,14 @@ function scoreTone(score: number): string {
 
 export function RiskDashboardPanel() {
   const [windowHours, setWindowHours] = useState(168);
-  const [state, reload] = useAdminPanelLoad<Dashboard>(
+  const [state, reload, lastLoadedAt] = useAdminPanelLoad<Dashboard>(
     async () => {
       const { data, error } = await (supabase as any).rpc("admin_risk_dashboard", { _window_hours: windowHours });
       if (error) throw new Error(error.message);
       return data as Dashboard;
     },
     [windowHours],
+    { autoRefreshMs: 30_000 },
   );
 
   // Live refresh on new risk_flags inserts
@@ -89,6 +90,7 @@ export function RiskDashboardPanel() {
       <div className="flex flex-wrap items-center gap-2">
         <ShieldAlert className="size-4 text-primary" />
         <h2 className="text-lg font-semibold">Risk scoring · dashboard</h2>
+        <LastCheckBadge at={lastLoadedAt} />
         <div className="ml-auto flex items-center gap-1 rounded-full border border-border bg-surface p-1">
           {WINDOW_OPTIONS.map((o) => (
             <button

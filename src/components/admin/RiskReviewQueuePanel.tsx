@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2 } from "lucide-react";
-import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 import {
   adminListNewAccountReviewQueue,
   adminResolveRiskFlag,
@@ -32,10 +32,10 @@ export function RiskReviewQueuePanel() {
   const resolveFn = useServerFn(adminResolveRiskFlag);
   const [busy, setBusy] = useState<string | null>(null);
 
-  const [state, reload] = useAdminPanelLoad<ReviewQueueRow[]>(async () => {
+  const [state, reload, lastLoadedAt] = useAdminPanelLoad<ReviewQueueRow[]>(async () => {
     const { rows } = await listFn({ data: { limit: 200 } });
     return rows;
-  }, []);
+  }, [], { autoRefreshMs: 30_000 });
 
   // Live refresh on new flags
   useEffect(() => {
@@ -77,6 +77,7 @@ export function RiskReviewQueuePanel() {
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Flag className="size-5 text-amber-400" />
             Coadă review — conturi noi cu risc ridicat
+            <LastCheckBadge at={lastLoadedAt} />
           </h2>
           <p className="text-xs text-muted-foreground">
             Auto-flag la scor ≥60 pentru conturi create în ultimele 7 zile. Decide: curăță, fals pozitiv sau escaladează.

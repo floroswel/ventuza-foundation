@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   Activity, AlertTriangle, RefreshCw, ShieldAlert, Timer, Users as UsersIcon,
 } from "lucide-react";
-import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 import {
   adminGetRateLimitStats, type RateLimitStats,
 } from "@/lib/admin-ratelimit.functions";
@@ -26,9 +26,10 @@ function fmtDate(iso: string | null) {
 export function RateLimitPanel() {
   const get = useServerFn(adminGetRateLimitStats);
   const [windowHours, setWindowHours] = useState(24);
-  const [state, reload] = useAdminPanelLoad<RateLimitStats>(
+  const [state, reload, lastLoadedAt] = useAdminPanelLoad<RateLimitStats>(
     () => get({ data: { windowHours } }),
     [windowHours],
+    { autoRefreshMs: 30_000 },
   );
 
   return (
@@ -36,6 +37,7 @@ export function RateLimitPanel() {
       <div className="flex flex-wrap items-center gap-2">
         <Activity className="size-4 text-primary" />
         <h2 className="text-lg font-semibold">Rate limit · abuz</h2>
+        <LastCheckBadge at={lastLoadedAt} />
         <div className="ml-auto flex items-center gap-1 rounded-full border border-border bg-surface p-1">
           {WINDOW_OPTIONS.map((o) => (
             <button
