@@ -134,6 +134,7 @@ export const adminGetUserRiskDetail = createServerFn({ method: "POST" })
       reports_received: recvRes.count ?? 0,
       reports_made: madeRes.count ?? 0,
       audit: auditRes.error ? [] : (auditRes.data ?? []),
-    } as UserRiskDetail;
+    } as unknown as Record<string, unknown>;
   });
+
 
