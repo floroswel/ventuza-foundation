@@ -310,3 +310,46 @@ function EmptyState({
     </Card>
   );
 }
+
+function ErrorState({
+  kind,
+  message,
+  onRetry,
+  onBrowseAll,
+}: {
+  kind: "permission" | "network";
+  message: string;
+  onRetry: () => void;
+  onBrowseAll: () => void;
+}) {
+  const isPerm = kind === "permission";
+  return (
+    <Card className="p-8 text-center">
+      <ShieldAlert
+        className={`h-10 w-10 mx-auto mb-3 ${isPerm ? "text-destructive" : "text-muted-foreground"}`}
+      />
+      <h3 className="font-semibold mb-1">
+        {isPerm ? "Nu ai acces la locurile din apropiere" : "Nu am putut încărca locurile din apropiere"}
+      </h3>
+      <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+        {isPerm
+          ? "Contul tău nu are permisiunea necesară pentru această funcție. Reîncarcă pagina (Ctrl/Cmd+Shift+R) — dacă persistă, deconectează-te și autentifică-te din nou."
+          : "A apărut o problemă temporară de conexiune. Încearcă din nou într-o clipă."}
+      </p>
+      {message && (
+        <p className="text-[11px] font-mono text-muted-foreground/70 mb-4 break-all">
+          {message}
+        </p>
+      )}
+      <div className="flex gap-2 justify-center flex-wrap">
+        <Button onClick={onRetry} size="sm">
+          <RefreshCw className="h-4 w-4 mr-1.5" />
+          Reîncearcă
+        </Button>
+        <Button onClick={onBrowseAll} variant="outline" size="sm">
+          Vezi toate evenimentele
+        </Button>
+      </div>
+    </Card>
+  );
+}
