@@ -244,7 +244,12 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
               </thead>
               <tbody>
                 {data.top_users.map((u) => (
-                  <tr key={u.user_id} className="border-t border-border/40">
+                  <tr
+                    key={u.user_id}
+                    onClick={() => onOpenUser(u.user_id)}
+                    className="cursor-pointer border-t border-border/40 transition-colors hover:bg-primary/10"
+                    title="Deschide detaliu risc"
+                  >
                     <td className="p-1">
                       <div className="flex items-center gap-1">
                         {u.display_name ?? "(fără nume)"}
@@ -264,6 +269,7 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
                     <td className="p-1">{fmt(u.created_at)}</td>
                   </tr>
                 ))}
+
               </tbody>
             </table>
           </div>
