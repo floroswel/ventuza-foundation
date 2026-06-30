@@ -15,7 +15,7 @@ import { NearbyMap } from "@/components/nearby/NearbyMap";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
-import { Map, List, RefreshCw, MapPin, BellPlus, Loader2 } from "lucide-react";
+import { Map, List, RefreshCw, MapPin, BellPlus, Loader2, ShieldAlert } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { BackButton } from "@/components/BackButton";
 import { toast } from "sonner";
@@ -76,9 +76,17 @@ function NearbyPage() {
 
   const bucketId = coords ? computeBucketId(coords.lat, coords.lng) : null;
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
+  const { data, isLoading, refetch, isFetching, error } = useQuery({
     queryKey: ["nearby", bucketId],
     enabled: !!bucketId,
+    retry: (failureCount, err: unknown) => {
+      // Don't retry permission/auth errors — they won't resolve on their own.
+      const msg = String((err as Error)?.message ?? err ?? "").toLowerCase();
+      if (msg.includes("permission denied") || msg.includes("403") || msg.includes("unauthorized") || msg.includes("401")) {
+        return false;
+      }
+      return failureCount < 2;
+    },
     queryFn: async () => {
       // Throttle: don't refire within 30s of last successful call.
       const since = Date.now() - lastFetchAt.current;
@@ -91,6 +99,21 @@ function NearbyPage() {
     },
     staleTime: 30_000,
   });
+
+  const errorKind = useMemo<"permission" | "network" | null>(() => {
+    if (!error) return null;
+    const msg = String((error as Error)?.message ?? error ?? "").toLowerCase();
+    if (
+      msg.includes("permission denied") ||
+      msg.includes("403") ||
+      msg.includes("unauthorized") ||
+      msg.includes("401") ||
+      msg.includes("forbidden")
+    ) {
+      return "permission";
+    }
+    return "network";
+  }, [error]);
 
   // Filter on-device by exact radius and current kind, sort by distance.
   const filtered = useMemo(() => {
@@ -201,7 +224,14 @@ function NearbyPage() {
         </TabsList>
 
         <TabsContent value={kind} className="mt-4">
-          {view === "map" ? (
+          {errorKind ? (
+            <ErrorState
+              kind={errorKind}
+              message={String((error as Error)?.message ?? "")}
+              onRetry={() => refetch()}
+              onBrowseAll={() => navigate({ to: "/events" })}
+            />
+          ) : view === "map" ? (
             <NearbyMap user={coords} points={filtered} onSelect={(p) => {
               if (p.kind === "event") navigate({ to: "/events/$id", params: { id: p.id } });
               else if (p.kind === "offer") navigate({ to: "/offers/$id", params: { id: p.id } });
@@ -276,6 +306,49 @@ function EmptyState({
           Anunță-mă
         </Button>
 
+      </div>
+    </Card>
+  );
+}
+
+function ErrorState({
+  kind,
+  message,
+  onRetry,
+  onBrowseAll,
+}: {
+  kind: "permission" | "network";
+  message: string;
+  onRetry: () => void;
+  onBrowseAll: () => void;
+}) {
+  const isPerm = kind === "permission";
+  return (
+    <Card className="p-8 text-center">
+      <ShieldAlert
+        className={`h-10 w-10 mx-auto mb-3 ${isPerm ? "text-destructive" : "text-muted-foreground"}`}
+      />
+      <h3 className="font-semibold mb-1">
+        {isPerm ? "Nu ai acces la locurile din apropiere" : "Nu am putut încărca locurile din apropiere"}
+      </h3>
+      <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
+        {isPerm
+          ? "Contul tău nu are permisiunea necesară pentru această funcție. Reîncarcă pagina (Ctrl/Cmd+Shift+R) — dacă persistă, deconectează-te și autentifică-te din nou."
+          : "A apărut o problemă temporară de conexiune. Încearcă din nou într-o clipă."}
+      </p>
+      {message && (
+        <p className="text-[11px] font-mono text-muted-foreground/70 mb-4 break-all">
+          {message}
+        </p>
+      )}
+      <div className="flex gap-2 justify-center flex-wrap">
+        <Button onClick={onRetry} size="sm">
+          <RefreshCw className="h-4 w-4 mr-1.5" />
+          Reîncearcă
+        </Button>
+        <Button onClick={onBrowseAll} variant="outline" size="sm">
+          Vezi toate evenimentele
+        </Button>
       </div>
     </Card>
   );
