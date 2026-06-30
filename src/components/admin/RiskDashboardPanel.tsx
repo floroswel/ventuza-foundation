@@ -292,7 +292,12 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
               </thead>
               <tbody>
                 {data.recent_flags.map((f) => (
-                  <tr key={f.id} className="border-t border-border/40">
+                  <tr
+                    key={f.id}
+                    onClick={() => onOpenUser(f.user_id)}
+                    className="cursor-pointer border-t border-border/40 transition-colors hover:bg-primary/10"
+                    title="Deschide detaliu risc"
+                  >
                     <td className="p-1">{fmt(f.created_at)}</td>
                     <td className="p-1"><span className="rounded bg-primary/10 px-2 py-0.5 uppercase text-[10px]">{f.kind}</span></td>
                     <td className="p-1 text-right">
@@ -308,6 +313,7 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
                     </td>
                   </tr>
                 ))}
+
               </tbody>
             </table>
           </div>
