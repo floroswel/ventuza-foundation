@@ -3413,6 +3413,10 @@ export type Database = {
           verified: boolean
         }[]
       }
+      admin_security_signals: {
+        Args: { _window_hours?: number }
+        Returns: Json
+      }
       admin_suspend_partner: {
         Args: { p_reason: string; p_user_id: string }
         Returns: Json
