@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Activity, RefreshCw, ShieldAlert, Fingerprint, Globe } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
+import { AutoRefreshSelect, useAdminAutoRefresh } from "@/components/admin/AutoRefreshSelect";
 import {
   adminGetSignupThrottleStats,
   type SignupThrottleStats,
@@ -36,10 +37,11 @@ function short(h: string, n = 12) {
 export function SignupThrottlePanel() {
   const get = useServerFn(adminGetSignupThrottleStats);
   const [windowHours, setWindowHours] = useState(24);
+  const autoRefreshMs = useAdminAutoRefresh();
   const [state, reload, lastLoadedAt] = useAdminPanelLoad<SignupThrottleStats>(
     () => get({ data: { windowHours } }),
     [windowHours],
-    { autoRefreshMs: 30_000 },
+    { autoRefreshMs },
   );
 
   return (
@@ -63,6 +65,7 @@ export function SignupThrottlePanel() {
             </button>
           ))}
         </div>
+        <AutoRefreshSelect />
         <button
           onClick={reload}
           className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-surface"

@@ -5,6 +5,7 @@ import {
   Search, Filter, X, ChevronLeft, ChevronRight, Fingerprint, FileDown, Printer,
 } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
+import { AutoRefreshSelect, useAdminAutoRefresh } from "@/components/admin/AutoRefreshSelect";
 import { UserRiskDetailDialog } from "@/components/admin/UserRiskDetailDialog";
 import { exportRiskCsv, exportRiskPdf, type RiskExportInput } from "@/lib/risk-export";
 
@@ -65,6 +66,7 @@ function scoreTone(score: number): string {
 
 export function RiskDashboardPanel() {
   const [windowHours, setWindowHours] = useState(168);
+  const autoRefreshMs = useAdminAutoRefresh();
   const [state, reload, lastLoadedAt] = useAdminPanelLoad<Dashboard>(
     async () => {
       const { data, error } = await (supabase as any).rpc("admin_risk_dashboard", { _window_hours: windowHours });
@@ -72,7 +74,7 @@ export function RiskDashboardPanel() {
       return data as Dashboard;
     },
     [windowHours],
-    { autoRefreshMs: 30_000 },
+    { autoRefreshMs },
   );
 
   // Live refresh on new risk_flags inserts
@@ -113,6 +115,7 @@ export function RiskDashboardPanel() {
             </button>
           ))}
         </div>
+        <AutoRefreshSelect />
         <button
           onClick={reload}
           className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-surface"

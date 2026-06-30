@@ -3,6 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2, MessageSquarePlus, Clock, History, Activity } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
+import { AutoRefreshSelect, useAdminAutoRefresh } from "@/components/admin/AutoRefreshSelect";
 import {
   adminListNewAccountReviewQueue,
   adminResolveRiskFlag,
@@ -102,10 +103,11 @@ export function RiskReviewQueuePanel() {
   const PAGE_SIZE = 10;
   const [page, setPage] = useState(1);
 
+  const autoRefreshMs = useAdminAutoRefresh();
   const [state, reload, lastLoadedAt] = useAdminPanelLoad<ReviewQueueRow[]>(async () => {
     const { rows } = await listFn({ data: { limit: 200 } });
     return rows;
-  }, [], { autoRefreshMs: 30_000 });
+  }, [], { autoRefreshMs });
 
   const baseRows = state.status === "ready" ? state.data.filter((r) => !resolvedIds.has(r.flag_id)) : [];
 
@@ -242,12 +244,15 @@ export function RiskReviewQueuePanel() {
             Auto-flag la scor ≥60 pentru conturi create în ultimele 7 zile. Decide: curăță, fals pozitiv sau escaladează.
           </p>
         </div>
-        <button
-          onClick={() => reload()}
-          className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10 flex items-center gap-1"
-        >
-          <RefreshCw className="size-3.5" /> Reîncarcă
-        </button>
+        <div className="flex items-center gap-2">
+          <AutoRefreshSelect />
+          <button
+            onClick={() => reload()}
+            className="rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs hover:bg-white/10 flex items-center gap-1"
+          >
+            <RefreshCw className="size-3.5" /> Reîncarcă
+          </button>
+        </div>
       </div>
 
       {/* Filter bar */}
