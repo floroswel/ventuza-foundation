@@ -4695,6 +4695,7 @@ export type Database = {
         | "event_rsvp"
         | "event_reminder"
         | "tap"
+        | "admin_message"
       rsvp_status: "going" | "interested"
     }
     CompositeTypes: {
@@ -4872,6 +4873,7 @@ export const Constants = {
         "event_rsvp",
         "event_reminder",
         "tap",
+        "admin_message",
       ],
       rsvp_status: ["going", "interested"],
     },
