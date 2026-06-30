@@ -12,6 +12,7 @@ export type FriendlyAuthError = {
     | "user_already_exists"
     | "weak_password"
     | "email_invalid"
+    | "disposable_email"
     | "network"
     | "age_required"
     | "unknown";
@@ -113,6 +114,15 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
   // EMAIL INVALID
   if (msg.includes("invalid email") || msg.includes("email_address_invalid")) {
     return { code: "email_invalid", message: "Adresa de email nu pare validă." };
+  }
+
+  // DISPOSABLE EMAIL (server-side block via public.is_disposable_email)
+  if (msg.includes("disposable_email_not_allowed") || msg.includes("disposable")) {
+    return {
+      code: "disposable_email",
+      message:
+        "Email temporar nepermis. Folosește un email real (Gmail, Outlook, Yahoo, ProtonMail sau domeniul tău).",
+    };
   }
 
   // AGE

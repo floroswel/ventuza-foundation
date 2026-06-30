@@ -3394,6 +3394,7 @@ export type Database = {
         Args: { _window_hours?: number }
         Returns: Json
       }
+      admin_recompute_user_risk: { Args: { _user_id: string }; Returns: Json }
       admin_reinstate_partner: { Args: { p_user_id: string }; Returns: Json }
       admin_risk_queue: {
         Args: { _limit?: number }
@@ -3423,6 +3424,7 @@ export type Database = {
       app_role_values: { Args: never; Returns: string[] }
       assert_account_usable: { Args: never; Returns: undefined }
       assert_age_verified: { Args: never; Returns: undefined }
+      assert_email_allowed: { Args: { _email: string }; Returns: boolean }
       assert_no_plaintext_hiv_profile_completion: {
         Args: never
         Returns: boolean
@@ -3459,6 +3461,7 @@ export type Database = {
         Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
         Returns: number
       }
+      compute_user_risk: { Args: { _user_id: string }; Returns: Json }
       consent_kinds: {
         Args: never
         Returns: {
@@ -3791,6 +3794,7 @@ export type Database = {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
       }
+      is_disposable_email: { Args: { _email: string }; Returns: boolean }
       is_fingerprint_banned: { Args: { _fp: string }; Returns: boolean }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
@@ -3915,6 +3919,7 @@ export type Database = {
       postgis_wagyu_version: { Args: never; Returns: string }
       purge_scheduled_deletions: { Args: never; Returns: number }
       recompute_risk_score: { Args: { _uid: string }; Returns: number }
+      recompute_user_risk: { Args: { _user_id: string }; Returns: Json }
       record_age_verification: {
         Args: {
           p_didit_session?: string
@@ -3937,6 +3942,10 @@ export type Database = {
       register_device_fingerprint: {
         Args: { _fp: string; _ua: string }
         Returns: boolean
+      }
+      rl_enforce: {
+        Args: { _action: string; _max: number; _window_seconds: number }
+        Returns: undefined
       }
       security_invariants_snapshot: { Args: never; Returns: Json }
       seed_content_summary: { Args: never; Returns: Json }
