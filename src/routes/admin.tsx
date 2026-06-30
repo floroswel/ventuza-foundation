@@ -71,7 +71,8 @@ type Section =
   | "overview" | "users" | "reports" | "risk" | "riskdash" | "riskqueue" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
-  | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle";
+  | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle"
+  | "settings" | "staff" | "tools";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
