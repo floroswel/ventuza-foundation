@@ -87,6 +87,13 @@ export function RiskReviewQueuePanel() {
   const [busy, setBusy] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [noteDraft, setNoteDraft] = useState<Record<string, string>>({});
+  const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set());
+  const [confirm, setConfirm] = useState<null | {
+    flagId: string;
+    decision: "cleared" | "false_positive" | "escalated";
+    userLabel: string;
+    note: string;
+  }>(null);
 
   const [state, reload, lastLoadedAt] = useAdminPanelLoad<ReviewQueueRow[]>(async () => {
     const { rows } = await listFn({ data: { limit: 200 } });
@@ -106,25 +113,42 @@ export function RiskReviewQueuePanel() {
     return () => { supabase.removeChannel(ch); };
   }, [reload]);
 
-  async function resolve(flagId: string, decision: "cleared" | "false_positive" | "escalated") {
-    const notes = decision === "escalated"
-      ? (window.prompt("Note (escaladare):") ?? undefined)
-      : undefined;
-    if (decision === "escalated" && !notes) return;
+  const DECISION_META: Record<"cleared" | "false_positive" | "escalated", { title: string; desc: string; ok: string; toast: string; noteRequired: boolean; tone: "default" | "destructive" }> = {
+    cleared:        { title: "Curăță flag-ul",       desc: "Marchează contul ca legitim. Flag-ul iese din coadă, dar rămâne în istoric.", ok: "Curăță",        toast: "Flag curățat — cont marcat legitim", noteRequired: false, tone: "default" },
+    false_positive: { title: "Marchează fals pozitiv", desc: "Semnalele nu reflectă risc real. Util pentru calibrare ulterioară.",         ok: "Fals pozitiv",  toast: "Marcat ca fals pozitiv",            noteRequired: false, tone: "default" },
+    escalated:      { title: "Escaladează spre Trust & Safety", desc: "Necesită investigație suplimentară. Nota e obligatorie pentru audit.", ok: "Escaladează",   toast: "Escaladat către Trust & Safety",    noteRequired: true,  tone: "destructive" },
+  };
+
+  function openConfirm(flagId: string, decision: "cleared" | "false_positive" | "escalated", userLabel: string) {
+    setConfirm({ flagId, decision, userLabel, note: "" });
+  }
+
+  async function runResolve() {
+    if (!confirm) return;
+    const { flagId, decision, note } = confirm;
+    const meta = DECISION_META[decision];
+    const trimmed = note.trim();
+    if (meta.noteRequired && trimmed.length < 3) {
+      toast.error("Nota e obligatorie pentru escaladare (min. 3 caractere).");
+      return;
+    }
     setBusy(flagId);
+    setConfirm(null);
+    // Optimistic hide
+    setResolvedIds((s) => { const n = new Set(s); n.add(flagId); return n; });
     try {
-      await resolveFn({ data: { flagId, decision, notes } });
-      toast.success(
-        decision === "escalated" ? "Escaladat" :
-        decision === "false_positive" ? "Marcat fals pozitiv" : "Curățat",
-      );
+      await resolveFn({ data: { flagId, decision, notes: trimmed || undefined } });
+      toast.success(meta.toast, { description: `Flag ${flagId.slice(0, 8)}…` });
       reload();
     } catch (e) {
-      toast.error("Eroare: " + (e instanceof Error ? e.message : String(e)));
+      // Rollback optimistic hide
+      setResolvedIds((s) => { const n = new Set(s); n.delete(flagId); return n; });
+      toast.error("Eroare la salvare", { description: e instanceof Error ? e.message : String(e) });
     } finally {
       setBusy(null);
     }
   }
+
 
   async function markInProgress(flagId: string) {
     setBusy(flagId);
