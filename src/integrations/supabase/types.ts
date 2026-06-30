@@ -3390,6 +3390,10 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_rate_limit_stats: {
+        Args: { _window_hours?: number }
+        Returns: Json
+      }
       admin_reinstate_partner: { Args: { p_user_id: string }; Returns: Json }
       admin_risk_queue: {
         Args: { _limit?: number }
