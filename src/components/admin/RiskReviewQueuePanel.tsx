@@ -289,7 +289,7 @@ export function RiskReviewQueuePanel() {
                         </button>
                         <button
                           disabled={busy === r.flag_id}
-                          onClick={() => resolve(r.flag_id, "cleared")}
+                          onClick={() => openConfirm(r.flag_id, "cleared", r.display_name ?? r.user_id)}
                           title="Curăță (legitim)"
                           className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-2 py-1 text-xs text-emerald-300 hover:bg-emerald-500/20 disabled:opacity-50"
                         >
@@ -297,7 +297,7 @@ export function RiskReviewQueuePanel() {
                         </button>
                         <button
                           disabled={busy === r.flag_id}
-                          onClick={() => resolve(r.flag_id, "false_positive")}
+                          onClick={() => openConfirm(r.flag_id, "false_positive", r.display_name ?? r.user_id)}
                           title="Fals pozitiv"
                           className="rounded-md border border-white/10 bg-white/5 px-2 py-1 text-xs hover:bg-white/10 disabled:opacity-50"
                         >
@@ -305,12 +305,13 @@ export function RiskReviewQueuePanel() {
                         </button>
                         <button
                           disabled={busy === r.flag_id}
-                          onClick={() => resolve(r.flag_id, "escalated")}
+                          onClick={() => openConfirm(r.flag_id, "escalated", r.display_name ?? r.user_id)}
                           title="Escaladează"
                           className="rounded-md border border-red-500/40 bg-red-500/10 px-2 py-1 text-xs text-red-300 hover:bg-red-500/20 disabled:opacity-50"
                         >
                           <AlertTriangle className="size-3" />
                         </button>
+
                       </div>
                     </td>
                   </tr>
