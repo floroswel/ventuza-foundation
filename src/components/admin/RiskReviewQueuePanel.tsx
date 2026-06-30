@@ -32,10 +32,10 @@ export function RiskReviewQueuePanel() {
   const resolveFn = useServerFn(adminResolveRiskFlag);
   const [busy, setBusy] = useState<string | null>(null);
 
-  const [state, reload] = useAdminPanelLoad<ReviewQueueRow[]>(async () => {
+  const [state, reload, lastLoadedAt] = useAdminPanelLoad<ReviewQueueRow[]>(async () => {
     const { rows } = await listFn({ data: { limit: 200 } });
     return rows;
-  }, []);
+  }, [], { autoRefreshMs: 30_000 });
 
   // Live refresh on new flags
   useEffect(() => {
