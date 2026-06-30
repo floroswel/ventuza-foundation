@@ -4,6 +4,8 @@ import {
   AlertTriangle, ShieldAlert, TrendingUp, RefreshCw, Activity, Users, Flag, BadgeCheck,
 } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
+import { UserRiskDetailDialog } from "@/components/admin/UserRiskDetailDialog";
+
 
 type Bucket = { bucket: string; count: number };
 type Trend = { bucket: string; flags: number; high_risk_users: number };
@@ -85,6 +87,8 @@ export function RiskDashboardPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const [openUserId, setOpenUserId] = useState<string | null>(null);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -115,13 +119,16 @@ export function RiskDashboardPanel() {
       </div>
 
       <PanelStatus state={state} retry={reload}>
-        {state.status === "ready" && <Content data={state.data} />}
+        {state.status === "ready" && <Content data={state.data} onOpenUser={setOpenUserId} />}
       </PanelStatus>
+
+      <UserRiskDetailDialog userId={openUserId} onClose={() => setOpenUserId(null)} />
     </div>
   );
 }
 
-function Content({ data }: { data: Dashboard }) {
+function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: string) => void }) {
+
   const s = data.summary;
   const maxDist = useMemo(() => Math.max(...data.distribution.map((b) => b.count), 1), [data.distribution]);
   const maxTrendH = useMemo(() => Math.max(...data.trend_hourly.map((b) => b.flags), 1), [data.trend_hourly]);
@@ -237,7 +244,12 @@ function Content({ data }: { data: Dashboard }) {
               </thead>
               <tbody>
                 {data.top_users.map((u) => (
-                  <tr key={u.user_id} className="border-t border-border/40">
+                  <tr
+                    key={u.user_id}
+                    onClick={() => onOpenUser(u.user_id)}
+                    className="cursor-pointer border-t border-border/40 transition-colors hover:bg-primary/10"
+                    title="Deschide detaliu risc"
+                  >
                     <td className="p-1">
                       <div className="flex items-center gap-1">
                         {u.display_name ?? "(fără nume)"}
@@ -257,6 +269,7 @@ function Content({ data }: { data: Dashboard }) {
                     <td className="p-1">{fmt(u.created_at)}</td>
                   </tr>
                 ))}
+
               </tbody>
             </table>
           </div>
@@ -279,7 +292,12 @@ function Content({ data }: { data: Dashboard }) {
               </thead>
               <tbody>
                 {data.recent_flags.map((f) => (
-                  <tr key={f.id} className="border-t border-border/40">
+                  <tr
+                    key={f.id}
+                    onClick={() => onOpenUser(f.user_id)}
+                    className="cursor-pointer border-t border-border/40 transition-colors hover:bg-primary/10"
+                    title="Deschide detaliu risc"
+                  >
                     <td className="p-1">{fmt(f.created_at)}</td>
                     <td className="p-1"><span className="rounded bg-primary/10 px-2 py-0.5 uppercase text-[10px]">{f.kind}</span></td>
                     <td className="p-1 text-right">
@@ -295,6 +313,7 @@ function Content({ data }: { data: Dashboard }) {
                     </td>
                   </tr>
                 ))}
+
               </tbody>
             </table>
           </div>
