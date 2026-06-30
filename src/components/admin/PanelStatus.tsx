@@ -9,7 +9,7 @@
  *  - „forbidden": detectat automat (Forbidden / 403) și afișat ca explicație de rol.
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { AlertTriangle, Loader2, ShieldAlert, Inbox } from "lucide-react";
+import { AlertTriangle, Loader2, ShieldAlert, Inbox, RefreshCw } from "lucide-react";
 
 export type PanelState<T> =
   | { status: "loading" }
@@ -19,14 +19,16 @@ export type PanelState<T> =
 export function useAdminPanelLoad<T>(
   loader: () => Promise<T>,
   deps: any[] = [],
-  opts: { timeoutMs?: number } = {},
-): [PanelState<T>, () => void] {
+  opts: { timeoutMs?: number; autoRefreshMs?: number } = {},
+): [PanelState<T>, () => void, Date | null] {
   const [state, setState] = useState<PanelState<T>>({ status: "loading" });
+  const [lastLoadedAt, setLastLoadedAt] = useState<Date | null>(null);
   const tick = useRef(0);
 
   const run = () => {
     const myTick = ++tick.current;
-    setState({ status: "loading" });
+    // Keep previous data visible on refresh; only show spinner on first load.
+    setState((prev) => (prev.status === "ready" ? prev : { status: "loading" }));
     const timeout = setTimeout(() => {
       if (tick.current !== myTick) return;
       setState({
@@ -40,6 +42,7 @@ export function useAdminPanelLoad<T>(
         if (tick.current !== myTick) return;
         clearTimeout(timeout);
         setState({ status: "ready", data });
+        setLastLoadedAt(new Date());
       })
       .catch((e: any) => {
         if (tick.current !== myTick) return;
@@ -53,8 +56,67 @@ export function useAdminPanelLoad<T>(
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { run(); }, deps);
 
-  return [state, run];
+  // Auto-refresh: re-run loader every `autoRefreshMs` so the panel stays
+  // in sync with the latest batch and the "last check" timestamp advances.
+  useEffect(() => {
+    if (!opts.autoRefreshMs || opts.autoRefreshMs <= 0) return;
+    const id = setInterval(() => run(), opts.autoRefreshMs);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opts.autoRefreshMs, ...deps]);
+
+  return [state, run, lastLoadedAt];
 }
+
+/**
+ * Small badge showing when the panel last successfully refreshed.
+ * Updates every 15s so "acum 12s" stays accurate without a full reload.
+ */
+export function LastCheckBadge({
+  at,
+  intervalMs = 15000,
+  label = "Verificat",
+}: {
+  at: Date | null;
+  intervalMs?: number;
+  label?: string;
+}) {
+  const [, force] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => force((n) => n + 1), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
+
+  if (!at) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full border border-border bg-surface px-2 py-0.5 text-[10px] text-muted-foreground">
+        <RefreshCw className="size-3 animate-spin" /> Se sincronizează…
+      </span>
+    );
+  }
+  const sec = Math.max(0, Math.floor((Date.now() - at.getTime()) / 1000));
+  const rel =
+    sec < 5 ? "acum" :
+    sec < 60 ? `acum ${sec}s` :
+    sec < 3600 ? `acum ${Math.floor(sec / 60)}m` :
+    `acum ${Math.floor(sec / 3600)}h`;
+  const abs = at.toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  const stale = sec > 120;
+  return (
+    <span
+      title={`Ultima verificare reușită: ${at.toISOString()}`}
+      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] ${
+        stale
+          ? "border-amber-500/40 bg-amber-500/10 text-amber-300"
+          : "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+      }`}
+    >
+      <RefreshCw className={`size-3 ${stale ? "" : ""}`} />
+      {label} {rel} · {abs}
+    </span>
+  );
+}
+
 
 export function PanelStatus({
   state, isEmpty, emptyHint, retry, children,
