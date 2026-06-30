@@ -3417,6 +3417,7 @@ export type Database = {
         Returns: Json
       }
       app_role_values: { Args: never; Returns: string[] }
+      assert_account_usable: { Args: never; Returns: undefined }
       assert_age_verified: { Args: never; Returns: undefined }
       assert_no_plaintext_hiv_profile_completion: {
         Args: never
@@ -3445,6 +3446,7 @@ export type Database = {
         }[]
       }
       claim_quest_reward: { Args: { _quest_id: string }; Returns: Json }
+      cleanup_rate_limit_log: { Args: never; Returns: number }
       compute_geo_bucket_id: {
         Args: { p_lat: number; p_lng: number }
         Returns: string
