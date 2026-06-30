@@ -5,6 +5,7 @@ import {
   Search, Filter, X, ChevronLeft, ChevronRight, Fingerprint, FileDown, Printer,
 } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
+import { AutoRefreshSelect, useAdminAutoRefresh } from "@/components/admin/AutoRefreshSelect";
 import { UserRiskDetailDialog } from "@/components/admin/UserRiskDetailDialog";
 import { exportRiskCsv, exportRiskPdf, type RiskExportInput } from "@/lib/risk-export";
 
