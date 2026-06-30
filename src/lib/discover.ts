@@ -168,7 +168,22 @@ export async function fetchDiscover(
     order_mode: orderMode,
     result_limit: 60,
   });
-  if (error) throw error;
+  if (error) {
+    const msg = (error.message ?? "").toLowerCase();
+    if (msg.includes("discover_rate_limited")) {
+      throw new Error("Ai răsfoit prea repede. Reia explorarea peste aproximativ o oră.");
+    }
+    if (msg.includes("email_not_confirmed")) {
+      throw new Error("Confirmă-ți emailul ca să vezi profilurile din apropiere.");
+    }
+    if (msg.includes("age_verification_required")) {
+      throw new Error("Trebuie să-ți verifici vârsta înainte de a folosi Discover.");
+    }
+    if (msg.includes("not_authenticated") || msg.includes("forbidden")) {
+      throw new Error("Sesiune expirată. Te rugăm să te autentifici din nou.");
+    }
+    throw error;
+  }
   return (data ?? []) as DiscoverProfile[];
 }
 
