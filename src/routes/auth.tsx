@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
+import { mapAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).catch("login"),
