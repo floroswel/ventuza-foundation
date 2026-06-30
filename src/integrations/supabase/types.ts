@@ -3938,6 +3938,7 @@ export type Database = {
         Args: { _fp: string; _ua: string }
         Returns: boolean
       }
+      security_invariants_snapshot: { Args: never; Returns: Json }
       seed_content_summary: { Args: never; Returns: Json }
       set_looking_now:
         | { Args: { _hours: number; _intent?: string }; Returns: undefined }
