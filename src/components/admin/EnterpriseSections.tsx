@@ -471,6 +471,7 @@ export function AlertsPanel() {
                       Marchează rezolvată
                     </button>
                   </div>
+                  <AffectedAccounts alertId={a.id} kind={a.kind} />
                 </div>
               </li>
             );
