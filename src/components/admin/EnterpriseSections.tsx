@@ -503,6 +503,14 @@ export function AlertsPanel() {
         <span className="ml-auto text-xs text-muted-foreground">
           {filtered.length} / {items.length}
         </span>
+        <button
+          onClick={() => { setLoading(true); load(); }}
+          disabled={loading}
+          className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-surface disabled:opacity-50"
+          title="Reîncarcă alertele"
+        >
+          <RefreshCw className={`mr-1 inline size-3 ${loading ? "animate-spin" : ""}`} /> Refresh
+        </button>
       </div>
       <div className="flex flex-wrap items-center gap-2">
         <select value={fKind} onChange={(e) => setFKind(e.target.value)} className={selectCls} aria-label="Tip alertă">
