@@ -24,6 +24,7 @@ export type NearbyPoint = {
  * Client filters to exact radius and sorts by haversine distance.
  */
 export const getNearbyPoints = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: { bucketId: string; kinds?: NearbyKind[] }) => {
     if (!d.bucketId || typeof d.bucketId !== "string") {
       throw new Error("bucketId_required");
@@ -31,20 +32,15 @@ export const getNearbyPoints = createServerFn({ method: "POST" })
     if (!/^-?\d+:-?\d+$/.test(d.bucketId)) throw new Error("bucketId_invalid");
     return d;
   })
-  .handler(async ({ data }) => {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(
-      process.env.SUPABASE_URL!,
-      process.env.SUPABASE_PUBLISHABLE_KEY!,
-      { auth: { persistSession: false, autoRefreshToken: false } },
-    );
-    const { data: rows, error } = await supabase.rpc("nearby_points", {
+  .handler(async ({ data, context }) => {
+    const { data: rows, error } = await context.supabase.rpc("nearby_points", {
       p_bucket_id: data.bucketId,
       p_kinds: data.kinds ?? ["venue", "event", "offer"],
     });
     if (error) throw new Error(error.message);
     return { points: (rows ?? []) as NearbyPoint[] };
   });
+
 
 export const claimOffer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
