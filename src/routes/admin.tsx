@@ -9,7 +9,7 @@ import {
   Megaphone, Play, Pause, Building2, LayoutDashboard, Users, Database, Send,
   Trash2, Save, Search, RefreshCw, ChevronLeft, ChevronRight, Crown,
   ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon, Sparkles,
-  Activity, Bot,
+  Activity, Bot, Flag,
 } from "lucide-react";
 import { AdminShell, type NavItem } from "@/components/admin/AdminShell";
 import { GlassCard, Kpi, MonoNumber, StatusBadge, SectionTitle } from "@/components/admin/ui/primitives";
@@ -39,6 +39,7 @@ import { DemoSeedPanel, DemoSeedBanner } from "@/components/admin/DemoSeedPanel"
 import { RateLimitPanel } from "@/components/admin/RateLimitPanel";
 import { SecuritySignalsPanel } from "@/components/admin/SecuritySignalsPanel";
 import { RiskDashboardPanel } from "@/components/admin/RiskDashboardPanel";
+import { RiskReviewQueuePanel } from "@/components/admin/RiskReviewQueuePanel";
 
 
 function AgeGateDevBanner() {
@@ -66,7 +67,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Section =
-  | "overview" | "users" | "reports" | "risk" | "riskdash" | "ads" | "biz"
+  | "overview" | "users" | "reports" | "risk" | "riskdash" | "riskqueue" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals";
@@ -149,6 +150,7 @@ function AdminDashboard() {
     { id: "users",    label: "Utilizatori", icon: Users,        group: "Trust & Safety", adminOnly: true },
     { id: "reports",  label: "Rapoarte",  icon: ShieldAlert,    group: "Trust & Safety" },
     { id: "risk",     label: "Risc · coadă", icon: AlertTriangle,  group: "Trust & Safety" },
+    { id: "riskqueue",label: "Risc · review nou", icon: Flag,      group: "Trust & Safety", hint: "Conturi noi auto-flag pentru review" },
     { id: "riskdash", label: "Risc · dashboard", icon: Activity,  group: "Trust & Safety", hint: "Distribuție, trend, semnale live" },
     { id: "csam",     label: "CSAM",      icon: ShieldAlert,    group: "Trust & Safety", adminOnly: true },
     { id: "dsa",      label: "DSA",       icon: FileWarning,    group: "Trust & Safety" },
@@ -195,6 +197,7 @@ function AdminDashboard() {
       {section === "reports" && <ReportsPanel meId={user!.id} />}
       {section === "risk" && <RiskPanel />}
       {section === "riskdash" && <RiskDashboardPanel />}
+      {section === "riskqueue" && <RiskReviewQueuePanel />}
       {section === "csam" && isAdmin && <CsamPanel />}
       {section === "dsa" && <DsaPanel />}
       {section === "gdpr" && isAdmin && <GdprOpsPanel />}
