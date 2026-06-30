@@ -69,16 +69,24 @@ export const Route = createFileRoute("/api/public/signup-guard")({
 
         if (error) {
           const msg = error.message ?? "";
-          if (msg.includes("signup_throttled_ip")) {
+          const throttled =
+            msg.includes("signup_throttled_ip")
+              ? "signup_throttled_ip"
+              : msg.includes("signup_throttled_fingerprint") || msg.includes("signup_throttled")
+                ? "signup_throttled_fingerprint"
+                : null;
+          if (throttled) {
+            // Hourly cap window — conservative upper bound until cap resets.
+            const retryAfterSec = msg.includes("daily") ? 86400 : 3600;
             return Response.json(
-              { ok: false, error: "signup_throttled_ip" },
-              { status: 429 },
-            );
-          }
-          if (msg.includes("signup_throttled_fingerprint")) {
-            return Response.json(
-              { ok: false, error: "signup_throttled_fingerprint" },
-              { status: 429 },
+              { ok: false, error: throttled, retryAfterSec },
+              {
+                status: 429,
+                headers: {
+                  "Retry-After": String(retryAfterSec),
+                  "Cache-Control": "no-store",
+                },
+              },
             );
           }
           // Fail-open on infra error — don't lock real users out.
