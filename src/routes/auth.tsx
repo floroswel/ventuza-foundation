@@ -149,9 +149,10 @@ function AuthPage() {
     }
 
     if (captchaRequired && !captchaToken) {
-      toast.error("Completează verificarea anti-bot.");
+      handleAuthError(new Error("captcha required"));
       return;
     }
+    setAuthError(null);
 
     setSubmitting(true);
     try {
