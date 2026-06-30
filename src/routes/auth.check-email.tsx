@@ -5,6 +5,7 @@ import { Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 
 const searchSchema = z.object({ email: z.string().email().optional() });
 
@@ -23,6 +24,8 @@ function CheckEmailPage() {
   const { email } = Route.useSearch();
   const [cooldown, setCooldown] = useState(60);
   const [resending, setResending] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRequired = isTurnstileConfigured();
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -35,18 +38,27 @@ function CheckEmailPage() {
       toast.error("Lipsește adresa de email — întoarce-te la pasul de înregistrare.");
       return;
     }
+    if (captchaRequired && !captchaToken) {
+      toast.error("Completează verificarea anti-bot.");
+      return;
+    }
     setResending(true);
     try {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
-        options: { emailRedirectTo: `${window.location.origin}/n` },
+        options: {
+          emailRedirectTo: `${window.location.origin}/n`,
+          captchaToken: captchaToken ?? undefined,
+        },
       });
       if (error) throw error;
       toast.success("Trimis. Verifică inbox + spam.");
+      setCaptchaToken(null);
       setCooldown(60);
-    } catch (e: any) {
-      toast.error(e.message ?? "Nu am putut retrimite emailul.");
+    } catch (e) {
+      setCaptchaToken(null);
+      toast.error(e instanceof Error ? e.message : "Nu am putut retrimite emailul.");
     } finally {
       setResending(false);
     }
@@ -73,8 +85,15 @@ function CheckEmailPage() {
         <p className="text-xs text-muted-foreground">
           Nu vezi emailul? Verifică folderul Spam / Promoții.
         </p>
+        <TurnstileWidget
+          onToken={setCaptchaToken}
+          onExpire={() => setCaptchaToken(null)}
+        />
         <div className="flex flex-col gap-2 pt-2">
-          <Button onClick={resend} disabled={resending || cooldown > 0 || !email}>
+          <Button
+            onClick={resend}
+            disabled={resending || cooldown > 0 || !email || (captchaRequired && !captchaToken)}
+          >
             {resending && <Loader2 className="size-4 animate-spin mr-2" />}
             {cooldown > 0 ? `Retrimite în ${cooldown}s` : "Retrimite emailul"}
           </Button>
