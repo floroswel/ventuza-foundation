@@ -38,6 +38,7 @@ import { isProductionHost, shouldEnforceAgeGate, clearAgeGatePolicyCache } from 
 import { DemoSeedPanel, DemoSeedBanner } from "@/components/admin/DemoSeedPanel";
 import { RateLimitPanel } from "@/components/admin/RateLimitPanel";
 import { SecuritySignalsPanel } from "@/components/admin/SecuritySignalsPanel";
+import { RiskDashboardPanel } from "@/components/admin/RiskDashboardPanel";
 
 
 function AgeGateDevBanner() {
@@ -65,7 +66,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Section =
-  | "overview" | "users" | "reports" | "risk" | "ads" | "biz"
+  | "overview" | "users" | "reports" | "risk" | "riskdash" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals";
@@ -147,7 +148,8 @@ function AdminDashboard() {
     // Trust & Safety
     { id: "users",    label: "Utilizatori", icon: Users,        group: "Trust & Safety", adminOnly: true },
     { id: "reports",  label: "Rapoarte",  icon: ShieldAlert,    group: "Trust & Safety" },
-    { id: "risk",     label: "Risc",      icon: AlertTriangle,  group: "Trust & Safety" },
+    { id: "risk",     label: "Risc · coadă", icon: AlertTriangle,  group: "Trust & Safety" },
+    { id: "riskdash", label: "Risc · dashboard", icon: Activity,  group: "Trust & Safety", hint: "Distribuție, trend, semnale live" },
     { id: "csam",     label: "CSAM",      icon: ShieldAlert,    group: "Trust & Safety", adminOnly: true },
     { id: "dsa",      label: "DSA",       icon: FileWarning,    group: "Trust & Safety" },
 
@@ -192,6 +194,7 @@ function AdminDashboard() {
       {section === "users" && isAdmin && <UsersPanel meId={user!.id} />}
       {section === "reports" && <ReportsPanel meId={user!.id} />}
       {section === "risk" && <RiskPanel />}
+      {section === "riskdash" && <RiskDashboardPanel />}
       {section === "csam" && isAdmin && <CsamPanel />}
       {section === "dsa" && <DsaPanel />}
       {section === "gdpr" && isAdmin && <GdprOpsPanel />}
