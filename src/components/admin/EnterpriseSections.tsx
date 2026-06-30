@@ -344,20 +344,78 @@ export function AlertsPanel() {
     finally { setBusy(null); }
   };
 
+  const kindOptions = useMemo(
+    () => Array.from(new Set(items.map((a) => a.kind).filter(Boolean))).sort(),
+    [items],
+  );
+  const filtered = useMemo(() => {
+    const now = Date.now();
+    const rangeMs: Record<string, number> = {
+      "1h": 60 * 60 * 1000,
+      "24h": 24 * 60 * 60 * 1000,
+      "7d": 7 * 24 * 60 * 60 * 1000,
+      "30d": 30 * 24 * 60 * 60 * 1000,
+      all: Infinity,
+    };
+    const maxAge = rangeMs[fRange] ?? Infinity;
+    return items.filter((a) => {
+      if (fKind && a.kind !== fKind) return false;
+      if (fSeverity && a.severity !== fSeverity) return false;
+      if (maxAge !== Infinity) {
+        const t = a.created_at ? new Date(a.created_at).getTime() : 0;
+        if (now - t > maxAge) return false;
+      }
+      return true;
+    });
+  }, [items, fKind, fSeverity, fRange]);
+
+  const selectCls = "rounded-full border border-border bg-background px-3 py-1.5 text-xs";
+
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
         <Bell className="size-4 text-primary" />
         <h2 className="text-lg font-semibold">Alerte (live)</h2>
-        <span className="ml-auto text-xs text-muted-foreground">{items.length} active</span>
+        <span className="ml-auto text-xs text-muted-foreground">
+          {filtered.length} / {items.length}
+        </span>
+      </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <select value={fKind} onChange={(e) => setFKind(e.target.value)} className={selectCls} aria-label="Tip alertă">
+          <option value="">Toate tipurile</option>
+          {kindOptions.map((k) => <option key={k} value={k}>{k}</option>)}
+        </select>
+        <select value={fSeverity} onChange={(e) => setFSeverity(e.target.value)} className={selectCls} aria-label="Severitate">
+          <option value="">Toate severitățile</option>
+          <option value="critical">Critical</option>
+          <option value="warning">Warning</option>
+          <option value="info">Info</option>
+        </select>
+        <select value={fRange} onChange={(e) => setFRange(e.target.value)} className={selectCls} aria-label="Interval timp">
+          <option value="1h">Ultima oră</option>
+          <option value="24h">Ultimele 24h</option>
+          <option value="7d">Ultimele 7 zile</option>
+          <option value="30d">Ultimele 30 zile</option>
+          <option value="all">Tot timpul</option>
+        </select>
+        {(fKind || fSeverity || fRange !== "24h") && (
+          <button
+            onClick={() => { setFKind(""); setFSeverity(""); setFRange("24h"); }}
+            className="rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground"
+          >
+            Resetează
+          </button>
+        )}
       </div>
       {error ? (
         <ErrorBanner error={error} onRetry={load} />
       ) : loading ? (
         <LoadingBox />
-      ) : items.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
-          ✅ Nicio alertă activă (empty legitim — apare aici când sistemul detectează un incident)
+          {items.length === 0
+            ? "✅ Nicio alertă activă (empty legitim — apare aici când sistemul detectează un incident)"
+            : "Niciun rezultat pentru filtrele curente."}
         </div>
       ) : (
         <ul className="space-y-2">
