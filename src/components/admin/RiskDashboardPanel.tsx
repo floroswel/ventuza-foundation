@@ -90,6 +90,7 @@ export function RiskDashboardPanel() {
       <div className="flex flex-wrap items-center gap-2">
         <ShieldAlert className="size-4 text-primary" />
         <h2 className="text-lg font-semibold">Risk scoring · dashboard</h2>
+        <LastCheckBadge at={lastLoadedAt} />
         <div className="ml-auto flex items-center gap-1 rounded-full border border-border bg-surface p-1">
           {WINDOW_OPTIONS.map((o) => (
             <button
