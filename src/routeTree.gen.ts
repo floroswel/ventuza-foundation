@@ -61,6 +61,7 @@ import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
+import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
 import { Route as ApiPublicHooksBillingTickRouteImport } from './routes/api/public/hooks/billing-tick'
 
 const VisitorsRoute = VisitorsRouteImport.update({
@@ -324,6 +325,11 @@ const ApiPublicAgeWebhookRoute = ApiPublicAgeWebhookRouteImport.update({
   path: '/api/public/age-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminUsersIdRoute = AdminUsersIdRouteImport.update({
+  id: '/users/$id',
+  path: '/users/$id',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiPublicHooksBillingTickRoute =
   ApiPublicHooksBillingTickRouteImport.update({
     id: '/api/public/hooks/billing-tick',
@@ -334,7 +340,7 @@ const ApiPublicHooksBillingTickRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/account-deletion': typeof AccountDeletionRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/blocked': typeof BlockedRoute
@@ -381,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
+  '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -389,7 +396,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/account-deletion': typeof AccountDeletionRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/blocked': typeof BlockedRoute
@@ -436,6 +443,7 @@ export interface FileRoutesByTo {
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages': typeof MessagesIndexRoute
+  '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -445,7 +453,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/account-deletion': typeof AccountDeletionRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/advertise': typeof AdvertiseRouteWithChildren
   '/auth': typeof AuthRouteWithChildren
   '/blocked': typeof BlockedRoute
@@ -492,6 +500,7 @@ export interface FileRoutesById {
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
+  '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -549,6 +558,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/venues/$id'
     | '/messages/'
+    | '/admin/users/$id'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -604,6 +614,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/venues/$id'
     | '/messages'
+    | '/admin/users/$id'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -659,6 +670,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/venues/$id'
     | '/messages/'
+    | '/admin/users/$id'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -668,7 +680,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AccountDeletionRoute: typeof AccountDeletionRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AdvertiseRoute: typeof AdvertiseRouteWithChildren
   AuthRoute: typeof AuthRouteWithChildren
   BlockedRoute: typeof BlockedRoute
@@ -1080,6 +1092,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAgeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users/$id': {
+      id: '/admin/users/$id'
+      path: '/users/$id'
+      fullPath: '/admin/users/$id'
+      preLoaderRoute: typeof AdminUsersIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/hooks/billing-tick': {
       id: '/api/public/hooks/billing-tick'
       path: '/api/public/hooks/billing-tick'
@@ -1089,6 +1108,16 @@ declare module '@tanstack/react-router' {
     }
   }
 }
+
+interface AdminRouteChildren {
+  AdminUsersIdRoute: typeof AdminUsersIdRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminUsersIdRoute: AdminUsersIdRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
 interface AdvertiseRouteChildren {
   AdvertiseNewRoute: typeof AdvertiseNewRoute
@@ -1162,7 +1191,7 @@ const PartnerRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountDeletionRoute: AccountDeletionRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AdvertiseRoute: AdvertiseRouteWithChildren,
   AuthRoute: AuthRouteWithChildren,
   BlockedRoute: BlockedRoute,
