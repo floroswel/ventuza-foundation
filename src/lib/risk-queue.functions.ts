@@ -139,5 +139,41 @@ export const adminGetUserRiskDetail = createServerFn({ method: "POST" })
     return result as any;
   });
 
+const AddNoteInput = z.object({
+  flagId: z.string().uuid(),
+  note: z.string().min(1).max(2000),
+});
 
+/** Add a staff note to a risk flag (append-only, audit logged). */
+export const adminAddRiskFlagNote = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => AddNoteInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.rpc("admin_add_risk_flag_note", {
+      _flag_id: data.flagId,
+      _note: data.note,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+const SetStatusInput = z.object({
+  flagId: z.string().uuid(),
+  status: z.enum(["open", "in_progress", "resolved", "escalated", "false_positive"]),
+  note: z.string().max(2000).optional(),
+});
+
+/** Move a risk flag between statuses (audit logged). Optional note recorded with the change. */
+export const adminSetRiskFlagStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => SetStatusInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase.rpc("admin_set_risk_flag_status", {
+      _flag_id: data.flagId,
+      _status: data.status,
+      _note: data.note ?? undefined,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
 

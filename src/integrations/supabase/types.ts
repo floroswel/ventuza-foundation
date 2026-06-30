@@ -3396,6 +3396,10 @@ export type Database = {
             }
             Returns: string
           }
+      admin_add_risk_flag_note: {
+        Args: { _flag_id: string; _note: string }
+        Returns: undefined
+      }
       admin_analytics_summary: { Args: never; Returns: Json }
       admin_can_access_sensitive: {
         Args: { _kind: string; _user_id: string }
@@ -3474,6 +3478,10 @@ export type Database = {
       admin_security_signals: {
         Args: { _window_hours?: number }
         Returns: Json
+      }
+      admin_set_risk_flag_status: {
+        Args: { _flag_id: string; _note?: string; _status: string }
+        Returns: undefined
       }
       admin_suspend_partner: {
         Args: { p_reason: string; p_user_id: string }
