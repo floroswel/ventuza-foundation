@@ -241,6 +241,30 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
     setFlagStatus("all"); setFlagKind("all"); setFingerprintQuery("");
   };
 
+  const buildExportInput = (): RiskExportInput => ({
+    windowHours: data.window_hours,
+    generatedAt: data.generated_at,
+    filters: {
+      search, scoreBucket, userStatus, flagStatus, flagKind,
+      fingerprintQuery,
+      fingerprintMatches: fingerprintUserIds ? fingerprintUserIds.size : null,
+    },
+    summary: {
+      "Useri total": s.total_profiles,
+      "Risc ≥60": s.high_risk_count,
+      "Risc ≥80": s.critical_count,
+      "Scor mediu": s.avg_risk,
+      [`Flag-uri (${data.window_hours}h)`]: s.flags_window,
+      "Flag-uri deschise": s.flags_open,
+      "Flag-uri ultima oră": s.flags_last_hour,
+    },
+    distribution: data.distribution,
+    kinds: data.kinds,
+    topUsers: filteredUsers,
+    recentFlags: filteredFlags,
+  });
+
+
 
   return (
     <div className="space-y-4">
