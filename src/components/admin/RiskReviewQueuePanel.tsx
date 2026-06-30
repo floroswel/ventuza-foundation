@@ -159,8 +159,9 @@ export function RiskReviewQueuePanel() {
                   const notes = parseNotes(r.details);
                   const isOpen = expanded === r.flag_id;
                   return (
-                  <>
-                  <tr key={r.flag_id} className="border-t border-white/5">
+                  <FragmentRow key={r.flag_id}>
+                  <tr className="border-t border-white/5">
+
                     <td className="px-3 py-2">
                       <div className="font-medium">{r.display_name ?? "(fără nume)"}</div>
                       <div className="text-[10px] text-muted-foreground font-mono">{r.user_id}</div>
