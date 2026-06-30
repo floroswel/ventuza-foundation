@@ -146,27 +146,36 @@ export async function fetchDiscover(
   filters: DiscoverFilters,
   orderMode: "score" | "distance",
 ): Promise<DiscoverProfile[]> {
-  const arr = (v: string[]) => (v.length ? v : (null as unknown as string[] | undefined));
+  const arr = (v: string[]) => (v.length ? v : null);
+  const { data: u } = await supabase.auth.getUser();
+  const viewerId = u.user?.id;
+  if (!viewerId) {
+    const e = new Error("Sesiune expirată. Autentifică-te din nou.") as Error & { code: string };
+    e.code = "not_authenticated";
+    throw e;
+  }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.rpc as any)("discover_profiles", {
-    max_distance_km: filters.maxDistanceKm,
-    min_age: filters.minAge,
-    max_age: filters.maxAge,
-    looking_for_filter: arr(filters.lookingFor),
-    gender_filter: arr(filters.gender),
-    orientation_filter: arr(filters.orientation),
-    tribes_filter: arr(filters.tribes),
-    body_filter: arr(filters.bodyTypes),
-    position_filter: arr(filters.positions),
-    hiv_filter: arr(filters.hivStatuses),
-    min_height: filters.minHeight,
-    max_height: filters.maxHeight,
-    online_only: filters.onlineOnly,
-    with_photo_only: filters.withPhotoOnly,
-    verified_only: filters.verifiedOnly,
-    looking_now_only: filters.lookingNowOnly,
-    order_mode: orderMode,
-    result_limit: 60,
+    _viewer: viewerId,
+    _max_km: filters.maxDistanceKm,
+    _min_age: filters.minAge,
+    _max_age: filters.maxAge,
+    _genders: arr(filters.gender),
+    _tribes: arr(filters.tribes),
+    _looking_for: arr(filters.lookingFor),
+    _limit: 50,
+    _offset: 0,
+    _looking_now_only: filters.lookingNowOnly,
+    _sort: orderMode === "distance" ? "distance" : "smart",
+    _tab: "all",
+    _orientation: arr(filters.orientation),
+    _body: arr(filters.bodyTypes),
+    _position: arr(filters.positions),
+    _min_height: filters.minHeight,
+    _max_height: filters.maxHeight,
+    _online_only: filters.onlineOnly,
+    _with_photo_only: filters.withPhotoOnly,
+    _verified_only: filters.verifiedOnly,
   });
   if (error) {
     const msg = (error.message ?? "").toLowerCase();
