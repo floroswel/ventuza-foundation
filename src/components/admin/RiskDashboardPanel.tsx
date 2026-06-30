@@ -129,12 +129,117 @@ export function RiskDashboardPanel() {
   );
 }
 
-function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: string) => void }) {
+type ScoreBucket = "all" | "0-39" | "40-59" | "60-79" | "80+";
+type UserStatus = "all" | "active" | "suspended" | "banned";
+type FlagStatus = "all" | "open" | "resolved" | "dismissed";
 
+function inScoreBucket(score: number, b: ScoreBucket): boolean {
+  if (b === "all") return true;
+  if (b === "0-39") return score < 40;
+  if (b === "40-59") return score >= 40 && score < 60;
+  if (b === "60-79") return score >= 60 && score < 80;
+  return score >= 80;
+}
+
+function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: string) => void }) {
   const s = data.summary;
   const maxDist = useMemo(() => Math.max(...data.distribution.map((b) => b.count), 1), [data.distribution]);
   const maxTrendH = useMemo(() => Math.max(...data.trend_hourly.map((b) => b.flags), 1), [data.trend_hourly]);
   const maxTrendD = useMemo(() => Math.max(...data.trend_daily.map((b) => b.flags), 1), [data.trend_daily]);
+
+  // ===== Filter state =====
+  const [search, setSearch] = useState("");
+  const [scoreBucket, setScoreBucket] = useState<ScoreBucket>("all");
+  const [userStatus, setUserStatus] = useState<UserStatus>("all");
+  const [flagStatus, setFlagStatus] = useState<FlagStatus>("all");
+  const [flagKind, setFlagKind] = useState<string>("all");
+  const [fingerprintQuery, setFingerprintQuery] = useState("");
+  const [fingerprintUserIds, setFingerprintUserIds] = useState<Set<string> | null>(null);
+  const [fingerprintLoading, setFingerprintLoading] = useState(false);
+  const [fingerprintError, setFingerprintError] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const PAGE_SIZE = 10;
+
+  // Resolve fingerprint → user_ids
+  useEffect(() => {
+    const q = fingerprintQuery.trim();
+    if (q.length < 3) {
+      setFingerprintUserIds(null);
+      setFingerprintError(null);
+      return;
+    }
+    let cancelled = false;
+    setFingerprintLoading(true);
+    setFingerprintError(null);
+    (async () => {
+      const { data: rows, error } = await (supabase as any)
+        .from("device_fingerprints")
+        .select("user_id, fingerprint")
+        .ilike("fingerprint", `%${q}%`)
+        .limit(500);
+      if (cancelled) return;
+      if (error) {
+        setFingerprintError(error.message);
+        setFingerprintUserIds(new Set());
+      } else {
+        setFingerprintUserIds(new Set((rows ?? []).map((r: any) => r.user_id).filter(Boolean)));
+      }
+      setFingerprintLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [fingerprintQuery]);
+
+  // Reset page when filters change
+  useEffect(() => { setPage(0); }, [search, scoreBucket, userStatus, fingerprintUserIds]);
+
+  const filteredUsers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return data.top_users.filter((u) => {
+      if (!inScoreBucket(u.risk_score, scoreBucket)) return false;
+      if (userStatus === "banned" && !u.banned_at) return false;
+      if (userStatus === "suspended" && !(u.suspended_until && !u.banned_at)) return false;
+      if (userStatus === "active" && (u.banned_at || u.suspended_until)) return false;
+      if (fingerprintUserIds && !fingerprintUserIds.has(u.user_id)) return false;
+      if (q) {
+        const name = (u.display_name ?? "").toLowerCase();
+        const id = u.user_id.toLowerCase();
+        if (!name.includes(q) && !id.includes(q)) return false;
+      }
+      return true;
+    });
+  }, [data.top_users, search, scoreBucket, userStatus, fingerprintUserIds]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const pageSafe = Math.min(page, totalPages - 1);
+  const pagedUsers = filteredUsers.slice(pageSafe * PAGE_SIZE, pageSafe * PAGE_SIZE + PAGE_SIZE);
+
+  const filteredFlags = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return data.recent_flags.filter((f) => {
+      if (flagStatus !== "all" && f.status !== flagStatus) return false;
+      if (flagKind !== "all" && f.kind !== flagKind) return false;
+      if (fingerprintUserIds && !fingerprintUserIds.has(f.user_id)) return false;
+      if (q) {
+        const name = (f.display_name ?? "").toLowerCase();
+        if (!name.includes(q) && !f.user_id.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [data.recent_flags, search, flagStatus, flagKind, fingerprintUserIds]);
+
+  const filtersActive =
+    search.trim() !== "" ||
+    scoreBucket !== "all" ||
+    userStatus !== "all" ||
+    flagStatus !== "all" ||
+    flagKind !== "all" ||
+    fingerprintQuery.trim() !== "";
+
+  const resetFilters = () => {
+    setSearch(""); setScoreBucket("all"); setUserStatus("all");
+    setFlagStatus("all"); setFlagKind("all"); setFingerprintQuery("");
+  };
+
 
   return (
     <div className="space-y-4">
