@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   Activity, AlertTriangle, RefreshCw, ShieldAlert, Timer, Users as UsersIcon,
 } from "lucide-react";
-import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 import {
   adminGetRateLimitStats, type RateLimitStats,
 } from "@/lib/admin-ratelimit.functions";
