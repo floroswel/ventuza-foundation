@@ -186,14 +186,36 @@ export function RiskReviewQueuePanel() {
               <tbody>
                 {state.data.map((r) => {
                   const notes = parseNotes(r.details);
+                  const flags = flagsFromDetails(r.details);
+                  const signals = signalEntries(r.details);
+                  const reason = r.details?.reason ?? null;
+                  const ageH = typeof r.details?.account_age_hours === "number"
+                    ? Math.round((r.details!.account_age_hours as number) * 10) / 10
+                    : null;
                   const isOpen = expanded === r.flag_id;
                   return (
                   <FragmentRow key={r.flag_id}>
                   <tr className="border-t border-white/5">
 
-                    <td className="px-3 py-2">
+                    <td className="px-3 py-2 align-top">
                       <div className="font-medium">{r.display_name ?? "(fără nume)"}</div>
                       <div className="text-[10px] text-muted-foreground font-mono">{r.user_id}</div>
+                      {flags.length > 0 && (
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {flags.slice(0, 4).map((f) => (
+                            <span
+                              key={f}
+                              title={FLAG_LABEL[f]?.weight ? `Contribuție scor: ${FLAG_LABEL[f].weight}` : f}
+                              className="rounded-full border border-amber-500/30 bg-amber-500/10 px-2 py-0.5 text-[10px] text-amber-200"
+                            >
+                              {FLAG_LABEL[f]?.label ?? f}
+                            </span>
+                          ))}
+                          {flags.length > 4 && (
+                            <span className="text-[10px] text-muted-foreground">+{flags.length - 4}</span>
+                          )}
+                        </div>
+                      )}
                     </td>
                     <td className="px-3 py-2">
                       <span className={`inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs ${scoreTone(r.risk_score)}`}>
