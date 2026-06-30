@@ -2756,6 +2756,42 @@ export type Database = {
         }
         Relationships: []
       }
+      signup_throttle_logs: {
+        Row: {
+          created_at: string
+          fp_day: number | null
+          fp_hour: number | null
+          fp_prefix: string | null
+          id: number
+          ip_day: number | null
+          ip_hash_prefix: string | null
+          ip_hour: number | null
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          fp_day?: number | null
+          fp_hour?: number | null
+          fp_prefix?: string | null
+          id?: number
+          ip_day?: number | null
+          ip_hash_prefix?: string | null
+          ip_hour?: number | null
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          fp_day?: number | null
+          fp_hour?: number | null
+          fp_prefix?: string | null
+          id?: number
+          ip_day?: number | null
+          ip_hash_prefix?: string | null
+          ip_hour?: number | null
+          reason?: string
+        }
+        Relationships: []
+      }
       sos_events: {
         Row: {
           city: string | null
@@ -3532,6 +3568,7 @@ export type Database = {
       claim_quest_reward: { Args: { _quest_id: string }; Returns: Json }
       cleanup_rate_limit_log: { Args: never; Returns: number }
       cleanup_signup_attempts: { Args: never; Returns: undefined }
+      cleanup_signup_throttle_logs: { Args: never; Returns: undefined }
       compute_geo_bucket_id: {
         Args: { p_lat: number; p_lng: number }
         Returns: string
