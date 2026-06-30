@@ -129,13 +129,15 @@ export const adminGetUserRiskDetail = createServerFn({ method: "POST" })
     if (profileRes.error) throw new Error(profileRes.error.message);
     if (flagsRes.error) throw new Error(flagsRes.error.message);
 
-    return {
+    const result: UserRiskDetail = {
       profile: profileRes.data ?? null,
       flags: flagsRes.data ?? [],
       reports_received: recvRes.count ?? 0,
       reports_made: madeRes.count ?? 0,
       audit: auditRes.error ? [] : (auditRes.data ?? []),
-    } as unknown as Record<string, unknown>;
+    };
+    return result as any;
   });
+
 
 
