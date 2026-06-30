@@ -19,6 +19,7 @@ import { Map, List, RefreshCw, MapPin, BellPlus, Loader2, ShieldAlert } from "lu
 import { useAuth } from "@/lib/auth-context";
 import { BackButton } from "@/components/BackButton";
 import { toast } from "sonner";
+import { logRpcError } from "@/lib/rpc-error-logger";
 
 
 export const Route = createFileRoute("/nearby")({
