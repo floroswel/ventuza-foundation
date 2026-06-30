@@ -116,6 +116,16 @@ function NearbyPage() {
     return "network";
   }, [error]);
 
+  // Log telemetry on every new error (permission denied prioritized)
+  useEffect(() => {
+    if (!error) return;
+    void logRpcError(error, {
+      rpc: "nearby_points",
+      callSite: "routes/nearby.useQuery",
+      extra: { bucketId },
+    });
+  }, [error, bucketId]);
+
   // Filter on-device by exact radius and current kind, sort by distance.
   const filtered = useMemo(() => {
     if (!coords || !data) return [];
