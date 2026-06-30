@@ -414,6 +414,49 @@ export function RiskReviewQueuePanel() {
           </div>
         )}
       </PanelStatus>
+
+      <AlertDialog open={!!confirm} onOpenChange={(o) => { if (!o) setConfirm(null); }}>
+        <AlertDialogContent>
+          {confirm && (() => {
+            const meta = DECISION_META[confirm.decision];
+            return (
+              <>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{meta.title}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Utilizator: <span className="font-medium text-foreground">{confirm.userLabel}</span>
+                    <br />
+                    {meta.desc}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="space-y-2">
+                  <label className="text-xs text-muted-foreground">
+                    Notă {meta.noteRequired ? <span className="text-red-400">(obligatorie)</span> : <span>(opțional)</span>}
+                  </label>
+                  <textarea
+                    autoFocus
+                    value={confirm.note}
+                    onChange={(e) => setConfirm((c) => c ? { ...c, note: e.target.value } : c)}
+                    rows={3}
+                    placeholder={meta.noteRequired ? "Motiv escaladare, context, link investigație..." : "Context intern (opțional)..."}
+                    className="w-full rounded-md border border-white/10 bg-black/30 px-3 py-2 text-sm"
+                  />
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Anulează</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={runResolve}
+                    className={meta.tone === "destructive" ? "bg-red-600 hover:bg-red-700 text-white" : ""}
+                  >
+                    {meta.ok}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </>
+            );
+          })()}
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+
 }
