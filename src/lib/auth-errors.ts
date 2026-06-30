@@ -116,6 +116,15 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
     return { code: "email_invalid", message: "Adresa de email nu pare validă." };
   }
 
+  // DISPOSABLE EMAIL (server-side block via public.is_disposable_email)
+  if (msg.includes("disposable_email_not_allowed") || msg.includes("disposable")) {
+    return {
+      code: "disposable_email",
+      message:
+        "Email temporar nepermis. Folosește un email real (Gmail, Outlook, Yahoo, ProtonMail sau domeniul tău).",
+    };
+  }
+
   // AGE
   if (msg.includes("age_verification_required")) {
     return { code: "age_required", message: "Trebuie să-ți verifici vârsta înainte de a continua." };
