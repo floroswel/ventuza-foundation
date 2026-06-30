@@ -99,8 +99,8 @@ function AuthPage() {
     return () => clearTimeout(t);
   }, [retryCountdown]);
 
-  function handleAuthError(err: unknown) {
-    const mapped = mapAuthError(err);
+  function handleAuthError(err: unknown, override?: Partial<FriendlyAuthError>) {
+    const mapped = { ...mapAuthError(err), ...(override ?? {}) };
     setAuthError(mapped);
     if (mapped.retryAfterSec) setRetryCountdown(mapped.retryAfterSec);
     if (mapped.resetCaptcha) {
@@ -189,8 +189,14 @@ function AuthPage() {
             body: JSON.stringify({ fingerprint: fp ?? undefined }),
           });
           if (guardRes.status === 429) {
-            const payload = (await guardRes.json().catch(() => ({}))) as { error?: string };
-            handleAuthError(new Error(payload.error ?? "signup_throttled"));
+            const payload = (await guardRes.json().catch(() => ({}))) as {
+              error?: string;
+              retryAfterSec?: number;
+            };
+            const headerRetry = Number(guardRes.headers.get("Retry-After") ?? "");
+            const retryAfterSec =
+              payload.retryAfterSec ?? (Number.isFinite(headerRetry) && headerRetry > 0 ? headerRetry : 3600);
+            handleAuthError(new Error(payload.error ?? "signup_throttled"), { retryAfterSec });
             return;
           }
         } catch {
