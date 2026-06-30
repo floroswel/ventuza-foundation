@@ -2720,6 +2720,27 @@ export type Database = {
         }
         Relationships: []
       }
+      signup_attempts: {
+        Row: {
+          created_at: string
+          fingerprint: string | null
+          id: number
+          ip_hash: string | null
+        }
+        Insert: {
+          created_at?: string
+          fingerprint?: string | null
+          id?: number
+          ip_hash?: string | null
+        }
+        Update: {
+          created_at?: string
+          fingerprint?: string | null
+          id?: number
+          ip_hash?: string | null
+        }
+        Relationships: []
+      }
       sos_events: {
         Row: {
           city: string | null
@@ -3444,6 +3465,10 @@ export type Database = {
         Args: { _action: string; _max: number; _window_seconds: number }
         Returns: boolean
       }
+      check_signup_throttle: {
+        Args: { _fingerprint: string; _ip_hash: string }
+        Returns: undefined
+      }
       claim_business_application_by_code: {
         Args: { _app_id: string }
         Returns: Json
@@ -3458,6 +3483,7 @@ export type Database = {
       }
       claim_quest_reward: { Args: { _quest_id: string }; Returns: Json }
       cleanup_rate_limit_log: { Args: never; Returns: number }
+      cleanup_signup_attempts: { Args: never; Returns: undefined }
       compute_geo_bucket_id: {
         Args: { p_lat: number; p_lng: number }
         Returns: string
