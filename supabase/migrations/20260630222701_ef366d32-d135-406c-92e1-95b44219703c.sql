@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.nearby_points(text, text[]) TO anon;
