@@ -38,6 +38,7 @@ import { isProductionHost, shouldEnforceAgeGate, clearAgeGatePolicyCache } from 
 import { DemoSeedPanel, DemoSeedBanner } from "@/components/admin/DemoSeedPanel";
 import { RateLimitPanel } from "@/components/admin/RateLimitPanel";
 import { SecuritySignalsPanel } from "@/components/admin/SecuritySignalsPanel";
+import { RiskDashboardPanel } from "@/components/admin/RiskDashboardPanel";
 
 
 function AgeGateDevBanner() {
