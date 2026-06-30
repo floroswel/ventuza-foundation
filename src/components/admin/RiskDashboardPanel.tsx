@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AlertTriangle, ShieldAlert, TrendingUp, RefreshCw, Activity, Users, Flag, BadgeCheck,
-  Search, Filter, X, ChevronLeft, ChevronRight, Fingerprint,
+  Search, Filter, X, ChevronLeft, ChevronRight, Fingerprint, FileDown, Printer,
 } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 import { UserRiskDetailDialog } from "@/components/admin/UserRiskDetailDialog";
+import { exportRiskCsv, exportRiskPdf, type RiskExportInput } from "@/lib/risk-export";
 
 
 
@@ -240,6 +241,30 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
     setFlagStatus("all"); setFlagKind("all"); setFingerprintQuery("");
   };
 
+  const buildExportInput = (): RiskExportInput => ({
+    windowHours: data.window_hours,
+    generatedAt: data.generated_at,
+    filters: {
+      search, scoreBucket, userStatus, flagStatus, flagKind,
+      fingerprintQuery,
+      fingerprintMatches: fingerprintUserIds ? fingerprintUserIds.size : null,
+    },
+    summary: {
+      "Useri total": s.total_profiles,
+      "Risc ≥60": s.high_risk_count,
+      "Risc ≥80": s.critical_count,
+      "Scor mediu": s.avg_risk,
+      [`Flag-uri (${data.window_hours}h)`]: s.flags_window,
+      "Flag-uri deschise": s.flags_open,
+      "Flag-uri ultima oră": s.flags_last_hour,
+    },
+    distribution: data.distribution,
+    kinds: data.kinds,
+    topUsers: filteredUsers,
+    recentFlags: filteredFlags,
+  });
+
+
 
   return (
     <div className="space-y-4">
@@ -264,15 +289,32 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
         <div className="mb-2 flex items-center gap-2 text-sm font-medium">
           <Filter className="size-4 text-primary" />
           Filtre & căutare
-          {filtersActive && (
+          <div className="ml-auto flex items-center gap-1">
+            {filtersActive && (
+              <button
+                onClick={resetFilters}
+                className="flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] hover:bg-primary/10"
+              >
+                <X className="size-3" /> Reset
+              </button>
+            )}
             <button
-              onClick={resetFilters}
-              className="ml-auto flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] hover:bg-primary/10"
+              onClick={() => exportRiskCsv(buildExportInput())}
+              className="flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] hover:bg-primary/10"
+              title="Descarcă datele curente ca CSV"
             >
-              <X className="size-3" /> Reset
+              <FileDown className="size-3" /> CSV
             </button>
-          )}
+            <button
+              onClick={() => exportRiskPdf(buildExportInput())}
+              className="flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] hover:bg-primary/10"
+              title="Deschide raport printabil (Save as PDF)"
+            >
+              <Printer className="size-3" /> PDF
+            </button>
+          </div>
         </div>
+
         <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
           <label className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1 text-xs">
             <Search className="size-3 text-muted-foreground" />
