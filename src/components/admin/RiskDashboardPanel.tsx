@@ -573,3 +573,29 @@ function Section({ title, icon, children }: { title: string; icon?: React.ReactN
 function Empty({ label }: { label: string }) {
   return <div className="py-3 text-center text-xs text-muted-foreground">{label}</div>;
 }
+
+function FilterChip({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-1 rounded-md border border-border bg-background px-2 py-1">
+      <span className="text-muted-foreground uppercase tracking-wide">{label}</span>
+      <div className="flex flex-wrap gap-1">{children}</div>
+    </div>
+  );
+}
+
+function ChipButton({
+  active, onClick, children,
+}: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`rounded-full px-2 py-0.5 transition-colors ${
+        active
+          ? "bg-primary text-primary-foreground"
+          : "border border-border text-muted-foreground hover:bg-primary/10 hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
