@@ -87,6 +87,8 @@ export function RiskDashboardPanel() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const [openUserId, setOpenUserId] = useState<string | null>(null);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
@@ -117,13 +119,16 @@ export function RiskDashboardPanel() {
       </div>
 
       <PanelStatus state={state} retry={reload}>
-        {state.status === "ready" && <Content data={state.data} />}
+        {state.status === "ready" && <Content data={state.data} onOpenUser={setOpenUserId} />}
       </PanelStatus>
+
+      <UserRiskDetailDialog userId={openUserId} onClose={() => setOpenUserId(null)} />
     </div>
   );
 }
 
-function Content({ data }: { data: Dashboard }) {
+function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: string) => void }) {
+
   const s = data.summary;
   const maxDist = useMemo(() => Math.max(...data.distribution.map((b) => b.count), 1), [data.distribution]);
   const maxTrendH = useMemo(() => Math.max(...data.trend_hourly.map((b) => b.flags), 1), [data.trend_hourly]);
