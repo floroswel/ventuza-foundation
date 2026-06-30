@@ -66,7 +66,7 @@ export const Route = createFileRoute("/admin")({
 });
 
 type Section =
-  | "overview" | "users" | "reports" | "risk" | "ads" | "biz"
+  | "overview" | "users" | "reports" | "risk" | "riskdash" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals";
