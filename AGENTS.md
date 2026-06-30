@@ -687,3 +687,27 @@ trebuie REFUZATĂ.
 
 Funcția `public.cleanup_rate_limit_log()` (GRANT exclusiv `service_role`)
 șterge intrările > 7 zile — apelabilă din pg_cron sau admin manual.
+
+## TODO — FAZA 2 ADMIN (de programat după sprintul curent)
+
+Marcat aici pentru a nu fi uitat la planificarea următorului val admin. NU sunt
+în scope pentru sprintul Module 2 + 3 + extra critice.
+
+- **Cohortă D1/D7/D30** — retenție pe ferestre standard, segmente (gen,
+  oraș, plan, sursă), export CSV. Tabel materializat reîmprospătat de
+  pg_cron.
+- **A/B testing cu p-value** — extensia panoului Experiments cu test
+  statistic (chi² pentru rate, t-test pentru continui), MDE, putere,
+  early-stop guard (Sequential Bayesian sau O'Brien-Fleming) ca să nu
+  facem peeking.
+- **Dashboard FCM / APNS** — rate livrare/click/eroare per platformă,
+  defalcat pe campanie + tip notificare (proximity, admin_message, woof,
+  match). Drill-down pe motivul eșecului (token invalid, quota etc.).
+- **Calendar boost partener** — UI care arată sloturile boost ocupate pe
+  oraș/zi/oră ca să prevenim suprapuneri și să vindem corect inventory.
+- **Anti-fraud cohortă** — detectare conturi multiple per device/IP/email
+  pattern cu scoring de cluster (nu doar per user), acțiuni bulk pe
+  cluster (ban în masă cu audit per user).
+- **Force-update version gate** — `app_settings.min_supported_version` per
+  platformă (iOS/Android/web), client face hard-stop dacă build local <
+  min, cu CTA către store. Necesită canal de override pentru staff.
