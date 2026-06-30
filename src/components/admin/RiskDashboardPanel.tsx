@@ -4,6 +4,8 @@ import {
   AlertTriangle, ShieldAlert, TrendingUp, RefreshCw, Activity, Users, Flag, BadgeCheck,
 } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
+import { UserRiskDetailDialog } from "@/components/admin/UserRiskDetailDialog";
+
 
 type Bucket = { bucket: string; count: number };
 type Trend = { bucket: string; flags: number; high_risk_users: number };
