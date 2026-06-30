@@ -63,8 +63,8 @@ export const Route = createFileRoute("/api/public/signup-guard")({
         );
 
         const { error } = await supabase.rpc("check_signup_throttle", {
-          _ip_hash: ipHash,
-          _fingerprint: fingerprint,
+          _ip_hash: ipHash ?? "",
+          _fingerprint: fingerprint ?? "",
         });
 
         if (error) {

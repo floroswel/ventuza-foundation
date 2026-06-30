@@ -58,6 +58,7 @@ import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as BusinessDashboardRouteImport } from './routes/business.dashboard'
 import { Route as AuthCheckEmailRouteImport } from './routes/auth.check-email'
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
+import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
 import { Route as ApiPublicHooksBillingTickRouteImport } from './routes/api/public/hooks/billing-tick'
@@ -308,6 +309,11 @@ const AdvertiseNewRoute = AdvertiseNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdvertiseRoute,
 } as any)
+const ApiPublicSignupGuardRoute = ApiPublicSignupGuardRouteImport.update({
+  id: '/api/public/signup-guard',
+  path: '/api/public/signup-guard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicGooglePlayRtdnRoute = ApiPublicGooglePlayRtdnRouteImport.update({
   id: '/api/public/google-play-rtdn',
   path: '/api/public/google-play-rtdn',
@@ -377,6 +383,7 @@ export interface FileRoutesByFullPath {
   '/messages/': typeof MessagesIndexRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
+  '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
 }
 export interface FileRoutesByTo {
@@ -431,6 +438,7 @@ export interface FileRoutesByTo {
   '/messages': typeof MessagesIndexRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
+  '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
 }
 export interface FileRoutesById {
@@ -486,6 +494,7 @@ export interface FileRoutesById {
   '/messages/': typeof MessagesIndexRoute
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
+  '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
 }
 export interface FileRouteTypes {
@@ -542,6 +551,7 @@ export interface FileRouteTypes {
     | '/messages/'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
+    | '/api/public/signup-guard'
     | '/api/public/hooks/billing-tick'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -596,6 +606,7 @@ export interface FileRouteTypes {
     | '/messages'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
+    | '/api/public/signup-guard'
     | '/api/public/hooks/billing-tick'
   id:
     | '__root__'
@@ -650,6 +661,7 @@ export interface FileRouteTypes {
     | '/messages/'
     | '/api/public/age-webhook'
     | '/api/public/google-play-rtdn'
+    | '/api/public/signup-guard'
     | '/api/public/hooks/billing-tick'
   fileRoutesById: FileRoutesById
 }
@@ -698,6 +710,7 @@ export interface RootRouteChildren {
   MessagesIndexRoute: typeof MessagesIndexRoute
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
+  ApiPublicSignupGuardRoute: typeof ApiPublicSignupGuardRoute
   ApiPublicHooksBillingTickRoute: typeof ApiPublicHooksBillingTickRoute
 }
 
@@ -1046,6 +1059,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdvertiseNewRouteImport
       parentRoute: typeof AdvertiseRoute
     }
+    '/api/public/signup-guard': {
+      id: '/api/public/signup-guard'
+      path: '/api/public/signup-guard'
+      fullPath: '/api/public/signup-guard'
+      preLoaderRoute: typeof ApiPublicSignupGuardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/google-play-rtdn': {
       id: '/api/public/google-play-rtdn'
       path: '/api/public/google-play-rtdn'
@@ -1184,6 +1204,7 @@ const rootRouteChildren: RootRouteChildren = {
   MessagesIndexRoute: MessagesIndexRoute,
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
+  ApiPublicSignupGuardRoute: ApiPublicSignupGuardRoute,
   ApiPublicHooksBillingTickRoute: ApiPublicHooksBillingTickRoute,
 }
 export const routeTree = rootRouteImport
