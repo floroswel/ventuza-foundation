@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   AlertTriangle, ShieldAlert, RefreshCw, Users, Fingerprint, TrendingUp, Clock,
 } from "lucide-react";
-import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 import {
   adminGetSecuritySignals, type SecuritySignals,
 } from "@/lib/admin-security-signals.functions";
