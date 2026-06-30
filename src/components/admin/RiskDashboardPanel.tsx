@@ -259,6 +259,87 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
         <Kpi label="Generat" value={fmt(data.generated_at)} icon={<RefreshCw className="size-3" />} />
       </div>
 
+      {/* Filter bar */}
+      <div className="rounded-lg border border-border bg-surface p-3">
+        <div className="mb-2 flex items-center gap-2 text-sm font-medium">
+          <Filter className="size-4 text-primary" />
+          Filtre & căutare
+          {filtersActive && (
+            <button
+              onClick={resetFilters}
+              className="ml-auto flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-[10px] hover:bg-primary/10"
+            >
+              <X className="size-3" /> Reset
+            </button>
+          )}
+        </div>
+        <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
+          <label className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1 text-xs">
+            <Search className="size-3 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Caută după nume sau UUID…"
+              className="w-full bg-transparent outline-none"
+            />
+          </label>
+          <label className="flex items-center gap-2 rounded-md border border-border bg-background px-2 py-1 text-xs">
+            <Fingerprint className="size-3 text-muted-foreground" />
+            <input
+              value={fingerprintQuery}
+              onChange={(e) => setFingerprintQuery(e.target.value)}
+              placeholder="Fingerprint cluster (≥3 caractere)…"
+              className="w-full bg-transparent outline-none font-mono"
+            />
+            {fingerprintLoading && <RefreshCw className="size-3 animate-spin text-muted-foreground" />}
+          </label>
+          <div className="flex flex-wrap gap-2 text-[10px]">
+            <FilterChip label="Scor">
+              {(["all", "0-39", "40-59", "60-79", "80+"] as ScoreBucket[]).map((b) => (
+                <ChipButton key={b} active={scoreBucket === b} onClick={() => setScoreBucket(b)}>{b === "all" ? "toate" : b}</ChipButton>
+              ))}
+            </FilterChip>
+          </div>
+          <div className="flex flex-wrap gap-2 text-[10px]">
+            <FilterChip label="Status user">
+              {(["all", "active", "suspended", "banned"] as UserStatus[]).map((b) => (
+                <ChipButton key={b} active={userStatus === b} onClick={() => setUserStatus(b)}>
+                  {b === "all" ? "toate" : b === "active" ? "activ" : b === "suspended" ? "suspendat" : "banat"}
+                </ChipButton>
+              ))}
+            </FilterChip>
+          </div>
+          <div className="flex flex-wrap gap-2 text-[10px]">
+            <FilterChip label="Status flag">
+              {(["all", "open", "resolved", "dismissed"] as FlagStatus[]).map((b) => (
+                <ChipButton key={b} active={flagStatus === b} onClick={() => setFlagStatus(b)}>
+                  {b === "all" ? "toate" : b}
+                </ChipButton>
+              ))}
+            </FilterChip>
+          </div>
+          <div className="flex flex-wrap gap-2 text-[10px] lg:col-span-3">
+            <FilterChip label="Tip semnal">
+              <ChipButton active={flagKind === "all"} onClick={() => setFlagKind("all")}>toate</ChipButton>
+              {data.kinds.map((k) => (
+                <ChipButton key={k.kind} active={flagKind === k.kind} onClick={() => setFlagKind(k.kind)}>
+                  {k.kind} <span className="opacity-60">({k.count})</span>
+                </ChipButton>
+              ))}
+            </FilterChip>
+          </div>
+        </div>
+        {fingerprintError && (
+          <div className="mt-2 text-[10px] text-red-300">Eroare fingerprint: {fingerprintError}</div>
+        )}
+        {fingerprintUserIds && (
+          <div className="mt-2 text-[10px] text-muted-foreground">
+            Fingerprint match: {fingerprintUserIds.size} useri în cluster
+          </div>
+        )}
+      </div>
+
+
       {/* Distribution */}
       <Section title="Distribuție scor risc" icon={<Activity className="size-4" />}>
         <div className="grid grid-cols-5 gap-2">
