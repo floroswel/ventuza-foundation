@@ -248,11 +248,20 @@ function AuthPage() {
       toast.error("Enter your email above first.");
       return;
     }
+    if (captchaRequired && !captchaToken) {
+      toast.error("Completează verificarea anti-bot înainte de a trimite linkul.");
+      return;
+    }
     const { error } = await supabase.auth.resetPasswordForEmail(emailParsed.data, {
       redirectTo: `${window.location.origin}/reset-password`,
+      captchaToken: captchaToken ?? undefined,
     });
-    if (error) toast.error(error.message);
-    else toast.success("Password reset email sent.");
+    if (error) {
+      setCaptchaToken(null);
+      toast.error(error.message);
+    } else {
+      toast.success("Password reset email sent.");
+    }
   }
 
   if (authLoading) {
