@@ -10,7 +10,7 @@ export type ReviewQueueRow = {
   flag_created_at: string;
   risk_score: number;
   severity: number;
-  details: Record<string, unknown>;
+  details: Record<string, unknown> | null;
   verified: boolean;
   banned_at: string | null;
   suspended_until: string | null;
