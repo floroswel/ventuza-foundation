@@ -107,7 +107,7 @@ function DiscoverPage() {
     return () => clearTimeout(t);
   }, [filters]);
 
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{ message: string; code?: string } | null>(null);
   const [autoExpanded, setAutoExpanded] = useState<number | null>(null);
   const load = useCallback(async () => {
     if (!user) return;
