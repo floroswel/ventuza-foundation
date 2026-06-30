@@ -115,7 +115,7 @@ function Content({ stats }: { stats: SignupThrottleStats }) {
           icon={<ShieldAlert className="size-4 text-red-300" />}
         >
           <div className="mb-2 flex flex-wrap gap-1">
-            {(Object.keys(REASON_LABEL) as Array<keyof typeof REASON_LABEL>).map((k) => {
+            {(["ip_hourly_cap","ip_daily_cap","fp_hourly_cap","fp_daily_cap"] as const).map((k) => {
               const n = stats.blocks_by_reason[k] ?? 0;
               if (!n) return null;
               return (
