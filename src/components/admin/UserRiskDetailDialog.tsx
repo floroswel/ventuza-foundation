@@ -66,11 +66,12 @@ export function UserRiskDetailDialog({
   const flags = detail?.flags ?? [];
   const signals = (p?.risk_signals as Record<string, any> | null) ?? null;
   const breakdown: Array<[string, number]> = signals && typeof signals === "object"
-    ? Object.entries(signals)
+    ? (Object.entries(signals)
         .filter(([, v]) => typeof v === "number")
-        .map(([k, v]) => [k, v as number])
-        .sort((a, b) => b[1] - a[1])
+        .map(([k, v]) => [k, v as number] as [string, number])
+        .sort((a, b) => b[1] - a[1]))
     : [];
+
 
   const copy = async (s: string) => {
     try { await navigator.clipboard.writeText(s); toast.success("Copiat"); }
