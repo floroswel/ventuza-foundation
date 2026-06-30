@@ -107,7 +107,7 @@ function DiscoverPage() {
     return () => clearTimeout(t);
   }, [filters]);
 
-  const [loadError, setLoadError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<{ message: string; code?: string } | null>(null);
   const [autoExpanded, setAutoExpanded] = useState<number | null>(null);
   const load = useCallback(async () => {
     if (!user) return;
@@ -135,9 +135,10 @@ function DiscoverPage() {
       }
       setProfiles(data);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Couldn't load discover";
-      setLoadError(msg);
-      toast.error(msg);
+      const message = e instanceof Error ? e.message : "Couldn't load discover";
+      const code = (e as { code?: string } | null)?.code;
+      setLoadError({ message, code });
+      toast.error(message);
     } finally {
       setLoading(false);
     }
@@ -313,9 +314,33 @@ function DiscoverPage() {
       ) : loadError ? (
         <CenterMessage
           icon={<Compass className="size-8 text-destructive" />}
-          title="Ceva nu a mers"
-          desc={loadError}
-          action={<Button variant="hero" onClick={() => load()}>Reîncearcă</Button>}
+          title={
+            loadError.code === "discover_rate_limited"
+              ? "Prea multe cereri"
+              : loadError.code === "email_not_confirmed"
+                ? "Confirmă-ți emailul"
+                : loadError.code === "age_verification_required"
+                  ? "Verifică-ți vârsta"
+                  : "Ceva nu a mers"
+          }
+          desc={loadError.message}
+          action={
+            loadError.code === "email_not_confirmed" ? (
+              <Button asChild variant="hero">
+                <Link to="/auth/check-email">Retrimite emailul</Link>
+              </Button>
+            ) : loadError.code === "age_verification_required" ? (
+              <Button asChild variant="hero">
+                <Link to="/settings">Verifică acum</Link>
+              </Button>
+            ) : loadError.code === "not_authenticated" ? (
+              <Button asChild variant="hero">
+                <Link to="/auth" search={{ mode: "login" }}>Autentifică-te</Link>
+              </Button>
+            ) : (
+              <Button variant="hero" onClick={() => load()}>Reîncearcă</Button>
+            )
+          }
         />
       ) : visible.length === 0 ? (
         <EmptyState

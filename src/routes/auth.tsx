@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
+import { mapAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).catch("login"),
@@ -87,7 +88,27 @@ function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<"google" | "apple" | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaNonce, setCaptchaNonce] = useState(0);
+  const [authError, setAuthError] = useState<FriendlyAuthError | null>(null);
+  const [retryCountdown, setRetryCountdown] = useState(0);
   const captchaRequired = isTurnstileConfigured();
+
+  useEffect(() => {
+    if (retryCountdown <= 0) return;
+    const t = setTimeout(() => setRetryCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [retryCountdown]);
+
+  function handleAuthError(err: unknown) {
+    const mapped = mapAuthError(err);
+    setAuthError(mapped);
+    if (mapped.retryAfterSec) setRetryCountdown(mapped.retryAfterSec);
+    if (mapped.resetCaptcha) {
+      setCaptchaToken(null);
+      setCaptchaNonce((n) => n + 1);
+    }
+    toast.error(mapped.message);
+  }
 
   useEffect(() => {
     if (!authLoading && user) {
@@ -128,9 +149,10 @@ function AuthPage() {
     }
 
     if (captchaRequired && !captchaToken) {
-      toast.error("Completează verificarea anti-bot.");
+      handleAuthError(new Error("captcha required"));
       return;
     }
+    setAuthError(null);
 
     setSubmitting(true);
     try {
@@ -157,8 +179,7 @@ function AuthPage() {
           },
         });
         if (error) {
-          setCaptchaToken(null);
-          toast.error(error.message);
+          handleAuthError(error);
           return;
         }
         // Persist birthdate on profile (trigger `enforce_min_age` enforces 18+ server-side).
@@ -184,8 +205,7 @@ function AuthPage() {
           options: { captchaToken: captchaToken ?? undefined },
         });
         if (error) {
-          setCaptchaToken(null);
-          toast.error(error.message);
+          handleAuthError(error);
           return;
         }
         if (data.user) await routeAfterAuth(data.user.id, navigate, search.redirect);
@@ -249,18 +269,18 @@ function AuthPage() {
       return;
     }
     if (captchaRequired && !captchaToken) {
-      toast.error("Completează verificarea anti-bot înainte de a trimite linkul.");
+      handleAuthError(new Error("captcha required"));
       return;
     }
+    setAuthError(null);
     const { error } = await supabase.auth.resetPasswordForEmail(emailParsed.data, {
       redirectTo: `${window.location.origin}/reset-password`,
       captchaToken: captchaToken ?? undefined,
     });
     if (error) {
-      setCaptchaToken(null);
-      toast.error(error.message);
+      handleAuthError(error);
     } else {
-      toast.success("Password reset email sent.");
+      toast.success("Email cu link de resetare trimis.");
     }
   }
 
@@ -460,16 +480,54 @@ function AuthPage() {
           )}
 
           <TurnstileWidget
-            onToken={setCaptchaToken}
+            key={captchaNonce}
+            onToken={(t) => { setCaptchaToken(t); if (authError?.resetCaptcha) setAuthError(null); }}
             onExpire={() => setCaptchaToken(null)}
           />
 
+          {authError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span>{authError.message}</span>
+                {authError.code === "email_not_confirmed" && (
+                  <Link
+                    to="/auth/check-email"
+                    search={{ email: email || undefined }}
+                    className="shrink-0 text-xs font-medium underline"
+                  >
+                    Retrimite emailul
+                  </Link>
+                )}
+              </div>
+              {retryCountdown > 0 && (
+                <p className="mt-1 text-xs opacity-80">Mai poți încerca în {retryCountdown}s.</p>
+              )}
+            </div>
+          )}
+
           <Button
             type="submit"
-            disabled={submitting || oauthBusy !== null || signupDisabled || (captchaRequired && !captchaToken)}
+            disabled={
+              submitting ||
+              oauthBusy !== null ||
+              signupDisabled ||
+              (captchaRequired && !captchaToken) ||
+              retryCountdown > 0
+            }
             className="h-12 w-full rounded-full text-sm uppercase tracking-[0.18em]"
           >
-            {submitting ? <Loader2 className="size-4 animate-spin" /> : mode === "signup" ? "Create account" : "Log in"}
+            {submitting ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : retryCountdown > 0 ? (
+              `Așteaptă ${retryCountdown}s`
+            ) : mode === "signup" ? (
+              "Create account"
+            ) : (
+              "Log in"
+            )}
           </Button>
 
           {mode === "login" ? (
