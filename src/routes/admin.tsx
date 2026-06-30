@@ -166,6 +166,7 @@ function AdminDashboard() {
     // System
     { id: "health",   label: "System Health", icon: Activity,    group: "System" },
     { id: "security", label: "Securitate",    icon: KeyRound,    group: "System" },
+    { id: "ratelimit",label: "Rate limit",    icon: Activity,    group: "System" },
     { id: "data",     label: "Date (toate)",  icon: Database,    group: "System", adminOnly: true },
     { id: "demoseed", label: "Demo seed",     icon: Sparkles,    group: "System", adminOnly: true },
   ];
