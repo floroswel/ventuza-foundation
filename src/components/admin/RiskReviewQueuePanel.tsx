@@ -243,13 +243,61 @@ export function RiskReviewQueuePanel() {
         </button>
       </div>
 
+      {/* Filter bar */}
+      <div className="rounded-lg border border-white/10 bg-white/5 p-3 flex flex-wrap items-center gap-2 text-xs">
+        <input
+          type="search"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Caută nume sau UUID..."
+          className="flex-1 min-w-[180px] rounded-md border border-white/10 bg-black/30 px-2 py-1.5"
+        />
+        <select
+          value={sevFilter}
+          onChange={(e) => setSevFilter(e.target.value as typeof sevFilter)}
+          className="rounded-md border border-white/10 bg-black/30 px-2 py-1.5"
+        >
+          <option value="all">Toate severitățile</option>
+          <option value="critic">Critic</option>
+          <option value="inalt">Înalt</option>
+          <option value="mediu">Mediu</option>
+        </select>
+        <select
+          value={windowFilter}
+          onChange={(e) => setWindowFilter(e.target.value as typeof windowFilter)}
+          className="rounded-md border border-white/10 bg-black/30 px-2 py-1.5"
+        >
+          <option value="all">Orice perioadă</option>
+          <option value="1h">Ultima oră</option>
+          <option value="24h">Ultimele 24h</option>
+          <option value="7d">Ultimele 7 zile</option>
+        </select>
+        <span className="text-muted-foreground">
+          {filteredRows.length}
+          {filtersActive && baseRows.length !== filteredRows.length && <> / {baseRows.length}</>}
+          {" "}rânduri
+        </span>
+        {filtersActive && (
+          <button
+            onClick={resetFilters}
+            className="rounded-md border border-white/10 bg-white/5 px-2 py-1.5 hover:bg-white/10"
+          >
+            Reset
+          </button>
+        )}
+      </div>
+
       <PanelStatus
         state={state}
-        isEmpty={state.status === "ready" && state.data.filter((r) => !resolvedIds.has(r.flag_id)).length === 0}
-        emptyHint="empty legitim — niciun cont nou nu a depășit pragul de risc."
+        isEmpty={state.status === "ready" && filteredRows.length === 0}
+        emptyHint={
+          baseRows.length === 0
+            ? "empty legitim — niciun cont nou nu a depășit pragul de risc."
+            : "Niciun rezultat pentru filtrele curente."
+        }
         retry={reload}
       >
-        {state.status === "ready" && state.data.filter((r) => !resolvedIds.has(r.flag_id)).length > 0 && (
+        {state.status === "ready" && pagedRows.length > 0 && (
           <div className="rounded-lg border border-white/10 bg-white/5 overflow-hidden">
             <table className="w-full text-sm">
               <thead className="bg-white/5 text-xs uppercase text-muted-foreground">
@@ -264,7 +312,7 @@ export function RiskReviewQueuePanel() {
                 </tr>
               </thead>
               <tbody>
-                {state.data.filter((r) => !resolvedIds.has(r.flag_id)).map((r) => {
+                {pagedRows.map((r) => {
                   const notes = parseNotes(r.details);
                   const flags = flagsFromDetails(r.details);
                   const signals = signalEntries(r.details);
