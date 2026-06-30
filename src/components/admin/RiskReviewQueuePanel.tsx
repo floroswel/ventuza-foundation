@@ -32,13 +32,41 @@ function severityLabel(s: number) {
 }
 
 type NoteEntry = { actor?: string; at?: string; note?: string; status_change?: { from?: string; to?: string } };
-function parseNotes(details: string | null): NoteEntry[] {
-  if (!details) return [];
-  try {
-    const obj = JSON.parse(details);
-    const log = obj?.notes_log;
-    return Array.isArray(log) ? (log as NoteEntry[]) : [];
-  } catch { return []; }
+function parseNotes(details: RiskFlagDetails | null): NoteEntry[] {
+  const log = details?.notes_log;
+  return Array.isArray(log) ? log : [];
+}
+
+// Friendly labels for risk signal flags emitted by public.compute_user_risk.
+const FLAG_LABEL: Record<string, { label: string; weight: string }> = {
+  duplicate_fingerprint:      { label: "Fingerprint duplicat",       weight: "+15…40" },
+  rapid_signup:               { label: "Signup rapid (24h)",         weight: "+10…25" },
+  no_verification:            { label: "Vârstă neverificată",        weight: "+15"    },
+  no_photos:                  { label: "Fără poze",                  weight: "+10"    },
+  multiple_reports:           { label: "Rapoarte deschise multiple", weight: "+15…40" },
+  spam_messages_new_account:  { label: "Spam mesaje (cont nou)",     weight: "+20"    },
+  spam_messages:              { label: "Spam mesaje",                weight: "+15"    },
+};
+
+const SIGNAL_LABEL: Record<string, string> = {
+  duplicate_fingerprint_users: "useri cu același fingerprint",
+  rapid_signup_24h:            "conturi noi din același device (24h)",
+  age_status:                  "status verificare vârstă",
+  open_reports:                "rapoarte deschise primite",
+  messages_1h:                 "mesaje trimise în ultima oră",
+};
+
+function flagsFromDetails(d: RiskFlagDetails | null): string[] {
+  if (!d) return [];
+  const direct = Array.isArray(d.flags) ? d.flags : [];
+  const nested = Array.isArray(d.signals?.flags) ? (d.signals!.flags as string[]) : [];
+  // Deduplicate while preserving order
+  return Array.from(new Set([...direct, ...nested]));
+}
+
+function signalEntries(d: RiskFlagDetails | null): Array<[string, unknown]> {
+  if (!d?.signals) return [];
+  return Object.entries(d.signals).filter(([k]) => k !== "flags");
 }
 
 export function RiskReviewQueuePanel() {
