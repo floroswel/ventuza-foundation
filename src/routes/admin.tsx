@@ -40,6 +40,7 @@ import { RateLimitPanel } from "@/components/admin/RateLimitPanel";
 import { SecuritySignalsPanel } from "@/components/admin/SecuritySignalsPanel";
 import { RiskDashboardPanel } from "@/components/admin/RiskDashboardPanel";
 import { RiskReviewQueuePanel } from "@/components/admin/RiskReviewQueuePanel";
+import { SignupThrottlePanel } from "@/components/admin/SignupThrottlePanel";
 
 
 function AgeGateDevBanner() {
@@ -70,7 +71,7 @@ type Section =
   | "overview" | "users" | "reports" | "risk" | "riskdash" | "riskqueue" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
-  | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals";
+  | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -172,6 +173,7 @@ function AdminDashboard() {
     { id: "health",   label: "System Health", icon: Activity,    group: "System" },
     { id: "security", label: "Securitate",    icon: KeyRound,    group: "System" },
     { id: "ratelimit",label: "Rate limit",    icon: Activity,    group: "System" },
+    { id: "signupthrottle", label: "Signup throttling", icon: ShieldAlert, group: "System" },
     { id: "signals",  label: "Semnale securitate", icon: ShieldAlert, group: "System" },
     { id: "data",     label: "Date (toate)",  icon: Database,    group: "System", adminOnly: true },
     { id: "demoseed", label: "Demo seed",     icon: Sparkles,    group: "System", adminOnly: true },
@@ -215,6 +217,7 @@ function AdminDashboard() {
       {section === "demoseed" && isAdmin && <DemoSeedPanel isSuperAdmin={isSuper} />}
       {section === "health" && <SystemHealthPanel />}
       {section === "ratelimit" && <RateLimitPanel />}
+      {section === "signupthrottle" && <SignupThrottlePanel />}
       {section === "signals" && <SecuritySignalsPanel />}
     </AdminShell>
   );
