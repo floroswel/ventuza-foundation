@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import {
   AlertTriangle, ShieldAlert, TrendingUp, RefreshCw, Activity, Users, Flag, BadgeCheck,
-  Search, Filter, X, ChevronLeft, ChevronRight, Fingerprint,
+  Search, Filter, X, ChevronLeft, ChevronRight, Fingerprint, FileDown, Printer,
 } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 import { UserRiskDetailDialog } from "@/components/admin/UserRiskDetailDialog";
+import { exportRiskCsv, exportRiskPdf, type RiskExportInput } from "@/lib/risk-export";
 
 
 
