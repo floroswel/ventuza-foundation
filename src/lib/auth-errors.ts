@@ -12,6 +12,7 @@ export type FriendlyAuthError = {
     | "user_already_exists"
     | "weak_password"
     | "email_invalid"
+    | "disposable_email"
     | "network"
     | "age_required"
     | "unknown";
