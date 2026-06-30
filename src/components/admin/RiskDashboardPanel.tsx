@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   AlertTriangle, ShieldAlert, TrendingUp, RefreshCw, Activity, Users, Flag, BadgeCheck,
 } from "lucide-react";
-import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 
 type Bucket = { bucket: string; count: number };
 type Trend = { bucket: string; flags: number; high_risk_users: number };
