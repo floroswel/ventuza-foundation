@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Flag, Loader2 } from "lucide-react";
+import { logRpcError } from "@/lib/rpc-error-logger";
 
 const REASONS = [
   { id: "fake", label: "Profil fals / poze furate" },
@@ -83,6 +84,11 @@ export function ReportBlockDialog({
       setDetails("");
       toast.success(alsoBlock ? "Raportat și blocat" : "Mulțumim, am primit raportul");
     } catch (error) {
+      void logRpcError(error, {
+        rpc: alsoBlock ? "reports.insert+blocks.upsert" : "reports.insert",
+        callSite: "ReportBlockDialog.submit",
+        extra: { alsoBlock, reason },
+      });
       toast.error(reportBlockErrorMessage(error));
     } finally {
       setBusy(false);
