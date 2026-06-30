@@ -507,7 +507,32 @@ export function RiskReviewQueuePanel() {
             </table>
           </div>
         )}
+
+        {state.status === "ready" && filteredRows.length > PAGE_SIZE && (
+          <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
+            <span>
+              Pagina {safePage} din {totalPages} · {filteredRows.length} rezultate
+            </span>
+            <div className="flex items-center gap-1">
+              <button
+                disabled={safePage <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="rounded-md border border-white/10 bg-white/5 px-2 py-1 hover:bg-white/10 disabled:opacity-40"
+              >
+                ‹ Anterior
+              </button>
+              <button
+                disabled={safePage >= totalPages}
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                className="rounded-md border border-white/10 bg-white/5 px-2 py-1 hover:bg-white/10 disabled:opacity-40"
+              >
+                Următor ›
+              </button>
+            </div>
+          </div>
+        )}
       </PanelStatus>
+
 
       <AlertDialog open={!!confirm} onOpenChange={(o) => { if (!o) setConfirm(null); }}>
         <AlertDialogContent>
