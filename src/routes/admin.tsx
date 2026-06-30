@@ -225,6 +225,9 @@ function AdminDashboard() {
       {section === "health" && <SystemHealthPanel />}
       {section === "ratelimit" && <RateLimitPanel />}
       {section === "signupthrottle" && <SignupThrottlePanel />}
+      {section === "settings" && isAdmin && <SettingsAndFlagsPanel />}
+      {section === "staff" && isAdmin && <StaffManagementPanel />}
+      {section === "tools" && isAdmin && <AdminToolsPanel />}
       {section === "signals" && <SecuritySignalsPanel />}
     </AdminShell>
   );
