@@ -4,6 +4,7 @@ import {
   AlertTriangle, ShieldAlert, RefreshCw, Users, Fingerprint, TrendingUp, Clock,
 } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
+import { AutoRefreshSelect, useAdminAutoRefresh } from "@/components/admin/AutoRefreshSelect";
 import {
   adminGetSecuritySignals, type SecuritySignals,
 } from "@/lib/admin-security-signals.functions";
