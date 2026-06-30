@@ -1,4 +1,4 @@
-import { Fragment as FragmentRow, useEffect, useState } from "react";
+import { Fragment as FragmentRow, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2, MessageSquarePlus, Clock, History, Activity } from "lucide-react";
@@ -12,6 +12,16 @@ import {
   type RiskFlagDetails,
 } from "@/lib/risk-queue.functions";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 
 function fmt(iso: string | null) {
