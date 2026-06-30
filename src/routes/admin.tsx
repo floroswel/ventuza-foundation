@@ -41,6 +41,9 @@ import { SecuritySignalsPanel } from "@/components/admin/SecuritySignalsPanel";
 import { RiskDashboardPanel } from "@/components/admin/RiskDashboardPanel";
 import { RiskReviewQueuePanel } from "@/components/admin/RiskReviewQueuePanel";
 import { SignupThrottlePanel } from "@/components/admin/SignupThrottlePanel";
+import { SettingsAndFlagsPanel } from "@/components/admin/SettingsAndFlagsPanel";
+import { StaffManagementPanel } from "@/components/admin/StaffManagementPanel";
+import { AdminToolsPanel } from "@/components/admin/AdminToolsPanel";
 
 
 function AgeGateDevBanner() {
