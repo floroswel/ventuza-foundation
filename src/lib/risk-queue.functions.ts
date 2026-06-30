@@ -2,9 +2,11 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+type JsonValue = string | number | boolean | null | JsonValue[] | { [k: string]: JsonValue };
+
 export type RiskFlagDetails = {
   risk_score?: number;
-  signals?: Record<string, unknown> & { flags?: string[] };
+  signals?: { [k: string]: JsonValue };
   flags?: string[];
   account_age_hours?: number;
   queued_at?: string;
@@ -15,7 +17,7 @@ export type RiskFlagDetails = {
     note?: string;
     status_change?: { from?: string; to?: string };
   }>;
-  [k: string]: unknown;
+  [k: string]: JsonValue | undefined;
 };
 
 export type ReviewQueueRow = {
