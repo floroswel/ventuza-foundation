@@ -170,17 +170,28 @@ export async function fetchDiscover(
   });
   if (error) {
     const msg = (error.message ?? "").toLowerCase();
+    const make = (code: string, message: string) => {
+      const e = new Error(message) as Error & { code: string };
+      e.code = code;
+      return e;
+    };
     if (msg.includes("discover_rate_limited")) {
-      throw new Error("Ai răsfoit prea repede. Reia explorarea peste aproximativ o oră.");
+      throw make(
+        "discover_rate_limited",
+        "Ai răsfoit prea repede (max 500 profiluri/oră). Reia explorarea peste aproximativ o oră.",
+      );
     }
     if (msg.includes("email_not_confirmed")) {
-      throw new Error("Confirmă-ți emailul ca să vezi profilurile din apropiere.");
+      throw make(
+        "email_not_confirmed",
+        "Confirmă-ți emailul ca să vezi profilurile din apropiere. Verifică inbox-ul (și Spam).",
+      );
     }
     if (msg.includes("age_verification_required")) {
-      throw new Error("Trebuie să-ți verifici vârsta înainte de a folosi Discover.");
+      throw make("age_verification_required", "Trebuie să-ți verifici vârsta înainte de a folosi Discover.");
     }
     if (msg.includes("not_authenticated") || msg.includes("forbidden")) {
-      throw new Error("Sesiune expirată. Te rugăm să te autentifici din nou.");
+      throw make("not_authenticated", "Sesiune expirată. Autentifică-te din nou.");
     }
     throw error;
   }
