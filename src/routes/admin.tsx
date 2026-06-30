@@ -36,6 +36,7 @@ import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
 import { ExperimentsPanel } from "@/components/admin/ExperimentsPanel";
 import { isProductionHost, shouldEnforceAgeGate, clearAgeGatePolicyCache } from "@/lib/age-gate-policy";
 import { DemoSeedPanel, DemoSeedBanner } from "@/components/admin/DemoSeedPanel";
+import { RateLimitPanel } from "@/components/admin/RateLimitPanel";
 
 
 function AgeGateDevBanner() {
@@ -66,7 +67,7 @@ type Section =
   | "overview" | "users" | "reports" | "risk" | "ads" | "biz"
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
-  | "partners" | "demoseed" | "health" | "copilot" | "billing";
+  | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -165,6 +166,7 @@ function AdminDashboard() {
     // System
     { id: "health",   label: "System Health", icon: Activity,    group: "System" },
     { id: "security", label: "Securitate",    icon: KeyRound,    group: "System" },
+    { id: "ratelimit",label: "Rate limit",    icon: Activity,    group: "System" },
     { id: "data",     label: "Date (toate)",  icon: Database,    group: "System", adminOnly: true },
     { id: "demoseed", label: "Demo seed",     icon: Sparkles,    group: "System", adminOnly: true },
   ];
@@ -204,6 +206,7 @@ function AdminDashboard() {
       {section === "security" && <SecurityPanel />}
       {section === "demoseed" && isAdmin && <DemoSeedPanel isSuperAdmin={isSuper} />}
       {section === "health" && <SystemHealthPanel />}
+      {section === "ratelimit" && <RateLimitPanel />}
     </AdminShell>
   );
 }
