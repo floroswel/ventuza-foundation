@@ -78,21 +78,18 @@ export const adminGetUserActivity = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
 
-    const [authUser, devices, signups, subs, invoicesPaid, reportsMade, reportsRcvd,
+    const [authUser, devices, subs, invoicesPaid, reportsMade, reportsRcvd,
            pushSubs, deletionReqs, riskFlags] = await Promise.all([
       sa.auth.admin.getUserById(data.userId),
       sa.from("device_fingerprints")
-        .select("id, created_at, last_seen_at, fingerprint")
+        .select("id, first_seen_at, last_seen_at, fingerprint, user_agent")
         .eq("user_id", data.userId).order("last_seen_at", { ascending: false }).limit(10),
-      sa.from("signup_attempts")
-        .select("id, created_at, status")
-        .eq("user_id", data.userId).order("created_at", { ascending: false }).limit(10),
       sa.from("subscriptions")
-        .select("id, status, plan_code, expires_at, provider, created_at, updated_at")
-        .eq("user_id", data.userId).order("created_at", { ascending: false }).limit(20),
+        .select("id, status, platform, product_id, started_at, expires_at, auto_renew, updated_at")
+        .eq("user_id", data.userId).order("started_at", { ascending: false }).limit(20),
       sa.from("partner_invoices")
-        .select("id, invoice_number, amount_cents, currency, status, issued_at, paid_at")
-        .eq("partner_id", data.userId).order("issued_at", { ascending: false }).limit(20),
+        .select("id, series, number, year, total_minor, currency, status, issued_at, paid_at")
+        .eq("owner_id", data.userId).order("issued_at", { ascending: false }).limit(20),
       sa.from("reports")
         .select("id, reported_id, reason, status, created_at")
         .eq("reporter_id", data.userId).order("created_at", { ascending: false }).limit(20),
@@ -100,20 +97,23 @@ export const adminGetUserActivity = createServerFn({ method: "POST" })
         .select("id, reporter_id, reason, status, created_at")
         .eq("reported_id", data.userId).order("created_at", { ascending: false }).limit(20),
       sa.from("push_subscriptions")
-        .select("id, kind, created_at, last_used_at")
+        .select("id, kind, platform, created_at, last_seen_at")
         .eq("user_id", data.userId).order("created_at", { ascending: false }).limit(10),
       sa.from("deletion_requests")
-        .select("id, status, scheduled_at, created_at, cancelled_at")
+        .select("id, status, scheduled_at, created_at")
         .eq("user_id", data.userId).order("created_at", { ascending: false }).limit(5),
       sa.from("risk_flags")
-        .select("id, severity, reason, status, created_at")
+        .select("id, kind, severity, status, created_at, resolved_at")
         .eq("user_id", data.userId).order("created_at", { ascending: false }).limit(20),
     ]);
 
-    // Mască fingerprint: doar prefixul ca să nu poată fi reconstituit.
+    // Mască fingerprint + user_agent: doar prefixul / familia, ca să nu se poată reconstitui.
     const safeDevices = (devices.data ?? []).map((d: any) => ({
-      id: d.id, created_at: d.created_at, last_seen_at: d.last_seen_at,
+      id: d.id, first_seen_at: d.first_seen_at, last_seen_at: d.last_seen_at,
       fingerprint_prefix: typeof d.fingerprint === "string" ? d.fingerprint.slice(0, 8) + "…" : null,
+      ua_family: typeof d.user_agent === "string"
+        ? (d.user_agent.match(/(Chrome|Firefox|Safari|Edge|Mobile)[\/\s][\d.]*/)?.[0] ?? "unknown")
+        : null,
     }));
 
     return {
@@ -125,7 +125,6 @@ export const adminGetUserActivity = createServerFn({ method: "POST" })
         providers: authUser?.data?.user?.app_metadata?.providers ?? [],
       },
       devices: safeDevices,
-      signup_attempts: signups.data ?? [],
       subscriptions: subs.data ?? [],
       invoices_as_partner: invoicesPaid.data ?? [],
       reports_made: reportsMade.data ?? [],
