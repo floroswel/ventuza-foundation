@@ -95,10 +95,56 @@ export function RiskReviewQueuePanel() {
     note: string;
   }>(null);
 
+  // Filters & pagination
+  const [search, setSearch] = useState("");
+  const [sevFilter, setSevFilter] = useState<"all" | "critic" | "inalt" | "mediu">("all");
+  const [windowFilter, setWindowFilter] = useState<"1h" | "24h" | "7d" | "all">("all");
+  const PAGE_SIZE = 10;
+  const [page, setPage] = useState(1);
+
   const [state, reload, lastLoadedAt] = useAdminPanelLoad<ReviewQueueRow[]>(async () => {
     const { rows } = await listFn({ data: { limit: 200 } });
     return rows;
   }, [], { autoRefreshMs: 30_000 });
+
+  const baseRows = state.status === "ready" ? state.data.filter((r) => !resolvedIds.has(r.flag_id)) : [];
+
+  const filteredRows = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    const now = Date.now();
+    const windowMs = windowFilter === "1h" ? 3_600_000
+      : windowFilter === "24h" ? 86_400_000
+      : windowFilter === "7d" ? 7 * 86_400_000
+      : null;
+    return baseRows.filter((r) => {
+      if (q) {
+        const hay = `${r.display_name ?? ""} ${r.user_id}`.toLowerCase();
+        if (!hay.includes(q)) return false;
+      }
+      if (sevFilter !== "all") {
+        const s = r.severity ?? 0;
+        if (sevFilter === "critic" && s < 3) return false;
+        if (sevFilter === "inalt" && (s < 2 || s >= 3)) return false;
+        if (sevFilter === "mediu" && s >= 2) return false;
+      }
+      if (windowMs !== null) {
+        const t = r.flag_created_at ? new Date(r.flag_created_at).getTime() : 0;
+        if (!t || now - t > windowMs) return false;
+      }
+      return true;
+    });
+  }, [baseRows, search, sevFilter, windowFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRows.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const pagedRows = filteredRows.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+
+  // Reset page when filters or data shrink past current page
+  useEffect(() => { setPage(1); }, [search, sevFilter, windowFilter]);
+
+  const filtersActive = !!(search || sevFilter !== "all" || windowFilter !== "all");
+  function resetFilters() { setSearch(""); setSevFilter("all"); setWindowFilter("all"); }
+
 
   // Live refresh on new flags
   useEffect(() => {
