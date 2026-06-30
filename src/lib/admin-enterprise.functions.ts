@@ -234,6 +234,60 @@ export const adminResolveAlert = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+export const adminGetAlertAffectedAccounts = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.number() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+
+    const { data: alert, error: aErr } = await context.supabase
+      .from("admin_alerts")
+      .select("id, kind, target_table, target_id, created_at")
+      .eq("id", data.id)
+      .maybeSingle();
+    if (aErr) throw new Error(aErr.message);
+    if (!alert) return { accounts: [] as any[], truncated: false };
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const PROFILE_COLS = "id, display_name, profile_slug, created_at, risk_score, partner_suspended_at";
+    let ids: string[] = [];
+    let truncated = false;
+
+    if (alert.kind === "fingerprint_cluster" && alert.target_id) {
+      const { data: rows, error } = await (supabaseAdmin as any)
+        .from("device_fingerprints")
+        .select("user_id")
+        .eq("fingerprint", alert.target_id)
+        .limit(100);
+      if (error) throw new Error(error.message);
+      ids = Array.from(new Set((rows ?? []).map((r: any) => r.user_id).filter(Boolean)));
+    } else if (alert.kind === "signup_spike") {
+      const since = new Date(new Date(alert.created_at).getTime() - 60 * 60_000).toISOString();
+      const { data: rows, error } = await (supabaseAdmin as any)
+        .from("profiles")
+        .select(PROFILE_COLS)
+        .gte("created_at", since)
+        .order("created_at", { ascending: false })
+        .limit(51);
+      if (error) throw new Error(error.message);
+      if ((rows ?? []).length > 50) { truncated = true; rows!.pop(); }
+      return { accounts: rows ?? [], truncated };
+    } else if (alert.target_table === "profiles" && alert.target_id) {
+      ids = [alert.target_id];
+    }
+
+    if (ids.length === 0) return { accounts: [], truncated };
+    const { data: profiles, error } = await (supabaseAdmin as any)
+      .from("profiles")
+      .select(PROFILE_COLS)
+      .in("id", ids.slice(0, 50));
+    if (error) throw new Error(error.message);
+    if (ids.length > 50) truncated = true;
+    return { accounts: profiles ?? [], truncated };
+  });
+
+
+
 
 /* ---------------- DSA REPORTS ---------------- */
 export const adminGetDsaReports = createServerFn({ method: "POST" })
