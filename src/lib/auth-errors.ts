@@ -15,6 +15,7 @@ export type FriendlyAuthError = {
     | "disposable_email"
     | "network"
     | "age_required"
+    | "signup_throttled"
     | "unknown";
   /** Romanian user-facing message. Short, actionable. */
   message: string;
