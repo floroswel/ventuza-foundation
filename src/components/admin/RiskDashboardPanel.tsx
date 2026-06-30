@@ -66,6 +66,7 @@ function scoreTone(score: number): string {
 
 export function RiskDashboardPanel() {
   const [windowHours, setWindowHours] = useState(168);
+  const autoRefreshMs = useAdminAutoRefresh();
   const [state, reload, lastLoadedAt] = useAdminPanelLoad<Dashboard>(
     async () => {
       const { data, error } = await (supabase as any).rpc("admin_risk_dashboard", { _window_hours: windowHours });
@@ -73,7 +74,7 @@ export function RiskDashboardPanel() {
       return data as Dashboard;
     },
     [windowHours],
-    { autoRefreshMs: 30_000 },
+    { autoRefreshMs },
   );
 
   // Live refresh on new risk_flags inserts
