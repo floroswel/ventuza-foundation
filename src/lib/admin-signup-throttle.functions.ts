@@ -16,7 +16,21 @@ export type SignupThrottleStats = {
     unique_fps: number;
     blocked_ips: number;
     blocked_fps: number;
+    blocks_logged: number;
   };
+  blocks_by_reason: Partial<
+    Record<"ip_hourly_cap" | "ip_daily_cap" | "fp_hourly_cap" | "fp_daily_cap", number>
+  >;
+  recent_blocks: Array<{
+    reason: "ip_hourly_cap" | "ip_daily_cap" | "fp_hourly_cap" | "fp_daily_cap";
+    ip_hash_prefix: string | null;
+    fp_prefix: string | null;
+    ip_hour: number;
+    ip_day: number;
+    fp_hour: number;
+    fp_day: number;
+    created_at: string;
+  }>;
   top_ips: Array<{
     ip_hash: string;
     total: number;
