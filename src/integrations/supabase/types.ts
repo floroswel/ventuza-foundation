@@ -3411,12 +3411,33 @@ export type Database = {
         }
         Returns: Json
       }
+      admin_new_account_review_queue: {
+        Args: { _limit?: number }
+        Returns: {
+          account_created_at: string
+          banned_at: string
+          details: Json
+          display_name: string
+          flag_created_at: string
+          flag_id: string
+          report_count: number
+          risk_score: number
+          severity: number
+          suspended_until: string
+          user_id: string
+          verified: boolean
+        }[]
+      }
       admin_rate_limit_stats: {
         Args: { _window_hours?: number }
         Returns: Json
       }
       admin_recompute_user_risk: { Args: { _user_id: string }; Returns: Json }
       admin_reinstate_partner: { Args: { p_user_id: string }; Returns: Json }
+      admin_resolve_risk_flag: {
+        Args: { _decision: string; _flag_id: string; _notes?: string }
+        Returns: undefined
+      }
       admin_risk_dashboard: { Args: { _window_hours?: number }; Returns: Json }
       admin_risk_queue: {
         Args: { _limit?: number }
