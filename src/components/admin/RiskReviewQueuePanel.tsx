@@ -1,7 +1,7 @@
 import { Fragment as FragmentRow, useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2, MessageSquarePlus, Clock, History } from "lucide-react";
+import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2, MessageSquarePlus, Clock, History, Activity } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 import {
   adminListNewAccountReviewQueue,
@@ -9,6 +9,7 @@ import {
   adminAddRiskFlagNote,
   adminSetRiskFlagStatus,
   type ReviewQueueRow,
+  type RiskFlagDetails,
 } from "@/lib/risk-queue.functions";
 import { toast } from "sonner";
 
