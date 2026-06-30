@@ -383,7 +383,7 @@ export function AlertsPanel() {
       <div className="flex flex-wrap items-center gap-2">
         <select value={fKind} onChange={(e) => setFKind(e.target.value)} className={selectCls} aria-label="Tip alertă">
           <option value="">Toate tipurile</option>
-          {kindOptions.map((k) => <option key={k} value={k}>{k}</option>)}
+          {kindOptions.map((k: string) => <option key={k} value={k}>{k}</option>)}
         </select>
         <select value={fSeverity} onChange={(e) => setFSeverity(e.target.value)} className={selectCls} aria-label="Severitate">
           <option value="">Toate severitățile</option>
