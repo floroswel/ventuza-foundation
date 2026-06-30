@@ -206,6 +206,7 @@ function AdminDashboard() {
       {section === "security" && <SecurityPanel />}
       {section === "demoseed" && isAdmin && <DemoSeedPanel isSuperAdmin={isSuper} />}
       {section === "health" && <SystemHealthPanel />}
+      {section === "ratelimit" && <RateLimitPanel />}
     </AdminShell>
   );
 }
