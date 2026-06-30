@@ -283,6 +283,128 @@ export function AuditLogPanel() {
 /* =========================================================
    ALERTS (realtime)
 ========================================================= */
+function AffectedAccounts({ alertId, kind }: { alertId: number; kind: string }) {
+  const fetchAffected = useServerFn(adminGetAlertAffectedAccounts);
+  const [open, setOpen] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [accounts, setAccounts] = useState<any[]>([]);
+  const [truncated, setTruncated] = useState(false);
+
+  const load = async () => {
+    setLoading(true); setError(null);
+    try {
+      const r: any = await fetchAffected({ data: { id: alertId } });
+      setAccounts(r.accounts ?? []);
+      setTruncated(!!r.truncated);
+      setLoaded(true);
+    } catch (e: any) { setError(errMsg(e)); }
+    finally { setLoading(false); }
+  };
+
+  const toggle = () => {
+    const next = !open;
+    setOpen(next);
+    if (next && !loaded && !loading) load();
+  };
+
+  const copy = async (id: string) => {
+    try { await navigator.clipboard.writeText(id); toast.success("ID copiat"); }
+    catch { toast.error("Nu am putut copia"); }
+  };
+
+  const label = kind === "signup_spike"
+    ? "Conturi nou create (ultima oră)"
+    : kind === "fingerprint_cluster"
+      ? "Conturi pe acest fingerprint"
+      : "Cont afectat";
+
+  return (
+    <div className="mt-1 rounded-xl border border-border/60 bg-background/40">
+      <button
+        type="button"
+        onClick={toggle}
+        className="flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-medium text-muted-foreground hover:text-foreground"
+        aria-expanded={open}
+      >
+        {open ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
+        <UsersIcon className="size-3" />
+        <span>{label}</span>
+        {loaded && <span className="ml-1 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] text-primary">{accounts.length}{truncated ? "+" : ""}</span>}
+      </button>
+      {open && (
+        <div className="border-t border-border/60 p-2">
+          {loading ? (
+            <p className="px-2 py-3 text-xs text-muted-foreground">Se încarcă…</p>
+          ) : error ? (
+            <div className="space-y-2 px-2 py-2">
+              <p className="text-xs text-red-400">{error}</p>
+              <button onClick={load} className="rounded-full border border-border px-2 py-1 text-[11px]">Reîncearcă</button>
+            </div>
+          ) : accounts.length === 0 ? (
+            <p className="px-2 py-3 text-xs text-muted-foreground">
+              Nu am putut identifica conturi pentru această alertă.
+            </p>
+          ) : (
+            <ul className="divide-y divide-border/60">
+              {accounts.map((p) => {
+                const name = p.display_name || p.profile_slug || p.id.slice(0, 8);
+                const score = typeof p.risk_score === "number" ? p.risk_score : null;
+                const scoreCls = score == null ? "bg-muted text-muted-foreground"
+                  : score >= 80 ? "bg-red-500/15 text-red-400"
+                  : score >= 60 ? "bg-orange-500/15 text-orange-400"
+                  : score >= 40 ? "bg-yellow-500/15 text-yellow-400"
+                  : "bg-emerald-500/15 text-emerald-400";
+                return (
+                  <li key={p.id} className="flex items-center gap-2 py-1.5">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs font-medium">{name}</p>
+                      <p className="truncate font-mono text-[10px] text-muted-foreground">{p.id}</p>
+                    </div>
+                    {score != null && (
+                      <span className={`rounded-full px-1.5 py-0.5 text-[10px] ${scoreCls}`} title="Risk score">
+                        {score}
+                      </span>
+                    )}
+                    {p.partner_suspended_at && (
+                      <span className="rounded-full bg-red-500/15 px-1.5 py-0.5 text-[10px] text-red-400">suspendat</span>
+                    )}
+                    <button
+                      onClick={() => copy(p.id)}
+                      title="Copiază ID"
+                      className="rounded-md border border-border p-1 text-muted-foreground hover:text-foreground"
+                    >
+                      <Copy className="size-3" />
+                    </button>
+                    {p.profile_slug && (
+                      <a
+                        href={`/u/${p.profile_slug}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        title="Deschide profil public"
+                        className="rounded-md border border-border p-1 text-muted-foreground hover:text-foreground"
+                      >
+                        <ExternalLink className="size-3" />
+                      </a>
+                    )}
+                  </li>
+                );
+              })}
+              {truncated && (
+                <li className="px-1 pt-2 text-[11px] text-muted-foreground">
+                  Lista a fost limitată la primele {accounts.length} conturi.
+                </li>
+              )}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 export function AlertsPanel() {
   const get = useServerFn(adminGetAlerts);
   const ack = useServerFn(adminAckAlert);
