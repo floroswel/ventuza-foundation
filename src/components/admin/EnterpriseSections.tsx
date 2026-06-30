@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   adminGetAuditLog, adminGetAlerts, adminAckAlert, adminSnoozeAlert, adminResolveAlert,
+  adminGetAlertAffectedAccounts,
   adminGetDsaReports, adminResolveDsa,
   adminGetCsamReports, adminAddCsamHash,
   adminGetDeletionRequests, adminExportUserData, adminProcessDeletion,
