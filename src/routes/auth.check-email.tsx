@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
+import { mapAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
 
 const searchSchema = z.object({ email: z.string().email().optional() });
 
@@ -25,6 +26,8 @@ function CheckEmailPage() {
   const [cooldown, setCooldown] = useState(60);
   const [resending, setResending] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaNonce, setCaptchaNonce] = useState(0);
+  const [resendError, setResendError] = useState<FriendlyAuthError | null>(null);
   const captchaRequired = isTurnstileConfigured();
 
   useEffect(() => {
@@ -33,16 +36,28 @@ function CheckEmailPage() {
     return () => clearTimeout(t);
   }, [cooldown]);
 
+  function handleError(err: unknown) {
+    const mapped = mapAuthError(err);
+    setResendError(mapped);
+    if (mapped.retryAfterSec) setCooldown(mapped.retryAfterSec);
+    if (mapped.resetCaptcha) {
+      setCaptchaToken(null);
+      setCaptchaNonce((n) => n + 1);
+    }
+    toast.error(mapped.message);
+  }
+
   async function resend() {
     if (!email) {
       toast.error("Lipsește adresa de email — întoarce-te la pasul de înregistrare.");
       return;
     }
     if (captchaRequired && !captchaToken) {
-      toast.error("Completează verificarea anti-bot.");
+      handleError(new Error("captcha required"));
       return;
     }
     setResending(true);
+    setResendError(null);
     try {
       const { error } = await supabase.auth.resend({
         type: "signup",
@@ -55,14 +70,16 @@ function CheckEmailPage() {
       if (error) throw error;
       toast.success("Trimis. Verifică inbox + spam.");
       setCaptchaToken(null);
+      setCaptchaNonce((n) => n + 1);
       setCooldown(60);
     } catch (e) {
-      setCaptchaToken(null);
-      toast.error(e instanceof Error ? e.message : "Nu am putut retrimite emailul.");
+      handleError(e);
     } finally {
       setResending(false);
     }
   }
+
+  const disabled = resending || cooldown > 0 || !email || (captchaRequired && !captchaToken);
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
@@ -86,14 +103,20 @@ function CheckEmailPage() {
           Nu vezi emailul? Verifică folderul Spam / Promoții.
         </p>
         <TurnstileWidget
-          onToken={setCaptchaToken}
+          key={captchaNonce}
+          onToken={(t) => { setCaptchaToken(t); if (resendError?.resetCaptcha) setResendError(null); }}
           onExpire={() => setCaptchaToken(null)}
         />
-        <div className="flex flex-col gap-2 pt-2">
-          <Button
-            onClick={resend}
-            disabled={resending || cooldown > 0 || !email || (captchaRequired && !captchaToken)}
+        {resendError && (
+          <div
+            role="alert"
+            className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-left text-sm text-destructive"
           >
+            {resendError.message}
+          </div>
+        )}
+        <div className="flex flex-col gap-2 pt-2">
+          <Button onClick={resend} disabled={disabled}>
             {resending && <Loader2 className="size-4 animate-spin mr-2" />}
             {cooldown > 0 ? `Retrimite în ${cooldown}s` : "Retrimite emailul"}
           </Button>
