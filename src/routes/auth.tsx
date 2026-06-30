@@ -179,6 +179,23 @@ function AuthPage() {
           handleAuthError(disposableErr);
           return;
         }
+        // Anti-bot throttle per IP + device fingerprint (caps at /api/public/signup-guard).
+        try {
+          const { computeDeviceFingerprint } = await import("@/lib/fingerprint");
+          const fp = await computeDeviceFingerprint().catch(() => null);
+          const guardRes = await fetch("/api/public/signup-guard", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fingerprint: fp ?? undefined }),
+          });
+          if (guardRes.status === 429) {
+            const payload = (await guardRes.json().catch(() => ({}))) as { error?: string };
+            handleAuthError(new Error(payload.error ?? "signup_throttled"));
+            return;
+          }
+        } catch {
+          // Network failure: fail-open so real users aren't locked out.
+        }
         const { data, error } = await supabase.auth.signUp({
           email: emailParsed.data,
           password: passParsed.data,
