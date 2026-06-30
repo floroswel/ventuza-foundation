@@ -88,7 +88,27 @@ function AuthPage() {
   const [submitting, setSubmitting] = useState(false);
   const [oauthBusy, setOauthBusy] = useState<"google" | "apple" | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const [captchaNonce, setCaptchaNonce] = useState(0);
+  const [authError, setAuthError] = useState<FriendlyAuthError | null>(null);
+  const [retryCountdown, setRetryCountdown] = useState(0);
   const captchaRequired = isTurnstileConfigured();
+
+  useEffect(() => {
+    if (retryCountdown <= 0) return;
+    const t = setTimeout(() => setRetryCountdown((c) => c - 1), 1000);
+    return () => clearTimeout(t);
+  }, [retryCountdown]);
+
+  function handleAuthError(err: unknown) {
+    const mapped = mapAuthError(err);
+    setAuthError(mapped);
+    if (mapped.retryAfterSec) setRetryCountdown(mapped.retryAfterSec);
+    if (mapped.resetCaptcha) {
+      setCaptchaToken(null);
+      setCaptchaNonce((n) => n + 1);
+    }
+    toast.error(mapped.message);
+  }
 
   useEffect(() => {
     if (!authLoading && user) {
