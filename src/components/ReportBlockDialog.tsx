@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Flag, Loader2 } from "lucide-react";
+import { logRpcError } from "@/lib/rpc-error-logger";
 
 const REASONS = [
   { id: "fake", label: "Profil fals / poze furate" },
