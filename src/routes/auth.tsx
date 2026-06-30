@@ -480,16 +480,54 @@ function AuthPage() {
           )}
 
           <TurnstileWidget
-            onToken={setCaptchaToken}
+            key={captchaNonce}
+            onToken={(t) => { setCaptchaToken(t); if (authError?.resetCaptcha) setAuthError(null); }}
             onExpire={() => setCaptchaToken(null)}
           />
 
+          {authError && (
+            <div
+              role="alert"
+              className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <span>{authError.message}</span>
+                {authError.code === "email_not_confirmed" && (
+                  <Link
+                    to="/auth/check-email"
+                    search={{ email: email || undefined }}
+                    className="shrink-0 text-xs font-medium underline"
+                  >
+                    Retrimite emailul
+                  </Link>
+                )}
+              </div>
+              {retryCountdown > 0 && (
+                <p className="mt-1 text-xs opacity-80">Mai poți încerca în {retryCountdown}s.</p>
+              )}
+            </div>
+          )}
+
           <Button
             type="submit"
-            disabled={submitting || oauthBusy !== null || signupDisabled || (captchaRequired && !captchaToken)}
+            disabled={
+              submitting ||
+              oauthBusy !== null ||
+              signupDisabled ||
+              (captchaRequired && !captchaToken) ||
+              retryCountdown > 0
+            }
             className="h-12 w-full rounded-full text-sm uppercase tracking-[0.18em]"
           >
-            {submitting ? <Loader2 className="size-4 animate-spin" /> : mode === "signup" ? "Create account" : "Log in"}
+            {submitting ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : retryCountdown > 0 ? (
+              `Așteaptă ${retryCountdown}s`
+            ) : mode === "signup" ? (
+              "Create account"
+            ) : (
+              "Log in"
+            )}
           </Button>
 
           {mode === "login" ? (
