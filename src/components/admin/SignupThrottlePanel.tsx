@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Activity, RefreshCw, ShieldAlert, Fingerprint, Globe } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
+import { AutoRefreshSelect, useAdminAutoRefresh } from "@/components/admin/AutoRefreshSelect";
 import {
   adminGetSignupThrottleStats,
   type SignupThrottleStats,
