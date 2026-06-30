@@ -77,6 +77,7 @@ export function RiskReviewQueuePanel() {
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <Flag className="size-5 text-amber-400" />
             Coadă review — conturi noi cu risc ridicat
+            <LastCheckBadge at={lastLoadedAt} />
           </h2>
           <p className="text-xs text-muted-foreground">
             Auto-flag la scor ≥60 pentru conturi create în ultimele 7 zile. Decide: curăță, fals pozitiv sau escaladează.
