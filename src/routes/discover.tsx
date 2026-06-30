@@ -135,9 +135,10 @@ function DiscoverPage() {
       }
       setProfiles(data);
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Couldn't load discover";
-      setLoadError(msg);
-      toast.error(msg);
+      const message = e instanceof Error ? e.message : "Couldn't load discover";
+      const code = (e as { code?: string } | null)?.code;
+      setLoadError({ message, code });
+      toast.error(message);
     } finally {
       setLoading(false);
     }
