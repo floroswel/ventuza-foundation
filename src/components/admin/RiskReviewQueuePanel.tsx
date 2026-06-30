@@ -1,14 +1,17 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2 } from "lucide-react";
+import { AlertTriangle, Check, X, RefreshCw, Flag, Loader2, MessageSquarePlus, Clock, History } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
 import {
   adminListNewAccountReviewQueue,
   adminResolveRiskFlag,
+  adminAddRiskFlagNote,
+  adminSetRiskFlagStatus,
   type ReviewQueueRow,
 } from "@/lib/risk-queue.functions";
 import { toast } from "sonner";
+
 
 function fmt(iso: string | null) {
   if (!iso) return "—";
