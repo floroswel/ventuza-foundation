@@ -181,6 +181,9 @@ function AdminDashboard() {
     { id: "signals",  label: "Semnale securitate", icon: ShieldAlert, group: "System" },
     { id: "data",     label: "Date (toate)",  icon: Database,    group: "System", adminOnly: true },
     { id: "demoseed", label: "Demo seed",     icon: Sparkles,    group: "System", adminOnly: true },
+    { id: "settings", label: "Settings & flags", icon: KeyRound,  group: "System", adminOnly: true, hint: "app_settings + feature_flags" },
+    { id: "staff",    label: "Staff & roluri", icon: ShieldCheck, group: "System", adminOnly: true, hint: "RBAC + MFA + IP allowlist" },
+    { id: "tools",    label: "Unelte",          icon: FileText,   group: "System", adminOnly: true, hint: "Redactare mesaj, edit partner, storno factură" },
   ];
   const items: NavItem[] = allItems
     .filter((i) => !i.adminOnly || isAdmin)
