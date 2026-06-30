@@ -76,9 +76,17 @@ function NearbyPage() {
 
   const bucketId = coords ? computeBucketId(coords.lat, coords.lng) : null;
 
-  const { data, isLoading, refetch, isFetching } = useQuery({
+  const { data, isLoading, refetch, isFetching, error } = useQuery({
     queryKey: ["nearby", bucketId],
     enabled: !!bucketId,
+    retry: (failureCount, err: unknown) => {
+      // Don't retry permission/auth errors — they won't resolve on their own.
+      const msg = String((err as Error)?.message ?? err ?? "").toLowerCase();
+      if (msg.includes("permission denied") || msg.includes("403") || msg.includes("unauthorized") || msg.includes("401")) {
+        return false;
+      }
+      return failureCount < 2;
+    },
     queryFn: async () => {
       // Throttle: don't refire within 30s of last successful call.
       const since = Date.now() - lastFetchAt.current;
@@ -91,6 +99,21 @@ function NearbyPage() {
     },
     staleTime: 30_000,
   });
+
+  const errorKind = useMemo<"permission" | "network" | null>(() => {
+    if (!error) return null;
+    const msg = String((error as Error)?.message ?? error ?? "").toLowerCase();
+    if (
+      msg.includes("permission denied") ||
+      msg.includes("403") ||
+      msg.includes("unauthorized") ||
+      msg.includes("401") ||
+      msg.includes("forbidden")
+    ) {
+      return "permission";
+    }
+    return "network";
+  }, [error]);
 
   // Filter on-device by exact radius and current kind, sort by distance.
   const filtered = useMemo(() => {
