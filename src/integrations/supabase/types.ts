@@ -3479,93 +3479,62 @@ export type Database = {
       current_week_start: { Args: never; Returns: string }
       detect_admin_anomalies: { Args: never; Returns: number }
       disablelongtransactions: { Args: never; Returns: string }
-      discover_profiles:
-        | {
-            Args: {
-              _genders?: string[]
-              _limit?: number
-              _looking_for?: string[]
-              _looking_now_only?: boolean
-              _max_age?: number
-              _max_km?: number
-              _min_age?: number
-              _offset?: number
-              _sort?: string
-              _tab?: string
-              _tribes?: string[]
-              _viewer: string
-            }
-            Returns: {
-              birthdate: string
-              display_name: string
-              distance_m: number
-              hide_age: boolean
-              hide_distance: boolean
-              hide_online: boolean
-              id: string
-              interests: string[]
-              last_seen: string
-              looking_now_intent: string
-              looking_now_until: string
-              photos: string[]
-              prompts: Json
-              pronouns: string[]
-              score: number
-              tribes: string[]
-              verified: boolean
-            }[]
-          }
-        | {
-            Args: {
-              body_filter?: string[]
-              gender_filter?: string[]
-              hiv_filter?: string[]
-              looking_for_filter?: string[]
-              looking_now_only?: boolean
-              max_age?: number
-              max_distance_km?: number
-              max_height?: number
-              min_age?: number
-              min_height?: number
-              online_only?: boolean
-              order_mode?: string
-              orientation_filter?: string[]
-              position_filter?: string[]
-              result_limit?: number
-              tribes_filter?: string[]
-              verified_only?: boolean
-              with_photo_only?: boolean
-            }
-            Returns: {
-              bio: string
-              birthdate: string
-              body_type: string
-              boost_until: string
-              display_name: string
-              distance_m: number
-              ethnicity: string
-              gender: string[]
-              height_cm: number
-              id: string
-              interests: string[]
-              last_seen: string
-              looking_for: string[]
-              looking_now_intent: string
-              looking_now_until: string
-              orientation: string[]
-              photos: string[]
-              position: string
-              prompts: Json
-              pronouns: string[]
-              relationship_status: string
-              score: number
-              travel_city: string
-              travel_until: string
-              tribes: string[]
-              verified: boolean
-              weight_kg: number
-            }[]
-          }
+      discover_profiles: {
+        Args: {
+          _body?: string[]
+          _genders?: string[]
+          _limit?: number
+          _looking_for?: string[]
+          _looking_now_only?: boolean
+          _max_age?: number
+          _max_height?: number
+          _max_km?: number
+          _min_age?: number
+          _min_height?: number
+          _offset?: number
+          _online_only?: boolean
+          _orientation?: string[]
+          _position?: string[]
+          _sort?: string
+          _tab?: string
+          _tribes?: string[]
+          _verified_only?: boolean
+          _viewer: string
+          _with_photo_only?: boolean
+        }
+        Returns: {
+          bio: string
+          birthdate: string
+          body_type: string
+          boost_until: string
+          display_name: string
+          distance_m: number
+          ethnicity: string
+          gender: string[]
+          height_cm: number
+          hide_age: boolean
+          hide_distance: boolean
+          hide_online: boolean
+          id: string
+          interests: string[]
+          last_seen: string
+          looking_for: string[]
+          looking_now_intent: string
+          looking_now_until: string
+          orientation: string[]
+          photos: string[]
+          position: string
+          prompts: Json
+          pronouns: string[]
+          relationship_status: string
+          score: number
+          travel_city: string
+          travel_until: string
+          tribes: string[]
+          verified: boolean
+          weight_kg: number
+        }[]
+      }
       distance_bucket_label: { Args: { d: number }; Returns: string }
       dropgeometrycolumn:
         | {
@@ -3794,6 +3763,7 @@ export type Database = {
         Returns: undefined
       }
       is_admin_or_above: { Args: { _user_id: string }; Returns: boolean }
+      is_blocked_between: { Args: { a: string; b: string }; Returns: boolean }
       is_conversation_participant: {
         Args: { _conv_id: string; _user_id: string }
         Returns: boolean
@@ -3805,6 +3775,7 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      list_my_block_relations: { Args: never; Returns: string[] }
       longtransactionsenabled: { Args: never; Returns: boolean }
       mark_inactive_for_deletion: { Args: never; Returns: number }
       mark_message_viewed: { Args: { _msg_id: string }; Returns: undefined }
