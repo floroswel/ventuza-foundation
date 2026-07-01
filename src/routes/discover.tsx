@@ -373,9 +373,32 @@ function DiscoverPage() {
       ) : (
         <>
           <OnlineRow profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)} onOpen={setSelected} />
+          <PosterRow
+            title="Global"
+            emoji="🌍"
+            profiles={(() => {
+              const travelers = visible.filter((p) => p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date()));
+              const pool = travelers.length >= 3
+                ? travelers
+                : [...visible].sort((a, b) => (b.distance_m ?? 0) - (a.distance_m ?? 0));
+              return pool.slice(0, 9);
+            })()}
+            onOpen={setSelected}
+          />
+          <PosterRow
+            title="New & nearby"
+            profiles={[...visible]
+              .sort((a, b) => (a.distance_m ?? Number.MAX_SAFE_INTEGER) - (b.distance_m ?? Number.MAX_SAFE_INTEGER))
+              .slice(0, 12)}
+            onOpen={setSelected}
+          />
+          <div className="px-4 pb-1 pt-4">
+            <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Toți din grid</p>
+          </div>
           <Cascade profiles={visible} onOpen={setSelected} />
         </>
       )}
+
 
       <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={filters} onApply={setFilters} />
       <MatchModal
