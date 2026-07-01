@@ -41,7 +41,7 @@ export function IntelligenceDashboardPanel() {
         <Kpi label="Abonamente active" value={revenue?.active_subs ?? "—"} />
         <Kpi label="ARPU (RON)" value={revenue?.arpu_ron ?? "—"} />
         <Kpi label="Trial → paid 30d" value={revenue?.trial_to_paid_30d ?? "—"} />
-        <Kpi label="Churn 30d" value={revenue?.churn_30d ?? "—"} tone={(revenue?.churn_30d ?? 0) > 5 ? "warn" : "default"} suffix="%" />
+        <Kpi label="Churn 30d (%)" value={revenue?.churn_30d ?? "—"} tone={(revenue?.churn_30d ?? 0) > 5 ? "warn" : "default"} />
         <Kpi label="Signups 30d" value={funnel?.signup ?? "—"} />
         <Kpi label="First msg 30d" value={funnel?.first_message ?? "—"} />
       </div>

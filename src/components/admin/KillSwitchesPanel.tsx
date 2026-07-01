@@ -36,8 +36,9 @@ export function KillSwitchesPanel() {
     try {
       const [k, v] = await Promise.all([getKS(), getMV()]);
       setKs(k); setMv(v);
-      setWeb(v?.web ?? "0.0.0"); setIos(v?.ios ?? "0.0.0"); setAndroid(v?.android ?? "0.0.0");
-      setMsg(v?.force_update_message ?? "");
+      const vAny = v as any;
+      setWeb(vAny?.web ?? "0.0.0"); setIos(vAny?.ios ?? "0.0.0"); setAndroid(vAny?.android ?? "0.0.0");
+      setMsg(vAny?.force_update_message ?? "");
     } catch (e: any) { toast.error(e?.message ?? "Eroare"); } finally { setBusy(false); }
   };
   useEffect(() => { load(); }, []);
