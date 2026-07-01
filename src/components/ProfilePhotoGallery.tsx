@@ -205,6 +205,7 @@ function FullscreenViewer({
   extra?: ReactNode;
 }) {
   const [i, setI] = useState(initial);
+  const dialogRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const prevBtnRef = useRef<HTMLButtonElement>(null);
   const nextBtnRef = useRef<HTMLButtonElement>(null);
@@ -225,25 +226,68 @@ function FullscreenViewer({
   }, []);
 
   useEffect(() => {
+    const FOCUSABLE = [
+      "a[href]",
+      "button:not([disabled])",
+      "input:not([disabled]):not([type='hidden'])",
+      "select:not([disabled])",
+      "textarea:not([disabled])",
+      "[tabindex]:not([tabindex='-1'])",
+    ].join(",");
+
+    function getFocusable(): HTMLElement[] {
+      const root = dialogRef.current;
+      if (!root) return [];
+      return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter((el) => {
+        if (el.getAttribute("aria-hidden") === "true") return false;
+        // hidden or display:none — offsetParent is null (except for fixed elements, which we want to keep)
+        const style = window.getComputedStyle(el);
+        if (style.visibility === "hidden" || style.display === "none") return false;
+        return true;
+      });
+    }
+
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
       if (e.key === "ArrowLeft") { setI((v) => (v - 1 + photos.length) % photos.length); return; }
       if (e.key === "ArrowRight") { setI((v) => (v + 1) % photos.length); return; }
       if (e.key === "Tab") {
-        const order = [closeBtnRef.current, prevBtnRef.current, nextBtnRef.current].filter(Boolean) as HTMLButtonElement[];
-        if (!order.length) return;
+        const order = getFocusable();
+        if (!order.length) { e.preventDefault(); return; }
         const active = document.activeElement as HTMLElement | null;
-        const idxA = active ? order.indexOf(active as HTMLButtonElement) : -1;
+        const idxA = active ? order.indexOf(active) : -1;
         e.preventDefault();
         const nextIdx = e.shiftKey
           ? (idxA <= 0 ? order.length - 1 : idxA - 1)
           : (idxA === -1 || idxA === order.length - 1 ? 0 : idxA + 1);
-        order[nextIdx].focus();
+        const target = order[nextIdx];
+        target.focus({ preventScroll: false });
+        // Ensure element inside scrollable content is visible after focus
+        if (typeof target.scrollIntoView === "function") {
+          target.scrollIntoView({ block: "nearest", inline: "nearest" });
+        }
       }
     }
+
+    // Enforce trap on focusin too, in case focus escapes via mouse/tap outside dialog
+    function onFocusIn(e: FocusEvent) {
+      const root = dialogRef.current;
+      if (!root) return;
+      const target = e.target as Node | null;
+      if (target && !root.contains(target)) {
+        e.stopPropagation();
+        (closeBtnRef.current ?? getFocusable()[0])?.focus();
+      }
+    }
+
     window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
+    document.addEventListener("focusin", onFocusIn);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.removeEventListener("focusin", onFocusIn);
+    };
   }, [photos.length, onClose]);
+
 
   function onDragEnd(_: unknown, info: PanInfo) {
     if (info.offset.x < -SWIPE_THRESHOLD) setI((v) => (v + 1) % photos.length);
