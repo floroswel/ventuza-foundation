@@ -1,5 +1,5 @@
 import { Link, useLocation } from "@tanstack/react-router";
-import { Compass, MessageCircle, CalendarHeart, Users, Trophy, MapPin, Briefcase } from "lucide-react";
+import { Compass, MessageCircle, MapPin, Briefcase, Globe, UserCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { useUserRoles } from "@/hooks/useUserRole";
@@ -9,16 +9,14 @@ export function BottomNav() {
   const { total: unreadTotal } = useUnreadMessages();
   const { roles } = useUserRoles();
   const isPartner = roles.includes("business") || roles.includes("admin") || roles.includes("moderator");
-  // For partners, swap Squads for Partner portal (keep 6 items max for mobile width).
   const items = [
     { to: "/discover", label: "Discover", Icon: Compass },
     { to: "/nearby", label: "Nearby", Icon: MapPin },
-    { to: "/quests", label: "Quests", Icon: Trophy },
-    { to: "/events", label: "Events", Icon: CalendarHeart },
+    { to: "/explore", label: "Explore", Icon: Globe },
+    { to: "/messages", label: "Inbox", Icon: MessageCircle, badge: unreadTotal },
     isPartner
       ? { to: "/partner", label: "Partner", Icon: Briefcase }
-      : { to: "/groups", label: "Squads", Icon: Users },
-    { to: "/messages", label: "Messages", Icon: MessageCircle, badge: unreadTotal },
+      : { to: "/account", label: "Cont", Icon: UserCircle2 },
   ] as const;
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/85 backdrop-blur">
