@@ -178,6 +178,7 @@ function AdminDashboard() {
     { id: "gdpr",       label: "GDPR Ops",    icon: Download,    group: "Compliance", adminOnly: true },
     { id: "breakglass", label: "Break-glass", icon: ShieldAlert, group: "Compliance", adminOnly: true },
     { id: "breach",     label: "Breșe",       icon: AlertOctagon,group: "Compliance", adminOnly: true },
+    { id: "legalp0",    label: "Legal P0 · NCMEC/DSA/Country", icon: ShieldAlert, group: "Compliance", adminOnly: true, hint: "CSAM+NCMEC, breach 72h, DSA SoR, country-risk, e-Factura" },
     { id: "policies",   label: "Politici",    icon: FileText,    group: "Compliance" },
     { id: "audit",      label: "Audit",       icon: ScrollText,  group: "Compliance" },
 
