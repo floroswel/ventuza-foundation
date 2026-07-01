@@ -250,6 +250,7 @@ function AdminDashboard() {
       {section === "broadcast2" && isAdmin && <BroadcastV2Panel />}
       {section === "intel" && <IntelligenceDashboardPanel />}
       {section === "killswitch" && isAdmin && <KillSwitchesPanel />}
+      {section === "legalp0" && isAdmin && <LegalP0Panel />}
     </AdminShell>
   );
 }
