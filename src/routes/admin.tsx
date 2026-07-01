@@ -247,7 +247,7 @@ function AdminDashboard() {
       {section === "userops" && isAdmin && <OperationsUserOpsPanel />}
       {section === "broadcast2" && isAdmin && <BroadcastV2Panel />}
       {section === "intel" && <IntelligenceDashboardPanel />}
-      {section === "killswitch" && isAdmin && <KillSwitchesPanel />
+      {section === "killswitch" && isAdmin && <KillSwitchesPanel />}
     </AdminShell>
   );
 }
