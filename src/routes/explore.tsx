@@ -102,7 +102,7 @@ function ExplorePage() {
             cities={filtered}
             loading={isLoading}
             error={error as Error | null}
-            onOpen={(city) => navigate({ to: "/events", search: { city } as never })}
+            onOpen={() => navigate({ to: "/events" })}
           />
         )}
       </div>
