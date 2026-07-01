@@ -83,7 +83,7 @@ type Section =
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle"
   | "settings" | "staff" | "tools"
-  | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch";
+  | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch" | "legalp0";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
