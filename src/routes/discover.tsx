@@ -620,6 +620,100 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
   );
 }
 
+function PosterRow({
+  title,
+  emoji,
+  profiles,
+  onOpen,
+}: {
+  title: string;
+  emoji?: string;
+  profiles: DiscoverProfile[];
+  onOpen: (p: DiscoverProfile) => void;
+}) {
+  const [urls, setUrls] = useState<Record<string, string>>({});
+  const { bySender } = useUnreadMessages();
+  useEffect(() => {
+    const paths = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
+    if (paths.length) signPhotos(paths).then(setUrls);
+  }, [profiles]);
+  if (!profiles.length) return null;
+  return (
+    <section className="pt-5">
+      <header className="mb-2 flex items-baseline justify-between px-4">
+        <h2 className="text-xl font-bold tracking-tight">
+          {title} {emoji && <span aria-hidden>{emoji}</span>}
+        </h2>
+        <span className="text-xs font-medium text-primary/90">{profiles.length} online</span>
+      </header>
+      <div className="-mx-1 flex snap-x snap-mandatory gap-2 overflow-x-auto px-4 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {profiles.map((p) => {
+          const path = p.photos?.[0];
+          const url = path ? urls[path] : null;
+          const online = isOnline(p.last_seen);
+          const age = ageFrom(p.birthdate);
+          const unread = bySender[p.id] ?? 0;
+          const traveler = p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date());
+          return (
+            <button
+              key={p.id}
+              onClick={() => onOpen(p)}
+              className={cn(
+                "group relative aspect-[2/3] w-[42vw] max-w-[180px] shrink-0 snap-start overflow-hidden rounded-2xl bg-surface text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                unread > 0 && "snake-border",
+              )}
+            >
+              {url ? (
+                <img src={url} alt={p.display_name ?? ""} loading="lazy" className="size-full object-cover transition-transform duration-300 group-active:scale-[0.97]" />
+              ) : (
+                <div className="flex size-full items-center justify-center text-3xl text-muted-foreground/40">
+                  {p.display_name?.[0]?.toUpperCase() ?? "?"}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-transparent" />
+              {traveler && (
+                <span className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-black/70 px-2 py-0.5 text-[10px] font-medium text-white backdrop-blur">
+                  <Plane className="size-3" /> {p.travel_city}
+                </span>
+              )}
+              {p.boost_until && new Date(p.boost_until) > new Date() && (
+                <span className="absolute right-2 top-2 flex items-center gap-0.5 rounded-full bg-primary/95 px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-lg backdrop-blur">
+                  <Rocket className="size-2.5" /> BOOST
+                </span>
+              )}
+              {p.looking_now_until && new Date(p.looking_now_until) > new Date() && (
+                <span className="absolute right-2 top-2 flex items-center gap-0.5 rounded-full bg-rose-500/95 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-lg backdrop-blur">
+                  <Flame className="size-2.5" /> NOW
+                </span>
+              )}
+              <div className="absolute inset-x-0 bottom-0 space-y-0.5 p-2.5">
+                <div className="flex items-center gap-1.5">
+                  {online && <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />}
+                  <p className="truncate text-sm font-semibold leading-tight text-white">
+                    {p.display_name}
+                    {age ? <span className="font-normal text-white/70">, {age}</span> : null}
+                  </p>
+                </div>
+                {p.distance_m != null && (
+                  <p className="text-[10px] text-white/70">{formatDistance(p.distance_m)}</p>
+                )}
+              </div>
+              {p.verified && !p.boost_until && (
+                <span className="absolute left-2 top-2 rounded-full bg-black/60 p-0.5 backdrop-blur">
+                  <BadgeCheck className="size-3.5 text-primary" />
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function ProfileSheetOriginalMarker() { return null; }
+
+
 function ProfileSheet({
   profile, currentUserId, onClose, onDecision, onMessage,
 }: {
