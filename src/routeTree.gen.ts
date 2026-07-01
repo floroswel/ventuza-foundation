@@ -25,6 +25,7 @@ import { Route as NearbyRouteImport } from './routes/nearby'
 import { Route as NRouteImport } from './routes/n'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as FavoritesRouteImport } from './routes/favorites'
+import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as CruiseRouteImport } from './routes/cruise'
@@ -34,6 +35,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AdvertiseRouteImport } from './routes/advertise'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountDeletionRouteImport } from './routes/account-deletion'
+import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as VenuesIdRouteImport } from './routes/venues.$id'
@@ -144,6 +146,11 @@ const FavoritesRoute = FavoritesRouteImport.update({
   path: '/favorites',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExploreRoute = ExploreRouteImport.update({
+  id: '/explore',
+  path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EventsRoute = EventsRouteImport.update({
   id: '/events',
   path: '/events',
@@ -187,6 +194,11 @@ const AdminRoute = AdminRouteImport.update({
 const AccountDeletionRoute = AccountDeletionRouteImport.update({
   id: '/account-deletion',
   path: '/account-deletion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AccountRoute = AccountRouteImport.update({
+  id: '/account',
+  path: '/account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -339,6 +351,7 @@ const ApiPublicHooksBillingTickRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRouteWithChildren
   '/advertise': typeof AdvertiseRouteWithChildren
@@ -348,6 +361,7 @@ export interface FileRoutesByFullPath {
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
+  '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/n': typeof NRoute
@@ -395,6 +409,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRouteWithChildren
   '/advertise': typeof AdvertiseRouteWithChildren
@@ -404,6 +419,7 @@ export interface FileRoutesByTo {
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
+  '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/n': typeof NRoute
@@ -452,6 +468,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/account': typeof AccountRoute
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRouteWithChildren
   '/advertise': typeof AdvertiseRouteWithChildren
@@ -461,6 +478,7 @@ export interface FileRoutesById {
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
+  '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/n': typeof NRoute
@@ -510,6 +528,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/account'
     | '/account-deletion'
     | '/admin'
     | '/advertise'
@@ -519,6 +538,7 @@ export interface FileRouteTypes {
     | '/cruise'
     | '/discover'
     | '/events'
+    | '/explore'
     | '/favorites'
     | '/groups'
     | '/n'
@@ -566,6 +586,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/account'
     | '/account-deletion'
     | '/admin'
     | '/advertise'
@@ -575,6 +596,7 @@ export interface FileRouteTypes {
     | '/cruise'
     | '/discover'
     | '/events'
+    | '/explore'
     | '/favorites'
     | '/groups'
     | '/n'
@@ -622,6 +644,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/account'
     | '/account-deletion'
     | '/admin'
     | '/advertise'
@@ -631,6 +654,7 @@ export interface FileRouteTypes {
     | '/cruise'
     | '/discover'
     | '/events'
+    | '/explore'
     | '/favorites'
     | '/groups'
     | '/n'
@@ -679,6 +703,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AccountRoute: typeof AccountRoute
   AccountDeletionRoute: typeof AccountDeletionRoute
   AdminRoute: typeof AdminRouteWithChildren
   AdvertiseRoute: typeof AdvertiseRouteWithChildren
@@ -688,6 +713,7 @@ export interface RootRouteChildren {
   CruiseRoute: typeof CruiseRoute
   DiscoverRoute: typeof DiscoverRoute
   EventsRoute: typeof EventsRouteWithChildren
+  ExploreRoute: typeof ExploreRoute
   FavoritesRoute: typeof FavoritesRoute
   GroupsRoute: typeof GroupsRouteWithChildren
   NRoute: typeof NRoute
@@ -840,6 +866,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FavoritesRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/explore': {
+      id: '/explore'
+      path: '/explore'
+      fullPath: '/explore'
+      preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/events': {
       id: '/events'
       path: '/events'
@@ -901,6 +934,13 @@ declare module '@tanstack/react-router' {
       path: '/account-deletion'
       fullPath: '/account-deletion'
       preLoaderRoute: typeof AccountDeletionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/account': {
+      id: '/account'
+      path: '/account'
+      fullPath: '/account'
+      preLoaderRoute: typeof AccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1190,6 +1230,7 @@ const PartnerRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AccountRoute: AccountRoute,
   AccountDeletionRoute: AccountDeletionRoute,
   AdminRoute: AdminRouteWithChildren,
   AdvertiseRoute: AdvertiseRouteWithChildren,
@@ -1199,6 +1240,7 @@ const rootRouteChildren: RootRouteChildren = {
   CruiseRoute: CruiseRoute,
   DiscoverRoute: DiscoverRoute,
   EventsRoute: EventsRouteWithChildren,
+  ExploreRoute: ExploreRoute,
   FavoritesRoute: FavoritesRoute,
   GroupsRoute: GroupsRouteWithChildren,
   NRoute: NRoute,
