@@ -9,7 +9,7 @@ import {
   Megaphone, Play, Pause, Building2, LayoutDashboard, Users, Database, Send,
   Trash2, Save, Search, RefreshCw, ChevronLeft, ChevronRight, Crown,
   ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon, Sparkles,
-  Activity, Bot, Flag,
+  Activity, Bot, Flag, LifeBuoy, Gavel, Eye, TrendingUp, PowerOff,
 } from "lucide-react";
 import { AdminShell, type NavItem } from "@/components/admin/AdminShell";
 import { GlassCard, Kpi, MonoNumber, StatusBadge, SectionTitle } from "@/components/admin/ui/primitives";
@@ -44,6 +44,12 @@ import { SignupThrottlePanel } from "@/components/admin/SignupThrottlePanel";
 import { SettingsAndFlagsPanel } from "@/components/admin/SettingsAndFlagsPanel";
 import { StaffManagementPanel } from "@/components/admin/StaffManagementPanel";
 import { AdminToolsPanel } from "@/components/admin/AdminToolsPanel";
+import { SupportTicketsPanel } from "@/components/admin/SupportTicketsPanel";
+import { AppealsPanel } from "@/components/admin/AppealsPanel";
+import { OperationsUserOpsPanel } from "@/components/admin/OperationsUserOpsPanel";
+import { BroadcastV2Panel } from "@/components/admin/BroadcastV2Panel";
+import { IntelligenceDashboardPanel } from "@/components/admin/IntelligenceDashboardPanel";
+import { KillSwitchesPanel } from "@/components/admin/KillSwitchesPanel";
 
 
 function AgeGateDevBanner() {
