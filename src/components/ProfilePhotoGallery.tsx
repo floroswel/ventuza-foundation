@@ -370,6 +370,7 @@ function FullscreenViewer({
               alt={alt ? `${alt} — poza ${i + 1} din ${photos.length}` : `Poza ${i + 1} din ${photos.length}`}
               wrapperClassName="flex h-[100dvh] w-full items-center justify-center"
               className="max-h-[100dvh] max-w-full object-contain"
+              onStatusChange={setImgStatus}
               motionProps={{
                 drag: "x",
                 dragConstraints: { left: 0, right: 0 },
@@ -383,6 +384,7 @@ function FullscreenViewer({
               }}
             />
           </AnimatePresence>
+
 
           <p
             className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/60"
