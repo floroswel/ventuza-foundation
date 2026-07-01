@@ -77,7 +77,7 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 | **Destinatari** | P1, P8. |
 | **Transfer extra-UE** | P8 — SCC + DPF. |
 | **Retenție** | Pe durata contului; cascade la ștergere. `profile_views` 90 zile. |
-| **Măsuri tehnice** | RPC `discover_profiles` cu proiecție restrânsă (fără `hiv_status`, fără coordonate). Distanță bucketizată exclusiv (`bucket_distance_m`, `distance_bucket_label`). Owner-only RLS pe `location`. |
+| **Măsuri tehnice** | RPC `discover_profiles` cu proiecție restrânsă (fără date de sănătate, fără coordonate). Distanță bucketizată exclusiv (`bucket_distance_m`, `distance_bucket_label`). Owner-only RLS pe `location`. |
 
 ---
 
@@ -327,7 +327,7 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 | **Scop** | Moderare automată texte; asistență la scrierea bio. |
 | **Persoane vizate** | Utilizatori care folosesc feature-urile. |
 | **Categorii date — normale** | Doar textul trimis explicit (bio draft, mesaj raportat). |
-| **🟥 Categorii Art. 9** | **NU se trimit câmpuri Art. 9 codificate** (hiv_status, orientation). Dacă userul scrie liber un text care le conține → temei consimțământ explicit prin folosirea feature-ului. |
+| **🟥 Categorii Art. 9** | **NU se trimit câmpuri Art. 9 codificate** (orientare). Ventuza nu mai procesează date HIV. Dacă userul scrie liber un text care conține date sensibile → temei consimțământ explicit prin folosirea feature-ului. |
 | **Temei Art. 6** | 6(1)(b) (asistent bio — feature opt-in) + 6(1)(f) (moderare). |
 | **Temei Art. 9** | 9(2)(a) consimțământ implicit prin trimiterea voluntară a textului — **DE REZOLVAT: adaugă disclosure explicit în UI înainte de trimiterea bio-ului la AI**. |
 | **Destinatari** | P7 Lovable AI Gateway, P8. |
@@ -344,9 +344,9 @@ Identificate la generarea acestui registru, din analiza schemei reale:
 1. **🟧 A4 — selfie Didit ca date biometrice**: temeiul 9(2)(a) este înregistrat la onboarding global (`terms`/`privacy`) dar **nu** există un consent_log dedicat `age_verification` separat de termenii generali. **Acțiune:** adaugă în onboarding (`src/routes/n.tsx`) un consent explicit `kind='age_verification'` înainte de redirect către Didit.
 2. **🟧 A17 — AI Gateway**: bio assist trimite text liber la model US potențial; lipsește un disclosure explicit + checkbox de consimțământ în UI-ul de bio assist. **Acțiune:** adaugă tooltip + consent la prima utilizare per user; loghează în `consent_log` kind `ai_features`.
 3. **🟧 A6 — push consent dual**: consimțământul de push este browser-level (Notification API) + opt-in app-level. Lipsește înregistrare în `consent_log` (kind `push_notifications`). **Acțiune:** loghează în `consent_log` la activare/dezactivare.
-4. **🟥 DPIA obligatoriu (Art. 35)**: combinația date sănătate + orientare + locație + monitorizare sistematică + risc minori impune DPIA formal. **Acțiune:** redactare DPIA + anexare la registru înainte de lansare comercială publică.
+4. **🟥 DPIA obligatoriu (Art. 35)**: combinația orientare + locație + monitorizare sistematică + risc minori impune DPIA formal. **Acțiune:** redactare DPIA + anexare la registru înainte de lansare comercială publică.
 5. **🟧 TIA (Transfer Impact Assessment)** post-Schrems II pentru toți procesatorii US (P2, P3, P4, P5, P7, P8). **Acțiune:** redactare TIA și anexare.
-6. **✅ Cifrare la nivel de coloană pentru `hiv_status` / `hiv_test_date` aplicată**: plaintext-ul nu mai există în `profiles`; datele sunt în `hiv_status_enc` / `hiv_test_date_enc`, accesibile doar prin RPC-urile server-side `get_user_health` / `set_user_health`. Test DB anti-regresie: `assert_no_plaintext_hiv_profile_completion()`.
+6. **✅ Eliminare completă procesare HIV**: coloanele `hiv_status_enc` / `hiv_test_date_enc` au fost dropate din `profiles`, funcțiile `get_user_health` / `set_user_health` și triggerele `enforce_health_consent` / `cascade_health_consent_withdrawal` au fost șterse. Kind-ul `health_data` a fost scos din `consent_kinds`. Zero date HIV mai există în bază.
 7. **🟧 DPO desemnat oficial** (Art. 37) — neînregistrat. **Acțiune:** numire formală + notificare ANSPDCP.
 8. **🟧 DPA Didit + RevenueCat + Lovable**: semnate manual din dashboard — confirmă starea fiecăruia și anexează copii.
 
@@ -392,7 +392,7 @@ Identificate la generarea acestui registru, din analiza schemei reale:
 - `/legal/dsa` (coordonator DSA)
 - `/legal/security-incidents`
 - `/legal/records-of-processing` (pagina publică sumarizată a acestui registru)
-- `docs/migrations-draft/encrypt-hiv-columns.md`
+- `docs/migrations-draft/encrypt-hiv-columns.md` (arhivă istorică — HIV a fost complet eliminat ulterior)
 - `AGENTS.md` — reguli permanente (locație, sănătate, procesatori, Art. 30)
 
 ## A20 — Facturare parteneri (Business)
