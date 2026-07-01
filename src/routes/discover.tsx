@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
+import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 
 
 export const Route = createFileRoute("/discover")({
