@@ -57,7 +57,6 @@ function ExplorePage() {
             </button>
             <Link
               to="/settings"
-              search={{ travel: 1 } as never}
               aria-label="Travel mode"
               className="grid size-10 place-items-center rounded-full border border-border/60 bg-background/60 backdrop-blur"
             >
