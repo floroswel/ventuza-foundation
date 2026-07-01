@@ -607,10 +607,8 @@ function ProfileSheet({
   onMessage: (p: DiscoverProfile) => void;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
-  const [idx, setIdx] = useState(0);
 
   useEffect(() => {
-    setIdx(0);
     if (!profile?.photos?.length) { setUrls({}); return; }
     signPhotos(profile.photos).then(setUrls);
   }, [profile]);
@@ -618,11 +616,10 @@ function ProfileSheet({
   if (!profile) return null;
   const age = ageFrom(profile.birthdate);
   const photos = profile.photos ?? [];
-  const currentPath = photos[idx];
-  const currentUrl = currentPath ? urls[currentPath] : null;
   const lastSeenText = formatLastSeen(profile.last_seen);
   const online = isOnline(profile.last_seen);
   const heightStr = formatHeight(profile.height_cm);
+
 
   const signedPhotos = photos.map((p) => urls[p]).filter(Boolean) as string[];
 
