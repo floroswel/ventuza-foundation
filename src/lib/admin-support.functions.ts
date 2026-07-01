@@ -139,9 +139,9 @@ export const adminTicketAction = createServerFn({ method: "POST" })
     await assertStaff(context.supabase, context.userId);
     const { error } = await context.supabase.rpc("admin_staff_ticket_action", {
       _ticket_id: data.ticketId,
-      _new_status: data.status ?? null,
-      _assignee: data.assignee ?? null,
-      _priority: data.priority ?? null,
+      _new_status: (data.status ?? null) as any,
+      _assignee: (data.assignee ?? null) as any,
+      _priority: (data.priority ?? null) as any,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
