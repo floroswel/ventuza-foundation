@@ -63,7 +63,8 @@ function AccountPage() {
     if (!user || !profile) return;
     setSaving(true);
     setProfile({ ...profile, [field]: value });
-    const { error } = await supabase.from("profiles").update({ [field]: value }).eq("id", user.id);
+    const patch = { [field]: value } as { hide_online?: boolean; discrete_mode?: boolean };
+    const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
     setSaving(false);
     if (error) {
       toast.error(error.message);
