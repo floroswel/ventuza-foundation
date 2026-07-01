@@ -413,16 +413,45 @@ function FullscreenViewer({
             <ChevronRight className="size-6" aria-hidden="true" />
           </button>
 
-          <div className="fixed left-1/2 top-4 z-20 flex -translate-x-1/2 gap-1" aria-hidden="true">
-            {photos.map((_, k) => (
-              <span
-                key={k}
-                className={cn(
-                  "h-1 rounded-full transition-all",
-                  k === i ? "w-8 bg-white" : "w-3 bg-white/40",
-                )}
-              />
-            ))}
+          <div
+            role="tablist"
+            aria-label="Selectează poza"
+            aria-orientation="horizontal"
+            onKeyDown={(e) => {
+              let next: number | null = null;
+              if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (i - 1 + photos.length) % photos.length;
+              else if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (i + 1) % photos.length;
+              else if (e.key === "Home") next = 0;
+              else if (e.key === "End") next = photos.length - 1;
+              if (next === null) return;
+              e.preventDefault();
+              setI(next);
+              const btn = e.currentTarget.querySelector<HTMLButtonElement>(`[data-fs-thumb="${next}"]`);
+              btn?.focus();
+              btn?.scrollIntoView({ block: "nearest", inline: "center" });
+            }}
+            className="fixed left-1/2 top-4 z-30 flex max-w-[90vw] -translate-x-1/2 gap-1 overflow-x-auto rounded-full bg-black/40 px-2 py-1.5 backdrop-blur"
+          >
+            {photos.map((_, k) => {
+              const active = k === i;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  role="tab"
+                  data-fs-thumb={k}
+                  aria-label={`Poza ${k + 1} din ${photos.length}`}
+                  aria-selected={active}
+                  aria-current={active ? "true" : undefined}
+                  tabIndex={active ? 0 : -1}
+                  onClick={(e) => { e.stopPropagation(); setI(k); }}
+                  className={cn(
+                    "h-2 shrink-0 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
+                    active ? "w-8 bg-white" : "w-3 bg-white/40 hover:bg-white/70",
+                  )}
+                />
+              );
+            })}
           </div>
         </>
       )}
