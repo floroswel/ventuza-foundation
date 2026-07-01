@@ -185,7 +185,9 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
             alt={alt}
             onIndexChange={setIdx}
             onClose={() => setFs(false)}
+            extra={fullscreenExtra}
           />
+
         )}
       </AnimatePresence>
     </>
