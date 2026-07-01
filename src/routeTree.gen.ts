@@ -24,6 +24,7 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as NearbyRouteImport } from './routes/nearby'
 import { Route as NRouteImport } from './routes/n'
 import { Route as GroupsRouteImport } from './routes/groups'
+import { Route as GalleryTestRouteImport } from './routes/gallery-test'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as EventsRouteImport } from './routes/events'
@@ -139,6 +140,11 @@ const NRoute = NRouteImport.update({
 const GroupsRoute = GroupsRouteImport.update({
   id: '/groups',
   path: '/groups',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GalleryTestRoute = GalleryTestRouteImport.update({
+  id: '/gallery-test',
+  path: '/gallery-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -363,6 +369,7 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
+  '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
@@ -421,6 +428,7 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
+  '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
@@ -480,6 +488,7 @@ export interface FileRoutesById {
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
+  '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
@@ -540,6 +549,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/explore'
     | '/favorites'
+    | '/gallery-test'
     | '/groups'
     | '/n'
     | '/nearby'
@@ -598,6 +608,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/explore'
     | '/favorites'
+    | '/gallery-test'
     | '/groups'
     | '/n'
     | '/nearby'
@@ -656,6 +667,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/explore'
     | '/favorites'
+    | '/gallery-test'
     | '/groups'
     | '/n'
     | '/nearby'
@@ -715,6 +727,7 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRouteWithChildren
   ExploreRoute: typeof ExploreRoute
   FavoritesRoute: typeof FavoritesRoute
+  GalleryTestRoute: typeof GalleryTestRoute
   GroupsRoute: typeof GroupsRouteWithChildren
   NRoute: typeof NRoute
   NearbyRoute: typeof NearbyRoute
@@ -857,6 +870,13 @@ declare module '@tanstack/react-router' {
       path: '/groups'
       fullPath: '/groups'
       preLoaderRoute: typeof GroupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gallery-test': {
+      id: '/gallery-test'
+      path: '/gallery-test'
+      fullPath: '/gallery-test'
+      preLoaderRoute: typeof GalleryTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -1242,6 +1262,7 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRouteWithChildren,
   ExploreRoute: ExploreRoute,
   FavoritesRoute: FavoritesRoute,
+  GalleryTestRoute: GalleryTestRoute,
   GroupsRoute: GroupsRouteWithChildren,
   NRoute: NRoute,
   NearbyRoute: NearbyRoute,
@@ -1281,3 +1302,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
