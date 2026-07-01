@@ -2139,13 +2139,10 @@ export type Database = {
           friends_only_mode: boolean
           gender: string[] | null
           gender_custom: string | null
-          health_data_consent_at: string | null
           height_cm: number | null
           hide_age: boolean
           hide_distance: boolean
           hide_online: boolean
-          hiv_status_enc: string | null
-          hiv_test_date_enc: string | null
           id: string
           ideal_match: string | null
           incognito: boolean
@@ -2262,13 +2259,10 @@ export type Database = {
           friends_only_mode?: boolean
           gender?: string[] | null
           gender_custom?: string | null
-          health_data_consent_at?: string | null
           height_cm?: number | null
           hide_age?: boolean
           hide_distance?: boolean
           hide_online?: boolean
-          hiv_status_enc?: string | null
-          hiv_test_date_enc?: string | null
           id: string
           ideal_match?: string | null
           incognito?: boolean
@@ -2385,13 +2379,10 @@ export type Database = {
           friends_only_mode?: boolean
           gender?: string[] | null
           gender_custom?: string | null
-          health_data_consent_at?: string | null
           height_cm?: number | null
           hide_age?: boolean
           hide_distance?: boolean
           hide_online?: boolean
-          hiv_status_enc?: string | null
-          hiv_test_date_enc?: string | null
           id?: string
           ideal_match?: string | null
           incognito?: boolean
@@ -3535,10 +3526,6 @@ export type Database = {
       assert_account_usable: { Args: never; Returns: undefined }
       assert_age_verified: { Args: never; Returns: undefined }
       assert_email_allowed: { Args: { _email: string }; Returns: boolean }
-      assert_no_plaintext_hiv_profile_completion: {
-        Args: never
-        Returns: boolean
-      }
       award_xp: {
         Args: { _kind: string; _meta?: Json; _user_id: string; _xp: number }
         Returns: undefined
@@ -3838,20 +3825,9 @@ export type Database = {
           verified: boolean
         }[]
       }
-      get_user_health: {
-        Args: { _key: string; _user_id: string }
-        Returns: {
-          hiv_status: string
-          hiv_test_date: string
-        }[]
-      }
       gettransactionid: { Args: never; Returns: unknown }
       has_active_consent: {
         Args: { _kind: string; _user_id: string }
-        Returns: boolean
-      }
-      has_active_health_consent: {
-        Args: { _user_id: string }
         Returns: boolean
       }
       has_active_subscription: { Args: { _user: string }; Returns: boolean }
@@ -3869,7 +3845,6 @@ export type Database = {
         }
         Returns: boolean
       }
-      health_gated_columns: { Args: never; Returns: string[] }
       increment_quest_progress: {
         Args: { _delta?: number; _metric: string; _user_id: string }
         Returns: undefined
@@ -4039,10 +4014,6 @@ export type Database = {
       set_looking_now:
         | { Args: { _hours: number; _intent?: string }; Returns: undefined }
         | { Args: { _hours: number; _intent: string }; Returns: undefined }
-      set_user_health: {
-        Args: { _date: string; _key: string; _status: string; _user_id: string }
-        Returns: undefined
-      }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
@@ -4651,10 +4622,6 @@ export type Database = {
         Returns: string
       }
       wipe_seed_admin_appendonly: { Args: never; Returns: Json }
-      withdraw_health_consent: {
-        Args: { _version?: string }
-        Returns: undefined
-      }
     }
     Enums: {
       age_status: "unverified" | "pending" | "verified" | "failed" | "expired"
