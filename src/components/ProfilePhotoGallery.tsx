@@ -209,11 +209,13 @@ function FullscreenViewer({
   extra?: ReactNode;
 }) {
   const [i, setI] = useState(initial);
+  const [imgStatus, setImgStatus] = useState<"loading" | "ready" | "error">("loading");
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const prevBtnRef = useRef<HTMLButtonElement>(null);
   const nextBtnRef = useRef<HTMLButtonElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
+
 
   useEffect(() => { onIndexChange(i); }, [i, onIndexChange]);
 
