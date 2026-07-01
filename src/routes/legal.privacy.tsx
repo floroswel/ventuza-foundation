@@ -37,9 +37,11 @@ function PrivacyPage() {
             <strong>Date sensibile (Art. 9 GDPR) — opționale, doar cu consimțământ explicit:</strong>
             <ul className="mt-1 list-[circle] pl-5">
               <li><strong>Orientare sexuală / identitate de gen</strong> (gen, orientare, pronume, tribes) — Art. 9(1) date privind viața sexuală.</li>
-              <li><strong>Status HIV și data ultimului test</strong> — Art. 9(1) date privind sănătatea, stocate cifrat (pgcrypto).</li>
               <li><strong>Selfie de verificare 18+</strong> — Art. 9(1) date biometrice, procesate de Didit și șterse după verificare.</li>
             </ul>
+            <p className="mt-2 text-xs text-muted-foreground">
+              <strong>NU procesăm date despre statutul HIV.</strong> Ventuza a eliminat complet colectarea și stocarea datelor despre HIV. Pentru testare și informații vezi resursele publice ARAS din centrul de siguranță.
+            </p>
           </li>
           <li><strong>Locație:</strong> coordonatele rămân pe dispozitivul tău; serverul filtrează prin <em>bucket-uri geografice</em>, nu prin lat/lng. Alți utilizatori văd doar distanță rotunjită ("~500m", "~2km"), niciodată coordonate precise.</li>
           <li><strong>Activitate:</strong> swipe-uri, match-uri, mesaje, RSVP la evenimente.</li>
@@ -51,14 +53,14 @@ function PrivacyPage() {
         <h2 className="mt-6 text-base font-semibold">2. Temei legal (GDPR Art. 6 și 9)</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
           <li><strong>Execuția contractului</strong> — pentru a furniza serviciul.</li>
-          <li><strong>Consimțământ explicit</strong> — pentru datele de sănătate (status HIV) și notificările marketing.</li>
+          <li><strong>Consimțământ explicit</strong> — pentru date biometrice (selfie verificare vârstă) și notificările marketing.</li>
           <li><strong>Interes legitim</strong> — moderare, prevenirea fraudei, securitate.</li>
           <li><strong>Obligație legală</strong> — răspuns la solicitări ale autorităților.</li>
         </ul>
 
         <h2 className="mt-6 text-base font-semibold">3. Cu cine împărtășim datele</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
-          <li><strong>Alți utilizatori</strong> — profilul tău public (fotografii, bio, interese, status HIV dacă l-ai completat).</li>
+          <li><strong>Alți utilizatori</strong> — profilul tău public (fotografii, bio, interese).</li>
           <li><strong>Subprocesatori:</strong>
             <ul className="mt-1 list-[circle] pl-5">
               <li>Supabase (Lovable Cloud) — bază de date, autentificare, stocare fotografii (UE).</li>
