@@ -519,6 +519,59 @@ export type Database = {
         }
         Relationships: []
       }
+      anaf_efactura_queue: {
+        Row: {
+          anaf_response: string | null
+          anaf_upload_id: string | null
+          attempts: number
+          created_at: string
+          error_msg: string | null
+          id: string
+          invoice_id: string
+          status: string
+          submitted_at: string | null
+          submitted_by: string | null
+          ubl_xml: string | null
+          updated_at: string
+        }
+        Insert: {
+          anaf_response?: string | null
+          anaf_upload_id?: string | null
+          attempts?: number
+          created_at?: string
+          error_msg?: string | null
+          id?: string
+          invoice_id: string
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          ubl_xml?: string | null
+          updated_at?: string
+        }
+        Update: {
+          anaf_response?: string | null
+          anaf_upload_id?: string | null
+          attempts?: number
+          created_at?: string
+          error_msg?: string | null
+          id?: string
+          invoice_id?: string
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          ubl_xml?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "anaf_efactura_queue_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: true
+            referencedRelation: "partner_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       app_settings: {
         Row: {
           category: string
@@ -672,7 +725,11 @@ export type Database = {
       breach_incidents: {
         Row: {
           affected_users_count: number | null
+          art33_draft: string | null
+          art34_draft: string | null
           authority_notified_at: string | null
+          closed_at: string | null
+          containment_actions: string | null
           created_at: string
           created_by: string | null
           data_categories: string[] | null
@@ -682,13 +739,20 @@ export type Database = {
           id: string
           is_seed: boolean
           notify_deadline: string
+          root_cause: string | null
+          severity: string
           status: string
+          timeline: Json
           title: string
           users_notified_at: string | null
         }
         Insert: {
           affected_users_count?: number | null
+          art33_draft?: string | null
+          art34_draft?: string | null
           authority_notified_at?: string | null
+          closed_at?: string | null
+          containment_actions?: string | null
           created_at?: string
           created_by?: string | null
           data_categories?: string[] | null
@@ -698,13 +762,20 @@ export type Database = {
           id?: string
           is_seed?: boolean
           notify_deadline?: string
+          root_cause?: string | null
+          severity?: string
           status?: string
+          timeline?: Json
           title: string
           users_notified_at?: string | null
         }
         Update: {
           affected_users_count?: number | null
+          art33_draft?: string | null
+          art34_draft?: string | null
           authority_notified_at?: string | null
+          closed_at?: string | null
+          containment_actions?: string | null
           created_at?: string
           created_by?: string | null
           data_categories?: string[] | null
@@ -714,7 +785,10 @@ export type Database = {
           id?: string
           is_seed?: boolean
           notify_deadline?: string
+          root_cause?: string | null
+          severity?: string
           status?: string
+          timeline?: Json
           title?: string
           users_notified_at?: string | null
         }
@@ -939,6 +1013,45 @@ export type Database = {
         }
         Relationships: []
       }
+      country_risk_config: {
+        Row: {
+          country_code: string
+          country_name: string
+          disable_discover: boolean
+          disable_signup: boolean
+          force_stealth: boolean
+          hide_precise_location: boolean
+          reason: string | null
+          risk_level: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          country_code: string
+          country_name: string
+          disable_discover?: boolean
+          disable_signup?: boolean
+          force_stealth?: boolean
+          hide_precise_location?: boolean
+          reason?: string | null
+          risk_level: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          country_code?: string
+          country_name?: string
+          disable_discover?: boolean
+          disable_signup?: boolean
+          force_stealth?: boolean
+          hide_precise_location?: boolean
+          reason?: string | null
+          risk_level?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       csam_hash_blocklist: {
         Row: {
           added_at: string
@@ -959,6 +1072,65 @@ export type Database = {
           source?: string | null
         }
         Relationships: []
+      }
+      csam_ncmec_queue: {
+        Row: {
+          affected_country: string | null
+          created_at: string
+          created_by: string | null
+          csam_report_id: string
+          error_msg: string | null
+          filed_at: string | null
+          filed_by: string | null
+          hash_perceptual: string | null
+          hash_sha256: string | null
+          id: string
+          narrative: string
+          ncmec_case_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          affected_country?: string | null
+          created_at?: string
+          created_by?: string | null
+          csam_report_id: string
+          error_msg?: string | null
+          filed_at?: string | null
+          filed_by?: string | null
+          hash_perceptual?: string | null
+          hash_sha256?: string | null
+          id?: string
+          narrative: string
+          ncmec_case_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          affected_country?: string | null
+          created_at?: string
+          created_by?: string | null
+          csam_report_id?: string
+          error_msg?: string | null
+          filed_at?: string | null
+          filed_by?: string | null
+          hash_perceptual?: string | null
+          hash_sha256?: string | null
+          id?: string
+          narrative?: string
+          ncmec_case_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "csam_ncmec_queue_csam_report_id_fkey"
+            columns: ["csam_report_id"]
+            isOneToOne: false
+            referencedRelation: "csam_reports"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       csam_reports: {
         Row: {
@@ -1091,6 +1263,68 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      dsa_sor: {
+        Row: {
+          action_type: string
+          appeal_id: string | null
+          automated: boolean
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          legal_basis: string
+          reasoning: string
+          redress_deadline: string
+          target_content_id: string | null
+          target_content_type: string | null
+          target_user_id: string | null
+          transparency_period: string | null
+          transparency_reported: boolean
+        }
+        Insert: {
+          action_type: string
+          appeal_id?: string | null
+          automated?: boolean
+          category: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          legal_basis: string
+          reasoning: string
+          redress_deadline?: string
+          target_content_id?: string | null
+          target_content_type?: string | null
+          target_user_id?: string | null
+          transparency_period?: string | null
+          transparency_reported?: boolean
+        }
+        Update: {
+          action_type?: string
+          appeal_id?: string | null
+          automated?: boolean
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          legal_basis?: string
+          reasoning?: string
+          redress_deadline?: string
+          target_content_id?: string | null
+          target_content_type?: string | null
+          target_user_id?: string | null
+          transparency_period?: string | null
+          transparency_reported?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dsa_sor_appeal_id_fkey"
+            columns: ["appeal_id"]
+            isOneToOne: false
+            referencedRelation: "appeals"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       event_rsvps: {
         Row: {
@@ -3807,6 +4041,10 @@ export type Database = {
         Returns: undefined
       }
       billing_tick: { Args: never; Returns: Json }
+      breach_add_timeline_event: {
+        Args: { _breach_id: string; _kind: string; _note: string }
+        Returns: undefined
+      }
       bucket_distance_m: { Args: { d: number }; Returns: number }
       check_rate_limit: {
         Args: { _action: string; _max: number; _window_seconds: number }
@@ -3941,6 +4179,19 @@ export type Database = {
           }
         | { Args: { schema_name: string; table_name: string }; Returns: string }
         | { Args: { table_name: string }; Returns: string }
+      dsa_record_sor: {
+        Args: {
+          _action_type: string
+          _automated: boolean
+          _category: string
+          _legal_basis: string
+          _reasoning: string
+          _target_content_id: string
+          _target_content_type: string
+          _target_user_id: string
+        }
+        Returns: string
+      }
       enablelongtransactions: { Args: never; Returns: string }
       ensure_referral_code: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
@@ -4042,6 +4293,18 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_country_risk: {
+        Args: { _country_code: string }
+        Returns: {
+          country_code: string
+          disable_discover: boolean
+          disable_signup: boolean
+          force_stealth: boolean
+          hide_precise_location: boolean
+          reason: string
+          risk_level: string
+        }[]
+      }
       get_local_leaderboard: {
         Args: { _radius_km?: number }
         Returns: {

@@ -50,6 +50,7 @@ import { OperationsUserOpsPanel } from "@/components/admin/OperationsUserOpsPane
 import { BroadcastV2Panel } from "@/components/admin/BroadcastV2Panel";
 import { IntelligenceDashboardPanel } from "@/components/admin/IntelligenceDashboardPanel";
 import { KillSwitchesPanel } from "@/components/admin/KillSwitchesPanel";
+import { LegalP0Panel } from "@/components/admin/LegalP0Panel";
 
 
 function AgeGateDevBanner() {
@@ -82,7 +83,7 @@ type Section =
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle"
   | "settings" | "staff" | "tools"
-  | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch";
+  | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch" | "legalp0";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -177,6 +178,7 @@ function AdminDashboard() {
     { id: "gdpr",       label: "GDPR Ops",    icon: Download,    group: "Compliance", adminOnly: true },
     { id: "breakglass", label: "Break-glass", icon: ShieldAlert, group: "Compliance", adminOnly: true },
     { id: "breach",     label: "Breșe",       icon: AlertOctagon,group: "Compliance", adminOnly: true },
+    { id: "legalp0",    label: "Legal P0 · NCMEC/DSA/Country", icon: ShieldAlert, group: "Compliance", adminOnly: true, hint: "CSAM+NCMEC, breach 72h, DSA SoR, country-risk, e-Factura" },
     { id: "policies",   label: "Politici",    icon: FileText,    group: "Compliance" },
     { id: "audit",      label: "Audit",       icon: ScrollText,  group: "Compliance" },
 
@@ -248,6 +250,7 @@ function AdminDashboard() {
       {section === "broadcast2" && isAdmin && <BroadcastV2Panel />}
       {section === "intel" && <IntelligenceDashboardPanel />}
       {section === "killswitch" && isAdmin && <KillSwitchesPanel />}
+      {section === "legalp0" && isAdmin && <LegalP0Panel />}
     </AdminShell>
   );
 }
