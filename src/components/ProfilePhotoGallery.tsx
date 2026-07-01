@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * `motionProps` opțional pentru a atașa drag/animații framer-motion.
  */
 function GalleryImage({
-  src, alt, className, wrapperClassName, motionProps, onClick, onRetryKey,
+  src, alt, className, wrapperClassName, motionProps, onClick, onRetryKey, onStatusChange,
 }: {
   src: string;
   alt: string;
@@ -18,11 +18,15 @@ function GalleryImage({
   onClick?: () => void;
   /** cheie internă folosită doar pentru re-render la retry */
   onRetryKey?: number;
+  /** notifică părintele despre starea de încărcare (pentru status regions externe) */
+  onStatusChange?: (status: "loading" | "ready" | "error") => void;
 }) {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [nonce, setNonce] = useState(0);
 
   useEffect(() => { setStatus("loading"); }, [src, onRetryKey, nonce]);
+  useEffect(() => { onStatusChange?.(status); }, [status, onStatusChange]);
+
 
   return (
     <div className={cn("relative size-full", wrapperClassName)}>
@@ -205,11 +209,13 @@ function FullscreenViewer({
   extra?: ReactNode;
 }) {
   const [i, setI] = useState(initial);
+  const [imgStatus, setImgStatus] = useState<"loading" | "ready" | "error">("loading");
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
   const prevBtnRef = useRef<HTMLButtonElement>(null);
   const nextBtnRef = useRef<HTMLButtonElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
+
 
   useEffect(() => { onIndexChange(i); }, [i, onIndexChange]);
 
@@ -321,6 +327,28 @@ function FullscreenViewer({
         <X className="size-5" aria-hidden="true" />
       </button>
 
+      {/* Status fixat — vizibil și când derulezi vertical */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="pointer-events-none fixed left-1/2 top-16 z-30 -translate-x-1/2"
+      >
+        {imgStatus === "loading" && (
+          <span className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur">
+            <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+            Se încarcă poza {i + 1} din {photos.length}…
+          </span>
+        )}
+        {imgStatus === "error" && (
+          <span className="inline-flex items-center gap-2 rounded-full bg-destructive/90 px-3 py-1.5 text-xs font-medium text-destructive-foreground shadow-lg backdrop-blur">
+            <ImageOff className="size-3.5" aria-hidden="true" />
+            Poza {i + 1} nu s-a putut încărca
+          </span>
+        )}
+      </div>
+
+
       {multi && (
         <>
           <button
@@ -364,6 +392,7 @@ function FullscreenViewer({
               alt={alt ? `${alt} — poza ${i + 1} din ${photos.length}` : `Poza ${i + 1} din ${photos.length}`}
               wrapperClassName="flex h-[100dvh] w-full items-center justify-center"
               className="max-h-[100dvh] max-w-full object-contain"
+              onStatusChange={setImgStatus}
               motionProps={{
                 drag: "x",
                 dragConstraints: { left: 0, right: 0 },
@@ -377,6 +406,7 @@ function FullscreenViewer({
               }}
             />
           </AnimatePresence>
+
 
           <p
             className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/60"
