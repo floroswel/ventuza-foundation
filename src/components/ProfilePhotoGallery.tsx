@@ -127,14 +127,42 @@ function FullscreenViewer({
   onIndexChange: (i: number) => void;
 }) {
   const [i, setI] = useState(initial);
+  const closeBtnRef = useRef<HTMLButtonElement>(null);
+  const prevBtnRef = useRef<HTMLButtonElement>(null);
+  const nextBtnRef = useRef<HTMLButtonElement>(null);
+  const previouslyFocused = useRef<HTMLElement | null>(null);
 
   useEffect(() => { onIndexChange(i); }, [i, onIndexChange]);
 
+  // Focus trap + restore + body scroll lock
+  useEffect(() => {
+    previouslyFocused.current = document.activeElement as HTMLElement | null;
+    closeBtnRef.current?.focus();
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      previouslyFocused.current?.focus?.();
+    };
+  }, []);
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") onClose();
-      if (e.key === "ArrowLeft") setI((v) => (v - 1 + photos.length) % photos.length);
-      if (e.key === "ArrowRight") setI((v) => (v + 1) % photos.length);
+      if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
+      if (e.key === "ArrowLeft") { setI((v) => (v - 1 + photos.length) % photos.length); return; }
+      if (e.key === "ArrowRight") { setI((v) => (v + 1) % photos.length); return; }
+      if (e.key === "Tab") {
+        // Cycle focus between the visible controls only.
+        const order = [closeBtnRef.current, prevBtnRef.current, nextBtnRef.current].filter(Boolean) as HTMLButtonElement[];
+        if (!order.length) return;
+        const active = document.activeElement as HTMLElement | null;
+        const idxA = active ? order.indexOf(active as HTMLButtonElement) : -1;
+        e.preventDefault();
+        const nextIdx = e.shiftKey
+          ? (idxA <= 0 ? order.length - 1 : idxA - 1)
+          : (idxA === -1 || idxA === order.length - 1 ? 0 : idxA + 1);
+        order[nextIdx].focus();
+      }
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -149,41 +177,67 @@ function FullscreenViewer({
     else if (info.offset.x > SWIPE_THRESHOLD) setI((v) => (v - 1 + photos.length) % photos.length);
   }
 
+  const multi = photos.length > 1;
+
   return (
     <motion.div
+      role="dialog"
+      aria-modal="true"
+      aria-label={alt ? `Galerie foto ${alt}` : "Galerie foto"}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15 }}
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <button
+        ref={closeBtnRef}
         onClick={onClose}
-        aria-label="Închide"
-        className="absolute right-4 top-4 z-10 flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20"
+        aria-label="Închide galeria"
+        className="absolute right-4 top-4 z-20 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
-        <X className="size-5" />
+        <X className="size-5" aria-hidden="true" />
       </button>
 
-      {photos.length > 1 && (
-        <div className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 gap-1">
-          {photos.map((_, k) => (
-            <span
-              key={k}
-              className={cn(
-                "h-1 rounded-full transition-all",
-                k === i ? "w-8 bg-white" : "w-3 bg-white/40",
-              )}
-            />
-          ))}
-        </div>
+      {multi && (
+        <>
+          <button
+            ref={prevBtnRef}
+            onClick={() => setI((v) => (v - 1 + photos.length) % photos.length)}
+            aria-label="Poza anterioară"
+            className="absolute left-3 top-1/2 z-20 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            <ChevronLeft className="size-6" aria-hidden="true" />
+          </button>
+          <button
+            ref={nextBtnRef}
+            onClick={() => setI((v) => (v + 1) % photos.length)}
+            aria-label="Poza următoare"
+            className="absolute right-3 top-1/2 z-20 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            <ChevronRight className="size-6" aria-hidden="true" />
+          </button>
+
+          <div className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 gap-1" aria-hidden="true">
+            {photos.map((_, k) => (
+              <span
+                key={k}
+                className={cn(
+                  "h-1 rounded-full transition-all",
+                  k === i ? "w-8 bg-white" : "w-3 bg-white/40",
+                )}
+              />
+            ))}
+          </div>
+        </>
       )}
 
       <AnimatePresence initial={false} mode="popLayout">
         <motion.img
           key={photos[i]}
           src={photos[i]}
-          alt={alt}
+          alt={alt ? `${alt} — poza ${i + 1} din ${photos.length}` : `Poza ${i + 1} din ${photos.length}`}
           draggable={false}
           drag
           dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
@@ -197,9 +251,14 @@ function FullscreenViewer({
         />
       </AnimatePresence>
 
-      <p className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/50">
+      <p
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/60"
+        aria-live="polite"
+        aria-atomic="true"
+      >
         {i + 1} / {photos.length} · glisează jos pentru închidere
       </p>
     </motion.div>
   );
 }
+
