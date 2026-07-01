@@ -298,6 +298,8 @@ function FullscreenViewer({
 
   return (
     <motion.div
+      ref={dialogRef}
+
       role="dialog"
       aria-modal="true"
       aria-label={alt ? `Galerie foto ${alt}` : "Galerie foto"}
