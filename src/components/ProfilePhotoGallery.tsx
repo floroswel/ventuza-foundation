@@ -306,22 +306,25 @@ function FullscreenViewer({
       )}
 
       <AnimatePresence initial={false} mode="popLayout">
-        <motion.img
+        <GalleryImage
           key={photos[i]}
           src={photos[i]}
           alt={alt ? `${alt} — poza ${i + 1} din ${photos.length}` : `Poza ${i + 1} din ${photos.length}`}
-          draggable={false}
-          drag
-          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-          dragElastic={{ top: 0.4, bottom: 0.4, left: 0.3, right: 0.3 }}
-          onDragEnd={onDragEnd}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          wrapperClassName="flex h-[100dvh] w-full items-center justify-center"
           className="max-h-[100dvh] max-w-full object-contain"
+          motionProps={{
+            drag: true,
+            dragConstraints: { left: 0, right: 0, top: 0, bottom: 0 },
+            dragElastic: { top: 0.4, bottom: 0.4, left: 0.3, right: 0.3 },
+            onDragEnd: onDragEnd,
+            initial: { opacity: 0 },
+            animate: { opacity: 1 },
+            exit: { opacity: 0 },
+            transition: { duration: 0.15 },
+          }}
         />
       </AnimatePresence>
+
 
       <p
         className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/60"
