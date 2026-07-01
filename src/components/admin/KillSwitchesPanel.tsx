@@ -96,7 +96,7 @@ export function KillSwitchesPanel() {
           </div>
         </div>
         <div className="mt-3 flex items-center justify-between">
-          <p className="text-[11px] text-muted-foreground">Actualmente: web {mv?.web} · ios {mv?.ios} · android {mv?.android}</p>
+          <p className="text-[11px] text-muted-foreground">Actualmente: web {(mv as any)?.web} · ios {(mv as any)?.ios} · android {(mv as any)?.android}</p>
           <ReasonDialog
             title="Publică minimum supported version"
             description="Toate device-urile sub aceste versiuni vor fi blocate până la update."
