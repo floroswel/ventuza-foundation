@@ -32,7 +32,7 @@ function age(iso?: string | null) {
 function PublicProfilePage() {
   const { slug } = Route.useParams();
   const [profile, setProfile] = useState<any | null>(null);
-  const [signedPhoto, setSignedPhoto] = useState<string | null>(null);
+  const [signedPhotos, setSignedPhotos] = useState<string[]>([]);
   const [signedVoice, setSignedVoice] = useState<string | null>(null);
   const [signedVideo, setSignedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,9 +46,14 @@ function PublicProfilePage() {
         .maybeSingle();
       setProfile(data);
       setLoading(false);
-      if (data?.photos?.[0]) {
-        const { data: s } = await supabase.storage.from("profile-photos").createSignedUrl(data.photos[0], 3600);
-        if (s?.signedUrl) setSignedPhoto(s.signedUrl);
+      const paths: string[] = Array.isArray(data?.photos) ? data.photos : [];
+      if (paths.length) {
+        const urls: string[] = [];
+        for (const p of paths) {
+          const { data: s } = await supabase.storage.from("profile-photos").createSignedUrl(p, 3600);
+          if (s?.signedUrl) urls.push(s.signedUrl);
+        }
+        setSignedPhotos(urls);
       }
       if (data?.voice_prompt_path) {
         const { data: s } = await supabase.storage.from("profile-media").createSignedUrl(data.voice_prompt_path, 3600);
@@ -60,6 +65,7 @@ function PublicProfilePage() {
       }
     })();
   }, [slug]);
+
 
   if (loading) {
     return (
