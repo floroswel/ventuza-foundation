@@ -14,7 +14,6 @@
 export type ConsentKind =
   | "terms"
   | "privacy"
-  | "health_data"
   | "age_verification"
   | "ai_features"
   | "push_notifications"
@@ -60,16 +59,6 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
     label: "Politica de confidențialitate",
     description: "Acord cu modul în care prelucrăm datele tale (vezi /legal/privacy).",
     gates: ["account_creation"],
-  },
-  health_data: {
-    kind: "health_data",
-    currentVersion: "2026-06-22",
-    required: false,
-    art9: true,
-    label: "Date de sănătate (HIV)",
-    description:
-      "Stocăm statusul HIV și data testului în profilul tău. Vizibil doar conform setărilor tale. Le poți șterge oricând retrăgând consimțământul.",
-    gates: ["profiles.hiv_status_enc", "profiles.hiv_test_date_enc", "setMyHealth"],
   },
   age_verification: {
     kind: "age_verification",

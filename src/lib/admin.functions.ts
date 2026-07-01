@@ -164,8 +164,6 @@ const ListInput = z.object({
  */
 const SENSITIVE_COLUMNS: Record<string, string[]> = {
   profiles: [
-    // Sănătate (Art. 9) — DOAR super_admin via break-glass kind='health'
-    "hiv_status_enc", "hiv_test_date_enc", "health_data_consent_at",
     // Orientare / identitate sexuală (Art. 9 — viața sexuală) — break-glass
     // kind='orientation'. Pe o app queer `gender` + `tribes` + `pronouns` pot
     // dezvălui orientarea indirect, deci sunt tratate la fel.

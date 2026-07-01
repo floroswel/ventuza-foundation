@@ -10,7 +10,7 @@ export type DiscoverFilters = {
   tribes: string[];
   bodyTypes: string[];
   positions: string[];
-  hivStatuses: string[];
+  
   minHeight: number | null;
   maxHeight: number | null;
   onlineOnly: boolean;
@@ -29,7 +29,7 @@ export const DEFAULT_FILTERS: DiscoverFilters = {
   tribes: [],
   bodyTypes: [],
   positions: [],
-  hivStatuses: [],
+  
   minHeight: null,
   maxHeight: null,
   onlineOnly: false,
@@ -57,8 +57,7 @@ export type DiscoverProfile = {
   weight_kg: number | null;
   ethnicity: string | null;
   position: string | null;
-  // hiv_status / hiv_test_date NU mai sunt returnate de RPC (GDPR Art. 9 — date de sănătate).
-  // Rămân doar pe propriul profil (profile.tsx). Filtrarea după HIV se face server-side.
+  // Ventuza nu mai procesează statutul HIV — nici stocare, nici filtre, nici RPC.
   relationship_status: string | null;
   verified: boolean;
   distance_m: number | null;

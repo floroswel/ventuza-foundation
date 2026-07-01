@@ -512,7 +512,7 @@ async function seedAdminModules(
 
   // --- K. Break-glass sensitive access log ---
   const breakKinds: Array<{ kind: string; fields: string[] }> = [
-    { kind: "health", fields: ["hiv_status_enc", "hiv_test_date_enc"] },
+    { kind: "orientation", fields: ["orientation", "tribes"] },
     { kind: "location", fields: ["location"] },
     { kind: "selfie", fields: ["selfie_url"] },
     { kind: "messages", fields: ["body", "media_url"] },
