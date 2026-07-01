@@ -122,14 +122,37 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
     else if (info.offset.x > SWIPE_THRESHOLD) go(-1);
   }
 
+  const total = photos.length;
+  const galleryLabel = alt ? `Galerie foto ${alt}` : "Galerie foto";
+
+  // Keyboard nav pe indicator rail (roving tabindex): săgeți / Home / End.
+  function onRailKey(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (total <= 1) return;
+    let next: number | null = null;
+    if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (idx - 1 + total) % total;
+    else if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (idx + 1) % total;
+    else if (e.key === "Home") next = 0;
+    else if (e.key === "End") next = total - 1;
+    if (next === null) return;
+    e.preventDefault();
+    setIdx(next);
+    const btn = e.currentTarget.querySelector<HTMLButtonElement>(`[data-thumb-idx="${next}"]`);
+    btn?.focus();
+  }
+
   return (
     <>
-      <div className={cn("relative aspect-square w-full overflow-hidden bg-background select-none", className)}>
+      <div
+        className={cn("relative aspect-square w-full overflow-hidden bg-background select-none", className)}
+        role="region"
+        aria-roledescription="carusel"
+        aria-label={galleryLabel}
+      >
         <AnimatePresence initial={false} mode="popLayout">
           <GalleryImage
             key={photos[idx]}
             src={photos[idx]}
-            alt={alt}
+            alt={alt ? `${alt} — poza ${idx + 1} din ${total}` : `Poza ${idx + 1} din ${total}`}
             onClick={() => setFs(true)}
             className="size-full cursor-zoom-in object-cover"
             motionProps={{
@@ -145,9 +168,8 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
           />
         </AnimatePresence>
 
-
         {/* Invisible tap zones for desktop / accessibility */}
-        {photos.length > 1 && (
+        {total > 1 && (
           <>
             <button
               aria-label="Poza anterioară"
@@ -162,20 +184,42 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
           </>
         )}
 
-        {/* Dots */}
-        {photos.length > 1 && (
-          <div className="pointer-events-none absolute left-1/2 top-2 z-10 flex -translate-x-1/2 gap-1">
-            {photos.map((_, i) => (
-              <span
-                key={i}
-                className={cn(
-                  "h-1 rounded-full transition-all",
-                  i === idx ? "w-6 bg-white" : "w-3 bg-white/40",
-                )}
-              />
-            ))}
+        {/* Indicator rail — keyboard-navigable tablist cu roving tabindex */}
+        {total > 1 && (
+          <div
+            role="tablist"
+            aria-label="Selectează poza"
+            aria-orientation="horizontal"
+            onKeyDown={onRailKey}
+            className="absolute left-1/2 top-2 z-20 flex -translate-x-1/2 gap-1"
+          >
+            {photos.map((_, i) => {
+              const active = i === idx;
+              return (
+                <button
+                  key={i}
+                  type="button"
+                  role="tab"
+                  data-thumb-idx={i}
+                  aria-label={`Poza ${i + 1} din ${total}`}
+                  aria-selected={active}
+                  aria-current={active ? "true" : undefined}
+                  tabIndex={active ? 0 : -1}
+                  onClick={(e) => { e.stopPropagation(); setIdx(i); }}
+                  className={cn(
+                    "h-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
+                    active ? "w-6 bg-white" : "w-3 bg-white/40 hover:bg-white/70",
+                  )}
+                />
+              );
+            })}
           </div>
         )}
+
+        {/* Live region: anunță schimbarea pozei pentru screen readers */}
+        <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+          Poza {idx + 1} din {total}
+        </p>
 
         {topRight && <div className="absolute right-3 top-3 z-20">{topRight}</div>}
         {overlay && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 [&_*]:pointer-events-auto">{overlay}</div>}
@@ -191,7 +235,6 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
             onClose={() => setFs(false)}
             extra={fullscreenExtra}
           />
-
         )}
       </AnimatePresence>
     </>
@@ -257,6 +300,8 @@ function FullscreenViewer({
       if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
       if (e.key === "ArrowLeft") { setI((v) => (v - 1 + photos.length) % photos.length); return; }
       if (e.key === "ArrowRight") { setI((v) => (v + 1) % photos.length); return; }
+      if (e.key === "Home") { e.preventDefault(); setI(0); return; }
+      if (e.key === "End") { e.preventDefault(); setI(photos.length - 1); return; }
       if (e.key === "Tab") {
         const order = getFocusable();
         if (!order.length) { e.preventDefault(); return; }
@@ -368,16 +413,45 @@ function FullscreenViewer({
             <ChevronRight className="size-6" aria-hidden="true" />
           </button>
 
-          <div className="fixed left-1/2 top-4 z-20 flex -translate-x-1/2 gap-1" aria-hidden="true">
-            {photos.map((_, k) => (
-              <span
-                key={k}
-                className={cn(
-                  "h-1 rounded-full transition-all",
-                  k === i ? "w-8 bg-white" : "w-3 bg-white/40",
-                )}
-              />
-            ))}
+          <div
+            role="tablist"
+            aria-label="Selectează poza"
+            aria-orientation="horizontal"
+            onKeyDown={(e) => {
+              let next: number | null = null;
+              if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (i - 1 + photos.length) % photos.length;
+              else if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (i + 1) % photos.length;
+              else if (e.key === "Home") next = 0;
+              else if (e.key === "End") next = photos.length - 1;
+              if (next === null) return;
+              e.preventDefault();
+              setI(next);
+              const btn = e.currentTarget.querySelector<HTMLButtonElement>(`[data-fs-thumb="${next}"]`);
+              btn?.focus();
+              btn?.scrollIntoView({ block: "nearest", inline: "center" });
+            }}
+            className="fixed left-1/2 top-4 z-30 flex max-w-[90vw] -translate-x-1/2 gap-1 overflow-x-auto rounded-full bg-black/40 px-2 py-1.5 backdrop-blur"
+          >
+            {photos.map((_, k) => {
+              const active = k === i;
+              return (
+                <button
+                  key={k}
+                  type="button"
+                  role="tab"
+                  data-fs-thumb={k}
+                  aria-label={`Poza ${k + 1} din ${photos.length}`}
+                  aria-selected={active}
+                  aria-current={active ? "true" : undefined}
+                  tabIndex={active ? 0 : -1}
+                  onClick={(e) => { e.stopPropagation(); setI(k); }}
+                  className={cn(
+                    "h-2 shrink-0 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
+                    active ? "w-8 bg-white" : "w-3 bg-white/40 hover:bg-white/70",
+                  )}
+                />
+              );
+            })}
           </div>
         </>
       )}
