@@ -95,7 +95,7 @@ const SWIPE_THRESHOLD = 60;
  *  - dots indicator sus,
  *  - tap = deschide fullscreen viewer (cu swipe și swipe-jos pentru close).
  */
-export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topRight }: Props) {
+export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topRight, fullscreenExtra }: Props) {
   const [idx, setIdx] = useState(0);
   const [fs, setFs] = useState(false);
 
