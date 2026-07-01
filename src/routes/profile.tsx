@@ -524,7 +524,7 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
       weight_kg: form.weight_kg,
       ethnicity: form.ethnicity,
       position: form.position,
-      // hiv_status / hiv_test_date — cifrate; scrise prin setMyHealth mai jos.
+      // Datele HIV au fost eliminate din schemă (decizie GDPR).
       relationship_status: form.relationship_status,
       meet_at: form.meet_at ?? [],
       expectations: form.expectations ?? [],

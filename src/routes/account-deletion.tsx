@@ -80,7 +80,7 @@ function AccountDeletionPage() {
           <h2 className="text-xl font-semibold">Ce date ștergem</h2>
           <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
             <li>Profilul tău (nume, fotografii, bio, preferințe, orientare, locație).</li>
-            <li>Date de sănătate (status HIV criptat) — șterse imediat la cerere.</li>
+            <li>Consimțăminte și log-uri asociate contului tău.</li>
             <li>Mesaje trimise și primite, swipe-uri, match-uri, vizualizări.</li>
             <li>Album privat, stories, voice notes, video clips.</li>
             <li>Notificări push, abonamente premium și istoric grant-uri.</li>

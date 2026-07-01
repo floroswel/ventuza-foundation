@@ -113,7 +113,7 @@ export function SystemHealthPanel() {
         <h3 className="text-sm font-semibold">Reguli active (din AGENTS.md)</h3>
         <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
           <li>• Locație precisă — niciodată către alți useri. Doar bucket.</li>
-          <li>• HIV/orientare/mesaje/selfie — doar Break-glass cu justificare.</li>
+          <li>• Orientare/mesaje/selfie — doar Break-glass cu justificare. (HIV: eliminat complet.)</li>
           <li>• CSAM — fără randare imagini. Doar hash.</li>
           <li>• Moderare obligatorie pentru venues/events/offers.</li>
           <li>• Consimțăminte centralizate în <code>consent_kinds()</code>.</li>
