@@ -327,6 +327,28 @@ function FullscreenViewer({
         <X className="size-5" aria-hidden="true" />
       </button>
 
+      {/* Status fixat — vizibil și când derulezi vertical */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="pointer-events-none fixed left-1/2 top-16 z-30 -translate-x-1/2"
+      >
+        {imgStatus === "loading" && (
+          <span className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1.5 text-xs font-medium text-white shadow-lg backdrop-blur">
+            <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />
+            Se încarcă poza {i + 1} din {photos.length}…
+          </span>
+        )}
+        {imgStatus === "error" && (
+          <span className="inline-flex items-center gap-2 rounded-full bg-destructive/90 px-3 py-1.5 text-xs font-medium text-destructive-foreground shadow-lg backdrop-blur">
+            <ImageOff className="size-3.5" aria-hidden="true" />
+            Poza {i + 1} nu s-a putut încărca
+          </span>
+        )}
+      </div>
+
+
       {multi && (
         <>
           <button
