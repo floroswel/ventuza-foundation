@@ -176,7 +176,7 @@ function VenturePanel({
   return (
     <div className="space-y-4">
       {cities.map((c) => (
-        <CityCard key={c.city} city={c} onOpen={() => onOpen(c.city)} />
+        <CityCard key={c.city} city={c} onOpen={onOpen} />
       ))}
     </div>
   );
