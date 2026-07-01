@@ -83,7 +83,7 @@ const ROWS: Row[] = [
   {
     name: "Didit",
     purpose: "Verificare vârstă (18+) prin selfie + estimare AI",
-    data: "Selfie capturat în fluxul lor hosted, vendor_data=user_id intern, callback URL. Fără orientare, fără hiv_status, fără locație precisă, fără mesaje.",
+    data: "Selfie capturat în fluxul lor hosted, vendor_data=user_id intern, callback URL. Fără orientare, fără date de sănătate, fără locație precisă, fără mesaje.",
     sensitive: true,
     region: "UE",
     extraEU: false,
@@ -217,7 +217,7 @@ function SubsPage() {
 
         <h2 className="mt-8 text-base font-semibold">Minimizarea datelor</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
-          <li><strong>Didit</strong> primește doar selfie + ID intern pentru age check — niciodată orientare, hiv_status sau locație.</li>
+          <li><strong>Didit</strong> primește doar selfie + ID intern pentru age check — niciodată orientare, date de sănătate sau locație.</li>
           <li><strong>RevenueCat</strong> și <strong>Google Play Billing</strong> primesc doar identificatorul abonamentului + UUID intern — fără email, fără PII demografic.</li>
           <li><strong>Push services</strong> (FCM/APNs/Mozilla) primesc endpoint + un payload scurt fără date sensibile (ex. „Ai un mesaj nou”).</li>
           <li><strong>AI Gateway</strong> primește doar textul trimis explicit la moderare/generare — nu profilul integral.</li>
