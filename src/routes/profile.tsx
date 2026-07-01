@@ -67,8 +67,6 @@ type Profile = {
   weight_kg: number | null;
   ethnicity: string | null;
   position: string | null;
-  hiv_status: string | null;
-  hiv_test_date: string | null;
   relationship_status: string | null;
   verified_at: string | null;
   incognito: boolean;
@@ -144,8 +142,7 @@ function ProfilePage() {
       if (error) toast.error(error.message);
       let p: Profile | null = null;
       if (data) {
-        const h = await getMyHealth().catch(() => ({ hiv_status: null, hiv_test_date: null }));
-        p = withHealth(data, h);
+        p = data as unknown as Profile;
       }
       setProfile(p);
       setLoading(false);
@@ -329,7 +326,7 @@ function ProfilePage() {
           </Section>
         )}
 
-        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.hiv_status || profile.prep_status) && (
+        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.prep_status) && (
           <Section title="Stats">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface p-4 text-sm">
               {profile.body_type && <StatRow label="Body" value={profile.body_type} />}
@@ -338,7 +335,6 @@ function ProfilePage() {
               {profile.weight_kg && <StatRow label="Weight" value={`${profile.weight_kg} kg`} />}
               {profile.ethnicity && <StatRow label="Ethnicity" value={profile.ethnicity} />}
               {profile.relationship_status && <StatRow label="Relationship" value={profile.relationship_status} />}
-              {profile.hiv_status && <StatRow label="HIV" value={profile.hiv_status} />}
               {profile.prep_status && <StatRow label="PrEP" value={profile.prep_status} />}
             </div>
           </Section>
@@ -409,7 +405,7 @@ function ProfilePage() {
             lookingNowIntent={profile.looking_now_intent}
             onUpdate={async () => {
               const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
-              if (data) setProfile((prev) => withHealth(data, prev ? { hiv_status: prev.hiv_status, hiv_test_date: prev.hiv_test_date } : undefined));
+              if (data) setProfile(data as unknown as Profile);
             }}
           />
           <ProfilePremiumPanel
@@ -421,7 +417,7 @@ function ProfilePage() {
             boostUntil={profile.boost_until}
             onUpdate={async () => {
               const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
-              if (data) setProfile((prev) => withHealth(data, prev ? { hiv_status: prev.hiv_status, hiv_test_date: prev.hiv_test_date } : undefined));
+              if (data) setProfile(data as unknown as Profile);
             }}
           />
         </Section>
@@ -541,19 +537,8 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
     }).eq("id", profile.id).select("*").maybeSingle();
     if (error || !data) { setSaving(false); return toast.error(error?.message ?? "Failed"); }
 
-    // Cifrare HIV via server fn. Dacă userul nu are consimțământ activ,
-    // server fn-ul întoarce ok:false (triggerul DB ar bloca scrierea oricum).
-    const wantHiv = form.hiv_status ?? null;
-    const wantDate = form.hiv_test_date ?? null;
-    if (wantHiv !== profile.hiv_status || wantDate !== profile.hiv_test_date) {
-      const res = await setMyHealth({ data: { hiv_status: wantHiv, hiv_test_date: wantDate } });
-      if (!res.ok) {
-        setSaving(false);
-        return toast.error(res.message);
-      }
-    }
     setSaving(false);
-    onSaved(withHealth(data, { hiv_status: wantHiv, hiv_test_date: wantDate }));
+    onSaved(data as unknown as Profile);
   }
 
   function single<K extends keyof Profile>(k: K, options: string[]) {
