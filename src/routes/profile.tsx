@@ -6,11 +6,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { useConsent } from "@/lib/use-consent";
 import { supabase } from "@/integrations/supabase/client";
-import { getMyHealth, setMyHealth } from "@/lib/health.functions";
 
-function withHealth<T extends object>(row: T, h?: { hiv_status: string | null; hiv_test_date: string | null }): Profile {
-  return { ...(row as unknown as Profile), hiv_status: h?.hiv_status ?? null, hiv_test_date: h?.hiv_test_date ?? null };
-}
+
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +35,7 @@ import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
   LOOKING_FOR_OPTIONS, INTEREST_OPTIONS,
   TRIBE_OPTIONS, BODY_TYPE_OPTIONS, POSITION_OPTIONS,
-  HIV_STATUS_OPTIONS, RELATIONSHIP_STATUS_OPTIONS, ETHNICITY_OPTIONS,
+  RELATIONSHIP_STATUS_OPTIONS, ETHNICITY_OPTIONS,
   MEET_AT_OPTIONS, EXPECTATIONS_OPTIONS, SCENES_OPTIONS,
   SAFETY_OPTIONS, PREP_STATUS_OPTIONS, VACCINATION_OPTIONS,
 } from "@/lib/profile-options";

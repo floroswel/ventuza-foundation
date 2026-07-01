@@ -427,20 +427,9 @@ function StepView({
             <Label>Status relație</Label>
             <ChipGrid options={RELATIONSHIP_STATUS_OPTIONS} selected={data.relationship_status ? [data.relationship_status] : []} onToggle={(v) => setData({ ...data, relationship_status: data.relationship_status === v ? "" : v })} />
           </div>
-          <div className="space-y-2 pt-2 border-t border-border/50">
-            <Label>Status HIV <span className="text-muted-foreground font-normal">(opțional)</span></Label>
-            <ChipGrid options={HIV_STATUS_OPTIONS} selected={data.hiv_status ? [data.hiv_status] : []} onToggle={(v) => setData({ ...data, hiv_status: data.hiv_status === v ? "" : v })} />
-            {data.hiv_status && (
-              <label className="mt-3 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-950/20 p-3">
-                <input type="checkbox" className="mt-1" checked={data.health_consent}
-                  onChange={(e) => setData({ ...data, health_consent: e.target.checked })} />
-                <span className="text-xs leading-relaxed text-foreground/85">
-                  <strong>Consimțământ explicit (GDPR Art. 9):</strong> sunt de acord ca Ventuza
-                  să afișeze statusul meu HIV pe profil. Pot retrage oricând din Setări.
-                </span>
-              </label>
-            )}
-          </div>
+          {/* Câmpul de status HIV a fost eliminat — Ventuza nu mai procesează
+              date de sănătate (decizie GDPR: reducere risc Art. 9). Pentru
+              informare vezi /safety (resurse ARAS, testare). */}
         </div>
       );
 
