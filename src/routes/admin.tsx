@@ -50,6 +50,7 @@ import { OperationsUserOpsPanel } from "@/components/admin/OperationsUserOpsPane
 import { BroadcastV2Panel } from "@/components/admin/BroadcastV2Panel";
 import { IntelligenceDashboardPanel } from "@/components/admin/IntelligenceDashboardPanel";
 import { KillSwitchesPanel } from "@/components/admin/KillSwitchesPanel";
+import { LegalP0Panel } from "@/components/admin/LegalP0Panel";
 
 
 function AgeGateDevBanner() {
