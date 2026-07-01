@@ -1,7 +1,77 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, ImageOff, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+/**
+ * Image cu skeleton (loading) + fallback (error).
+ * `motionProps` opțional pentru a atașa drag/animații framer-motion.
+ */
+function GalleryImage({
+  src, alt, className, wrapperClassName, motionProps, onClick, onRetryKey,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  wrapperClassName?: string;
+  motionProps?: React.ComponentProps<typeof motion.img>;
+  onClick?: () => void;
+  /** cheie internă folosită doar pentru re-render la retry */
+  onRetryKey?: number;
+}) {
+  const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
+  const [nonce, setNonce] = useState(0);
+
+  useEffect(() => { setStatus("loading"); }, [src, onRetryKey, nonce]);
+
+  return (
+    <div className={cn("relative size-full", wrapperClassName)}>
+      {status !== "error" && (
+        <motion.img
+          {...motionProps}
+          key={`${src}-${nonce}`}
+          src={src}
+          alt={alt}
+          draggable={false}
+          onClick={onClick}
+          onLoad={() => setStatus("ready")}
+          onError={() => setStatus("error")}
+          className={cn(className, status === "loading" && "opacity-0")}
+        />
+      )}
+
+      {status === "loading" && (
+        <div
+          role="status"
+          aria-label="Se încarcă poza"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden bg-surface"
+        >
+          <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-surface via-surface-elevated to-surface" />
+          <Loader2 className="relative size-6 animate-spin text-muted-foreground" aria-hidden="true" />
+          <span className="sr-only">Se încarcă poza…</span>
+        </div>
+      )}
+
+      {status === "error" && (
+        <div
+          role="alert"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-surface p-4 text-center text-muted-foreground"
+        >
+          <ImageOff className="size-8" aria-hidden="true" />
+          <p className="text-sm">Poza nu s-a putut încărca</p>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setStatus("loading"); setNonce((n) => n + 1); }}
+            className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          >
+            Încearcă din nou
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 
 
 type Props = {
@@ -49,23 +119,25 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
     <>
       <div className={cn("relative aspect-square w-full overflow-hidden bg-background select-none", className)}>
         <AnimatePresence initial={false} mode="popLayout">
-          <motion.img
+          <GalleryImage
             key={photos[idx]}
             src={photos[idx]}
             alt={alt}
-            draggable={false}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.6}
-            onDragEnd={handleDragEnd}
             onClick={() => setFs(true)}
-            initial={{ opacity: 0.6, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
             className="size-full cursor-zoom-in object-cover"
+            motionProps={{
+              drag: "x",
+              dragConstraints: { left: 0, right: 0 },
+              dragElastic: 0.6,
+              onDragEnd: handleDragEnd,
+              initial: { opacity: 0.6, scale: 1.02 },
+              animate: { opacity: 1, scale: 1 },
+              exit: { opacity: 0 },
+              transition: { duration: 0.18 },
+            }}
           />
         </AnimatePresence>
+
 
         {/* Invisible tap zones for desktop / accessibility */}
         {photos.length > 1 && (
@@ -234,22 +306,25 @@ function FullscreenViewer({
       )}
 
       <AnimatePresence initial={false} mode="popLayout">
-        <motion.img
+        <GalleryImage
           key={photos[i]}
           src={photos[i]}
           alt={alt ? `${alt} — poza ${i + 1} din ${photos.length}` : `Poza ${i + 1} din ${photos.length}`}
-          draggable={false}
-          drag
-          dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
-          dragElastic={{ top: 0.4, bottom: 0.4, left: 0.3, right: 0.3 }}
-          onDragEnd={onDragEnd}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
+          wrapperClassName="flex h-[100dvh] w-full items-center justify-center"
           className="max-h-[100dvh] max-w-full object-contain"
+          motionProps={{
+            drag: true,
+            dragConstraints: { left: 0, right: 0, top: 0, bottom: 0 },
+            dragElastic: { top: 0.4, bottom: 0.4, left: 0.3, right: 0.3 },
+            onDragEnd: onDragEnd,
+            initial: { opacity: 0 },
+            animate: { opacity: 1 },
+            exit: { opacity: 0 },
+            transition: { duration: 0.15 },
+          }}
         />
       </AnimatePresence>
+
 
       <p
         className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/60"
