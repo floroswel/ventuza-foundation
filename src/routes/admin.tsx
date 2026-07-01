@@ -157,6 +157,12 @@ function AdminDashboard() {
     { id: "alerts",   label: "Alerte",   icon: Bell,            group: "Operations", hint: "Notificări staff" },
     { id: "copilot",  label: "Copilot AI", icon: Bot,           group: "Operations", hint: "Asistent procedural" },
     { id: "broadcast",label: "Broadcast",icon: Send,            group: "Operations", adminOnly: true },
+    { id: "broadcast2", label: "Broadcast v2 · targeting", icon: Send, group: "Operations", adminOnly: true, hint: "Filtre reale + dry-run + campanii" },
+    { id: "support",  label: "Ticketing", icon: LifeBuoy,        group: "Operations", hint: "Helpdesk intern" },
+    { id: "appeals",  label: "Contestații DSA", icon: Gavel,     group: "Operations", hint: "Art. 20 DSA" },
+    { id: "userops",  label: "User ops · view-as", icon: Eye,    group: "Operations", adminOnly: true, hint: "Impersonare read-only + sesiuni" },
+    { id: "intel",    label: "Intelligence · MRR/Cohorts", icon: TrendingUp, group: "Operations", hint: "MRR/ARR, retention, funnel" },
+    { id: "killswitch", label: "Kill switches", icon: PowerOff,  group: "System", adminOnly: true, hint: "Emergency + force-update" },
 
     // Trust & Safety
     { id: "users",    label: "Utilizatori", icon: Users,        group: "Trust & Safety", adminOnly: true },
@@ -236,6 +242,12 @@ function AdminDashboard() {
       {section === "staff" && isAdmin && <StaffManagementPanel />}
       {section === "tools" && isAdmin && <AdminToolsPanel />}
       {section === "signals" && <SecuritySignalsPanel />}
+      {section === "support" && <SupportTicketsPanel />}
+      {section === "appeals" && <AppealsPanel />}
+      {section === "userops" && isAdmin && <OperationsUserOpsPanel />}
+      {section === "broadcast2" && isAdmin && <BroadcastV2Panel />}
+      {section === "intel" && <IntelligenceDashboardPanel />}
+      {section === "killswitch" && isAdmin && <KillSwitchesPanel />
     </AdminShell>
   );
 }
