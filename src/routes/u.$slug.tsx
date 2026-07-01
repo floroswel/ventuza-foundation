@@ -4,7 +4,9 @@ import { BadgeCheck, Loader2, Mic, Music, ArrowLeft, Heart, Video } from "lucide
 import { supabase } from "@/integrations/supabase/client";
 import { Chip } from "@/components/Chip";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
+import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { formatHeight } from "@/lib/discover";
+
 
 export const Route = createFileRoute("/u/$slug")({
   head: ({ params }) => ({
@@ -30,7 +32,7 @@ function age(iso?: string | null) {
 function PublicProfilePage() {
   const { slug } = Route.useParams();
   const [profile, setProfile] = useState<any | null>(null);
-  const [signedPhoto, setSignedPhoto] = useState<string | null>(null);
+  const [signedPhotos, setSignedPhotos] = useState<string[]>([]);
   const [signedVoice, setSignedVoice] = useState<string | null>(null);
   const [signedVideo, setSignedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -44,9 +46,14 @@ function PublicProfilePage() {
         .maybeSingle();
       setProfile(data);
       setLoading(false);
-      if (data?.photos?.[0]) {
-        const { data: s } = await supabase.storage.from("profile-photos").createSignedUrl(data.photos[0], 3600);
-        if (s?.signedUrl) setSignedPhoto(s.signedUrl);
+      const paths: string[] = Array.isArray(data?.photos) ? data.photos : [];
+      if (paths.length) {
+        const urls: string[] = [];
+        for (const p of paths) {
+          const { data: s } = await supabase.storage.from("profile-photos").createSignedUrl(p, 3600);
+          if (s?.signedUrl) urls.push(s.signedUrl);
+        }
+        setSignedPhotos(urls);
       }
       if (data?.voice_prompt_path) {
         const { data: s } = await supabase.storage.from("profile-media").createSignedUrl(data.voice_prompt_path, 3600);
@@ -58,6 +65,7 @@ function PublicProfilePage() {
       }
     })();
   }, [slug]);
+
 
   if (loading) {
     return (
@@ -80,33 +88,38 @@ function PublicProfilePage() {
   return (
     <main className="min-h-dvh bg-background pb-20">
       <section className="relative">
-        <div className="aspect-[4/5] w-full overflow-hidden bg-surface">
-          {signedPhoto ? (
-            <img src={signedPhoto} alt={profile.display_name} className="size-full object-cover" />
-          ) : (
-            <div className="flex size-full items-center justify-center text-muted-foreground">No photo</div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
-        </div>
-        <Link
-          to="/"
-          className="absolute left-4 top-4 inline-flex size-10 items-center justify-center rounded-full border border-border bg-surface/80 backdrop-blur"
-        >
-          <ArrowLeft className="size-4" />
-        </Link>
-        <div className="absolute inset-x-0 bottom-0 px-6 pb-6">
-          <h1 className="wordmark text-4xl">
-            {profile.display_name}
-            {age(profile.birthdate) && <span className="ml-2 text-foreground/80">{age(profile.birthdate)}</span>}
-          </h1>
-          {profile.verified_at && (
-            <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur">
-              <BadgeCheck className="size-3" /> Verified
-            </span>
-          )}
-          <div className="mt-3"><ProfileBadgesRow profile={profile} /></div>
-        </div>
+        <ProfilePhotoGallery
+          photos={signedPhotos}
+          alt={profile.display_name ?? ""}
+          topRight={
+            <Link
+              to="/"
+              className="inline-flex size-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur"
+              aria-label="Back"
+            >
+              <ArrowLeft className="size-4" />
+            </Link>
+          }
+          overlay={
+            <>
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+              <div className="relative px-6 pb-6 pt-8">
+                <h1 className="wordmark text-4xl text-white">
+                  {profile.display_name}
+                  {age(profile.birthdate) && <span className="ml-2 text-white/80">{age(profile.birthdate)}</span>}
+                </h1>
+                {profile.verified_at && (
+                  <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur">
+                    <BadgeCheck className="size-3" /> Verified
+                  </span>
+                )}
+                <div className="mt-3"><ProfileBadgesRow profile={profile} /></div>
+              </div>
+            </>
+          }
+        />
       </section>
+
 
       <div className="space-y-6 px-6 pt-6">
         {signedVideo && (
