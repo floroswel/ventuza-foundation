@@ -119,23 +119,25 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
     <>
       <div className={cn("relative aspect-square w-full overflow-hidden bg-background select-none", className)}>
         <AnimatePresence initial={false} mode="popLayout">
-          <motion.img
+          <GalleryImage
             key={photos[idx]}
             src={photos[idx]}
             alt={alt}
-            draggable={false}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.6}
-            onDragEnd={handleDragEnd}
             onClick={() => setFs(true)}
-            initial={{ opacity: 0.6, scale: 1.02 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.18 }}
             className="size-full cursor-zoom-in object-cover"
+            motionProps={{
+              drag: "x",
+              dragConstraints: { left: 0, right: 0 },
+              dragElastic: 0.6,
+              onDragEnd: handleDragEnd,
+              initial: { opacity: 0.6, scale: 1.02 },
+              animate: { opacity: 1, scale: 1 },
+              exit: { opacity: 0 },
+              transition: { duration: 0.18 },
+            }}
           />
         </AnimatePresence>
+
 
         {/* Invisible tap zones for desktop / accessibility */}
         {photos.length > 1 && (
