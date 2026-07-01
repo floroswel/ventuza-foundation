@@ -4,7 +4,9 @@ import { BadgeCheck, Loader2, Mic, Music, ArrowLeft, Heart, Video } from "lucide
 import { supabase } from "@/integrations/supabase/client";
 import { Chip } from "@/components/Chip";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
+import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { formatHeight } from "@/lib/discover";
+
 
 export const Route = createFileRoute("/u/$slug")({
   head: ({ params }) => ({
