@@ -82,7 +82,10 @@ type Props = {
   overlay?: ReactNode;
   /** Optional close button element rendered top-right of the gallery. */
   topRight?: ReactNode;
+  /** Extra content rendered below the image inside the fullscreen viewer (vertically scrollable). */
+  fullscreenExtra?: ReactNode;
 };
+
 
 const SWIPE_THRESHOLD = 60;
 
@@ -92,7 +95,7 @@ const SWIPE_THRESHOLD = 60;
  *  - dots indicator sus,
  *  - tap = deschide fullscreen viewer (cu swipe și swipe-jos pentru close).
  */
-export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topRight }: Props) {
+export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topRight, fullscreenExtra }: Props) {
   const [idx, setIdx] = useState(0);
   const [fs, setFs] = useState(false);
 
@@ -182,7 +185,9 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
             alt={alt}
             onIndexChange={setIdx}
             onClose={() => setFs(false)}
+            extra={fullscreenExtra}
           />
+
         )}
       </AnimatePresence>
     </>
@@ -190,13 +195,14 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
 }
 
 function FullscreenViewer({
-  photos, initial, alt, onClose, onIndexChange,
+  photos, initial, alt, onClose, onIndexChange, extra,
 }: {
   photos: string[];
   initial: number;
   alt: string;
   onClose: () => void;
   onIndexChange: (i: number) => void;
+  extra?: ReactNode;
 }) {
   const [i, setI] = useState(initial);
   const closeBtnRef = useRef<HTMLButtonElement>(null);
@@ -224,7 +230,6 @@ function FullscreenViewer({
       if (e.key === "ArrowLeft") { setI((v) => (v - 1 + photos.length) % photos.length); return; }
       if (e.key === "ArrowRight") { setI((v) => (v + 1) % photos.length); return; }
       if (e.key === "Tab") {
-        // Cycle focus between the visible controls only.
         const order = [closeBtnRef.current, prevBtnRef.current, nextBtnRef.current].filter(Boolean) as HTMLButtonElement[];
         if (!order.length) return;
         const active = document.activeElement as HTMLElement | null;
@@ -241,10 +246,6 @@ function FullscreenViewer({
   }, [photos.length, onClose]);
 
   function onDragEnd(_: unknown, info: PanInfo) {
-    if (info.offset.y > 120 && Math.abs(info.offset.y) > Math.abs(info.offset.x)) {
-      onClose();
-      return;
-    }
     if (info.offset.x < -SWIPE_THRESHOLD) setI((v) => (v + 1) % photos.length);
     else if (info.offset.x > SWIPE_THRESHOLD) setI((v) => (v - 1 + photos.length) % photos.length);
   }
@@ -260,14 +261,16 @@ function FullscreenViewer({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.15 }}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-black"
+      className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-black"
+      style={{ touchAction: "pan-y" }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
+      {/* Fixed controls stay in viewport during vertical scroll */}
       <button
         ref={closeBtnRef}
         onClick={onClose}
         aria-label="Închide galeria"
-        className="absolute right-4 top-4 z-20 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        className="fixed right-4 top-4 z-30 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
       >
         <X className="size-5" aria-hidden="true" />
       </button>
@@ -278,7 +281,7 @@ function FullscreenViewer({
             ref={prevBtnRef}
             onClick={() => setI((v) => (v - 1 + photos.length) % photos.length)}
             aria-label="Poza anterioară"
-            className="absolute left-3 top-1/2 z-20 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="fixed left-3 top-[calc(50dvh-1.375rem)] z-30 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             <ChevronLeft className="size-6" aria-hidden="true" />
           </button>
@@ -286,12 +289,12 @@ function FullscreenViewer({
             ref={nextBtnRef}
             onClick={() => setI((v) => (v + 1) % photos.length)}
             aria-label="Poza următoare"
-            className="absolute right-3 top-1/2 z-20 flex min-h-11 min-w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+            className="fixed right-3 top-[calc(50dvh-1.375rem)] z-30 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
           >
             <ChevronRight className="size-6" aria-hidden="true" />
           </button>
 
-          <div className="absolute left-1/2 top-4 z-10 flex -translate-x-1/2 gap-1" aria-hidden="true">
+          <div className="fixed left-1/2 top-4 z-20 flex -translate-x-1/2 gap-1" aria-hidden="true">
             {photos.map((_, k) => (
               <span
                 key={k}
@@ -305,35 +308,48 @@ function FullscreenViewer({
         </>
       )}
 
-      <AnimatePresence initial={false} mode="popLayout">
-        <GalleryImage
-          key={photos[i]}
-          src={photos[i]}
-          alt={alt ? `${alt} — poza ${i + 1} din ${photos.length}` : `Poza ${i + 1} din ${photos.length}`}
-          wrapperClassName="flex h-[100dvh] w-full items-center justify-center"
-          className="max-h-[100dvh] max-w-full object-contain"
-          motionProps={{
-            drag: true,
-            dragConstraints: { left: 0, right: 0, top: 0, bottom: 0 },
-            dragElastic: { top: 0.4, bottom: 0.4, left: 0.3, right: 0.3 },
-            onDragEnd: onDragEnd,
-            initial: { opacity: 0 },
-            animate: { opacity: 1 },
-            exit: { opacity: 0 },
-            transition: { duration: 0.15 },
-          }}
-        />
-      </AnimatePresence>
+      {/* Scrollable content: image section + optional extra content below */}
+      <div className="relative flex min-h-[100dvh] w-full flex-col">
+        <div className="relative flex h-[100dvh] w-full shrink-0 items-center justify-center">
+          <AnimatePresence initial={false} mode="popLayout">
+            <GalleryImage
+              key={photos[i]}
+              src={photos[i]}
+              alt={alt ? `${alt} — poza ${i + 1} din ${photos.length}` : `Poza ${i + 1} din ${photos.length}`}
+              wrapperClassName="flex h-[100dvh] w-full items-center justify-center"
+              className="max-h-[100dvh] max-w-full object-contain"
+              motionProps={{
+                drag: "x",
+                dragConstraints: { left: 0, right: 0 },
+                dragElastic: 0.3,
+                onDragEnd: onDragEnd,
+                initial: { opacity: 0 },
+                animate: { opacity: 1 },
+                exit: { opacity: 0 },
+                transition: { duration: 0.15 },
+                style: { touchAction: "pan-y" },
+              }}
+            />
+          </AnimatePresence>
 
+          <p
+            className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/60"
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            {i + 1} / {photos.length}
+            {extra ? " · derulează în jos" : ""}
+          </p>
+        </div>
 
-      <p
-        className="absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/60"
-        aria-live="polite"
-        aria-atomic="true"
-      >
-        {i + 1} / {photos.length} · glisează jos pentru închidere
-      </p>
+        {extra && (
+          <div className="w-full bg-black text-white">
+            {extra}
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 }
+
 
