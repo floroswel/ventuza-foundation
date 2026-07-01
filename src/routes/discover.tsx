@@ -623,77 +623,54 @@ function ProfileSheet({
   const online = isOnline(profile.last_seen);
   const heightStr = formatHeight(profile.height_cm);
 
+  const signedPhotos = photos.map((p) => urls[p]).filter(Boolean) as string[];
+
   return (
     <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/80 backdrop-blur-sm sm:items-end" onClick={onClose}>
       <div
         onClick={(e) => e.stopPropagation()}
         className="relative h-full w-full overflow-y-auto border-border bg-surface sm:h-auto sm:max-h-[92dvh] sm:max-w-md sm:rounded-t-3xl sm:border"
       >
-        {/* Carousel */}
-        <div className="relative aspect-square w-full bg-background">
-          {currentUrl ? (
-            <img src={currentUrl} alt={profile.display_name ?? ""} className="size-full object-cover" />
-          ) : (
-            <div className="flex size-full items-center justify-center text-5xl text-muted-foreground/40">
-              {profile.display_name?.[0]?.toUpperCase() ?? "?"}
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent" />
-
-          {photos.length > 1 && (
+        <ProfilePhotoGallery
+          photos={signedPhotos}
+          alt={profile.display_name ?? ""}
+          topRight={
+            <button
+              onClick={onClose}
+              className="flex size-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur"
+              aria-label="Close"
+            >
+              <X className="size-4" />
+            </button>
+          }
+          overlay={
             <>
-              <button
-                onClick={() => setIdx((i) => (i - 1 + photos.length) % photos.length)}
-                aria-label="Previous photo"
-                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white backdrop-blur hover:bg-black/60"
-              >
-                <ChevronLeft className="size-5" />
-              </button>
-              <button
-                onClick={() => setIdx((i) => (i + 1) % photos.length)}
-                aria-label="Next photo"
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-black/40 p-1.5 text-white backdrop-blur hover:bg-black/60"
-              >
-                <ChevronRight className="size-5" />
-              </button>
-              <div className="absolute left-1/2 top-2 flex -translate-x-1/2 gap-1.5">
-                {photos.map((_, i) => (
-                  <span key={i} className={cn("h-1 w-6 rounded-full transition-all", i === idx ? "bg-white" : "bg-white/30")} />
-                ))}
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent" />
+              <div className="relative p-5">
+                <h2 className="flex items-center gap-2 font-display text-3xl font-medium text-white">
+                  {profile.display_name}{age ? <span className="text-white/70">, {age}</span> : null}
+                  {profile.verified && <BadgeCheck className="size-5 text-primary" />}
+                </h2>
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85">
+                  <span className="inline-flex items-center gap-1.5">
+                    <span className={cn("size-1.5 rounded-full", online ? "bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" : "bg-white/40")} />
+                    {lastSeenText}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <MapPin className="size-3" /> {formatDistance(profile.distance_m)}
+                  </span>
+                  {heightStr && (
+                    <span className="inline-flex items-center gap-1">
+                      <Ruler className="size-3" /> {heightStr}
+                    </span>
+                  )}
+                </div>
+                <MatchScoreBadge target={profile} />
               </div>
             </>
-          )}
+          }
+        />
 
-          <button
-            onClick={onClose}
-            className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur"
-            aria-label="Close"
-          >
-            <X className="size-4" />
-          </button>
-
-          <div className="absolute inset-x-0 bottom-0 p-5">
-            <h2 className="flex items-center gap-2 font-display text-3xl font-medium text-white">
-              {profile.display_name}{age ? <span className="text-white/70">, {age}</span> : null}
-              {profile.verified && <BadgeCheck className="size-5 text-primary" />}
-            </h2>
-            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85">
-              <span className="inline-flex items-center gap-1.5">
-                <span className={cn("size-1.5 rounded-full", online ? "bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" : "bg-white/40")} />
-                {lastSeenText}
-              </span>
-              <span className="inline-flex items-center gap-1">
-                <MapPin className="size-3" /> {formatDistance(profile.distance_m)}
-              </span>
-              {heightStr && (
-                <span className="inline-flex items-center gap-1">
-                  <Ruler className="size-3" /> {heightStr}
-                </span>
-              )}
-            </div>
-            <MatchScoreBadge target={profile} />
-          </div>
-        </div>
 
 
         <div className="space-y-5 px-5 pb-6 pt-4">
