@@ -300,6 +300,8 @@ function FullscreenViewer({
       if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
       if (e.key === "ArrowLeft") { setI((v) => (v - 1 + photos.length) % photos.length); return; }
       if (e.key === "ArrowRight") { setI((v) => (v + 1) % photos.length); return; }
+      if (e.key === "Home") { e.preventDefault(); setI(0); return; }
+      if (e.key === "End") { e.preventDefault(); setI(photos.length - 1); return; }
       if (e.key === "Tab") {
         const order = getFocusable();
         if (!order.length) { e.preventDefault(); return; }
