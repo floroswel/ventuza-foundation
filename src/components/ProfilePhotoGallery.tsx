@@ -82,7 +82,10 @@ type Props = {
   overlay?: ReactNode;
   /** Optional close button element rendered top-right of the gallery. */
   topRight?: ReactNode;
+  /** Extra content rendered below the image inside the fullscreen viewer (vertically scrollable). */
+  fullscreenExtra?: ReactNode;
 };
+
 
 const SWIPE_THRESHOLD = 60;
 
