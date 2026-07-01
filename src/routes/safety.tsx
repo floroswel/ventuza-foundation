@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Shield, Eye, MessageCircle, MapPin, Phone, AlertTriangle, ChevronLeft, Lock, ShieldCheck, EyeOff, Fingerprint, Ban, Image as ImageIcon } from "lucide-react";
 import { PanicToolsCard } from "@/components/PanicToolsCard";
-import { HealthReminderCard } from "@/components/HealthReminderCard";
 
 
 export const Route = createFileRoute("/safety")({
@@ -54,7 +53,6 @@ function SafetyCenter() {
 
         <PanicToolsCard />
 
-        <HealthReminderCard />
 
 
 

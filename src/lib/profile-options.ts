@@ -53,9 +53,7 @@ export const POSITION_OPTIONS = [
   "Top", "Vers Top", "Versatile", "Vers Bottom", "Bottom", "Side", "Oral", "Not sure",
 ];
 
-export const HIV_STATUS_OPTIONS = [
-  "Negative", "Negative on PrEP", "Positive", "Positive Undetectable", "Prefer not to say",
-];
+// HIV_STATUS_OPTIONS: eliminat. Ventuza nu procesează statusul HIV (decizie GDPR).
 
 export const RELATIONSHIP_STATUS_OPTIONS = [
   "Single", "Dating", "Exclusive", "Partnered", "Open relationship", "Married", "Polyamorous",

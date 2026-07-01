@@ -6,11 +6,8 @@ import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { useConsent } from "@/lib/use-consent";
 import { supabase } from "@/integrations/supabase/client";
-import { getMyHealth, setMyHealth } from "@/lib/health.functions";
 
-function withHealth<T extends object>(row: T, h?: { hiv_status: string | null; hiv_test_date: string | null }): Profile {
-  return { ...(row as unknown as Profile), hiv_status: h?.hiv_status ?? null, hiv_test_date: h?.hiv_test_date ?? null };
-}
+
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,7 +35,7 @@ import {
   GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
   LOOKING_FOR_OPTIONS, INTEREST_OPTIONS,
   TRIBE_OPTIONS, BODY_TYPE_OPTIONS, POSITION_OPTIONS,
-  HIV_STATUS_OPTIONS, RELATIONSHIP_STATUS_OPTIONS, ETHNICITY_OPTIONS,
+  RELATIONSHIP_STATUS_OPTIONS, ETHNICITY_OPTIONS,
   MEET_AT_OPTIONS, EXPECTATIONS_OPTIONS, SCENES_OPTIONS,
   SAFETY_OPTIONS, PREP_STATUS_OPTIONS, VACCINATION_OPTIONS,
 } from "@/lib/profile-options";
@@ -70,8 +67,6 @@ type Profile = {
   weight_kg: number | null;
   ethnicity: string | null;
   position: string | null;
-  hiv_status: string | null;
-  hiv_test_date: string | null;
   relationship_status: string | null;
   verified_at: string | null;
   incognito: boolean;
@@ -147,8 +142,7 @@ function ProfilePage() {
       if (error) toast.error(error.message);
       let p: Profile | null = null;
       if (data) {
-        const h = await getMyHealth().catch(() => ({ hiv_status: null, hiv_test_date: null }));
-        p = withHealth(data, h);
+        p = data as unknown as Profile;
       }
       setProfile(p);
       setLoading(false);
@@ -332,7 +326,7 @@ function ProfilePage() {
           </Section>
         )}
 
-        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.hiv_status || profile.prep_status) && (
+        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.prep_status) && (
           <Section title="Stats">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface p-4 text-sm">
               {profile.body_type && <StatRow label="Body" value={profile.body_type} />}
@@ -341,7 +335,6 @@ function ProfilePage() {
               {profile.weight_kg && <StatRow label="Weight" value={`${profile.weight_kg} kg`} />}
               {profile.ethnicity && <StatRow label="Ethnicity" value={profile.ethnicity} />}
               {profile.relationship_status && <StatRow label="Relationship" value={profile.relationship_status} />}
-              {profile.hiv_status && <StatRow label="HIV" value={profile.hiv_status} />}
               {profile.prep_status && <StatRow label="PrEP" value={profile.prep_status} />}
             </div>
           </Section>
@@ -412,7 +405,7 @@ function ProfilePage() {
             lookingNowIntent={profile.looking_now_intent}
             onUpdate={async () => {
               const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
-              if (data) setProfile((prev) => withHealth(data, prev ? { hiv_status: prev.hiv_status, hiv_test_date: prev.hiv_test_date } : undefined));
+              if (data) setProfile(data as unknown as Profile);
             }}
           />
           <ProfilePremiumPanel
@@ -424,7 +417,7 @@ function ProfilePage() {
             boostUntil={profile.boost_until}
             onUpdate={async () => {
               const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
-              if (data) setProfile((prev) => withHealth(data, prev ? { hiv_status: prev.hiv_status, hiv_test_date: prev.hiv_test_date } : undefined));
+              if (data) setProfile(data as unknown as Profile);
             }}
           />
         </Section>
@@ -531,7 +524,7 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
       weight_kg: form.weight_kg,
       ethnicity: form.ethnicity,
       position: form.position,
-      // hiv_status / hiv_test_date — cifrate; scrise prin setMyHealth mai jos.
+      // Datele HIV au fost eliminate din schemă (decizie GDPR).
       relationship_status: form.relationship_status,
       meet_at: form.meet_at ?? [],
       expectations: form.expectations ?? [],
@@ -544,19 +537,8 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
     }).eq("id", profile.id).select("*").maybeSingle();
     if (error || !data) { setSaving(false); return toast.error(error?.message ?? "Failed"); }
 
-    // Cifrare HIV via server fn. Dacă userul nu are consimțământ activ,
-    // server fn-ul întoarce ok:false (triggerul DB ar bloca scrierea oricum).
-    const wantHiv = form.hiv_status ?? null;
-    const wantDate = form.hiv_test_date ?? null;
-    if (wantHiv !== profile.hiv_status || wantDate !== profile.hiv_test_date) {
-      const res = await setMyHealth({ data: { hiv_status: wantHiv, hiv_test_date: wantDate } });
-      if (!res.ok) {
-        setSaving(false);
-        return toast.error(res.message);
-      }
-    }
     setSaving(false);
-    onSaved(withHealth(data, { hiv_status: wantHiv, hiv_test_date: wantDate }));
+    onSaved(data as unknown as Profile);
   }
 
   function single<K extends keyof Profile>(k: K, options: string[]) {
@@ -676,12 +658,11 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
         {/* Health */}
         <SectionDivider label="Health" />
         <EditSection>
-          {single("hiv_status", HIV_STATUS_OPTIONS)}
           {single("prep_status", PREP_STATUS_OPTIONS)}
           <EditChips label="Health Practices" options={SAFETY_OPTIONS} value={form.safety_practices ?? []} onChange={(v) => setForm({ ...form, safety_practices: v })} />
           <EditChips label="Vaccinations" options={VACCINATION_OPTIONS} value={form.vaccinations ?? []} onChange={(v) => setForm({ ...form, vaccinations: v })} />
           <p className="rounded-xl border border-border/50 bg-surface/50 p-3 text-[11px] leading-relaxed text-muted-foreground">
-            <strong className="text-foreground/80">Sexual Health FAQ.</strong> Learn more about HIV, PrEP, getting tested for STIs and our commitment to privacy regarding this information.
+            <strong className="text-foreground/80">Resurse de sănătate.</strong> Ventuza nu stochează date despre HIV. Pentru testare gratuită și consiliere vezi <a href="https://www.arasnet.ro" target="_blank" rel="noreferrer" className="underline">ARAS</a> sau centrul de siguranță (<a href="/safety" className="underline">/safety</a>).
           </p>
         </EditSection>
       </div>

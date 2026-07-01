@@ -4,7 +4,6 @@ import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Bell, Loader2, Upload, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { setMyHealth } from "@/lib/health.functions";
 import { moderatePhoto } from "@/lib/verification.functions";
 import { useAuth } from "@/lib/auth-context";
 import { EnablePushButton } from "@/components/EnablePushButton";
@@ -24,7 +23,6 @@ import {
   TRIBE_OPTIONS,
   BODY_TYPE_OPTIONS,
   POSITION_OPTIONS,
-  HIV_STATUS_OPTIONS,
   RELATIONSHIP_STATUS_OPTIONS,
   ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
@@ -51,13 +49,11 @@ type Data = {
   weight_kg: number | null;
   ethnicity: string;
   position: string;
-  hiv_status: string;
   relationship_status: string;
   interests: string[];
   prompts: Prompt[];
   bio: string;
   photos: string[];
-  health_consent: boolean;
   terms_accepted: boolean;
 };
 
@@ -76,13 +72,11 @@ const empty: Data = {
   weight_kg: null,
   ethnicity: "",
   position: "",
-  hiv_status: "",
   relationship_status: "",
   interests: [],
   prompts: [],
   bio: "",
   photos: [],
-  health_consent: false,
   terms_accepted: false,
 };
 
@@ -184,7 +178,7 @@ function Onboarding() {
       case "intent":
         return data.looking_for.length > 0;
       case "stats":
-        return !data.hiv_status || data.health_consent;
+        return true;
       case "personality":
         return data.interests.length >= 3;
       case "photos":
@@ -201,18 +195,12 @@ function Onboarding() {
     if (!user) return;
     setSaving(true);
 
-    // GDPR: ÎNTÂI înregistrăm consimțământul (inclusiv health_data dacă userul a acceptat),
-    // pentru ca triggerul `enforce_health_consent` de pe `profiles` să accepte scrierea
-    // câmpurilor health-gated în aceeași tranzacție logică. Vezi AGENTS.md.
+    // GDPR: înregistrăm consimțămintele obligatorii (terms/privacy) înainte de update.
     const ua = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 400) : null;
     const consents: Array<{ kind: string; version: string; accepted: boolean }> = [
       { kind: "terms", version: "2026-06-22", accepted: true },
       { kind: "privacy", version: "2026-06-22", accepted: true },
     ];
-    const wantsHealth = Boolean(data.hiv_status) && data.health_consent;
-    if (wantsHealth) {
-      consents.push({ kind: "health_data", version: "2026-06-22", accepted: true });
-    }
     const { error: consentError } = await supabase.from("consent_log").insert(
       consents.map((c) => ({ user_id: user.id, ...c, user_agent: ua })),
     );
@@ -236,15 +224,11 @@ function Onboarding() {
       weight_kg: data.weight_kg,
       ethnicity: data.ethnicity || null,
       position: data.position || null,
-      // hiv_status / hiv_test_date sunt cifrate la nivel de coloană și se
-      // scriu DOAR prin setMyHealth (server fn → set_user_health RPC), nu
-      // direct prin update pe profiles. Vezi AGENTS.md "CIFRARE DATE SĂNĂTATE".
       relationship_status: data.relationship_status || null,
       interests: data.interests,
       bio: data.bio.trim(),
       prompts: data.prompts,
       photos: data.photos,
-      health_data_consent_at: wantsHealth ? new Date().toISOString() : null,
       terms_accepted_version: "2026-06-22",
       terms_accepted_at: new Date().toISOString(),
       privacy_accepted_version: "2026-06-22",
@@ -253,13 +237,6 @@ function Onboarding() {
     }).eq("id", user.id);
     if (error) { setSaving(false); return toast.error(error.message); }
 
-    if (wantsHealth && data.hiv_status) {
-      const res = await setMyHealth({ data: { hiv_status: data.hiv_status, hiv_test_date: null } });
-      if (!res.ok) {
-        setSaving(false);
-        return toast.error(res.message);
-      }
-    }
     setSaving(false);
 
     try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
@@ -450,20 +427,9 @@ function StepView({
             <Label>Status relație</Label>
             <ChipGrid options={RELATIONSHIP_STATUS_OPTIONS} selected={data.relationship_status ? [data.relationship_status] : []} onToggle={(v) => setData({ ...data, relationship_status: data.relationship_status === v ? "" : v })} />
           </div>
-          <div className="space-y-2 pt-2 border-t border-border/50">
-            <Label>Status HIV <span className="text-muted-foreground font-normal">(opțional)</span></Label>
-            <ChipGrid options={HIV_STATUS_OPTIONS} selected={data.hiv_status ? [data.hiv_status] : []} onToggle={(v) => setData({ ...data, hiv_status: data.hiv_status === v ? "" : v })} />
-            {data.hiv_status && (
-              <label className="mt-3 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-950/20 p-3">
-                <input type="checkbox" className="mt-1" checked={data.health_consent}
-                  onChange={(e) => setData({ ...data, health_consent: e.target.checked })} />
-                <span className="text-xs leading-relaxed text-foreground/85">
-                  <strong>Consimțământ explicit (GDPR Art. 9):</strong> sunt de acord ca Ventuza
-                  să afișeze statusul meu HIV pe profil. Pot retrage oricând din Setări.
-                </span>
-              </label>
-            )}
-          </div>
+          {/* Câmpul de status HIV a fost eliminat — Ventuza nu mai procesează
+              date de sănătate (decizie GDPR: reducere risc Art. 9). Pentru
+              informare vezi /safety (resurse ARAS, testare). */}
         </div>
       );
 

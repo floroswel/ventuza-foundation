@@ -27,7 +27,7 @@ function Page() {
         <h2 className="mt-6 text-base font-semibold">1. Ce considerăm incident</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
           <li>Acces neautorizat la baza de date sau la fotografii private.</li>
-          <li>Scurgere de date cu caracter personal (email, locație, status HIV, mesaje).</li>
+          <li>Scurgere de date cu caracter personal (email, locație, mesaje).</li>
           <li>Compromiterea conturilor de administrator sau a cheilor service-role.</li>
           <li>Atac DDoS sau ransomware care afectează disponibilitatea.</li>
         </ul>

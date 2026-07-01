@@ -32,7 +32,7 @@ const FEATURES = {
   Dating: ["Discover/swipe/match", "Mesaje 1:1 cu media + voice", "Stories", "Visitors & favorites", "Block bilateral enforced la DB", "Travel mode", "PIN lock + discreet mode", "SOS / panic tools"],
   "B2B Partners": ["Portal partener /partner", "Wizard creare venues/events/offers", "Quota & moderare obligatorie", "Facturare RO completă (OP bancar, TVA, numerotare neîntreruptă)", "Grace period + retrogradare automată", "Notificări status partener", "Nearby cu prioritizare per plan"],
   Admin: ["RBAC pe 6 roluri", "Audit log append-only", "Break-glass cu justificare", "2FA enforced", "Data masking by default", "CSAM no-render + hash blocklist", "DSA reports anonime", "Command palette (Cmd+K) + AI copilot"],
-  GDPR: ["Art. 9 criptat pgcrypto (HIV, orientare)", "Consent registry centralizat", "Cascade withdrawal automat", "Registru Art. 30 versionat", "Subprocesatori documentați", "Right to be Forgotten complet", "DPIA pentru date sensibile"],
+  GDPR: ["Art. 9 minimizat (orientare opt-in, HIV eliminat complet)", "Consent registry centralizat", "Cascade withdrawal automat", "Registru Art. 30 versionat", "Subprocesatori documentați", "Right to be Forgotten complet", "DPIA pentru date sensibile"],
 };
 
 const PRICE_RANGES = [

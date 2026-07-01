@@ -7,17 +7,12 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * BREAK-GLASS — acces controlat la date sensibile din panoul admin.
  *
  * Reguli (vezi AGENTS.md → "REGULĂ — ADMIN"):
- *  - `health`   → DOAR super_admin (decriptează HIV via get_user_health)
- *  - `location` → DOAR super_admin (returnează coordonate proprii)
- *  - `selfie`   → admin sau super_admin
- *  - `messages` → admin sau super_admin
+ *  - `orientation` → DOAR super_admin
+ *  - `location`    → DOAR super_admin (returnează coordonate proprii)
+ *  - `selfie`      → admin sau super_admin
+ *  - `messages`    → admin sau super_admin
  *
- * Orice apel:
- *  1) verifică rolul prin `admin_can_access_sensitive` (server-side),
- *  2) cere `justification` ≥ 10 chars,
- *  3) loghează în `admin_sensitive_access_log` (append-only, vizibil
- *     doar super_admin + auditor) ȘI în `admin_audit_log` cu severitate
- *     `critical` pentru paritate cu jurnalul principal.
+ * Notă: kind='health' a fost eliminat — Ventuza nu mai procesează date HIV.
  */
 
 async function reqMeta() {
@@ -30,7 +25,7 @@ async function reqMeta() {
 
 const RevealInput = z.object({
   targetUserId: z.string().uuid(),
-  kind: z.enum(["health", "orientation", "location", "selfie", "messages"]),
+  kind: z.enum(["orientation", "location", "selfie", "messages"]),
   justification: z.string().min(10).max(500),
   conversationId: z.string().uuid().optional(),
   limit: z.number().int().min(1).max(100).optional(),
@@ -58,15 +53,7 @@ export const adminBreakGlassReveal = createServerFn({ method: "POST" })
     let payload: any = {};
     let fields: string[] = [];
 
-    if (data.kind === "health") {
-      const key = process.env.HEALTH_COL_KEY;
-      if (!key) throw new Error("HEALTH_COL_KEY missing");
-      const { data: row, error } = await sa.rpc("get_user_health", { _user_id: data.targetUserId, _key: key });
-      if (error) throw new Error(error.message);
-      const r = Array.isArray(row) ? row[0] : row;
-      payload = { hiv_status: r?.hiv_status ?? null, hiv_test_date: r?.hiv_test_date ?? null };
-      fields = ["hiv_status", "hiv_test_date"];
-    } else if (data.kind === "orientation") {
+    if (data.kind === "orientation") {
       const { data: p } = await sa.from("profiles")
         .select("id, orientation, gender, gender_custom, pronouns, pronouns_custom, tribes")
         .eq("id", data.targetUserId).maybeSingle();

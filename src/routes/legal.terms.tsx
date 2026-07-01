@@ -59,30 +59,33 @@ function TermsPage() {
           automată (AI) pentru a detecta conținut nepermis înainte de publicare.
         </p>
 
-        <h2 className="mt-6 text-base font-semibold">5. Status HIV și date sensibile</h2>
+        <h2 className="mt-6 text-base font-semibold">5. Date sensibile și non-discriminare</h2>
         <p className="mt-2 text-foreground/85">
-          Câmpul de status HIV este <strong>opțional</strong> și complet la latitudinea ta. Aceste informații sunt tratate
-          ca date de sănătate sensibile sub GDPR (Art. 9). Prin completarea lor consimți explicit la prelucrarea și afișarea
-          lor altor utilizatori ai aplicației. Le poți retrage oricând din <em>Setări → Consimțăminte</em>, iar la retragere
-          datele sunt șterse automat.
+          Datele privind orientarea sexuală și identitatea de gen sunt tratate ca date sensibile sub GDPR (Art. 9)
+          și sunt afișate doar dacă alegi să le completezi. Le poți retrage oricând din <em>Setări → Consimțăminte</em>.
+        </p>
+        <p className="mt-2 text-foreground/85">
+          <strong>Ventuza nu procesează date despre statutul HIV.</strong> Nu colectăm, nu stocăm și nu afișăm
+          statutul HIV sau data testării. Pentru testare gratuită și consiliere te încurajăm să folosești resursele
+          publice (ARAS, Sensiblu Testing) accesibile din centrul de siguranță.
         </p>
 
         <h2 className="mt-6 text-base font-semibold">5.1. Non-discriminare și protecția identității LGBTQ+</h2>
         <p className="mt-2 text-foreground/85">
           Ventuza este construită pentru comunitatea LGBTQ+. Discriminarea pe criterii de orientare sexuală, identitate
-          sau exprimare de gen, expresie HIV-pozitivă, etnie, religie, dizabilitate sau vârstă este strict interzisă —
+          sau exprimare de gen, etnie, religie, dizabilitate, vârstă sau stare de sănătate este strict interzisă —
           inclusiv în descrieri de profil, filtre publice sau mesaje. Încălcările duc la suspendare imediată.
         </p>
         <p className="mt-2 text-foreground/85">
-          <strong>Outing involuntar interzis.</strong> Dezvăluirea orientării sexuale, identității de gen, statusului HIV
-          sau a oricăror informații din profilul unui alt utilizator către persoane din afara aplicației (familie,
+          <strong>Outing involuntar interzis.</strong> Dezvăluirea orientării sexuale, identității de gen sau a
+          oricăror informații din profilul unui alt utilizator către persoane din afara aplicației (familie,
           angajator, rețele sociale, capturi de ecran redistribuite) constituie încălcare gravă și poate atrage
           răspundere civilă/penală conform legii române (OG 137/2000, Codul Penal Art. 226 — violarea vieții private).
           Ne rezervăm dreptul să cooperăm cu autoritățile la solicitarea victimei.
         </p>
         <p className="mt-2 text-foreground/85">
           Identitatea ta queer este protejată. Nu vindem date către brokeri de marketing, nu permitem targeting publicitar
-          pe orientare/identitate de gen/status HIV, iar locația ta nu este transmisă altor utilizatori sub formă precisă.
+          pe orientare/identitate de gen, iar locația ta nu este transmisă altor utilizatori sub formă precisă.
         </p>
 
 

@@ -14,7 +14,6 @@ import { CONSENT_REGISTRY, type ConsentKind } from "@/lib/consent-registry";
  * la onboarding și nu se pot retrage fără ștergerea contului.
  */
 const OPTIONAL_KINDS: ConsentKind[] = [
-  "health_data",
   "age_verification",
   "ai_features",
   "push_notifications",

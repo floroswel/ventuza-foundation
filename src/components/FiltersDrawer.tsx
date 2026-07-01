@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Chip } from "@/components/Chip";
 import {
   GENDER_OPTIONS, ORIENTATION_OPTIONS, LOOKING_FOR_OPTIONS,
-  TRIBE_OPTIONS, BODY_TYPE_OPTIONS, POSITION_OPTIONS, HIV_STATUS_OPTIONS,
+  TRIBE_OPTIONS, BODY_TYPE_OPTIONS, POSITION_OPTIONS,
 } from "@/lib/profile-options";
 import { DEFAULT_FILTERS, type DiscoverFilters } from "@/lib/discover";
 
@@ -104,7 +104,7 @@ export function FiltersDrawer({
         <ChipSection label="Tribes" options={TRIBE_OPTIONS} value={draft.tribes} onChange={(v) => setDraft({ ...draft, tribes: v })} />
         <ChipSection label="Body type" options={BODY_TYPE_OPTIONS} value={draft.bodyTypes} onChange={(v) => setDraft({ ...draft, bodyTypes: v })} />
         <ChipSection label="Position" options={POSITION_OPTIONS} value={draft.positions} onChange={(v) => setDraft({ ...draft, positions: v })} />
-        <ChipSection label="HIV status" options={HIV_STATUS_OPTIONS} value={draft.hivStatuses} onChange={(v) => setDraft({ ...draft, hivStatuses: v })} />
+        {/* Filtru HIV status: eliminat — Ventuza nu procesează datele HIV. */}
         <ChipSection label="Looking for" options={LOOKING_FOR_OPTIONS} value={draft.lookingFor} onChange={(v) => setDraft({ ...draft, lookingFor: v })} />
         <ChipSection label="Gender" options={GENDER_OPTIONS} value={draft.gender} onChange={(v) => setDraft({ ...draft, gender: v })} />
         <ChipSection label="Orientation" options={ORIENTATION_OPTIONS} value={draft.orientation} onChange={(v) => setDraft({ ...draft, orientation: v })} />
