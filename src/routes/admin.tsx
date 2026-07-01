@@ -9,7 +9,7 @@ import {
   Megaphone, Play, Pause, Building2, LayoutDashboard, Users, Database, Send,
   Trash2, Save, Search, RefreshCw, ChevronLeft, ChevronRight, Crown,
   ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon, Sparkles,
-  Activity, Bot, Flag,
+  Activity, Bot, Flag, LifeBuoy, Gavel, Eye, TrendingUp, PowerOff,
 } from "lucide-react";
 import { AdminShell, type NavItem } from "@/components/admin/AdminShell";
 import { GlassCard, Kpi, MonoNumber, StatusBadge, SectionTitle } from "@/components/admin/ui/primitives";
@@ -44,6 +44,12 @@ import { SignupThrottlePanel } from "@/components/admin/SignupThrottlePanel";
 import { SettingsAndFlagsPanel } from "@/components/admin/SettingsAndFlagsPanel";
 import { StaffManagementPanel } from "@/components/admin/StaffManagementPanel";
 import { AdminToolsPanel } from "@/components/admin/AdminToolsPanel";
+import { SupportTicketsPanel } from "@/components/admin/SupportTicketsPanel";
+import { AppealsPanel } from "@/components/admin/AppealsPanel";
+import { OperationsUserOpsPanel } from "@/components/admin/OperationsUserOpsPanel";
+import { BroadcastV2Panel } from "@/components/admin/BroadcastV2Panel";
+import { IntelligenceDashboardPanel } from "@/components/admin/IntelligenceDashboardPanel";
+import { KillSwitchesPanel } from "@/components/admin/KillSwitchesPanel";
 
 
 function AgeGateDevBanner() {
@@ -75,7 +81,8 @@ type Section =
   | "data" | "broadcast" | "audit" | "alerts" | "dsa" | "csam"
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle"
-  | "settings" | "staff" | "tools";
+  | "settings" | "staff" | "tools"
+  | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch";
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -150,6 +157,12 @@ function AdminDashboard() {
     { id: "alerts",   label: "Alerte",   icon: Bell,            group: "Operations", hint: "Notificări staff" },
     { id: "copilot",  label: "Copilot AI", icon: Bot,           group: "Operations", hint: "Asistent procedural" },
     { id: "broadcast",label: "Broadcast",icon: Send,            group: "Operations", adminOnly: true },
+    { id: "broadcast2", label: "Broadcast v2 · targeting", icon: Send, group: "Operations", adminOnly: true, hint: "Filtre reale + dry-run + campanii" },
+    { id: "support",  label: "Ticketing", icon: LifeBuoy,        group: "Operations", hint: "Helpdesk intern" },
+    { id: "appeals",  label: "Contestații DSA", icon: Gavel,     group: "Operations", hint: "Art. 20 DSA" },
+    { id: "userops",  label: "User ops · view-as", icon: Eye,    group: "Operations", adminOnly: true, hint: "Impersonare read-only + sesiuni" },
+    { id: "intel",    label: "Intelligence · MRR/Cohorts", icon: TrendingUp, group: "Operations", hint: "MRR/ARR, retention, funnel" },
+    { id: "killswitch", label: "Kill switches", icon: PowerOff,  group: "System", adminOnly: true, hint: "Emergency + force-update" },
 
     // Trust & Safety
     { id: "users",    label: "Utilizatori", icon: Users,        group: "Trust & Safety", adminOnly: true },
@@ -229,6 +242,12 @@ function AdminDashboard() {
       {section === "staff" && isAdmin && <StaffManagementPanel />}
       {section === "tools" && isAdmin && <AdminToolsPanel />}
       {section === "signals" && <SecuritySignalsPanel />}
+      {section === "support" && <SupportTicketsPanel />}
+      {section === "appeals" && <AppealsPanel />}
+      {section === "userops" && isAdmin && <OperationsUserOpsPanel />}
+      {section === "broadcast2" && isAdmin && <BroadcastV2Panel />}
+      {section === "intel" && <IntelligenceDashboardPanel />}
+      {section === "killswitch" && isAdmin && <KillSwitchesPanel />}
     </AdminShell>
   );
 }

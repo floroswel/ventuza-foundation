@@ -232,6 +232,56 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_impersonation_log: {
+        Row: {
+          actor_id: string
+          ended_at: string | null
+          fields_accessed: Json
+          id: string
+          ip: unknown
+          justification: string
+          purpose: string
+          started_at: string
+          target_user_id: string
+          ticket_id: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          actor_id: string
+          ended_at?: string | null
+          fields_accessed?: Json
+          id?: string
+          ip?: unknown
+          justification: string
+          purpose: string
+          started_at?: string
+          target_user_id: string
+          ticket_id?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          actor_id?: string
+          ended_at?: string | null
+          fields_accessed?: Json
+          id?: string
+          ip?: unknown
+          justification?: string
+          purpose?: string
+          started_at?: string
+          target_user_id?: string
+          ticket_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_impersonation_log_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       admin_ip_allowlist: {
         Row: {
           cidr: string
@@ -529,6 +579,54 @@ export type Database = {
         }
         Relationships: []
       }
+      appeals: {
+        Row: {
+          action_ref: string | null
+          created_at: string
+          decision_reason: string | null
+          evidence_urls: Json
+          id: string
+          kind: string
+          original_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          user_statement: string
+        }
+        Insert: {
+          action_ref?: string | null
+          created_at?: string
+          decision_reason?: string | null
+          evidence_urls?: Json
+          id?: string
+          kind: string
+          original_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          user_statement: string
+        }
+        Update: {
+          action_ref?: string | null
+          created_at?: string
+          decision_reason?: string | null
+          evidence_urls?: Json
+          id?: string
+          kind?: string
+          original_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          user_statement?: string
+        }
+        Relationships: []
+      }
       banned_fingerprints: {
         Row: {
           banned_at: string
@@ -619,6 +717,60 @@ export type Database = {
           status?: string
           title?: string
           users_notified_at?: string | null
+        }
+        Relationships: []
+      }
+      broadcast_campaigns: {
+        Row: {
+          audience_filter: Json
+          body: string
+          channel: string
+          created_at: string
+          created_by: string
+          delivered_count: number
+          finished_at: string | null
+          id: string
+          link: string | null
+          scheduled_at: string | null
+          started_at: string | null
+          status: string
+          target_count: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          audience_filter?: Json
+          body: string
+          channel?: string
+          created_at?: string
+          created_by: string
+          delivered_count?: number
+          finished_at?: string | null
+          id?: string
+          link?: string | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string
+          target_count?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          audience_filter?: Json
+          body?: string
+          channel?: string
+          created_at?: string
+          created_by?: string
+          delivered_count?: number
+          finished_at?: string | null
+          id?: string
+          link?: string | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string
+          target_count?: number
+          title?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -2953,6 +3105,101 @@ export type Database = {
         }
         Relationships: []
       }
+      support_ticket_messages: {
+        Row: {
+          attachments: Json
+          author_id: string
+          author_role: string
+          body: string
+          created_at: string
+          id: string
+          internal_note: boolean
+          ticket_id: string
+        }
+        Insert: {
+          attachments?: Json
+          author_id: string
+          author_role: string
+          body: string
+          created_at?: string
+          id?: string
+          internal_note?: boolean
+          ticket_id: string
+        }
+        Update: {
+          attachments?: Json
+          author_id?: string
+          author_role?: string
+          body?: string
+          created_at?: string
+          id?: string
+          internal_note?: boolean
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "support_ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      support_tickets: {
+        Row: {
+          assignee_id: string | null
+          category: string
+          closed_at: string | null
+          created_at: string
+          first_response_at: string | null
+          id: string
+          last_msg_at: string
+          priority: string
+          related_id: string | null
+          related_type: string | null
+          resolved_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          assignee_id?: string | null
+          category: string
+          closed_at?: string | null
+          created_at?: string
+          first_response_at?: string | null
+          id?: string
+          last_msg_at?: string
+          priority?: string
+          related_id?: string | null
+          related_type?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          assignee_id?: string | null
+          category?: string
+          closed_at?: string | null
+          created_at?: string
+          first_response_at?: string | null
+          id?: string
+          last_msg_at?: string
+          priority?: string
+          related_id?: string | null
+          related_type?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       swipes: {
         Row: {
           action: string
@@ -3445,6 +3692,15 @@ export type Database = {
         }
         Returns: string
       }
+      admin_decide_appeal: {
+        Args: {
+          _appeal_id: string
+          _decision: string
+          _decision_reason: string
+        }
+        Returns: undefined
+      }
+      admin_funnel_stats: { Args: { _days?: number }; Returns: Json }
       admin_get_my_role: { Args: never; Returns: string }
       admin_moderate_item: {
         Args: {
@@ -3484,6 +3740,17 @@ export type Database = {
         Args: { _decision: string; _flag_id: string; _notes?: string }
         Returns: undefined
       }
+      admin_retention_cohorts: {
+        Args: { _days?: number }
+        Returns: {
+          cohort_day: string
+          d1: number
+          d30: number
+          d7: number
+          signups: number
+        }[]
+      }
+      admin_revenue_stats: { Args: never; Returns: Json }
       admin_risk_dashboard: { Args: { _window_hours?: number }; Returns: Json }
       admin_risk_queue: {
         Args: { _limit?: number }
@@ -3513,6 +3780,15 @@ export type Database = {
       admin_signup_throttle_stats: {
         Args: { _window_hours?: number }
         Returns: Json
+      }
+      admin_staff_ticket_action: {
+        Args: {
+          _assignee: string
+          _new_status: string
+          _priority: string
+          _ticket_id: string
+        }
+        Returns: undefined
       }
       admin_suspend_partner: {
         Args: { p_reason: string; p_user_id: string }
