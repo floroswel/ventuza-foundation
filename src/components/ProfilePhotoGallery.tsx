@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
  * `motionProps` opțional pentru a atașa drag/animații framer-motion.
  */
 function GalleryImage({
-  src, alt, className, wrapperClassName, motionProps, onClick, onRetryKey,
+  src, alt, className, wrapperClassName, motionProps, onClick, onRetryKey, onStatusChange,
 }: {
   src: string;
   alt: string;
@@ -18,11 +18,15 @@ function GalleryImage({
   onClick?: () => void;
   /** cheie internă folosită doar pentru re-render la retry */
   onRetryKey?: number;
+  /** notifică părintele despre starea de încărcare (pentru status regions externe) */
+  onStatusChange?: (status: "loading" | "ready" | "error") => void;
 }) {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [nonce, setNonce] = useState(0);
 
   useEffect(() => { setStatus("loading"); }, [src, onRetryKey, nonce]);
+  useEffect(() => { onStatusChange?.(status); }, [status, onStatusChange]);
+
 
   return (
     <div className={cn("relative size-full", wrapperClassName)}>
