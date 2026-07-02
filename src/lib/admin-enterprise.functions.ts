@@ -699,7 +699,7 @@ export const adminBulkAlertAction = createServerFn({ method: "POST" })
     } else if (data.action === "resolve") {
       patch = { resolved_at: nowIso, resolved_by: context.userId, resolution_note: data.note ?? null };
     }
-    const { error } = await context.supabase.from("admin_alerts").update(patch).in("id", data.ids);
+    const { error } = await (context.supabase as any).from("admin_alerts").update(patch).in("id", data.ids);
     if (error) throw new Error(error.message);
     await logAudit({
       actorId: context.userId, action: `alert.bulk.${data.action}`,
