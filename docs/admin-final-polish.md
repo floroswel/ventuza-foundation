@@ -15,15 +15,17 @@ Nu conține "1000 de îmbunătățiri". Conține ce lipsește real, pe fiecare p
 Panouri care nu au încă cele trei stări distincte cu `AdminPanelError` +
 "empty legitim" separat de eroare:
 
-- [ ] `AlertRulesPanel` — spinner infinit dacă `list_rules` întoarce eroare.
-- [ ] `ExperimentsPanel` — nu diferențiază "zero experimente" de "forbidden".
-- [ ] `LegalDocsAdminPanel` — lipsă banner "Acces refuzat" pentru non-super_admin.
-- [ ] `PolicyEnginePanel` — empty state ambiguu.
-- [ ] `RateLimitPanel` — toast pe eroare, fără state persistent.
-- [ ] `SignupThrottlePanel` — la fel.
-- [ ] `SystemHealthPanel` — la fel.
-- [ ] `DemoSeedPanel` — nu ascunde acțiunile în producție (regula seed).
-- [ ] `SecuritySignalsPanel` — spinner etern la lipsă date.
+- [x] `AlertRulesPanel` — pe eroare afișează banner + suprimă empty ambiguu.
+- [x] `ExperimentsPanel` — refactorizat pe `useAdminPanelLoad` + `PanelStatus`,
+      diferențiază "zero experimente" de "forbidden".
+- [x] `LegalDocsAdminPanel` — banner "Acces refuzat" cu hint `super_admin`
+      pentru non-super_admin.
+- [x] `PolicyEnginePanel` — empty legitim explicit ("Creează prima regulă").
+- [x] `RateLimitPanel` — deja pe `useAdminPanelLoad` + `PanelStatus`.
+- [x] `SignupThrottlePanel` — deja pe `useAdminPanelLoad` + `PanelStatus`.
+- [x] `SystemHealthPanel` — try/catch fatal + banner "Reîncearcă".
+- [x] `DemoSeedPanel` — "Populează" dezactivat în producție (wipe rămâne activ).
+- [x] `SecuritySignalsPanel` — deja pe `useAdminPanelLoad` + `PanelStatus`.
 
 Fix pattern: `useAdminPanelState` (hook nou) care returnează
 `{ loading, error, empty, reload }` și un `<AdminPanelBoundary>` wrapper.
