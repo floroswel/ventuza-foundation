@@ -27,6 +27,7 @@ import {
 } from "@/lib/geo-bucket";
 import { getNearbyPoints, type NearbyPoint } from "@/lib/nearby.functions";
 import { recordProximityHit } from "@/lib/proximity.functions";
+import { useCountryGate } from "@/lib/country-gate";
 
 const DEFAULT_RADIUS_M = 2000;
 // Avoid double-triggering during the same session (server still enforces
