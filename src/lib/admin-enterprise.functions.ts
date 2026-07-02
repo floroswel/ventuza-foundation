@@ -651,7 +651,7 @@ export const adminAssignAlert = createServerFn({ method: "POST" })
   }).parse(d))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
-    const { error } = await context.supabase.rpc("admin_assign_alert", {
+    const { error } = await (context.supabase as any).rpc("admin_assign_alert", {
       _alert_id: data.id,
       _assignee: data.assignee,
       _due: data.due_at ?? null,
