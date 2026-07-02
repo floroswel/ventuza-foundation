@@ -55,6 +55,7 @@ import { PolicyEnginePanel } from "@/components/admin/PolicyEnginePanel";
 import { EnterpriseUsersPanel } from "@/components/admin/EnterpriseUsersPanel";
 import { LegalDocsAdminPanel } from "@/components/admin/LegalDocsAdminPanel";
 import { OverviewPanelRich } from "@/components/admin/OverviewPanelRich";
+import { AlertRulesPanel } from "@/components/admin/AlertRulesPanel";
 
 
 
