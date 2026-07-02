@@ -131,17 +131,24 @@ export type Database = {
         Row: {
           acknowledged_at: string | null
           acknowledged_by: string | null
+          assigned_to: string | null
           body: string | null
           created_at: string
+          due_at: string | null
+          escalated_at: string | null
           id: number
           is_seed: boolean
           kind: string
+          parent_alert_id: number | null
+          priority: string
           resolution_note: string | null
           resolved_at: string | null
           resolved_by: string | null
+          rule_id: number | null
           severity: string
           snoozed_by: string | null
           snoozed_until: string | null
+          tags: string[]
           target_id: string | null
           target_table: string | null
           title: string
@@ -149,17 +156,24 @@ export type Database = {
         Insert: {
           acknowledged_at?: string | null
           acknowledged_by?: string | null
+          assigned_to?: string | null
           body?: string | null
           created_at?: string
+          due_at?: string | null
+          escalated_at?: string | null
           id?: number
           is_seed?: boolean
           kind: string
+          parent_alert_id?: number | null
+          priority?: string
           resolution_note?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
+          rule_id?: number | null
           severity?: string
           snoozed_by?: string | null
           snoozed_until?: string | null
+          tags?: string[]
           target_id?: string | null
           target_table?: string | null
           title: string
@@ -167,22 +181,44 @@ export type Database = {
         Update: {
           acknowledged_at?: string | null
           acknowledged_by?: string | null
+          assigned_to?: string | null
           body?: string | null
           created_at?: string
+          due_at?: string | null
+          escalated_at?: string | null
           id?: number
           is_seed?: boolean
           kind?: string
+          parent_alert_id?: number | null
+          priority?: string
           resolution_note?: string | null
           resolved_at?: string | null
           resolved_by?: string | null
+          rule_id?: number | null
           severity?: string
           snoozed_by?: string | null
           snoozed_until?: string | null
+          tags?: string[]
           target_id?: string | null
           target_table?: string | null
           title?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "admin_alerts_parent_alert_id_fkey"
+            columns: ["parent_alert_id"]
+            isOneToOne: false
+            referencedRelation: "admin_alerts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "admin_alerts_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "alert_rules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       admin_audit_log: {
         Row: {
@@ -516,6 +552,54 @@ export type Database = {
           id?: string
           owner_id?: string
           viewer_id?: string
+        }
+        Relationships: []
+      }
+      alert_rules: {
+        Row: {
+          condition: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          destination: Json
+          enabled: boolean
+          event_kind: string
+          id: number
+          name: string
+          severity: string
+          threshold: number
+          updated_at: string
+          window_seconds: number
+        }
+        Insert: {
+          condition?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          destination?: Json
+          enabled?: boolean
+          event_kind: string
+          id?: number
+          name: string
+          severity?: string
+          threshold?: number
+          updated_at?: string
+          window_seconds?: number
+        }
+        Update: {
+          condition?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          destination?: Json
+          enabled?: boolean
+          event_kind?: string
+          id?: number
+          name?: string
+          severity?: string
+          threshold?: number
+          updated_at?: string
+          window_seconds?: number
         }
         Relationships: []
       }
@@ -4139,6 +4223,10 @@ export type Database = {
         Returns: undefined
       }
       admin_analytics_summary: { Args: never; Returns: Json }
+      admin_assign_alert: {
+        Args: { _alert_id: number; _assignee: string; _due?: string }
+        Returns: undefined
+      }
       admin_can_access_sensitive: {
         Args: { _kind: string; _user_id: string }
         Returns: boolean
