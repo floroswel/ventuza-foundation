@@ -563,6 +563,12 @@ function SettingsPage() {
               <Shield className="size-4" /> Politica de confidențialitate
             </Link>
             <Link
+              to="/legal/data-safety"
+              className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
+            >
+              <Shield className="size-4" /> Siguranța datelor (Data Safety)
+            </Link>
+            <Link
               to="/legal/cookies"
               className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
             >
