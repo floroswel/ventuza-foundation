@@ -251,20 +251,7 @@ function User360Page() {
         </TabsContent>
 
         <TabsContent value="consents" className="space-y-3 mt-4">
-          <Card className="p-4">
-            <div className="text-sm font-semibold mb-2">
-              Istoric consimțăminte (50 cele mai recente)
-            </div>
-            <MiniTable
-              rows={view.consents}
-              cols={[
-                { k: "kind", h: "Kind" },
-                { k: "version", h: "Versiune" },
-                { k: "accepted", h: "Acceptat", fmt: (v) => (v ? "✓" : "✗") },
-                { k: "created_at", h: "Data", fmt: fmtDate },
-              ]}
-            />
-          </Card>
+          <ConsentsHistoryPanel userId={id} />
         </TabsContent>
 
         <TabsContent value="reports" className="space-y-3 mt-4">
