@@ -88,7 +88,8 @@ export function PolicyEnginePanel() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-3">
-        <SectionTitle icon={Scale} title="Policy Engine" subtitle="Reguli versionate · Shadow mode · Backtest" />
+        <SectionTitle>Policy Engine · Reguli versionate · Shadow mode · Backtest</SectionTitle>
+
         <div className="ml-auto flex items-center gap-2">
           <button
             onClick={() => { setCreating(true); setEditorOpen(true); }}
