@@ -3653,6 +3653,48 @@ export type Database = {
         }
         Relationships: []
       }
+      support_macros: {
+        Row: {
+          active: boolean
+          body: string
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          key: string
+          lang: string
+          title: string
+          updated_at: string
+          usage_count: number
+        }
+        Insert: {
+          active?: boolean
+          body: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          key: string
+          lang?: string
+          title: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Update: {
+          active?: boolean
+          body?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          key?: string
+          lang?: string
+          title?: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
       support_ticket_messages: {
         Row: {
           attachments: Json
@@ -3700,6 +3742,9 @@ export type Database = {
           category: string
           closed_at: string | null
           created_at: string
+          csat_feedback: string | null
+          csat_score: number | null
+          csat_submitted_at: string | null
           first_response_at: string | null
           id: string
           last_msg_at: string
@@ -3717,6 +3762,9 @@ export type Database = {
           category: string
           closed_at?: string | null
           created_at?: string
+          csat_feedback?: string | null
+          csat_score?: number | null
+          csat_submitted_at?: string | null
           first_response_at?: string | null
           id?: string
           last_msg_at?: string
@@ -3734,6 +3782,9 @@ export type Database = {
           category?: string
           closed_at?: string | null
           created_at?: string
+          csat_feedback?: string | null
+          csat_score?: number | null
+          csat_submitted_at?: string | null
           first_response_at?: string | null
           id?: string
           last_msg_at?: string
@@ -4812,6 +4863,7 @@ export type Database = {
         Args: { _item_id: string; _queue: string; _ttl_seconds?: number }
         Returns: string
       }
+      increment_macro_usage: { Args: { _key: string }; Returns: undefined }
       increment_quest_progress: {
         Args: { _delta?: number; _metric: string; _user_id: string }
         Returns: undefined
@@ -5615,6 +5667,10 @@ export type Database = {
         Returns: unknown
       }
       start_age_verification: { Args: never; Returns: undefined }
+      submit_ticket_csat: {
+        Args: { _feedback?: string; _score: number; _ticket_id: string }
+        Returns: undefined
+      }
       toggle_message_reaction: {
         Args: { _emoji: string; _msg_id: string }
         Returns: Json
