@@ -121,13 +121,23 @@ export function SupportTicketsPanel() {
   }, []);
   useEffect(() => {
     setSlaError(null);
+    const t0 = performance.now();
     slaFn()
       .then((all) => setSla(all?.support))
-      .catch((e: any) => {
+      .catch(async (e: any) => {
         setSla(undefined);
-        setSlaError(e?.message ?? "Nu am putut încărca pragurile SLA");
+        const msg = e?.message ?? "Nu am putut încărca pragurile SLA";
+        setSlaError(msg);
+        await reportSlaFailure(e, {
+          rpc: "getSlaThresholds",
+          callSite: "SupportTicketsPanel.sla",
+          fatal: false, // SLA nu blochează panoul, avem fallback pe praguri implicite
+          hasLoadedOnce: false,
+          durationMs: Math.round(performance.now() - t0),
+        });
       });
   }, [slaFn]);
+
 
   const load = async () => {
     setBusy(true);
