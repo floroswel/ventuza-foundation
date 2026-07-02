@@ -152,7 +152,12 @@ export function AlertRulesPanel() {
         </button>
       </div>
 
-      {error && <AdminPanelError message={error} onRetry={() => { setLoading(true); load(); }} />}
+      {error && (
+        <div className="rounded-xl border border-red-500/40 bg-red-500/10 p-3 text-xs text-red-400">
+          {error}
+          <button onClick={() => { setLoading(true); load(); }} className="ml-3 rounded-full border border-red-500/40 px-2 py-0.5 text-red-300 hover:bg-red-500/10">Reîncearcă</button>
+        </div>
+      )}
 
       {loading ? (
         <div className="rounded-xl border border-border p-6 text-sm text-muted-foreground">Se încarcă…</div>
