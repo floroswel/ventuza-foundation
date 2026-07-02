@@ -1770,6 +1770,75 @@ export type Database = {
         }
         Relationships: []
       }
+      legal_document_versions: {
+        Row: {
+          action: string
+          content_md: string
+          created_at: string
+          edited_by: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          title: string
+          version: number
+        }
+        Insert: {
+          action: string
+          content_md: string
+          created_at?: string
+          edited_by?: string | null
+          id?: string
+          published_at?: string | null
+          slug: string
+          title: string
+          version: number
+        }
+        Update: {
+          action?: string
+          content_md?: string
+          created_at?: string
+          edited_by?: string | null
+          id?: string
+          published_at?: string | null
+          slug?: string
+          title?: string
+          version?: number
+        }
+        Relationships: []
+      }
+      legal_documents: {
+        Row: {
+          content_md: string
+          created_at: string
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          content_md?: string
+          created_at?: string
+          published_at?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          content_md?: string
+          created_at?: string
+          published_at?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
           created_at: string
@@ -4097,6 +4166,45 @@ export type Database = {
       }
       admin_funnel_stats: { Args: { _days?: number }; Returns: Json }
       admin_get_my_role: { Args: never; Returns: string }
+      admin_legal_document_history: {
+        Args: { _slug: string }
+        Returns: {
+          action: string
+          content_md: string
+          created_at: string
+          edited_by: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          title: string
+          version: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "legal_document_versions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      admin_list_legal_documents: {
+        Args: never
+        Returns: {
+          content_md: string
+          created_at: string
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "legal_documents"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_moderate_item: {
         Args: {
           p_decision: string
@@ -4124,6 +4232,25 @@ export type Database = {
           user_id: string
           verified: boolean
         }[]
+      }
+      admin_publish_legal_document: {
+        Args: { _slug: string }
+        Returns: {
+          content_md: string
+          created_at: string
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "legal_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       admin_rate_limit_stats: {
         Args: { _window_hours?: number }
@@ -4189,9 +4316,47 @@ export type Database = {
         Args: { p_reason: string; p_user_id: string }
         Returns: Json
       }
+      admin_unpublish_legal_document: {
+        Args: { _slug: string }
+        Returns: {
+          content_md: string
+          created_at: string
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "legal_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_update_setting: {
         Args: { _actor: string; _key: string; _value: Json }
         Returns: Json
+      }
+      admin_upsert_legal_document: {
+        Args: { _content_md: string; _slug: string; _title: string }
+        Returns: {
+          content_md: string
+          created_at: string
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "legal_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       app_role_values: { Args: never; Returns: string[] }
       assert_account_usable: { Args: never; Returns: undefined }

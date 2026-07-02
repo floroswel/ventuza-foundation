@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
+import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+
 export const Route = createFileRoute("/legal/age-policy")({
   head: () => ({
     meta: [
@@ -22,7 +24,7 @@ function AgePolicyPage() {
         <h1 className="text-base font-semibold">Politica 18+ (vârstă minimă)</h1>
       </header>
 
-      <article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
+      <LegalDocOverride slug="age-policy" fallback={<article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
         <p className="text-xs text-muted-foreground">Ultima actualizare: 27 iunie 2026</p>
 
         <h2 className="mt-6 text-base font-semibold">1. Serviciu exclusiv pentru adulți</h2>
@@ -69,7 +71,7 @@ function AgePolicyPage() {
           Art. 374 (pornografie infantilă), Regulamentul (UE) 2022/2065 (DSA — Art. 28 privind protecția minorilor pe
           platforme online), Google Play Families Policy.
         </p>
-      </article>
+      </article>} />
     </div>
   );
 }

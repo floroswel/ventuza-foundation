@@ -53,6 +53,7 @@ import { KillSwitchesPanel } from "@/components/admin/KillSwitchesPanel";
 import { LegalP0Panel } from "@/components/admin/LegalP0Panel";
 import { PolicyEnginePanel } from "@/components/admin/PolicyEnginePanel";
 import { EnterpriseUsersPanel } from "@/components/admin/EnterpriseUsersPanel";
+import { LegalDocsAdminPanel } from "@/components/admin/LegalDocsAdminPanel";
 
 
 
@@ -87,7 +88,7 @@ type Section =
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle"
   | "settings" | "staff" | "tools"
   | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch" | "legalp0"
-  | "policyengine";
+  | "policyengine" | "legaldocs";
 
 
 type Report = {
@@ -187,6 +188,7 @@ function AdminDashboard() {
     { id: "policies",   label: "Politici",    icon: FileText,    group: "Compliance" },
     { id: "policyengine", label: "Policy Engine · reguli/shadow", icon: Scale, group: "Compliance", adminOnly: true, hint: "Rules-as-code, versionare, backtest, shadow mode" },
     { id: "audit",      label: "Audit",       icon: ScrollText,  group: "Compliance" },
+    { id: "legaldocs",  label: "Documente legale · CMS", icon: FileText, group: "Compliance", adminOnly: true, hint: "Editează live Termeni, Privacy, DSA etc." },
 
     // Business
     { id: "ads",      label: "Ads",            icon: Megaphone,   group: "Business" },
@@ -258,6 +260,7 @@ function AdminDashboard() {
       {section === "killswitch" && isAdmin && <KillSwitchesPanel />}
       {section === "legalp0" && isAdmin && <LegalP0Panel />}
       {section === "policyengine" && isAdmin && <PolicyEnginePanel />}
+      {section === "legaldocs" && isAdmin && <LegalDocsAdminPanel />}
     </AdminShell>
   );
 }

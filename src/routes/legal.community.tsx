@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
+import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+
 export const Route = createFileRoute("/legal/community")({
   head: () => ({
     meta: [
@@ -21,7 +23,7 @@ function CommunityPage() {
         </Link>
         <h1 className="text-base font-semibold">Reguli comunitate</h1>
       </header>
-      <article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
+      <LegalDocOverride slug="community" fallback={<article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
         <p className="text-xs text-muted-foreground">Ultima actualizare: 22 iunie 2026</p>
 
         <h2 className="mt-6 text-base font-semibold">Valorile noastre</h2>
@@ -55,7 +57,7 @@ function CommunityPage() {
 
         <h2 className="mt-6 text-base font-semibold">Resurse</h2>
         <p>ACCEPT România — <a className="text-primary" href="tel:+40215635209">021 563 52 09</a> · Helpline anti-violență <a className="text-primary" href="tel:0800500333">0800 500 333</a>.</p>
-      </article>
+      </article>} />
     </div>
   );
 }
