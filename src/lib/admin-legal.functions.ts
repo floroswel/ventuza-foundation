@@ -61,6 +61,8 @@ export const adminEnqueueNcmec = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rep, error: rerr } = await (supabaseAdmin as any)
       .from("csam_reports")
