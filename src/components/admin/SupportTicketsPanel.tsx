@@ -143,7 +143,42 @@ export function SupportTicketsPanel() {
   const load = async () => {
     setBusy(true);
     setError(null);
+    const t0 = performance.now();
     try {
+      const [r, k, cl] = await Promise.all([
+        list({ data: { status, priority, search: search || undefined, limit: 100 } }),
+        stats(),
+        claimsFn({ data: { queue: "support" } }),
+      ]);
+      setRows(r.rows as TicketRow[]);
+      setKpi(k);
+      const map: Record<string, { actor_id: string; display_name: string; expires_at: string }> =
+        {};
+      for (const c of cl)
+        map[c.item_id] = {
+          actor_id: c.actor_id,
+          display_name: c.display_name,
+          expires_at: c.expires_at,
+        };
+      setClaims(map);
+      setCursor(0);
+    } catch (e: any) {
+      const msg = e?.message ?? "Eroare la încărcarea ticket-urilor";
+      setError(msg);
+      toast.error(msg);
+      await reportSlaFailure(e, {
+        rpc: "adminListTickets+adminTicketStats+listQueueClaims",
+        callSite: "SupportTicketsPanel.load",
+        fatal: !hasLoadedOnce,
+        hasLoadedOnce,
+        durationMs: Math.round(performance.now() - t0),
+      });
+    } finally {
+      setBusy(false);
+      setHasLoadedOnce(true);
+    }
+  };
+
       const [r, k, cl] = await Promise.all([
         list({ data: { status, priority, search: search || undefined, limit: 100 } }),
         stats(),
