@@ -90,7 +90,7 @@ type Section =
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle"
   | "settings" | "staff" | "tools"
   | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch" | "legalp0"
-  | "policyengine" | "legaldocs";
+  | "policyengine" | "legaldocs" | "alertrules";
 
 
 type Report = {
