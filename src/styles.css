@@ -217,3 +217,30 @@ html {
     linear-gradient(to bottom, oklch(0.95 0.015 85 / 0.05) 1px, transparent 1px);
   background-size: 48px 48px;
 }
+
+/* Shimmer for skeleton loaders */
+@keyframes admin-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+[data-admin] .admin-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    oklch(0.22 0.012 70 / 0) 0%,
+    oklch(0.82 0.115 85 / 0.10) 50%,
+    oklch(0.22 0.012 70 / 0) 100%
+  );
+  background-size: 800px 100%;
+  animation: admin-shimmer 1.4s linear infinite;
+}
+.admin-shimmer {
+  background-image: linear-gradient(
+    90deg,
+    oklch(0.22 0.012 70 / 0) 0%,
+    oklch(0.82 0.115 85 / 0.10) 50%,
+    oklch(0.22 0.012 70 / 0) 100%
+  );
+  background-size: 800px 100%;
+  animation: admin-shimmer 1.4s linear infinite;
+}
+
