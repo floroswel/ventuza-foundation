@@ -53,6 +53,7 @@ export function ConsentsCard() {
     try {
       const { error } = await supabase.rpc("record_consent", {
         _kind: kind,
+        _version: CONSENT_REGISTRY[kind].currentVersion,
         _accepted: accepted,
       });
       if (error) throw error;
