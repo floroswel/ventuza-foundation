@@ -339,6 +339,13 @@ export function OverviewPanelRich({ onNavigate }: { onNavigate: (section: string
                   </tr>
                 </thead>
                 <tbody>
+                  {queues.length === 0 && (
+                    <tr>
+                      <td colSpan={5} className="px-3 py-6 text-center text-[11px] text-[var(--admin-text-dim)]">
+                        Nicio coadă activă — totul e procesat. (empty legitim)
+                      </td>
+                    </tr>
+                  )}
                   {queues.map((q: any) => {
                     const tone = slaTone(q.oldestMin, q.sla);
                     const claims = oc.claimsByQueue?.[q.key] ?? 0;
