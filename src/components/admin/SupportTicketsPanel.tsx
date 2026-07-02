@@ -12,7 +12,15 @@ import { ClaimBadge } from "@/components/admin/queue/ClaimBadge";
 import { useQueueClaim } from "@/components/admin/queue/useQueueClaim";
 import { useKeyboardShortcuts, ShortcutsHint } from "@/components/admin/queue/useKeyboardShortcuts";
 import { pushAction } from "@/components/admin/queue/useActionJournal";
+import { SavedViewsBar } from "@/components/admin/SavedViewsBar";
+import { useSavedViews } from "@/hooks/useSavedViews";
 import { supabase } from "@/integrations/supabase/client";
+
+type SupportFilters = {
+  status: "open" | "pending" | "waiting_user" | "resolved" | "closed" | "all";
+  priority: "low" | "normal" | "high" | "urgent" | "all";
+  search: string;
+};
 
 type TicketRow = {
   id: string; user_id: string; subject: string; category: string;
@@ -49,6 +57,19 @@ export function SupportTicketsPanel() {
   const [sla, setSla] = useState<SlaThreshold | undefined>();
   const [claims, setClaims] = useState<Record<string, { actor_id: string; display_name: string; expires_at: string }>>({});
   const [meId, setMeId] = useState<string | undefined>();
+
+  // Saved views: restore-once la mount + expose bar
+  const savedViews = useSavedViews<SupportFilters>("admin.support");
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) return;
+    restoredRef.current = true;
+    if (savedViews.active) {
+      const f = savedViews.active.filters;
+      setStatus(f.status); setPriority(f.priority); setSearch(f.search);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [savedViews.active?.id]);
 
   useEffect(() => { supabase.auth.getUser().then(({ data }) => setMeId(data.user?.id)); }, []);
   useEffect(() => { slaFn().then((all) => setSla(all?.support)).catch(() => {}); }, [slaFn]);
@@ -108,6 +129,14 @@ export function SupportTicketsPanel() {
             className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-[11px] hover:border-primary/50">
             {busy ? <Loader2 className="size-3 animate-spin" /> : <RefreshCw className="size-3" />} Refresh
           </button>
+        </div>
+
+        <div className="mb-2">
+          <SavedViewsBar<SupportFilters>
+            scope="admin.support"
+            currentFilters={{ status, priority, search }}
+            onApply={(f) => { setStatus(f.status); setPriority(f.priority); setSearch(f.search); }}
+          />
         </div>
 
         <ShortcutsHint items={[
