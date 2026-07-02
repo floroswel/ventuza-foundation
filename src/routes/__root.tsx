@@ -18,6 +18,7 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
 import { SessionGuards } from "@/components/SessionGuards";
+import { CountryRiskGuard } from "@/components/CountryRiskGuard";
 import { AgeGate } from "@/components/AgeGate";
 import { useProximityForegroundWatcher } from "@/lib/proximity-watcher";
 // Init i18n eagerly — useTranslation() în orice rută/child are nevoie de
@@ -207,6 +208,7 @@ function RootComponent() {
       <AuthProvider>
         <NotificationsProvider>
           <SessionGuards />
+          <CountryRiskGuard />
           <ProximityWatcherMount />
           <Outlet />
           <AgeGate />

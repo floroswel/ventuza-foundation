@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { useCountryGate } from "@/lib/country-gate";
 
 // Routes a not-yet-onboarded user is allowed to land on. Everything else is
 // hard-redirected to /n so OAuth signups cannot reach the app without supplying
@@ -22,6 +23,7 @@ export function SessionGuards() {
   const location = useLocation();
   const geoWatchRef = useRef<number | null>(null);
   const lastSentRef = useRef(0);
+  const { forceStealth, hidePreciseLocation, isBlocked } = useCountryGate();
 
   useDeviceFingerprint();
 
@@ -64,6 +66,10 @@ export function SessionGuards() {
 
   useEffect(() => {
     if (!user || !("geolocation" in navigator)) return;
+    // Country gate: NU publica coordonatele când userul este într-o țară care
+    // forțează stealth / ascunde locația precisă / e blocată. Protejăm userul
+    // împotriva outing-ului chiar dacă orice altă parte a UI-ului cere geoloc.
+    if (forceStealth || hidePreciseLocation || isBlocked) return;
 
     geoWatchRef.current = navigator.geolocation.watchPosition(
       (pos) => {
@@ -83,7 +89,7 @@ export function SessionGuards() {
       if (geoWatchRef.current != null) navigator.geolocation.clearWatch(geoWatchRef.current);
       geoWatchRef.current = null;
     };
-  }, [user]);
+  }, [user, forceStealth, hidePreciseLocation, isBlocked]);
 
   return null;
 }

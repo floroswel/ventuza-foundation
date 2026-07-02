@@ -32,6 +32,7 @@ import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
 import { getOrCreateConversation } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { useCountryGate } from "@/lib/country-gate";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
@@ -79,6 +80,7 @@ type Tab = "nearby" | "fresh";
 function DiscoverPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const countryGate = useCountryGate();
   const [tab, setTab] = useState<Tab>("nearby");
   const [view, setView] = useState<"grid" | "swipe">("grid");
   useEffect(() => {
@@ -311,6 +313,25 @@ function DiscoverPage() {
     },
     [user],
   );
+
+  if (countryGate.isDiscoverDisabled || countryGate.forceStealth || countryGate.isBlocked) {
+    return (
+      <main className="min-h-dvh bg-background px-6 py-16 text-foreground">
+        <div className="mx-auto max-w-md space-y-4 text-center">
+          <h1 className="font-serif text-2xl">Discovery is off in your region</h1>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            Public discovery has been turned off for your safety. You can still edit your profile
+            and manage your account. See our{" "}
+            <a href="/safety" className="underline underline-offset-2">
+              safety tips
+            </a>{" "}
+            for meeting people privately.
+          </p>
+        </div>
+        <BottomNav />
+      </main>
+    );
+  }
 
   return (
     <main className="relative min-h-dvh bg-background pb-28">

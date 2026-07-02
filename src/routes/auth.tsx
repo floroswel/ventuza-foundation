@@ -6,6 +6,7 @@ import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
+import { useCountryGate } from "@/lib/country-gate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
@@ -96,6 +97,7 @@ function AuthPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const countryGate = useCountryGate();
   const [mode, setMode] = useState<"login" | "signup">(search.mode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -155,6 +157,10 @@ function AuthPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (submitting) return;
+    if (countryGate.isBlocked) {
+      navigate({ to: "/blocked-region", replace: true });
+      return;
+    }
 
     const emailParsed = emailSchema.safeParse(email);
     if (!emailParsed.success) {
@@ -266,6 +272,10 @@ function AuthPage() {
 
   async function onOAuth(provider: "google" | "apple") {
     if (provider === ("signup-blocked" as never)) return;
+    if (countryGate.isBlocked) {
+      navigate({ to: "/blocked-region", replace: true });
+      return;
+    }
     if (mode === "signup") {
       if (!over18 || !acceptTerms) {
         toast.error("Confirmă cele două bife (18+ și Termeni) înainte de a continua.");

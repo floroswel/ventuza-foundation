@@ -27,6 +27,7 @@ import {
 } from "@/lib/geo-bucket";
 import { getNearbyPoints, type NearbyPoint } from "@/lib/nearby.functions";
 import { recordProximityHit } from "@/lib/proximity.functions";
+import { useCountryGate } from "@/lib/country-gate";
 
 const DEFAULT_RADIUS_M = 2000;
 // Avoid double-triggering during the same session (server still enforces
@@ -57,9 +58,13 @@ export function useProximityForegroundWatcher() {
   const fetchNearby = useServerFn(getNearbyPoints);
   const recordHit = useServerFn(recordProximityHit);
   const pointsCacheRef = useRef<Map<string, NearbyPoint[]>>(new Map());
+  // Country gate: în țări high/blocked nu rulăm proximity foreground —
+  // proximity notifications ar putea expune userul (outing prin push preview).
+  const { forceStealth, hidePreciseLocation, isBlocked, isDiscoverDisabled } = useCountryGate();
 
   useEffect(() => {
     if (!userId) return;
+    if (forceStealth || hidePreciseLocation || isBlocked || isDiscoverDisabled) return;
     if (typeof window === "undefined" || !("geolocation" in navigator)) return;
 
     let stopped = false;
@@ -113,5 +118,5 @@ export function useProximityForegroundWatcher() {
       stopped = true;
       stopWatcher();
     };
-  }, [userId, fetchNearby, recordHit]);
+  }, [userId, fetchNearby, recordHit, forceStealth, hidePreciseLocation, isBlocked, isDiscoverDisabled]);
 }
