@@ -62,6 +62,10 @@ export function SupportTicketsPanel() {
   const [sla, setSla] = useState<SlaThreshold | undefined>();
   const [claims, setClaims] = useState<Record<string, { actor_id: string; display_name: string; expires_at: string }>>({});
   const [meId, setMeId] = useState<string | undefined>();
+  const bulk = useBulkSelection(rows);
+  const bulkFn = useServerFn(adminBulkTicketAction);
+  const [bulkStatus, setBulkStatus] = useState<string>("");
+  const [bulkPriority, setBulkPriority] = useState<string>("");
 
   // Saved views: restore-once la mount + expose bar
   const savedViews = useSavedViews<SupportFilters>("admin.support");
