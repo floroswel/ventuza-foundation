@@ -6,6 +6,7 @@ import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
+import { useCountryGate } from "@/lib/country-gate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
@@ -155,6 +156,10 @@ function AuthPage() {
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (submitting) return;
+    if (countryGate.isBlocked) {
+      navigate({ to: "/blocked-region", replace: true });
+      return;
+    }
 
     const emailParsed = emailSchema.safeParse(email);
     if (!emailParsed.success) {
