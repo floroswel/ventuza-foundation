@@ -168,7 +168,7 @@ async def main() -> int:
                 # reload și verifică că checkbox persistă (T1/T3)
                 await page.reload(wait_until="networkidle")
                 await page.locator("section:has-text('Consimțăminte GDPR')").wait_for(timeout=8000)
-                cb = await get_checkbox(page, kind)
+                cb = consents_section(page).locator("input[type=checkbox]").nth(OPTIONAL_KINDS.index(kind))
                 actual = await cb.is_checked()
                 if actual != desired:
                     await fail(f"[{kind}] checkbox după reload={actual}, așteptat {desired}")
