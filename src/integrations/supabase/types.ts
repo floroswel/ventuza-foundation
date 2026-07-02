@@ -2401,6 +2401,137 @@ export type Database = {
         }
         Relationships: []
       }
+      policy_evaluations: {
+        Row: {
+          action_taken: string | null
+          created_at: string
+          id: number
+          input: Json | null
+          matched: boolean
+          mode: string
+          rule_code: string
+          rule_version: number
+          subject_id: string | null
+          subject_kind: string
+        }
+        Insert: {
+          action_taken?: string | null
+          created_at?: string
+          id?: number
+          input?: Json | null
+          matched: boolean
+          mode: string
+          rule_code: string
+          rule_version: number
+          subject_id?: string | null
+          subject_kind: string
+        }
+        Update: {
+          action_taken?: string | null
+          created_at?: string
+          id?: number
+          input?: Json | null
+          matched?: boolean
+          mode?: string
+          rule_code?: string
+          rule_version?: number
+          subject_id?: string | null
+          subject_kind?: string
+        }
+        Relationships: []
+      }
+      policy_rule_versions: {
+        Row: {
+          action: Json
+          change_note: string | null
+          changed_by: string | null
+          created_at: string
+          expression: Json
+          id: string
+          rule_id: string
+          state: Database["public"]["Enums"]["policy_rule_state"]
+          version: number
+        }
+        Insert: {
+          action: Json
+          change_note?: string | null
+          changed_by?: string | null
+          created_at?: string
+          expression: Json
+          id?: string
+          rule_id: string
+          state: Database["public"]["Enums"]["policy_rule_state"]
+          version: number
+        }
+        Update: {
+          action?: Json
+          change_note?: string | null
+          changed_by?: string | null
+          created_at?: string
+          expression?: Json
+          id?: string
+          rule_id?: string
+          state?: Database["public"]["Enums"]["policy_rule_state"]
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "policy_rule_versions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "policy_rules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      policy_rules: {
+        Row: {
+          action: Json
+          category: string
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          expression: Json
+          id: string
+          state: Database["public"]["Enums"]["policy_rule_state"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
+        Insert: {
+          action?: Json
+          category: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expression?: Json
+          id?: string
+          state?: Database["public"]["Enums"]["policy_rule_state"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Update: {
+          action?: Json
+          category?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expression?: Json
+          id?: string
+          state?: Database["public"]["Enums"]["policy_rule_state"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       policy_versions: {
         Row: {
           content_url: string | null
@@ -4478,6 +4609,35 @@ export type Database = {
         Returns: string
       }
       partner_get_quota_usage: { Args: { p_user: string }; Returns: Json }
+      policy_set_state: {
+        Args: {
+          p_new_state: Database["public"]["Enums"]["policy_rule_state"]
+          p_note?: string
+          p_rule_id: string
+        }
+        Returns: undefined
+      }
+      policy_simulate: {
+        Args: { p_days?: number; p_rule_code: string }
+        Returns: {
+          by_day: Json
+          match_rate: number
+          matched: number
+          total: number
+        }[]
+      }
+      policy_upsert_rule: {
+        Args: {
+          p_action: Json
+          p_category: string
+          p_change_note?: string
+          p_code: string
+          p_description: string
+          p_expression: Json
+          p_title: string
+        }
+        Returns: string
+      }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
         | { Args: { use_typmod?: boolean }; Returns: string }
@@ -5202,6 +5362,7 @@ export type Database = {
         | "event_reminder"
         | "tap"
         | "admin_message"
+      policy_rule_state: "draft" | "shadow" | "enforcing" | "archived"
       rsvp_status: "going" | "interested"
     }
     CompositeTypes: {
@@ -5381,6 +5542,7 @@ export const Constants = {
         "tap",
         "admin_message",
       ],
+      policy_rule_state: ["draft", "shadow", "enforcing", "archived"],
       rsvp_status: ["going", "interested"],
     },
   },
