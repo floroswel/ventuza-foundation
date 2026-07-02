@@ -514,3 +514,221 @@ export const adminMarkMfaEnrolled = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+/* ---------------- ALERT RULES ENGINE ---------------- */
+const AlertRuleUpsert = z.object({
+  id: z.number().int().positive().optional(),
+  name: z.string().min(2).max(120),
+  description: z.string().max(500).optional().nullable(),
+  event_kind: z.string().min(1).max(80),
+  condition: z.record(z.string(), z.any()).default({}),
+  threshold: z.number().int().min(1).max(1_000_000).default(1),
+  window_seconds: z.number().int().min(60).max(60 * 60 * 24 * 30).default(3600),
+  severity: z.enum(["info", "warn", "high", "critical"]).default("warn"),
+  destination: z.record(z.string(), z.any()).default({}),
+  enabled: z.boolean().default(true),
+});
+
+export const adminListAlertRules = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const { data, error } = await context.supabase
+      .from("alert_rules")
+      .select("*")
+      .order("enabled", { ascending: false })
+      .order("severity", { ascending: false })
+      .order("id", { ascending: false });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const adminUpsertAlertRule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => AlertRuleUpsert.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const payload = {
+      name: data.name,
+      description: data.description ?? null,
+      event_kind: data.event_kind,
+      condition: data.condition,
+      threshold: data.threshold,
+      window_seconds: data.window_seconds,
+      severity: data.severity,
+      destination: data.destination,
+      enabled: data.enabled,
+    };
+    let result: any;
+    if (data.id) {
+      const { data: before } = await context.supabase.from("alert_rules").select("*").eq("id", data.id).maybeSingle();
+      const { data: row, error } = await context.supabase
+        .from("alert_rules").update(payload).eq("id", data.id).select("*").maybeSingle();
+      if (error) throw new Error(error.message);
+      await logAudit({
+        actorId: context.userId, action: "alert_rule.update",
+        targetTable: "alert_rules", targetId: String(data.id),
+        before, after: row, severity: "info",
+      });
+      result = row;
+    } else {
+      const { data: row, error } = await context.supabase
+        .from("alert_rules").insert({ ...payload, created_by: context.userId }).select("*").maybeSingle();
+      if (error) throw new Error(error.message);
+      await logAudit({
+        actorId: context.userId, action: "alert_rule.create",
+        targetTable: "alert_rules", targetId: String(row?.id ?? ""),
+        after: row, severity: "info",
+      });
+      result = row;
+    }
+    return result;
+  });
+
+export const adminDeleteAlertRule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.number().int().positive() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { data: before } = await context.supabase.from("alert_rules").select("*").eq("id", data.id).maybeSingle();
+    const { error } = await context.supabase.from("alert_rules").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await logAudit({
+      actorId: context.userId, action: "alert_rule.delete",
+      targetTable: "alert_rules", targetId: String(data.id),
+      before, severity: "warning",
+    });
+    return { ok: true };
+  });
+
+export const adminToggleAlertRule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ id: z.number().int().positive(), enabled: z.boolean() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { error } = await context.supabase.from("alert_rules").update({ enabled: data.enabled }).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await logAudit({
+      actorId: context.userId, action: "alert_rule.toggle",
+      targetTable: "alert_rules", targetId: String(data.id),
+      after: { enabled: data.enabled }, severity: "info",
+    });
+    return { ok: true };
+  });
+
+/* Simulator: count matching admin_alerts in window */
+export const adminSimulateAlertRule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    event_kind: z.string(),
+    window_seconds: z.number().int().min(60).max(60 * 60 * 24 * 90),
+    threshold: z.number().int().min(1),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const since = new Date(Date.now() - data.window_seconds * 1000).toISOString();
+    const { count, error } = await context.supabase
+      .from("admin_alerts")
+      .select("id", { count: "exact", head: true })
+      .eq("kind", data.event_kind)
+      .gte("created_at", since);
+    if (error) throw new Error(error.message);
+    return {
+      matches: count ?? 0,
+      threshold: data.threshold,
+      would_fire: (count ?? 0) >= data.threshold,
+      window_since: since,
+    };
+  });
+
+/* ---------------- ALERT ASSIGN / BULK ---------------- */
+export const adminAssignAlert = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.number().int().positive(),
+    assignee: z.string().uuid().nullable(),
+    due_at: z.string().datetime().nullable().optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const { error } = await (context.supabase as any).rpc("admin_assign_alert", {
+      _alert_id: data.id,
+      _assignee: data.assignee,
+      _due: data.due_at ?? null,
+    });
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const adminUpdateAlertPriority = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    id: z.number().int().positive(),
+    priority: z.enum(["low", "normal", "high", "urgent"]),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const { error } = await context.supabase.from("admin_alerts")
+      .update({ priority: data.priority }).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    await logAudit({
+      actorId: context.userId, action: "alert.priority",
+      targetTable: "admin_alerts", targetId: String(data.id),
+      after: { priority: data.priority }, severity: "info",
+    });
+    return { ok: true };
+  });
+
+export const adminBulkAlertAction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({
+    ids: z.array(z.number().int().positive()).min(1).max(200),
+    action: z.enum(["ack", "snooze", "resolve"]),
+    minutes: z.number().int().min(5).max(60 * 24 * 7).optional(),
+    note: z.string().max(500).optional(),
+    justification: z.string().max(500).optional(),
+  }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const nowIso = new Date().toISOString();
+    let patch: Record<string, any> = {};
+    if (data.action === "ack") patch = { acknowledged_at: nowIso, acknowledged_by: context.userId };
+    else if (data.action === "snooze") {
+      const mins = data.minutes ?? 60;
+      patch = { snoozed_until: new Date(Date.now() + mins * 60_000).toISOString(), snoozed_by: context.userId };
+    } else if (data.action === "resolve") {
+      patch = { resolved_at: nowIso, resolved_by: context.userId, resolution_note: data.note ?? null };
+    }
+    const { error } = await (context.supabase as any).from("admin_alerts").update(patch).in("id", data.ids);
+    if (error) throw new Error(error.message);
+    await logAudit({
+      actorId: context.userId, action: `alert.bulk.${data.action}`,
+      targetTable: "admin_alerts", targetId: `[${data.ids.length} ids]`,
+      after: { ids: data.ids, patch }, justification: data.justification ?? null,
+      severity: data.action === "resolve" ? "warning" : "info",
+    });
+    return { ok: true, count: data.ids.length };
+  });
+
+/* Staff pickers for assignment dropdown */
+export const adminListStaff = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data, error } = await (supabaseAdmin as any)
+      .from("user_roles")
+      .select("user_id, role")
+      .in("role", ["super_admin", "admin", "moderator", "cs_support", "auditor", "support"]);
+    if (error) throw new Error(error.message);
+    const ids = Array.from(new Set((data ?? []).map((r: any) => r.user_id)));
+    if (ids.length === 0) return [];
+    const { data: profiles } = await (supabaseAdmin as any)
+      .from("profiles").select("id, display_name").in("id", ids);
+    const nameById = new Map((profiles ?? []).map((p: any) => [p.id, p.display_name]));
+    return (data ?? []).map((r: any) => ({
+      user_id: r.user_id,
+      display_name: nameById.get(r.user_id) ?? "(fără nume)",
+      role: r.role,
+    }));
+  });

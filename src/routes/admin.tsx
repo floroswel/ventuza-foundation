@@ -55,6 +55,7 @@ import { PolicyEnginePanel } from "@/components/admin/PolicyEnginePanel";
 import { EnterpriseUsersPanel } from "@/components/admin/EnterpriseUsersPanel";
 import { LegalDocsAdminPanel } from "@/components/admin/LegalDocsAdminPanel";
 import { OverviewPanelRich } from "@/components/admin/OverviewPanelRich";
+import { AlertRulesPanel } from "@/components/admin/AlertRulesPanel";
 
 
 
@@ -89,7 +90,7 @@ type Section =
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle"
   | "settings" | "staff" | "tools"
   | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch" | "legalp0"
-  | "policyengine" | "legaldocs";
+  | "policyengine" | "legaldocs" | "alertrules";
 
 
 type Report = {
@@ -163,6 +164,7 @@ function AdminDashboard() {
     // Operations
     { id: "overview", label: "Overview", icon: LayoutDashboard, group: "Operations", adminOnly: true, hint: "KPI, activitate, growth" },
     { id: "alerts",   label: "Alerte",   icon: Bell,            group: "Operations", hint: "Notificări staff" },
+    { id: "alertrules", label: "Reguli alerte", icon: Bell,      group: "Operations", adminOnly: true, hint: "Motor reguli + backtest" },
     { id: "copilot",  label: "Copilot AI", icon: Bot,           group: "Operations", hint: "Asistent procedural" },
     { id: "broadcast",label: "Broadcast",icon: Send,            group: "Operations", adminOnly: true },
     { id: "broadcast2", label: "Broadcast v2 · targeting", icon: Send, group: "Operations", adminOnly: true, hint: "Filtre reale + dry-run + campanii" },
@@ -225,6 +227,7 @@ function AdminDashboard() {
     >
       {section === "overview" && isAdmin && <OverviewPanelRich onNavigate={(id: string) => setSection(id as Section)} />}
       {section === "alerts" && <AlertsPanel />}
+      {section === "alertrules" && isAdmin && <AlertRulesPanel />}
       {section === "copilot" && <AiCopilotPanel />}
       {section === "users" && isAdmin && <UsersPanel meId={user!.id} />}
       {section === "reports" && <ReportsPanel meId={user!.id} />}
