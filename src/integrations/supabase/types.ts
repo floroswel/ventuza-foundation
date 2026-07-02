@@ -3093,6 +3093,36 @@ export type Database = {
         }
         Relationships: []
       }
+      queue_claims: {
+        Row: {
+          actor_id: string
+          claimed_at: string
+          expires_at: string
+          heartbeat_at: string
+          id: string
+          item_id: string
+          queue: string
+        }
+        Insert: {
+          actor_id: string
+          claimed_at?: string
+          expires_at?: string
+          heartbeat_at?: string
+          id?: string
+          item_id: string
+          queue: string
+        }
+        Update: {
+          actor_id?: string
+          claimed_at?: string
+          expires_at?: string
+          heartbeat_at?: string
+          id?: string
+          item_id?: string
+          queue?: string
+        }
+        Relationships: []
+      }
       rate_limit_log: {
         Row: {
           action: string
@@ -4198,6 +4228,16 @@ export type Database = {
         }[]
       }
       claim_quest_reward: { Args: { _quest_id: string }; Returns: Json }
+      claim_queue_item: {
+        Args: { _item_id: string; _queue: string; _ttl_seconds?: number }
+        Returns: {
+          actor_id: string
+          claimed_at: string
+          expires_at: string
+          stolen: boolean
+        }[]
+      }
+      cleanup_expired_queue_claims: { Args: never; Returns: number }
       cleanup_rate_limit_log: { Args: never; Returns: number }
       cleanup_signup_attempts: { Args: never; Returns: undefined }
       cleanup_signup_throttle_logs: { Args: never; Returns: undefined }
@@ -4515,6 +4555,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      heartbeat_queue_claim: {
+        Args: { _item_id: string; _queue: string; _ttl_seconds?: number }
+        Returns: string
+      }
       increment_quest_progress: {
         Args: { _delta?: number; _metric: string; _user_id: string }
         Returns: undefined
@@ -4533,6 +4577,16 @@ export type Database = {
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       list_my_block_relations: { Args: never; Returns: string[] }
+      list_queue_claims: {
+        Args: { _queue: string }
+        Returns: {
+          actor_id: string
+          claimed_at: string
+          display_name: string
+          expires_at: string
+          item_id: string
+        }[]
+      }
       longtransactionsenabled: { Args: never; Returns: boolean }
       mark_inactive_for_deletion: { Args: never; Returns: number }
       mark_message_viewed: { Args: { _msg_id: string }; Returns: undefined }
@@ -4711,6 +4765,10 @@ export type Database = {
       redeem_referral: { Args: { _code: string }; Returns: Json }
       register_device_fingerprint: {
         Args: { _fp: string; _ua: string }
+        Returns: boolean
+      }
+      release_queue_item: {
+        Args: { _item_id: string; _queue: string }
         Returns: boolean
       }
       rl_enforce: {
