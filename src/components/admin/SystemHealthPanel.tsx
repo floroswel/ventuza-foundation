@@ -60,9 +60,13 @@ export function SystemHealthPanel() {
       detail: "geolocation" in navigator ? "disponibil" : "indisponibil",
     });
 
-    setProbes(results);
-    setLastCheck(new Date());
-    setLoading(false);
+      setProbes(results);
+      setLastCheck(new Date());
+    } catch (e: unknown) {
+      setFatal(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
