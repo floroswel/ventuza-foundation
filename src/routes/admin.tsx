@@ -164,6 +164,7 @@ function AdminDashboard() {
     // Operations
     { id: "overview", label: "Overview", icon: LayoutDashboard, group: "Operations", adminOnly: true, hint: "KPI, activitate, growth" },
     { id: "alerts",   label: "Alerte",   icon: Bell,            group: "Operations", hint: "Notificări staff" },
+    { id: "alertrules", label: "Reguli alerte", icon: Bell,      group: "Operations", adminOnly: true, hint: "Motor reguli + backtest" },
     { id: "copilot",  label: "Copilot AI", icon: Bot,           group: "Operations", hint: "Asistent procedural" },
     { id: "broadcast",label: "Broadcast",icon: Send,            group: "Operations", adminOnly: true },
     { id: "broadcast2", label: "Broadcast v2 · targeting", icon: Send, group: "Operations", adminOnly: true, hint: "Filtre reale + dry-run + campanii" },
