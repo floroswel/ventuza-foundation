@@ -356,7 +356,7 @@ function RecentEvalsCard({ code, recent }: { code: string; recent: ReturnType<ty
               {rows.map((r) => (
                 <tr key={r.id} className="border-t border-border/40">
                   <td className="py-1 admin-mono text-[10px]">{new Date(r.created_at).toLocaleString("ro-RO")}</td>
-                  <td className="text-center"><StatusBadge kind={r.mode === "enforcing" ? "danger" : "info"}>{r.mode}</StatusBadge></td>
+                  <td className="text-center"><StatusBadge tone={r.mode === "enforcing" ? "banned" : "info"}>{r.mode}</StatusBadge></td>
                   <td className="admin-mono text-[10px] truncate max-w-[140px]">{r.subject_kind}:{r.subject_id?.slice(0, 8)}</td>
                   <td className="text-center">{r.matched ? "✓" : "—"}</td>
                   <td className="text-[10px] text-muted-foreground">{r.action_taken ?? ""}</td>
