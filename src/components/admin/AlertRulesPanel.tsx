@@ -192,7 +192,7 @@ export function AlertRulesPanel() {
         <div className="rounded-xl border border-border p-6 text-sm text-muted-foreground">
           Se încarcă…
         </div>
-      ) : rules.length === 0 ? (
+      ) : error ? null : rules.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
           Nicio regulă activă. Creează una pentru a primi alerte automate când un tip de eveniment
           depășește pragul.
