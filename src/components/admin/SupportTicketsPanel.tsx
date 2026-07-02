@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import { AlertTriangle, Loader2, RefreshCw, Send, ShieldAlert } from "lucide-react";
+import { Loader2, RefreshCw, Send } from "lucide-react";
+import { AdminErrorBanner } from "./AdminErrorBanner";
 import {
   adminListTickets,
   adminTicketStats,
