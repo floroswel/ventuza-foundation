@@ -32,6 +32,7 @@ import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
 import { getOrCreateConversation } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { useCountryGate } from "@/lib/country-gate";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
