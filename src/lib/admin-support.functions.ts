@@ -147,6 +147,57 @@ export const adminTicketAction = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/* ---------------- STAFF: bulk action pe mai multe tickete ---------------- */
+const BulkIn = z.object({
+  ticketIds: z.array(z.string().uuid()).min(1).max(100),
+  status: z.enum(["open", "pending", "waiting_user", "resolved", "closed"]).nullable().optional(),
+  priority: z.enum(["low", "normal", "high", "urgent"]).nullable().optional(),
+  assignee: z.string().uuid().nullable().optional(),
+  reason: z.string().min(10).max(500),
+});
+export const adminBulkTicketAction = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => BulkIn.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sa = supabaseAdmin as any;
+
+    const results: Array<{ id: string; ok: boolean; error?: string }> = [];
+    for (const id of data.ticketIds) {
+      const { error } = await context.supabase.rpc("admin_staff_ticket_action", {
+        _ticket_id: id,
+        _new_status: (data.status ?? null) as any,
+        _assignee: (data.assignee ?? null) as any,
+        _priority: (data.priority ?? null) as any,
+      });
+      results.push({ id, ok: !error, error: error?.message });
+    }
+    const ok = results.filter((r) => r.ok).length;
+    const failed = results.length - ok;
+
+    // Audit bulk-ul (o singură intrare cu justificarea + rezumat).
+    await sa.from("admin_audit_log").insert({
+      actor_id: context.userId,
+      action: "support.bulk_action",
+      target_type: "support_tickets",
+      target_id: null,
+      justification: data.reason,
+      before_state: null,
+      after_state: {
+        count: data.ticketIds.length,
+        ok, failed,
+        status: data.status ?? null,
+        priority: data.priority ?? null,
+        assignee: data.assignee ?? null,
+        ids_sample: data.ticketIds.slice(0, 20),
+      },
+      severity: "info",
+    });
+    return { total: data.ticketIds.length, ok, failed, results };
+  });
+
+
 /* ---------------- STAFF: KPI inbox ---------------- */
 export const adminTicketStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
