@@ -9,7 +9,7 @@ describe("classifySlaFailure", () => {
   });
 
   it("detectează timeout", () => {
-    expect(classifySlaFailure(new Error("Cererea a depășit 20s"))).toBe("timeout");
+    expect(classifySlaFailure(new Error("Request timeout after 20s"))).toBe("timeout");
     expect(classifySlaFailure(new Error("ETIMEDOUT"))).toBe("timeout");
   });
 
