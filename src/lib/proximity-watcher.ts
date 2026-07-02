@@ -57,9 +57,13 @@ export function useProximityForegroundWatcher() {
   const fetchNearby = useServerFn(getNearbyPoints);
   const recordHit = useServerFn(recordProximityHit);
   const pointsCacheRef = useRef<Map<string, NearbyPoint[]>>(new Map());
+  // Country gate: în țări high/blocked nu rulăm proximity foreground —
+  // proximity notifications ar putea expune userul (outing prin push preview).
+  const { forceStealth, hidePreciseLocation, isBlocked, isDiscoverDisabled } = useCountryGate();
 
   useEffect(() => {
     if (!userId) return;
+    if (forceStealth || hidePreciseLocation || isBlocked || isDiscoverDisabled) return;
     if (typeof window === "undefined" || !("geolocation" in navigator)) return;
 
     let stopped = false;
@@ -113,5 +117,5 @@ export function useProximityForegroundWatcher() {
       stopped = true;
       stopWatcher();
     };
-  }, [userId, fetchNearby, recordHit]);
+  }, [userId, fetchNearby, recordHit, forceStealth, hidePreciseLocation, isBlocked, isDiscoverDisabled]);
 }
