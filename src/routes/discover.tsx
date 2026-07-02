@@ -79,6 +79,7 @@ type Tab = "nearby" | "fresh";
 function DiscoverPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const countryGate = useCountryGate();
   const [tab, setTab] = useState<Tab>("nearby");
   const [view, setView] = useState<"grid" | "swipe">("grid");
   useEffect(() => {
