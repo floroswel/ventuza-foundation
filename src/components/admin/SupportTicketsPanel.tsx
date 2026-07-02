@@ -180,49 +180,34 @@ export function SupportTicketsPanel() {
       <SectionTitle>Ticketing intern</SectionTitle>
 
       {fatal && (
-        <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm">
-          <div className="flex items-start gap-2">
-            {forbidden ? (
-              <ShieldAlert className="mt-0.5 size-4 shrink-0 text-red-400" />
-            ) : (
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-400" />
-            )}
-            <div className="flex-1">
-              <p className="font-semibold text-red-300">
-                {forbidden ? "Acces refuzat" : "Nu am putut încărca ticket-urile"}
-              </p>
-              <p className="mt-1 break-words text-xs text-red-200/90">{error}</p>
-              {forbidden && (
-                <p className="mt-2 text-[11px] text-red-200/70">
-                  Necesită rol de <code>support</code>, <code>moderator</code>, <code>admin</code> sau <code>super_admin</code>.
-                </p>
-              )}
-              <button
-                onClick={load}
-                disabled={busy}
-                className="mt-2 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/10 disabled:opacity-50"
-              >
-                {busy ? "Se reîncearcă…" : "Reîncearcă"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminErrorBanner
+          variant="fatal"
+          error={error}
+          forbidden={forbidden}
+          title={forbidden ? "Acces refuzat" : "Nu am putut încărca ticket-urile"}
+          forbiddenHint={
+            <>
+              Necesită rol de <code>support</code>, <code>moderator</code>, <code>admin</code> sau{" "}
+              <code>super_admin</code>.
+            </>
+          }
+          onRetry={load}
+          busy={busy}
+        />
       )}
 
       {!fatal && error && (
-        <div className="rounded-xl border border-red-500/40 bg-red-500/5 px-3 py-2 text-xs text-red-200">
-          <AlertTriangle className="mr-1 inline size-3.5" />
-          Refresh eșuat — se afișează ultimele date reușite. <button onClick={load} className="ml-1 underline">Reîncearcă</button>
-          <span className="ml-2 text-red-200/70">({error})</span>
-        </div>
+        <AdminErrorBanner variant="soft" error={error} onRetry={load} busy={busy} />
       )}
 
       {slaError && (
-        <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-200">
-          <AlertTriangle className="mr-1 inline size-3.5" />
-          Pragurile SLA nu au putut fi încărcate; se folosesc valorile implicite. ({slaError})
-        </div>
+        <AdminErrorBanner
+          variant="warning"
+          error={slaError}
+          softLead="Pragurile SLA nu au putut fi încărcate; se folosesc valorile implicite."
+        />
       )}
+
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <Kpi label="Deschise" value={kpi?.open ?? "—"} />
