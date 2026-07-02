@@ -101,22 +101,15 @@ export function SystemHealthPanel() {
       </div>
 
       {fatal && (
-        <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm">
-          <div className="flex items-start gap-2">
-            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-400" />
-            <div className="flex-1">
-              <p className="font-semibold text-red-300">Eroare la rularea probelor</p>
-              <p className="mt-1 break-words text-xs text-red-200/90">{fatal}</p>
-              <button
-                onClick={run}
-                className="mt-2 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/10"
-              >
-                Reîncearcă
-              </button>
-            </div>
-          </div>
-        </div>
+        <AdminErrorBanner
+          variant="fatal"
+          title="Eroare la rularea probelor"
+          error={fatal}
+          onRetry={run}
+          busy={loading}
+        />
       )}
+
 
       {loading && probes.length === 0 ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
