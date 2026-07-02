@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { adminGetOverview } from "@/lib/admin.functions";
-import { Activity, AlertTriangle, Database, Cpu, Globe, RefreshCw, ShieldCheck, Loader2 } from "lucide-react";
+import { Activity, Database, Cpu, Globe, RefreshCw, ShieldCheck, Loader2 } from "lucide-react";
+import { AdminErrorBanner } from "./AdminErrorBanner";
 
 type Probe = { label: string; ok: boolean; detail: string; latency?: number };
 
