@@ -46,7 +46,9 @@ export const Route = createFileRoute("/api/public/google-play-rtdn")({
             .eq("purchase_token", purchaseToken);
 
           // Audit log
-          console.log(`[RTDN] ${productId} token=${purchaseToken.slice(0, 12)}… type=${notifType} → ${status}`);
+          console.log(
+            `[RTDN] ${productId} token=${purchaseToken.slice(0, 12)}… type=${notifType} → ${status}`,
+          );
           return new Response("ok", { status: 200 });
         } catch (err) {
           console.error("[RTDN] error:", err);

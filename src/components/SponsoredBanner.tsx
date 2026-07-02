@@ -18,7 +18,9 @@ export function SponsoredBanner({ placement, city, limit = 1 }: Props) {
       setAds(data);
       data.forEach((ad) => trackAd(ad.id, "impression"));
     });
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [placement, city, limit]);
 
   if (!ads.length) return null;
@@ -46,7 +48,9 @@ export function SponsoredBanner({ placement, city, limit = 1 }: Props) {
               <Megaphone className="size-3" /> Sponsorizat
             </div>
             <p className="mt-1 text-sm font-semibold">{ad.title}</p>
-            {ad.body && <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{ad.body}</p>}
+            {ad.body && (
+              <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{ad.body}</p>
+            )}
             {ad.cta_url && (
               <span className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary">
                 {ad.cta_label ?? "Află mai mult"} <ExternalLink className="size-3" />

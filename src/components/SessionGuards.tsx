@@ -13,12 +13,7 @@ const ALLOWED_WITHOUT_BIRTHDATE = ["/n", "/auth", "/age-gate", "/legal", "/r/"];
 // app gates server-side via `assert_account_usable()` — this redirect is just
 // UX so the user lands somewhere actionable (resend link) instead of hitting
 // `email_not_confirmed` errors on every social RPC.
-const ALLOWED_WITHOUT_EMAIL_CONFIRMED = [
-  "/auth",
-  "/legal",
-  "/reset-password",
-  "/account-deletion",
-];
+const ALLOWED_WITHOUT_EMAIL_CONFIRMED = ["/auth", "/legal", "/reset-password", "/account-deletion"];
 
 /** Invisible component that wires session-scoped background guards. */
 export function SessionGuards() {
@@ -38,7 +33,8 @@ export function SessionGuards() {
     const exempt = ALLOWED_WITHOUT_EMAIL_CONFIRMED.some((p) => path.startsWith(p));
     if (exempt) return;
     // `email_confirmed_at` lives on auth.users; the client User object exposes it.
-    const confirmedAt = (user as unknown as { email_confirmed_at?: string | null }).email_confirmed_at;
+    const confirmedAt = (user as unknown as { email_confirmed_at?: string | null })
+      .email_confirmed_at;
     if (!confirmedAt && user.email) {
       navigate({ to: "/auth/check-email", search: { email: user.email }, replace: true });
     }
@@ -61,7 +57,9 @@ export function SessionGuards() {
         navigate({ to: "/n", replace: true });
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [user, location.pathname, navigate]);
 
   useEffect(() => {
@@ -89,4 +87,3 @@ export function SessionGuards() {
 
   return null;
 }
-

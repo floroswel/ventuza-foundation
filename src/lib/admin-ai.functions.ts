@@ -21,7 +21,9 @@ export const adminAiCopilot = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
-    const { data: staff, error } = await context.supabase.rpc("is_staff", { _user_id: context.userId });
+    const { data: staff, error } = await context.supabase.rpc("is_staff", {
+      _user_id: context.userId,
+    });
     if (error) throw new Error("Nu am putut verifica rolul.");
     if (staff !== true) throw new Error("forbidden: rol staff necesar.");
 

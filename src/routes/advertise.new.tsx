@@ -9,14 +9,28 @@ import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/advertise/new")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Campanie nouă — Ventuza Ads" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Campanie nouă — Ventuza Ads" }, { name: "robots", content: "noindex" }],
+  }),
   component: NewCampaignPage,
 });
 
 const PLACEMENTS = [
-  { id: "events_banner", label: "Banner Events", desc: "Apare sus pe pagina /events. Recomandat cluburi/baruri." },
-  { id: "discover_card", label: "Card Discover", desc: "Apare între profile pe Discover. Recomandat branduri." },
-  { id: "event_boost", label: "Boost eveniment", desc: "Promovează un eveniment existent la vârful listei." },
+  {
+    id: "events_banner",
+    label: "Banner Events",
+    desc: "Apare sus pe pagina /events. Recomandat cluburi/baruri.",
+  },
+  {
+    id: "discover_card",
+    label: "Card Discover",
+    desc: "Apare între profile pe Discover. Recomandat branduri.",
+  },
+  {
+    id: "event_boost",
+    label: "Boost eveniment",
+    desc: "Promovează un eveniment existent la vârful listei.",
+  },
 ];
 
 function NewCampaignPage() {
@@ -82,13 +96,20 @@ function NewCampaignPage() {
   }
 
   if (authLoading || loading) {
-    return <div className="grid min-h-screen place-items-center bg-background"><Loader2 className="size-6 animate-spin text-primary" /></div>;
+    return (
+      <div className="grid min-h-screen place-items-center bg-background">
+        <Loader2 className="size-6 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
     <div className="min-h-screen bg-background pb-32">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur">
-        <Link to="/advertise" className="flex size-9 items-center justify-center rounded-full border border-border">
+        <Link
+          to="/advertise"
+          className="flex size-9 items-center justify-center rounded-full border border-border"
+        >
           <ChevronLeft className="size-4" />
         </Link>
         <h1 className="flex items-center gap-2 text-base font-semibold">
@@ -98,7 +119,9 @@ function NewCampaignPage() {
 
       <form onSubmit={submit} className="mx-auto max-w-md space-y-4 px-4 py-6">
         <div>
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Plasament</label>
+          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Plasament
+          </label>
           <div className="mt-2 space-y-1.5">
             {PLACEMENTS.map((p) => (
               <button
@@ -116,27 +139,91 @@ function NewCampaignPage() {
           </div>
         </div>
 
-        <Field label="Titlu *"><input value={title} onChange={(e) => setTitle(e.target.value)} className={inputCls} required maxLength={60} /></Field>
-        <Field label="Descriere scurtă"><textarea value={body} onChange={(e) => setBody(e.target.value)} rows={2} className={inputCls} maxLength={140} /></Field>
-        <Field label="URL imagine (recomandat 16:9)"><input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className={inputCls} placeholder="https://..." /></Field>
+        <Field label="Titlu *">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className={inputCls}
+            required
+            maxLength={60}
+          />
+        </Field>
+        <Field label="Descriere scurtă">
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={2}
+            className={inputCls}
+            maxLength={140}
+          />
+        </Field>
+        <Field label="URL imagine (recomandat 16:9)">
+          <input
+            value={imageUrl}
+            onChange={(e) => setImageUrl(e.target.value)}
+            className={inputCls}
+            placeholder="https://..."
+          />
+        </Field>
 
         <div className="grid grid-cols-2 gap-2">
-          <Field label="URL destinație"><input value={ctaUrl} onChange={(e) => setCtaUrl(e.target.value)} className={inputCls} placeholder="https://" /></Field>
-          <Field label="Text buton"><input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)} className={inputCls} maxLength={20} /></Field>
+          <Field label="URL destinație">
+            <input
+              value={ctaUrl}
+              onChange={(e) => setCtaUrl(e.target.value)}
+              className={inputCls}
+              placeholder="https://"
+            />
+          </Field>
+          <Field label="Text buton">
+            <input
+              value={ctaLabel}
+              onChange={(e) => setCtaLabel(e.target.value)}
+              className={inputCls}
+              maxLength={20}
+            />
+          </Field>
         </div>
 
         <div className="grid grid-cols-3 gap-2">
-          <Field label="Oraș (opțional)"><input value={city} onChange={(e) => setCity(e.target.value)} className={inputCls} placeholder="Toate" /></Field>
-          <Field label="Zile"><input type="number" min={1} max={90} value={days} onChange={(e) => setDays(Number(e.target.value))} className={inputCls} /></Field>
-          <Field label="Buget (RON)"><input type="number" min={50} value={budget} onChange={(e) => setBudget(Number(e.target.value))} className={inputCls} /></Field>
+          <Field label="Oraș (opțional)">
+            <input
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              className={inputCls}
+              placeholder="Toate"
+            />
+          </Field>
+          <Field label="Zile">
+            <input
+              type="number"
+              min={1}
+              max={90}
+              value={days}
+              onChange={(e) => setDays(Number(e.target.value))}
+              className={inputCls}
+            />
+          </Field>
+          <Field label="Buget (RON)">
+            <input
+              type="number"
+              min={50}
+              value={budget}
+              onChange={(e) => setBudget(Number(e.target.value))}
+              className={inputCls}
+            />
+          </Field>
         </div>
 
         <div className="rounded-xl border border-border bg-surface p-3 text-xs text-muted-foreground">
-          Total estimat: <span className="font-semibold text-foreground">{budget} RON</span> pentru {days} zile.
-          Campania devine activă după aprobare manuală (max 24h) și plată confirmată.
+          Total estimat: <span className="font-semibold text-foreground">{budget} RON</span> pentru{" "}
+          {days} zile. Campania devine activă după aprobare manuală (max 24h) și plată confirmată.
         </div>
 
-        <button disabled={saving} className="w-full rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground disabled:opacity-60">
+        <button
+          disabled={saving}
+          className="w-full rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground disabled:opacity-60"
+        >
           {saving ? "Trimit…" : "Trimite spre aprobare"}
         </button>
       </form>
@@ -146,8 +233,14 @@ function NewCampaignPage() {
   );
 }
 
-const inputCls = "mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
+const inputCls =
+  "mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
-  return <div><label className="text-xs text-muted-foreground">{label}</label>{children}</div>;
+  return (
+    <div>
+      <label className="text-xs text-muted-foreground">{label}</label>
+      {children}
+    </div>
+  );
 }

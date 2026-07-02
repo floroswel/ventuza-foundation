@@ -1,12 +1,22 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, Crown, Eye, EyeOff, Pencil, Settings as SettingsIcon, ShieldAlert, Sparkles, X, Loader2 } from "lucide-react";
+import {
+  BadgeCheck,
+  Crown,
+  Eye,
+  EyeOff,
+  Pencil,
+  Settings as SettingsIcon,
+  ShieldAlert,
+  Sparkles,
+  X,
+  Loader2,
+} from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { useConsent } from "@/lib/use-consent";
 import { supabase } from "@/integrations/supabase/client";
-
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
@@ -32,12 +42,22 @@ import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { BackButton } from "@/components/BackButton";
 import { formatHeight } from "@/lib/discover";
 import {
-  GENDER_OPTIONS, PRONOUN_OPTIONS, ORIENTATION_OPTIONS,
-  LOOKING_FOR_OPTIONS, INTEREST_OPTIONS,
-  TRIBE_OPTIONS, BODY_TYPE_OPTIONS, POSITION_OPTIONS,
-  RELATIONSHIP_STATUS_OPTIONS, ETHNICITY_OPTIONS,
-  MEET_AT_OPTIONS, EXPECTATIONS_OPTIONS, SCENES_OPTIONS,
-  SAFETY_OPTIONS, PREP_STATUS_OPTIONS, VACCINATION_OPTIONS,
+  GENDER_OPTIONS,
+  PRONOUN_OPTIONS,
+  ORIENTATION_OPTIONS,
+  LOOKING_FOR_OPTIONS,
+  INTEREST_OPTIONS,
+  TRIBE_OPTIONS,
+  BODY_TYPE_OPTIONS,
+  POSITION_OPTIONS,
+  RELATIONSHIP_STATUS_OPTIONS,
+  ETHNICITY_OPTIONS,
+  MEET_AT_OPTIONS,
+  EXPECTATIONS_OPTIONS,
+  SCENES_OPTIONS,
+  SAFETY_OPTIONS,
+  PREP_STATUS_OPTIONS,
+  VACCINATION_OPTIONS,
 } from "@/lib/profile-options";
 
 export const Route = createFileRoute("/profile")({
@@ -138,7 +158,11 @@ function ProfilePage() {
   useEffect(() => {
     if (!user) return;
     (async () => {
-      const { data, error } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", user.id)
+        .maybeSingle();
       if (error) toast.error(error.message);
       let p: Profile | null = null;
       if (data) {
@@ -150,7 +174,9 @@ function ProfilePage() {
       if (p?.photos?.length) {
         const out: Record<string, string> = {};
         for (const path of p.photos) {
-          const { data: s } = await supabase.storage.from("profile-photos").createSignedUrl(path, 3600);
+          const { data: s } = await supabase.storage
+            .from("profile-photos")
+            .createSignedUrl(path, 3600);
           if (s?.signedUrl) out[path] = s.signedUrl;
         }
         setSigned(out);
@@ -174,9 +200,15 @@ function ProfilePage() {
       <section className="relative">
         <div className="aspect-[4/5] w-full overflow-hidden bg-surface">
           {primary && signed[primary] ? (
-            <img src={signed[primary]} alt={profile.display_name ?? ""} className="size-full object-cover" />
+            <img
+              src={signed[primary]}
+              alt={profile.display_name ?? ""}
+              className="size-full object-cover"
+            />
           ) : (
-            <div className="flex size-full items-center justify-center text-muted-foreground">No photo</div>
+            <div className="flex size-full items-center justify-center text-muted-foreground">
+              No photo
+            </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
         </div>
@@ -186,13 +218,28 @@ function ProfilePage() {
 
         <div className="absolute right-4 top-4 flex gap-2">
           <NotificationBell className="size-10 border border-border bg-surface/80 backdrop-blur" />
-          <Button size="icon" variant="subtle" onClick={() => navigate({ to: "/premium" })} aria-label="Premium">
+          <Button
+            size="icon"
+            variant="subtle"
+            onClick={() => navigate({ to: "/premium" })}
+            aria-label="Premium"
+          >
             <Crown className="size-4 text-primary" />
           </Button>
-          <Button size="icon" variant="subtle" onClick={() => setEditing(true)} aria-label="Edit profile">
+          <Button
+            size="icon"
+            variant="subtle"
+            onClick={() => setEditing(true)}
+            aria-label="Edit profile"
+          >
             <Pencil className="size-4" />
           </Button>
-          <Button size="icon" variant="subtle" onClick={() => navigate({ to: "/settings" })} aria-label="Settings">
+          <Button
+            size="icon"
+            variant="subtle"
+            onClick={() => navigate({ to: "/settings" })}
+            aria-label="Settings"
+          >
             <SettingsIcon className="size-4" />
           </Button>
         </div>
@@ -201,7 +248,9 @@ function ProfilePage() {
           <div className="flex items-end gap-3">
             <h1 className="wordmark text-4xl font-medium leading-tight">
               {profile.display_name}
-              {age(profile.birthdate) && <span className="ml-2 text-foreground/80">{age(profile.birthdate)}</span>}
+              {age(profile.birthdate) && (
+                <span className="ml-2 text-foreground/80">{age(profile.birthdate)}</span>
+              )}
             </h1>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
@@ -220,7 +269,12 @@ function ProfilePage() {
               </span>
             )}
             {profile.pronouns?.slice(0, 2).map((p) => (
-              <span key={p} className="rounded-full bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">{p}</span>
+              <span
+                key={p}
+                className="rounded-full bg-surface/70 px-2.5 py-1 text-xs backdrop-blur"
+              >
+                {p}
+              </span>
             ))}
           </div>
           <div className="mt-3">
@@ -268,28 +322,37 @@ function ProfilePage() {
 
         <DateVibesCard
           userId={profile.id}
-          vibes={{ ask_me_about: profile.ask_me_about, dealbreakers: profile.dealbreakers, ideal_match: profile.ideal_match }}
+          vibes={{
+            ask_me_about: profile.ask_me_about,
+            dealbreakers: profile.dealbreakers,
+            ideal_match: profile.ideal_match,
+          }}
           onChange={(next) => setProfile({ ...profile, ...next })}
         />
 
         <LifestyleFactsCard
           userId={profile.id}
           facts={{
-            zodiac: profile.zodiac, languages: profile.languages, education: profile.education,
-            school: profile.school, job_title: profile.job_title, company: profile.company,
-            religion: profile.religion, politics: profile.politics, children: profile.children,
-            pets: profile.pets, drinking: profile.drinking, smoking: profile.smoking,
-            cannabis: profile.cannabis, drugs: profile.drugs, workout: profile.workout,
-            diet: profile.diet, sleep_schedule: profile.sleep_schedule,
+            zodiac: profile.zodiac,
+            languages: profile.languages,
+            education: profile.education,
+            school: profile.school,
+            job_title: profile.job_title,
+            company: profile.company,
+            religion: profile.religion,
+            politics: profile.politics,
+            children: profile.children,
+            pets: profile.pets,
+            drinking: profile.drinking,
+            smoking: profile.smoking,
+            cannabis: profile.cannabis,
+            drugs: profile.drugs,
+            workout: profile.workout,
+            diet: profile.diet,
+            sleep_schedule: profile.sleep_schedule,
           }}
           onChange={(next) => setProfile({ ...profile, ...next })}
         />
-
-
-
-
-
-
 
         {profile.bio && (
           <Section title="About">
@@ -300,12 +363,15 @@ function ProfilePage() {
         {profile.prompts && profile.prompts.length > 0 && (
           <Section title="In their words">
             <div className="space-y-3">
-              {profile.prompts.map((p, i) => p.question && (
-                <div key={i} className="rounded-2xl border border-border bg-surface p-5">
-                  <p className="text-xs uppercase tracking-wider text-primary">{p.question}</p>
-                  <p className="mt-2 font-display text-xl leading-snug">{p.answer}</p>
-                </div>
-              ))}
+              {profile.prompts.map(
+                (p, i) =>
+                  p.question && (
+                    <div key={i} className="rounded-2xl border border-border bg-surface p-5">
+                      <p className="text-xs uppercase tracking-wider text-primary">{p.question}</p>
+                      <p className="mt-2 font-display text-xl leading-snug">{p.answer}</p>
+                    </div>
+                  ),
+              )}
             </div>
           </Section>
         )}
@@ -313,7 +379,11 @@ function ProfilePage() {
         {profile.interests && profile.interests.length > 0 && (
           <Section title="Interests">
             <div className="flex flex-wrap gap-2">
-              {profile.interests.map((i) => <Chip key={i} active>{i}</Chip>)}
+              {profile.interests.map((i) => (
+                <Chip key={i} active>
+                  {i}
+                </Chip>
+              ))}
             </div>
           </Section>
         )}
@@ -321,20 +391,34 @@ function ProfilePage() {
         {profile.tribes && profile.tribes.length > 0 && (
           <Section title="Tribes">
             <div className="flex flex-wrap gap-2">
-              {profile.tribes.map((t) => <Chip key={t} active>{t}</Chip>)}
+              {profile.tribes.map((t) => (
+                <Chip key={t} active>
+                  {t}
+                </Chip>
+              ))}
             </div>
           </Section>
         )}
 
-        {(profile.body_type || profile.position || profile.height_cm || profile.weight_kg || profile.ethnicity || profile.relationship_status || profile.prep_status) && (
+        {(profile.body_type ||
+          profile.position ||
+          profile.height_cm ||
+          profile.weight_kg ||
+          profile.ethnicity ||
+          profile.relationship_status ||
+          profile.prep_status) && (
           <Section title="Stats">
             <div className="grid grid-cols-2 gap-x-4 gap-y-2 rounded-2xl border border-border bg-surface p-4 text-sm">
               {profile.body_type && <StatRow label="Body" value={profile.body_type} />}
               {profile.position && <StatRow label="Position" value={profile.position} />}
-              {formatHeight(profile.height_cm) && <StatRow label="Height" value={formatHeight(profile.height_cm)!} />}
+              {formatHeight(profile.height_cm) && (
+                <StatRow label="Height" value={formatHeight(profile.height_cm)!} />
+              )}
               {profile.weight_kg && <StatRow label="Weight" value={`${profile.weight_kg} kg`} />}
               {profile.ethnicity && <StatRow label="Ethnicity" value={profile.ethnicity} />}
-              {profile.relationship_status && <StatRow label="Relationship" value={profile.relationship_status} />}
+              {profile.relationship_status && (
+                <StatRow label="Relationship" value={profile.relationship_status} />
+              )}
               {profile.prep_status && <StatRow label="PrEP" value={profile.prep_status} />}
             </div>
           </Section>
@@ -342,31 +426,61 @@ function ProfilePage() {
 
         {profile.expectations && profile.expectations.length > 0 && (
           <Section title="Expectations">
-            <div className="flex flex-wrap gap-2">{profile.expectations.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+            <div className="flex flex-wrap gap-2">
+              {profile.expectations.map((v) => (
+                <Chip key={v} active>
+                  {v}
+                </Chip>
+              ))}
+            </div>
           </Section>
         )}
 
         {profile.meet_at && profile.meet_at.length > 0 && (
           <Section title="Meet at">
-            <div className="flex flex-wrap gap-2">{profile.meet_at.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+            <div className="flex flex-wrap gap-2">
+              {profile.meet_at.map((v) => (
+                <Chip key={v} active>
+                  {v}
+                </Chip>
+              ))}
+            </div>
           </Section>
         )}
 
         {profile.scenes && profile.scenes.length > 0 && (
           <Section title="Scenes">
-            <div className="flex flex-wrap gap-2">{profile.scenes.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+            <div className="flex flex-wrap gap-2">
+              {profile.scenes.map((v) => (
+                <Chip key={v} active>
+                  {v}
+                </Chip>
+              ))}
+            </div>
           </Section>
         )}
 
-        {((profile.safety_practices && profile.safety_practices.length > 0) || (profile.vaccinations && profile.vaccinations.length > 0)) && (
+        {((profile.safety_practices && profile.safety_practices.length > 0) ||
+          (profile.vaccinations && profile.vaccinations.length > 0)) && (
           <Section title="Safer play">
             {profile.safety_practices && profile.safety_practices.length > 0 && (
-              <div className="mb-3 flex flex-wrap gap-2">{profile.safety_practices.map((v) => <Chip key={v} active>{v}</Chip>)}</div>
+              <div className="mb-3 flex flex-wrap gap-2">
+                {profile.safety_practices.map((v) => (
+                  <Chip key={v} active>
+                    {v}
+                  </Chip>
+                ))}
+              </div>
             )}
             {profile.vaccinations && profile.vaccinations.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {profile.vaccinations.map((v) => (
-                  <span key={v} className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">💉 {v}</span>
+                  <span
+                    key={v}
+                    className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary"
+                  >
+                    💉 {v}
+                  </span>
                 ))}
               </div>
             )}
@@ -374,8 +488,20 @@ function ProfilePage() {
         )}
 
         <Section title="Identity">
-          <TagRow label="Gender" values={[...(profile.gender ?? []), ...(profile.gender_custom ? [profile.gender_custom] : [])]} />
-          <TagRow label="Pronouns" values={[...(profile.pronouns ?? []), ...(profile.pronouns_custom ? [profile.pronouns_custom] : [])]} />
+          <TagRow
+            label="Gender"
+            values={[
+              ...(profile.gender ?? []),
+              ...(profile.gender_custom ? [profile.gender_custom] : []),
+            ]}
+          />
+          <TagRow
+            label="Pronouns"
+            values={[
+              ...(profile.pronouns ?? []),
+              ...(profile.pronouns_custom ? [profile.pronouns_custom] : []),
+            ]}
+          />
           <TagRow label="Orientation" values={profile.orientation ?? []} />
           <TagRow label="Looking for" values={profile.looking_for ?? []} />
         </Section>
@@ -391,7 +517,9 @@ function ProfilePage() {
               </span>
               <div>
                 <p className="text-sm font-medium">Who viewed you</p>
-                <p className="text-xs text-muted-foreground">See everyone who checked your profile</p>
+                <p className="text-xs text-muted-foreground">
+                  See everyone who checked your profile
+                </p>
               </div>
             </div>
             <span className="text-xs text-muted-foreground">›</span>
@@ -404,7 +532,11 @@ function ProfilePage() {
             lookingNowUntil={profile.looking_now_until}
             lookingNowIntent={profile.looking_now_intent}
             onUpdate={async () => {
-              const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
+              const { data } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", profile.id)
+                .maybeSingle();
               if (data) setProfile(data as unknown as Profile);
             }}
           />
@@ -416,7 +548,11 @@ function ProfilePage() {
             travelUntil={profile.travel_until}
             boostUntil={profile.boost_until}
             onUpdate={async () => {
-              const { data } = await supabase.from("profiles").select("*").eq("id", profile.id).maybeSingle();
+              const { data } = await supabase
+                .from("profiles")
+                .select("*")
+                .eq("id", profile.id)
+                .maybeSingle();
               if (data) setProfile(data as unknown as Profile);
             }}
           />
@@ -426,15 +562,15 @@ function ProfilePage() {
           <PrivateAlbumManager userId={profile.id} />
         </Section>
 
-
-
-
         {/* Privacy quick actions */}
         <Section title="Privacy">
           <button
             onClick={async () => {
               const next = !profile.incognito;
-              const { error } = await supabase.from("profiles").update({ incognito: next }).eq("id", profile.id);
+              const { error } = await supabase
+                .from("profiles")
+                .update({ incognito: next })
+                .eq("id", profile.id);
               if (error) return toast.error(error.message);
               setProfile({ ...profile, incognito: next });
               toast.success(next ? "You're now in Obsidian Vault." : "You're visible again.");
@@ -443,9 +579,17 @@ function ProfilePage() {
           >
             <div>
               <p className="text-sm font-medium">Obsidian Vault</p>
-              <p className="text-xs text-muted-foreground">Hide your profile from the grid. You can still browse.</p>
+              <p className="text-xs text-muted-foreground">
+                Hide your profile from the grid. You can still browse.
+              </p>
             </div>
-            <span className={profile.incognito ? "rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground" : "rounded-full bg-surface-elevated px-3 py-1 text-xs text-muted-foreground"}>
+            <span
+              className={
+                profile.incognito
+                  ? "rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                  : "rounded-full bg-surface-elevated px-3 py-1 text-xs text-muted-foreground"
+              }
+            >
               {profile.incognito ? "On" : "Off"}
             </span>
           </button>
@@ -456,7 +600,11 @@ function ProfilePage() {
         <EditDrawer
           profile={profile}
           onClose={() => setEditing(false)}
-          onSaved={(p) => { setProfile(p); setEditing(false); toast.success("Profile updated."); }}
+          onSaved={(p) => {
+            setProfile(p);
+            setEditing(false);
+            toast.success("Profile updated.");
+          }}
         />
       )}
       <BottomNav />
@@ -480,7 +628,12 @@ function TagRow({ label, values }: { label: string; values: string[] }) {
       <p className="mb-1.5 text-xs text-muted-foreground">{label}</p>
       <div className="flex flex-wrap gap-2">
         {values.map((v) => (
-          <span key={v} className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary">{v}</span>
+          <span
+            key={v}
+            className="rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs text-primary"
+          >
+            {v}
+          </span>
         ))}
       </div>
     </div>
@@ -500,42 +653,58 @@ function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 }
 
-function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: () => void; onSaved: (p: Profile) => void }) {
+function EditDrawer({
+  profile,
+  onClose,
+  onSaved,
+}: {
+  profile: Profile;
+  onClose: () => void;
+  onSaved: (p: Profile) => void;
+}) {
   const [form, setForm] = useState(profile);
   const [saving, setSaving] = useState(false);
 
   async function save() {
     setSaving(true);
     const f = form as unknown as Profile & { hide_age?: boolean };
-    const { data, error } = await supabase.from("profiles").update({
-      display_name: form.display_name,
-      bio: form.bio,
-      gender: form.gender ?? [],
-      gender_custom: form.gender_custom,
-      pronouns: form.pronouns ?? [],
-      pronouns_custom: form.pronouns_custom,
-      orientation: form.orientation ?? [],
-      looking_for: form.looking_for ?? [],
-      interests: form.interests ?? [],
-      prompts: form.prompts ?? [],
-      tribes: form.tribes ?? [],
-      body_type: form.body_type,
-      height_cm: form.height_cm,
-      weight_kg: form.weight_kg,
-      ethnicity: form.ethnicity,
-      position: form.position,
-      // Datele HIV au fost eliminate din schemă (decizie GDPR).
-      relationship_status: form.relationship_status,
-      meet_at: form.meet_at ?? [],
-      expectations: form.expectations ?? [],
-      scenes: form.scenes ?? [],
-      safety_practices: form.safety_practices ?? [],
-      vaccinations: form.vaccinations ?? [],
-      prep_status: form.prep_status,
-      accept_nsfw_photos: form.accept_nsfw_photos ?? false,
-      hide_age: f.hide_age ?? false,
-    }).eq("id", profile.id).select("*").maybeSingle();
-    if (error || !data) { setSaving(false); return toast.error(error?.message ?? "Failed"); }
+    const { data, error } = await supabase
+      .from("profiles")
+      .update({
+        display_name: form.display_name,
+        bio: form.bio,
+        gender: form.gender ?? [],
+        gender_custom: form.gender_custom,
+        pronouns: form.pronouns ?? [],
+        pronouns_custom: form.pronouns_custom,
+        orientation: form.orientation ?? [],
+        looking_for: form.looking_for ?? [],
+        interests: form.interests ?? [],
+        prompts: form.prompts ?? [],
+        tribes: form.tribes ?? [],
+        body_type: form.body_type,
+        height_cm: form.height_cm,
+        weight_kg: form.weight_kg,
+        ethnicity: form.ethnicity,
+        position: form.position,
+        // Datele HIV au fost eliminate din schemă (decizie GDPR).
+        relationship_status: form.relationship_status,
+        meet_at: form.meet_at ?? [],
+        expectations: form.expectations ?? [],
+        scenes: form.scenes ?? [],
+        safety_practices: form.safety_practices ?? [],
+        vaccinations: form.vaccinations ?? [],
+        prep_status: form.prep_status,
+        accept_nsfw_photos: form.accept_nsfw_photos ?? false,
+        hide_age: f.hide_age ?? false,
+      })
+      .eq("id", profile.id)
+      .select("*")
+      .maybeSingle();
+    if (error || !data) {
+      setSaving(false);
+      return toast.error(error?.message ?? "Failed");
+    }
 
     setSaving(false);
     onSaved(data as unknown as Profile);
@@ -545,10 +714,20 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
     const current = (form[k] as unknown as string) || "";
     return (
       <div className="space-y-2">
-        <Label>{String(k).replace(/_/g, " ").replace(/^./, c => c.toUpperCase())}</Label>
+        <Label>
+          {String(k)
+            .replace(/_/g, " ")
+            .replace(/^./, (c) => c.toUpperCase())}
+        </Label>
         <div className="flex flex-wrap gap-2">
           {options.map((o) => (
-            <Chip key={o} active={current === o} onClick={() => setForm({ ...form, [k]: current === o ? null : o } as Profile)}>{o}</Chip>
+            <Chip
+              key={o}
+              active={current === o}
+              onClick={() => setForm({ ...form, [k]: current === o ? null : o } as Profile)}
+            >
+              {o}
+            </Chip>
           ))}
         </div>
       </div>
@@ -558,7 +737,11 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <header className="flex items-center justify-between border-b border-border/50 px-6 py-4">
-        <button onClick={onClose} aria-label="Close" className="text-muted-foreground hover:text-foreground">
+        <button
+          onClick={onClose}
+          aria-label="Close"
+          className="text-muted-foreground hover:text-foreground"
+        >
           <X className="size-5" />
         </button>
         <h2 className="font-display text-lg">Edit Profile</h2>
@@ -579,7 +762,9 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
               maxLength={15}
               className="h-12 bg-surface border-border"
             />
-            <p className="text-right text-[10px] text-muted-foreground">{(form.display_name ?? "").length}/15</p>
+            <p className="text-right text-[10px] text-muted-foreground">
+              {(form.display_name ?? "").length}/15
+            </p>
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
@@ -594,9 +779,16 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
               placeholder="Tell people who you are and what you're looking for (not what you're not looking for)"
               className="bg-surface border-border"
             />
-            <p className="text-right text-[10px] text-muted-foreground">{(form.bio ?? "").length}/255</p>
+            <p className="text-right text-[10px] text-muted-foreground">
+              {(form.bio ?? "").length}/255
+            </p>
           </div>
-          <EditChips label="My Tags" options={INTEREST_OPTIONS} value={form.interests ?? []} onChange={(v) => setForm({ ...form, interests: v })} />
+          <EditChips
+            label="My Tags"
+            options={INTEREST_OPTIONS}
+            value={form.interests ?? []}
+            onChange={(v) => setForm({ ...form, interests: v })}
+          />
         </EditSection>
 
         {/* Stats */}
@@ -605,17 +797,37 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
           <ToggleRow
             label="Show Age"
             checked={!(form as unknown as { hide_age?: boolean }).hide_age}
-            onChange={(on) => setForm({ ...form, ...({ hide_age: !on } as Partial<Profile>) } as Profile)}
+            onChange={(on) =>
+              setForm({ ...form, ...({ hide_age: !on } as Partial<Profile>) } as Profile)
+            }
             help="When on, this appears on your profile and allows other users to filter for you."
           />
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Height (cm)</Label>
-              <Input type="number" min={140} max={220} value={form.height_cm ?? ""} onChange={(e) => setForm({ ...form, height_cm: e.target.value ? Number(e.target.value) : null })} className="h-12 bg-surface border-border" />
+              <Input
+                type="number"
+                min={140}
+                max={220}
+                value={form.height_cm ?? ""}
+                onChange={(e) =>
+                  setForm({ ...form, height_cm: e.target.value ? Number(e.target.value) : null })
+                }
+                className="h-12 bg-surface border-border"
+              />
             </div>
             <div className="space-y-2">
               <Label>Weight (kg)</Label>
-              <Input type="number" min={40} max={200} value={form.weight_kg ?? ""} onChange={(e) => setForm({ ...form, weight_kg: e.target.value ? Number(e.target.value) : null })} className="h-12 bg-surface border-border" />
+              <Input
+                type="number"
+                min={40}
+                max={200}
+                value={form.weight_kg ?? ""}
+                onChange={(e) =>
+                  setForm({ ...form, weight_kg: e.target.value ? Number(e.target.value) : null })
+                }
+                className="h-12 bg-surface border-border"
+              />
             </div>
           </div>
           {single("ethnicity", ETHNICITY_OPTIONS)}
@@ -627,16 +839,43 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
         {/* Preferences */}
         <SectionDivider label="Preferences" />
         <EditSection>
-          <EditChips label="My Tribes" options={TRIBE_OPTIONS} value={form.tribes ?? []} onChange={(v) => setForm({ ...form, tribes: v })} />
-          <EditChips label="Looking For" options={LOOKING_FOR_OPTIONS} value={form.looking_for ?? []} onChange={(v) => setForm({ ...form, looking_for: v })} />
-          <EditChips label="Meet At" options={MEET_AT_OPTIONS} value={form.meet_at ?? []} onChange={(v) => setForm({ ...form, meet_at: v })} />
-          <EditChips label="Expectations" options={EXPECTATIONS_OPTIONS} value={form.expectations ?? []} onChange={(v) => setForm({ ...form, expectations: v })} />
-          <EditChips label="Scenes" options={SCENES_OPTIONS} value={form.scenes ?? []} onChange={(v) => setForm({ ...form, scenes: v })} />
+          <EditChips
+            label="My Tribes"
+            options={TRIBE_OPTIONS}
+            value={form.tribes ?? []}
+            onChange={(v) => setForm({ ...form, tribes: v })}
+          />
+          <EditChips
+            label="Looking For"
+            options={LOOKING_FOR_OPTIONS}
+            value={form.looking_for ?? []}
+            onChange={(v) => setForm({ ...form, looking_for: v })}
+          />
+          <EditChips
+            label="Meet At"
+            options={MEET_AT_OPTIONS}
+            value={form.meet_at ?? []}
+            onChange={(v) => setForm({ ...form, meet_at: v })}
+          />
+          <EditChips
+            label="Expectations"
+            options={EXPECTATIONS_OPTIONS}
+            value={form.expectations ?? []}
+            onChange={(v) => setForm({ ...form, expectations: v })}
+          />
+          <EditChips
+            label="Scenes"
+            options={SCENES_OPTIONS}
+            value={form.scenes ?? []}
+            onChange={(v) => setForm({ ...form, scenes: v })}
+          />
 
           <label className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
             <div>
               <p className="text-sm font-medium">Accept NSFW Pics</p>
-              <p className="text-xs text-muted-foreground">Allow matches to send adult content in DMs.</p>
+              <p className="text-xs text-muted-foreground">
+                Allow matches to send adult content in DMs.
+              </p>
             </div>
             <input
               type="checkbox"
@@ -650,19 +889,53 @@ function EditDrawer({ profile, onClose, onSaved }: { profile: Profile; onClose: 
         {/* Identity */}
         <SectionDivider label="Identity" />
         <EditSection>
-          <EditChips label="Gender" options={GENDER_OPTIONS} value={form.gender ?? []} onChange={(v) => setForm({ ...form, gender: v })} />
-          <EditChips label="Pronouns" options={PRONOUN_OPTIONS} value={form.pronouns ?? []} onChange={(v) => setForm({ ...form, pronouns: v })} />
-          <EditChips label="Orientation" options={ORIENTATION_OPTIONS} value={form.orientation ?? []} onChange={(v) => setForm({ ...form, orientation: v })} />
+          <EditChips
+            label="Gender"
+            options={GENDER_OPTIONS}
+            value={form.gender ?? []}
+            onChange={(v) => setForm({ ...form, gender: v })}
+          />
+          <EditChips
+            label="Pronouns"
+            options={PRONOUN_OPTIONS}
+            value={form.pronouns ?? []}
+            onChange={(v) => setForm({ ...form, pronouns: v })}
+          />
+          <EditChips
+            label="Orientation"
+            options={ORIENTATION_OPTIONS}
+            value={form.orientation ?? []}
+            onChange={(v) => setForm({ ...form, orientation: v })}
+          />
         </EditSection>
 
         {/* Health */}
         <SectionDivider label="Health" />
         <EditSection>
           {single("prep_status", PREP_STATUS_OPTIONS)}
-          <EditChips label="Health Practices" options={SAFETY_OPTIONS} value={form.safety_practices ?? []} onChange={(v) => setForm({ ...form, safety_practices: v })} />
-          <EditChips label="Vaccinations" options={VACCINATION_OPTIONS} value={form.vaccinations ?? []} onChange={(v) => setForm({ ...form, vaccinations: v })} />
+          <EditChips
+            label="Health Practices"
+            options={SAFETY_OPTIONS}
+            value={form.safety_practices ?? []}
+            onChange={(v) => setForm({ ...form, safety_practices: v })}
+          />
+          <EditChips
+            label="Vaccinations"
+            options={VACCINATION_OPTIONS}
+            value={form.vaccinations ?? []}
+            onChange={(v) => setForm({ ...form, vaccinations: v })}
+          />
           <p className="rounded-xl border border-border/50 bg-surface/50 p-3 text-[11px] leading-relaxed text-muted-foreground">
-            <strong className="text-foreground/80">Resurse de sănătate.</strong> Ventuza nu stochează date despre HIV. Pentru testare gratuită și consiliere vezi <a href="https://www.arasnet.ro" target="_blank" rel="noreferrer" className="underline">ARAS</a> sau centrul de siguranță (<a href="/safety" className="underline">/safety</a>).
+            <strong className="text-foreground/80">Resurse de sănătate.</strong> Ventuza nu
+            stochează date despre HIV. Pentru testare gratuită și consiliere vezi{" "}
+            <a href="https://www.arasnet.ro" target="_blank" rel="noreferrer" className="underline">
+              ARAS
+            </a>{" "}
+            sau centrul de siguranță (
+            <a href="/safety" className="underline">
+              /safety
+            </a>
+            ).
           </p>
         </EditSection>
       </div>
@@ -677,30 +950,59 @@ function EditSection({ children }: { children: React.ReactNode }) {
 function SectionDivider({ label }: { label: string }) {
   return (
     <div className="border-y border-border bg-background px-6 py-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">{label}</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+        {label}
+      </p>
     </div>
   );
 }
 
-function ToggleRow({ label, checked, onChange, help }: { label: string; checked: boolean; onChange: (v: boolean) => void; help?: string }) {
+function ToggleRow({
+  label,
+  checked,
+  onChange,
+  help,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (v: boolean) => void;
+  help?: string;
+}) {
   return (
     <div>
       <label className="flex items-center justify-between">
         <span className="text-sm font-medium">{label}</span>
-        <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-5 accent-primary" />
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className="size-5 accent-primary"
+        />
       </label>
       {help && <p className="mt-1.5 text-[11px] leading-relaxed text-muted-foreground">{help}</p>}
     </div>
   );
 }
 
-function EditChips({ label, options, value, onChange }: { label: string; options: string[]; value: string[]; onChange: (v: string[]) => void }) {
+function EditChips({
+  label,
+  options,
+  value,
+  onChange,
+}: {
+  label: string;
+  options: string[];
+  value: string[];
+  onChange: (v: string[]) => void;
+}) {
   return (
     <div className="space-y-3">
       <Label>{label}</Label>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
-          <Chip key={o} active={value.includes(o)} onClick={() => onChange(toggle(value, o))}>{o}</Chip>
+          <Chip key={o} active={value.includes(o)} onClick={() => onChange(toggle(value, o))}>
+            {o}
+          </Chip>
         ))}
       </div>
     </div>
@@ -717,7 +1019,7 @@ function AiBioButton({ form, setForm }: { form: Profile; setForm: (p: Profile) =
     if (!ok) return;
     setLoading(true);
     try {
-      const a = form.birthdate ? age(form.birthdate) ?? undefined : undefined;
+      const a = form.birthdate ? (age(form.birthdate) ?? undefined) : undefined;
       const res = await gen({
         data: {
           name: form.display_name ?? undefined,
@@ -810,4 +1112,3 @@ function PhotoCoachButton({ photos }: { photos: string[] }) {
     </div>
   );
 }
-

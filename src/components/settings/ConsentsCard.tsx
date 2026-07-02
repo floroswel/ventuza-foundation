@@ -64,7 +64,9 @@ export function ConsentsCard() {
             const reg = await navigator.serviceWorker?.getRegistration();
             const sub = await reg?.pushManager?.getSubscription();
             if (sub) await sub.unsubscribe();
-          } catch { /* best-effort */ }
+          } catch {
+            /* best-effort */
+          }
         }
         toast.success("Consimțământ retras. Prelucrarea aferentă a fost oprită.");
       } else {
@@ -85,8 +87,8 @@ export function ConsentsCard() {
         {loading && <Loader2 className="ml-1 inline size-3 animate-spin" />}
       </h2>
       <p className="mt-2 text-[11px] text-muted-foreground">
-        Toate sunt opționale și pot fi retrase oricând. Retragerea oprește
-        imediat prelucrarea (și șterge datele unde se aplică).
+        Toate sunt opționale și pot fi retrase oricând. Retragerea oprește imediat prelucrarea (și
+        șterge datele unde se aplică).
       </p>
       <div className="mt-3 divide-y divide-border">
         {OPTIONAL_KINDS.map((kind) => {

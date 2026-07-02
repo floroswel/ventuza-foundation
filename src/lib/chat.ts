@@ -54,7 +54,9 @@ export async function getOrCreateConversation(otherUserId: string): Promise<stri
   return data as string;
 }
 
-export async function fetchPublicProfiles(ids: string[]): Promise<Map<string, { name: string | null; photo: string | null }>> {
+export async function fetchPublicProfiles(
+  ids: string[],
+): Promise<Map<string, { name: string | null; photo: string | null }>> {
   const map = new Map<string, { name: string | null; photo: string | null }>();
   if (!ids.length) return map;
   const { data, error } = await supabase.rpc("get_public_profiles", { _ids: ids });
@@ -62,10 +64,16 @@ export async function fetchPublicProfiles(ids: string[]): Promise<Map<string, { 
     console.error("get_public_profiles failed", error);
     return map;
   }
-  const rows = (data ?? []) as Array<{ id: string; display_name: string | null; photos: string[] | null }>;
-  await Promise.all(rows.map(async (p) => {
-    map.set(p.id, { name: p.display_name, photo: await signPhoto(p.photos?.[0] ?? null) });
-  }));
+  const rows = (data ?? []) as Array<{
+    id: string;
+    display_name: string | null;
+    photos: string[] | null;
+  }>;
+  await Promise.all(
+    rows.map(async (p) => {
+      map.set(p.id, { name: p.display_name, photo: await signPhoto(p.photos?.[0] ?? null) });
+    }),
+  );
   return map;
 }
 
@@ -75,7 +83,11 @@ export async function fetchConversations(meId: string): Promise<ConversationList
   // RLS on `blocks` only lets me see rows where I'm the blocker, so a client-only
   // filter would miss users who blocked ME.
   const { data: blocked } = await supabase.rpc("list_my_block_relations" as never);
-  const blockedSet = new Set<string>(((blocked ?? []) as Array<string | { list_my_block_relations: string }>).map((r) => typeof r === "string" ? r : r.list_my_block_relations));
+  const blockedSet = new Set<string>(
+    ((blocked ?? []) as Array<string | { list_my_block_relations: string }>).map((r) =>
+      typeof r === "string" ? r : r.list_my_block_relations,
+    ),
+  );
 
   const { data: convs, error } = await supabase
     .from("conversations")
@@ -97,7 +109,10 @@ export async function fetchConversations(meId: string): Promise<ConversationList
   const { data: unread } = await supabase
     .from("messages")
     .select("conversation_id")
-    .in("conversation_id", rows.map((r) => r.id))
+    .in(
+      "conversation_id",
+      rows.map((r) => r.id),
+    )
     .neq("sender_id", meId)
     .is("read_at", null);
   const unreadCounts = new Map<string, number>();
@@ -141,7 +156,11 @@ export async function fetchMessages(
   return ((data ?? []) as MessageRow[]).slice().reverse();
 }
 
-export async function sendMessage(conversationId: string, body: string, replyToId?: string | null): Promise<MessageRow> {
+export async function sendMessage(
+  conversationId: string,
+  body: string,
+  replyToId?: string | null,
+): Promise<MessageRow> {
   const trimmed = body.trim();
   if (!trimmed) throw new Error("empty");
   const { data: u } = await supabase.auth.getUser();
@@ -185,15 +204,19 @@ export async function sendMessage(conversationId: string, body: string, replyToI
         .eq("id", u.user!.id)
         .maybeSingle();
       const { sendPushToUser } = await import("@/lib/push.functions");
-      await sendPushToUser({ data: {
-        toUserId,
-        title: (me as { display_name?: string } | null)?.display_name || "Mesaj nou",
-        body: trimmed.slice(0, 140),
-        url: `/messages/${conversationId}`,
-        tag: `msg:${conversationId}`,
-        category: "messages",
-      } });
-    } catch { /* best-effort */ }
+      await sendPushToUser({
+        data: {
+          toUserId,
+          title: (me as { display_name?: string } | null)?.display_name || "Mesaj nou",
+          body: trimmed.slice(0, 140),
+          url: `/messages/${conversationId}`,
+          tag: `msg:${conversationId}`,
+          category: "messages",
+        },
+      });
+    } catch {
+      /* best-effort */
+    }
   })();
 
   return data as MessageRow;
@@ -211,7 +234,8 @@ export async function markRead(conversationId: string, meId: string): Promise<vo
     .select("read_receipts_enabled")
     .eq("id", meId)
     .maybeSingle();
-  if (meProf && (meProf as { read_receipts_enabled?: boolean }).read_receipts_enabled === false) return;
+  if (meProf && (meProf as { read_receipts_enabled?: boolean }).read_receipts_enabled === false)
+    return;
   await supabase
     .from("messages")
     .update({ read_at: new Date().toISOString() })
@@ -225,7 +249,10 @@ export type MediaPayload =
   | { kind: "audio"; file: Blob; durationMs: number }
   | { kind: "location"; lat: number; lng: number; label?: string };
 
-export async function sendMediaMessage(conversationId: string, payload: MediaPayload): Promise<MessageRow> {
+export async function sendMediaMessage(
+  conversationId: string,
+  payload: MediaPayload,
+): Promise<MessageRow> {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("not signed in");
   const uid = u.user.id;
@@ -247,9 +274,10 @@ export async function sendMediaMessage(conversationId: string, payload: MediaPay
   } else {
     const ext = payload.kind === "image" ? "jpg" : "webm";
     const path = `${uid}/${conversationId}/${crypto.randomUUID()}.${ext}`;
-    const { error: upErr } = await supabase.storage
-      .from("chat-media")
-      .upload(path, payload.file, { contentType: payload.file.type || (payload.kind === "image" ? "image/jpeg" : "audio/webm"), upsert: false });
+    const { error: upErr } = await supabase.storage.from("chat-media").upload(path, payload.file, {
+      contentType: payload.file.type || (payload.kind === "image" ? "image/jpeg" : "audio/webm"),
+      upsert: false,
+    });
     if (upErr) throw upErr;
     insert = {
       ...insert,
@@ -261,12 +289,20 @@ export async function sendMediaMessage(conversationId: string, payload: MediaPay
     if (payload.kind === "image" && payload.viewOnce) insert.view_once = true;
   }
 
-  const { data, error } = await supabase.from("messages").insert(insert as never).select("*").single();
+  const { data, error } = await supabase
+    .from("messages")
+    .insert(insert as never)
+    .select("*")
+    .single();
   if (error) throw error;
   return data as MessageRow;
 }
 
-export async function updateLiveLocationMessage(messageId: string, lat: number, lng: number): Promise<MessageRow> {
+export async function updateLiveLocationMessage(
+  messageId: string,
+  lat: number,
+  lng: number,
+): Promise<MessageRow> {
   const { data, error } = await supabase
     .from("messages")
     .update({ location_lat: lat, location_lng: lng })
@@ -284,17 +320,21 @@ export async function signChatMedia(path: string | null | undefined): Promise<st
 }
 
 export async function markMediaViewed(messageId: string): Promise<void> {
-  await supabase.from("messages").update({ viewed_at: new Date().toISOString() }).eq("id", messageId);
+  await supabase
+    .from("messages")
+    .update({ viewed_at: new Date().toISOString() })
+    .eq("id", messageId);
 }
 
-
-export async function fetchOtherProfile(otherId: string): Promise<{ id: string; name: string | null; photo: string | null }> {
+export async function fetchOtherProfile(
+  otherId: string,
+): Promise<{ id: string; name: string | null; photo: string | null }> {
   const { data } = await supabase.rpc("get_public_profiles", { _ids: [otherId] });
-  const row = ((data ?? []) as Array<{ display_name: string | null; photos: string[] | null }>)[0] ?? null;
+  const row =
+    ((data ?? []) as Array<{ display_name: string | null; photos: string[] | null }>)[0] ?? null;
   return {
     id: otherId,
     name: row?.display_name ?? null,
     photo: await signPhoto(row?.photos?.[0] ?? null),
   };
 }
-

@@ -1,9 +1,24 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { CalendarHeart, Loader2, MapPin, Map as MapIcon, Plus, Users, Clock, List } from "lucide-react";
+import {
+  CalendarHeart,
+  Loader2,
+  MapPin,
+  Map as MapIcon,
+  Plus,
+  Users,
+  Clock,
+  List,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { BottomNav } from "@/components/BottomNav";
-import { listUpcomingEvents, eventTypeLabel, formatEventDate, type EventType, type EventWithMeta } from "@/lib/events";
+import {
+  listUpcomingEvents,
+  eventTypeLabel,
+  formatEventDate,
+  type EventType,
+  type EventWithMeta,
+} from "@/lib/events";
 import { CreateEventDialog } from "@/components/CreateEventDialog";
 import { NotificationBell } from "@/components/NotificationBell";
 import { EventsMap } from "@/components/EventsMap";
@@ -11,10 +26,13 @@ import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { EmptyState } from "@/components/EmptyState";
 import { toast } from "sonner";
 
-
-
 export const Route = createFileRoute("/events")({
-  head: () => ({ meta: [{ title: "Events — Ventuza" }, { name: "description", content: "Find gay-friendly parties, bars and meetups near you." }] }),
+  head: () => ({
+    meta: [
+      { title: "Events — Ventuza" },
+      { name: "description", content: "Find gay-friendly parties, bars and meetups near you." },
+    ],
+  }),
   component: EventsPage,
 });
 
@@ -22,7 +40,7 @@ const TYPES: Array<EventType | "all"> = ["all", "party", "bar", "pride", "meetup
 
 function EventsPage() {
   const { user, loading: authLoading } = useAuth();
-  
+
   const navigate = useNavigate();
   const [events, setEvents] = useState<EventWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,22 +49,24 @@ function EventsPage() {
   const [creating, setCreating] = useState(false);
   const [view, setView] = useState<"list" | "map">("list");
 
-
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
 
-  const load = useMemo(() => async () => {
-    setLoading(true);
-    try {
-      const data = await listUpcomingEvents({ city, type });
-      setEvents(data);
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't load events");
-    } finally {
-      setLoading(false);
-    }
-  }, [city, type]);
+  const load = useMemo(
+    () => async () => {
+      setLoading(true);
+      try {
+        const data = await listUpcomingEvents({ city, type });
+        setEvents(data);
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Couldn't load events");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [city, type],
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -105,7 +125,6 @@ function EventsPage() {
             </button>
           ))}
         </div>
-
       </header>
 
       <div className="flex-1 px-3 py-3 space-y-3">
@@ -119,11 +138,11 @@ function EventsPage() {
           <EmptyState
             icon={CalendarHeart}
             title="Niciun eveniment în curând"
-            body={'Fii primul — apasă „Propune" sus dreapta ca să trimiți un eveniment. Intră la moderare și devine vizibil după aprobare.'}
+            body={
+              'Fii primul — apasă „Propune" sus dreapta ca să trimiți un eveniment. Intră la moderare și devine vizibil după aprobare.'
+            }
           />
-
         ) : view === "map" ? (
-
           <EventsMap events={events} />
         ) : (
           <ul className="space-y-3">
@@ -136,8 +155,12 @@ function EventsPage() {
                 >
                   <div className="flex gap-3 p-3">
                     <div className="flex size-16 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/10 text-primary">
-                      <span className="text-[10px] uppercase tracking-wider">{new Date(e.starts_at).toLocaleDateString(undefined, { month: "short" })}</span>
-                      <span className="text-xl font-bold leading-none">{new Date(e.starts_at).getDate()}</span>
+                      <span className="text-[10px] uppercase tracking-wider">
+                        {new Date(e.starts_at).toLocaleDateString(undefined, { month: "short" })}
+                      </span>
+                      <span className="text-xl font-bold leading-none">
+                        {new Date(e.starts_at).getDate()}
+                      </span>
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start gap-2">
@@ -152,7 +175,8 @@ function EventsPage() {
                       </p>
                       <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
                         <MapPin className="size-3" />
-                        {e.city}{e.venue ? ` · ${e.venue}` : ""}
+                        {e.city}
+                        {e.venue ? ` · ${e.venue}` : ""}
                       </p>
                       <p className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
                         <span className="inline-flex items-center gap-1">
@@ -173,7 +197,6 @@ function EventsPage() {
             ))}
           </ul>
         )}
-
       </div>
 
       <CreateEventDialog

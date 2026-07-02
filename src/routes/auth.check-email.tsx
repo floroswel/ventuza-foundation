@@ -13,10 +13,7 @@ const searchSchema = z.object({ email: z.string().email().optional() });
 export const Route = createFileRoute("/auth/check-email")({
   validateSearch: searchSchema,
   head: () => ({
-    meta: [
-      { title: "Confirmă emailul — Ventuza" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Confirmă emailul — Ventuza" }, { name: "robots", content: "noindex" }],
   }),
   component: CheckEmailPage,
 });
@@ -104,7 +101,10 @@ function CheckEmailPage() {
         </p>
         <TurnstileWidget
           key={captchaNonce}
-          onToken={(t) => { setCaptchaToken(t); if (resendError?.resetCaptcha) setResendError(null); }}
+          onToken={(t) => {
+            setCaptchaToken(t);
+            if (resendError?.resetCaptcha) setResendError(null);
+          }}
           onExpire={() => setCaptchaToken(null)}
         />
         {resendError && (
@@ -121,7 +121,9 @@ function CheckEmailPage() {
             {cooldown > 0 ? `Retrimite în ${cooldown}s` : "Retrimite emailul"}
           </Button>
           <Button asChild variant="ghost" size="sm">
-            <Link to="/auth" search={{ mode: "login" }}>Înapoi la autentificare</Link>
+            <Link to="/auth" search={{ mode: "login" }}>
+              Înapoi la autentificare
+            </Link>
           </Button>
         </div>
       </div>

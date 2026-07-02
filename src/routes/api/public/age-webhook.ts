@@ -1,8 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { createHmac, timingSafeEqual } from "node:crypto";
 
-const UUID_RE =
-  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 /**
  * Didit age verification webhook.
@@ -23,15 +22,11 @@ export const Route = createFileRoute("/api/public/age-webhook")({
         }
 
         const signatureHeader =
-          request.headers.get("x-signature") ??
-          request.headers.get("X-Signature") ??
-          "";
+          request.headers.get("x-signature") ?? request.headers.get("X-Signature") ?? "";
 
         const rawBody = await request.text();
 
-        const expectedHex = createHmac("sha256", secret)
-          .update(rawBody)
-          .digest("hex");
+        const expectedHex = createHmac("sha256", secret).update(rawBody).digest("hex");
         const provided = signatureHeader
           .trim()
           .toLowerCase()
@@ -69,9 +64,7 @@ export const Route = createFileRoute("/api/public/age-webhook")({
             "";
 
           const statusRaw =
-            (payload.status as string | undefined) ??
-            (decision.status as string | undefined) ??
-            "";
+            (payload.status as string | undefined) ?? (decision.status as string | undefined) ?? "";
 
           // Age estimation — try common shapes.
           let estimatedAge: number | null = null;
@@ -79,9 +72,7 @@ export const Route = createFileRoute("/api/public/age-webhook")({
             (decision.age_estimation as Record<string, unknown> | undefined) ??
             (payload.age_estimation as Record<string, unknown> | undefined);
           if (ageEst) {
-            const v =
-              (ageEst.age as number | undefined) ??
-              (ageEst.value as number | undefined);
+            const v = (ageEst.age as number | undefined) ?? (ageEst.value as number | undefined);
             if (typeof v === "number") estimatedAge = Math.round(v);
           }
 
@@ -97,12 +88,9 @@ export const Route = createFileRoute("/api/public/age-webhook")({
             return new Response("ok", { status: 200 });
           }
 
-          const result: "pass" | "fail" =
-            statusRaw.toLowerCase() === "approved" ? "pass" : "fail";
+          const result: "pass" | "fail" = statusRaw.toLowerCase() === "approved" ? "pass" : "fail";
 
-          const { supabaseAdmin } = await import(
-            "@/integrations/supabase/client.server"
-          );
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
           // Idempotency on session_id.
           const { data: existing } = await supabaseAdmin
@@ -115,22 +103,16 @@ export const Route = createFileRoute("/api/public/age-webhook")({
             return new Response("ok", { status: 200 });
           }
 
-          const { error } = await supabaseAdmin.rpc(
-            "record_age_verification",
-            {
-              p_user_id: vendorData,
-              p_result: result,
-              p_estimated_age: estimatedAge ?? undefined,
-              p_didit_session: sessionId,
-              p_status_raw: statusRaw,
-            },
-          );
+          const { error } = await supabaseAdmin.rpc("record_age_verification", {
+            p_user_id: vendorData,
+            p_result: result,
+            p_estimated_age: estimatedAge ?? undefined,
+            p_didit_session: sessionId,
+            p_status_raw: statusRaw,
+          });
 
           if (error) {
-            console.error(
-              "[age-webhook] record_age_verification error",
-              error,
-            );
+            console.error("[age-webhook] record_age_verification error", error);
             return new Response("ok", { status: 200 });
           }
 

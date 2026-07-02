@@ -59,12 +59,17 @@ export function StoryViewer({
   function next() {
     if (!group) return;
     if (si + 1 < group.stories.length) setSi(si + 1);
-    else if (gi + 1 < groups.length) { setGi(gi + 1); setSi(0); }
-    else onClose();
+    else if (gi + 1 < groups.length) {
+      setGi(gi + 1);
+      setSi(0);
+    } else onClose();
   }
   function prev() {
     if (si > 0) setSi(si - 1);
-    else if (gi > 0) { setGi(gi - 1); setSi(groups[gi - 1].stories.length - 1); }
+    else if (gi > 0) {
+      setGi(gi - 1);
+      setSi(groups[gi - 1].stories.length - 1);
+    }
   }
 
   async function handleDelete() {
@@ -104,7 +109,9 @@ export function StoryViewer({
         </div>
         <div className="mt-2 flex items-center justify-between text-white">
           <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">{isMine ? "Tu" : group.display_name ?? "—"}</span>
+            <span className="text-sm font-medium">
+              {isMine ? "Tu" : (group.display_name ?? "—")}
+            </span>
             <span className="text-[10px] text-white/60">
               {Math.round((Date.now() - new Date(story.created_at).getTime()) / 60000)}m
             </span>
@@ -116,11 +123,19 @@ export function StoryViewer({
           </div>
           <div className="flex items-center gap-2">
             {isMine && (
-              <button onClick={handleDelete} aria-label="Șterge" className="rounded-full bg-white/10 p-1.5">
+              <button
+                onClick={handleDelete}
+                aria-label="Șterge"
+                className="rounded-full bg-white/10 p-1.5"
+              >
                 <Trash2 className="size-4" />
               </button>
             )}
-            <button onClick={onClose} aria-label="Închide" className="rounded-full bg-white/10 p-1.5">
+            <button
+              onClick={onClose}
+              aria-label="Închide"
+              className="rounded-full bg-white/10 p-1.5"
+            >
               <X className="size-4" />
             </button>
           </div>
@@ -135,22 +150,36 @@ export function StoryViewer({
           <div className="grid size-full place-items-center text-white/60">Se încarcă…</div>
         )}
         {story.caption && (
-          <p className={cn(
-            "absolute inset-x-6 bottom-20 rounded-xl bg-black/55 px-3 py-2 text-center text-sm text-white backdrop-blur",
-          )}>{story.caption}</p>
+          <p
+            className={cn(
+              "absolute inset-x-6 bottom-20 rounded-xl bg-black/55 px-3 py-2 text-center text-sm text-white backdrop-blur",
+            )}
+          >
+            {story.caption}
+          </p>
         )}
 
         {/* Tap zones */}
         <button
-          onClick={(e) => { e.stopPropagation(); prev(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            prev();
+          }}
           className="absolute left-0 top-0 h-full w-1/3"
           aria-label="Înapoi"
-        ><ChevronLeft className="absolute left-2 top-1/2 -translate-y-1/2 size-6 text-white/40" /></button>
+        >
+          <ChevronLeft className="absolute left-2 top-1/2 -translate-y-1/2 size-6 text-white/40" />
+        </button>
         <button
-          onClick={(e) => { e.stopPropagation(); next(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            next();
+          }}
           className="absolute right-0 top-0 h-full w-1/3"
           aria-label="Următorul"
-        ><ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 size-6 text-white/40" /></button>
+        >
+          <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 size-6 text-white/40" />
+        </button>
       </div>
     </div>
   );

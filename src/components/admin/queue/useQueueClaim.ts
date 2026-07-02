@@ -2,13 +2,19 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
-import {
-  claimQueueItem, heartbeatQueueClaim, releaseQueueItem,
-} from "@/lib/admin-queue.functions";
+import { claimQueueItem, heartbeatQueueClaim, releaseQueueItem } from "@/lib/admin-queue.functions";
 
 type QueueName =
-  | "reports" | "appeals" | "csam" | "dsa" | "gdpr"
-  | "partners" | "support" | "riskqueue" | "breach" | "ncmec";
+  | "reports"
+  | "appeals"
+  | "csam"
+  | "dsa"
+  | "gdpr"
+  | "partners"
+  | "support"
+  | "riskqueue"
+  | "breach"
+  | "ncmec";
 
 export type ClaimState = {
   loading: boolean;
@@ -23,14 +29,26 @@ export type ClaimState = {
  * Auto-claim on mount, heartbeat la 2 min, release on unmount.
  * Dacă itemul e revendicat de altul, `mine=false` și heartbeat-ul e oprit.
  */
-export function useQueueClaim(queue: QueueName, itemId: string | null, opts?: { autoClaim?: boolean; ttlSeconds?: number }): ClaimState {
+export function useQueueClaim(
+  queue: QueueName,
+  itemId: string | null,
+  opts?: { autoClaim?: boolean; ttlSeconds?: number },
+): ClaimState {
   const { autoClaim = true, ttlSeconds = 600 } = opts ?? {};
   const claimFn = useServerFn(claimQueueItem);
   const hbFn = useServerFn(heartbeatQueueClaim);
   const relFn = useServerFn(releaseQueueItem);
 
-  const [state, setState] = useState<{ mine: boolean; actorId: string | null; expiresAt: string | null; loading: boolean }>({
-    mine: false, actorId: null, expiresAt: null, loading: false,
+  const [state, setState] = useState<{
+    mine: boolean;
+    actorId: string | null;
+    expiresAt: string | null;
+    loading: boolean;
+  }>({
+    mine: false,
+    actorId: null,
+    expiresAt: null,
+    loading: false,
   });
   const mineRef = useRef(false);
 
@@ -53,13 +71,17 @@ export function useQueueClaim(queue: QueueName, itemId: string | null, opts?: { 
       await relFn({ data: { queue, itemId } });
       mineRef.current = false;
       setState({ mine: false, actorId: null, expiresAt: null, loading: false });
-    } catch { /* swallow */ }
+    } catch {
+      /* swallow */
+    }
   }, [relFn, queue, itemId]);
 
   useEffect(() => {
     if (!itemId || !autoClaim) return;
     void doClaim();
-    return () => { void doRelease(); };
+    return () => {
+      void doRelease();
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [itemId, autoClaim]);
 
@@ -70,7 +92,9 @@ export function useQueueClaim(queue: QueueName, itemId: string | null, opts?: { 
       if (!mineRef.current) return;
       hbFn({ data: { queue, itemId, ttlSeconds } })
         .then((r) => r.expiresAt && setState((s) => ({ ...s, expiresAt: r.expiresAt })))
-        .catch(() => { /* silent */ });
+        .catch(() => {
+          /* silent */
+        });
     }, 120_000);
     return () => clearInterval(t);
   }, [hbFn, queue, itemId, ttlSeconds]);

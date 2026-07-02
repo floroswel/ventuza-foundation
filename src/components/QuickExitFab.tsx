@@ -6,8 +6,16 @@ const NEUTRAL_URL = "https://www.google.com/search?q=weather";
 
 // Where the FAB shows. Stays out of auth/legal/onboarding screens.
 const SHOW_PREFIXES = [
-  "/discover", "/messages", "/swipe", "/visitors", "/favorites",
-  "/groups", "/events", "/quests", "/profile", "/u/",
+  "/discover",
+  "/messages",
+  "/swipe",
+  "/visitors",
+  "/favorites",
+  "/groups",
+  "/events",
+  "/quests",
+  "/profile",
+  "/u/",
 ];
 
 /**
@@ -56,7 +64,9 @@ export function QuickExitFab() {
   function doExit() {
     try {
       sessionStorage.clear();
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     // Replace history so back button doesn't return to the app.
     window.location.replace(NEUTRAL_URL);
   }

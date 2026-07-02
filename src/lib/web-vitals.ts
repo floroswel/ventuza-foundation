@@ -18,7 +18,9 @@ export function initWebVitals() {
         path: window.location.pathname,
         user_agent: navigator.userAgent.slice(0, 200),
       });
-    } catch {/* ignore */}
+    } catch {
+      /* ignore */
+    }
   };
 
   onCLS(send);

@@ -3,9 +3,9 @@ import { Bookmark, BookmarkPlus, X, Check } from "lucide-react";
 import { useSavedViews, type SavedView } from "@/hooks/useSavedViews";
 
 type Props<F> = {
-  scope: string;                          // ex: "admin.support"
-  currentFilters: F;                      // filtrele active (obiect serializabil)
-  onApply: (filters: F) => void;          // callback la selectarea unei view
+  scope: string; // ex: "admin.support"
+  currentFilters: F; // filtrele active (obiect serializabil)
+  onApply: (filters: F) => void; // callback la selectarea unei view
   compact?: boolean;
 };
 
@@ -25,13 +25,19 @@ export function SavedViewsBar<F>({ scope, currentFilters, onApply, compact }: Pr
     const trimmed = name.trim();
     if (trimmed.length < 1) return;
     save(trimmed, currentFilters);
-    setName(""); setNaming(false);
+    setName("");
+    setNaming(false);
   };
 
-  const apply = (v: SavedView<F>) => { setActive(v.id); onApply(v.filters); };
+  const apply = (v: SavedView<F>) => {
+    setActive(v.id);
+    onApply(v.filters);
+  };
 
   return (
-    <div className={`flex flex-wrap items-center gap-1.5 ${compact ? "text-[10px]" : "text-[11px]"}`}>
+    <div
+      className={`flex flex-wrap items-center gap-1.5 ${compact ? "text-[10px]" : "text-[11px]"}`}
+    >
       <span className="inline-flex items-center gap-1 text-muted-foreground">
         <Bookmark className="size-3" /> Views:
       </span>
@@ -67,14 +73,31 @@ export function SavedViewsBar<F>({ scope, currentFilters, onApply, compact }: Pr
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
-            onKeyDown={(e) => { if (e.key === "Enter") commit(); if (e.key === "Escape") { setNaming(false); setName(""); } }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") commit();
+              if (e.key === "Escape") {
+                setNaming(false);
+                setName("");
+              }
+            }}
             placeholder="Nume view…"
             className="w-28 bg-transparent text-[11px] outline-none placeholder:text-muted-foreground/60"
           />
-          <button onClick={commit} className="text-primary hover:text-primary/80" aria-label="Salvează">
+          <button
+            onClick={commit}
+            className="text-primary hover:text-primary/80"
+            aria-label="Salvează"
+          >
             <Check className="size-3" />
           </button>
-          <button onClick={() => { setNaming(false); setName(""); }} className="text-muted-foreground hover:text-foreground" aria-label="Anulează">
+          <button
+            onClick={() => {
+              setNaming(false);
+              setName("");
+            }}
+            className="text-muted-foreground hover:text-foreground"
+            aria-label="Anulează"
+          >
             <X className="size-3" />
           </button>
         </span>

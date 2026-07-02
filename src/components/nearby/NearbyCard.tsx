@@ -29,11 +29,7 @@ export function NearbyCard({ point, onSelect }: Props) {
       })
     : null;
 
-  const detailTo = isEvent
-    ? "/events/$id"
-    : isOffer
-    ? "/offers/$id"
-    : "/venues/$id";
+  const detailTo = isEvent ? "/events/$id" : isOffer ? "/offers/$id" : "/venues/$id";
 
   return (
     <Card className="overflow-hidden flex flex-col">
@@ -74,9 +70,7 @@ export function NearbyCard({ point, onSelect }: Props) {
             <div className="text-sm font-semibold text-primary">
               {formatDistance(point.distanceM)}
             </div>
-            {point.city && (
-              <div className="text-[10px] text-muted-foreground">{point.city}</div>
-            )}
+            {point.city && <div className="text-[10px] text-muted-foreground">{point.city}</div>}
           </div>
         </div>
         {startTime && (
@@ -85,16 +79,8 @@ export function NearbyCard({ point, onSelect }: Props) {
           </div>
         )}
         <div className="flex gap-2 mt-auto pt-2">
-          <Button
-            asChild
-            size="sm"
-            variant="default"
-            className="flex-1"
-          >
-            <Link
-              to={detailTo}
-              params={{ id: isOffer || isVenue ? point.id : point.id }}
-            >
+          <Button asChild size="sm" variant="default" className="flex-1">
+            <Link to={detailTo} params={{ id: isOffer || isVenue ? point.id : point.id }}>
               {isEvent ? "Detalii / RSVP" : isOffer ? "Revendică" : "Detalii"}
             </Link>
           </Button>

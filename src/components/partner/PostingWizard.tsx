@@ -182,7 +182,9 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
                 {t.label}
                 {full && <Badge variant="destructive">Limită atinsă</Badge>}
                 {blockedNoVenue && <Badge variant="secondary">Adaugă întâi un loc</Badge>}
-                {blockedNoApproved && <Badge variant="secondary">Așteaptă aprobarea unui loc</Badge>}
+                {blockedNoApproved && (
+                  <Badge variant="secondary">Așteaptă aprobarea unui loc</Badge>
+                )}
               </div>
               <p className="text-sm text-muted-foreground mt-1">{t.shortDescription}</p>
               <p className="text-xs text-muted-foreground mt-1 italic">{t.whenToUse}</p>
@@ -246,9 +248,7 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
           value={values[f.key]}
           onChange={(v) => setValues((s) => ({ ...s, [f.key]: v }))}
           extraOptions={
-            f.key === "venue_id"
-              ? myVenues.map((v) => ({ value: v.id, label: v.name }))
-              : undefined
+            f.key === "venue_id" ? myVenues.map((v) => ({ value: v.id, label: v.name })) : undefined
           }
           uploaderUserId={user?.id ?? ""}
         />
@@ -264,7 +264,14 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
         Click pe hartă sau trage pin-ul roșu pentru a seta locația{" "}
         {template.kind === "venue" ? "locului" : "evenimentului"}.
       </p>
-      <PinMap lat={lat} lng={lng} onChange={(la, ln) => { setLat(la); setLng(ln); }} />
+      <PinMap
+        lat={lat}
+        lng={lng}
+        onChange={(la, ln) => {
+          setLat(la);
+          setLng(ln);
+        }}
+      />
       <div className="space-y-1">
         <Label className="flex items-center justify-between">
           <span>Rază notificare proximitate</span>
@@ -280,9 +287,9 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
           className="w-full"
         />
         <p className="text-xs text-muted-foreground">
-          Utilizatorii la sub {(radius / 1000).toFixed(1)} km pot primi o notificare după
-          aprobare — <strong>respectând limitele lor anti-spam</strong> (max 1 alertă per
-          loc / 24h, plafon zilnic, ore liniștite). Tu nu controlezi aceste limite.
+          Utilizatorii la sub {(radius / 1000).toFixed(1)} km pot primi o notificare după aprobare —{" "}
+          <strong>respectând limitele lor anti-spam</strong> (max 1 alertă per loc / 24h, plafon
+          zilnic, ore liniștite). Tu nu controlezi aceste limite.
         </p>
       </div>
     </div>
@@ -295,11 +302,7 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
         <Label className="text-xs uppercase tracking-wide text-muted-foreground">
           Cum apare în Nearby
         </Label>
-        <NearbyPreviewCard
-          template={template}
-          values={values}
-          radius={radius}
-        />
+        <NearbyPreviewCard template={template} values={values} radius={radius} />
       </div>
       <div>
         <Label className="text-xs uppercase tracking-wide text-muted-foreground">
@@ -405,9 +408,9 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
               Postarea ta a intrat în coada de moderare. SLA: <strong>1–2 zile lucrătoare</strong>.
             </p>
             <p>
-              Vei primi o notificare în portal cu decizia (aprobat, cere modificări sau respins
-              cu motiv). După aprobare, postarea apare în Nearby și utilizatorii din rază pot
-              primi o alertă (respectând limitele lor anti-spam).
+              Vei primi o notificare în portal cu decizia (aprobat, cere modificări sau respins cu
+              motiv). După aprobare, postarea apare în Nearby și utilizatorii din rază pot primi o
+              alertă (respectând limitele lor anti-spam).
             </p>
           </div>
           <DialogFooter>
@@ -429,7 +432,8 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
           </DialogTitle>
           <DialogDescription>
             {step === 2 && "Completează detaliile. Câmpurile cu * sunt obligatorii."}
-            {step === 3 && (showLocation ? "Setează unde se află." : "Oferta moștenește locația locului.")}
+            {step === 3 &&
+              (showLocation ? "Setează unde se află." : "Oferta moștenește locația locului.")}
             {step === 4 && "Verifică exact cum vor vedea utilizatorii postarea ta."}
           </DialogDescription>
         </DialogHeader>
@@ -460,10 +464,7 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
             </Button>
           )}
           {step < 4 && (
-            <Button
-              onClick={() => setStep(step + 1)}
-              disabled={step === 2 && issues.length > 0}
-            >
+            <Button onClick={() => setStep(step + 1)} disabled={step === 2 && issues.length > 0}>
               Continuă <ChevronRight className="w-4 h-4 ml-1" />
             </Button>
           )}
@@ -516,9 +517,7 @@ function FieldRenderer({
     </Label>
   );
 
-  const hintEl = field.hint && (
-    <p className="text-xs text-muted-foreground mt-1">{field.hint}</p>
-  );
+  const hintEl = field.hint && <p className="text-xs text-muted-foreground mt-1">{field.hint}</p>;
 
   if (field.type === "textarea") {
     return (
@@ -614,7 +613,13 @@ function FieldRenderer({
         }
         value={value ?? ""}
         onChange={(e) =>
-          onChange(field.type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value)
+          onChange(
+            field.type === "number"
+              ? e.target.value === ""
+                ? ""
+                : Number(e.target.value)
+              : e.target.value,
+          )
         }
         placeholder={field.placeholder}
         maxLength={field.maxLength}
@@ -631,8 +636,8 @@ function OfferLocationNote() {
     <div className="rounded border bg-muted/40 p-4 text-sm text-muted-foreground flex items-start gap-2">
       <MapPin className="w-4 h-4 mt-0.5" />
       <div>
-        Oferta moștenește automat locația locului la care e atașată. Treci la pasul
-        următor pentru preview.
+        Oferta moștenește automat locația locului la care e atașată. Treci la pasul următor pentru
+        preview.
       </div>
     </div>
   );
@@ -711,13 +716,14 @@ function NearbyPreviewCard({
   radius: number;
 }) {
   const title = String(values.title || values.name || "Titlul tău...");
-  const subtitle = template.kind === "venue"
-    ? `${values.category ?? ""}${values.city ? ` • ${values.city}` : ""}`
-    : template.kind === "event"
-      ? values.starts_at
-        ? new Date(values.starts_at).toLocaleString("ro-RO")
-        : "Data evenimentului"
-      : "Ofertă";
+  const subtitle =
+    template.kind === "venue"
+      ? `${values.category ?? ""}${values.city ? ` • ${values.city}` : ""}`
+      : template.kind === "event"
+        ? values.starts_at
+          ? new Date(values.starts_at).toLocaleString("ro-RO")
+          : "Data evenimentului"
+        : "Ofertă";
   return (
     <Card>
       <CardContent className="pt-4 flex gap-3 items-start">
@@ -738,7 +744,9 @@ function NearbyPreviewCard({
             <Eye className="w-3 h-3" /> Rază: {(radius / 1000).toFixed(1)} km
           </div>
         </div>
-        <Badge variant="secondary" className="text-[10px]">Preview</Badge>
+        <Badge variant="secondary" className="text-[10px]">
+          Preview
+        </Badge>
       </CardContent>
     </Card>
   );

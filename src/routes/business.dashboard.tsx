@@ -3,13 +3,36 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
 import { useUserRoles } from "@/hooks/useUserRole";
-import { getMyAdvertiser, listMyCampaigns, type Advertiser, type AdCampaign, type AdPlacement } from "@/lib/ads";
-import { createAdvertiser as createAdvertiserFn, createAdCampaign as createAdCampaignFn } from "@/lib/ads.functions";
-import { Building2, Plus, BarChart3, Loader2, ChevronLeft, ExternalLink, Eye, MousePointerClick, CircleDollarSign, ShieldCheck, AlertTriangle } from "lucide-react";
+import {
+  getMyAdvertiser,
+  listMyCampaigns,
+  type Advertiser,
+  type AdCampaign,
+  type AdPlacement,
+} from "@/lib/ads";
+import {
+  createAdvertiser as createAdvertiserFn,
+  createAdCampaign as createAdCampaignFn,
+} from "@/lib/ads.functions";
+import {
+  Building2,
+  Plus,
+  BarChart3,
+  Loader2,
+  ChevronLeft,
+  ExternalLink,
+  Eye,
+  MousePointerClick,
+  CircleDollarSign,
+  ShieldCheck,
+  AlertTriangle,
+} from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/business/dashboard")({
-  head: () => ({ meta: [{ title: "Panou Business — Ventuza" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Panou Business — Ventuza" }, { name: "robots", content: "noindex" }],
+  }),
   component: BusinessDashboard,
 });
 
@@ -76,7 +99,10 @@ function BusinessDashboard() {
         <p className="mt-2 text-sm text-muted-foreground">
           Pentru a accesa panoul business, trimite o cerere de parteneriat.
         </p>
-        <Link to="/business" className="mt-4 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+        <Link
+          to="/business"
+          className="mt-4 rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground"
+        >
           Aplică acum
         </Link>
       </main>
@@ -87,13 +113,20 @@ function BusinessDashboard() {
     if (!user) return;
     setCreating(true);
     try {
-      const data = await createAdvertiserSrv({ data: {
-        brand_name: String(form.get("brand_name") || "").trim(),
-        contact_email: String(form.get("contact_email") || "").trim(),
-        contact_phone: String(form.get("contact_phone") || "").trim() || null,
-        website: String(form.get("website") || "").trim() || null,
-        category: String(form.get("category") || "venue") as "venue"|"event"|"brand"|"ngo"|"service",
-      } });
+      const data = await createAdvertiserSrv({
+        data: {
+          brand_name: String(form.get("brand_name") || "").trim(),
+          contact_email: String(form.get("contact_email") || "").trim(),
+          contact_phone: String(form.get("contact_phone") || "").trim() || null,
+          website: String(form.get("website") || "").trim() || null,
+          category: String(form.get("category") || "venue") as
+            | "venue"
+            | "event"
+            | "brand"
+            | "ngo"
+            | "service",
+        },
+      });
       setAdvertiser(data as Advertiser);
       toast.success("Profilul brand-ului a fost creat");
     } catch (e) {
@@ -107,18 +140,20 @@ function BusinessDashboard() {
     if (!advertiser) return;
     setCreating(true);
     try {
-      const data = await createCampaignSrv({ data: {
-        advertiser_id: advertiser.id,
-        placement: String(form.get("placement") || "events_banner") as AdPlacement,
-        title: String(form.get("title") || "").trim(),
-        body: String(form.get("body") || "").trim() || null,
-        image_url: String(form.get("image_url") || "").trim() || null,
-        cta_label: String(form.get("cta_label") || "Află mai mult").trim(),
-        cta_url: String(form.get("cta_url") || "").trim() || null,
-        city: String(form.get("city") || "").trim() || null,
-        starts_at: String(form.get("starts_at")),
-        ends_at: String(form.get("ends_at")),
-      } });
+      const data = await createCampaignSrv({
+        data: {
+          advertiser_id: advertiser.id,
+          placement: String(form.get("placement") || "events_banner") as AdPlacement,
+          title: String(form.get("title") || "").trim(),
+          body: String(form.get("body") || "").trim() || null,
+          image_url: String(form.get("image_url") || "").trim() || null,
+          cta_label: String(form.get("cta_label") || "Află mai mult").trim(),
+          cta_url: String(form.get("cta_url") || "").trim() || null,
+          city: String(form.get("city") || "").trim() || null,
+          starts_at: String(form.get("starts_at")),
+          ends_at: String(form.get("ends_at")),
+        },
+      });
       setCampaigns((prev) => [data as AdCampaign, ...prev]);
       setShowForm(false);
       toast.success("Campanie trimisă spre aprobare");
@@ -129,22 +164,38 @@ function BusinessDashboard() {
     }
   }
 
-  const totalImpressions = campaigns.reduce((s, c) => s + ((c as unknown as { impressions?: number }).impressions ?? 0), 0);
-  const totalClicks = campaigns.reduce((s, c) => s + ((c as unknown as { clicks?: number }).clicks ?? 0), 0);
-  const totalSpend = campaigns.reduce((s, c) => s + ((c as unknown as { budget_cents?: number }).budget_cents ?? 0), 0);
+  const totalImpressions = campaigns.reduce(
+    (s, c) => s + ((c as unknown as { impressions?: number }).impressions ?? 0),
+    0,
+  );
+  const totalClicks = campaigns.reduce(
+    (s, c) => s + ((c as unknown as { clicks?: number }).clicks ?? 0),
+    0,
+  );
+  const totalSpend = campaigns.reduce(
+    (s, c) => s + ((c as unknown as { budget_cents?: number }).budget_cents ?? 0),
+    0,
+  );
   const ctr = totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : "0.00";
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-2xl flex-col bg-background pb-12">
       <header className="sticky top-0 z-20 flex items-center gap-2 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
-        <Link to="/partner" className="rounded-full p-2 hover:bg-muted" aria-label="Portal Partener">
+        <Link
+          to="/partner"
+          className="rounded-full p-2 hover:bg-muted"
+          aria-label="Portal Partener"
+        >
           <ChevronLeft className="h-5 w-5" />
         </Link>
         <div className="flex items-center gap-2 flex-1">
           <Building2 className="h-5 w-5 text-primary" />
           <h1 className="text-lg font-semibold">Panou Business</h1>
         </div>
-        <Link to="/partner" className="text-xs text-muted-foreground hover:text-foreground underline">
+        <Link
+          to="/partner"
+          className="text-xs text-muted-foreground hover:text-foreground underline"
+        >
           Locuri & evenimente
         </Link>
       </header>
@@ -163,18 +214,44 @@ function BusinessDashboard() {
                 createAdvertiser(new FormData(e.currentTarget));
               }}
             >
-              <input name="brand_name" required placeholder="Nume brand" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" />
-              <input name="contact_email" type="email" required placeholder="Email contact" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" />
-              <input name="contact_phone" placeholder="Telefon (opțional)" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" />
-              <input name="website" type="url" placeholder="https://..." className="rounded-lg border border-border bg-background px-3 py-2 text-sm" />
-              <select name="category" className="rounded-lg border border-border bg-background px-3 py-2 text-sm">
+              <input
+                name="brand_name"
+                required
+                placeholder="Nume brand"
+                className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              />
+              <input
+                name="contact_email"
+                type="email"
+                required
+                placeholder="Email contact"
+                className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              />
+              <input
+                name="contact_phone"
+                placeholder="Telefon (opțional)"
+                className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              />
+              <input
+                name="website"
+                type="url"
+                placeholder="https://..."
+                className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              />
+              <select
+                name="category"
+                className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+              >
                 <option value="venue">Local / Bar / Club</option>
                 <option value="event">Organizator eveniment</option>
                 <option value="brand">Brand / Marcă</option>
                 <option value="ngo">ONG / Asociație</option>
                 <option value="service">Serviciu</option>
               </select>
-              <button disabled={creating} className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">
+              <button
+                disabled={creating}
+                className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+              >
                 {creating ? "Se creează…" : "Creează profil brand"}
               </button>
             </form>
@@ -190,14 +267,28 @@ function BusinessDashboard() {
                   </div>
                   <p className="text-xs text-muted-foreground">{advertiser.contact_email}</p>
                 </div>
-                <span className="rounded-full bg-muted px-2 py-0.5 text-xs uppercase">{advertiser.category}</span>
+                <span className="rounded-full bg-muted px-2 py-0.5 text-xs uppercase">
+                  {advertiser.category}
+                </span>
               </div>
             </section>
 
             <section className="grid grid-cols-3 gap-2">
-              <Stat icon={<Eye className="h-4 w-4" />} label="Afișări" value={totalImpressions.toLocaleString()} />
-              <Stat icon={<MousePointerClick className="h-4 w-4" />} label="Click-uri" value={`${totalClicks} · ${ctr}%`} />
-              <Stat icon={<CircleDollarSign className="h-4 w-4" />} label="Buget total" value={`€${(totalSpend / 100).toFixed(0)}`} />
+              <Stat
+                icon={<Eye className="h-4 w-4" />}
+                label="Afișări"
+                value={totalImpressions.toLocaleString()}
+              />
+              <Stat
+                icon={<MousePointerClick className="h-4 w-4" />}
+                label="Click-uri"
+                value={`${totalClicks} · ${ctr}%`}
+              />
+              <Stat
+                icon={<CircleDollarSign className="h-4 w-4" />}
+                label="Buget total"
+                value={`€${(totalSpend / 100).toFixed(0)}`}
+              />
             </section>
 
             <section className="rounded-2xl border border-border/60 bg-card">
@@ -206,7 +297,10 @@ function BusinessDashboard() {
                   <BarChart3 className="h-4 w-4 text-primary" />
                   <h3 className="text-sm font-semibold">Campaniile mele</h3>
                 </div>
-                <button onClick={() => setShowForm((v) => !v)} className="flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground">
+                <button
+                  onClick={() => setShowForm((v) => !v)}
+                  className="flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
+                >
                   <Plus className="h-3.5 w-3.5" /> {showForm ? "Anulează" : "Campanie nouă"}
                 </button>
               </div>
@@ -219,35 +313,83 @@ function BusinessDashboard() {
                     createCampaign(new FormData(e.currentTarget));
                   }}
                 >
-                  <select name="placement" className="rounded-lg border border-border bg-background px-3 py-2 text-sm">
+                  <select
+                    name="placement"
+                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  >
                     {(Object.keys(PLACEMENT_LABELS) as AdPlacement[]).map((p) => (
                       <option key={p} value={p}>
-                        {PLACEMENT_LABELS[p]} — €{PRICING[p].perDayEur}/zi (min {PRICING[p].minDays} zile)
+                        {PLACEMENT_LABELS[p]} — €{PRICING[p].perDayEur}/zi (min {PRICING[p].minDays}{" "}
+                        zile)
                       </option>
                     ))}
                   </select>
-                  <input name="title" required maxLength={60} placeholder="Titlu (max 60)" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" />
-                  <textarea name="body" maxLength={140} rows={2} placeholder="Descriere scurtă (max 140)" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" />
-                  <input name="image_url" type="url" placeholder="URL imagine (opțional)" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+                  <input
+                    name="title"
+                    required
+                    maxLength={60}
+                    placeholder="Titlu (max 60)"
+                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  />
+                  <textarea
+                    name="body"
+                    maxLength={140}
+                    rows={2}
+                    placeholder="Descriere scurtă (max 140)"
+                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  />
+                  <input
+                    name="image_url"
+                    type="url"
+                    placeholder="URL imagine (opțional)"
+                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  />
                   <div className="grid grid-cols-2 gap-2">
-                    <input name="cta_label" placeholder="CTA (ex: Vezi oferta)" defaultValue="Află mai mult" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" />
-                    <input name="cta_url" type="url" placeholder="URL CTA" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+                    <input
+                      name="cta_label"
+                      placeholder="CTA (ex: Vezi oferta)"
+                      defaultValue="Află mai mult"
+                      className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                    />
+                    <input
+                      name="cta_url"
+                      type="url"
+                      placeholder="URL CTA"
+                      className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                    />
                   </div>
-                  <input name="city" placeholder="Oraș țintă (gol = toate)" className="rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+                  <input
+                    name="city"
+                    placeholder="Oraș țintă (gol = toate)"
+                    className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                  />
                   <div className="grid grid-cols-2 gap-2">
                     <label className="text-xs text-muted-foreground">
                       Start
-                      <input name="starts_at" type="datetime-local" required className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+                      <input
+                        name="starts_at"
+                        type="datetime-local"
+                        required
+                        className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      />
                     </label>
                     <label className="text-xs text-muted-foreground">
                       Sfârșit
-                      <input name="ends_at" type="datetime-local" required className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+                      <input
+                        name="ends_at"
+                        type="datetime-local"
+                        required
+                        className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                      />
                     </label>
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Bugetul se calculează automat după placement × zile. Plată la facturare lunară.
                   </p>
-                  <button disabled={creating} className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50">
+                  <button
+                    disabled={creating}
+                    className="rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-50"
+                  >
                     {creating ? "Se trimite…" : "Trimite spre aprobare"}
                   </button>
                 </form>
@@ -260,7 +402,11 @@ function BusinessDashboard() {
                   </li>
                 )}
                 {campaigns.map((c) => {
-                  const cAny = c as unknown as { impressions?: number; clicks?: number; budget_cents?: number };
+                  const cAny = c as unknown as {
+                    impressions?: number;
+                    clicks?: number;
+                    budget_cents?: number;
+                  };
                   return (
                     <li key={c.id} className="flex flex-col gap-1 px-4 py-3">
                       <div className="flex items-center justify-between gap-2">
@@ -270,14 +416,29 @@ function BusinessDashboard() {
                       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                         <span>{PLACEMENT_LABELS[c.placement]}</span>
                         {c.city && <span>· {c.city}</span>}
-                        <span>· {new Date(c.starts_at).toLocaleDateString()} → {new Date(c.ends_at).toLocaleDateString()}</span>
+                        <span>
+                          · {new Date(c.starts_at).toLocaleDateString()} →{" "}
+                          {new Date(c.ends_at).toLocaleDateString()}
+                        </span>
                       </div>
                       <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1"><Eye className="h-3 w-3" /> {cAny.impressions ?? 0}</span>
-                        <span className="flex items-center gap-1"><MousePointerClick className="h-3 w-3" /> {cAny.clicks ?? 0}</span>
-                        <span className="flex items-center gap-1"><CircleDollarSign className="h-3 w-3" /> €{((cAny.budget_cents ?? 0) / 100).toFixed(0)}</span>
+                        <span className="flex items-center gap-1">
+                          <Eye className="h-3 w-3" /> {cAny.impressions ?? 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <MousePointerClick className="h-3 w-3" /> {cAny.clicks ?? 0}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <CircleDollarSign className="h-3 w-3" /> €
+                          {((cAny.budget_cents ?? 0) / 100).toFixed(0)}
+                        </span>
                         {c.cta_url && (
-                          <a href={c.cta_url} target="_blank" rel="noreferrer" className="ml-auto flex items-center gap-1 text-primary">
+                          <a
+                            href={c.cta_url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="ml-auto flex items-center gap-1 text-primary"
+                          >
                             CTA <ExternalLink className="h-3 w-3" />
                           </a>
                         )}
@@ -289,7 +450,8 @@ function BusinessDashboard() {
             </section>
 
             <p className="px-1 text-xs text-muted-foreground">
-              Toate campaniile sunt revizuite manual de echipa Ventuza pentru conformitate cu Charter-ul LGBTQ+ și DSA.
+              Toate campaniile sunt revizuite manual de echipa Ventuza pentru conformitate cu
+              Charter-ul LGBTQ+ și DSA.
             </p>
           </>
         )}
@@ -301,7 +463,10 @@ function BusinessDashboard() {
 function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="rounded-xl border border-border/60 bg-card p-3">
-      <div className="flex items-center gap-1 text-xs text-muted-foreground">{icon}{label}</div>
+      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+        {icon}
+        {label}
+      </div>
       <div className="mt-1 text-base font-semibold">{value}</div>
     </div>
   );
@@ -315,5 +480,11 @@ function StatusBadge({ status }: { status: string }) {
     rejected: "bg-destructive/15 text-destructive",
     ended: "bg-muted text-muted-foreground",
   };
-  return <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${map[status] ?? "bg-muted text-muted-foreground"}`}>{status}</span>;
+  return (
+    <span
+      className={`rounded-full px-2 py-0.5 text-xs font-medium ${map[status] ?? "bg-muted text-muted-foreground"}`}
+    >
+      {status}
+    </span>
+  );
 }

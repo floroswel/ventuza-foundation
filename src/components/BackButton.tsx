@@ -19,9 +19,7 @@ export function BackButton({ fallback = "/discover", label = "Înapoi", classNam
 
   const onClick = () => {
     const canGoBack =
-      typeof window !== "undefined" &&
-      window.history.length > 1 &&
-      document.referrer !== "";
+      typeof window !== "undefined" && window.history.length > 1 && document.referrer !== "";
     if (canGoBack) {
       router.history.back();
     } else {

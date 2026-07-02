@@ -36,11 +36,14 @@ function canvasSignal(): string {
 function webglSignal(): string {
   try {
     const canvas = document.createElement("canvas");
-    const gl = (canvas.getContext("webgl") || canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
+    const gl = (canvas.getContext("webgl") ||
+      canvas.getContext("experimental-webgl")) as WebGLRenderingContext | null;
     if (!gl) return "no-webgl";
     const dbg = gl.getExtension("WEBGL_debug_renderer_info");
     const vendor = dbg ? gl.getParameter(dbg.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
-    const renderer = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+    const renderer = dbg
+      ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL)
+      : gl.getParameter(gl.RENDERER);
     return `${vendor}|${renderer}`;
   } catch {
     return "no-webgl";

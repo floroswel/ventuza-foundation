@@ -10,10 +10,15 @@ import type { Database } from "@/integrations/supabase/types";
  * Vezi AGENTS.md "REGULĂ — CONSIMȚĂMINTE (permanentă)" și src/lib/consent-registry.ts.
  */
 async function requireAiConsent(supabase: SupabaseClient<Database>, userId: string) {
-  const { data, error } = await supabase.rpc("has_active_consent", { _user_id: userId, _kind: "ai_features" });
+  const { data, error } = await supabase.rpc("has_active_consent", {
+    _user_id: userId,
+    _kind: "ai_features",
+  });
   if (error) throw new Error("Nu am putut verifica consimțământul AI.");
   if (data !== true) {
-    throw new Error("ai_consent_required: activează „Funcții AI” din Setări → Confidențialitate pentru a folosi această funcție.");
+    throw new Error(
+      "ai_consent_required: activează „Funcții AI” din Setări → Confidențialitate pentru a folosi această funcție.",
+    );
   }
 }
 
@@ -30,15 +35,19 @@ async function evalAiPolicy(
   input: Record<string, unknown>,
 ) {
   try {
-    await supabase.rpc("policy_evaluate" as never, {
-      _category: "ai_gateway",
-      _subject_kind: "user",
-      _subject_id: userId,
-      _input: { op, ...input } as never,
-    } as never);
-  } catch { /* nu blocăm AI-ul dacă evaluatorul eșuează */ }
+    await supabase.rpc(
+      "policy_evaluate" as never,
+      {
+        _category: "ai_gateway",
+        _subject_kind: "user",
+        _subject_id: userId,
+        _input: { op, ...input } as never,
+      } as never,
+    );
+  } catch {
+    /* nu blocăm AI-ul dacă evaluatorul eșuează */
+  }
 }
-
 
 // ---------- Bio writer ----------
 const BioInput = z.object({
@@ -69,7 +78,9 @@ export const generateBio = createServerFn({ method: "POST" })
       data.tribes?.length && `Triburi: ${data.tribes.join(", ")}`,
       data.lookingFor?.length && `Caută: ${data.lookingFor.join(", ")}`,
       `Vibe: ${data.vibe}`,
-    ].filter(Boolean).join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
     const text = await aiComplete({
       messages: [
         { role: "system", content: sys },
@@ -80,7 +91,6 @@ export const generateBio = createServerFn({ method: "POST" })
     });
     return { bio: text };
   });
-
 
 // ---------- Wingman / opener ----------
 const OpenerInput = z.object({
@@ -108,7 +118,9 @@ export const generateOpener = createServerFn({ method: "POST" })
       data.theirBio && `Bio: ${data.theirBio}`,
       data.theirInterests?.length && `Interese: ${data.theirInterests.join(", ")}`,
       `Stil: ${data.style}`,
-    ].filter(Boolean).join("\n");
+    ]
+      .filter(Boolean)
+      .join("\n");
     const text = await aiComplete({
       messages: [
         { role: "system", content: sys },
@@ -142,7 +154,10 @@ export const translateText = createServerFn({ method: "POST" })
     });
     const text = await aiComplete({
       messages: [
-        { role: "system", content: `Traduci mesaje de chat în ${data.targetLang}. Răspunzi DOAR cu traducerea, păstrând tonul.` },
+        {
+          role: "system",
+          content: `Traduci mesaje de chat în ${data.targetLang}. Răspunzi DOAR cu traducerea, păstrând tonul.`,
+        },
         { role: "user", content: data.text },
       ],
       temperature: 0.3,
@@ -166,7 +181,9 @@ export const photoCoach = createServerFn({ method: "POST" })
     });
     const sys =
       "Ești un photo coach pentru o app gay de dating. Analizezi pozele și dai feedback concret, prietenos, în română. Pentru fiecare poză: 1 punct forte + 1 sugestie. La final: o recomandare globală (ce poză ar fi cea principală, ce să adauge/scoată). Ton: încurajator, direct, fără clișee. Max 600 caractere total. Fără markdown.";
-    const content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
+    const content: Array<
+      { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
+    > = [
       { type: "text", text: `Analizează cele ${data.photoUrls.length} poze de profil:` },
       ...data.photoUrls.map((url) => ({ type: "image_url" as const, image_url: { url } })),
     ];
@@ -212,7 +229,9 @@ export const matchScore = createServerFn({ method: "POST" })
         p.interests?.length && `Interese: ${p.interests.join(", ")}`,
         p.tribes?.length && `Triburi: ${p.tribes.join(", ")}`,
         p.lookingFor?.length && `Caută: ${p.lookingFor.join(", ")}`,
-      ].filter(Boolean).join("\n");
+      ]
+        .filter(Boolean)
+        .join("\n");
     const text = await aiComplete({
       messages: [
         { role: "system", content: sys },

@@ -21,14 +21,17 @@ import { getRequestIP, getRequestHeader } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type AppRole =
-  | "super_admin" | "admin" | "auditor" | "moderator" | "support" | "read_only";
+type AppRole = "super_admin" | "admin" | "auditor" | "moderator" | "support" | "read_only";
 
 async function reqMeta() {
   let ip: string | null = null;
   let ua: string | null = null;
-  try { ip = getRequestIP({ xForwardedFor: true }) ?? null; } catch {}
-  try { ua = getRequestHeader("user-agent") ?? null; } catch {}
+  try {
+    ip = getRequestIP({ xForwardedFor: true }) ?? null;
+  } catch {}
+  try {
+    ua = getRequestHeader("user-agent") ?? null;
+  } catch {}
   return { ip, ua };
 }
 
@@ -39,20 +42,28 @@ async function assertRole(supabase: any, userId: string, roles: AppRole[]) {
 }
 
 async function logAudit(opts: {
-  actorId: string; action: string;
-  targetTable?: string | null; targetId?: string | null;
-  before?: any; after?: any; justification?: string | null;
+  actorId: string;
+  action: string;
+  targetTable?: string | null;
+  targetId?: string | null;
+  before?: any;
+  after?: any;
+  justification?: string | null;
   severity?: "info" | "warning" | "critical";
 }) {
   const meta = await reqMeta();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await (supabaseAdmin as any).from("admin_audit_log").insert({
-    actor_id: opts.actorId, action: opts.action,
-    target_table: opts.targetTable ?? null, target_id: opts.targetId ?? null,
-    before_data: opts.before ?? null, after_data: opts.after ?? null,
+    actor_id: opts.actorId,
+    action: opts.action,
+    target_table: opts.targetTable ?? null,
+    target_id: opts.targetId ?? null,
+    before_data: opts.before ?? null,
+    after_data: opts.after ?? null,
     justification: opts.justification ?? null,
     severity: opts.severity ?? "info",
-    ip: meta.ip, user_agent: meta.ua,
+    ip: meta.ip,
+    user_agent: meta.ua,
   });
 }
 
@@ -70,8 +81,7 @@ export const adminRedactMessage = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => RedactInput.parse(d))
   .handler(async ({ data, context }) => {
-    await assertRole(context.supabase, context.userId,
-      ["super_admin", "admin", "moderator"]);
+    await assertRole(context.supabase, context.userId, ["super_admin", "admin", "moderator"]);
     const { assertAdminMfa } = await import("./admin-mfa-guard");
     await assertAdminMfa(context.userId);
 
@@ -80,9 +90,13 @@ export const adminRedactMessage = createServerFn({ method: "POST" })
 
     // Snapshot complet (PII inclus) — rămâne DOAR în admin_audit_log.before_data,
     // vizibil exclusiv pentru auditor/super_admin. Conform regulii Break-Glass.
-    const { data: before, error: e0 } = await sa.from("messages")
-      .select("id, conversation_id, sender_id, body, media_url, media_type, voice_url, voice_duration_sec, created_at, deleted_at")
-      .eq("id", data.messageId).maybeSingle();
+    const { data: before, error: e0 } = await sa
+      .from("messages")
+      .select(
+        "id, conversation_id, sender_id, body, media_url, media_type, voice_url, voice_duration_sec, created_at, deleted_at",
+      )
+      .eq("id", data.messageId)
+      .maybeSingle();
     if (e0) throw new Error(e0.message);
     if (!before) throw new Error("Mesaj inexistent");
     if (before.deleted_at) throw new Error("Mesajul e deja redactat/șters");
@@ -99,10 +113,14 @@ export const adminRedactMessage = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     await logAudit({
-      actorId: context.userId, action: "message.redact",
-      targetTable: "messages", targetId: data.messageId,
-      before, after: patch,
-      justification: data.justification, severity: "critical",
+      actorId: context.userId,
+      action: "message.redact",
+      targetTable: "messages",
+      targetId: data.messageId,
+      before,
+      after: patch,
+      justification: data.justification,
+      severity: "critical",
     });
     return { ok: true as const };
   });
@@ -115,22 +133,26 @@ export const adminRedactMessage = createServerFn({ method: "POST" })
  * Staff edit NU re-trigger-uiește moderarea (e o corecție de încredere).
  * Rol: admin+; MFA cerut.
  * ============================================================ */
-const PartnerVenueChanges = z.object({
-  name: z.string().trim().min(1).max(120).optional(),
-  description: z.string().trim().max(2000).optional(),
-  address: z.string().trim().max(255).optional(),
-  phone_e164: z.string().trim().max(20).optional(),
-  website: z.string().trim().max(500).optional(),
-  opening_hours: z.string().trim().max(500).optional(),
-}).refine((c) => Object.keys(c).length > 0, { message: "Niciun câmp" });
+const PartnerVenueChanges = z
+  .object({
+    name: z.string().trim().min(1).max(120).optional(),
+    description: z.string().trim().max(2000).optional(),
+    address: z.string().trim().max(255).optional(),
+    phone_e164: z.string().trim().max(20).optional(),
+    website: z.string().trim().max(500).optional(),
+    opening_hours: z.string().trim().max(500).optional(),
+  })
+  .refine((c) => Object.keys(c).length > 0, { message: "Niciun câmp" });
 
-const PartnerEventChanges = z.object({
-  title: z.string().trim().min(1).max(120).optional(),
-  description: z.string().trim().max(2000).optional(),
-  venue: z.string().trim().max(120).optional(),
-  starts_at: z.string().datetime().optional(),
-  ends_at: z.string().datetime().optional(),
-}).refine((c) => Object.keys(c).length > 0, { message: "Niciun câmp" });
+const PartnerEventChanges = z
+  .object({
+    title: z.string().trim().min(1).max(120).optional(),
+    description: z.string().trim().max(2000).optional(),
+    venue: z.string().trim().max(120).optional(),
+    starts_at: z.string().datetime().optional(),
+    ends_at: z.string().datetime().optional(),
+  })
+  .refine((c) => Object.keys(c).length > 0, { message: "Niciun câmp" });
 
 const PartnerItemInput = z.discriminatedUnion("kind", [
   z.object({
@@ -160,8 +182,11 @@ export const adminUpdatePartnerItem = createServerFn({ method: "POST" })
     const table = data.kind === "venue" ? "venues" : "events";
     const cols = Object.keys(data.changes).join(",") + ",owner_id,host_id";
 
-    const { data: before, error: e0 } = await sa.from(table)
-      .select(cols).eq("id", data.itemId).maybeSingle();
+    const { data: before, error: e0 } = await sa
+      .from(table)
+      .select(cols)
+      .eq("id", data.itemId)
+      .maybeSingle();
     if (e0) throw new Error(e0.message);
     if (!before) throw new Error("Item inexistent");
 
@@ -169,10 +194,14 @@ export const adminUpdatePartnerItem = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     await logAudit({
-      actorId: context.userId, action: `partner.${data.kind}.update`,
-      targetTable: table, targetId: data.itemId,
-      before, after: data.changes,
-      justification: data.justification, severity: "warning",
+      actorId: context.userId,
+      action: `partner.${data.kind}.update`,
+      targetTable: table,
+      targetId: data.itemId,
+      before,
+      after: data.changes,
+      justification: data.justification,
+      severity: "warning",
     });
     return { ok: true as const };
   });
@@ -205,8 +234,11 @@ export const adminVoidInvoice = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
 
-    const { data: orig, error: e0 } = await sa.from("partner_invoices")
-      .select("*").eq("id", data.invoiceId).maybeSingle();
+    const { data: orig, error: e0 } = await sa
+      .from("partner_invoices")
+      .select("*")
+      .eq("id", data.invoiceId)
+      .maybeSingle();
     if (e0) throw new Error(e0.message);
     if (!orig) throw new Error("Factură inexistentă");
     if (orig.status === "voided") throw new Error("Factura e deja anulată");
@@ -218,7 +250,8 @@ export const adminVoidInvoice = createServerFn({ method: "POST" })
     // Alocă număr nou pentru storno în aceeași serie/an.
     const year = new Date().getFullYear();
     const { data: nextNum, error: nErr } = await sa.rpc("next_invoice_number", {
-      _series: orig.series, _year: year,
+      _series: orig.series,
+      _year: year,
     });
     if (nErr) throw new Error(`next_invoice_number: ${nErr.message}`);
 
@@ -253,22 +286,32 @@ export const adminVoidInvoice = createServerFn({ method: "POST" })
       is_seed: orig.is_seed ?? false,
     };
 
-    const { data: storno, error: sErr } = await sa.from("partner_invoices")
-      .insert(stornoRow).select("id, series, year, number").maybeSingle();
+    const { data: storno, error: sErr } = await sa
+      .from("partner_invoices")
+      .insert(stornoRow)
+      .select("id, series, year, number")
+      .maybeSingle();
     if (sErr) throw new Error(`Storno: ${sErr.message}`);
 
     // Marchează originalul ca anulat.
-    const { error: uErr } = await sa.from("partner_invoices")
-      .update({ status: "voided", notes: (orig.notes ?? "") + `\n[VOID @ ${nowIso}] ${data.justification}` })
+    const { error: uErr } = await sa
+      .from("partner_invoices")
+      .update({
+        status: "voided",
+        notes: (orig.notes ?? "") + `\n[VOID @ ${nowIso}] ${data.justification}`,
+      })
       .eq("id", orig.id);
     if (uErr) throw new Error(`Mark voided: ${uErr.message}`);
 
     await logAudit({
-      actorId: context.userId, action: "invoice.void",
-      targetTable: "partner_invoices", targetId: orig.id,
+      actorId: context.userId,
+      action: "invoice.void",
+      targetTable: "partner_invoices",
+      targetId: orig.id,
       before: { status: orig.status, total_minor: orig.total_minor },
       after: { status: "voided", storno_id: storno?.id, storno_number: storno?.number },
-      justification: data.justification, severity: "critical",
+      justification: data.justification,
+      severity: "critical",
     });
     return { ok: true as const, storno };
   });

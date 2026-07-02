@@ -16,10 +16,7 @@ function countAll(items: Items, predicate: (s: string | null | undefined) => boo
 export function StatusTiles({ items }: { items: Items }) {
   const live = countAll(items, (s) => s === "approved");
   const pending = countAll(items, (s) => s === "pending");
-  const attention = countAll(
-    items,
-    (s) => s === "rejected" || s === "changes_requested",
-  );
+  const attention = countAll(items, (s) => s === "rejected" || s === "changes_requested");
 
   const tiles = [
     {
@@ -41,10 +38,7 @@ export function StatusTiles({ items }: { items: Items }) {
       value: attention,
       icon: AlertTriangle,
       cls: attention > 0 ? "text-red-600" : "text-muted-foreground",
-      ring:
-        attention > 0
-          ? "border-red-500/40 bg-red-500/10"
-          : "border-border bg-muted/30",
+      ring: attention > 0 ? "border-red-500/40 bg-red-500/10" : "border-border bg-muted/30",
     },
   ];
 

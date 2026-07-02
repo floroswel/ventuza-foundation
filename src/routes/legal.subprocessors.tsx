@@ -7,7 +7,9 @@ export const Route = createFileRoute("/legal/subprocessors")({
       { title: "Subprocesatori — Ventuza" },
       { name: "description", content: "Lista terților care procesează date în numele Ventuza." },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza-foundation.lovable.app/legal/subprocessors" }],
+    links: [
+      { rel: "canonical", href: "https://ventuza-foundation.lovable.app/legal/subprocessors" },
+    ],
   }),
   component: SubsPage,
 });
@@ -126,7 +128,8 @@ const ROWS: Row[] = [
   },
   {
     name: "OpenStreetMap Foundation",
-    purpose: "Tile-uri raster pentru harta din feature-ul „Aproape de tine” (descoperire localuri/evenimente/oferte).",
+    purpose:
+      "Tile-uri raster pentru harta din feature-ul „Aproape de tine” (descoperire localuri/evenimente/oferte).",
     data: "IP-ul dispozitivului și bounding box-ul tile-urilor cerute. Fără PII, fără cont, fără date Art. 9. NU primește coordonatele exacte ale userului — harta cere doar tile-uri pe zona vizualizată.",
     sensitive: false,
     region: "UK (UE adequacy)",
@@ -141,7 +144,10 @@ function SubsPage() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur">
-        <Link to="/settings" className="flex size-9 items-center justify-center rounded-full border border-border">
+        <Link
+          to="/settings"
+          className="flex size-9 items-center justify-center rounded-full border border-border"
+        >
           <ChevronLeft className="size-4" />
         </Link>
         <h1 className="text-base font-semibold">Subprocesatori</h1>
@@ -149,18 +155,17 @@ function SubsPage() {
       <article className="mx-auto max-w-3xl px-4 py-6 text-sm leading-relaxed">
         <p className="text-xs text-muted-foreground">Ultima actualizare: 26 iunie 2026</p>
         <p className="mt-4">
-          Conform GDPR Art. 28, mai jos sunt toți împuterniciții reali către care
-          aplicația trimite date personale. Lista reflectă codul efectiv (fișierul
-          sursă e indicat la fiecare rând). Toți au DPA semnat / sunt acoperiți de
-          un DPA platformă; pentru transferurile în afara SEE folosim Clauzele
-          Contractuale Standard ale Comisiei Europene (Decizia 2021/914) și, unde
+          Conform GDPR Art. 28, mai jos sunt toți împuterniciții reali către care aplicația trimite
+          date personale. Lista reflectă codul efectiv (fișierul sursă e indicat la fiecare rând).
+          Toți au DPA semnat / sunt acoperiți de un DPA platformă; pentru transferurile în afara SEE
+          folosim Clauzele Contractuale Standard ale Comisiei Europene (Decizia 2021/914) și, unde
           există, EU-US Data Privacy Framework.
         </p>
 
         <p className="mt-3 text-xs text-muted-foreground">
-          Bază de date principală găzduită în UE (Frankfurt). Coordonatele precise
-          de locație nu părăsesc niciodată baza noastră — către alți useri sau
-          procesatori se trimite doar distanță bucketizată.
+          Bază de date principală găzduită în UE (Frankfurt). Coordonatele precise de locație nu
+          părăsesc niciodată baza noastră — către alți useri sau procesatori se trimite doar
+          distanță bucketizată.
         </p>
 
         <div className="mt-6 overflow-x-auto rounded-xl border border-border">
@@ -180,7 +185,9 @@ function SubsPage() {
                 <tr key={r.name} className="border-t border-border align-top">
                   <td className="px-3 py-2 font-medium">
                     {r.name}
-                    <div className="mt-1 font-mono text-[10px] text-muted-foreground">{r.codeRef}</div>
+                    <div className="mt-1 font-mono text-[10px] text-muted-foreground">
+                      {r.codeRef}
+                    </div>
                   </td>
                   <td className="px-3 py-2">{r.purpose}</td>
                   <td className="px-3 py-2">
@@ -205,7 +212,12 @@ function SubsPage() {
                   </td>
                   <td className="px-3 py-2 text-[11px]">{r.transfer}</td>
                   <td className="px-3 py-2">
-                    <a className="text-primary underline" href={r.dpa} target="_blank" rel="noopener noreferrer">
+                    <a
+                      className="text-primary underline"
+                      href={r.dpa}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
                       Document
                     </a>
                   </td>
@@ -217,16 +229,34 @@ function SubsPage() {
 
         <h2 className="mt-8 text-base font-semibold">Minimizarea datelor</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
-          <li><strong>Didit</strong> primește doar selfie + ID intern pentru age check — niciodată orientare, date de sănătate sau locație.</li>
-          <li><strong>RevenueCat</strong> și <strong>Google Play Billing</strong> primesc doar identificatorul abonamentului + UUID intern — fără email, fără PII demografic.</li>
-          <li><strong>Push services</strong> (FCM/APNs/Mozilla) primesc endpoint + un payload scurt fără date sensibile (ex. „Ai un mesaj nou”).</li>
-          <li><strong>AI Gateway</strong> primește doar textul trimis explicit la moderare/generare — nu profilul integral.</li>
-          <li><strong>Coordonatele GPS</strong> nu părăsesc niciodată baza de date; ce iese e bucket de distanță.</li>
+          <li>
+            <strong>Didit</strong> primește doar selfie + ID intern pentru age check — niciodată
+            orientare, date de sănătate sau locație.
+          </li>
+          <li>
+            <strong>RevenueCat</strong> și <strong>Google Play Billing</strong> primesc doar
+            identificatorul abonamentului + UUID intern — fără email, fără PII demografic.
+          </li>
+          <li>
+            <strong>Push services</strong> (FCM/APNs/Mozilla) primesc endpoint + un payload scurt
+            fără date sensibile (ex. „Ai un mesaj nou”).
+          </li>
+          <li>
+            <strong>AI Gateway</strong> primește doar textul trimis explicit la moderare/generare —
+            nu profilul integral.
+          </li>
+          <li>
+            <strong>Coordonatele GPS</strong> nu părăsesc niciodată baza de date; ce iese e bucket
+            de distanță.
+          </li>
         </ul>
 
         <p className="mt-6 text-xs text-muted-foreground">
           Modificările listei sunt anunțate cu minim 30 de zile înainte. Poți obiecta la{" "}
-          <a className="text-primary" href="mailto:dpo@ventuza.app">dpo@ventuza.app</a>.
+          <a className="text-primary" href="mailto:dpo@ventuza.app">
+            dpo@ventuza.app
+          </a>
+          .
         </p>
       </article>
     </div>

@@ -69,12 +69,11 @@ export const Route = createFileRoute("/api/public/signup-guard")({
 
         if (error) {
           const msg = error.message ?? "";
-          const throttled =
-            msg.includes("signup_throttled_ip")
-              ? "signup_throttled_ip"
-              : msg.includes("signup_throttled_fingerprint") || msg.includes("signup_throttled")
-                ? "signup_throttled_fingerprint"
-                : null;
+          const throttled = msg.includes("signup_throttled_ip")
+            ? "signup_throttled_ip"
+            : msg.includes("signup_throttled_fingerprint") || msg.includes("signup_throttled")
+              ? "signup_throttled_fingerprint"
+              : null;
           if (throttled) {
             // Hourly cap window — conservative upper bound until cap resets.
             const retryAfterSec = msg.includes("daily") ? 86400 : 3600;

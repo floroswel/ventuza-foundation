@@ -43,7 +43,10 @@ export function PinLockGate() {
 
   return (
     <div className="fixed inset-0 z-[200] grid place-items-center bg-background/95 backdrop-blur">
-      <form onSubmit={submit} className="w-full max-w-xs rounded-3xl border border-border bg-surface p-6 text-center">
+      <form
+        onSubmit={submit}
+        className="w-full max-w-xs rounded-3xl border border-border bg-surface p-6 text-center"
+      >
         <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary">
           <Lock className="size-5" />
         </div>

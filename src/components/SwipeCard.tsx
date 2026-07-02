@@ -25,8 +25,12 @@ export function SwipeCard({ profile, onDecision, stackIndex }: Props) {
     let cancelled = false;
     const path = profile.photos?.[0];
     if (!path) return;
-    signPhotos([path]).then((m) => { if (!cancelled) setPhotoUrl(m[path] ?? null); });
-    return () => { cancelled = true; };
+    signPhotos([path]).then((m) => {
+      if (!cancelled) setPhotoUrl(m[path] ?? null);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [profile.id, profile.photos]);
 
   function handleEnd(_e: any, info: PanInfo) {
@@ -37,7 +41,8 @@ export function SwipeCard({ profile, onDecision, stackIndex }: Props) {
     } else if (info.offset.x < -SWIPE_THRESHOLD) {
       onDecision("pass");
     } else {
-      x.set(0); y.set(0);
+      x.set(0);
+      y.set(0);
     }
   }
 
@@ -52,27 +57,49 @@ export function SwipeCard({ profile, onDecision, stackIndex }: Props) {
       dragElastic={0.9}
       onDragEnd={handleEnd}
       style={{ x, y, rotate, zIndex: 10 - stackIndex }}
-      initial={{ scale: 1 - stackIndex * 0.04, y: stackIndex * 12, opacity: stackIndex > 2 ? 0 : 1 }}
-      animate={{ scale: 1 - stackIndex * 0.04, y: stackIndex * 12, opacity: stackIndex > 2 ? 0 : 1 }}
+      initial={{
+        scale: 1 - stackIndex * 0.04,
+        y: stackIndex * 12,
+        opacity: stackIndex > 2 ? 0 : 1,
+      }}
+      animate={{
+        scale: 1 - stackIndex * 0.04,
+        y: stackIndex * 12,
+        opacity: stackIndex > 2 ? 0 : 1,
+      }}
       transition={{ type: "spring", stiffness: 260, damping: 28 }}
       className="absolute inset-0 cursor-grab overflow-hidden rounded-3xl border border-border bg-surface shadow-[0_20px_60px_-20px_rgba(0,0,0,0.7)] active:cursor-grabbing"
     >
       {/* photo */}
       <div className="relative size-full">
         {photoUrl ? (
-          <img src={photoUrl} alt={profile.display_name ?? ""} className="size-full object-cover" draggable={false} />
+          <img
+            src={photoUrl}
+            alt={profile.display_name ?? ""}
+            className="size-full object-cover"
+            draggable={false}
+          />
         ) : (
-          <div className="flex size-full items-center justify-center text-muted-foreground">No photo</div>
+          <div className="flex size-full items-center justify-center text-muted-foreground">
+            No photo
+          </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent" />
 
         {isTop && (
-          <div className="absolute right-3 top-3 z-10" onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+          <div
+            className="absolute right-3 top-3 z-10"
+            onClick={(e) => e.stopPropagation()}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
             <ReportBlockDialog
               targetUserId={profile.id}
               targetName={profile.display_name ?? undefined}
               trigger={
-                <button className="rounded-full bg-background/70 p-2 text-foreground/70 backdrop-blur hover:text-destructive" aria-label="Raportează">
+                <button
+                  className="rounded-full bg-background/70 p-2 text-foreground/70 backdrop-blur hover:text-destructive"
+                  aria-label="Raportează"
+                >
                   <Flag className="size-4" />
                 </button>
               }
@@ -83,13 +110,22 @@ export function SwipeCard({ profile, onDecision, stackIndex }: Props) {
         {/* like / pass / super overlays */}
         {isTop && (
           <>
-            <motion.div style={{ opacity: likeOpacity }} className="absolute right-6 top-8 rounded-2xl border-2 border-primary px-4 py-2 text-lg font-bold uppercase tracking-widest text-primary glow-gold rotate-12">
+            <motion.div
+              style={{ opacity: likeOpacity }}
+              className="absolute right-6 top-8 rounded-2xl border-2 border-primary px-4 py-2 text-lg font-bold uppercase tracking-widest text-primary glow-gold rotate-12"
+            >
               Like
             </motion.div>
-            <motion.div style={{ opacity: passOpacity }} className="absolute left-6 top-8 rounded-2xl border-2 border-destructive px-4 py-2 text-lg font-bold uppercase tracking-widest text-destructive -rotate-12">
+            <motion.div
+              style={{ opacity: passOpacity }}
+              className="absolute left-6 top-8 rounded-2xl border-2 border-destructive px-4 py-2 text-lg font-bold uppercase tracking-widest text-destructive -rotate-12"
+            >
               Pass
             </motion.div>
-            <motion.div style={{ opacity: superOpacity }} className="absolute left-1/2 top-6 -translate-x-1/2 rounded-2xl border-2 border-primary px-4 py-2 text-lg font-bold uppercase tracking-widest text-primary glow-gold">
+            <motion.div
+              style={{ opacity: superOpacity }}
+              className="absolute left-1/2 top-6 -translate-x-1/2 rounded-2xl border-2 border-primary px-4 py-2 text-lg font-bold uppercase tracking-widest text-primary glow-gold"
+            >
               ★ Super
             </motion.div>
           </>
@@ -109,13 +145,22 @@ export function SwipeCard({ profile, onDecision, stackIndex }: Props) {
           </div>
           {topPrompt ? (
             <div className="mt-4 rounded-2xl border border-border/60 bg-background/70 p-3 backdrop-blur">
-              <p className="text-[10px] uppercase tracking-wider text-primary">{topPrompt.question}</p>
-              <p className="mt-1 font-display text-base leading-snug line-clamp-2">{topPrompt.answer}</p>
+              <p className="text-[10px] uppercase tracking-wider text-primary">
+                {topPrompt.question}
+              </p>
+              <p className="mt-1 font-display text-base leading-snug line-clamp-2">
+                {topPrompt.answer}
+              </p>
             </div>
           ) : profile.interests?.length ? (
             <div className="mt-4 flex flex-wrap gap-1.5">
               {profile.interests.slice(0, 3).map((i) => (
-                <span key={i} className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs text-primary">{i}</span>
+                <span
+                  key={i}
+                  className="rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-xs text-primary"
+                >
+                  {i}
+                </span>
               ))}
             </div>
           ) : null}
@@ -125,7 +170,13 @@ export function SwipeCard({ profile, onDecision, stackIndex }: Props) {
   );
 }
 
-export function SwipeActions({ onAction, disabled }: { onAction: (a: "like" | "pass" | "super") => void; disabled?: boolean }) {
+export function SwipeActions({
+  onAction,
+  disabled,
+}: {
+  onAction: (a: "like" | "pass" | "super") => void;
+  disabled?: boolean;
+}) {
   return (
     <div className="flex items-center justify-center gap-5">
       <button

@@ -40,7 +40,9 @@ export async function uploadStory(file: File, caption?: string): Promise<Story> 
   const isImage = (file.type || "").startsWith("image/");
   if (isImage) {
     try {
-      const { data: signedData } = await supabase.storage.from(STORIES_BUCKET).createSignedUrl(path, 300);
+      const { data: signedData } = await supabase.storage
+        .from(STORIES_BUCKET)
+        .createSignedUrl(path, 300);
       if (signedData?.signedUrl) {
         const mod = await moderatePhoto({ data: { photoUrl: signedData.signedUrl } });
         if (!mod.allowed) {
@@ -68,11 +70,14 @@ export async function uploadStory(file: File, caption?: string): Promise<Story> 
   return data as Story;
 }
 
-
 export async function deleteStory(id: string) {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) throw new Error("not signed in");
-  const { data: story } = await supabase.from("stories").select("media_path").eq("id", id).maybeSingle();
+  const { data: story } = await supabase
+    .from("stories")
+    .select("media_path")
+    .eq("id", id)
+    .maybeSingle();
   if (story?.media_path) await supabase.storage.from(STORIES_BUCKET).remove([story.media_path]);
   const { error } = await supabase.from("stories").delete().eq("id", id);
   if (error) throw error;
@@ -94,7 +99,14 @@ export async function fetchActiveStoryGroups(): Promise<StoryGroup[]> {
   const userIds = Array.from(new Set(stories.map((s) => s.user_id)));
   const [{ data: profs }, { data: seenRows }] = await Promise.all([
     supabase.rpc("get_public_profiles", { _ids: userIds }),
-    supabase.from("story_views").select("story_id").eq("viewer_id", u.user.id).in("story_id", stories.map((s) => s.id)),
+    supabase
+      .from("story_views")
+      .select("story_id")
+      .eq("viewer_id", u.user.id)
+      .in(
+        "story_id",
+        stories.map((s) => s.id),
+      ),
   ]);
   const profMap = new Map<string, { display_name: string | null; photos: string[] | null }>();
   (profs ?? []).forEach((p) =>
@@ -110,7 +122,13 @@ export async function fetchActiveStoryGroups(): Promise<StoryGroup[]> {
     const meta = profMap.get(s.user_id) ?? { display_name: null, photos: null };
     let g = grouped.get(s.user_id);
     if (!g) {
-      g = { user_id: s.user_id, display_name: meta.display_name, photos: meta.photos, stories: [], hasUnseen: false };
+      g = {
+        user_id: s.user_id,
+        display_name: meta.display_name,
+        photos: meta.photos,
+        stories: [],
+        hasUnseen: false,
+      };
       grouped.set(s.user_id, g);
     }
     g.stories.push(s);
@@ -143,5 +161,9 @@ export async function signStoryMedia(paths: string[]): Promise<Record<string, st
 export async function markStorySeen(storyId: string) {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) return;
-  await supabase.from("story_views").insert({ story_id: storyId, viewer_id: u.user.id }).select().maybeSingle();
+  await supabase
+    .from("story_views")
+    .insert({ story_id: storyId, viewer_id: u.user.id })
+    .select()
+    .maybeSingle();
 }

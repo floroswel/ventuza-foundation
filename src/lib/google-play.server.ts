@@ -154,7 +154,10 @@ export async function verifyGooglePlayPurchase(opts: {
   const trySubscription = async () => {
     const url = `${base}/subscriptions/${encodeURIComponent(opts.productId)}/tokens/${encodeURIComponent(opts.purchaseToken)}`;
     const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
-    return { status: r.status, body: (await r.json().catch(() => null)) as SubscriptionResult | null };
+    return {
+      status: r.status,
+      body: (await r.json().catch(() => null)) as SubscriptionResult | null,
+    };
   };
   const tryProduct = async () => {
     const url = `${base}/products/${encodeURIComponent(opts.productId)}/tokens/${encodeURIComponent(opts.purchaseToken)}`;
@@ -167,7 +170,13 @@ export async function verifyGooglePlayPurchase(opts: {
     if (status === 200 && body && body.purchaseState === 0) {
       return { valid: true, isSubscription: false, expiresAt: null, raw: body };
     }
-    return { valid: false, isSubscription: false, expiresAt: null, raw: body, reason: `HTTP ${status}` };
+    return {
+      valid: false,
+      isSubscription: false,
+      expiresAt: null,
+      raw: body,
+      reason: `HTTP ${status}`,
+    };
   }
 
   // Default → încearcă subscription, fallback la product

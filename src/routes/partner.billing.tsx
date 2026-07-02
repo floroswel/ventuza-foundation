@@ -20,15 +20,23 @@ import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Loader2, Copy, Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { StatusNotificationsBell } from "@/components/partner/StatusNotificationsBell";
 
-
 export const Route = createFileRoute("/partner/billing")({
-  head: () => ({ meta: [{ title: "Facturare — Ventuza Partners" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [{ title: "Facturare — Ventuza Partners" }, { name: "robots", content: "noindex" }],
+  }),
   component: PartnerBilling,
 });
 
@@ -55,19 +63,31 @@ function PartnerBilling() {
   const [copied, setCopied] = useState(false);
 
   const load = useCallback(async () => {
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
     try {
       const [p, s, i] = await Promise.all([getPlans({}), getSub({}), getInvoices({})]);
-      setPlans(p.plans); setSettings(p.settings);
-      setSub(s.subscription); setEnt(s.entitlements);
+      setPlans(p.plans);
+      setSettings(p.settings);
+      setSub(s.subscription);
+      setEnt(s.entitlements);
       setInvoices(i.invoices);
-      const { data: ba } = await supabase.from("business_applications")
-        .select("brand_name,legal_name,cui,iban,billing_email,is_vat_payer,billing_completed_at,status")
-        .eq("user_id", user!.id).eq("status", "approved")
-        .order("updated_at", { ascending: false }).limit(1).maybeSingle();
+      const { data: ba } = await supabase
+        .from("business_applications")
+        .select(
+          "brand_name,legal_name,cui,iban,billing_email,is_vat_payer,billing_completed_at,status",
+        )
+        .eq("user_id", user!.id)
+        .eq("status", "approved")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
       setBizApp(ba);
-    } catch (e: any) { setError(e.message); }
-    finally { setLoading(false); }
+    } catch (e: any) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
   }, [getPlans, getSub, getInvoices, user]);
   useEffect(() => {
     if (user) load();
@@ -77,7 +97,9 @@ function PartnerBilling() {
 
   // Polling 30s pe facturi cât există plăți pending — toast la activare.
   useEffect(() => {
-    const hasPending = invoices.some((i) => i.status === "pending_payment" || i.status === "overdue");
+    const hasPending = invoices.some(
+      (i) => i.status === "pending_payment" || i.status === "overdue",
+    );
     if (!hasPending || !user) return;
     const id = setInterval(async () => {
       try {
@@ -86,16 +108,23 @@ function PartnerBilling() {
         for (const inv of fresh.invoices) {
           const before = prev.get(inv.id);
           if (before && before !== "paid" && inv.status === "paid") {
-            toast.success(`Factura ${inv.payment_code} a fost confirmată. Abonamentul tău e activ.`);
+            toast.success(
+              `Factura ${inv.payment_code} a fost confirmată. Abonamentul tău e activ.`,
+            );
           }
         }
         setInvoices(fresh.invoices);
         // Reîncarcă și subscription dacă s-a activat ceva.
-        if (fresh.invoices.some((i: any) => i.status === "paid" && (prev.get(i.id) ?? "") !== "paid")) {
+        if (
+          fresh.invoices.some((i: any) => i.status === "paid" && (prev.get(i.id) ?? "") !== "paid")
+        ) {
           const s = await getSub({});
-          setSub(s.subscription); setEnt(s.entitlements);
+          setSub(s.subscription);
+          setEnt(s.entitlements);
         }
-      } catch { /* silently retry */ }
+      } catch {
+        /* silently retry */
+      }
     }, 30000);
     return () => clearInterval(id);
   }, [invoices, user, getInvoices, getSub]);
@@ -106,23 +135,40 @@ function PartnerBilling() {
       toast.success("Factură proformă generată. Vezi instrucțiunile OP.");
       setOpInvoice(r.invoice);
       load();
-    } catch (e: any) { toast.error(e.message.replace(/^Error: /, "")); }
+    } catch (e: any) {
+      toast.error(e.message.replace(/^Error: /, ""));
+    }
   };
 
-  if (!user) return (
-    <div className="container max-w-md py-12 text-center space-y-3">
-      <h1 className="text-xl font-semibold">Facturare partener</h1>
-      <p className="text-sm text-muted-foreground">Conectează-te ca să vezi planul și facturile.</p>
-      <Button asChild><Link to="/auth" search={{ mode: "login" }}>Conectează-te</Link></Button>
-    </div>
-  );
-  if (loading) return <div className="p-12 flex justify-center"><Loader2 className="animate-spin" /></div>;
-  if (error) return (
-    <div className="container max-w-4xl py-6">
-      <div className="p-4 bg-destructive/10 text-destructive rounded">{error}</div>
-      <Button onClick={load} className="mt-2">Reîncearcă</Button>
-    </div>
-  );
+  if (!user)
+    return (
+      <div className="container max-w-md py-12 text-center space-y-3">
+        <h1 className="text-xl font-semibold">Facturare partener</h1>
+        <p className="text-sm text-muted-foreground">
+          Conectează-te ca să vezi planul și facturile.
+        </p>
+        <Button asChild>
+          <Link to="/auth" search={{ mode: "login" }}>
+            Conectează-te
+          </Link>
+        </Button>
+      </div>
+    );
+  if (loading)
+    return (
+      <div className="p-12 flex justify-center">
+        <Loader2 className="animate-spin" />
+      </div>
+    );
+  if (error)
+    return (
+      <div className="container max-w-4xl py-6">
+        <div className="p-4 bg-destructive/10 text-destructive rounded">{error}</div>
+        <Button onClick={load} className="mt-2">
+          Reîncearcă
+        </Button>
+      </div>
+    );
 
   const billingComplete = !!bizApp?.billing_completed_at && !!bizApp?.billing_email;
   const issuer = settings?.issuer;
@@ -132,18 +178,27 @@ function PartnerBilling() {
     <div className="container max-w-4xl py-6 space-y-6">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Link to="/partner"><Button variant="ghost" size="sm"><ArrowLeft className="h-4 w-4 mr-1" />Înapoi</Button></Link>
+          <Link to="/partner">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="h-4 w-4 mr-1" />
+              Înapoi
+            </Button>
+          </Link>
           <h1 className="text-2xl font-bold">Facturare</h1>
         </div>
         <StatusNotificationsBell />
       </div>
 
-
       {!bizApp && (
         <div className="p-4 rounded border border-amber-500/40 bg-amber-50 dark:bg-amber-950/20 text-sm space-y-2">
           <div className="font-semibold">Nu ai o cerere de business aprobată</div>
-          <p className="text-muted-foreground">Înainte de a face upgrade la un plan plătit, trimite și apoi finalizează cererea de partener. Datele fiscale se completează după aprobare.</p>
-          <Button asChild size="sm" variant="outline"><Link to="/business">Aplică ca partener</Link></Button>
+          <p className="text-muted-foreground">
+            Înainte de a face upgrade la un plan plătit, trimite și apoi finalizează cererea de
+            partener. Datele fiscale se completează după aprobare.
+          </p>
+          <Button asChild size="sm" variant="outline">
+            <Link to="/business">Aplică ca partener</Link>
+          </Button>
         </div>
       )}
 
@@ -160,12 +215,32 @@ function PartnerBilling() {
           <div className="text-2xl font-bold">{sub?.plan_code ?? "Free"}</div>
           {(() => {
             const meta: Record<string, { label: string; cls: string; hint: string }> = {
-              active: { label: "Activ", cls: "bg-green-100 text-green-700", hint: "Abonament plătit la zi." },
-              grace: { label: "Perioadă de grație", cls: "bg-yellow-100 text-yellow-700", hint: "Plata nu a fost confirmată încă. Funcționalitățile rămân active câteva zile — achită factura ca să eviți retrogradarea la Free." },
-              free_downgraded: { label: "Retrogradat la Free", cls: "bg-orange-100 text-orange-700", hint: "Perioada de grație a expirat fără plată. Conținutul peste limite Free a fost ascuns." },
-              cancelled: { label: "Anulat", cls: "bg-muted text-foreground", hint: "Abonamentul a fost anulat. Poți alege un plan nou oricând." },
+              active: {
+                label: "Activ",
+                cls: "bg-green-100 text-green-700",
+                hint: "Abonament plătit la zi.",
+              },
+              grace: {
+                label: "Perioadă de grație",
+                cls: "bg-yellow-100 text-yellow-700",
+                hint: "Plata nu a fost confirmată încă. Funcționalitățile rămân active câteva zile — achită factura ca să eviți retrogradarea la Free.",
+              },
+              free_downgraded: {
+                label: "Retrogradat la Free",
+                cls: "bg-orange-100 text-orange-700",
+                hint: "Perioada de grație a expirat fără plată. Conținutul peste limite Free a fost ascuns.",
+              },
+              cancelled: {
+                label: "Anulat",
+                cls: "bg-muted text-foreground",
+                hint: "Abonamentul a fost anulat. Poți alege un plan nou oricând.",
+              },
             };
-            const m = meta[sub?.status ?? ""] ?? { label: sub?.status ?? "—", cls: "bg-muted", hint: "" };
+            const m = meta[sub?.status ?? ""] ?? {
+              label: sub?.status ?? "—",
+              cls: "bg-muted",
+              hint: "",
+            };
             return (
               <span className={`text-xs px-2 py-1 rounded ${m.cls}`} title={m.hint}>
                 {m.label}
@@ -180,23 +255,33 @@ function PartnerBilling() {
         </div>
         {sub?.status === "grace" && (
           <p className="text-xs text-yellow-700 dark:text-yellow-300">
-            Achită factura pentru a păstra toate funcționalitățile. După expirarea graței,
-            contul tău trece automat la Free și conținutul peste limite devine ascuns.
+            Achită factura pentru a păstra toate funcționalitățile. După expirarea graței, contul
+            tău trece automat la Free și conținutul peste limite devine ascuns.
           </p>
         )}
         {ent && (
           <div className="text-xs text-muted-foreground">
             Max venues: {ent.max_venues} · Events: {ent.max_events} · Push: {ent.push_priority}
-            {ent.featured_in_nearby && " · ★ Featured"} {ent.badge_verified && " · ✓ Badge verificat"}
+            {ent.featured_in_nearby && " · ★ Featured"}{" "}
+            {ent.badge_verified && " · ✓ Badge verificat"}
           </div>
         )}
       </div>
 
       {/* Date fiscale — key forțează remount când bizApp ajunge async */}
-      <BillingProfileCard key={bizApp?.user_id ?? bizApp?.cui ?? "empty"} biz={bizApp} onSave={async (vals) => {
-        try { await updateBilling({ data: vals }); toast.success("Date fiscale actualizate"); load(); }
-        catch (e: any) { toast.error(e.message); }
-      }} />
+      <BillingProfileCard
+        key={bizApp?.user_id ?? bizApp?.cui ?? "empty"}
+        biz={bizApp}
+        onSave={async (vals) => {
+          try {
+            await updateBilling({ data: vals });
+            toast.success("Date fiscale actualizate");
+            load();
+          } catch (e: any) {
+            toast.error(e.message);
+          }
+        }}
+      />
 
       {/* Planuri disponibile */}
       <div>
@@ -211,12 +296,17 @@ function PartnerBilling() {
             const price = settings?.prices?.[p.code]?.monthly_minor;
             const isCurrent = sub?.plan_code === p.code && sub?.status !== "free_downgraded";
             return (
-              <div key={p.code} className={`rounded-lg border p-4 ${isCurrent ? "border-primary" : ""}`}>
+              <div
+                key={p.code}
+                className={`rounded-lg border p-4 ${isCurrent ? "border-primary" : ""}`}
+              >
                 <div className="text-lg font-bold">{p.name}</div>
                 <div className="text-sm text-muted-foreground min-h-[40px]">{p.description}</div>
                 <div className="my-3 text-2xl font-bold">
                   {p.code === "Free" ? "Gratuit" : `${RON(price)} /lună`}
-                  {p.code !== "Free" && <span className="text-xs text-muted-foreground"> + TVA</span>}
+                  {p.code !== "Free" && (
+                    <span className="text-xs text-muted-foreground"> + TVA</span>
+                  )}
                 </div>
                 <ul className="text-xs space-y-1 mb-3">
                   <li>• {p.entitlements.max_venues} venues</li>
@@ -225,12 +315,20 @@ function PartnerBilling() {
                   {p.entitlements.featured_in_nearby && <li>• Featured în Nearby</li>}
                   {p.entitlements.can_create_boost && <li>• Boost evenimente 48h</li>}
                 </ul>
-                {p.code !== "Free" && (
-                  isCurrent ? <Button disabled className="w-full">Plan activ</Button>
-                  : <Button className="w-full" disabled={!billingComplete} onClick={() => startUpgrade(p.code as any)}>
+                {p.code !== "Free" &&
+                  (isCurrent ? (
+                    <Button disabled className="w-full">
+                      Plan activ
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full"
+                      disabled={!billingComplete}
+                      onClick={() => startUpgrade(p.code as any)}
+                    >
                       {sub?.plan_code === "Free" ? "Abonare" : "Schimbă"}
                     </Button>
-                )}
+                  ))}
               </div>
             );
           })}
@@ -241,12 +339,22 @@ function PartnerBilling() {
       <div>
         <h2 className="text-lg font-semibold mb-2">Facturile mele</h2>
         {invoices.length === 0 ? (
-          <div className="text-sm text-muted-foreground p-4 rounded border">Nicio factură încă.</div>
+          <div className="text-sm text-muted-foreground p-4 rounded border">
+            Nicio factură încă.
+          </div>
         ) : (
           <div className="rounded border overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-muted/40">
-                <tr><th className="p-2 text-left">Cod</th><th className="p-2">Tip</th><th className="p-2 text-right">Total</th><th className="p-2">Status</th><th className="p-2">Emisă</th><th className="p-2">Scadență</th><th></th></tr>
+                <tr>
+                  <th className="p-2 text-left">Cod</th>
+                  <th className="p-2">Tip</th>
+                  <th className="p-2 text-right">Total</th>
+                  <th className="p-2">Status</th>
+                  <th className="p-2">Emisă</th>
+                  <th className="p-2">Scadență</th>
+                  <th></th>
+                </tr>
               </thead>
               <tbody>
                 {invoices.map((inv) => (
@@ -255,11 +363,17 @@ function PartnerBilling() {
                     <td className="p-2">{inv.kind}</td>
                     <td className="p-2 text-right">{RON(inv.total_minor)}</td>
                     <td className="p-2">{inv.status}</td>
-                    <td className="p-2 text-xs">{new Date(inv.issued_at).toLocaleDateString("ro-RO")}</td>
-                    <td className="p-2 text-xs">{new Date(inv.due_at).toLocaleDateString("ro-RO")}</td>
+                    <td className="p-2 text-xs">
+                      {new Date(inv.issued_at).toLocaleDateString("ro-RO")}
+                    </td>
+                    <td className="p-2 text-xs">
+                      {new Date(inv.due_at).toLocaleDateString("ro-RO")}
+                    </td>
                     <td className="p-2">
                       {(inv.status === "pending_payment" || inv.status === "overdue") && (
-                        <Button size="sm" variant="outline" onClick={() => setOpInvoice(inv)}>Instrucțiuni OP</Button>
+                        <Button size="sm" variant="outline" onClick={() => setOpInvoice(inv)}>
+                          Instrucțiuni OP
+                        </Button>
                       )}
                     </td>
                   </tr>
@@ -276,32 +390,63 @@ function PartnerBilling() {
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>Instrucțiuni transfer bancar</DialogTitle>
-              <DialogDescription>Fă ordinul de plată cu datele de mai jos. Abonamentul se activează în 1–3 zile lucrătoare după confirmare.</DialogDescription>
+              <DialogDescription>
+                Fă ordinul de plată cu datele de mai jos. Abonamentul se activează în 1–3 zile
+                lucrătoare după confirmare.
+              </DialogDescription>
             </DialogHeader>
             <div className="space-y-3 text-sm">
               <div className="rounded border p-3 bg-muted/30 space-y-1">
-                <div><span className="text-muted-foreground">Beneficiar:</span> <strong>{opInvoice.issuer_snapshot?.name}</strong></div>
-                <div><span className="text-muted-foreground">CUI:</span> {opInvoice.issuer_snapshot?.cui}</div>
-                <div><span className="text-muted-foreground">Banca:</span> {opInvoice.issuer_snapshot?.bank}</div>
-                <div><span className="text-muted-foreground">IBAN:</span> <span className="font-mono">{opInvoice.issuer_snapshot?.iban}</span></div>
-                <div><span className="text-muted-foreground">Sumă:</span> <strong>{RON(opInvoice.total_minor)}</strong> (incl. TVA)</div>
+                <div>
+                  <span className="text-muted-foreground">Beneficiar:</span>{" "}
+                  <strong>{opInvoice.issuer_snapshot?.name}</strong>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">CUI:</span>{" "}
+                  {opInvoice.issuer_snapshot?.cui}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Banca:</span>{" "}
+                  {opInvoice.issuer_snapshot?.bank}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">IBAN:</span>{" "}
+                  <span className="font-mono">{opInvoice.issuer_snapshot?.iban}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Sumă:</span>{" "}
+                  <strong>{RON(opInvoice.total_minor)}</strong> (incl. TVA)
+                </div>
               </div>
               <div className="rounded border-2 border-primary p-3">
-                <div className="text-xs text-muted-foreground mb-1">DETALII PLATĂ (mențiune OP) — OBLIGATORIU:</div>
+                <div className="text-xs text-muted-foreground mb-1">
+                  DETALII PLATĂ (mențiune OP) — OBLIGATORIU:
+                </div>
                 <div className="flex items-center gap-2">
                   <code className="text-lg font-bold flex-1">{opInvoice.payment_code}</code>
-                  <Button size="sm" variant="outline" onClick={() => {
-                    navigator.clipboard.writeText(opInvoice.payment_code);
-                    setCopied(true); setTimeout(() => setCopied(false), 2000);
-                  }}>{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}</Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      navigator.clipboard.writeText(opInvoice.payment_code);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                  >
+                    {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                  </Button>
                 </div>
-                <div className="text-xs text-muted-foreground mt-1">Fără acest cod nu putem identifica plata.</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Fără acest cod nu putem identifica plata.
+                </div>
               </div>
               <div className="text-xs text-muted-foreground">
                 Scadență: {new Date(opInvoice.due_at).toLocaleDateString("ro-RO")}
               </div>
             </div>
-            <DialogFooter><Button onClick={() => setOpInvoice(null)}>Am înțeles</Button></DialogFooter>
+            <DialogFooter>
+              <Button onClick={() => setOpInvoice(null)}>Am înțeles</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}
@@ -309,7 +454,13 @@ function PartnerBilling() {
   );
 }
 
-function BillingProfileCard({ biz, onSave }: { biz: any; onSave: (v: { iban: string | null; billing_email: string; is_vat_payer: boolean }) => void }) {
+function BillingProfileCard({
+  biz,
+  onSave,
+}: {
+  biz: any;
+  onSave: (v: { iban: string | null; billing_email: string; is_vat_payer: boolean }) => void;
+}) {
   const [iban, setIban] = useState(biz?.iban ?? "");
   const [email, setEmail] = useState(biz?.billing_email ?? "");
   const [vat, setVat] = useState<boolean>(!!biz?.is_vat_payer);
@@ -321,11 +472,29 @@ function BillingProfileCard({ biz, onSave }: { biz: any; onSave: (v: { iban: str
         <strong>{biz?.legal_name ?? "—"}</strong> · CUI {biz?.cui ?? "—"}
       </div>
       <div className="grid md:grid-cols-3 gap-2">
-        <div><Label>Email facturare *</Label><Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" /></div>
-        <div><Label>IBAN (opțional)</Label><Input value={iban} onChange={(e) => setIban(e.target.value)} placeholder="ROxx XXXX …" /></div>
-        <div className="flex items-end gap-2"><input type="checkbox" id="vat" checked={vat} onChange={(e) => setVat(e.target.checked)} /><Label htmlFor="vat">Plătitor TVA</Label></div>
+        <div>
+          <Label>Email facturare *</Label>
+          <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
+        </div>
+        <div>
+          <Label>IBAN (opțional)</Label>
+          <Input value={iban} onChange={(e) => setIban(e.target.value)} placeholder="ROxx XXXX …" />
+        </div>
+        <div className="flex items-end gap-2">
+          <input
+            type="checkbox"
+            id="vat"
+            checked={vat}
+            onChange={(e) => setVat(e.target.checked)}
+          />
+          <Label htmlFor="vat">Plătitor TVA</Label>
+        </div>
       </div>
-      <Button onClick={() => onSave({ iban: iban || null, billing_email: email, is_vat_payer: vat })}>Salvează</Button>
+      <Button
+        onClick={() => onSave({ iban: iban || null, billing_email: email, is_vat_payer: vat })}
+      >
+        Salvează
+      </Button>
     </div>
   );
 }

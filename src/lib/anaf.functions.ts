@@ -8,13 +8,15 @@ import { z } from "zod";
  */
 export const lookupAnafCui = createServerFn({ method: "POST" })
   .inputValidator((data) =>
-    z.object({
-      cui: z
-        .string()
-        .trim()
-        .regex(/^(RO)?\d{2,10}$/i, "CUI invalid (ex: RO12345678 sau 12345678)")
-        .transform((v) => v.toUpperCase().replace(/^RO/, "")),
-    }).parse(data),
+    z
+      .object({
+        cui: z
+          .string()
+          .trim()
+          .regex(/^(RO)?\d{2,10}$/i, "CUI invalid (ex: RO12345678 sau 12345678)")
+          .transform((v) => v.toUpperCase().replace(/^RO/, "")),
+      })
+      .parse(data),
   )
   .handler(async ({ data }) => {
     const today = new Date().toISOString().slice(0, 10);
@@ -24,15 +26,12 @@ export const lookupAnafCui = createServerFn({ method: "POST" })
     const t = setTimeout(() => ctrl.abort(), 8000);
     let json: any;
     try {
-      const res = await fetch(
-        "https://webservicesp.anaf.ro/PlatitorTvaRest/api/v9/ws/tva",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json", Accept: "application/json" },
-          body,
-          signal: ctrl.signal,
-        },
-      );
+      const res = await fetch("https://webservicesp.anaf.ro/PlatitorTvaRest/api/v9/ws/tva", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body,
+        signal: ctrl.signal,
+      });
       if (!res.ok) {
         console.error("ANAF HTTP", res.status);
         return {

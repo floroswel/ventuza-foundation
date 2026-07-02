@@ -18,12 +18,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 
 import { ReasonDialog } from "./ReasonDialog";
 import {
-  adminRedactMessage, adminUpdatePartnerItem, adminVoidInvoice,
+  adminRedactMessage,
+  adminUpdatePartnerItem,
+  adminVoidInvoice,
 } from "@/lib/admin-content.functions";
 
 const UUID = /^[0-9a-f-]{36}$/i;
@@ -49,8 +55,8 @@ function RedactMessageCard() {
         <h3 className="font-medium">Redactare mesaj individual</h3>
       </div>
       <p className="text-xs text-muted-foreground">
-        Înlocuiește textul cu „[REDACTED]”, șterge media/voice, marchează `deleted_at`.
-        Contextul conversației rămâne intact. Snapshot original păstrat doar în
+        Înlocuiește textul cu „[REDACTED]”, șterge media/voice, marchează `deleted_at`. Contextul
+        conversației rămâne intact. Snapshot original păstrat doar în
         <code className="px-1">admin_audit_log</code>.
       </p>
       <div>
@@ -59,7 +65,11 @@ function RedactMessageCard() {
       </div>
       <div className="flex justify-end">
         <ReasonDialog
-          trigger={<Button variant="destructive" size="sm"><Eraser className="h-4 w-4 mr-1" /> Redactează</Button>}
+          trigger={
+            <Button variant="destructive" size="sm">
+              <Eraser className="h-4 w-4 mr-1" /> Redactează
+            </Button>
+          }
           title="Redactare mesaj"
           destructive
           confirmLabel="Redactează"
@@ -114,14 +124,16 @@ function EditPartnerItemCard() {
         <h3 className="font-medium">Editare directă venue / event partener</h3>
       </div>
       <p className="text-xs text-muted-foreground">
-        Corecție de încredere (telefon greșit, adresă etc.). NU re-trigger-uiește
-        moderarea. Trece complet prin audit log (vechi → nou).
+        Corecție de încredere (telefon greșit, adresă etc.). NU re-trigger-uiește moderarea. Trece
+        complet prin audit log (vechi → nou).
       </p>
       <div className="grid grid-cols-3 gap-3">
         <div>
           <Label>Tip</Label>
           <Select value={kind} onValueChange={(v) => setKind(v as any)}>
-            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectTrigger>
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="venue">venue</SelectItem>
               <SelectItem value="event">event</SelectItem>
@@ -136,30 +148,68 @@ function EditPartnerItemCard() {
 
       {kind === "venue" ? (
         <div className="grid grid-cols-2 gap-3">
-          <div><Label>Nume</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
-          <div><Label>Telefon E.164</Label><Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+40…" /></div>
-          <div className="col-span-2"><Label>Adresă</Label><Input value={address} onChange={(e) => setAddress(e.target.value)} /></div>
-          <div className="col-span-2"><Label>Website</Label><Input value={website} onChange={(e) => setWebsite(e.target.value)} /></div>
-          <div className="col-span-2"><Label>Descriere</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} /></div>
+          <div>
+            <Label>Nume</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div>
+            <Label>Telefon E.164</Label>
+            <Input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+40…" />
+          </div>
+          <div className="col-span-2">
+            <Label>Adresă</Label>
+            <Input value={address} onChange={(e) => setAddress(e.target.value)} />
+          </div>
+          <div className="col-span-2">
+            <Label>Website</Label>
+            <Input value={website} onChange={(e) => setWebsite(e.target.value)} />
+          </div>
+          <div className="col-span-2">
+            <Label>Descriere</Label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-3">
-          <div><Label>Titlu</Label><Input value={title} onChange={(e) => setTitle(e.target.value)} /></div>
-          <div><Label>Venue (text)</Label><Input value={venueText} onChange={(e) => setVenueText(e.target.value)} /></div>
-          <div className="col-span-2"><Label>Descriere</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} /></div>
+          <div>
+            <Label>Titlu</Label>
+            <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+          <div>
+            <Label>Venue (text)</Label>
+            <Input value={venueText} onChange={(e) => setVenueText(e.target.value)} />
+          </div>
+          <div className="col-span-2">
+            <Label>Descriere</Label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+            />
+          </div>
         </div>
       )}
 
       <div className="flex justify-end">
         <ReasonDialog
-          trigger={<Button size="sm"><Save className="h-4 w-4 mr-1" /> Salvează</Button>}
+          trigger={
+            <Button size="sm">
+              <Save className="h-4 w-4 mr-1" /> Salvează
+            </Button>
+          }
           title="Editare directă (staff)"
           confirmLabel="Salvează"
           onConfirm={async (reason) => {
             if (!UUID.test(id.trim())) throw new Error("Item ID invalid (uuid)");
             const changes = buildChanges();
             if (Object.keys(changes).length === 0) throw new Error("Niciun câmp completat");
-            await fn({ data: { kind, itemId: id.trim(), changes: changes as any, justification: reason } });
+            await fn({
+              data: { kind, itemId: id.trim(), changes: changes as any, justification: reason },
+            });
             toast.success("Item actualizat");
           }}
         />
@@ -178,8 +228,8 @@ function VoidInvoiceCard() {
         <h3 className="font-medium">Anulare factură (storno + reemitere)</h3>
       </div>
       <p className="text-xs text-muted-foreground">
-        Inserează o factură storno cu totaluri negative, păstrează snapshot-ul
-        fiscal IMUTABIL și marchează originalul `voided`. Rezervat super_admin.
+        Inserează o factură storno cu totaluri negative, păstrează snapshot-ul fiscal IMUTABIL și
+        marchează originalul `voided`. Rezervat super_admin.
       </p>
       <div>
         <Label>Invoice ID (uuid)</Label>
@@ -187,14 +237,20 @@ function VoidInvoiceCard() {
       </div>
       <div className="flex justify-end">
         <ReasonDialog
-          trigger={<Button variant="destructive" size="sm"><FileMinus className="h-4 w-4 mr-1" /> Anulează</Button>}
+          trigger={
+            <Button variant="destructive" size="sm">
+              <FileMinus className="h-4 w-4 mr-1" /> Anulează
+            </Button>
+          }
           title="Anulare factură (storno)"
           destructive
           confirmLabel="Anulează"
           onConfirm={async (reason) => {
             if (!UUID.test(id.trim())) throw new Error("Invoice ID invalid (uuid)");
             const r: any = await fn({ data: { invoiceId: id.trim(), justification: reason } });
-            toast.success(`Storno emis ${r?.storno?.series}-${r?.storno?.year}-${String(r?.storno?.number ?? "").padStart(6, "0")}`);
+            toast.success(
+              `Storno emis ${r?.storno?.series}-${r?.storno?.year}-${String(r?.storno?.number ?? "").padStart(6, "0")}`,
+            );
             setId("");
           }}
         />

@@ -30,10 +30,16 @@ export type Advertiser = {
   created_at: string;
 };
 
-export async function fetchActiveAds(placement: AdPlacement, city?: string, limit = 3): Promise<AdCampaign[]> {
+export async function fetchActiveAds(
+  placement: AdPlacement,
+  city?: string,
+  limit = 3,
+): Promise<AdCampaign[]> {
   let q = supabase
     .from("ad_campaigns")
-    .select("id, advertiser_id, placement, title, body, image_url, cta_label, cta_url, target_event_id, city, status, starts_at, ends_at")
+    .select(
+      "id, advertiser_id, placement, title, body, image_url, cta_label, cta_url, target_event_id, city, status, starts_at, ends_at",
+    )
     .eq("placement", placement)
     .eq("status", "active")
     .lte("starts_at", new Date().toISOString())

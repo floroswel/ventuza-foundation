@@ -24,10 +24,18 @@ const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
 function makeId() {
-  try { return crypto.randomUUID(); } catch { return `${Date.now()}-${Math.random()}`; }
+  try {
+    return crypto.randomUUID();
+  } catch {
+    return `${Date.now()}-${Math.random()}`;
+  }
 }
 
-export function pushAction(input: { label: string; undo: JournalEntry["undo"]; redo: JournalEntry["redo"] }) {
+export function pushAction(input: {
+  label: string;
+  undo: JournalEntry["undo"];
+  redo: JournalEntry["redo"];
+}) {
   const entry: JournalEntry = { id: makeId(), ts: Date.now(), ...input };
   state.past.push(entry);
   if (state.past.length > MAX) state.past.shift();
@@ -38,8 +46,12 @@ export function pushAction(input: { label: string; undo: JournalEntry["undo"]; r
 export async function undoLast() {
   if (state.busy) return;
   const entry = state.past[state.past.length - 1];
-  if (!entry) { toast("Nimic de anulat"); return; }
-  state.busy = true; emit();
+  if (!entry) {
+    toast("Nimic de anulat");
+    return;
+  }
+  state.busy = true;
+  emit();
   try {
     await entry.undo();
     state.past.pop();
@@ -48,15 +60,20 @@ export async function undoLast() {
   } catch (e: any) {
     toast.error(`Undo eșuat: ${e?.message ?? "eroare"}`);
   } finally {
-    state.busy = false; emit();
+    state.busy = false;
+    emit();
   }
 }
 
 export async function redoLast() {
   if (state.busy) return;
   const entry = state.future[state.future.length - 1];
-  if (!entry) { toast("Nimic de refăcut"); return; }
-  state.busy = true; emit();
+  if (!entry) {
+    toast("Nimic de refăcut");
+    return;
+  }
+  state.busy = true;
+  emit();
   try {
     await entry.redo();
     state.future.pop();
@@ -65,12 +82,15 @@ export async function redoLast() {
   } catch (e: any) {
     toast.error(`Redo eșuat: ${e?.message ?? "eroare"}`);
   } finally {
-    state.busy = false; emit();
+    state.busy = false;
+    emit();
   }
 }
 
 export function clearJournal() {
-  state.past = []; state.future = []; emit();
+  state.past = [];
+  state.future = [];
+  emit();
 }
 
 export function useActionJournal() {
@@ -78,7 +98,9 @@ export function useActionJournal() {
   useEffect(() => {
     const l = () => force((x) => x + 1);
     listeners.add(l);
-    return () => { listeners.delete(l); };
+    return () => {
+      listeners.delete(l);
+    };
   }, []);
   return {
     past: state.past,
@@ -99,7 +121,10 @@ export function useAdminUndoShortcuts() {
       const mod = e.metaKey || e.ctrlKey;
       if (!mod || e.key.toLowerCase() !== "z") return;
       const tag = (e.target as HTMLElement | null)?.tagName;
-      const editable = tag === "INPUT" || tag === "TEXTAREA" || (e.target as HTMLElement | null)?.isContentEditable;
+      const editable =
+        tag === "INPUT" ||
+        tag === "TEXTAREA" ||
+        (e.target as HTMLElement | null)?.isContentEditable;
       if (editable) return; // lasă editarea nativă în form-uri
       e.preventDefault();
       if (e.shiftKey) void redoLast();

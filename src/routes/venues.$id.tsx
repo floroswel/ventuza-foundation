@@ -50,7 +50,10 @@ function VenueDetailPage() {
   return (
     <div className="container max-w-3xl py-4 px-3 space-y-4">
       <Button asChild variant="ghost" size="sm">
-        <Link to="/nearby"><ArrowLeft className="h-4 w-4 mr-1" />Înapoi</Link>
+        <Link to="/nearby">
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Înapoi
+        </Link>
       </Button>
       {venue.cover_url && (
         <div
@@ -78,7 +81,12 @@ function VenueDetailPage() {
         {venue.website && (
           <div className="flex items-center gap-2 text-sm">
             <Globe className="h-4 w-4" />
-            <a href={venue.website} target="_blank" rel="noreferrer" className="text-primary underline">
+            <a
+              href={venue.website}
+              target="_blank"
+              rel="noreferrer"
+              className="text-primary underline"
+            >
               {venue.website}
             </a>
           </div>
@@ -94,7 +102,8 @@ function VenueDetailPage() {
       </div>
       <Button asChild className="w-full" size="lg">
         <a href={directionsHref} target="_blank" rel="noreferrer">
-          <Navigation className="h-4 w-4 mr-2" />Direcții
+          <Navigation className="h-4 w-4 mr-2" />
+          Direcții
         </a>
       </Button>
       {offers && offers.length > 0 && (

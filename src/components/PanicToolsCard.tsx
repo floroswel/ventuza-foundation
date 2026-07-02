@@ -7,7 +7,9 @@ import { toast } from "sonner";
 /** Panic exit + fake call + discreet icon switcher. All client-side. */
 export function PanicToolsCard() {
   const [fakeCall, setFakeCall] = useState(false);
-  const [skin, setSkin] = useState<DiscreetSkin>(() => (typeof window !== "undefined" ? loadDiscreetMode() : "off"));
+  const [skin, setSkin] = useState<DiscreetSkin>(() =>
+    typeof window !== "undefined" ? loadDiscreetMode() : "off",
+  );
 
   function panicExit() {
     // open neutral page, replace current to avoid back-button reveal

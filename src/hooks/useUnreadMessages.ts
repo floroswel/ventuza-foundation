@@ -53,7 +53,9 @@ function scheduleRefresh(userId: string) {
   if (refreshTimer) clearTimeout(refreshTimer);
   refreshTimer = setTimeout(() => {
     if (inflight) return;
-    inflight = doRefresh(userId).finally(() => { inflight = null; });
+    inflight = doRefresh(userId).finally(() => {
+      inflight = null;
+    });
   }, 250);
 }
 
@@ -66,17 +68,25 @@ function ensureChannel(userId: string) {
   currentUserId = userId;
   channel = supabase
     .channel(`unread-msgs-${userId}`)
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => scheduleRefresh(userId))
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" }, () => scheduleRefresh(userId))
+    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () =>
+      scheduleRefresh(userId),
+    )
+    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" }, () =>
+      scheduleRefresh(userId),
+    )
     .subscribe();
 }
 
 function subscribe(listener: () => void) {
   listeners.add(listener);
-  return () => { listeners.delete(listener); };
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
-function getSnapshot() { return state; }
+function getSnapshot() {
+  return state;
+}
 
 export function useUnreadMessages() {
   const { user } = useAuth();
@@ -84,8 +94,15 @@ export function useUnreadMessages() {
 
   useEffect(() => {
     if (!user) {
-      if (channel) { supabase.removeChannel(channel); channel = null; currentUserId = null; }
-      if (state !== EMPTY) { state = EMPTY; emit(); }
+      if (channel) {
+        supabase.removeChannel(channel);
+        channel = null;
+        currentUserId = null;
+      }
+      if (state !== EMPTY) {
+        state = EMPTY;
+        emit();
+      }
       return;
     }
     ensureChannel(user.id);

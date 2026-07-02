@@ -18,13 +18,7 @@ type LegalDoc = {
  * unpublished or empty. Subscribes to realtime updates so admin edits go
  * live without a refresh.
  */
-export function LegalDocOverride({
-  slug,
-  fallback,
-}: {
-  slug: string;
-  fallback: ReactNode;
-}) {
+export function LegalDocOverride({ slug, fallback }: { slug: string; fallback: ReactNode }) {
   const [doc, setDoc] = useState<LegalDoc | null>(null);
   const [loaded, setLoaded] = useState(false);
 

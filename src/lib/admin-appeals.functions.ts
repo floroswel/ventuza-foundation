@@ -11,7 +11,14 @@ async function assertStaff(supabase: any, userId: string) {
 
 /* USER — submit appeal */
 const SubmitIn = z.object({
-  kind: z.enum(["ban", "suspension", "content_removed", "account_deleted", "photo_rejected", "other"]),
+  kind: z.enum([
+    "ban",
+    "suspension",
+    "content_removed",
+    "account_deleted",
+    "photo_rejected",
+    "other",
+  ]),
   actionRef: z.string().max(200).nullable().optional(),
   originalReason: z.string().max(500).nullable().optional(),
   userStatement: z.string().min(20).max(4000),
@@ -30,7 +37,8 @@ export const submitAppeal = createServerFn({ method: "POST" })
       evidence_urls: data.evidenceUrls,
     });
     if (error) {
-      if (error.code === "23505") throw new Error("Ai deja o contestație activă pentru această acțiune.");
+      if (error.code === "23505")
+        throw new Error("Ai deja o contestație activă pentru această acțiune.");
       throw new Error(error.message);
     }
     return { ok: true };
@@ -39,9 +47,11 @@ export const submitAppeal = createServerFn({ method: "POST" })
 export const listMyAppeals = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.from("appeals")
+    const { data, error } = await context.supabase
+      .from("appeals")
       .select("id, kind, action_ref, status, decision_reason, created_at, reviewed_at")
-      .eq("user_id", context.userId).order("created_at", { ascending: false });
+      .eq("user_id", context.userId)
+      .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return data ?? [];
   });
@@ -59,8 +69,11 @@ export const adminListAppeals = createServerFn({ method: "POST" })
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
-    let q = sa.from("appeals").select("*", { count: "exact" })
-      .order("created_at", { ascending: false }).limit(data.limit);
+    let q = sa
+      .from("appeals")
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false })
+      .limit(data.limit);
     if (data.status !== "all") q = q.eq("status", data.status);
     if (data.kind) q = q.eq("kind", data.kind);
     const { data: rows, error, count } = await q;
@@ -68,7 +81,10 @@ export const adminListAppeals = createServerFn({ method: "POST" })
     const ids = Array.from(new Set((rows ?? []).map((r: any) => r.user_id)));
     let names = new Map<string, string>();
     if (ids.length) {
-      const { data: p } = await sa.from("profiles").select("id, display_name, banned_at, suspended_until").in("id", ids);
+      const { data: p } = await sa
+        .from("profiles")
+        .select("id, display_name, banned_at, suspended_until")
+        .in("id", ids);
       names = new Map((p ?? []).map((x: any) => [x.id, x]));
     }
     return {
@@ -98,9 +114,16 @@ export const adminDecideAppeal = createServerFn({ method: "POST" })
     if (data.decision === "granted" && data.autoLift) {
       const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
       const sa = supabaseAdmin as any;
-      const { data: appeal } = await sa.from("appeals").select("user_id, kind").eq("id", data.appealId).maybeSingle();
+      const { data: appeal } = await sa
+        .from("appeals")
+        .select("user_id, kind")
+        .eq("id", data.appealId)
+        .maybeSingle();
       if (appeal?.user_id && (appeal.kind === "ban" || appeal.kind === "suspension")) {
-        await sa.from("profiles").update({ banned_at: null, suspended_until: null }).eq("id", appeal.user_id);
+        await sa
+          .from("profiles")
+          .update({ banned_at: null, suspended_until: null })
+          .eq("id", appeal.user_id);
       }
     }
     return { ok: true };

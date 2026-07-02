@@ -8,7 +8,6 @@ import { EmptyState } from "@/components/EmptyState";
 import { getOrCreateConversation } from "@/lib/chat";
 import { toast } from "sonner";
 
-
 export const Route = createFileRoute("/visitors")({
   head: () => ({ meta: [{ title: "Visitors — Ventuza" }] }),
   component: VisitorsPage,
@@ -43,7 +42,9 @@ function age(iso?: string | null) {
 function fmt(iso: string) {
   const d = new Date(iso);
   const diff = Date.now() - d.getTime();
-  const m = 60_000, h = 60 * m, day = 24 * h;
+  const m = 60_000,
+    h = 60 * m,
+    day = 24 * h;
   if (diff < h) return `${Math.max(1, Math.floor(diff / m))}m ago`;
   if (diff < day) return `${Math.floor(diff / h)}h ago`;
   if (diff < 7 * day) return `${Math.floor(diff / day)}d ago`;
@@ -83,13 +84,26 @@ function VisitorsPage() {
           else cur.count += 1;
         }
         const ids = Array.from(map.keys());
-        if (ids.length === 0) { if (alive) { setVisitors([]); setLoading(false); } return; }
+        if (ids.length === 0) {
+          if (alive) {
+            setVisitors([]);
+            setLoading(false);
+          }
+          return;
+        }
 
-        const { data: profs, error: pErr } = await supabase.rpc("get_public_profiles", { _ids: ids });
+        const { data: profs, error: pErr } = await supabase.rpc("get_public_profiles", {
+          _ids: ids,
+        });
         if (pErr) throw pErr;
-        type Prow = { id: string; display_name: string | null; photos: string[] | null; birthdate: string | null };
+        type Prow = {
+          id: string;
+          display_name: string | null;
+          photos: string[] | null;
+          birthdate: string | null;
+        };
         const profMap = new Map<string, Prow>();
-        for (const p of ((profs ?? []) as Prow[])) profMap.set(p.id, p);
+        for (const p of (profs ?? []) as Prow[]) profMap.set(p.id, p);
 
         const out: Visitor[] = [];
         for (const id of ids) {
@@ -104,7 +118,9 @@ function VisitorsPage() {
             age: age(p?.birthdate),
           });
         }
-        out.sort((a, b) => new Date(b.last_viewed_at).getTime() - new Date(a.last_viewed_at).getTime());
+        out.sort(
+          (a, b) => new Date(b.last_viewed_at).getTime() - new Date(a.last_viewed_at).getTime(),
+        );
         if (alive) setVisitors(out);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't load visitors");
@@ -112,13 +128,18 @@ function VisitorsPage() {
         if (alive) setLoading(false);
       }
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [user]);
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-24">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
-        <Link to="/profile" className="rounded-full p-2 text-muted-foreground hover:text-foreground">
+        <Link
+          to="/profile"
+          className="rounded-full p-2 text-muted-foreground hover:text-foreground"
+        >
           <ChevronLeft className="size-5" />
         </Link>
         <h1 className="text-lg font-semibold tracking-tight">Visitors</h1>
@@ -139,10 +160,12 @@ function VisitorsPage() {
             body="Când cineva îți vede profilul, va apărea aici."
           />
         ) : (
-
           <ul className="grid grid-cols-2 gap-3">
             {visitors.map((v) => (
-              <li key={v.viewer_id} className="group overflow-hidden rounded-2xl border border-border bg-surface">
+              <li
+                key={v.viewer_id}
+                className="group overflow-hidden rounded-2xl border border-border bg-surface"
+              >
                 <div className="relative aspect-[3/4] bg-muted">
                   {v.photo ? (
                     <img src={v.photo} alt="" className="size-full object-cover" />
@@ -156,7 +179,9 @@ function VisitorsPage() {
                       {v.display_name ?? "Unknown"}
                       {v.age ? <span className="text-white/70">, {v.age}</span> : null}
                     </p>
-                    <p className="text-[10px] text-white/60">{fmt(v.last_viewed_at)} · {v.view_count} view{v.view_count > 1 ? "s" : ""}</p>
+                    <p className="text-[10px] text-white/60">
+                      {fmt(v.last_viewed_at)} · {v.view_count} view{v.view_count > 1 ? "s" : ""}
+                    </p>
                   </div>
                 </div>
                 <button

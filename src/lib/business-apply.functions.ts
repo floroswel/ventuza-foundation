@@ -19,43 +19,54 @@ import { z } from "zod";
 
 const cuiRoRegex = /^(RO)?\d{2,10}$/i;
 
-const Schema = z.object({
-  entity_type: z.enum([
-    "srl","pfa","ii","sa","ong","asociatie","fundatie","brand","organizator_eveniment","altul",
-  ]),
-  legal_name: z.string().trim().min(2).max(200),
-  brand_name: z.string().trim().max(120).optional().nullable(),
-  cui: z.string().trim().max(20).optional().nullable(),
-  reg_com: z.string().trim().max(40).optional().nullable(),
-  vat_number: z.string().trim().max(20).optional().nullable(),
-  country: z.string().trim().length(2),
-  city: z.string().trim().max(80).optional().nullable(),
-  address: z.string().trim().max(200).optional().nullable(),
-  contact_name: z.string().trim().min(2).max(120),
-  contact_role: z.string().trim().max(80).optional().nullable(),
-  contact_email: z.string().trim().email().max(200),
-  contact_phone: z.string().trim().max(40).optional().nullable(),
-  website: z.string().trim().url().max(200).optional().nullable(),
-  social_links: z.string().trim().max(500).optional().nullable(),
-  category: z.string().trim().max(80).optional().nullable(),
-  goals: z.string().trim().min(20).max(2000),
-  monthly_budget_eur: z.number().int().min(0).max(1_000_000).optional().nullable(),
-  // GDPR — consimțăminte explicite. Server le validează la `true`; nu mai
-  // sunt forțate ca înainte (când UI-ul putea fi ocolit prin apel direct).
-  accepts_terms: z.literal(true, {
-    errorMap: () => ({ message: "Trebuie să accepți Termenii B2B." }),
-  }),
-  accepts_dpa: z.literal(true, {
-    errorMap: () => ({ message: "Trebuie să accepți Politica de confidențialitate." }),
-  }),
-  accepts_lgbt_charter: z.literal(true, {
-    errorMap: () => ({ message: "Trebuie să confirmi Charta LGBTQ+." }),
-  }),
-}).superRefine((v, ctx) => {
-  if (v.country === "RO" && v.cui && !cuiRoRegex.test(v.cui)) {
-    ctx.addIssue({ code: "custom", path: ["cui"], message: "CUI invalid (ex: RO12345678)" });
-  }
-});
+const Schema = z
+  .object({
+    entity_type: z.enum([
+      "srl",
+      "pfa",
+      "ii",
+      "sa",
+      "ong",
+      "asociatie",
+      "fundatie",
+      "brand",
+      "organizator_eveniment",
+      "altul",
+    ]),
+    legal_name: z.string().trim().min(2).max(200),
+    brand_name: z.string().trim().max(120).optional().nullable(),
+    cui: z.string().trim().max(20).optional().nullable(),
+    reg_com: z.string().trim().max(40).optional().nullable(),
+    vat_number: z.string().trim().max(20).optional().nullable(),
+    country: z.string().trim().length(2),
+    city: z.string().trim().max(80).optional().nullable(),
+    address: z.string().trim().max(200).optional().nullable(),
+    contact_name: z.string().trim().min(2).max(120),
+    contact_role: z.string().trim().max(80).optional().nullable(),
+    contact_email: z.string().trim().email().max(200),
+    contact_phone: z.string().trim().max(40).optional().nullable(),
+    website: z.string().trim().url().max(200).optional().nullable(),
+    social_links: z.string().trim().max(500).optional().nullable(),
+    category: z.string().trim().max(80).optional().nullable(),
+    goals: z.string().trim().min(20).max(2000),
+    monthly_budget_eur: z.number().int().min(0).max(1_000_000).optional().nullable(),
+    // GDPR — consimțăminte explicite. Server le validează la `true`; nu mai
+    // sunt forțate ca înainte (când UI-ul putea fi ocolit prin apel direct).
+    accepts_terms: z.literal(true, {
+      errorMap: () => ({ message: "Trebuie să accepți Termenii B2B." }),
+    }),
+    accepts_dpa: z.literal(true, {
+      errorMap: () => ({ message: "Trebuie să accepți Politica de confidențialitate." }),
+    }),
+    accepts_lgbt_charter: z.literal(true, {
+      errorMap: () => ({ message: "Trebuie să confirmi Charta LGBTQ+." }),
+    }),
+  })
+  .superRefine((v, ctx) => {
+    if (v.country === "RO" && v.cui && !cuiRoRegex.test(v.cui)) {
+      ctx.addIssue({ code: "custom", path: ["cui"], message: "CUI invalid (ex: RO12345678)" });
+    }
+  });
 
 function emptyToNull<T extends Record<string, unknown>>(o: T): T {
   const out: Record<string, unknown> = { ...o };
@@ -92,7 +103,9 @@ export const submitBusinessApplication = createServerFn({ method: "POST" })
         const { data: u } = await sb.auth.getUser();
         if (u?.user?.id) userId = u.user.id;
       }
-    } catch { /* anonim */ }
+    } catch {
+      /* anonim */
+    }
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const consentMeta = {
@@ -124,8 +137,9 @@ export const submitBusinessApplication = createServerFn({ method: "POST" })
         actor_user_id: userId,
         metadata: consentMeta,
       });
-    } catch { /* best-effort */ }
+    } catch {
+      /* best-effort */
+    }
 
     return { id: inserted.id as string };
   });
-

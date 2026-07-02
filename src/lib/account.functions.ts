@@ -21,9 +21,7 @@ export const deleteMyAccount = createServerFn({ method: "POST" })
  */
 export const recordGooglePlayPurchase = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
-    (d: { productId: string; purchaseToken: string }) => d,
-  )
+  .inputValidator((d: { productId: string; purchaseToken: string }) => d)
   .handler(async ({ data, context }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { verifyGooglePlayPurchase } = await import("./google-play.server");
@@ -73,8 +71,6 @@ export const recordGooglePlayPurchase = createServerFn({ method: "POST" })
     return { success: status === "active", status, expiresAt, message };
   });
 
-
-
 /**
  * GDPR Right to Data Portability — export all user data as JSON.
  */
@@ -93,16 +89,18 @@ export const exportMyData = createServerFn({ method: "GET" })
         supabase.from("subscriptions").select("*").eq("user_id", userId),
         supabase.from("notifications").select("*").eq("user_id", userId),
       ]);
-    return JSON.parse(JSON.stringify({
-      exported_at: new Date().toISOString(),
-      user_id: userId,
-      profile: profile.data,
-      swipes: swipes.data ?? [],
-      matches: matches.data ?? [],
-      messages_sent: messages.data ?? [],
-      events_hosted: events.data ?? [],
-      event_rsvps: rsvps.data ?? [],
-      subscriptions: subs.data ?? [],
-      notifications: notifications.data ?? [],
-    })) as { exported_at: string; user_id: string };
+    return JSON.parse(
+      JSON.stringify({
+        exported_at: new Date().toISOString(),
+        user_id: userId,
+        profile: profile.data,
+        swipes: swipes.data ?? [],
+        matches: matches.data ?? [],
+        messages_sent: messages.data ?? [],
+        events_hosted: events.data ?? [],
+        event_rsvps: rsvps.data ?? [],
+        subscriptions: subs.data ?? [],
+        notifications: notifications.data ?? [],
+      }),
+    ) as { exported_at: string; user_id: string };
   });

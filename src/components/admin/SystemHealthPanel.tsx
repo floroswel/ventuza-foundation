@@ -19,7 +19,12 @@ export function SystemHealthPanel() {
     const t0 = performance.now();
     try {
       await getOverview();
-      results.push({ label: "Backend RPC (admin_overview)", ok: true, detail: "200 OK", latency: Math.round(performance.now() - t0) });
+      results.push({
+        label: "Backend RPC (admin_overview)",
+        ok: true,
+        detail: "200 OK",
+        latency: Math.round(performance.now() - t0),
+      });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       results.push({ label: "Backend RPC (admin_overview)", ok: false, detail: msg.slice(0, 120) });
@@ -29,7 +34,12 @@ export function SystemHealthPanel() {
     const t1 = performance.now();
     try {
       const r = await fetch(window.location.origin + "/", { method: "HEAD" });
-      results.push({ label: "Edge / CDN", ok: r.ok, detail: `HTTP ${r.status}`, latency: Math.round(performance.now() - t1) });
+      results.push({
+        label: "Edge / CDN",
+        ok: r.ok,
+        detail: `HTTP ${r.status}`,
+        latency: Math.round(performance.now() - t1),
+      });
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : String(e);
       results.push({ label: "Edge / CDN", ok: false, detail: msg.slice(0, 120) });
@@ -52,7 +62,9 @@ export function SystemHealthPanel() {
     setLoading(false);
   }
 
-  useEffect(() => { run(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => {
+    run(); /* eslint-disable-next-line */
+  }, []);
 
   const allOk = probes.every((p) => p.ok);
 
@@ -60,11 +72,15 @@ export function SystemHealthPanel() {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center gap-3">
         <h2 className="text-lg font-semibold tracking-tight">System Health</h2>
-        <div className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
-          loading ? "border-border bg-surface text-muted-foreground" :
-          allOk ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300" :
-          "border-red-500/40 bg-red-500/10 text-red-300"
-        }`}>
+        <div
+          className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold ${
+            loading
+              ? "border-border bg-surface text-muted-foreground"
+              : allOk
+                ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300"
+                : "border-red-500/40 bg-red-500/10 text-red-300"
+          }`}
+        >
           <Activity className="size-3" />
           {loading ? "verific…" : allOk ? "Toate sistemele OK" : "Anomalii detectate"}
         </div>
@@ -77,15 +93,22 @@ export function SystemHealthPanel() {
       </div>
 
       {loading && probes.length === 0 ? (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" /> Rulez probe…</div>
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin" /> Rulez probe…
+        </div>
       ) : (
         <div className="grid gap-3 md:grid-cols-2">
           {probes.map((p, i) => {
             const Icon = i === 0 ? Database : i === 1 ? Globe : i === 2 ? Cpu : ShieldCheck;
             return (
-              <div key={p.label} className="relative overflow-hidden rounded-2xl border border-border bg-surface/60 p-4">
+              <div
+                key={p.label}
+                className="relative overflow-hidden rounded-2xl border border-border bg-surface/60 p-4"
+              >
                 <div className="flex items-center gap-3">
-                  <div className={`grid size-10 place-items-center rounded-xl ${p.ok ? "bg-emerald-500/10 text-emerald-300" : "bg-red-500/10 text-red-300"}`}>
+                  <div
+                    className={`grid size-10 place-items-center rounded-xl ${p.ok ? "bg-emerald-500/10 text-emerald-300" : "bg-red-500/10 text-red-300"}`}
+                  >
                     <Icon className="size-5" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -97,7 +120,9 @@ export function SystemHealthPanel() {
                       {p.latency}ms
                     </span>
                   )}
-                  <span className={`size-2 rounded-full ${p.ok ? "bg-emerald-400 shadow-[0_0_8px_oklch(0.78_0.18_150/0.7)]" : "bg-red-400"}`} />
+                  <span
+                    className={`size-2 rounded-full ${p.ok ? "bg-emerald-400 shadow-[0_0_8px_oklch(0.78_0.18_150/0.7)]" : "bg-red-400"}`}
+                  />
                 </div>
               </div>
             );
@@ -106,17 +131,23 @@ export function SystemHealthPanel() {
       )}
 
       {lastCheck && (
-        <p className="text-[10px] text-muted-foreground">Ultima verificare: {lastCheck.toLocaleTimeString("ro-RO")}</p>
+        <p className="text-[10px] text-muted-foreground">
+          Ultima verificare: {lastCheck.toLocaleTimeString("ro-RO")}
+        </p>
       )}
 
       <section className="rounded-2xl border border-border bg-surface/40 p-4">
         <h3 className="text-sm font-semibold">Reguli active (din AGENTS.md)</h3>
         <ul className="mt-2 space-y-1.5 text-xs text-muted-foreground">
           <li>• Locație precisă — niciodată către alți useri. Doar bucket.</li>
-          <li>• Orientare/mesaje/selfie — doar Break-glass cu justificare. (HIV: eliminat complet.)</li>
+          <li>
+            • Orientare/mesaje/selfie — doar Break-glass cu justificare. (HIV: eliminat complet.)
+          </li>
           <li>• CSAM — fără randare imagini. Doar hash.</li>
           <li>• Moderare obligatorie pentru venues/events/offers.</li>
-          <li>• Consimțăminte centralizate în <code>consent_kinds()</code>.</li>
+          <li>
+            • Consimțăminte centralizate în <code>consent_kinds()</code>.
+          </li>
         </ul>
       </section>
     </div>

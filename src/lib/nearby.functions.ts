@@ -41,7 +41,6 @@ export const getNearbyPoints = createServerFn({ method: "POST" })
     return { points: (rows ?? []) as NearbyPoint[] };
   });
 
-
 export const claimOffer = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: { offerId: string }) => {

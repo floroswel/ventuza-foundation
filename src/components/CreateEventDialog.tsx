@@ -24,7 +24,9 @@ export function CreateEventDialog({
   const [type, setType] = useState<EventType>("party");
   const [city, setCity] = useState("");
   const [venue, setVenue] = useState("");
-  const [startsAt, setStartsAt] = useState(() => toLocalInputValue(new Date(Date.now() + 60 * 60 * 1000)));
+  const [startsAt, setStartsAt] = useState(() =>
+    toLocalInputValue(new Date(Date.now() + 60 * 60 * 1000)),
+  );
   const [maxAttendees, setMaxAttendees] = useState<string>("");
   const [isPrivate, setIsPrivate] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -32,9 +34,14 @@ export function CreateEventDialog({
   if (!open) return null;
 
   const reset = () => {
-    setTitle(""); setDescription(""); setType("party"); setCity(""); setVenue("");
+    setTitle("");
+    setDescription("");
+    setType("party");
+    setCity("");
+    setVenue("");
     setStartsAt(toLocalInputValue(new Date(Date.now() + 60 * 60 * 1000)));
-    setMaxAttendees(""); setIsPrivate(false);
+    setMaxAttendees("");
+    setIsPrivate(false);
   };
 
   const submit = async () => {
@@ -69,13 +76,21 @@ export function CreateEventDialog({
       <div className="w-full max-w-md rounded-t-3xl border border-border bg-background sm:rounded-3xl">
         <div className="flex items-center justify-between border-b border-border/60 px-4 py-3">
           <h2 className="text-base font-semibold">Propune un eveniment</h2>
-          <button onClick={() => onOpenChange(false)} className="rounded-full p-2 text-muted-foreground hover:text-foreground">
+          <button
+            onClick={() => onOpenChange(false)}
+            className="rounded-full p-2 text-muted-foreground hover:text-foreground"
+          >
             <X className="size-4" />
           </button>
         </div>
         <div className="max-h-[70vh] space-y-3 overflow-y-auto px-4 py-4">
           <Field label="Title">
-            <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Summer Pride party" className={inputCls} />
+            <input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Summer Pride party"
+              className={inputCls}
+            />
           </Field>
 
           <Field label="Type">
@@ -94,27 +109,60 @@ export function CreateEventDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <Field label="City">
-              <input value={city} onChange={(e) => setCity(e.target.value)} placeholder="Bucharest" className={inputCls} />
+              <input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="Bucharest"
+                className={inputCls}
+              />
             </Field>
             <Field label="Venue (optional)">
-              <input value={venue} onChange={(e) => setVenue(e.target.value)} placeholder="Club X" className={inputCls} />
+              <input
+                value={venue}
+                onChange={(e) => setVenue(e.target.value)}
+                placeholder="Club X"
+                className={inputCls}
+              />
             </Field>
           </div>
 
           <Field label="Starts at">
-            <input type="datetime-local" value={startsAt} onChange={(e) => setStartsAt(e.target.value)} className={inputCls} />
+            <input
+              type="datetime-local"
+              value={startsAt}
+              onChange={(e) => setStartsAt(e.target.value)}
+              className={inputCls}
+            />
           </Field>
 
           <Field label="Max attendees (optional)">
-            <input type="number" min={1} value={maxAttendees} onChange={(e) => setMaxAttendees(e.target.value)} placeholder="No limit" className={inputCls} />
+            <input
+              type="number"
+              min={1}
+              value={maxAttendees}
+              onChange={(e) => setMaxAttendees(e.target.value)}
+              placeholder="No limit"
+              className={inputCls}
+            />
           </Field>
 
           <Field label="Description">
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} placeholder="Dress code, vibe, address details…" className={`${inputCls} resize-none`} />
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={4}
+              placeholder="Dress code, vibe, address details…"
+              className={`${inputCls} resize-none`}
+            />
           </Field>
 
           <label className="flex items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm">
-            <input type="checkbox" checked={isPrivate} onChange={(e) => setIsPrivate(e.target.checked)} className="size-4 accent-primary" />
+            <input
+              type="checkbox"
+              checked={isPrivate}
+              onChange={(e) => setIsPrivate(e.target.checked)}
+              className="size-4 accent-primary"
+            />
             <span>Privat — vizibil doar pentru mine</span>
           </label>
           <p className="rounded-xl border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
@@ -122,7 +170,10 @@ export function CreateEventDialog({
           </p>
         </div>
         <div className="flex items-center justify-end gap-2 border-t border-border/60 px-4 py-3">
-          <button onClick={() => onOpenChange(false)} className="rounded-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground">
+          <button
+            onClick={() => onOpenChange(false)}
+            className="rounded-full px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
+          >
             Renunță
           </button>
           <button
@@ -139,12 +190,15 @@ export function CreateEventDialog({
   );
 }
 
-const inputCls = "w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-primary";
+const inputCls =
+  "w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm outline-none focus:border-primary";
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div>
-      <label className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">{label}</label>
+      <label className="mb-1 block text-xs uppercase tracking-wider text-muted-foreground">
+        {label}
+      </label>
       {children}
     </div>
   );

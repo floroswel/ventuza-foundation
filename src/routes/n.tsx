@@ -81,15 +81,15 @@ const empty: Data = {
 };
 
 const STEPS = [
-  "basics",       // name + birthdate
-  "identity",     // gender + pronouns + orientation
-  "intent",       // looking_for + tribes
-  "stats",        // body/position/height/weight/ethnicity/relationship + health
-  "personality",  // interests + prompts + bio
-  "photos",       // photos + terms
+  "basics", // name + birthdate
+  "identity", // gender + pronouns + orientation
+  "intent", // looking_for + tribes
+  "stats", // body/position/height/weight/ethnicity/relationship + health
+  "personality", // interests + prompts + bio
+  "photos", // photos + terms
 ] as const;
 
-const STEP_LABELS: Record<typeof STEPS[number], string> = {
+const STEP_LABELS: Record<(typeof STEPS)[number], string> = {
   basics: "Despre tine",
   identity: "Identitate",
   intent: "Ce cauți",
@@ -133,7 +133,9 @@ function Onboarding() {
         if (parsed.data) setData({ ...empty, ...parsed.data });
         if (typeof parsed.step === "number") setStep(Math.min(parsed.step, STEPS.length - 1));
       }
-    } catch { /* corrupt → ignore */ }
+    } catch {
+      /* corrupt → ignore */
+    }
     setHydrated(true);
   }, []);
 
@@ -142,22 +144,34 @@ function Onboarding() {
     if (!hydrated || typeof window === "undefined") return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, data, uid: user?.id ?? null }));
-    } catch { /* quota → ignore */ }
+    } catch {
+      /* quota → ignore */
+    }
   }, [step, data, hydrated, user?.id]);
 
   // Guard: dacă userul a terminat deja onboarding-ul, redirect către /discover.
   useEffect(() => {
     if (!user) return;
     let alive = true;
-    supabase.from("profiles").select("onboarding_completed").eq("id", user.id).maybeSingle()
+    supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", user.id)
+      .maybeSingle()
       .then(({ data: row }) => {
         if (!alive) return;
         if (row?.onboarding_completed) {
-          try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
+          try {
+            localStorage.removeItem(STORAGE_KEY);
+          } catch {
+            /* noop */
+          }
           navigate({ to: "/discover", replace: true });
         }
       });
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, [user?.id, navigate]);
 
   useEffect(() => {
@@ -170,11 +184,15 @@ function Onboarding() {
   const canContinue = useMemo(() => {
     switch (current) {
       case "basics":
-        return data.display_name.trim().length >= 2 && !!data.birthdate && calcAge(data.birthdate) >= 18;
+        return (
+          data.display_name.trim().length >= 2 && !!data.birthdate && calcAge(data.birthdate) >= 18
+        );
       case "identity":
-        return (data.gender.length > 0 || data.gender_custom.trim().length > 0)
-          && (data.pronouns.length > 0 || data.pronouns_custom.trim().length > 0)
-          && data.orientation.length > 0;
+        return (
+          (data.gender.length > 0 || data.gender_custom.trim().length > 0) &&
+          (data.pronouns.length > 0 || data.pronouns_custom.trim().length > 0) &&
+          data.orientation.length > 0
+        );
       case "intent":
         return data.looking_for.length > 0;
       case "stats":
@@ -201,45 +219,55 @@ function Onboarding() {
       { kind: "terms", version: "2026-06-22", accepted: true },
       { kind: "privacy", version: "2026-06-22", accepted: true },
     ];
-    const { error: consentError } = await supabase.from("consent_log").insert(
-      consents.map((c) => ({ user_id: user.id, ...c, user_agent: ua })),
-    );
+    const { error: consentError } = await supabase
+      .from("consent_log")
+      .insert(consents.map((c) => ({ user_id: user.id, ...c, user_agent: ua })));
     if (consentError) {
       setSaving(false);
       return toast.error(consentError.message);
     }
 
-    const { error } = await supabase.from("profiles").update({
-      display_name: data.display_name.trim(),
-      birthdate: data.birthdate,
-      gender: data.gender,
-      gender_custom: data.gender_custom.trim() || null,
-      pronouns: data.pronouns,
-      pronouns_custom: data.pronouns_custom.trim() || null,
-      orientation: data.orientation,
-      looking_for: data.looking_for,
-      tribes: data.tribes,
-      body_type: data.body_type || null,
-      height_cm: data.height_cm,
-      weight_kg: data.weight_kg,
-      ethnicity: data.ethnicity || null,
-      position: data.position || null,
-      relationship_status: data.relationship_status || null,
-      interests: data.interests,
-      bio: data.bio.trim(),
-      prompts: data.prompts,
-      photos: data.photos,
-      terms_accepted_version: "2026-06-22",
-      terms_accepted_at: new Date().toISOString(),
-      privacy_accepted_version: "2026-06-22",
-      privacy_accepted_at: new Date().toISOString(),
-      onboarding_completed: true,
-    }).eq("id", user.id);
-    if (error) { setSaving(false); return toast.error(error.message); }
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        display_name: data.display_name.trim(),
+        birthdate: data.birthdate,
+        gender: data.gender,
+        gender_custom: data.gender_custom.trim() || null,
+        pronouns: data.pronouns,
+        pronouns_custom: data.pronouns_custom.trim() || null,
+        orientation: data.orientation,
+        looking_for: data.looking_for,
+        tribes: data.tribes,
+        body_type: data.body_type || null,
+        height_cm: data.height_cm,
+        weight_kg: data.weight_kg,
+        ethnicity: data.ethnicity || null,
+        position: data.position || null,
+        relationship_status: data.relationship_status || null,
+        interests: data.interests,
+        bio: data.bio.trim(),
+        prompts: data.prompts,
+        photos: data.photos,
+        terms_accepted_version: "2026-06-22",
+        terms_accepted_at: new Date().toISOString(),
+        privacy_accepted_version: "2026-06-22",
+        privacy_accepted_at: new Date().toISOString(),
+        onboarding_completed: true,
+      })
+      .eq("id", user.id);
+    if (error) {
+      setSaving(false);
+      return toast.error(error.message);
+    }
 
     setSaving(false);
 
-    try { localStorage.removeItem(STORAGE_KEY); } catch { /* noop */ }
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* noop */
+    }
     toast.success("Your profile is ready.");
     // Înainte de a duce userul în /discover, oferim activarea push (consimțământ
     // recorded prin EnablePushButton → savePushSubscription → record_consent).
@@ -260,13 +288,17 @@ function Onboarding() {
         <div className="space-y-2 max-w-sm">
           <h2 className="wordmark text-3xl font-medium">Aproape gata</h2>
           <p className="text-sm text-muted-foreground">
-            Activează notificările ca să afli imediat când ai un match nou sau un mesaj.
-            Mod discret implicit — nimeni nu vede preview-ul.
+            Activează notificările ca să afli imediat când ai un match nou sau un mesaj. Mod discret
+            implicit — nimeni nu vede preview-ul.
           </p>
         </div>
         <div className="flex w-full max-w-xs flex-col gap-2">
           <EnablePushButton className="w-full" />
-          <Button variant="outline" size="lg" onClick={() => navigate({ to: "/discover", replace: true })}>
+          <Button
+            variant="outline"
+            size="lg"
+            onClick={() => navigate({ to: "/discover", replace: true })}
+          >
             Continuă fără notificări
           </Button>
         </div>
@@ -278,10 +310,15 @@ function Onboarding() {
     <main className="flex min-h-dvh flex-col bg-background">
       <header className="px-6 pt-6">
         <div className="flex items-center justify-between">
-          <button onClick={back} className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary">
+          <button
+            onClick={back}
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
+          >
             <ArrowLeft className="size-4" /> Înapoi
           </button>
-          <span className="text-xs text-muted-foreground">{STEP_LABELS[current]} · {step + 1}/{STEPS.length}</span>
+          <span className="text-xs text-muted-foreground">
+            {STEP_LABELS[current]} · {step + 1}/{STEPS.length}
+          </span>
         </div>
         <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-surface">
           <div
@@ -296,7 +333,13 @@ function Onboarding() {
       </section>
 
       <footer className="sticky bottom-0 border-t border-border/50 bg-background/80 px-6 py-4 backdrop-blur">
-        <Button onClick={next} disabled={!canContinue || saving} variant="hero" size="lg" className="w-full">
+        <Button
+          onClick={next}
+          disabled={!canContinue || saving}
+          variant="hero"
+          size="lg"
+          className="w-full"
+        >
           {saving && <Loader2 className="size-4 animate-spin" />}
           {step === STEPS.length - 1 ? "Finish" : "Continue"}
           {!saving && <ArrowRight className="size-4" />}
@@ -307,9 +350,12 @@ function Onboarding() {
 }
 
 function StepView({
-  step, data, setData, user,
+  step,
+  data,
+  setData,
+  user,
 }: {
-  step: typeof STEPS[number];
+  step: (typeof STEPS)[number];
   data: Data;
   setData: (d: Data) => void;
   user?: string;
@@ -319,8 +365,12 @@ function StepView({
       return (
         <div className="mx-auto w-full max-w-lg space-y-6">
           <div>
-            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Să te cunoaștem</h2>
-            <p className="mt-2 text-muted-foreground">Numele și data nașterii. Trebuie să ai 18+.</p>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
+              Să te cunoaștem
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Numele și data nașterii. Trebuie să ai 18+.
+            </p>
           </div>
           <div className="space-y-2">
             <Label>Cum te numești?</Label>
@@ -352,22 +402,48 @@ function StepView({
       return (
         <div className="mx-auto w-full max-w-lg space-y-8">
           <div>
-            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Identitatea ta</h2>
-            <p className="mt-2 text-muted-foreground">Gen, pronume și orientare. Alege orice ți se potrivește.</p>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
+              Identitatea ta
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Gen, pronume și orientare. Alege orice ți se potrivește.
+            </p>
           </div>
           <div className="space-y-3">
             <Label>Gen</Label>
-            <ChipGrid options={GENDER_OPTIONS} selected={data.gender} onToggle={(v) => setData({ ...data, gender: toggle(data.gender, v) })} />
-            <Input value={data.gender_custom} onChange={(e) => setData({ ...data, gender_custom: e.target.value })} placeholder="Personalizat (opțional)" className="h-11 bg-surface border-border" />
+            <ChipGrid
+              options={GENDER_OPTIONS}
+              selected={data.gender}
+              onToggle={(v) => setData({ ...data, gender: toggle(data.gender, v) })}
+            />
+            <Input
+              value={data.gender_custom}
+              onChange={(e) => setData({ ...data, gender_custom: e.target.value })}
+              placeholder="Personalizat (opțional)"
+              className="h-11 bg-surface border-border"
+            />
           </div>
           <div className="space-y-3">
             <Label>Pronume</Label>
-            <ChipGrid options={PRONOUN_OPTIONS} selected={data.pronouns} onToggle={(v) => setData({ ...data, pronouns: toggle(data.pronouns, v) })} />
-            <Input value={data.pronouns_custom} onChange={(e) => setData({ ...data, pronouns_custom: e.target.value })} placeholder="ex: ze/zir (opțional)" className="h-11 bg-surface border-border" />
+            <ChipGrid
+              options={PRONOUN_OPTIONS}
+              selected={data.pronouns}
+              onToggle={(v) => setData({ ...data, pronouns: toggle(data.pronouns, v) })}
+            />
+            <Input
+              value={data.pronouns_custom}
+              onChange={(e) => setData({ ...data, pronouns_custom: e.target.value })}
+              placeholder="ex: ze/zir (opțional)"
+              className="h-11 bg-surface border-border"
+            />
           </div>
           <div className="space-y-3">
             <Label>Orientare</Label>
-            <ChipGrid options={ORIENTATION_OPTIONS} selected={data.orientation} onToggle={(v) => setData({ ...data, orientation: toggle(data.orientation, v) })} />
+            <ChipGrid
+              options={ORIENTATION_OPTIONS}
+              selected={data.orientation}
+              onToggle={(v) => setData({ ...data, orientation: toggle(data.orientation, v) })}
+            />
           </div>
         </div>
       );
@@ -377,15 +453,27 @@ function StepView({
         <div className="mx-auto w-full max-w-lg space-y-8">
           <div>
             <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Ce cauți?</h2>
-            <p className="mt-2 text-muted-foreground">Alege orice se potrivește. Triburile sunt opționale.</p>
+            <p className="mt-2 text-muted-foreground">
+              Alege orice se potrivește. Triburile sunt opționale.
+            </p>
           </div>
           <div className="space-y-3">
             <Label>Caut</Label>
-            <ChipGrid options={LOOKING_FOR_OPTIONS} selected={data.looking_for} onToggle={(v) => setData({ ...data, looking_for: toggle(data.looking_for, v) })} />
+            <ChipGrid
+              options={LOOKING_FOR_OPTIONS}
+              selected={data.looking_for}
+              onToggle={(v) => setData({ ...data, looking_for: toggle(data.looking_for, v) })}
+            />
           </div>
           <div className="space-y-3">
-            <Label>Triburi <span className="text-muted-foreground font-normal">(opțional)</span></Label>
-            <ChipGrid options={TRIBE_OPTIONS} selected={data.tribes} onToggle={(v) => setData({ ...data, tribes: toggle(data.tribes, v) })} />
+            <Label>
+              Triburi <span className="text-muted-foreground font-normal">(opțional)</span>
+            </Label>
+            <ChipGrid
+              options={TRIBE_OPTIONS}
+              selected={data.tribes}
+              onToggle={(v) => setData({ ...data, tribes: toggle(data.tribes, v) })}
+            />
           </div>
         </div>
       );
@@ -394,38 +482,74 @@ function StepView({
       return (
         <div className="mx-auto w-full max-w-lg space-y-6">
           <div>
-            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Profilul tău fizic</h2>
-            <p className="mt-2 text-muted-foreground">Totul este opțional. Arată doar ce vrei tu.</p>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
+              Profilul tău fizic
+            </h2>
+            <p className="mt-2 text-muted-foreground">
+              Totul este opțional. Arată doar ce vrei tu.
+            </p>
           </div>
           <div className="space-y-2">
             <Label>Tip corp</Label>
-            <ChipGrid options={BODY_TYPE_OPTIONS} selected={data.body_type ? [data.body_type] : []} onToggle={(v) => setData({ ...data, body_type: data.body_type === v ? "" : v })} />
+            <ChipGrid
+              options={BODY_TYPE_OPTIONS}
+              selected={data.body_type ? [data.body_type] : []}
+              onToggle={(v) => setData({ ...data, body_type: data.body_type === v ? "" : v })}
+            />
           </div>
           <div className="space-y-2">
             <Label>Poziție</Label>
-            <ChipGrid options={POSITION_OPTIONS} selected={data.position ? [data.position] : []} onToggle={(v) => setData({ ...data, position: data.position === v ? "" : v })} />
+            <ChipGrid
+              options={POSITION_OPTIONS}
+              selected={data.position ? [data.position] : []}
+              onToggle={(v) => setData({ ...data, position: data.position === v ? "" : v })}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label>Înălțime (cm)</Label>
-              <Input type="number" min={140} max={220} value={data.height_cm ?? ""}
-                onChange={(e) => setData({ ...data, height_cm: e.target.value ? Number(e.target.value) : null })}
-                className="h-12 bg-surface border-border" />
+              <Input
+                type="number"
+                min={140}
+                max={220}
+                value={data.height_cm ?? ""}
+                onChange={(e) =>
+                  setData({ ...data, height_cm: e.target.value ? Number(e.target.value) : null })
+                }
+                className="h-12 bg-surface border-border"
+              />
             </div>
             <div className="space-y-2">
               <Label>Greutate (kg)</Label>
-              <Input type="number" min={40} max={200} value={data.weight_kg ?? ""}
-                onChange={(e) => setData({ ...data, weight_kg: e.target.value ? Number(e.target.value) : null })}
-                className="h-12 bg-surface border-border" />
+              <Input
+                type="number"
+                min={40}
+                max={200}
+                value={data.weight_kg ?? ""}
+                onChange={(e) =>
+                  setData({ ...data, weight_kg: e.target.value ? Number(e.target.value) : null })
+                }
+                className="h-12 bg-surface border-border"
+              />
             </div>
           </div>
           <div className="space-y-2">
             <Label>Etnie</Label>
-            <ChipGrid options={ETHNICITY_OPTIONS} selected={data.ethnicity ? [data.ethnicity] : []} onToggle={(v) => setData({ ...data, ethnicity: data.ethnicity === v ? "" : v })} />
+            <ChipGrid
+              options={ETHNICITY_OPTIONS}
+              selected={data.ethnicity ? [data.ethnicity] : []}
+              onToggle={(v) => setData({ ...data, ethnicity: data.ethnicity === v ? "" : v })}
+            />
           </div>
           <div className="space-y-2">
             <Label>Status relație</Label>
-            <ChipGrid options={RELATIONSHIP_STATUS_OPTIONS} selected={data.relationship_status ? [data.relationship_status] : []} onToggle={(v) => setData({ ...data, relationship_status: data.relationship_status === v ? "" : v })} />
+            <ChipGrid
+              options={RELATIONSHIP_STATUS_OPTIONS}
+              selected={data.relationship_status ? [data.relationship_status] : []}
+              onToggle={(v) =>
+                setData({ ...data, relationship_status: data.relationship_status === v ? "" : v })
+              }
+            />
           </div>
           {/* Câmpul de status HIV a fost eliminat — Ventuza nu mai procesează
               date de sănătate (decizie GDPR: reducere risc Art. 9). Pentru
@@ -441,12 +565,27 @@ function StepView({
             <p className="mt-2 text-muted-foreground">Interese și o scurtă bio.</p>
           </div>
           <div className="space-y-3">
-            <Label>Interese <span className="text-muted-foreground font-normal">(min. 3)</span></Label>
-            <ChipGrid options={INTEREST_OPTIONS} selected={data.interests} onToggle={(v) => setData({ ...data, interests: toggle(data.interests, v) })} />
+            <Label>
+              Interese <span className="text-muted-foreground font-normal">(min. 3)</span>
+            </Label>
+            <ChipGrid
+              options={INTEREST_OPTIONS}
+              selected={data.interests}
+              onToggle={(v) => setData({ ...data, interests: toggle(data.interests, v) })}
+            />
           </div>
           <div className="space-y-2">
-            <Label>Bio scurt <span className="text-muted-foreground font-normal">(opțional)</span></Label>
-            <Textarea value={data.bio} onChange={(e) => setData({ ...data, bio: e.target.value })} rows={5} maxLength={500} placeholder="Câteva rânduri despre tine…" className="bg-surface border-border" />
+            <Label>
+              Bio scurt <span className="text-muted-foreground font-normal">(opțional)</span>
+            </Label>
+            <Textarea
+              value={data.bio}
+              onChange={(e) => setData({ ...data, bio: e.target.value })}
+              rows={5}
+              maxLength={500}
+              placeholder="Câteva rânduri despre tine…"
+              className="bg-surface border-border"
+            />
             <p className="text-right text-xs text-muted-foreground">{data.bio.length}/500</p>
           </div>
         </div>
@@ -457,15 +596,26 @@ function StepView({
         <div className="space-y-6">
           <PhotosStep data={data} setData={setData} user={user} />
           <label className="mx-auto flex w-full max-w-lg items-start gap-3 rounded-xl border border-border bg-surface/40 p-3">
-            <input type="checkbox" className="mt-1" checked={data.terms_accepted}
-              onChange={(e) => setData({ ...data, terms_accepted: e.target.checked })} />
+            <input
+              type="checkbox"
+              className="mt-1"
+              checked={data.terms_accepted}
+              onChange={(e) => setData({ ...data, terms_accepted: e.target.checked })}
+            />
             <span className="text-xs leading-relaxed text-foreground/85">
               Am citit și accept{" "}
-              <a href="/legal/terms" target="_blank" className="text-primary underline">Termenii</a>,{" "}
-              <a href="/legal/privacy" target="_blank" className="text-primary underline">Confidențialitatea</a>{" "}
+              <a href="/legal/terms" target="_blank" className="text-primary underline">
+                Termenii
+              </a>
+              ,{" "}
+              <a href="/legal/privacy" target="_blank" className="text-primary underline">
+                Confidențialitatea
+              </a>{" "}
               și{" "}
-              <a href="/legal/community" target="_blank" className="text-primary underline">Regulile Comunității</a>.
-              Confirm că am cel puțin 18 ani.
+              <a href="/legal/community" target="_blank" className="text-primary underline">
+                Regulile Comunității
+              </a>
+              . Confirm că am cel puțin 18 ani.
             </span>
           </label>
         </div>
@@ -473,7 +623,15 @@ function StepView({
   }
 }
 
-function Field({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
+function Field({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="mx-auto w-full max-w-lg space-y-6">
       <div>
@@ -485,11 +643,21 @@ function Field({ title, hint, children }: { title: string; hint?: string; childr
   );
 }
 
-function ChipGrid({ options, selected, onToggle }: { options: string[]; selected: string[]; onToggle: (v: string) => void }) {
+function ChipGrid({
+  options,
+  selected,
+  onToggle,
+}: {
+  options: string[];
+  selected: string[];
+  onToggle: (v: string) => void;
+}) {
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((o) => (
-        <Chip key={o} active={selected.includes(o)} onClick={() => onToggle(o)}>{o}</Chip>
+        <Chip key={o} active={selected.includes(o)} onClick={() => onToggle(o)}>
+          {o}
+        </Chip>
       ))}
     </div>
   );
@@ -518,7 +686,9 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
             >
               <option value="">Alege un prompt…</option>
               {PROMPT_OPTIONS.map((q) => (
-                <option key={q} value={q} disabled={used.includes(q) && cur?.question !== q}>{q}</option>
+                <option key={q} value={q} disabled={used.includes(q) && cur?.question !== q}>
+                  {q}
+                </option>
               ))}
             </select>
             <Textarea
@@ -537,7 +707,15 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
   );
 }
 
-function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) => void; user?: string }) {
+function PhotosStep({
+  data,
+  setData,
+  user,
+}: {
+  data: Data;
+  setData: (d: Data) => void;
+  user?: string;
+}) {
   const [uploading, setUploading] = useState(false);
   const [signed, setSigned] = useState<Record<string, string>>({});
   const moderate = useServerFn(moderatePhoto);
@@ -566,26 +744,41 @@ function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) =>
         }
         const ext = file.name.split(".").pop() || "jpg";
         const path = `${user}/${crypto.randomUUID()}.${ext}`;
-        const { error } = await supabase.storage.from("profile-photos").upload(path, file, { upsert: false, contentType: file.type });
-        if (error) { toast.error(error.message); continue; }
+        const { error } = await supabase.storage
+          .from("profile-photos")
+          .upload(path, file, { upsert: false, contentType: file.type });
+        if (error) {
+          toast.error(error.message);
+          continue;
+        }
 
         // AI moderation cu retry. Dacă AI-ul e DOWN după retry-uri, NU blocăm signup-ul:
         // pătrăm poza, dar o marcăm pentru review manual (insert în risk_flags) și
         // anunțăm userul. Poza rămâne privată până la review (RLS profile photos).
-        let modOk = false; let modBlocked = false; let lastErr = "";
+        let modOk = false;
+        let modBlocked = false;
+        let lastErr = "";
         try {
-          const { data: signedData } = await supabase.storage.from("profile-photos").createSignedUrl(path, 300);
+          const { data: signedData } = await supabase.storage
+            .from("profile-photos")
+            .createSignedUrl(path, 300);
           if (signedData?.signedUrl) {
             for (let attempt = 0; attempt < 3 && !modOk && !modBlocked; attempt++) {
               try {
                 const mod = await moderate({ data: { photoUrl: signedData.signedUrl } });
-                if (mod.allowed) { modOk = true; break; }
+                if (mod.allowed) {
+                  modOk = true;
+                  break;
+                }
                 modBlocked = true;
                 await supabase.storage.from("profile-photos").remove([path]);
-                toast.error(`Poză respinsă: ${mod.reason || "conținut nepermis pe profilul public"}.`);
+                toast.error(
+                  `Poză respinsă: ${mod.reason || "conținut nepermis pe profilul public"}.`,
+                );
               } catch (e) {
                 lastErr = (e as Error).message;
-                if (attempt < 2) await new Promise((r) => setTimeout(r, 400 * Math.pow(2, attempt)));
+                if (attempt < 2)
+                  await new Promise((r) => setTimeout(r, 400 * Math.pow(2, attempt)));
               }
             }
           }
@@ -602,7 +795,9 @@ function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) =>
               severity: "low",
               meta: { path, reason: "ai_moderation_unavailable", err: lastErr.slice(0, 200) },
             } as never);
-          } catch { /* tabel poate avea schema diferită; nu blocăm */ }
+          } catch {
+            /* tabel poate avea schema diferită; nu blocăm */
+          }
           toast.message("Poză adăugată — verificare manuală în curs", {
             description: "Va fi vizibilă public după ce un moderator o aprobă.",
           });
@@ -617,7 +812,6 @@ function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) =>
     }
   }
 
-
   async function remove(path: string) {
     await supabase.storage.from("profile-photos").remove([path]);
     setData({ ...data, photos: data.photos.filter((p) => p !== path) });
@@ -627,21 +821,40 @@ function PhotosStep({ data, setData, user }: { data: Data; setData: (d: Data) =>
     <Field title="Add your photos" hint="Maxim 6 poze. Prima este principală.">
       <div className="grid grid-cols-3 gap-3">
         {data.photos.map((p, i) => (
-          <div key={p} className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-border bg-surface">
+          <div
+            key={p}
+            className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-border bg-surface"
+          >
             {signed[p] && <img src={signed[p]} alt="" className="size-full object-cover" />}
             {i === 0 && (
-              <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">Main</span>
+              <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
+                Main
+              </span>
             )}
-            <button onClick={() => remove(p)} aria-label="Remove photo" className="absolute right-2 top-2 rounded-full bg-background/80 p-1 text-foreground backdrop-blur hover:bg-destructive hover:text-destructive-foreground">
+            <button
+              onClick={() => remove(p)}
+              aria-label="Remove photo"
+              className="absolute right-2 top-2 rounded-full bg-background/80 p-1 text-foreground backdrop-blur hover:bg-destructive hover:text-destructive-foreground"
+            >
               <X className="size-3.5" />
             </button>
           </div>
         ))}
         {data.photos.length < 6 && (
           <label className="flex aspect-[3/4] cursor-pointer flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface text-muted-foreground transition-colors hover:border-primary hover:text-primary">
-            {uploading ? <Loader2 className="size-5 animate-spin" /> : <Upload className="size-5" />}
+            {uploading ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Upload className="size-5" />
+            )}
             <span className="text-xs">Add photo</span>
-            <input type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleUpload(e.target.files)} />
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => handleUpload(e.target.files)}
+            />
           </label>
         )}
       </div>

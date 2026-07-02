@@ -11,8 +11,13 @@ import { useState, type ReactNode } from "react";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter,
-  DialogHeader, DialogTitle, DialogTrigger,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -30,8 +35,14 @@ export type ReasonDialogProps = {
 };
 
 export function ReasonDialog({
-  trigger, title, description, fields, confirmLabel = "Confirmă",
-  destructive = false, minLen = 10, onConfirm,
+  trigger,
+  title,
+  description,
+  fields,
+  confirmLabel = "Confirmă",
+  destructive = false,
+  minLen = 10,
+  onConfirm,
 }: ReasonDialogProps) {
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -67,21 +78,32 @@ export function ReasonDialog({
           {fields}
           <div>
             <Label htmlFor="reason" className="text-sm">
-              Justificare (obligatorie, min. {minLen} caractere) <span className="text-destructive">*</span>
+              Justificare (obligatorie, min. {minLen} caractere){" "}
+              <span className="text-destructive">*</span>
             </Label>
             <Textarea
-              id="reason" value={reason} onChange={(e) => setReason(e.target.value)}
+              id="reason"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
               placeholder="Ex: ticket #1234, decizie moderare, Art. 16 GDPR rectificare"
-              rows={3} className="mt-1"
+              rows={3}
+              className="mt-1"
             />
             <p className="text-[11px] text-muted-foreground mt-1">
-              Salvată în <code>admin_audit_log</code> (append-only). Vizibilă pentru auditor/super_admin.
+              Salvată în <code>admin_audit_log</code> (append-only). Vizibilă pentru
+              auditor/super_admin.
             </p>
           </div>
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>Anulează</Button>
-          <Button onClick={submit} disabled={busy} variant={destructive ? "destructive" : "default"}>
+          <Button variant="outline" onClick={() => setOpen(false)} disabled={busy}>
+            Anulează
+          </Button>
+          <Button
+            onClick={submit}
+            disabled={busy}
+            variant={destructive ? "destructive" : "default"}
+          >
             {busy && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
             {confirmLabel}
           </Button>

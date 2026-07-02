@@ -211,7 +211,8 @@ function CruiseRow({
         <p className="truncate text-sm font-medium text-foreground">{p.display_name}</p>
         <p className="truncate text-[11px] text-muted-foreground">
           <Flame className="mr-1 inline size-3 text-rose-400" />
-          {p.looking_now_intent ?? "Right now"} · {minutesLeft}m rămase · {formatDistance(p.distance_m)}
+          {p.looking_now_intent ?? "Right now"} · {minutesLeft}m rămase ·{" "}
+          {formatDistance(p.distance_m)}
         </p>
       </div>
       <button

@@ -49,10 +49,15 @@ export function UndoRedoToolbar() {
             Istoric ({past.length}) · Redo ({future.length})
           </div>
           {past.length === 0 && future.length === 0 && (
-            <p className="px-2 py-3 text-center text-xs text-muted-foreground">Fără acțiuni în această sesiune.</p>
+            <p className="px-2 py-3 text-center text-xs text-muted-foreground">
+              Fără acțiuni în această sesiune.
+            </p>
           )}
           {[...past].reverse().map((e, i) => (
-            <div key={e.id} className="flex items-center justify-between rounded-md px-2 py-1 text-xs hover:bg-surface-elevated">
+            <div
+              key={e.id}
+              className="flex items-center justify-between rounded-md px-2 py-1 text-xs hover:bg-surface-elevated"
+            >
               <span className="truncate">
                 <span className="text-muted-foreground">{i === 0 ? "→ " : "  "}</span>
                 {e.label}
@@ -65,9 +70,14 @@ export function UndoRedoToolbar() {
           {future.length > 0 && (
             <div className="mt-1 border-t border-border/50 pt-1">
               {future.map((e) => (
-                <div key={e.id} className="flex items-center justify-between rounded-md px-2 py-1 text-xs text-muted-foreground/70">
+                <div
+                  key={e.id}
+                  className="flex items-center justify-between rounded-md px-2 py-1 text-xs text-muted-foreground/70"
+                >
                   <span className="truncate">↻ {e.label}</span>
-                  <span className="ml-2 shrink-0 text-[10px]">{new Date(e.ts).toLocaleTimeString("ro-RO")}</span>
+                  <span className="ml-2 shrink-0 text-[10px]">
+                    {new Date(e.ts).toLocaleTimeString("ro-RO")}
+                  </span>
                 </div>
               ))}
             </div>

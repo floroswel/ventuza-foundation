@@ -50,10 +50,13 @@ function VerificationCard({ userId, mainPhotoPath, verificationStatus, onUpdate 
       ]);
       if (!sa?.signedUrl || !sb?.signedUrl) throw new Error("Nu am putut accesa pozele.");
 
-      await supabase.from("profiles").update({
-        verification_selfie_path: path,
-        verification_status: "pending",
-      }).eq("id", userId);
+      await supabase
+        .from("profiles")
+        .update({
+          verification_selfie_path: path,
+          verification_status: "pending",
+        })
+        .eq("id", userId);
 
       const res = await verify({ data: { selfieUrl: sa.signedUrl, mainPhotoUrl: sb.signedUrl } });
       if (res.verified) toast.success("Verificat ✓ — ai badge-ul oficial.");
@@ -71,7 +74,9 @@ function VerificationCard({ userId, mainPhotoPath, verificationStatus, onUpdate 
   return (
     <div className="rounded-2xl border border-border bg-surface p-4">
       <div className="flex items-start gap-3">
-        <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${verified ? "bg-primary/15 text-primary" : "bg-surface-elevated text-muted-foreground"}`}>
+        <span
+          className={`flex size-10 shrink-0 items-center justify-center rounded-full ${verified ? "bg-primary/15 text-primary" : "bg-surface-elevated text-muted-foreground"}`}
+        >
           {verified ? <BadgeCheck className="size-5" /> : <ShieldAlert className="size-5" />}
         </span>
         <div className="min-w-0 flex-1">
@@ -105,7 +110,11 @@ function VerificationCard({ userId, mainPhotoPath, verificationStatus, onUpdate 
                 disabled={loading}
                 className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground glow-gold disabled:opacity-60"
               >
-                {loading ? <Loader2 className="size-3 animate-spin" /> : <Camera className="size-3" />}
+                {loading ? (
+                  <Loader2 className="size-3 animate-spin" />
+                ) : (
+                  <Camera className="size-3" />
+                )}
                 {loading ? "Verific…" : "Fă selfie de verificare"}
               </button>
             </>
@@ -125,10 +134,13 @@ function TravelCard({ userId, travelCity, travelUntil, onUpdate }: Props) {
   async function save() {
     setSaving(true);
     try {
-      const { error } = await supabase.from("profiles").update({
-        travel_city: city.trim() || null,
-        travel_until: until ? new Date(until).toISOString() : null,
-      }).eq("id", userId);
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          travel_city: city.trim() || null,
+          travel_until: until ? new Date(until).toISOString() : null,
+        })
+        .eq("id", userId);
       if (error) throw error;
       toast.success(city ? `Travel mode activ în ${city}` : "Travel mode dezactivat");
       onUpdate();
@@ -143,7 +155,10 @@ function TravelCard({ userId, travelCity, travelUntil, onUpdate }: Props) {
     setCity("");
     setUntil("");
     setSaving(true);
-    await supabase.from("profiles").update({ travel_city: null, travel_until: null }).eq("id", userId);
+    await supabase
+      .from("profiles")
+      .update({ travel_city: null, travel_until: null })
+      .eq("id", userId);
     setSaving(false);
     toast.success("Travel mode dezactivat");
     onUpdate();
@@ -152,13 +167,17 @@ function TravelCard({ userId, travelCity, travelUntil, onUpdate }: Props) {
   return (
     <div className="rounded-2xl border border-border bg-surface p-4">
       <div className="flex items-center gap-3">
-        <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${active ? "bg-primary/15 text-primary" : "bg-surface-elevated text-muted-foreground"}`}>
+        <span
+          className={`flex size-10 shrink-0 items-center justify-center rounded-full ${active ? "bg-primary/15 text-primary" : "bg-surface-elevated text-muted-foreground"}`}
+        >
           <Plane className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">Travel mode</p>
           <p className="text-xs text-muted-foreground">
-            {active ? `În ${travelCity}${travelUntil ? ` până la ${new Date(travelUntil).toLocaleDateString()}` : ""}` : "Spune-le altora unde mergi"}
+            {active
+              ? `În ${travelCity}${travelUntil ? ` până la ${new Date(travelUntil).toLocaleDateString()}` : ""}`
+              : "Spune-le altora unde mergi"}
           </p>
         </div>
       </div>
@@ -201,27 +220,39 @@ function TravelCard({ userId, travelCity, travelUntil, onUpdate }: Props) {
 function BoostCard({ userId, boostUntil, onUpdate }: Props) {
   const active = boostUntil && new Date(boostUntil) > new Date();
   const [busy, setBusy] = useState(false);
-  const minutesLeft = active ? Math.max(0, Math.round((new Date(boostUntil!).getTime() - Date.now()) / 60000)) : 0;
+  const minutesLeft = active
+    ? Math.max(0, Math.round((new Date(boostUntil!).getTime() - Date.now()) / 60000))
+    : 0;
 
   async function start() {
     setBusy(true);
     const until = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min boost
-    const { error } = await supabase.from("profiles").update({ boost_until: until }).eq("id", userId);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ boost_until: until })
+      .eq("id", userId);
     setBusy(false);
     if (error) toast.error(error.message);
-    else { toast.success("Boost activat 30 min ✨"); onUpdate(); }
+    else {
+      toast.success("Boost activat 30 min ✨");
+      onUpdate();
+    }
   }
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-4">
       <div className="flex items-start gap-3">
-        <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${active ? "bg-primary/15 text-primary glow-gold" : "bg-surface-elevated text-muted-foreground"}`}>
+        <span
+          className={`flex size-10 shrink-0 items-center justify-center rounded-full ${active ? "bg-primary/15 text-primary glow-gold" : "bg-surface-elevated text-muted-foreground"}`}
+        >
           <Rocket className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">Boost</p>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            {active ? `Activ încă ${minutesLeft} min — apari primul în Discover.` : "30 min de prioritate maximă în Discover."}
+            {active
+              ? `Activ încă ${minutesLeft} min — apari primul în Discover.`
+              : "30 min de prioritate maximă în Discover."}
           </p>
           {!active && (
             <button

@@ -87,12 +87,20 @@ export function EventsMap({ events }: { events: EventWithMeta[] }) {
         >
           <div className="flex items-start gap-3">
             <div className="flex size-12 shrink-0 flex-col items-center justify-center rounded-xl bg-primary/15 text-primary">
-              <span className="text-[9px] uppercase">{new Date(selectedEvent.starts_at).toLocaleDateString(undefined, { month: "short" })}</span>
-              <span className="text-lg font-bold leading-none">{new Date(selectedEvent.starts_at).getDate()}</span>
+              <span className="text-[9px] uppercase">
+                {new Date(selectedEvent.starts_at).toLocaleDateString(undefined, {
+                  month: "short",
+                })}
+              </span>
+              <span className="text-lg font-bold leading-none">
+                {new Date(selectedEvent.starts_at).getDate()}
+              </span>
             </div>
             <div className="min-w-0 flex-1">
               <p className="line-clamp-1 text-sm font-semibold">{selectedEvent.title}</p>
-              <p className="mt-0.5 text-xs text-muted-foreground">{formatEventDate(selectedEvent.starts_at)}</p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {formatEventDate(selectedEvent.starts_at)}
+              </p>
               <p className="mt-0.5 flex items-center gap-1 truncate text-xs text-muted-foreground">
                 <MapPin className="size-3" />
                 {selectedEvent.city}

@@ -8,7 +8,8 @@ export function BottomNav() {
   const { pathname } = useLocation();
   const { total: unreadTotal } = useUnreadMessages();
   const { roles } = useUserRoles();
-  const isPartner = roles.includes("business") || roles.includes("admin") || roles.includes("moderator");
+  const isPartner =
+    roles.includes("business") || roles.includes("admin") || roles.includes("moderator");
   const items = [
     { to: "/discover", label: "Discover", Icon: Compass },
     { to: "/nearby", label: "Nearby", Icon: MapPin },
@@ -24,7 +25,16 @@ export function BottomNav() {
         {items.map((item) => {
           const { to, label, Icon } = item;
           const badge = "badge" in item ? item.badge : 0;
-          const active = pathname === to || (to === "/messages" && pathname.startsWith("/messages")) || (to === "/explore" && pathname.startsWith("/explore")) || (to === "/account" && pathname.startsWith("/account")) || (to === "/partner" && pathname.startsWith("/partner")) || (to === "/nearby" && (pathname.startsWith("/nearby") || pathname.startsWith("/venues") || pathname.startsWith("/offers")));
+          const active =
+            pathname === to ||
+            (to === "/messages" && pathname.startsWith("/messages")) ||
+            (to === "/explore" && pathname.startsWith("/explore")) ||
+            (to === "/account" && pathname.startsWith("/account")) ||
+            (to === "/partner" && pathname.startsWith("/partner")) ||
+            (to === "/nearby" &&
+              (pathname.startsWith("/nearby") ||
+                pathname.startsWith("/venues") ||
+                pathname.startsWith("/offers")));
           return (
             <Link
               key={to}

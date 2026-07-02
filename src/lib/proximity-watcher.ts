@@ -44,7 +44,9 @@ function showLocalNotification(title: string, body: string) {
       });
       return;
     }
-  } catch {/* ignore */}
+  } catch {
+    /* ignore */
+  }
   // Fallback: lightweight in-app toast via sonner (loaded dynamically to avoid SSR).
   import("sonner").then(({ toast }) => toast(title, { description: body })).catch(() => {});
 }
@@ -87,7 +89,8 @@ export function useProximityForegroundWatcher() {
             data: { pointKind: p.kind, pointId: p.id, layer: "foreground" },
           });
           if (res.allowed) {
-            const distLabel = d < 950 ? `${Math.round(d / 10) * 10}m` : `${(d / 1000).toFixed(1)}km`;
+            const distLabel =
+              d < 950 ? `${Math.round(d / 10) * 10}m` : `${(d / 1000).toFixed(1)}km`;
             showLocalNotification(
               p.name,
               p.kind === "event"
@@ -95,12 +98,16 @@ export function useProximityForegroundWatcher() {
                 : `Local queer-friendly la ${distLabel}`,
             );
           }
-        } catch {/* swallow — server gate is best-effort UX */}
+        } catch {
+          /* swallow — server gate is best-effort UX */
+        }
       }
     }
 
     // Initial check
-    getCurrentCoords().then(checkAt).catch(() => {});
+    getCurrentCoords()
+      .then(checkAt)
+      .catch(() => {});
     const stopWatcher = watchSignificantMovement((c) => void checkAt(c), 250);
     return () => {
       stopped = true;

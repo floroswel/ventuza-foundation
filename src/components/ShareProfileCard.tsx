@@ -25,7 +25,9 @@ export function ShareProfileCard({ slug, displayName }: Props) {
     if (navigator.share) {
       try {
         await navigator.share({ title: `${displayName ?? "Profilul meu"} · Ventuza`, url });
-      } catch {/* user cancelled */}
+      } catch {
+        /* user cancelled */
+      }
     } else {
       copy();
     }

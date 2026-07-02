@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
-import { fetchActiveStoryGroups, signStoryMedia, uploadStory, type StoryGroup } from "@/lib/stories";
+import {
+  fetchActiveStoryGroups,
+  signStoryMedia,
+  uploadStory,
+  type StoryGroup,
+} from "@/lib/stories";
 import { signPhotos } from "@/lib/discover";
 import { useAuth } from "@/lib/auth-context";
 import { StoryViewer } from "@/components/StoryViewer";
@@ -79,7 +84,9 @@ export function StoriesStrip() {
               <Plus className="size-3.5" strokeWidth={3} />
             </span>
           </span>
-          <span className="text-[10px] text-foreground/80">{ownGroup ? "Adaugă" : "Story nou"}</span>
+          <span className="text-[10px] text-foreground/80">
+            {ownGroup ? "Adaugă" : "Story nou"}
+          </span>
         </button>
 
         {ordered.map((g, idx) => {
@@ -113,7 +120,7 @@ export function StoriesStrip() {
                 </span>
               </span>
               <span className="max-w-[68px] truncate text-[10px] text-foreground/80">
-                {isMe ? "Tu" : g.display_name ?? "—"}
+                {isMe ? "Tu" : (g.display_name ?? "—")}
               </span>
             </button>
           );

@@ -1,8 +1,22 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import {
-  AlertCircle, BadgeCheck, Check, CheckCheck, ChevronLeft, Clock, CornerUpLeft, Languages,
-  Loader2, MoreVertical, Send, ShieldCheck, Smile, Sparkles, Trash2, X as XIcon,
+  AlertCircle,
+  BadgeCheck,
+  Check,
+  CheckCheck,
+  ChevronLeft,
+  Clock,
+  CornerUpLeft,
+  Languages,
+  Loader2,
+  MoreVertical,
+  Send,
+  ShieldCheck,
+  Smile,
+  Sparkles,
+  Trash2,
+  X as XIcon,
 } from "lucide-react";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { toast } from "sonner";
@@ -10,7 +24,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import {
-  MESSAGES_PAGE, fetchMessages, fetchOtherProfile, markRead, sendMessage, unsendMessage,
+  MESSAGES_PAGE,
+  fetchMessages,
+  fetchOtherProfile,
+  markRead,
+  sendMessage,
+  unsendMessage,
   type MessageRow,
 } from "@/lib/chat";
 import { generateOpener, translateText } from "@/lib/ai.functions";
@@ -19,8 +38,14 @@ import { REACTION_EMOJIS, toggleMessageReaction, type ReactionEmoji } from "@/li
 import { ChatComposerExtras } from "@/components/ChatComposerExtras";
 import { ChatMediaBubble } from "@/components/ChatMediaBubble";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +61,13 @@ function ThreadPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [messages, setMessages] = useState<UiMessage[]>([]);
-  const [other, setOther] = useState<{ id: string; name: string | null; photo: string | null; bio?: string | null; interests?: string[] | null } | null>(null);
+  const [other, setOther] = useState<{
+    id: string;
+    name: string | null;
+    photo: string | null;
+    bio?: string | null;
+    interests?: string[] | null;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
@@ -79,7 +110,8 @@ function ThreadPage() {
 
   const [isBlocked, setIsBlocked] = useState(false);
   const hasInbound = messages.some((m) => m.sender_id && m.sender_id !== user?.id);
-  void meVerified; void hasInbound;
+  void meVerified;
+  void hasInbound;
   const blockedFirstMessage = isBlocked;
 
   async function handleVerifyFile(file: File) {
@@ -100,10 +132,13 @@ function ThreadPage() {
         supabase.storage.from("profile-photos").createSignedUrl(myMainPhoto, 600),
       ]);
       if (!sa?.signedUrl || !sb?.signedUrl) throw new Error("Nu am putut accesa pozele.");
-      await supabase.from("profiles").update({
-        verification_selfie_path: path,
-        verification_status: "pending",
-      }).eq("id", user.id);
+      await supabase
+        .from("profiles")
+        .update({
+          verification_selfie_path: path,
+          verification_status: "pending",
+        })
+        .eq("id", user.id);
       const res = await verifyFn({ data: { selfieUrl: sa.signedUrl, mainPhotoUrl: sb.signedUrl } });
       if (res.verified) {
         setMeVerified(true);
@@ -155,10 +190,15 @@ function ThreadPage() {
         if (!alive) return;
         setMessages(msgs);
         setHasMore(msgs.length >= MESSAGES_PAGE);
-        const extra = ((extraRes.data ?? []) as Array<{ bio: string | null; interests: string[] | null }>)[0] ?? null;
+        const extra =
+          ((extraRes.data ?? []) as Array<{ bio: string | null; interests: string[] | null }>)[0] ??
+          null;
         setOther({ ...prof, bio: extra?.bio ?? null, interests: extra?.interests ?? null });
         // Bilateral block check (either direction) — server-side via SECURITY DEFINER RPC.
-        const { data: blockedRes } = await supabase.rpc("is_blocked_between" as never, { a: user!.id, b: oid } as never);
+        const { data: blockedRes } = await supabase.rpc(
+          "is_blocked_between" as never,
+          { a: user!.id, b: oid } as never,
+        );
         if (alive) setIsBlocked(Boolean(blockedRes));
         await markRead(id, user!.id);
       } catch (e) {
@@ -173,7 +213,12 @@ function ThreadPage() {
       .channel(`thread-${id}`, { config: { broadcast: { self: false } } })
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${id}`,
+        },
         (payload) => {
           const m = payload.new as MessageRow;
           setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
@@ -185,7 +230,12 @@ function ThreadPage() {
       )
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "messages", filter: `conversation_id=eq.${id}` },
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "messages",
+          filter: `conversation_id=eq.${id}`,
+        },
         (payload) => {
           const m = payload.new as MessageRow;
           setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)));
@@ -253,7 +303,11 @@ function ThreadPage() {
     const now = Date.now();
     if (now - lastTypingSentRef.current < 1500) return;
     lastTypingSentRef.current = now;
-    void channelRef.current.send({ type: "broadcast", event: "typing", payload: { userId: user.id } });
+    void channelRef.current.send({
+      type: "broadcast",
+      event: "typing",
+      payload: { userId: user.id },
+    });
   }
 
   async function handleSend(e: FormEvent) {
@@ -293,7 +347,19 @@ function ThreadPage() {
     setUnsendTarget(null);
     try {
       await unsendMessage(m.id);
-      setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, deleted_at: new Date().toISOString(), body: "", media_url: null, media_type: "text" } : x)));
+      setMessages((prev) =>
+        prev.map((x) =>
+          x.id === m.id
+            ? {
+                ...x,
+                deleted_at: new Date().toISOString(),
+                body: "",
+                media_url: null,
+                media_type: "text",
+              }
+            : x,
+        ),
+      );
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Couldn't unsend");
     }
@@ -349,7 +415,10 @@ function ThreadPage() {
   return (
     <div className="mx-auto flex h-[100dvh] max-w-md flex-col bg-background">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
-        <Link to="/messages" className="rounded-full p-2 text-muted-foreground hover:text-foreground">
+        <Link
+          to="/messages"
+          className="rounded-full p-2 text-muted-foreground hover:text-foreground"
+        >
           <ChevronLeft className="size-5" />
         </Link>
         <div className="size-9 overflow-hidden rounded-full bg-muted">
@@ -360,7 +429,13 @@ function ThreadPage() {
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{other?.name ?? "…"}</p>
           <p className="truncate text-[10px] text-muted-foreground">
-            {otherTyping ? <span className="text-primary">typing…</span> : connected ? "online" : "reconnecting…"}
+            {otherTyping ? (
+              <span className="text-primary">typing…</span>
+            ) : connected ? (
+              "online"
+            ) : (
+              "reconnecting…"
+            )}
           </p>
         </div>
         <input
@@ -410,7 +485,10 @@ function ThreadPage() {
             targetName={other.name ?? undefined}
             onBlocked={() => navigate({ to: "/messages" })}
             trigger={
-              <button className="rounded-full p-2 text-muted-foreground hover:text-foreground" aria-label="Opțiuni">
+              <button
+                className="rounded-full p-2 text-muted-foreground hover:text-foreground"
+                aria-label="Opțiuni"
+              >
                 <MoreVertical className="size-5" />
               </button>
             }
@@ -439,17 +517,40 @@ function ThreadPage() {
                 const mine = m.sender_id === user?.id;
                 const translated = translations[m.id];
                 const replied = m.reply_to_id ? messages.find((x) => x.id === m.reply_to_id) : null;
-                const canUnsend = mine && !m.deleted_at && Date.now() - new Date(m.created_at).getTime() < 5 * 60_000;
+                const canUnsend =
+                  mine &&
+                  !m.deleted_at &&
+                  Date.now() - new Date(m.created_at).getTime() < 5 * 60_000;
                 const isDeleted = !!m.deleted_at;
                 return (
-                  <li key={m.id} className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}>
-                    <div className={cn("group relative flex w-full items-end gap-1", mine ? "justify-end" : "justify-start")}>
+                  <li
+                    key={m.id}
+                    className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}
+                  >
+                    <div
+                      className={cn(
+                        "group relative flex w-full items-end gap-1",
+                        mine ? "justify-end" : "justify-start",
+                      )}
+                    >
                       {!mine && !isDeleted && (
                         <div className="order-2 mb-1 hidden gap-1 group-hover:flex">
-                          <button type="button" onClick={() => setReplyTo(m)} aria-label="Reply" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                          <button
+                            type="button"
+                            onClick={() => setReplyTo(m)}
+                            aria-label="Reply"
+                            className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
                             <CornerUpLeft className="size-3.5" />
                           </button>
-                          <button type="button" onClick={() => setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)} aria-label="React" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)
+                            }
+                            aria-label="React"
+                            className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
                             <Smile className="size-3.5" />
                           </button>
                         </div>
@@ -462,19 +563,40 @@ function ThreadPage() {
                         )}
                       >
                         {replied && !isDeleted && (
-                          <div className={cn(
-                            "mb-1 rounded-xl border-l-2 px-2 py-1 text-[11px]",
-                            mine ? "border-primary-foreground/40 bg-primary/20 text-primary-foreground/80" : "border-primary/40 bg-muted text-muted-foreground",
-                          )}>
-                            <p className="truncate font-medium opacity-80">↩ {replied.sender_id === user?.id ? "Tu" : (other?.name ?? "…")}</p>
-                            <p className="line-clamp-2 opacity-90">{replied.deleted_at ? "Mesaj șters" : replied.body || (replied.media_type === "image" ? "📷 Photo" : replied.media_type === "audio" ? "🎤 Voice" : replied.media_type === "location" ? "📍 Location" : "")}</p>
+                          <div
+                            className={cn(
+                              "mb-1 rounded-xl border-l-2 px-2 py-1 text-[11px]",
+                              mine
+                                ? "border-primary-foreground/40 bg-primary/20 text-primary-foreground/80"
+                                : "border-primary/40 bg-muted text-muted-foreground",
+                            )}
+                          >
+                            <p className="truncate font-medium opacity-80">
+                              ↩ {replied.sender_id === user?.id ? "Tu" : (other?.name ?? "…")}
+                            </p>
+                            <p className="line-clamp-2 opacity-90">
+                              {replied.deleted_at
+                                ? "Mesaj șters"
+                                : replied.body ||
+                                  (replied.media_type === "image"
+                                    ? "📷 Photo"
+                                    : replied.media_type === "audio"
+                                      ? "🎤 Voice"
+                                      : replied.media_type === "location"
+                                        ? "📍 Location"
+                                        : "")}
+                            </p>
                           </div>
                         )}
                         {isDeleted ? (
-                          <div className={cn(
-                            "inline-flex items-center gap-1.5 rounded-2xl border border-dashed px-3 py-2 text-xs italic",
-                            mine ? "border-primary-foreground/30 bg-primary/30 text-primary-foreground/80" : "border-border bg-muted text-muted-foreground",
-                          )}>
+                          <div
+                            className={cn(
+                              "inline-flex items-center gap-1.5 rounded-2xl border border-dashed px-3 py-2 text-xs italic",
+                              mine
+                                ? "border-primary-foreground/30 bg-primary/30 text-primary-foreground/80"
+                                : "border-border bg-muted text-muted-foreground",
+                            )}
+                          >
                             <Trash2 className="size-3" /> Mesaj șters
                           </div>
                         ) : (
@@ -484,28 +606,53 @@ function ThreadPage() {
                       {mine && !isDeleted && (
                         <div className="order-0 mb-1 hidden gap-1 group-hover:flex">
                           {canUnsend && (
-                            <button type="button" onClick={() => setUnsendTarget(m)} aria-label="Unsend" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive">
+                            <button
+                              type="button"
+                              onClick={() => setUnsendTarget(m)}
+                              aria-label="Unsend"
+                              className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
+                            >
                               <Trash2 className="size-3.5" />
                             </button>
                           )}
-                          <button type="button" onClick={() => setReplyTo(m)} aria-label="Reply" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                          <button
+                            type="button"
+                            onClick={() => setReplyTo(m)}
+                            aria-label="Reply"
+                            className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
                             <CornerUpLeft className="size-3.5" />
                           </button>
-                          <button type="button" onClick={() => setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)} aria-label="React" className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)
+                            }
+                            aria-label="React"
+                            className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                          >
                             <Smile className="size-3.5" />
                           </button>
                         </div>
                       )}
                     </div>
                     {reactionPickerFor === m.id && (
-                      <div className={cn("flex gap-1 rounded-full border border-border bg-background px-2 py-1.5 shadow-lg", mine ? "self-end" : "self-start")}>
+                      <div
+                        className={cn(
+                          "flex gap-1 rounded-full border border-border bg-background px-2 py-1.5 shadow-lg",
+                          mine ? "self-end" : "self-start",
+                        )}
+                      >
                         {REACTION_EMOJIS.map((e) => {
                           const active = user && (m.reactions?.[e] ?? []).includes(user.id);
                           return (
                             <button
                               key={e}
                               onClick={() => handleReact(m.id, e)}
-                              className={cn("text-base transition-transform hover:scale-125", active && "scale-110")}
+                              className={cn(
+                                "text-base transition-transform hover:scale-125",
+                                active && "scale-110",
+                              )}
                             >
                               {e}
                             </button>
@@ -514,7 +661,12 @@ function ThreadPage() {
                       </div>
                     )}
                     {m.reactions && Object.keys(m.reactions).length > 0 && (
-                      <div className={cn("-mt-1 flex flex-wrap gap-1", mine ? "self-end" : "self-start")}>
+                      <div
+                        className={cn(
+                          "-mt-1 flex flex-wrap gap-1",
+                          mine ? "self-end" : "self-start",
+                        )}
+                      >
                         {Object.entries(m.reactions).map(([emoji, users]) => {
                           if (!users || users.length === 0) return null;
                           const mineReact = user ? users.includes(user.id) : false;
@@ -538,22 +690,35 @@ function ThreadPage() {
                     {mine && (
                       <div className="flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
                         {m._status === "pending" ? (
-                          <><Clock className="size-3" /> sending</>
+                          <>
+                            <Clock className="size-3" /> sending
+                          </>
                         ) : m._status === "failed" ? (
-                          <button onClick={() => retryFailed(m)} className="inline-flex items-center gap-1 text-destructive">
+                          <button
+                            onClick={() => retryFailed(m)}
+                            className="inline-flex items-center gap-1 text-destructive"
+                          >
                             <AlertCircle className="size-3" /> failed · tap to retry
                           </button>
                         ) : m.read_at ? (
-                          <><CheckCheck className="size-3 text-primary" /> read</>
+                          <>
+                            <CheckCheck className="size-3 text-primary" /> read
+                          </>
                         ) : (
-                          <><Check className="size-3" /> sent</>
+                          <>
+                            <Check className="size-3" /> sent
+                          </>
                         )}
                       </div>
                     )}
-                    {!mine && m.media_type !== "audio" && m.media_type !== "image" && m.media_type !== "location" && (
-                      translated ? (
+                    {!mine &&
+                      m.media_type !== "audio" &&
+                      m.media_type !== "image" &&
+                      m.media_type !== "location" &&
+                      (translated ? (
                         <div className="max-w-[78%] rounded-2xl bg-primary/10 px-3 py-2 text-xs text-primary">
-                          <span className="mr-1 opacity-70">RO:</span>{translated}
+                          <span className="mr-1 opacity-70">RO:</span>
+                          {translated}
                         </div>
                       ) : (
                         <button
@@ -562,11 +727,14 @@ function ThreadPage() {
                           disabled={translatingId === m.id}
                           className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
                         >
-                          {translatingId === m.id ? <Loader2 className="size-3 animate-spin" /> : <Languages className="size-3" />}
+                          {translatingId === m.id ? (
+                            <Loader2 className="size-3 animate-spin" />
+                          ) : (
+                            <Languages className="size-3" />
+                          )}
                           Traduce
                         </button>
-                      )
-                    )}
+                      ))}
                   </li>
                 );
               })}
@@ -590,14 +758,19 @@ function ThreadPage() {
         <div className="border-t border-border/60 bg-surface/60 px-3 py-2">
           <div className="mb-1 flex items-center justify-between">
             <p className="text-[11px] uppercase tracking-wider text-primary">Wingman AI</p>
-            <button onClick={() => setOpeners(null)} className="text-xs text-muted-foreground">×</button>
+            <button onClick={() => setOpeners(null)} className="text-xs text-muted-foreground">
+              ×
+            </button>
           </div>
           <div className="flex flex-col gap-1.5">
             {openers.map((o, i) => (
               <button
                 key={i}
                 type="button"
-                onClick={() => { setText(o); setOpeners(null); }}
+                onClick={() => {
+                  setText(o);
+                  setOpeners(null);
+                }}
                 className="rounded-xl border border-border bg-background px-3 py-2 text-left text-sm hover:border-primary"
               >
                 {o}
@@ -611,10 +784,19 @@ function ThreadPage() {
         <div className="flex items-start gap-2 border-t border-border/60 bg-surface/70 px-3 py-2">
           <CornerUpLeft className="mt-0.5 size-4 shrink-0 text-primary" />
           <div className="min-w-0 flex-1 border-l-2 border-primary/60 pl-2">
-            <p className="text-[11px] font-medium text-primary">Răspunde la {replyTo.sender_id === user?.id ? "tine" : (other?.name ?? "…")}</p>
-            <p className="line-clamp-2 text-xs text-muted-foreground">{replyTo.deleted_at ? "Mesaj șters" : replyTo.body || "📎 media"}</p>
+            <p className="text-[11px] font-medium text-primary">
+              Răspunde la {replyTo.sender_id === user?.id ? "tine" : (other?.name ?? "…")}
+            </p>
+            <p className="line-clamp-2 text-xs text-muted-foreground">
+              {replyTo.deleted_at ? "Mesaj șters" : replyTo.body || "📎 media"}
+            </p>
           </div>
-          <button type="button" onClick={() => setReplyTo(null)} aria-label="Cancel reply" className="shrink-0 rounded-full p-1 text-muted-foreground hover:text-foreground">
+          <button
+            type="button"
+            onClick={() => setReplyTo(null)}
+            aria-label="Cancel reply"
+            className="shrink-0 rounded-full p-1 text-muted-foreground hover:text-foreground"
+          >
             <XIcon className="size-4" />
           </button>
         </div>
@@ -623,7 +805,10 @@ function ThreadPage() {
       {blockedFirstMessage && (
         <div className="border-t border-destructive/40 bg-destructive/10 px-4 py-3 text-sm">
           <p className="font-medium text-destructive">Nu poți trimite mesaje acestui utilizator</p>
-          <p className="mt-1 text-xs text-muted-foreground">Există un blocaj între voi (de la tine sau de la cealaltă persoană). Conversația este doar pentru lectură.</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Există un blocaj între voi (de la tine sau de la cealaltă persoană). Conversația este
+            doar pentru lectură.
+          </p>
         </div>
       )}
 
@@ -638,18 +823,31 @@ function ThreadPage() {
           aria-label="Wingman AI"
           className="flex size-11 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary disabled:opacity-50"
         >
-          {wingmanLoading ? <Loader2 className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+          {wingmanLoading ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <Sparkles className="size-4" />
+          )}
         </button>
         <ChatComposerExtras
           conversationId={id}
           disabled={blockedFirstMessage}
-          onSent={(m) => setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))}
-          onUpdated={(m) => setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)))}
+          onSent={(m) =>
+            setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))
+          }
+          onUpdated={(m) =>
+            setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)))
+          }
         />
         <input
           value={text}
-          onChange={(e) => { setText(e.target.value); sendTypingPing(); }}
-          placeholder={blockedFirstMessage ? "Nu poți trimite mesaje acestui utilizator" : "Type a message…"}
+          onChange={(e) => {
+            setText(e.target.value);
+            sendTypingPing();
+          }}
+          placeholder={
+            blockedFirstMessage ? "Nu poți trimite mesaje acestui utilizator" : "Type a message…"
+          }
           maxLength={4000}
           disabled={blockedFirstMessage}
           className="flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary disabled:opacity-60"

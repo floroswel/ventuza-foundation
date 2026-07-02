@@ -1,5 +1,13 @@
 import { useMemo, useState, type ReactNode } from "react";
-import { ArrowUpDown, ArrowUp, ArrowDown, Search, ChevronLeft, ChevronRight, Download } from "lucide-react";
+import {
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+} from "lucide-react";
 
 export type Column<T> = {
   key: string;

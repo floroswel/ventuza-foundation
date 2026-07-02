@@ -3,7 +3,6 @@ import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { linkOrphanBusinessApps } from "@/lib/business.functions";
 
-
 type AuthCtx = {
   user: User | null;
   session: Session | null;
@@ -38,16 +37,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (pending) {
           localStorage.removeItem("pending_ref");
           import("@/lib/referrals").then(({ redeemReferral }) =>
-            redeemReferral(pending).then((res) => {
-              if (res.ok) {
-                import("sonner").then(({ toast }) => toast.success(`+${res.reward_xp ?? 100} XP de la prietenul tău!`));
-              }
-            }).catch(() => {})
+            redeemReferral(pending)
+              .then((res) => {
+                if (res.ok) {
+                  import("sonner").then(({ toast }) =>
+                    toast.success(`+${res.reward_xp ?? 100} XP de la prietenul tău!`),
+                  );
+                }
+              })
+              .catch(() => {}),
           );
         }
-      } catch {/* ignore */}
+      } catch {
+        /* ignore */
+      }
     };
-
 
     // Listener first so we never miss an event.
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
@@ -70,7 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, []);
-
 
   return (
     <Ctx.Provider

@@ -42,10 +42,9 @@ export const adminListNewAccountReviewQueue = createServerFn({ method: "POST" })
     z.object({ limit: z.number().int().min(1).max(500).optional() }).parse(d ?? {}),
   )
   .handler(async ({ data, context }) => {
-    const { data: rows, error } = await context.supabase.rpc(
-      "admin_new_account_review_queue",
-      { _limit: data.limit ?? 100 },
-    );
+    const { data: rows, error } = await context.supabase.rpc("admin_new_account_review_queue", {
+      _limit: data.limit ?? 100,
+    });
     if (error) throw new Error(error.message);
     const normalized: ReviewQueueRow[] = (rows ?? []).map((r: Record<string, unknown>) => ({
       ...(r as unknown as ReviewQueueRow),
@@ -110,7 +109,6 @@ export type UserRiskDetail = {
   }>;
 };
 
-
 /** Detailed risk profile for a single user: score, signals breakdown, full flag timeline. */
 export const adminGetUserRiskDetail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
@@ -125,18 +123,29 @@ export const adminGetUserRiskDetail = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
 
     const [profileRes, flagsRes, recvRes, madeRes, auditRes] = await Promise.all([
-      sb.from("profiles")
-        .select("id, display_name, profile_slug, created_at, risk_score, risk_signals, risk_updated_at, age_status, banned_at, suspended_until, partner_suspended_at")
+      sb
+        .from("profiles")
+        .select(
+          "id, display_name, profile_slug, created_at, risk_score, risk_signals, risk_updated_at, age_status, banned_at, suspended_until, partner_suspended_at",
+        )
         .eq("id", data.userId)
         .maybeSingle(),
-      sb.from("risk_flags")
+      sb
+        .from("risk_flags")
         .select("id, kind, severity, status, details, created_at, resolved_at, resolved_by")
         .eq("user_id", data.userId)
         .order("created_at", { ascending: false })
         .limit(200),
-      sb.from("reports").select("id", { count: "exact", head: true }).eq("reported_id", data.userId),
-      sb.from("reports").select("id", { count: "exact", head: true }).eq("reporter_id", data.userId),
-      sb.from("admin_audit_log")
+      sb
+        .from("reports")
+        .select("id", { count: "exact", head: true })
+        .eq("reported_id", data.userId),
+      sb
+        .from("reports")
+        .select("id", { count: "exact", head: true })
+        .eq("reporter_id", data.userId),
+      sb
+        .from("admin_audit_log")
         .select("id, action, severity, actor_email, created_at, justification")
         .eq("target_table", "profiles")
         .eq("target_id", data.userId)
@@ -194,4 +203,3 @@ export const adminSetRiskFlagStatus = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
-

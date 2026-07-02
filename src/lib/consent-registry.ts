@@ -79,7 +79,14 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
     label: "Funcții AI (asistent bio, openere, traduceri)",
     description:
       "Atunci când folosești AI (sugestii bio, openere chat, photo coach, traducere, match score), textul / pozele tale sunt trimise către Lovable AI Gateway (procesator extern, EU/SUA). Fără acest consimțământ, butoanele AI sunt dezactivate.",
-    gates: ["generateBio", "generateOpener", "translateText", "photoCoach", "matchScore", "verifySelfie"],
+    gates: [
+      "generateBio",
+      "generateOpener",
+      "translateText",
+      "photoCoach",
+      "matchScore",
+      "verifySelfie",
+    ],
     processor: "P7 — Lovable AI Gateway",
   },
   push_notifications: {

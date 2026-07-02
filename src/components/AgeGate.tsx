@@ -13,8 +13,17 @@ import { toast } from "sonner";
 // All adult-content/social surfaces must be gated. /cruise (Right Now feed),
 // /nearby (location-aware list), /visitors, /favorites are explicitly included.
 const GATED_PREFIXES = [
-  "/discover", "/messages", "/swipe", "/visitors", "/favorites",
-  "/groups", "/events", "/quests", "/cruise", "/nearby", "/profile",
+  "/discover",
+  "/messages",
+  "/swipe",
+  "/visitors",
+  "/favorites",
+  "/groups",
+  "/events",
+  "/quests",
+  "/cruise",
+  "/nearby",
+  "/profile",
 ];
 
 type Status = "unverified" | "pending" | "verified" | "failed" | "expired" | null;
@@ -83,8 +92,10 @@ export function AgeGate() {
   if (!enforce) {
     if (typeof window !== "undefined" && !(window as any).__ageGateDevWarned) {
       (window as any).__ageGateDevWarned = true;
-      // eslint-disable-next-line no-console
-      console.warn("⚠️ [DEV] AGE VERIFICATION DEZACTIVAT prin feature_flags.age_verification. Se reactivează automat în producție.");
+
+      console.warn(
+        "⚠️ [DEV] AGE VERIFICATION DEZACTIVAT prin feature_flags.age_verification. Se reactivează automat în producție.",
+      );
     }
     return null;
   }
@@ -147,9 +158,7 @@ export function AgeGate() {
           </div>
         )}
 
-        {status === "failed" && (
-          <p className="text-sm text-destructive">{t("age.failed")}</p>
-        )}
+        {status === "failed" && <p className="text-sm text-destructive">{t("age.failed")}</p>}
 
         <label className="flex items-start gap-2 text-left text-xs text-muted-foreground leading-relaxed cursor-pointer">
           <input
@@ -160,8 +169,17 @@ export function AgeGate() {
           />
           <span>
             Sunt de acord ca un selfie biometric să fie trimis către{" "}
-            <a href="https://didit.me/privacy-policy" target="_blank" rel="noreferrer" className="underline">Didit</a>
-            {" "}pentru estimarea vârstei. Imaginea este prelucrată conform politicii Didit (păstrată maxim 30 zile) și nu este folosită în alte scopuri. Pot retrage acest consimțământ din Setări → Confidențialitate.
+            <a
+              href="https://didit.me/privacy-policy"
+              target="_blank"
+              rel="noreferrer"
+              className="underline"
+            >
+              Didit
+            </a>{" "}
+            pentru estimarea vârstei. Imaginea este prelucrată conform politicii Didit (păstrată
+            maxim 30 zile) și nu este folosită în alte scopuri. Pot retrage acest consimțământ din
+            Setări → Confidențialitate.
           </span>
         </label>
 

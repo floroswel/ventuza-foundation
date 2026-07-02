@@ -27,15 +27,23 @@ async function assertStaff(supabase: any, userId: string) {
 async function getReqMeta() {
   let ip: string | null = null;
   let ua: string | null = null;
-  try { ip = getRequestIP({ xForwardedFor: true }) ?? null; } catch {}
-  try { ua = getRequestHeader("user-agent") ?? null; } catch {}
+  try {
+    ip = getRequestIP({ xForwardedFor: true }) ?? null;
+  } catch {}
+  try {
+    ua = getRequestHeader("user-agent") ?? null;
+  } catch {}
   return { ip, ua };
 }
 
 async function logAudit(opts: {
-  actorId: string; action: string;
-  targetTable?: string | null; targetId?: string | null;
-  before?: any; after?: any; justification?: string | null;
+  actorId: string;
+  action: string;
+  targetTable?: string | null;
+  targetId?: string | null;
+  before?: any;
+  after?: any;
+  justification?: string | null;
   severity?: "info" | "warning" | "critical";
 }) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -49,7 +57,8 @@ async function logAudit(opts: {
     after_data: opts.after ?? null,
     justification: opts.justification ?? null,
     severity: opts.severity ?? "info",
-    ip, user_agent: ua,
+    ip,
+    user_agent: ua,
   });
 }
 
@@ -79,16 +88,17 @@ export const adminUserQuickStats = createServerFn({ method: "GET" })
       return count ?? 0;
     }
 
-    const [total, newDay, active7d, banned, suspended, pendingAge, highRisk, deleted] = await Promise.all([
-      count((q) => q.is("deleted_at", null)),
-      count((q) => q.is("deleted_at", null).gte("created_at", dayAgo)),
-      count((q) => q.is("deleted_at", null).gte("last_seen", weekAgo)),
-      count((q) => q.not("banned_at", "is", null)),
-      count((q) => q.gt("suspended_until", nowIso)),
-      count((q) => q.is("deleted_at", null).neq("age_status", "verified")),
-      count((q) => q.gte("risk_score", 70)),
-      count((q) => q.not("deleted_at", "is", null)),
-    ]);
+    const [total, newDay, active7d, banned, suspended, pendingAge, highRisk, deleted] =
+      await Promise.all([
+        count((q) => q.is("deleted_at", null)),
+        count((q) => q.is("deleted_at", null).gte("created_at", dayAgo)),
+        count((q) => q.is("deleted_at", null).gte("last_seen", weekAgo)),
+        count((q) => q.not("banned_at", "is", null)),
+        count((q) => q.gt("suspended_until", nowIso)),
+        count((q) => q.is("deleted_at", null).neq("age_status", "verified")),
+        count((q) => q.gte("risk_score", 70)),
+        count((q) => q.not("deleted_at", "is", null)),
+      ]);
 
     return { total, newDay, active7d, banned, suspended, pendingAge, highRisk, deleted };
   });
@@ -100,11 +110,15 @@ const SearchInput = z.object({
   q: z.string().max(200).optional(),
   limit: z.number().int().min(1).max(200).optional(),
   status: z.enum(["any", "active", "banned", "suspended", "shadow"]).optional(),
-  role: z.enum(["any", "admin", "moderator", "business", "super_admin", "auditor", "support"]).optional(),
+  role: z
+    .enum(["any", "admin", "moderator", "business", "super_admin", "auditor", "support"])
+    .optional(),
   verified: z.enum(["any", "verified", "unverified"]).optional(),
   hasReports: z.boolean().optional(),
   createdSince: z.string().optional(), // ISO
-  sort: z.enum(["created_desc", "created_asc", "last_seen_desc", "reports_desc", "risk_desc", "xp_desc"]).optional(),
+  sort: z
+    .enum(["created_desc", "created_asc", "last_seen_desc", "reports_desc", "risk_desc", "xp_desc"])
+    .optional(),
 });
 
 export const adminSearchUsersV2 = createServerFn({ method: "POST" })
@@ -119,16 +133,29 @@ export const adminSearchUsersV2 = createServerFn({ method: "POST" })
 
     let q: any = sa
       .from("profiles")
-      .select("id, display_name, travel_city, verified, banned_at, suspended_until, report_count, level, xp, created_at, last_seen, age_status, risk_score, deleted_at, photos, partner_suspended_at");
+      .select(
+        "id, display_name, travel_city, verified, banned_at, suspended_until, report_count, level, xp, created_at, last_seen, age_status, risk_score, deleted_at, photos, partner_suspended_at",
+      );
 
     // Sort
     switch (data.sort ?? "created_desc") {
-      case "created_asc": q = q.order("created_at", { ascending: true }); break;
-      case "last_seen_desc": q = q.order("last_seen", { ascending: false, nullsFirst: false }); break;
-      case "reports_desc": q = q.order("report_count", { ascending: false, nullsFirst: false }); break;
-      case "risk_desc": q = q.order("risk_score", { ascending: false, nullsFirst: false }); break;
-      case "xp_desc": q = q.order("xp", { ascending: false, nullsFirst: false }); break;
-      default: q = q.order("created_at", { ascending: false });
+      case "created_asc":
+        q = q.order("created_at", { ascending: true });
+        break;
+      case "last_seen_desc":
+        q = q.order("last_seen", { ascending: false, nullsFirst: false });
+        break;
+      case "reports_desc":
+        q = q.order("report_count", { ascending: false, nullsFirst: false });
+        break;
+      case "risk_desc":
+        q = q.order("risk_score", { ascending: false, nullsFirst: false });
+        break;
+      case "xp_desc":
+        q = q.order("xp", { ascending: false, nullsFirst: false });
+        break;
+      default:
+        q = q.order("created_at", { ascending: false });
     }
     q = q.limit(limit);
 
@@ -183,9 +210,12 @@ export const adminSearchUsersV2 = createServerFn({ method: "POST" })
 
     // Roles (batch)
     const ids = (rows ?? []).map((r: any) => r.id);
-    let rolesByUser: Record<string, string[]> = {};
+    const rolesByUser: Record<string, string[]> = {};
     if (ids.length) {
-      const { data: roles } = await sa.from("user_roles").select("user_id, role").in("user_id", ids);
+      const { data: roles } = await sa
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", ids);
       (roles ?? []).forEach((r: any) => {
         rolesByUser[r.user_id] = rolesByUser[r.user_id] ?? [];
         rolesByUser[r.user_id].push(r.role);
@@ -239,7 +269,8 @@ export const adminBulkUserAction = createServerFn({ method: "POST" })
       }
     }
 
-    let ok = 0, failed = 0;
+    let ok = 0,
+      failed = 0;
     const errors: Array<{ id: string; msg: string }> = [];
 
     for (const id of data.userIds) {
@@ -249,25 +280,30 @@ export const adminBulkUserAction = createServerFn({ method: "POST" })
       switch (data.action) {
         case "ban":
           patch = { banned_at: new Date().toISOString(), banned_reason: data.reason };
-          action = "user.ban"; severity = "critical";
+          action = "user.ban";
+          severity = "critical";
           break;
         case "unban":
           patch = { banned_at: null, banned_reason: null };
-          action = "user.unban"; severity = "warning";
+          action = "user.unban";
+          severity = "warning";
           break;
         case "suspend": {
           const until = new Date(Date.now() + (data.hours ?? 24) * 3600 * 1000).toISOString();
           patch = { suspended_until: until };
-          action = "user.suspend"; severity = "warning";
+          action = "user.suspend";
+          severity = "warning";
           break;
         }
         case "verify":
           patch = { verified: true };
-          action = "user.verify"; severity = "info";
+          action = "user.verify";
+          severity = "info";
           break;
         case "unverify":
           patch = { verified: false };
-          action = "user.unverify"; severity = "warning";
+          action = "user.unverify";
+          severity = "warning";
           break;
       }
 
@@ -285,9 +321,12 @@ export const adminBulkUserAction = createServerFn({ method: "POST" })
       }
       ok++;
       await logAudit({
-        actorId: context.userId, action,
-        targetTable: "profiles", targetId: id,
-        before, after: patch,
+        actorId: context.userId,
+        action,
+        targetTable: "profiles",
+        targetId: id,
+        before,
+        after: patch,
         justification: `[bulk ${data.userIds.length}] ${data.reason}`,
         severity,
       });

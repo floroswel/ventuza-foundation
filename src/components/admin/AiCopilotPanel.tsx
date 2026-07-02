@@ -44,13 +44,17 @@ export function AiCopilotPanel() {
         </div>
         <div>
           <h2 className="text-lg font-semibold tracking-tight">Copilot operațional</h2>
-          <p className="text-xs text-muted-foreground">Asistent pentru staff — fără acces la date personale. Doar îndrumare procedurală.</p>
+          <p className="text-xs text-muted-foreground">
+            Asistent pentru staff — fără acces la date personale. Doar îndrumare procedurală.
+          </p>
         </div>
       </div>
 
       {turns.length === 0 && (
         <div className="rounded-2xl border border-border bg-surface/40 p-4">
-          <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">Întrebări frecvente</p>
+          <p className="mb-2 text-xs uppercase tracking-wider text-muted-foreground">
+            Întrebări frecvente
+          </p>
           <div className="flex flex-wrap gap-2">
             {QUICK.map((s) => (
               <button
@@ -69,7 +73,9 @@ export function AiCopilotPanel() {
         {turns.map((t, i) => (
           <div key={i} className="space-y-2">
             <div className="flex justify-end">
-              <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary/15 px-3 py-2 text-sm">{t.q}</div>
+              <div className="max-w-[85%] rounded-2xl rounded-tr-sm bg-primary/15 px-3 py-2 text-sm">
+                {t.q}
+              </div>
             </div>
             <div className="flex">
               <div className="max-w-[85%] rounded-2xl rounded-tl-sm border border-border bg-surface px-3 py-2 text-sm">
@@ -89,7 +95,10 @@ export function AiCopilotPanel() {
       </div>
 
       <form
-        onSubmit={(e) => { e.preventDefault(); submit(q); }}
+        onSubmit={(e) => {
+          e.preventDefault();
+          submit(q);
+        }}
         className="sticky bottom-3 flex items-center gap-2 rounded-2xl border border-border bg-surface/80 p-2 backdrop-blur"
       >
         <input

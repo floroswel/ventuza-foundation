@@ -29,30 +29,48 @@ export const Route = createFileRoute("/auth")({
 });
 
 const emailSchema = z.string().trim().email("Enter a valid email").max(255);
-const passwordSchema = z
-  .string()
-  .min(8, "At least 8 characters")
-  .max(72, "Max 72 characters");
+const passwordSchema = z.string().min(8, "At least 8 characters").max(72, "Max 72 characters");
 
 async function persistPendingBirthdate(userId: string) {
   if (typeof window === "undefined") return;
   // sessionStorage poate fi pierdut între contexte (Safari ASWebAuthSession,
   // browser extern pe mobil). Citim din ambele și ștergem după.
   let pending: string | null = null;
-  try { pending = sessionStorage.getItem("vz_pending_birthdate"); } catch { /* ignore */ }
+  try {
+    pending = sessionStorage.getItem("vz_pending_birthdate");
+  } catch {
+    /* ignore */
+  }
   if (!pending) {
-    try { pending = localStorage.getItem("vz_pending_birthdate"); } catch { /* ignore */ }
+    try {
+      pending = localStorage.getItem("vz_pending_birthdate");
+    } catch {
+      /* ignore */
+    }
   }
   if (!pending) return;
   try {
     await supabase.from("profiles").update({ birthdate: pending }).eq("id", userId);
-  } catch { /* ignore */ }
-  try { sessionStorage.removeItem("vz_pending_birthdate"); } catch { /* ignore */ }
-  try { localStorage.removeItem("vz_pending_birthdate"); } catch { /* ignore */ }
+  } catch {
+    /* ignore */
+  }
+  try {
+    sessionStorage.removeItem("vz_pending_birthdate");
+  } catch {
+    /* ignore */
+  }
+  try {
+    localStorage.removeItem("vz_pending_birthdate");
+  } catch {
+    /* ignore */
+  }
 }
 
-
-async function routeAfterAuth(userId: string, navigate: ReturnType<typeof useNavigate>, redirectTo?: string) {
+async function routeAfterAuth(
+  userId: string,
+  navigate: ReturnType<typeof useNavigate>,
+  redirectTo?: string,
+) {
   if (redirectTo && redirectTo.startsWith("/")) {
     navigate({ to: redirectTo, replace: true });
     return;
@@ -131,7 +149,8 @@ function AuthPage() {
     return age;
   }
 
-  const signupDisabled = mode === "signup" && (!over18 || !acceptTerms || (ageFromBirthDate(birthDate) ?? 0) < 18);
+  const signupDisabled =
+    mode === "signup" && (!over18 || !acceptTerms || (ageFromBirthDate(birthDate) ?? 0) < 18);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -195,7 +214,8 @@ function AuthPage() {
             };
             const headerRetry = Number(guardRes.headers.get("Retry-After") ?? "");
             const retryAfterSec =
-              payload.retryAfterSec ?? (Number.isFinite(headerRetry) && headerRetry > 0 ? headerRetry : 3600);
+              payload.retryAfterSec ??
+              (Number.isFinite(headerRetry) && headerRetry > 0 ? headerRetry : 3600);
             handleAuthError(new Error(payload.error ?? "signup_throttled"), { retryAfterSec });
             return;
           }
@@ -217,10 +237,7 @@ function AuthPage() {
         // Persist birthdate on profile (trigger `enforce_min_age` enforces 18+ server-side).
         // Canonical column is `birthdate` — used by age gate, discover, /n onboarding.
         if (data.user) {
-          await supabase
-            .from("profiles")
-            .update({ birthdate: birthDate })
-            .eq("id", data.user.id);
+          await supabase.from("profiles").update({ birthdate: birthDate }).eq("id", data.user.id);
         }
         if (data.session) {
           toast.success("Welcome to Ventuza.");
@@ -248,7 +265,7 @@ function AuthPage() {
   }
 
   async function onOAuth(provider: "google" | "apple") {
-    if (provider === "signup-blocked" as never) return;
+    if (provider === ("signup-blocked" as never)) return;
     if (mode === "signup") {
       if (!over18 || !acceptTerms) {
         toast.error("Confirmă cele două bife (18+ și Termeni) înainte de a continua.");
@@ -267,9 +284,16 @@ function AuthPage() {
       }
       // Persist în ambele storage-uri ca să supraviețuiască redirect-ului OAuth
       // (sessionStorage e pierdut pe Safari/WebView; localStorage rămâne).
-      try { sessionStorage.setItem("vz_pending_birthdate", birthDate); } catch { /* ignore */ }
-      try { localStorage.setItem("vz_pending_birthdate", birthDate); } catch { /* ignore */ }
-
+      try {
+        sessionStorage.setItem("vz_pending_birthdate", birthDate);
+      } catch {
+        /* ignore */
+      }
+      try {
+        localStorage.setItem("vz_pending_birthdate", birthDate);
+      } catch {
+        /* ignore */
+      }
     }
     setOauthBusy(provider);
     try {
@@ -333,7 +357,10 @@ function AuthPage() {
       />
 
       <div className="relative z-10 mx-auto flex min-h-dvh max-w-md flex-col px-6 py-10">
-        <Link to="/" className="self-start text-xs uppercase tracking-[0.22em] text-muted-foreground hover:text-primary">
+        <Link
+          to="/"
+          className="self-start text-xs uppercase tracking-[0.22em] text-muted-foreground hover:text-primary"
+        >
           ← Back
         </Link>
 
@@ -375,7 +402,10 @@ function AuthPage() {
               <Loader2 className="size-4 animate-spin" />
             ) : (
               <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-                <path fill="#EA4335" d="M12 10.2v3.9h5.5c-.2 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.6 14.6 2.7 12 2.7 6.9 2.7 2.7 6.9 2.7 12s4.2 9.3 9.3 9.3c5.4 0 8.9-3.8 8.9-9.1 0-.6-.1-1.1-.2-1.6H12z"/>
+                <path
+                  fill="#EA4335"
+                  d="M12 10.2v3.9h5.5c-.2 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.6 14.6 2.7 12 2.7 6.9 2.7 2.7 6.9 2.7 12s4.2 9.3 9.3 9.3c5.4 0 8.9-3.8 8.9-9.1 0-.6-.1-1.1-.2-1.6H12z"
+                />
               </svg>
             )}
             Continue with Google
@@ -390,7 +420,7 @@ function AuthPage() {
               <Loader2 className="size-4 animate-spin" />
             ) : (
               <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden>
-                <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.9-1.4-.1-2.8.9-3.5.9-.7 0-1.9-.8-3.1-.8-1.6 0-3 .9-3.8 2.4-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2-.1 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-1.1 2.8-2.3.9-1.3 1.2-2.6 1.3-2.7-.1 0-2.4-.9-2.4-3.7zM14.4 5.6c.6-.8 1.1-1.9 1-3-1 .1-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.5 2.8-1.3z"/>
+                <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.9-1.4-.1-2.8.9-3.5.9-.7 0-1.9-.8-3.1-.8-1.6 0-3 .9-3.8 2.4-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2-.1 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-1.1 2.8-2.3.9-1.3 1.2-2.6 1.3-2.7-.1 0-2.4-.9-2.4-3.7zM14.4 5.6c.6-.8 1.1-1.9 1-3-1 .1-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.5 2.8-1.3z" />
               </svg>
             )}
             Continue with Apple
@@ -399,14 +429,19 @@ function AuthPage() {
 
         <div className="my-6 flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
-          <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">or with email</span>
+          <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+            or with email
+          </span>
           <div className="h-px flex-1 bg-border" />
         </div>
 
         {/* Email form */}
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            <Label
+              htmlFor="email"
+              className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
+            >
               Email
             </Label>
             <div className="relative">
@@ -425,7 +460,10 @@ function AuthPage() {
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+            <Label
+              htmlFor="password"
+              className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
+            >
               Password
             </Label>
             <div className="relative">
@@ -464,7 +502,10 @@ function AuthPage() {
           {mode === "signup" && (
             <div className="space-y-3 rounded-xl border border-border bg-surface/60 p-4">
               <div>
-                <Label htmlFor="birthdate" className="mb-1 block text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                <Label
+                  htmlFor="birthdate"
+                  className="mb-1 block text-xs uppercase tracking-[0.18em] text-muted-foreground"
+                >
                   Data nașterii
                 </Label>
                 <Input
@@ -487,7 +528,9 @@ function AuthPage() {
                   onChange={(e) => setOver18(e.target.checked)}
                   className="mt-0.5 size-4 accent-primary"
                 />
-                <span>I confirm I am <strong>18 years or older</strong>.</span>
+                <span>
+                  I confirm I am <strong>18 years or older</strong>.
+                </span>
               </label>
               <label className="flex cursor-pointer items-start gap-3 text-sm text-foreground">
                 <input
@@ -498,11 +541,17 @@ function AuthPage() {
                 />
                 <span>
                   I accept the{" "}
-                  <Link to="/legal/terms" className="text-primary underline-offset-2 hover:underline">
+                  <Link
+                    to="/legal/terms"
+                    className="text-primary underline-offset-2 hover:underline"
+                  >
                     Terms
                   </Link>{" "}
                   &amp;{" "}
-                  <Link to="/legal/privacy" className="text-primary underline-offset-2 hover:underline">
+                  <Link
+                    to="/legal/privacy"
+                    className="text-primary underline-offset-2 hover:underline"
+                  >
                     Privacy Policy
                   </Link>
                   .
@@ -513,7 +562,10 @@ function AuthPage() {
 
           <TurnstileWidget
             key={captchaNonce}
-            onToken={(t) => { setCaptchaToken(t); if (authError?.resetCaptcha) setAuthError(null); }}
+            onToken={(t) => {
+              setCaptchaToken(t);
+              if (authError?.resetCaptcha) setAuthError(null);
+            }}
             onExpire={() => setCaptchaToken(null)}
           />
 
@@ -565,14 +617,22 @@ function AuthPage() {
           {mode === "login" ? (
             <p className="text-center text-xs text-muted-foreground">
               No account yet?{" "}
-              <button type="button" onClick={() => setMode("signup")} className="text-primary hover:underline">
+              <button
+                type="button"
+                onClick={() => setMode("signup")}
+                className="text-primary hover:underline"
+              >
                 Sign up
               </button>
             </p>
           ) : (
             <p className="text-center text-xs text-muted-foreground">
               Already a member?{" "}
-              <button type="button" onClick={() => setMode("login")} className="text-primary hover:underline">
+              <button
+                type="button"
+                onClick={() => setMode("login")}
+                className="text-primary hover:underline"
+              >
                 Log in
               </button>
             </p>
@@ -581,8 +641,14 @@ function AuthPage() {
 
         <p className="mt-8 text-center text-[11px] leading-relaxed text-muted-foreground">
           By continuing you agree to our{" "}
-          <Link to="/legal/terms" className="hover:text-primary">Terms</Link> and{" "}
-          <Link to="/legal/privacy" className="hover:text-primary">Privacy Policy</Link>.
+          <Link to="/legal/terms" className="hover:text-primary">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link to="/legal/privacy" className="hover:text-primary">
+            Privacy Policy
+          </Link>
+          .
         </p>
       </div>
     </main>

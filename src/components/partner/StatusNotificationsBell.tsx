@@ -49,7 +49,7 @@ export function StatusNotificationsBell() {
         // into thinking their items are still pending review.
         const msg = e instanceof Error ? e.message : "Nu am putut încărca notificările.";
         setErrorMsg(msg);
-        // eslint-disable-next-line no-console
+
         console.warn("[StatusNotificationsBell] refresh failed:", msg);
       });
   };
@@ -67,7 +67,9 @@ export function StatusNotificationsBell() {
     if (o && unread > 0) {
       try {
         await markRead({ data: {} });
-        setItems((prev) => prev.map((p) => ({ ...p, read_at: p.read_at ?? new Date().toISOString() })));
+        setItems((prev) =>
+          prev.map((p) => ({ ...p, read_at: p.read_at ?? new Date().toISOString() })),
+        );
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Marcarea ca citit a eșuat.";
         setErrorMsg(msg);
@@ -103,11 +105,7 @@ export function StatusNotificationsBell() {
             <AlertCircle className="w-3.5 h-3.5 mt-0.5 shrink-0" />
             <div className="flex-1">
               <div className="font-medium">Notificările nu s-au putut încărca.</div>
-              <button
-                type="button"
-                onClick={refresh}
-                className="underline mt-0.5"
-              >
+              <button type="button" onClick={refresh} className="underline mt-0.5">
                 Reîncearcă
               </button>
             </div>

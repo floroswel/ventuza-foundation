@@ -13,24 +13,36 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type AppRole =
-  | "super_admin" | "admin" | "auditor" | "moderator" | "support" | "read_only"
+  | "super_admin"
+  | "admin"
+  | "auditor"
+  | "moderator"
+  | "support"
+  | "read_only"
   | "business";
 
 const STAFF_ROLES: AppRole[] = [
-  "super_admin", "admin", "auditor", "moderator", "support", "read_only",
+  "super_admin",
+  "admin",
+  "auditor",
+  "moderator",
+  "support",
+  "read_only",
 ];
 
 async function reqMeta() {
   let ip: string | null = null;
   let ua: string | null = null;
-  try { ip = getRequestIP({ xForwardedFor: true }) ?? null; } catch {}
-  try { ua = getRequestHeader("user-agent") ?? null; } catch {}
+  try {
+    ip = getRequestIP({ xForwardedFor: true }) ?? null;
+  } catch {}
+  try {
+    ua = getRequestHeader("user-agent") ?? null;
+  } catch {}
   return { ip, ua };
 }
 
-async function assertRole(
-  supabase: any, userId: string, roles: AppRole[],
-) {
+async function assertRole(supabase: any, userId: string, roles: AppRole[]) {
   const { data, error } = await supabase.rpc("has_any_role", { _user_id: userId, _roles: roles });
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Forbidden: rol insuficient");
@@ -42,20 +54,28 @@ async function isSuper(supabase: any, userId: string): Promise<boolean> {
 }
 
 async function logAudit(opts: {
-  actorId: string; action: string;
-  targetTable?: string | null; targetId?: string | null;
-  before?: any; after?: any; justification?: string | null;
+  actorId: string;
+  action: string;
+  targetTable?: string | null;
+  targetId?: string | null;
+  before?: any;
+  after?: any;
+  justification?: string | null;
   severity?: "info" | "warning" | "critical";
 }) {
   const meta = await reqMeta();
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   await (supabaseAdmin as any).from("admin_audit_log").insert({
-    actor_id: opts.actorId, action: opts.action,
-    target_table: opts.targetTable ?? null, target_id: opts.targetId ?? null,
-    before_data: opts.before ?? null, after_data: opts.after ?? null,
+    actor_id: opts.actorId,
+    action: opts.action,
+    target_table: opts.targetTable ?? null,
+    target_id: opts.targetId ?? null,
+    before_data: opts.before ?? null,
+    after_data: opts.after ?? null,
     justification: opts.justification ?? null,
     severity: opts.severity ?? "info",
-    ip: meta.ip, user_agent: meta.ua,
+    ip: meta.ip,
+    user_agent: meta.ua,
   });
 }
 
@@ -65,12 +85,12 @@ async function logAudit(opts: {
 export const adminListStaff = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertRole(context.supabase, context.userId,
-      ["super_admin", "admin", "auditor"]);
+    await assertRole(context.supabase, context.userId, ["super_admin", "admin", "auditor"]);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
 
-    const { data: roles, error } = await sa.from("user_roles")
+    const { data: roles, error } = await sa
+      .from("user_roles")
       .select("user_id, role")
       .in("role", STAFF_ROLES);
     if (error) throw new Error(error.message);
@@ -80,7 +100,10 @@ export const adminListStaff = createServerFn({ method: "GET" })
 
     const [profilesRes, mfaRes, authRes] = await Promise.all([
       sa.from("profiles").select("id, display_name, created_at").in("id", ids),
-      sa.from("admin_mfa_status").select("user_id, enrolled, enrolled_at, last_verified_at").in("user_id", ids),
+      sa
+        .from("admin_mfa_status")
+        .select("user_id, enrolled, enrolled_at, last_verified_at")
+        .in("user_id", ids),
       Promise.all(ids.map((id) => sa.auth.admin.getUserById(id).catch(() => null))),
     ]);
     const profileById = new Map((profilesRes.data ?? []).map((p: any) => [p.id, p]));
@@ -94,20 +117,22 @@ export const adminListStaff = createServerFn({ method: "GET" })
       (rolesByUser[r.user_id] ??= []).push(r.role);
     });
 
-    const rows = ids.map((id) => {
-      const p: any = profileById.get(id) ?? {};
-      const m: any = mfaById.get(id);
-      return {
-        user_id: id,
-        display_name: p.display_name ?? null,
-        email: emailById.get(id) ?? null,
-        roles: rolesByUser[id] ?? [],
-        mfa_enrolled: !!m?.enrolled,
-        mfa_enrolled_at: m?.enrolled_at ?? null,
-        mfa_last_verified_at: m?.last_verified_at ?? null,
-        profile_created_at: p.created_at ?? null,
-      };
-    }).sort((a, b) => (a.display_name ?? "").localeCompare(b.display_name ?? ""));
+    const rows = ids
+      .map((id) => {
+        const p: any = profileById.get(id) ?? {};
+        const m: any = mfaById.get(id);
+        return {
+          user_id: id,
+          display_name: p.display_name ?? null,
+          email: emailById.get(id) ?? null,
+          roles: rolesByUser[id] ?? [],
+          mfa_enrolled: !!m?.enrolled,
+          mfa_enrolled_at: m?.enrolled_at ?? null,
+          mfa_last_verified_at: m?.last_verified_at ?? null,
+          profile_created_at: p.created_at ?? null,
+        };
+      })
+      .sort((a, b) => (a.display_name ?? "").localeCompare(b.display_name ?? ""));
     return { rows };
   });
 
@@ -137,15 +162,19 @@ export const adminGrantStaffRole = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
-    const { error } = await sa.from("user_roles")
+    const { error } = await sa
+      .from("user_roles")
       .upsert({ user_id: data.userId, role: data.role }, { onConflict: "user_id,role" });
     if (error) throw new Error(error.message);
 
     await logAudit({
-      actorId: context.userId, action: "staff.role_grant",
-      targetTable: "user_roles", targetId: data.userId,
+      actorId: context.userId,
+      action: "staff.role_grant",
+      targetTable: "user_roles",
+      targetId: data.userId,
       after: { role: data.role },
-      justification: data.justification, severity: "critical",
+      justification: data.justification,
+      severity: "critical",
     });
     return { ok: true as const };
   });
@@ -168,15 +197,21 @@ export const adminRevokeStaffRole = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
-    const { error } = await sa.from("user_roles")
-      .delete().eq("user_id", data.userId).eq("role", data.role);
+    const { error } = await sa
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.userId)
+      .eq("role", data.role);
     if (error) throw new Error(error.message);
 
     await logAudit({
-      actorId: context.userId, action: "staff.role_revoke",
-      targetTable: "user_roles", targetId: data.userId,
+      actorId: context.userId,
+      action: "staff.role_revoke",
+      targetTable: "user_roles",
+      targetId: data.userId,
       before: { role: data.role },
-      justification: data.justification, severity: "critical",
+      justification: data.justification,
+      severity: "critical",
     });
     return { ok: true as const };
   });
@@ -188,17 +223,22 @@ export const adminRevokeStaffRole = createServerFn({ method: "POST" })
 export const adminListIpAllowlist = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    await assertRole(context.supabase, context.userId,
-      ["super_admin", "admin", "auditor"]);
+    await assertRole(context.supabase, context.userId, ["super_admin", "admin", "auditor"]);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data, error } = await (supabaseAdmin as any)
-      .from("admin_ip_allowlist").select("*").order("created_at", { ascending: false });
+      .from("admin_ip_allowlist")
+      .select("*")
+      .order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return { rows: (data ?? []) as any[] };
   });
 
 const IpInput = z.object({
-  cidr: z.string().trim().min(7).max(64)
+  cidr: z
+    .string()
+    .trim()
+    .min(7)
+    .max(64)
     // IPv4/IPv6 + optional CIDR suffix — validare laxă, INET refuză restul.
     .regex(/^[0-9a-fA-F:.]+(\/\d{1,3})?$/, "CIDR invalid"),
   label: z.string().trim().max(120).optional(),
@@ -217,26 +257,35 @@ export const adminAddIpAllowlist = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
-    const { data: row, error } = await sa.from("admin_ip_allowlist")
+    const { data: row, error } = await sa
+      .from("admin_ip_allowlist")
       .insert({ cidr: data.cidr, label: data.label ?? null, created_by: context.userId })
-      .select("id").maybeSingle();
+      .select("id")
+      .maybeSingle();
     if (error) throw new Error(error.message);
 
     await logAudit({
-      actorId: context.userId, action: "staff.ip_allowlist_add",
-      targetTable: "admin_ip_allowlist", targetId: row?.id ?? null,
+      actorId: context.userId,
+      action: "staff.ip_allowlist_add",
+      targetTable: "admin_ip_allowlist",
+      targetId: row?.id ?? null,
       after: { cidr: data.cidr, label: data.label ?? null },
-      justification: data.justification, severity: "critical",
+      justification: data.justification,
+      severity: "critical",
     });
     return { ok: true as const, id: row?.id };
   });
 
 export const adminRemoveIpAllowlist = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    id: z.string().uuid(),
-    justification: z.string().trim().min(10).max(500),
-  }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        id: z.string().uuid(),
+        justification: z.string().trim().min(10).max(500),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     if (!(await isSuper(context.supabase, context.userId))) {
       throw new Error("Forbidden: doar super_admin");
@@ -246,15 +295,22 @@ export const adminRemoveIpAllowlist = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
-    const { data: before } = await sa.from("admin_ip_allowlist").select("*").eq("id", data.id).maybeSingle();
+    const { data: before } = await sa
+      .from("admin_ip_allowlist")
+      .select("*")
+      .eq("id", data.id)
+      .maybeSingle();
     const { error } = await sa.from("admin_ip_allowlist").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
 
     await logAudit({
-      actorId: context.userId, action: "staff.ip_allowlist_remove",
-      targetTable: "admin_ip_allowlist", targetId: data.id,
+      actorId: context.userId,
+      action: "staff.ip_allowlist_remove",
+      targetTable: "admin_ip_allowlist",
+      targetId: data.id,
       before: before ?? null,
-      justification: data.justification, severity: "critical",
+      justification: data.justification,
+      severity: "critical",
     });
     return { ok: true as const };
   });

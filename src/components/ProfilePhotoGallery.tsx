@@ -8,7 +8,14 @@ import { cn } from "@/lib/utils";
  * `motionProps` opțional pentru a atașa drag/animații framer-motion.
  */
 function GalleryImage({
-  src, alt, className, wrapperClassName, motionProps, onClick, onRetryKey, onStatusChange,
+  src,
+  alt,
+  className,
+  wrapperClassName,
+  motionProps,
+  onClick,
+  onRetryKey,
+  onStatusChange,
 }: {
   src: string;
   alt: string;
@@ -24,9 +31,12 @@ function GalleryImage({
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [nonce, setNonce] = useState(0);
 
-  useEffect(() => { setStatus("loading"); }, [src, onRetryKey, nonce]);
-  useEffect(() => { onStatusChange?.(status); }, [status, onStatusChange]);
-
+  useEffect(() => {
+    setStatus("loading");
+  }, [src, onRetryKey, nonce]);
+  useEffect(() => {
+    onStatusChange?.(status);
+  }, [status, onStatusChange]);
 
   return (
     <div className={cn("relative size-full", wrapperClassName)}>
@@ -51,7 +61,10 @@ function GalleryImage({
           className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden bg-surface"
         >
           <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-surface via-surface-elevated to-surface" />
-          <Loader2 className="relative size-6 animate-spin text-muted-foreground" aria-hidden="true" />
+          <Loader2
+            className="relative size-6 animate-spin text-muted-foreground"
+            aria-hidden="true"
+          />
           <span className="sr-only">Se încarcă poza…</span>
         </div>
       )}
@@ -65,7 +78,11 @@ function GalleryImage({
           <p className="text-sm">Poza nu s-a putut încărca</p>
           <button
             type="button"
-            onClick={(e) => { e.stopPropagation(); setStatus("loading"); setNonce((n) => n + 1); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setStatus("loading");
+              setNonce((n) => n + 1);
+            }}
             className="rounded-full border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-surface-elevated focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           >
             Încearcă din nou
@@ -75,8 +92,6 @@ function GalleryImage({
     </div>
   );
 }
-
-
 
 type Props = {
   photos: string[]; // signed URLs already resolved
@@ -90,7 +105,6 @@ type Props = {
   fullscreenExtra?: ReactNode;
 };
 
-
 const SWIPE_THRESHOLD = 60;
 
 /**
@@ -99,15 +113,29 @@ const SWIPE_THRESHOLD = 60;
  *  - dots indicator sus,
  *  - tap = deschide fullscreen viewer (cu swipe și swipe-jos pentru close).
  */
-export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topRight, fullscreenExtra }: Props) {
+export function ProfilePhotoGallery({
+  photos,
+  alt = "",
+  className,
+  overlay,
+  topRight,
+  fullscreenExtra,
+}: Props) {
   const [idx, setIdx] = useState(0);
   const [fs, setFs] = useState(false);
 
-  useEffect(() => { setIdx(0); }, [photos.length]);
+  useEffect(() => {
+    setIdx(0);
+  }, [photos.length]);
 
   if (!photos.length) {
     return (
-      <div className={cn("relative flex aspect-square w-full items-center justify-center bg-background text-5xl text-muted-foreground/40", className)}>
+      <div
+        className={cn(
+          "relative flex aspect-square w-full items-center justify-center bg-background text-5xl text-muted-foreground/40",
+          className,
+        )}
+      >
         {alt?.[0]?.toUpperCase() ?? "?"}
         {topRight && <div className="absolute right-3 top-3 z-10">{topRight}</div>}
         {overlay && <div className="absolute inset-x-0 bottom-0 z-10">{overlay}</div>}
@@ -143,7 +171,10 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
   return (
     <>
       <div
-        className={cn("relative aspect-square w-full overflow-hidden bg-background select-none", className)}
+        className={cn(
+          "relative aspect-square w-full overflow-hidden bg-background select-none",
+          className,
+        )}
         role="region"
         aria-roledescription="carusel"
         aria-label={galleryLabel}
@@ -173,12 +204,18 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
           <>
             <button
               aria-label="Poza anterioară"
-              onClick={(e) => { e.stopPropagation(); go(-1); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                go(-1);
+              }}
               className="absolute left-0 top-0 h-full w-1/4"
             />
             <button
               aria-label="Poza următoare"
-              onClick={(e) => { e.stopPropagation(); go(1); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                go(1);
+              }}
               className="absolute right-0 top-0 h-full w-1/4"
             />
           </>
@@ -205,7 +242,10 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
                   aria-selected={active}
                   aria-current={active ? "true" : undefined}
                   tabIndex={active ? 0 : -1}
-                  onClick={(e) => { e.stopPropagation(); setIdx(i); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIdx(i);
+                  }}
                   className={cn(
                     "h-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
                     active ? "w-6 bg-white" : "w-3 bg-white/40 hover:bg-white/70",
@@ -222,7 +262,11 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
         </p>
 
         {topRight && <div className="absolute right-3 top-3 z-20">{topRight}</div>}
-        {overlay && <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 [&_*]:pointer-events-auto">{overlay}</div>}
+        {overlay && (
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 [&_*]:pointer-events-auto">
+            {overlay}
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -242,7 +286,12 @@ export function ProfilePhotoGallery({ photos, alt = "", className, overlay, topR
 }
 
 function FullscreenViewer({
-  photos, initial, alt, onClose, onIndexChange, extra,
+  photos,
+  initial,
+  alt,
+  onClose,
+  onIndexChange,
+  extra,
 }: {
   photos: string[];
   initial: number;
@@ -259,8 +308,9 @@ function FullscreenViewer({
   const nextBtnRef = useRef<HTMLButtonElement>(null);
   const previouslyFocused = useRef<HTMLElement | null>(null);
 
-
-  useEffect(() => { onIndexChange(i); }, [i, onIndexChange]);
+  useEffect(() => {
+    onIndexChange(i);
+  }, [i, onIndexChange]);
 
   // Focus trap + restore + body scroll lock
   useEffect(() => {
@@ -297,20 +347,45 @@ function FullscreenViewer({
     }
 
     function onKey(e: KeyboardEvent) {
-      if (e.key === "Escape") { e.preventDefault(); onClose(); return; }
-      if (e.key === "ArrowLeft") { setI((v) => (v - 1 + photos.length) % photos.length); return; }
-      if (e.key === "ArrowRight") { setI((v) => (v + 1) % photos.length); return; }
-      if (e.key === "Home") { e.preventDefault(); setI(0); return; }
-      if (e.key === "End") { e.preventDefault(); setI(photos.length - 1); return; }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        setI((v) => (v - 1 + photos.length) % photos.length);
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        setI((v) => (v + 1) % photos.length);
+        return;
+      }
+      if (e.key === "Home") {
+        e.preventDefault();
+        setI(0);
+        return;
+      }
+      if (e.key === "End") {
+        e.preventDefault();
+        setI(photos.length - 1);
+        return;
+      }
       if (e.key === "Tab") {
         const order = getFocusable();
-        if (!order.length) { e.preventDefault(); return; }
+        if (!order.length) {
+          e.preventDefault();
+          return;
+        }
         const active = document.activeElement as HTMLElement | null;
         const idxA = active ? order.indexOf(active) : -1;
         e.preventDefault();
         const nextIdx = e.shiftKey
-          ? (idxA <= 0 ? order.length - 1 : idxA - 1)
-          : (idxA === -1 || idxA === order.length - 1 ? 0 : idxA + 1);
+          ? idxA <= 0
+            ? order.length - 1
+            : idxA - 1
+          : idxA === -1 || idxA === order.length - 1
+            ? 0
+            : idxA + 1;
         const target = order[nextIdx];
         target.focus({ preventScroll: false });
         // Ensure element inside scrollable content is visible after focus
@@ -339,7 +414,6 @@ function FullscreenViewer({
     };
   }, [photos.length, onClose]);
 
-
   function onDragEnd(_: unknown, info: PanInfo) {
     if (info.offset.x < -SWIPE_THRESHOLD) setI((v) => (v + 1) % photos.length);
     else if (info.offset.x > SWIPE_THRESHOLD) setI((v) => (v - 1 + photos.length) % photos.length);
@@ -350,7 +424,6 @@ function FullscreenViewer({
   return (
     <motion.div
       ref={dialogRef}
-
       role="dialog"
       aria-modal="true"
       aria-label={alt ? `Galerie foto ${alt}` : "Galerie foto"}
@@ -360,7 +433,9 @@ function FullscreenViewer({
       transition={{ duration: 0.15 }}
       className="fixed inset-0 z-[100] overflow-y-auto overscroll-contain bg-black"
       style={{ touchAction: "pan-y" }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       {/* Fixed controls stay in viewport during vertical scroll */}
       <button
@@ -393,7 +468,6 @@ function FullscreenViewer({
         )}
       </div>
 
-
       {multi && (
         <>
           <button
@@ -419,14 +493,18 @@ function FullscreenViewer({
             aria-orientation="horizontal"
             onKeyDown={(e) => {
               let next: number | null = null;
-              if (e.key === "ArrowLeft" || e.key === "ArrowUp") next = (i - 1 + photos.length) % photos.length;
-              else if (e.key === "ArrowRight" || e.key === "ArrowDown") next = (i + 1) % photos.length;
+              if (e.key === "ArrowLeft" || e.key === "ArrowUp")
+                next = (i - 1 + photos.length) % photos.length;
+              else if (e.key === "ArrowRight" || e.key === "ArrowDown")
+                next = (i + 1) % photos.length;
               else if (e.key === "Home") next = 0;
               else if (e.key === "End") next = photos.length - 1;
               if (next === null) return;
               e.preventDefault();
               setI(next);
-              const btn = e.currentTarget.querySelector<HTMLButtonElement>(`[data-fs-thumb="${next}"]`);
+              const btn = e.currentTarget.querySelector<HTMLButtonElement>(
+                `[data-fs-thumb="${next}"]`,
+              );
               btn?.focus();
               btn?.scrollIntoView({ block: "nearest", inline: "center" });
             }}
@@ -444,7 +522,10 @@ function FullscreenViewer({
                   aria-selected={active}
                   aria-current={active ? "true" : undefined}
                   tabIndex={active ? 0 : -1}
-                  onClick={(e) => { e.stopPropagation(); setI(k); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setI(k);
+                  }}
                   className={cn(
                     "h-2 shrink-0 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
                     active ? "w-8 bg-white" : "w-3 bg-white/40 hover:bg-white/70",
@@ -463,7 +544,11 @@ function FullscreenViewer({
             <GalleryImage
               key={photos[i]}
               src={photos[i]}
-              alt={alt ? `${alt} — poza ${i + 1} din ${photos.length}` : `Poza ${i + 1} din ${photos.length}`}
+              alt={
+                alt
+                  ? `${alt} — poza ${i + 1} din ${photos.length}`
+                  : `Poza ${i + 1} din ${photos.length}`
+              }
               wrapperClassName="flex h-[100dvh] w-full items-center justify-center"
               className="max-h-[100dvh] max-w-full object-contain"
               onStatusChange={setImgStatus}
@@ -481,7 +566,6 @@ function FullscreenViewer({
             />
           </AnimatePresence>
 
-
           <p
             className="pointer-events-none absolute bottom-6 left-1/2 -translate-x-1/2 text-xs uppercase tracking-[0.2em] text-white/60"
             aria-live="polite"
@@ -492,14 +576,8 @@ function FullscreenViewer({
           </p>
         </div>
 
-        {extra && (
-          <div className="w-full bg-black text-white">
-            {extra}
-          </div>
-        )}
+        {extra && <div className="w-full bg-black text-white">{extra}</div>}
       </div>
     </motion.div>
   );
 }
-
-

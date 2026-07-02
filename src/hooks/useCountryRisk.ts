@@ -23,12 +23,20 @@ async function detectCountry(): Promise<string | null> {
     const cc = (await res.text()).trim().toUpperCase();
     if (cc.length === 2 && typeof localStorage !== "undefined") localStorage.setItem("cc_hint", cc);
     return cc.length === 2 ? cc : null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 export function useCountryRisk(): { loading: boolean; country: string | null; risk: CountryRisk } {
-  const [state, setState] = useState<{ loading: boolean; country: string | null; risk: CountryRisk }>({
-    loading: true, country: null, risk: null,
+  const [state, setState] = useState<{
+    loading: boolean;
+    country: string | null;
+    risk: CountryRisk;
+  }>({
+    loading: true,
+    country: null,
+    risk: null,
   });
 
   useEffect(() => {
@@ -49,7 +57,9 @@ export function useCountryRisk(): { loading: boolean; country: string | null; ri
       cache = { at: Date.now(), country: cc, risk: row };
       if (alive) setState({ loading: false, country: cc, risk: row });
     })();
-    return () => { alive = false; };
+    return () => {
+      alive = false;
+    };
   }, []);
 
   return state;

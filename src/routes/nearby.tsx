@@ -21,7 +21,6 @@ import { BackButton } from "@/components/BackButton";
 import { toast } from "sonner";
 import { logRpcError } from "@/lib/rpc-error-logger";
 
-
 export const Route = createFileRoute("/nearby")({
   head: () => ({
     meta: [
@@ -83,7 +82,12 @@ function NearbyPage() {
     retry: (failureCount, err: unknown) => {
       // Don't retry permission/auth errors — they won't resolve on their own.
       const msg = String((err as Error)?.message ?? err ?? "").toLowerCase();
-      if (msg.includes("permission denied") || msg.includes("403") || msg.includes("unauthorized") || msg.includes("401")) {
+      if (
+        msg.includes("permission denied") ||
+        msg.includes("403") ||
+        msg.includes("unauthorized") ||
+        msg.includes("401")
+      ) {
         return false;
       }
       return failureCount < 2;
@@ -149,10 +153,9 @@ function NearbyPage() {
           <MapPin className="h-8 w-8 text-muted-foreground mb-3" />
           <h1 className="text-xl font-semibold mb-2">Activează locația</h1>
           <p className="text-sm text-muted-foreground mb-4">
-            Pentru a vedea ce e aproape de tine, avem nevoie de permisiunea pentru
-            locație. <strong>Coordonatele tale exacte rămân pe dispozitiv</strong> —
-            serverul primește doar o zonă aproximativă de ~5 km, atât cât e necesar
-            ca să-ți trimită locurile potrivite.
+            Pentru a vedea ce e aproape de tine, avem nevoie de permisiunea pentru locație.{" "}
+            <strong>Coordonatele tale exacte rămân pe dispozitiv</strong> — serverul primește doar o
+            zonă aproximativă de ~5 km, atât cât e necesar ca să-ți trimită locurile potrivite.
           </p>
           <Button
             onClick={() =>
@@ -206,7 +209,11 @@ function NearbyPage() {
             disabled={isFetching}
             aria-label="Reîncarcă"
           >
-            {isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            {isFetching ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4" />
+            )}
           </Button>
           <div className="flex gap-1 bg-muted rounded-md p-1">
             <button
@@ -243,11 +250,15 @@ function NearbyPage() {
               onBrowseAll={() => navigate({ to: "/events" })}
             />
           ) : view === "map" ? (
-            <NearbyMap user={coords} points={filtered} onSelect={(p) => {
-              if (p.kind === "event") navigate({ to: "/events/$id", params: { id: p.id } });
-              else if (p.kind === "offer") navigate({ to: "/offers/$id", params: { id: p.id } });
-              else navigate({ to: "/venues/$id", params: { id: p.id } });
-            }} />
+            <NearbyMap
+              user={coords}
+              points={filtered}
+              onSelect={(p) => {
+                if (p.kind === "event") navigate({ to: "/events/$id", params: { id: p.id } });
+                else if (p.kind === "offer") navigate({ to: "/offers/$id", params: { id: p.id } });
+                else navigate({ to: "/venues/$id", params: { id: p.id } });
+              }}
+            />
           ) : isLoading || !coords ? (
             <div className="text-center py-12 text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
@@ -258,18 +269,20 @@ function NearbyPage() {
               radiusM={radiusM}
               kind={kind}
               onExpand={() => {
-                const next = RADIUS_OPTIONS[Math.min(RADIUS_OPTIONS.indexOf(radiusM as 2000 | 5000 | 10000) + 1, RADIUS_OPTIONS.length - 1)];
+                const next =
+                  RADIUS_OPTIONS[
+                    Math.min(
+                      RADIUS_OPTIONS.indexOf(radiusM as 2000 | 5000 | 10000) + 1,
+                      RADIUS_OPTIONS.length - 1,
+                    )
+                  ];
                 setRadiusM(next);
               }}
             />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filtered.map((p) => (
-                <NearbyCard
-                  key={`${p.kind}:${p.id}`}
-                  point={p}
-                  onSelect={handleSelectOnMap}
-                />
+                <NearbyCard key={`${p.kind}:${p.id}`} point={p} onSelect={handleSelectOnMap} />
               ))}
             </div>
           )}
@@ -294,9 +307,7 @@ function EmptyState({
     <Card className="p-8 text-center">
       <MapPin className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
       <h3 className="font-semibold mb-1">Nimic în {radiusM / 1000}km</h3>
-      <p className="text-sm text-muted-foreground mb-4">
-        Nu am găsit {label} în zona ta acum.
-      </p>
+      <p className="text-sm text-muted-foreground mb-4">Nu am găsit {label} în zona ta acum.</p>
       <div className="flex gap-2 justify-center flex-wrap">
         {canExpand && (
           <Button onClick={onExpand} variant="default" size="sm">
@@ -316,7 +327,6 @@ function EmptyState({
           <BellPlus className="h-4 w-4 mr-1.5" />
           Anunță-mă
         </Button>
-
       </div>
     </Card>
   );
@@ -340,7 +350,9 @@ function ErrorState({
         className={`h-10 w-10 mx-auto mb-3 ${isPerm ? "text-destructive" : "text-muted-foreground"}`}
       />
       <h3 className="font-semibold mb-1">
-        {isPerm ? "Nu ai acces la locurile din apropiere" : "Nu am putut încărca locurile din apropiere"}
+        {isPerm
+          ? "Nu ai acces la locurile din apropiere"
+          : "Nu am putut încărca locurile din apropiere"}
       </h3>
       <p className="text-sm text-muted-foreground mb-4 max-w-md mx-auto">
         {isPerm
@@ -348,9 +360,7 @@ function ErrorState({
           : "A apărut o problemă temporară de conexiune. Încearcă din nou într-o clipă."}
       </p>
       {message && (
-        <p className="text-[11px] font-mono text-muted-foreground/70 mb-4 break-all">
-          {message}
-        </p>
+        <p className="text-[11px] font-mono text-muted-foreground/70 mb-4 break-all">{message}</p>
       )}
       <div className="flex gap-2 justify-center flex-wrap">
         <Button onClick={onRetry} size="sm">

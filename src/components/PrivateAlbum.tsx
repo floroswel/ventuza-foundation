@@ -12,7 +12,9 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [pending, setPending] = useState<Array<{ id: string; requester_id: string; requester_name: string | null }>>([]);
+  const [pending, setPending] = useState<
+    Array<{ id: string; requester_id: string; requester_name: string | null }>
+  >([]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
@@ -41,36 +43,49 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
       (reqs ?? []).map((r) => ({
         id: r.id,
         requester_id: r.requester_id,
-        requester_name: (r as { profiles?: { display_name?: string | null } }).profiles?.display_name ?? null,
+        requester_name:
+          (r as { profiles?: { display_name?: string | null } }).profiles?.display_name ?? null,
       })),
     );
     setLoading(false);
   }
 
-  useEffect(() => { void load(); }, [userId]);
+  useEffect(() => {
+    void load();
+  }, [userId]);
 
   async function save(next: string[]) {
     setPhotos(next);
-    const { error } = await supabase.from("private_albums").upsert(
-      { owner_id: userId, photos: next },
-      { onConflict: "owner_id" },
-    );
+    const { error } = await supabase
+      .from("private_albums")
+      .upsert({ owner_id: userId, photos: next }, { onConflict: "owner_id" });
     if (error) toast.error(error.message);
   }
 
   async function handleFiles(files: FileList | null) {
     if (!files?.length) return;
     const room = MAX - photos.length;
-    if (room <= 0) { toast.error(`Maxim ${MAX} poze în album.`); return; }
+    if (room <= 0) {
+      toast.error(`Maxim ${MAX} poze în album.`);
+      return;
+    }
     setBusy(true);
     const added: string[] = [];
     try {
       for (const file of Array.from(files).slice(0, room)) {
-        if (file.size > MAX_SIZE_MB * 1024 * 1024) { toast.error(`${file.name} > ${MAX_SIZE_MB}MB`); continue; }
+        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+          toast.error(`${file.name} > ${MAX_SIZE_MB}MB`);
+          continue;
+        }
         const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
         const path = `${userId}/${crypto.randomUUID()}.${ext}`;
-        const { error } = await supabase.storage.from("private-albums").upload(path, file, { contentType: file.type });
-        if (error) { toast.error(error.message); continue; }
+        const { error } = await supabase.storage
+          .from("private-albums")
+          .upload(path, file, { contentType: file.type });
+        if (error) {
+          toast.error(error.message);
+          continue;
+        }
         added.push(path);
       }
       if (added.length) {
@@ -102,7 +117,11 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
   }
 
   if (loading) {
-    return <div className="flex justify-center p-6"><Loader2 className="size-5 animate-spin text-primary" /></div>;
+    return (
+      <div className="flex justify-center p-6">
+        <Loader2 className="size-5 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
@@ -114,17 +133,24 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
           </span>
           <div className="flex-1">
             <p className="text-sm font-medium">Album privat</p>
-            <p className="text-xs text-muted-foreground">Poze pe care doar oamenii cărora le acorzi acces le pot vedea.</p>
+            <p className="text-xs text-muted-foreground">
+              Poze pe care doar oamenii cărora le acorzi acces le pot vedea.
+            </p>
           </div>
         </div>
 
         <div className="mt-3 grid grid-cols-4 gap-1.5">
           {photos.map((p) => (
-            <div key={p} className="group relative aspect-square overflow-hidden rounded-lg bg-background">
+            <div
+              key={p}
+              className="group relative aspect-square overflow-hidden rounded-lg bg-background"
+            >
               {signed[p] ? (
                 <img src={signed[p]} className="size-full object-cover" alt="" />
               ) : (
-                <div className="flex size-full items-center justify-center"><Loader2 className="size-3 animate-spin" /></div>
+                <div className="flex size-full items-center justify-center">
+                  <Loader2 className="size-3 animate-spin" />
+                </div>
               )}
               <button
                 onClick={() => remove(p)}
@@ -145,7 +171,14 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
             </button>
           )}
         </div>
-        <input ref={fileRef} type="file" accept="image/*" multiple className="hidden" onChange={(e) => handleFiles(e.target.files)} />
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => handleFiles(e.target.files)}
+        />
       </div>
 
       {pending.length > 0 && (
@@ -153,11 +186,24 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
           <p className="text-sm font-medium text-primary">Cereri în așteptare ({pending.length})</p>
           <div className="mt-2 space-y-2">
             {pending.map((r) => (
-              <div key={r.id} className="flex items-center justify-between rounded-xl bg-background p-2.5">
+              <div
+                key={r.id}
+                className="flex items-center justify-between rounded-xl bg-background p-2.5"
+              >
                 <p className="text-sm">{r.requester_name ?? "Cineva"}</p>
                 <div className="flex gap-1.5">
-                  <button onClick={() => deny(r)} className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground">Refuz</button>
-                  <button onClick={() => accept(r)} className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground">Acordă</button>
+                  <button
+                    onClick={() => deny(r)}
+                    className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground"
+                  >
+                    Refuz
+                  </button>
+                  <button
+                    onClick={() => accept(r)}
+                    className="rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                  >
+                    Acordă
+                  </button>
                 </div>
               </div>
             ))}
@@ -169,8 +215,16 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
 }
 
 /** Buton+UI pentru vizitator: cere acces sau vede albumul dacă unlock acordat */
-export function PrivateAlbumViewer({ ownerId, currentUserId }: { ownerId: string; currentUserId: string }) {
-  const [state, setState] = useState<"loading" | "none" | "pending" | "unlocked" | "denied">("loading");
+export function PrivateAlbumViewer({
+  ownerId,
+  currentUserId,
+}: {
+  ownerId: string;
+  currentUserId: string;
+}) {
+  const [state, setState] = useState<"loading" | "none" | "pending" | "unlocked" | "denied">(
+    "loading",
+  );
   const [photos, setPhotos] = useState<string[]>([]);
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [hasAlbum, setHasAlbum] = useState(false);
@@ -215,11 +269,15 @@ export function PrivateAlbumViewer({ ownerId, currentUserId }: { ownerId: string
     else setState("none");
   }
 
-  useEffect(() => { void check(); }, [ownerId, currentUserId]);
+  useEffect(() => {
+    void check();
+  }, [ownerId, currentUserId]);
 
   async function request() {
     const { error } = await supabase.from("album_requests").insert({
-      owner_id: ownerId, requester_id: currentUserId, status: "pending",
+      owner_id: ownerId,
+      requester_id: currentUserId,
+      status: "pending",
     });
     if (error) return toast.error(error.message);
     toast.success("Cerere trimisă");
@@ -253,12 +311,17 @@ export function PrivateAlbumViewer({ ownerId, currentUserId }: { ownerId: string
       <Lock className="mx-auto mb-2 size-6 text-primary" />
       <p className="text-sm font-medium">Are un album privat</p>
       <p className="mt-1 text-xs text-muted-foreground">
-        {state === "pending" ? "Cererea ta e în așteptare." :
-         state === "denied" ? "Cererea ta a fost refuzată." :
-         "Cere acces ca să vezi pozele private."}
+        {state === "pending"
+          ? "Cererea ta e în așteptare."
+          : state === "denied"
+            ? "Cererea ta a fost refuzată."
+            : "Cere acces ca să vezi pozele private."}
       </p>
       {state === "none" && (
-        <button onClick={request} className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground">
+        <button
+          onClick={request}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-1.5 text-xs font-medium text-primary-foreground"
+        >
           <ImagePlus className="size-3" /> Cere acces
         </button>
       )}

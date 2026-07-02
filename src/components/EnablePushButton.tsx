@@ -7,10 +7,12 @@ import { savePushSubscription, removePushSubscription } from "@/lib/push.functio
 import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/web-push-config";
 
 function supported(): boolean {
-  return typeof window !== "undefined"
-    && "serviceWorker" in navigator
-    && "PushManager" in window
-    && "Notification" in window;
+  return (
+    typeof window !== "undefined" &&
+    "serviceWorker" in navigator &&
+    "PushManager" in window &&
+    "Notification" in window
+  );
 }
 
 export function EnablePushButton({ className }: { className?: string }) {
@@ -20,11 +22,15 @@ export function EnablePushButton({ className }: { className?: string }) {
   const remove = useServerFn(removePushSubscription);
 
   useEffect(() => {
-    if (!supported()) { setSubscribed(false); return; }
+    if (!supported()) {
+      setSubscribed(false);
+      return;
+    }
     (async () => {
       try {
-        const reg = await navigator.serviceWorker.getRegistration("/push-sw.js")
-          ?? await navigator.serviceWorker.register("/push-sw.js");
+        const reg =
+          (await navigator.serviceWorker.getRegistration("/push-sw.js")) ??
+          (await navigator.serviceWorker.register("/push-sw.js"));
         const sub = await reg.pushManager.getSubscription();
         setSubscribed(!!sub && Notification.permission === "granted");
       } catch {
@@ -34,11 +40,17 @@ export function EnablePushButton({ className }: { className?: string }) {
   }, []);
 
   async function enable() {
-    if (!supported()) { toast.error("Browserul tău nu suportă notificări push."); return; }
+    if (!supported()) {
+      toast.error("Browserul tău nu suportă notificări push.");
+      return;
+    }
     setBusy(true);
     try {
       const perm = await Notification.requestPermission();
-      if (perm !== "granted") { toast.error("Notificările au fost respinse."); return; }
+      if (perm !== "granted") {
+        toast.error("Notificările au fost respinse.");
+        return;
+      }
       const reg = await navigator.serviceWorker.register("/push-sw.js");
       await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.subscribe({
@@ -46,13 +58,16 @@ export function EnablePushButton({ className }: { className?: string }) {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY).buffer as ArrayBuffer,
       });
       const json = sub.toJSON() as { endpoint?: string; keys?: { p256dh?: string; auth?: string } };
-      if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth) throw new Error("subscription incompletă");
-      await save({ data: {
-        endpoint: json.endpoint,
-        p256dh: json.keys.p256dh,
-        auth: json.keys.auth,
-        userAgent: navigator.userAgent.slice(0, 500),
-      } });
+      if (!json.endpoint || !json.keys?.p256dh || !json.keys?.auth)
+        throw new Error("subscription incompletă");
+      await save({
+        data: {
+          endpoint: json.endpoint,
+          p256dh: json.keys.p256dh,
+          auth: json.keys.auth,
+          userAgent: navigator.userAgent.slice(0, 500),
+        },
+      });
       setSubscribed(true);
       toast.success("Notificări activate.");
     } catch (e) {
@@ -92,8 +107,16 @@ export function EnablePushButton({ className }: { className?: string }) {
       onClick={subscribed ? disable : enable}
       className={className}
     >
-      {busy ? <Loader2 className="size-4 animate-spin" /> : subscribed ? <BellOff className="size-4" /> : <Bell className="size-4" />}
-      <span className="ml-2">{subscribed ? "Dezactivează notificările" : "Activează notificările"}</span>
+      {busy ? (
+        <Loader2 className="size-4 animate-spin" />
+      ) : subscribed ? (
+        <BellOff className="size-4" />
+      ) : (
+        <Bell className="size-4" />
+      )}
+      <span className="ml-2">
+        {subscribed ? "Dezactivează notificările" : "Activează notificările"}
+      </span>
     </Button>
   );
 }

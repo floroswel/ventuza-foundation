@@ -40,10 +40,11 @@ export const recordProximityHit = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => HitInput.parse(d))
   .handler(async ({ data, context }): Promise<ProximityHitResult> => {
-    const { data: row, error } = await (context.supabase as any).rpc(
-      "try_record_proximity_hit",
-      { p_kind: data.pointKind, p_id: data.pointId, p_layer: data.layer },
-    );
+    const { data: row, error } = await (context.supabase as any).rpc("try_record_proximity_hit", {
+      p_kind: data.pointKind,
+      p_id: data.pointId,
+      p_layer: data.layer,
+    });
     if (error) throw new Error(error.message);
     return row as ProximityHitResult;
   });

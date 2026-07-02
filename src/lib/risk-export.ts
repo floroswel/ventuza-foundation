@@ -58,13 +58,23 @@ export type RiskExportInput = {
   distribution: { bucket: string; count: number }[];
   kinds: { kind: string; count: number; avg_severity: number }[];
   topUsers: {
-    user_id: string; display_name: string | null; risk_score: number;
-    report_count: number; verified: boolean; banned_at: string | null;
-    suspended_until: string | null; created_at: string;
+    user_id: string;
+    display_name: string | null;
+    risk_score: number;
+    report_count: number;
+    verified: boolean;
+    banned_at: string | null;
+    suspended_until: string | null;
+    created_at: string;
   }[];
   recentFlags: {
-    id: string; created_at: string; kind: string; severity: number;
-    status: string; user_id: string; display_name: string | null;
+    id: string;
+    created_at: string;
+    kind: string;
+    severity: number;
+    status: string;
+    user_id: string;
+    display_name: string | null;
   }[];
 };
 
@@ -110,11 +120,24 @@ export function exportRiskCsv(input: RiskExportInput): void {
   lines.push([]);
 
   lines.push([`Top utilizatori (filtrate: ${input.topUsers.length})`]);
-  lines.push(["user_id", "display_name", "risk_score", "report_count", "verified", "status", "created_at"]);
+  lines.push([
+    "user_id",
+    "display_name",
+    "risk_score",
+    "report_count",
+    "verified",
+    "status",
+    "created_at",
+  ]);
   for (const u of input.topUsers) {
     lines.push([
-      u.user_id, u.display_name ?? "", u.risk_score, u.report_count,
-      u.verified ? "yes" : "no", fmtStatus(u), u.created_at,
+      u.user_id,
+      u.display_name ?? "",
+      u.risk_score,
+      u.report_count,
+      u.verified ? "yes" : "no",
+      fmtStatus(u),
+      u.created_at,
     ]);
   }
   lines.push([]);
@@ -139,28 +162,37 @@ export function exportRiskPdf(input: RiskExportInput): void {
     .join("");
 
   const kindsRows = input.kinds
-    .map((k) => `<tr><td>${esc(k.kind)}</td><td class="r">${k.count}</td><td class="r">${k.avg_severity}</td></tr>`)
+    .map(
+      (k) =>
+        `<tr><td>${esc(k.kind)}</td><td class="r">${k.count}</td><td class="r">${k.avg_severity}</td></tr>`,
+    )
     .join("");
 
   const usersRows = input.topUsers
-    .map((u) => `<tr>
+    .map(
+      (u) => `<tr>
       <td class="mono">${esc(u.user_id.slice(0, 12))}…</td>
       <td>${esc(u.display_name ?? "—")}${u.verified ? " ✓" : ""}</td>
       <td class="r"><b>${u.risk_score}</b></td>
       <td class="r">${u.report_count}</td>
       <td>${esc(fmtStatus(u))}</td>
       <td>${esc(u.created_at)}</td>
-    </tr>`).join("");
+    </tr>`,
+    )
+    .join("");
 
   const flagsRows = input.recentFlags
-    .map((f) => `<tr>
+    .map(
+      (f) => `<tr>
       <td>${esc(f.created_at)}</td>
       <td>${esc(f.kind)}</td>
       <td class="r">${f.severity}</td>
       <td>${esc(f.status)}</td>
       <td>${esc(f.display_name ?? "—")}</td>
       <td class="mono">${esc(f.user_id.slice(0, 12))}…</td>
-    </tr>`).join("");
+    </tr>`,
+    )
+    .join("");
 
   const html = `<!doctype html>
 <html lang="ro"><head><meta charset="utf-8"/>

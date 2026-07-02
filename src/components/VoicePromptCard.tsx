@@ -9,7 +9,11 @@ type Props = {
   voicePath: string | null;
   question: string | null;
   durationSec: number | null;
-  onChange: (next: { voice_prompt_path: string | null; voice_prompt_question: string | null; voice_prompt_duration_sec: number | null }) => void;
+  onChange: (next: {
+    voice_prompt_path: string | null;
+    voice_prompt_question: string | null;
+    voice_prompt_duration_sec: number | null;
+  }) => void;
 };
 
 const MAX_SEC = 30;
@@ -28,9 +32,14 @@ export function VoicePromptCard({ userId, voicePath, question, durationSec, onCh
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    if (!voicePath) { setSigned(null); return; }
+    if (!voicePath) {
+      setSigned(null);
+      return;
+    }
     (async () => {
-      const { data } = await supabase.storage.from("profile-media").createSignedUrl(voicePath, 3600);
+      const { data } = await supabase.storage
+        .from("profile-media")
+        .createSignedUrl(voicePath, 3600);
       if (data?.signedUrl) setSigned(data.signedUrl);
     })();
   }, [voicePath]);
@@ -41,7 +50,9 @@ export function VoicePromptCard({ userId, voicePath, question, durationSec, onCh
       const mime = MediaRecorder.isTypeSupported("audio/webm") ? "audio/webm" : "audio/mp4";
       const rec = new MediaRecorder(stream, { mimeType: mime });
       chunks.current = [];
-      rec.ondataavailable = (e) => { if (e.data.size) chunks.current.push(e.data); };
+      rec.ondataavailable = (e) => {
+        if (e.data.size) chunks.current.push(e.data);
+      };
       rec.onstop = async () => {
         stream.getTracks().forEach((t) => t.stop());
         const blob = new Blob(chunks.current, { type: mime });
@@ -53,7 +64,10 @@ export function VoicePromptCard({ userId, voicePath, question, durationSec, onCh
       setElapsed(0);
       timer.current = setInterval(() => {
         setElapsed((s) => {
-          if (s + 1 >= MAX_SEC) { stopRec(); return MAX_SEC; }
+          if (s + 1 >= MAX_SEC) {
+            stopRec();
+            return MAX_SEC;
+          }
           return s + 1;
         });
       }, 1000);
@@ -63,7 +77,10 @@ export function VoicePromptCard({ userId, voicePath, question, durationSec, onCh
   }
 
   function stopRec() {
-    if (timer.current) { clearInterval(timer.current); timer.current = null; }
+    if (timer.current) {
+      clearInterval(timer.current);
+      timer.current = null;
+    }
     if (mediaRec.current && mediaRec.current.state !== "inactive") mediaRec.current.stop();
     setRecording(false);
   }
@@ -73,21 +90,29 @@ export function VoicePromptCard({ userId, voicePath, question, durationSec, onCh
     try {
       const path = `${userId}/voice-${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("profile-media").upload(path, blob, {
-        contentType: blob.type, upsert: false,
+        contentType: blob.type,
+        upsert: false,
       });
       if (upErr) throw upErr;
 
       // delete old file
       if (voicePath) await supabase.storage.from("profile-media").remove([voicePath]);
 
-      const { error } = await supabase.from("profiles").update({
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          voice_prompt_path: path,
+          voice_prompt_question: currentQ,
+          voice_prompt_duration_sec: elapsed,
+        })
+        .eq("id", userId);
+      if (error) throw error;
+
+      onChange({
         voice_prompt_path: path,
         voice_prompt_question: currentQ,
         voice_prompt_duration_sec: elapsed,
-      }).eq("id", userId);
-      if (error) throw error;
-
-      onChange({ voice_prompt_path: path, voice_prompt_question: currentQ, voice_prompt_duration_sec: elapsed });
+      });
       toast.success("Voice prompt salvat.");
     } catch (e: any) {
       toast.error(e.message || "Upload eșuat");
@@ -101,11 +126,20 @@ export function VoicePromptCard({ userId, voicePath, question, durationSec, onCh
     setBusy(true);
     try {
       await supabase.storage.from("profile-media").remove([voicePath]);
-      const { error } = await supabase.from("profiles").update({
-        voice_prompt_path: null, voice_prompt_question: null, voice_prompt_duration_sec: null,
-      }).eq("id", userId);
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          voice_prompt_path: null,
+          voice_prompt_question: null,
+          voice_prompt_duration_sec: null,
+        })
+        .eq("id", userId);
       if (error) throw error;
-      onChange({ voice_prompt_path: null, voice_prompt_question: null, voice_prompt_duration_sec: null });
+      onChange({
+        voice_prompt_path: null,
+        voice_prompt_question: null,
+        voice_prompt_duration_sec: null,
+      });
       setSigned(null);
     } catch (e: any) {
       toast.error(e.message);
@@ -116,15 +150,22 @@ export function VoicePromptCard({ userId, voicePath, question, durationSec, onCh
 
   function togglePlay() {
     if (!audioRef.current) return;
-    if (playing) { audioRef.current.pause(); setPlaying(false); }
-    else { audioRef.current.play(); setPlaying(true); }
+    if (playing) {
+      audioRef.current.pause();
+      setPlaying(false);
+    } else {
+      audioRef.current.play();
+      setPlaying(true);
+    }
   }
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-5">
       <div className="flex items-center gap-2">
         <Mic className="size-4 text-primary" />
-        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Voice prompt · max {MAX_SEC}s</p>
+        <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+          Voice prompt · max {MAX_SEC}s
+        </p>
       </div>
 
       {!voicePath && (
@@ -136,7 +177,11 @@ export function VoicePromptCard({ userId, voicePath, question, durationSec, onCh
             disabled={recording}
             className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm"
           >
-            {VOICE_PROMPT_QUESTIONS.map((q) => <option key={q} value={q}>{q}</option>)}
+            {VOICE_PROMPT_QUESTIONS.map((q) => (
+              <option key={q} value={q}>
+                {q}
+              </option>
+            ))}
           </select>
 
           {!recording ? (
@@ -163,13 +208,20 @@ export function VoicePromptCard({ userId, voicePath, question, durationSec, onCh
         <div className="mt-3 space-y-3">
           <p className="text-sm text-foreground/90">{question}</p>
           <div className="flex items-center gap-3 rounded-xl border border-border bg-background px-3 py-2.5">
-            <button onClick={togglePlay} className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground">
+            <button
+              onClick={togglePlay}
+              className="flex size-9 items-center justify-center rounded-full bg-primary text-primary-foreground"
+            >
               {playing ? <Pause className="size-4" /> : <Play className="ml-0.5 size-4" />}
             </button>
             <div className="flex-1 text-xs text-muted-foreground">
               {durationSec ? `${durationSec}s` : "Audio"}
             </div>
-            <button onClick={remove} disabled={busy} className="rounded-full p-2 text-muted-foreground hover:text-destructive">
+            <button
+              onClick={remove}
+              disabled={busy}
+              className="rounded-full p-2 text-muted-foreground hover:text-destructive"
+            >
               <Trash2 className="size-4" />
             </button>
           </div>
