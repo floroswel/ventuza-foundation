@@ -30,8 +30,8 @@ const GROUP_ORDER = ["Operations", "Trust & Safety", "Compliance", "Business", "
 export function AdminShell({ items, active, onSelect, roleLabel, children, banner }: Props) {
   const [collapsed, setCollapsed] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [query, setQuery] = useState("");
   const [now, setNow] = useState(() => new Date());
+
   const [density, setDensity] = useState<"comfortable" | "compact">(() => {
     if (typeof window === "undefined") return "comfortable";
     return (localStorage.getItem("admin:density") as "comfortable" | "compact") ?? "comfortable";
@@ -65,15 +65,8 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
     return GROUP_ORDER.filter((k) => g[k]?.length).map((k) => [k, g[k]!] as const);
   }, [visible]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return visible;
-    return visible.filter((i) =>
-      i.label.toLowerCase().includes(q) ||
-      i.group.toLowerCase().includes(q) ||
-      (i.hint ?? "").toLowerCase().includes(q),
-    );
-  }, [query, visible]);
+
+
 
   return (
     <div data-admin data-density={density} className="relative min-h-dvh bg-[var(--admin-bg)] text-[var(--admin-text)]">
