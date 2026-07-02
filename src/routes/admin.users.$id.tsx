@@ -943,3 +943,194 @@ function fmtDate(v: any) {
     return String(v);
   }
 }
+
+/* ================= ConsentsHistoryPanel ================= */
+function ConsentsHistoryPanel({ userId }: { userId: string }) {
+  const getHistory = useServerFn(adminGetConsentHistory);
+  const exportCsv = useServerFn(adminExportConsentHistoryCsv);
+  const [kind, setKind] = useState<string>("");
+  const [offset, setOffset] = useState(0);
+  const [expJust, setExpJust] = useState("");
+  const [expOpen, setExpOpen] = useState(false);
+  const limit = 50;
+
+  const q = useQuery({
+    queryKey: ["admin-consent-history", userId, kind, offset],
+    queryFn: async () =>
+      getHistory({
+        data: { userId, kind: kind || undefined, limit, offset },
+      }),
+    retry: false,
+  });
+
+  const exp = useMutation({
+    mutationFn: async () =>
+      exportCsv({ data: { userId, justification: expJust.trim() } }),
+    onSuccess: (r) => {
+      const blob = new Blob([r.csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = r.filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      setExpOpen(false);
+      setExpJust("");
+      toast.success("CSV descărcat + audit log scris");
+    },
+    onError: (e: any) => toast.error(e?.message ?? "Export eșuat"),
+  });
+
+  const total = q.data?.total ?? 0;
+  const rows = q.data?.rows ?? [];
+  const kinds = ["", "age_verification", "ai_features", "push_notifications", "marketing", "health_data", "background_location"];
+
+  return (
+    <Card className="p-4 space-y-3">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <div>
+          <div className="text-sm font-semibold">Istoric consimțăminte</div>
+          <div className="text-xs text-muted-foreground">
+            {total} intrări · sursă append-only `consent_log` · IP mascat /24
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={kind}
+            onChange={(e) => {
+              setKind(e.target.value);
+              setOffset(0);
+            }}
+            className="text-xs border rounded px-2 py-1 bg-background"
+          >
+            {kinds.map((k) => (
+              <option key={k} value={k}>
+                {k || "toate tipurile"}
+              </option>
+            ))}
+          </select>
+          <Dialog open={expOpen} onOpenChange={setExpOpen}>
+            <DialogTrigger asChild>
+              <Button size="sm" variant="outline">
+                Export CSV
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Export istoric consimțăminte</DialogTitle>
+                <DialogDescription>
+                  Descarcă istoric complet (max 5000 intrări). Acțiunea e logată
+                  cu severitate `warning` în `admin_audit_log`.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-2">
+                <Label>Justificare (min. 10 caractere)</Label>
+                <Textarea
+                  value={expJust}
+                  onChange={(e) => setExpJust(e.target.value)}
+                  placeholder="ex: cerere ANSPDCP nr. 1234/2026, acces DSA-uri, audit intern Q3…"
+                  rows={3}
+                />
+              </div>
+              <DialogFooter>
+                <Button
+                  onClick={() => exp.mutate()}
+                  disabled={expJust.trim().length < 10 || exp.isPending}
+                >
+                  {exp.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : null}
+                  Descarcă CSV
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </div>
+      </div>
+
+      {q.isLoading ? (
+        <div className="text-xs text-muted-foreground flex items-center gap-2">
+          <Loader2 className="h-3 w-3 animate-spin" /> Se încarcă…
+        </div>
+      ) : q.error ? (
+        <div className="text-xs text-destructive">
+          {String((q.error as Error)?.message ?? q.error)}
+        </div>
+      ) : rows.length === 0 ? (
+        <div className="text-xs text-muted-foreground italic">
+          Niciun consimțământ înregistrat pentru filtrele curente.
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full text-xs">
+            <thead className="text-muted-foreground border-b">
+              <tr>
+                <th className="text-left py-1 pr-3">Data</th>
+                <th className="text-left py-1 pr-3">Tip</th>
+                <th className="text-left py-1 pr-3">Versiune</th>
+                <th className="text-left py-1 pr-3">Acțiune</th>
+                <th className="text-left py-1 pr-3">IP (mascat)</th>
+                <th className="text-left py-1 pr-3">UA</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r: any) => (
+                <tr key={r.id} className="border-b last:border-0">
+                  <td className="py-1 pr-3 font-mono">{fmtDate(r.created_at)}</td>
+                  <td className="py-1 pr-3">{r.kind}</td>
+                  <td className="py-1 pr-3 font-mono">{r.version}</td>
+                  <td className="py-1 pr-3">
+                    {r.accepted ? (
+                      <Badge variant="default" className="bg-emerald-600">
+                        acordat
+                      </Badge>
+                    ) : (
+                      <Badge variant="destructive">retras</Badge>
+                    )}
+                  </td>
+                  <td className="py-1 pr-3 font-mono text-muted-foreground">
+                    {r.ip_masked ?? "—"}
+                  </td>
+                  <td className="py-1 pr-3 text-muted-foreground">
+                    {r.ua_family ?? "—"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between text-xs">
+        <div className="text-muted-foreground">
+          {offset + 1}–{Math.min(offset + rows.length, total)} din {total}
+        </div>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={offset === 0}
+            onClick={() => setOffset(Math.max(0, offset - limit))}
+          >
+            Înapoi
+          </Button>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={offset + rows.length >= total}
+            onClick={() => setOffset(offset + limit)}
+          >
+            Înainte
+          </Button>
+        </div>
+      </div>
+
+      <div className="text-[10px] text-muted-foreground border-t pt-2">
+        Actorul modificării = user-ul însuși (consimțământ self-service). Pentru
+        acțiuni admin care ating consimțăminte, verifică `admin_audit_log`.
+        Datele brute (IP complet, User-Agent complet) sunt accesibile doar prin
+        break-glass.
+      </div>
+    </Card>
+  );
+}
