@@ -420,3 +420,155 @@ export const adminQuickFindUser = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
+
+/* =================================================================
+   CONSIMȚĂMINTE — istoric complet paginat + export CSV
+   Sursa: consent_log (append-only). Actor = user_id (consimțământ
+   self-service). IP este întors mascat la /24 pentru IPv4, iar
+   user_agent-ul e redus la familia de browser — datele brute rămân
+   accesibile doar prin break-glass.
+   ================================================================= */
+
+function maskIp(v: unknown): string | null {
+  if (!v || typeof v !== "string") return null;
+  // IPv4 → /24, IPv6 → primele 4 grupuri
+  if (v.includes(".")) {
+    const parts = v.split(".");
+    if (parts.length === 4) return `${parts[0]}.${parts[1]}.${parts[2]}.0/24`;
+  }
+  if (v.includes(":")) {
+    const parts = v.split(":");
+    return parts.slice(0, 4).join(":") + "::/64";
+  }
+  return v;
+}
+function uaFamily(v: unknown): string | null {
+  if (!v || typeof v !== "string") return null;
+  const m = v.match(/(Chrome|Firefox|Safari|Edge|Opera|Mobile|Android|iPhone|iPad)[\/\s][\d.]*/);
+  return m?.[0] ?? "unknown";
+}
+
+export const adminGetConsentHistory = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        userId: z.string().uuid(),
+        kind: z.string().optional(),
+        limit: z.number().int().min(1).max(500).default(200),
+        offset: z.number().int().min(0).default(0),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertRole(context.supabase, context.userId, [
+      "super_admin",
+      "admin",
+      "auditor",
+      "moderator",
+      "support",
+    ]);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sa = supabaseAdmin as any;
+
+    let q = sa
+      .from("consent_log")
+      .select("id, user_id, kind, version, accepted, ip, user_agent, created_at", {
+        count: "exact",
+      })
+      .eq("user_id", data.userId)
+      .order("created_at", { ascending: false })
+      .range(data.offset, data.offset + data.limit - 1);
+    if (data.kind) q = q.eq("kind", data.kind);
+    const { data: rows, error, count } = await q;
+    if (error) throw new Error(error.message);
+
+    // Audit read (categorie sensibilă — trasabilitate accesare istoric consimțăminte)
+    await logAudit({
+      actorId: context.userId,
+      action: "consent_history_view",
+      targetTable: "consent_log",
+      targetId: data.userId,
+      severity: "info",
+      after: { count: rows?.length ?? 0, kind: data.kind ?? null },
+    });
+
+    return {
+      total: count ?? 0,
+      rows: (rows ?? []).map((r: any) => ({
+        id: r.id,
+        kind: r.kind,
+        version: r.version,
+        accepted: r.accepted,
+        ip_masked: maskIp(r.ip),
+        ua_family: uaFamily(r.user_agent),
+        created_at: r.created_at,
+        actor_id: r.user_id, // self-service: actor = user
+      })),
+    };
+  });
+
+export const adminExportConsentHistoryCsv = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z.object({ userId: z.string().uuid(), justification: z.string().min(10) }).parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertRole(context.supabase, context.userId, [
+      "super_admin",
+      "admin",
+      "auditor",
+    ]);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sa = supabaseAdmin as any;
+    const { data: rows, error } = await sa
+      .from("consent_log")
+      .select("id, user_id, kind, version, accepted, ip, user_agent, created_at")
+      .eq("user_id", data.userId)
+      .order("created_at", { ascending: false })
+      .limit(5000);
+    if (error) throw new Error(error.message);
+
+    await logAudit({
+      actorId: context.userId,
+      action: "consent_history_export_csv",
+      targetTable: "consent_log",
+      targetId: data.userId,
+      justification: data.justification,
+      severity: "warning",
+      after: { rows: rows?.length ?? 0 },
+    });
+
+    const header = [
+      "id",
+      "user_id",
+      "kind",
+      "version",
+      "accepted",
+      "ip_masked",
+      "ua_family",
+      "created_at",
+    ].join(",");
+    const esc = (v: unknown) => {
+      if (v == null) return "";
+      const s = String(v);
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const body = (rows ?? [])
+      .map((r: any) =>
+        [
+          r.id,
+          r.user_id,
+          r.kind,
+          r.version,
+          r.accepted,
+          maskIp(r.ip) ?? "",
+          uaFamily(r.user_agent) ?? "",
+          r.created_at,
+        ]
+          .map(esc)
+          .join(","),
+      )
+      .join("\n");
+    return { filename: `consents-${data.userId}.csv`, csv: `${header}\n${body}\n` };
+  });
