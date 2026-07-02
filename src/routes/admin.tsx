@@ -9,7 +9,7 @@ import {
   Megaphone, Play, Pause, Building2, LayoutDashboard, Users, Database, Send,
   Trash2, Save, Search, RefreshCw, ChevronLeft, ChevronRight, Crown,
   ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon, Sparkles,
-  Activity, Bot, Flag, LifeBuoy, Gavel, Eye, TrendingUp, PowerOff,
+  Activity, Bot, Flag, LifeBuoy, Gavel, Eye, TrendingUp, PowerOff, Scale,
 } from "lucide-react";
 import { AdminShell, type NavItem } from "@/components/admin/AdminShell";
 import { GlassCard, Kpi, MonoNumber, StatusBadge, SectionTitle } from "@/components/admin/ui/primitives";
@@ -51,6 +51,7 @@ import { BroadcastV2Panel } from "@/components/admin/BroadcastV2Panel";
 import { IntelligenceDashboardPanel } from "@/components/admin/IntelligenceDashboardPanel";
 import { KillSwitchesPanel } from "@/components/admin/KillSwitchesPanel";
 import { LegalP0Panel } from "@/components/admin/LegalP0Panel";
+import { PolicyEnginePanel } from "@/components/admin/PolicyEnginePanel";
 
 
 function AgeGateDevBanner() {
@@ -83,7 +84,9 @@ type Section =
   | "gdpr" | "breakglass" | "breach" | "policies" | "security"
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle"
   | "settings" | "staff" | "tools"
-  | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch" | "legalp0";
+  | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch" | "legalp0"
+  | "policyengine";
+
 
 type Report = {
   id: string; reporter_id: string; reported_id: string; reason: string;
@@ -180,6 +183,7 @@ function AdminDashboard() {
     { id: "breach",     label: "Breșe",       icon: AlertOctagon,group: "Compliance", adminOnly: true },
     { id: "legalp0",    label: "Legal P0 · NCMEC/DSA/Country", icon: ShieldAlert, group: "Compliance", adminOnly: true, hint: "CSAM+NCMEC, breach 72h, DSA SoR, country-risk, e-Factura" },
     { id: "policies",   label: "Politici",    icon: FileText,    group: "Compliance" },
+    { id: "policyengine", label: "Policy Engine · reguli/shadow", icon: Scale, group: "Compliance", adminOnly: true, hint: "Rules-as-code, versionare, backtest, shadow mode" },
     { id: "audit",      label: "Audit",       icon: ScrollText,  group: "Compliance" },
 
     // Business
@@ -251,6 +255,7 @@ function AdminDashboard() {
       {section === "intel" && <IntelligenceDashboardPanel />}
       {section === "killswitch" && isAdmin && <KillSwitchesPanel />}
       {section === "legalp0" && isAdmin && <LegalP0Panel />}
+      {section === "policyengine" && isAdmin && <PolicyEnginePanel />}
     </AdminShell>
   );
 }
