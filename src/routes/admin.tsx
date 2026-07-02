@@ -56,6 +56,7 @@ import { EnterpriseUsersPanel } from "@/components/admin/EnterpriseUsersPanel";
 import { LegalDocsAdminPanel } from "@/components/admin/LegalDocsAdminPanel";
 import { OverviewPanelRich } from "@/components/admin/OverviewPanelRich";
 import { AlertRulesPanel } from "@/components/admin/AlertRulesPanel";
+import { SupportMacrosPanel } from "@/components/admin/SupportMacrosPanel";
 
 
 
@@ -90,7 +91,7 @@ type Section =
   | "partners" | "demoseed" | "health" | "copilot" | "billing" | "ratelimit" | "signals" | "signupthrottle"
   | "settings" | "staff" | "tools"
   | "support" | "appeals" | "userops" | "broadcast2" | "intel" | "killswitch" | "legalp0"
-  | "policyengine" | "legaldocs" | "alertrules";
+  | "policyengine" | "legaldocs" | "alertrules" | "macros";
 
 
 type Report = {
@@ -169,6 +170,7 @@ function AdminDashboard() {
     { id: "broadcast",label: "Broadcast",icon: Send,            group: "Operations", adminOnly: true },
     { id: "broadcast2", label: "Broadcast v2 · targeting", icon: Send, group: "Operations", adminOnly: true, hint: "Filtre reale + dry-run + campanii" },
     { id: "support",  label: "Ticketing", icon: LifeBuoy,        group: "Operations", hint: "Helpdesk intern" },
+    { id: "macros",   label: "Macros & CSAT", icon: FileText,   group: "Operations", hint: "Canned replies + scor satisfacție" },
     { id: "appeals",  label: "Contestații DSA", icon: Gavel,     group: "Operations", hint: "Art. 20 DSA" },
     { id: "userops",  label: "User ops · view-as", icon: Eye,    group: "Operations", adminOnly: true, hint: "Impersonare read-only + sesiuni" },
     { id: "intel",    label: "Intelligence · MRR/Cohorts", icon: TrendingUp, group: "Operations", hint: "MRR/ARR, retention, funnel" },
@@ -228,6 +230,7 @@ function AdminDashboard() {
       {section === "overview" && isAdmin && <OverviewPanelRich onNavigate={(id: string) => setSection(id as Section)} />}
       {section === "alerts" && <AlertsPanel />}
       {section === "alertrules" && isAdmin && <AlertRulesPanel />}
+      {section === "macros" && <SupportMacrosPanel />}
       {section === "copilot" && <AiCopilotPanel />}
       {section === "users" && isAdmin && <UsersPanel meId={user!.id} />}
       {section === "reports" && <ReportsPanel meId={user!.id} />}
