@@ -11,9 +11,8 @@ import {
 import { GlassCard, Kpi, MonoNumber, SectionTitle, StatusBadge, SeverityBadge } from "@/components/admin/ui/primitives";
 import { adminGetOverviewRich } from "@/lib/admin-overview.functions";
 
-type Overview = Awaited<ReturnType<typeof callType>>;
-// Trick pentru a extrage tipul de retur al server fn în client
-declare function callType(): ReturnType<Awaited<typeof adminGetOverviewRich>>;
+
+
 
 const AUTO_REFRESH_MS = 60_000;
 
