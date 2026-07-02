@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { reportSlaFailure } from "@/lib/admin-sla-telemetry";
 import { useServerFn } from "@tanstack/react-start";
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
@@ -136,21 +137,32 @@ export function OverviewPanelRich({ onNavigate }: { onNavigate: (section: string
   const [refreshedAt, setRefreshedAt] = useState<number | null>(null);
   const [auto, setAuto] = useState(true);
 
+  const hasLoadedOnceRef = useRef(false);
   const load = async () => {
     setLoading(true);
     setError(null);
+    const t0 = performance.now();
     try {
       const d = await fetchOverview();
       setData(d);
       setRefreshedAt(Date.now());
+      hasLoadedOnceRef.current = true;
     } catch (e: any) {
       const m = e?.message ?? String(e);
       setError(m);
       if (!/forbidden|role/i.test(m)) toast.error(m);
+      await reportSlaFailure(e, {
+        rpc: "adminGetOverviewRich",
+        callSite: "OverviewPanelRich.load",
+        fatal: !hasLoadedOnceRef.current,
+        hasLoadedOnce: hasLoadedOnceRef.current,
+        durationMs: Math.round(performance.now() - t0),
+      });
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     load();

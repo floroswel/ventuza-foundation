@@ -18,6 +18,7 @@ import { ClaimBadge } from "@/components/admin/queue/ClaimBadge";
 import { useQueueClaim } from "@/components/admin/queue/useQueueClaim";
 import { useKeyboardShortcuts, ShortcutsHint } from "@/components/admin/queue/useKeyboardShortcuts";
 import { pushAction } from "@/components/admin/queue/useActionJournal";
+import { reportSlaFailure } from "@/lib/admin-sla-telemetry";
 import { SavedViewsBar } from "@/components/admin/SavedViewsBar";
 import { useSavedViews } from "@/hooks/useSavedViews";
 import { useBulkSelection } from "@/hooks/useBulkSelection";
@@ -121,17 +122,28 @@ export function SupportTicketsPanel() {
   }, []);
   useEffect(() => {
     setSlaError(null);
+    const t0 = performance.now();
     slaFn()
       .then((all) => setSla(all?.support))
-      .catch((e: any) => {
+      .catch(async (e: any) => {
         setSla(undefined);
-        setSlaError(e?.message ?? "Nu am putut încărca pragurile SLA");
+        const msg = e?.message ?? "Nu am putut încărca pragurile SLA";
+        setSlaError(msg);
+        await reportSlaFailure(e, {
+          rpc: "getSlaThresholds",
+          callSite: "SupportTicketsPanel.sla",
+          fatal: false, // SLA nu blochează panoul, avem fallback pe praguri implicite
+          hasLoadedOnce: false,
+          durationMs: Math.round(performance.now() - t0),
+        });
       });
   }, [slaFn]);
+
 
   const load = async () => {
     setBusy(true);
     setError(null);
+    const t0 = performance.now();
     try {
       const [r, k, cl] = await Promise.all([
         list({ data: { status, priority, search: search || undefined, limit: 100 } }),
@@ -154,11 +166,20 @@ export function SupportTicketsPanel() {
       const msg = e?.message ?? "Eroare la încărcarea ticket-urilor";
       setError(msg);
       toast.error(msg);
+      await reportSlaFailure(e, {
+        rpc: "adminListTickets+adminTicketStats+listQueueClaims",
+        callSite: "SupportTicketsPanel.load",
+        fatal: !hasLoadedOnce,
+        hasLoadedOnce,
+        durationMs: Math.round(performance.now() - t0),
+      });
     } finally {
       setBusy(false);
       setHasLoadedOnce(true);
     }
   };
+
+
   useEffect(() => {
     load(); /* eslint-disable-next-line */
   }, [status, priority]);
