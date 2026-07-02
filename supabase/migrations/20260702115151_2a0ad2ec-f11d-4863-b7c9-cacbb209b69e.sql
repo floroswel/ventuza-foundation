@@ -1,0 +1,40 @@
+-- Admin ops — doar authenticated (funcțiile își fac în interior has_role/is_staff)
+REVOKE EXECUTE ON FUNCTION public.admin_decide_appeal(uuid, text, text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.admin_funnel_stats(integer) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.admin_legal_document_history(text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.admin_list_legal_documents() FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.admin_publish_legal_document(text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.admin_recompute_user_risk(uuid) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.admin_retention_cohorts(integer) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.admin_revenue_stats() FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.admin_staff_ticket_action(uuid, text, uuid, text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.admin_unpublish_legal_document(text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.admin_upsert_legal_document(text, text, text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.breach_add_timeline_event(uuid, text, text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.compute_user_risk(uuid) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.dsa_record_sor(text, uuid, text, text, text, text, text, boolean) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.get_country_risk(text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.policy_evaluate(text, text, text, jsonb) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.policy_set_state(uuid, policy_rule_state, text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.policy_simulate(text, integer) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.policy_upsert_rule(text, text, text, text, jsonb, jsonb, text) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.recompute_user_risk(uuid) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.rl_enforce(text, integer, integer) FROM PUBLIC, anon;
+REVOKE EXECUTE ON FUNCTION public.security_invariants_snapshot() FROM PUBLIC, anon;
+
+-- Trigger functions — apelate doar de sistemul de trigger cu drepturile owner-ului.
+REVOKE EXECUTE ON FUNCTION public.auto_flag_new_high_risk_account() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.enforce_disposable_email_on_profile() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.enqueue_efactura_on_invoice() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.prevent_risk_score_client_write() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.ticket_touch_on_msg() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_recompute_risk_on_fingerprint() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_recompute_risk_on_report() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_rl_business_apps() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_rl_consent() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_rl_favorites() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_rl_looking_now() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_rl_offer_claims() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_rl_story_views() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_rl_taps() FROM PUBLIC, anon, authenticated;
+REVOKE EXECUTE ON FUNCTION public.trg_rl_woofs() FROM PUBLIC, anon, authenticated;
