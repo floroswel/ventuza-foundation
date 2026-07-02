@@ -11,6 +11,7 @@ import { SlaBadge, type SlaThreshold } from "@/components/admin/queue/SlaBadge";
 import { ClaimBadge } from "@/components/admin/queue/ClaimBadge";
 import { useQueueClaim } from "@/components/admin/queue/useQueueClaim";
 import { useKeyboardShortcuts, ShortcutsHint } from "@/components/admin/queue/useKeyboardShortcuts";
+import { pushAction } from "@/components/admin/queue/useActionJournal";
 import { supabase } from "@/integrations/supabase/client";
 
 type TicketRow = {
@@ -195,12 +196,32 @@ function TicketThread({ ticketId, onClose }: { ticketId: string; onClose: () => 
     } catch (e: any) { toast.error(e?.message ?? "Eroare"); } finally { setBusy(false); }
   };
   const changeStatus = async (s: string) => {
-    try { await action({ data: { ticketId, status: s as any } }); await load(); }
-    catch (e: any) { toast.error(e?.message ?? "Eroare"); }
+    const prev = data?.ticket?.status as string | undefined;
+    try {
+      await action({ data: { ticketId, status: s as any } });
+      await load();
+      if (prev && prev !== s) {
+        pushAction({
+          label: `Ticket #${ticketId.slice(0, 8)} · status ${prev} → ${s}`,
+          undo: async () => { await action({ data: { ticketId, status: prev as any } }); await load(); },
+          redo: async () => { await action({ data: { ticketId, status: s as any } }); await load(); },
+        });
+      }
+    } catch (e: any) { toast.error(e?.message ?? "Eroare"); }
   };
   const changePrio = async (p: string) => {
-    try { await action({ data: { ticketId, priority: p as any } }); await load(); }
-    catch (e: any) { toast.error(e?.message ?? "Eroare"); }
+    const prev = data?.ticket?.priority as string | undefined;
+    try {
+      await action({ data: { ticketId, priority: p as any } });
+      await load();
+      if (prev && prev !== p) {
+        pushAction({
+          label: `Ticket #${ticketId.slice(0, 8)} · prioritate ${prev} → ${p}`,
+          undo: async () => { await action({ data: { ticketId, priority: prev as any } }); await load(); },
+          redo: async () => { await action({ data: { ticketId, priority: p as any } }); await load(); },
+        });
+      }
+    } catch (e: any) { toast.error(e?.message ?? "Eroare"); }
   };
 
   const claimBanner = !claim.loading && !claim.mine && claim.actorId ? (
