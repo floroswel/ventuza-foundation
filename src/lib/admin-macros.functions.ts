@@ -95,8 +95,8 @@ export const submitTicketCsat = createServerFn({ method: "POST" })
     feedback: z.string().max(2000).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc("submit_ticket_csat", {
-      _ticket_id: data.ticketId, _score: data.score, _feedback: data.feedback ?? null,
+    const { error } = await (context.supabase as any).rpc("submit_ticket_csat", {
+      _ticket_id: data.ticketId, _score: data.score, _feedback: data.feedback ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -115,11 +115,11 @@ export const adminCsatStats = createServerFn({ method: "GET" })
       .gte("csat_submitted_at", since)
       .not("csat_score", "is", null);
     if (error) throw new Error(error.message);
-    const scores = (data ?? []).map((r: any) => r.csat_score as number);
+    const scores: number[] = (data ?? []).map((r: any) => r.csat_score as number);
     const n = scores.length;
-    const avg = n ? scores.reduce((a, b) => a + b, 0) / n : 0;
-    const promoters = scores.filter((s) => s >= 4).length;
-    const detractors = scores.filter((s) => s <= 2).length;
+    const avg = n ? scores.reduce((a: number, b: number) => a + b, 0) / n : 0;
+    const promoters = scores.filter((s: number) => s >= 4).length;
+    const detractors = scores.filter((s: number) => s <= 2).length;
     return {
       count: n,
       avg: Number(avg.toFixed(2)),
