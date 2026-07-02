@@ -272,6 +272,10 @@ function AuthPage() {
 
   async function onOAuth(provider: "google" | "apple") {
     if (provider === ("signup-blocked" as never)) return;
+    if (countryGate.isBlocked) {
+      navigate({ to: "/blocked-region", replace: true });
+      return;
+    }
     if (mode === "signup") {
       if (!over18 || !acceptTerms) {
         toast.error("Confirmă cele două bife (18+ și Termeni) înainte de a continua.");
