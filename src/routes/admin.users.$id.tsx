@@ -55,6 +55,8 @@ import {
   adminUpdateUserProfile,
   adminChangeUserEmail,
   adminPushUnicast,
+  adminGetConsentHistory,
+  adminExportConsentHistoryCsv,
 } from "@/lib/admin-user360.functions";
 import {
   adminForceLogout,
