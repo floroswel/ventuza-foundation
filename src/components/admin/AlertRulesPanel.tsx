@@ -295,15 +295,20 @@ export function AlertRulesPanel() {
         </div>
       )}
 
-      <ReasonDialog
-        open={!!deleteTarget}
-        onCancel={() => setDeleteTarget(null)}
-        onConfirm={confirmDelete}
-        title="Șterge regula"
-        description={`Vei șterge definitiv regula „${deleteTarget?.name}". Este o acțiune permanentă și logată.`}
-        confirmLabel="Șterge"
-        destructive
-      />
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-border bg-background p-5 shadow-xl">
+            <h3 className="text-base font-semibold text-red-500">Șterge regula</h3>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Vei șterge definitiv regula „{deleteTarget.name}". Acțiune permanentă și logată în audit.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button onClick={() => setDeleteTarget(null)} className="rounded-md border border-border px-3 py-1.5 text-xs hover:bg-surface">Anulează</button>
+              <button onClick={() => confirmDelete("delete rule")} className="rounded-md bg-red-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-red-600">Șterge</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
