@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { useCountryGate } from "@/lib/country-gate";
 
 // Routes a not-yet-onboarded user is allowed to land on. Everything else is
 // hard-redirected to /n so OAuth signups cannot reach the app without supplying
