@@ -198,6 +198,10 @@ export const matchScore = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => MatchInput.parse(d))
   .handler(async ({ data, context }) => {
     await requireAiConsent(context.supabase, context.userId);
+    void evalAiPolicy(context.supabase, context.userId, "matchScore", {
+      me_bio_len: (data.me.bio ?? "").length,
+      them_bio_len: (data.them.bio ?? "").length,
+    });
     const sys =
       'Evaluezi compatibilitatea între doi useri pe app gay de dating. Răspunzi DOAR JSON valid: {"score": <0-100>, "reason": "<o frază scurtă în română, max 120 caractere, care explică DE CE>"}. Bazează-te pe interese comune, ce caută fiecare, triburi, vibe-ul bio-ului. Fii realist — nu da 90+ fără motive solide.';
     const fmt = (p: z.infer<typeof ProfileSummary>) =>
