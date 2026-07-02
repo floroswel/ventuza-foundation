@@ -96,29 +96,32 @@ async def latest_consent_row(page, kind: str):
     )
 
 
-async def get_checkbox(page, kind: str):
-    """Găsește checkbox-ul din ConsentsCard prin ordinea din OPTIONAL_KINDS."""
-    idx = OPTIONAL_KINDS.index(kind)
-    return page.locator("section:has-text('Consimțăminte GDPR') input[type=checkbox]").nth(idx)
+def consents_section(page):
+    return page.locator("section").filter(has_text="Consimțăminte GDPR")
 
 
 async def set_toggle(page, kind: str, desired: bool):
-    cb = await get_checkbox(page, kind)
+    cb = consents_section(page).locator("input[type=checkbox]").nth(OPTIONAL_KINDS.index(kind))
     await cb.wait_for(state="visible", timeout=5000)
-    current = await cb.is_checked()
-    if current == desired:
+    if await cb.is_checked() == desired:
         return
     await cb.click()
-    # așteptăm toast + persistă state
-    await page.wait_for_function(
-        """(args) => {
-            const boxes = document.querySelectorAll("section input[type=checkbox]");
-            return boxes[args.idx] && boxes[args.idx].checked === args.desired;
-        }""",
-        arg={"idx": OPTIONAL_KINDS.index(kind), "desired": desired},
-        timeout=5000,
-    )
-    await page.wait_for_timeout(400)  # RPC roundtrip
+    try:
+        await page.wait_for_function(
+            """(args) => {
+                const secs = Array.from(document.querySelectorAll('section'));
+                const sec = secs.find(s => s.textContent && s.textContent.includes('Consimțăminte GDPR'));
+                if (!sec) return false;
+                const boxes = sec.querySelectorAll('input[type=checkbox]');
+                return boxes[args.idx] && boxes[args.idx].checked === args.desired;
+            }""",
+            arg={"idx": OPTIONAL_KINDS.index(kind), "desired": desired},
+            timeout=8000,
+        )
+    except Exception:
+        toast = await page.locator("[data-sonner-toast]").all_inner_texts()
+        raise RuntimeError(f"toggle {kind}->{desired} nu a persistat; toast={toast}")
+    await page.wait_for_timeout(300)
 
 
 async def push_subscription_active(page) -> bool:
