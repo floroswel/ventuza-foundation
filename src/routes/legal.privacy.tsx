@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
+import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+
 export const Route = createFileRoute("/legal/privacy")({
   head: () => ({
     meta: [
@@ -21,7 +23,7 @@ function PrivacyPage() {
         <h1 className="text-base font-semibold">Politica de confidențialitate</h1>
       </header>
 
-      <article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
+      <LegalDocOverride slug="privacy" fallback={<article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
         <p className="text-xs text-muted-foreground">Ultima actualizare: 20 iunie 2026</p>
 
         <p className="mt-4 text-foreground/85">
@@ -129,7 +131,7 @@ function PrivacyPage() {
         <p className="mt-2 text-foreground/85">
           Operator: <strong>Ventuza</strong> · Email DPO: <a className="text-primary" href="mailto:privacy@ventuza.app">privacy@ventuza.app</a>
         </p>
-      </article>
+      </article>} />
     </div>
   );
 }

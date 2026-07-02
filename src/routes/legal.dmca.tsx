@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
+import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+
 export const Route = createFileRoute("/legal/dmca")({
   head: () => ({
     meta: [
@@ -22,7 +24,7 @@ function DmcaPage() {
         <h1 className="text-base font-semibold">DMCA / Drepturi de autor</h1>
       </header>
 
-      <article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
+      <LegalDocOverride slug="dmca" fallback={<article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
         <p className="text-xs text-muted-foreground">Ultima actualizare: 27 iunie 2026</p>
 
         <h2 className="mt-6 text-base font-semibold">1. Cadru legal</h2>
@@ -76,7 +78,7 @@ function DmcaPage() {
           DPO: <a className="text-primary" href="mailto:dpo@ventuza.app">dpo@ventuza.app</a> ·
           DSA: <Link className="text-primary" to="/legal/dsa">/legal/dsa</Link>
         </p>
-      </article>
+      </article>} />
     </div>
   );
 }

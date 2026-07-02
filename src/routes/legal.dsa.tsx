@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
+import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+
 export const Route = createFileRoute("/legal/dsa")({
   head: () => ({
     meta: [
@@ -21,7 +23,7 @@ function DsaPage() {
         </Link>
         <h1 className="text-base font-semibold">Transparență DSA</h1>
       </header>
-      <article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
+      <LegalDocOverride slug="dsa" fallback={<article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
         <p className="text-xs text-muted-foreground">Ultima actualizare: 22 iunie 2026</p>
 
         <h2 className="mt-6 text-base font-semibold">Punct unic de contact (DSA Art. 11–12)</h2>
@@ -45,7 +47,7 @@ function DsaPage() {
 
         <h2 className="mt-6 text-base font-semibold">Reprezentant legal în UE</h2>
         <p>Ventuza este stabilită în România (UE), deci nu este necesar un reprezentant separat conform DSA Art. 13.</p>
-      </article>
+      </article>} />
     </div>
   );
 }
