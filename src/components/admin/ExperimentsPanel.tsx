@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { FlaskConical, Loader2, Plus, Play, Pause } from "lucide-react";
+import { FlaskConical, Plus, Play, Pause } from "lucide-react";
 import { toast } from "sonner";
+import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
 
 type Exp = {
   id: string;
@@ -13,29 +14,22 @@ type Exp = {
 };
 
 export function ExperimentsPanel() {
-  const [items, setItems] = useState<Exp[]>([]);
-  const [loading, setLoading] = useState(true);
   const [showNew, setShowNew] = useState(false);
 
-  const load = async () => {
-    setLoading(true);
+  const [state, reload] = useAdminPanelLoad<Exp[]>(async () => {
     const { data, error } = await supabase
       .from("experiments")
       .select("*")
       .order("created_at", { ascending: false });
-    if (error) toast.error(error.message);
-    else setItems((data ?? []) as Exp[]);
-    setLoading(false);
-  };
-  useEffect(() => {
-    load();
+    if (error) throw new Error(error.message);
+    return (data ?? []) as Exp[];
   }, []);
 
   async function toggleStatus(e: Exp) {
     const next = e.status === "running" ? "paused" : "running";
     const { error } = await supabase.from("experiments").update({ status: next }).eq("id", e.id);
     if (error) toast.error(error.message);
-    else load();
+    else reload();
   }
 
   async function createExp(form: FormData) {
@@ -58,9 +52,11 @@ export function ExperimentsPanel() {
     else {
       toast.success("Experiment creat");
       setShowNew(false);
-      load();
+      reload();
     }
   }
+
+  const items = state.status === "ready" ? state.data : [];
 
   return (
     <section className="rounded-2xl border border-border bg-card p-4">
@@ -110,11 +106,12 @@ export function ExperimentsPanel() {
           </button>
         </form>
       )}
-      {loading ? (
-        <Loader2 className="mx-auto h-4 w-4 animate-spin" />
-      ) : items.length === 0 ? (
-        <p className="py-4 text-center text-xs text-muted-foreground">Niciun experiment.</p>
-      ) : (
+      <PanelStatus
+        state={state}
+        retry={reload}
+        isEmpty={state.status === "ready" && items.length === 0}
+        emptyHint="Niciun experiment definit. Apasă „Nou” ca să pornești primul A/B."
+      >
         <ul className="divide-y divide-border/60">
           {items.map((e) => (
             <li key={e.id} className="flex items-center gap-2 py-2">
@@ -139,7 +136,7 @@ export function ExperimentsPanel() {
             </li>
           ))}
         </ul>
-      )}
+      </PanelStatus>
     </section>
   );
 }
