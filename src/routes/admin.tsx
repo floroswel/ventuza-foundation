@@ -54,6 +54,7 @@ import { LegalP0Panel } from "@/components/admin/LegalP0Panel";
 import { PolicyEnginePanel } from "@/components/admin/PolicyEnginePanel";
 import { EnterpriseUsersPanel } from "@/components/admin/EnterpriseUsersPanel";
 import { LegalDocsAdminPanel } from "@/components/admin/LegalDocsAdminPanel";
+import { OverviewPanelRich } from "@/components/admin/OverviewPanelRich";
 
 
 
@@ -222,7 +223,7 @@ function AdminDashboard() {
       roleLabel={roleLabel}
       banner={<><AgeGateDevBanner /><DemoSeedBanner /></>}
     >
-      {section === "overview" && isAdmin && <OverviewPanel />}
+      {section === "overview" && isAdmin && <OverviewPanelRich onNavigate={(id: string) => setSection(id as Section)} />}
       {section === "alerts" && <AlertsPanel />}
       {section === "copilot" && <AiCopilotPanel />}
       {section === "users" && isAdmin && <UsersPanel meId={user!.id} />}
