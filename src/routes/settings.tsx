@@ -485,6 +485,9 @@ function SettingsPage() {
         {/* GDPR consents (single source of truth = src/lib/consent-registry.ts) */}
         <ConsentsCard />
 
+        {/* Consent history — user-scoped read of consent_log via RLS */}
+        <ConsentsHistoryCard />
+
         {/* Proximity notifications (Strat 1 + Strat 2 opt-in) */}
         <ProximityNotificationsCard />
 
