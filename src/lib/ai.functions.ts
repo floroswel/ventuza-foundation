@@ -101,7 +101,8 @@ export const generateOpener = createServerFn({ method: "POST" })
       interests_count: data.theirInterests?.length ?? 0,
       style: data.style,
     });
-
+    const sys =
+      'Ești Wingman AI într-o app gay de dating. Generezi 3 mesaje de deschidere SCURTE (max 140 caractere fiecare), personalizate pe bio-ul/interesele celuilalt. Nu folosi "Salut" generic. Fără emoji excesiv. Răspunzi DOAR cu cele 3 opțiuni numerotate 1., 2., 3., fără explicații.';
     const facts = [
       data.theirName && `El: ${data.theirName}`,
       data.theirBio && `Bio: ${data.theirBio}`,
