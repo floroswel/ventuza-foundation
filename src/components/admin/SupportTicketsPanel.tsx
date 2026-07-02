@@ -12,7 +12,15 @@ import { ClaimBadge } from "@/components/admin/queue/ClaimBadge";
 import { useQueueClaim } from "@/components/admin/queue/useQueueClaim";
 import { useKeyboardShortcuts, ShortcutsHint } from "@/components/admin/queue/useKeyboardShortcuts";
 import { pushAction } from "@/components/admin/queue/useActionJournal";
+import { SavedViewsBar } from "@/components/admin/SavedViewsBar";
+import { useSavedViews } from "@/hooks/useSavedViews";
 import { supabase } from "@/integrations/supabase/client";
+
+type SupportFilters = {
+  status: "open" | "pending" | "waiting_user" | "resolved" | "closed" | "all";
+  priority: "low" | "normal" | "high" | "urgent" | "all";
+  search: string;
+};
 
 type TicketRow = {
   id: string; user_id: string; subject: string; category: string;
