@@ -70,7 +70,9 @@ async def rpc_has_active_consent(page, kind: str) -> bool:
     return await page.evaluate(
         """async (kind) => {
             const mod = await import('/src/integrations/supabase/client.ts');
-            const { data, error } = await mod.supabase.rpc('has_active_consent', { _kind: kind });
+            const { data: { user } } = await mod.supabase.auth.getUser();
+            if (!user) return { __err: 'no user' };
+            const { data, error } = await mod.supabase.rpc('has_active_consent', { _user_id: user.id, _kind: kind });
             if (error) return { __err: error.message };
             return !!data;
         }""",
