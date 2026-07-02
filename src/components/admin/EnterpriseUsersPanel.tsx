@@ -27,7 +27,7 @@ import { SkeletonKpis, SkeletonTable } from "@/components/admin/ui/Skeleton";
 import { SavedViewsBar } from "@/components/admin/SavedViewsBar";
 import { BulkActionBar } from "@/components/admin/ui/BulkActionBar";
 import { ReasonDialog } from "@/components/admin/ReasonDialog";
-import { AdminPanelError, AdminPanelEmpty } from "@/components/admin/PanelStatus";
+import { AlertTriangle } from "lucide-react";
 import { UserDetailDrawer } from "@/components/admin/Wave1Sections";
 import { Button } from "@/components/ui/button";
 import { useBulkSelection } from "@/hooks/useBulkSelection";
