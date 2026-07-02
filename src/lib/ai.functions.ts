@@ -17,6 +17,29 @@ async function requireAiConsent(supabase: SupabaseClient<Database>, userId: stri
   }
 }
 
+/**
+ * Fire-and-forget: rulează regulile Policy Engine din categoria `ai_gateway`
+ * și scrie în `policy_evaluations`. Nu blochează request-ul dacă eșuează.
+ * Vezi AGENTS.md "Policy Engine" — regulile în `shadow` doar loghează,
+ * cele în `enforcing` returnează `enforce` (aplicat de caller dacă vrea).
+ */
+async function evalAiPolicy(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  op: string,
+  input: Record<string, unknown>,
+) {
+  try {
+    await supabase.rpc("policy_evaluate" as never, {
+      _category: "ai_gateway",
+      _subject_kind: "user",
+      _subject_id: userId,
+      _input: { op, ...input } as never,
+    } as never);
+  } catch { /* nu blocăm AI-ul dacă evaluatorul eșuează */ }
+}
+
+
 // ---------- Bio writer ----------
 const BioInput = z.object({
   name: z.string().optional(),
