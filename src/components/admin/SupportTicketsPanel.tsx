@@ -119,13 +119,18 @@ export function SupportTicketsPanel() {
     supabase.auth.getUser().then(({ data }) => setMeId(data.user?.id));
   }, []);
   useEffect(() => {
+    setSlaError(null);
     slaFn()
       .then((all) => setSla(all?.support))
-      .catch(() => {});
+      .catch((e: any) => {
+        setSla(undefined);
+        setSlaError(e?.message ?? "Nu am putut încărca pragurile SLA");
+      });
   }, [slaFn]);
 
   const load = async () => {
     setBusy(true);
+    setError(null);
     try {
       const [r, k, cl] = await Promise.all([
         list({ data: { status, priority, search: search || undefined, limit: 100 } }),
@@ -145,9 +150,12 @@ export function SupportTicketsPanel() {
       setClaims(map);
       setCursor(0);
     } catch (e: any) {
-      toast.error(e?.message ?? "Eroare");
+      const msg = e?.message ?? "Eroare la încărcarea ticket-urilor";
+      setError(msg);
+      toast.error(msg);
     } finally {
       setBusy(false);
+      setHasLoadedOnce(true);
     }
   };
   useEffect(() => {
