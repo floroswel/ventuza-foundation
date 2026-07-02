@@ -255,6 +255,16 @@ export const adminModerateItem = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     await assertStaff(context.supabase, context.userId);
+    // MFA cerut pentru aprobare cu rază > 5km (evită abuzuri de spam notificări)
+    // sau pentru marcare oficială / respingere definitivă.
+    const needsMfa =
+      data.decision !== "changes_requested" ||
+      (data.notification_radius_m ?? 0) > 5000 ||
+      data.is_official === true;
+    if (needsMfa) {
+      const { assertAdminMfa } = await import("./admin-mfa-guard");
+      await assertAdminMfa(context.userId);
+    }
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await (supabaseAdmin as any).rpc("admin_moderate_item", {
       p_kind: data.kind,

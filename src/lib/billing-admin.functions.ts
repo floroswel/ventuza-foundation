@@ -76,6 +76,8 @@ export const adminConfirmInvoicePayment = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await requireStaff(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { error } = await (context.supabase as any).rpc("admin_confirm_invoice_payment", {
       _invoice_id: data.invoice_id,
       _amount_minor: data.amount_minor,
@@ -93,6 +95,8 @@ export const adminCancelInvoice = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await requireStaff(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { error } = await (context.supabase as any).rpc("admin_cancel_invoice", {
       _invoice_id: data.invoice_id,
       _reason: data.reason,
