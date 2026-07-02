@@ -85,6 +85,9 @@ export function SupportTicketsPanel() {
   const [priority, setPriority] = useState<"low" | "normal" | "high" | "urgent" | "all">("all");
   const [search, setSearch] = useState("");
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [slaError, setSlaError] = useState<string | null>(null);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [selected, setSelected] = useState<string | null>(null);
   const [cursor, setCursor] = useState(0);
   const [sla, setSla] = useState<SlaThreshold | undefined>();
