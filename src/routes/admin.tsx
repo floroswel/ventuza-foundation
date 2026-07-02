@@ -9,7 +9,7 @@ import {
   Megaphone, Play, Pause, Building2, LayoutDashboard, Users, Database, Send,
   Trash2, Save, Search, RefreshCw, ChevronLeft, ChevronRight, Crown,
   ScrollText, Bell, FileWarning, FileText, KeyRound, Download, AlertOctagon, Sparkles,
-  Activity, Bot, Flag, LifeBuoy, Gavel, Eye, TrendingUp, PowerOff,
+  Activity, Bot, Flag, LifeBuoy, Gavel, Eye, TrendingUp, PowerOff, Scale,
 } from "lucide-react";
 import { AdminShell, type NavItem } from "@/components/admin/AdminShell";
 import { GlassCard, Kpi, MonoNumber, StatusBadge, SectionTitle } from "@/components/admin/ui/primitives";
