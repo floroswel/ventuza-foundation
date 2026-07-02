@@ -136,6 +136,10 @@ export const translateText = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => TranslateInput.parse(d))
   .handler(async ({ data, context }) => {
     await requireAiConsent(context.supabase, context.userId);
+    void evalAiPolicy(context.supabase, context.userId, "translateText", {
+      input_len: data.text.length,
+      target_lang: data.targetLang,
+    });
     const text = await aiComplete({
       messages: [
         { role: "system", content: `Traduci mesaje de chat în ${data.targetLang}. Răspunzi DOAR cu traducerea, păstrând tonul.` },
