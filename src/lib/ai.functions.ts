@@ -17,6 +17,29 @@ async function requireAiConsent(supabase: SupabaseClient<Database>, userId: stri
   }
 }
 
+/**
+ * Fire-and-forget: rulează regulile Policy Engine din categoria `ai_gateway`
+ * și scrie în `policy_evaluations`. Nu blochează request-ul dacă eșuează.
+ * Vezi AGENTS.md "Policy Engine" — regulile în `shadow` doar loghează,
+ * cele în `enforcing` returnează `enforce` (aplicat de caller dacă vrea).
+ */
+async function evalAiPolicy(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  op: string,
+  input: Record<string, unknown>,
+) {
+  try {
+    await supabase.rpc("policy_evaluate" as never, {
+      _category: "ai_gateway",
+      _subject_kind: "user",
+      _subject_id: userId,
+      _input: { op, ...input } as never,
+    } as never);
+  } catch { /* nu blocăm AI-ul dacă evaluatorul eșuează */ }
+}
+
+
 // ---------- Bio writer ----------
 const BioInput = z.object({
   name: z.string().optional(),
@@ -32,6 +55,11 @@ export const generateBio = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => BioInput.parse(d))
   .handler(async ({ data, context }) => {
     await requireAiConsent(context.supabase, context.userId);
+    void evalAiPolicy(context.supabase, context.userId, "generateBio", {
+      input_len: JSON.stringify(data).length,
+      interests_count: data.interests?.length ?? 0,
+      vibe: data.vibe,
+    });
     const sys =
       "Ești un copywriter pentru o app gay de dating (Ventuza). Scrii bio-uri scurte, autentice, fără clișee, fără emoji excesive, fără hashtag-uri. Max 280 caractere. Răspunzi DOAR cu bio-ul, fără ghilimele.";
     const facts = [
@@ -53,6 +81,7 @@ export const generateBio = createServerFn({ method: "POST" })
     return { bio: text };
   });
 
+
 // ---------- Wingman / opener ----------
 const OpenerInput = z.object({
   myName: z.string().optional(),
@@ -67,6 +96,11 @@ export const generateOpener = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => OpenerInput.parse(d))
   .handler(async ({ data, context }) => {
     await requireAiConsent(context.supabase, context.userId);
+    void evalAiPolicy(context.supabase, context.userId, "generateOpener", {
+      input_len: (data.theirBio ?? "").length,
+      interests_count: data.theirInterests?.length ?? 0,
+      style: data.style,
+    });
     const sys =
       'Ești Wingman AI într-o app gay de dating. Generezi 3 mesaje de deschidere SCURTE (max 140 caractere fiecare), personalizate pe bio-ul/interesele celuilalt. Nu folosi "Salut" generic. Fără emoji excesiv. Răspunzi DOAR cu cele 3 opțiuni numerotate 1., 2., 3., fără explicații.';
     const facts = [
@@ -102,6 +136,10 @@ export const translateText = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => TranslateInput.parse(d))
   .handler(async ({ data, context }) => {
     await requireAiConsent(context.supabase, context.userId);
+    void evalAiPolicy(context.supabase, context.userId, "translateText", {
+      input_len: data.text.length,
+      target_lang: data.targetLang,
+    });
     const text = await aiComplete({
       messages: [
         { role: "system", content: `Traduci mesaje de chat în ${data.targetLang}. Răspunzi DOAR cu traducerea, păstrând tonul.` },
@@ -123,6 +161,9 @@ export const photoCoach = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => PhotoCoachInput.parse(d))
   .handler(async ({ data, context }) => {
     await requireAiConsent(context.supabase, context.userId);
+    void evalAiPolicy(context.supabase, context.userId, "photoCoach", {
+      photos_count: data.photoUrls.length,
+    });
     const sys =
       "Ești un photo coach pentru o app gay de dating. Analizezi pozele și dai feedback concret, prietenos, în română. Pentru fiecare poză: 1 punct forte + 1 sugestie. La final: o recomandare globală (ce poză ar fi cea principală, ce să adauge/scoată). Ton: încurajator, direct, fără clișee. Max 600 caractere total. Fără markdown.";
     const content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
@@ -157,6 +198,10 @@ export const matchScore = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => MatchInput.parse(d))
   .handler(async ({ data, context }) => {
     await requireAiConsent(context.supabase, context.userId);
+    void evalAiPolicy(context.supabase, context.userId, "matchScore", {
+      me_bio_len: (data.me.bio ?? "").length,
+      them_bio_len: (data.them.bio ?? "").length,
+    });
     const sys =
       'Evaluezi compatibilitatea între doi useri pe app gay de dating. Răspunzi DOAR JSON valid: {"score": <0-100>, "reason": "<o frază scurtă în română, max 120 caractere, care explică DE CE>"}. Bazează-te pe interese comune, ce caută fiecare, triburi, vibe-ul bio-ului. Fii realist — nu da 90+ fără motive solide.';
     const fmt = (p: z.infer<typeof ProfileSummary>) =>

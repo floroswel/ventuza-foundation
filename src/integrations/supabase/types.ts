@@ -4609,6 +4609,15 @@ export type Database = {
         Returns: string
       }
       partner_get_quota_usage: { Args: { p_user: string }; Returns: Json }
+      policy_evaluate: {
+        Args: {
+          _category: string
+          _input: Json
+          _subject_id: string
+          _subject_kind: string
+        }
+        Returns: Json
+      }
       policy_set_state: {
         Args: {
           p_new_state: Database["public"]["Enums"]["policy_rule_state"]
