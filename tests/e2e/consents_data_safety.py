@@ -113,7 +113,7 @@ async def set_toggle(page, kind: str, desired: bool):
             const boxes = document.querySelectorAll("section input[type=checkbox]");
             return boxes[args.idx] && boxes[args.idx].checked === args.desired;
         }""",
-        {"idx": OPTIONAL_KINDS.index(kind), "desired": desired},
+        arg={"idx": OPTIONAL_KINDS.index(kind), "desired": desired},
         timeout=5000,
     )
     await page.wait_for_timeout(400)  # RPC roundtrip
