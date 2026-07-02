@@ -161,6 +161,9 @@ export const photoCoach = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => PhotoCoachInput.parse(d))
   .handler(async ({ data, context }) => {
     await requireAiConsent(context.supabase, context.userId);
+    void evalAiPolicy(context.supabase, context.userId, "photoCoach", {
+      photos_count: data.photoUrls.length,
+    });
     const sys =
       "Ești un photo coach pentru o app gay de dating. Analizezi pozele și dai feedback concret, prietenos, în română. Pentru fiecare poză: 1 punct forte + 1 sugestie. La final: o recomandare globală (ce poză ar fi cea principală, ce să adauge/scoată). Ton: încurajator, direct, fără clișee. Max 600 caractere total. Fără markdown.";
     const content: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
