@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Loader2, RefreshCw, Send } from "lucide-react";
 import {
   adminListTickets, adminTicketStats, getTicketThread, replyToTicket, adminTicketAction,
+  adminBulkTicketAction,
 } from "@/lib/admin-support.functions";
 import { getSlaThresholds, listQueueClaims } from "@/lib/admin-queue.functions";
 import { GlassCard, Kpi, SectionTitle, StatusBadge } from "@/components/admin/ui/primitives";
@@ -14,6 +15,10 @@ import { useKeyboardShortcuts, ShortcutsHint } from "@/components/admin/queue/us
 import { pushAction } from "@/components/admin/queue/useActionJournal";
 import { SavedViewsBar } from "@/components/admin/SavedViewsBar";
 import { useSavedViews } from "@/hooks/useSavedViews";
+import { useBulkSelection } from "@/hooks/useBulkSelection";
+import { BulkActionBar } from "@/components/admin/ui/BulkActionBar";
+import { ReasonDialog } from "@/components/admin/ReasonDialog";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 type SupportFilters = {
@@ -57,6 +62,10 @@ export function SupportTicketsPanel() {
   const [sla, setSla] = useState<SlaThreshold | undefined>();
   const [claims, setClaims] = useState<Record<string, { actor_id: string; display_name: string; expires_at: string }>>({});
   const [meId, setMeId] = useState<string | undefined>();
+  const bulk = useBulkSelection(rows);
+  const bulkFn = useServerFn(adminBulkTicketAction);
+  const [bulkStatus, setBulkStatus] = useState<string>("");
+  const [bulkPriority, setBulkPriority] = useState<string>("");
 
   // Saved views: restore-once la mount + expose bar
   const savedViews = useSavedViews<SupportFilters>("admin.support");
@@ -150,6 +159,15 @@ export function SupportTicketsPanel() {
           <table className="w-full text-xs">
             <thead className="text-[10px] uppercase tracking-wider text-muted-foreground">
               <tr>
+                <th className="w-8 px-2 py-1">
+                  <input
+                    type="checkbox"
+                    aria-label="Selectează tot"
+                    checked={bulk.allChecked}
+                    ref={(el) => { if (el) el.indeterminate = bulk.someChecked; }}
+                    onChange={(e) => bulk.selectAllVisible(e.target.checked)}
+                  />
+                </th>
                 <th className="px-2 py-1 text-left">Subject</th>
                 <th className="px-2 py-1 text-left">User</th>
                 <th className="px-2 py-1">Cat</th>
@@ -161,11 +179,20 @@ export function SupportTicketsPanel() {
             </thead>
             <tbody>
               {rows.length === 0 && (
-                <tr><td colSpan={7} className="py-6 text-center text-muted-foreground">Fără ticket-uri.</td></tr>
+                <tr><td colSpan={8} className="py-6 text-center text-muted-foreground">Fără ticket-uri.</td></tr>
               )}
               {rows.map((r, i) => (
-                <tr key={r.id} onClick={() => { setCursor(i); setSelected(r.id); }}
-                  className={`cursor-pointer border-t border-border/50 hover:bg-primary/5 ${i === cursor ? "bg-primary/5 outline outline-1 outline-primary/40" : ""}`}>
+                <tr key={r.id}
+                  onClick={() => { setCursor(i); setSelected(r.id); }}
+                  className={`cursor-pointer border-t border-border/50 hover:bg-primary/5 ${i === cursor ? "bg-primary/5 outline outline-1 outline-primary/40" : ""} ${bulk.isSelected(r.id) ? "bg-primary/10" : ""}`}>
+                  <td className="px-2 py-1.5 text-center" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      aria-label={`Selectează ${r.subject}`}
+                      checked={bulk.isSelected(r.id)}
+                      onChange={() => bulk.toggle(r.id)}
+                    />
+                  </td>
                   <td className="px-2 py-1.5 font-medium">{r.subject}</td>
                   <td className="px-2 py-1.5 text-muted-foreground">{r.display_name ?? "—"}</td>
                   <td className="px-2 py-1.5 text-center text-muted-foreground">{r.category}</td>
@@ -190,6 +217,83 @@ export function SupportTicketsPanel() {
           </table>
         </div>
       </GlassCard>
+
+      <BulkActionBar count={bulk.count} onClear={bulk.clear}>
+        <select
+          value={bulkStatus}
+          onChange={(e) => setBulkStatus(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          className="rounded-md border border-border bg-background px-2 py-1 text-xs"
+        >
+          <option value="">Status…</option>
+          {["open", "pending", "waiting_user", "resolved", "closed"].map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <select
+          value={bulkPriority}
+          onChange={(e) => setBulkPriority(e.target.value)}
+          onClick={(e) => e.stopPropagation()}
+          className="rounded-md border border-border bg-background px-2 py-1 text-xs"
+        >
+          <option value="">Prioritate…</option>
+          {["low", "normal", "high", "urgent"].map((p) => <option key={p} value={p}>{p}</option>)}
+        </select>
+        <ReasonDialog
+          trigger={
+            <Button
+              size="sm"
+              disabled={!bulkStatus && !bulkPriority}
+              variant={bulkStatus === "closed" ? "destructive" : "default"}
+            >
+              Aplică pe {bulk.count}
+            </Button>
+          }
+          title={`Aplică pe ${bulk.count} ticket${bulk.count === 1 ? "" : "e"}`}
+          description={[
+            bulkStatus ? `Status → ${bulkStatus}` : null,
+            bulkPriority ? `Prioritate → ${bulkPriority}` : null,
+          ].filter(Boolean).join(" · ")}
+          destructive={bulkStatus === "closed"}
+          confirmLabel={`Aplică pe ${bulk.count}`}
+          onConfirm={async (reason) => {
+            const ids = [...bulk.selected];
+            // Snapshot before → pentru undo prin journal
+            const before = new Map(rows.filter((r) => bulk.isSelected(r.id))
+              .map((r) => [r.id, { status: r.status, priority: r.priority }]));
+            const res = await bulkFn({
+              data: {
+                ticketIds: ids,
+                status: (bulkStatus || null) as any,
+                priority: (bulkPriority || null) as any,
+                reason,
+              },
+            });
+            const { pushAction } = await import("@/components/admin/queue/useActionJournal");
+            pushAction({
+              label: `Bulk ${bulkStatus || ""}${bulkStatus && bulkPriority ? "+" : ""}${bulkPriority || ""} pe ${res.ok}/${res.total} tickete`,
+              undo: async () => {
+                // Restaurează per-ticket la starea precedentă
+                for (const id of ids) {
+                  const prev = before.get(id);
+                  if (!prev) continue;
+                  await bulkFn({
+                    data: { ticketIds: [id], status: prev.status as any, priority: prev.priority as any, reason: "undo bulk action" },
+                  });
+                }
+                await load();
+              },
+              redo: async () => {
+                await bulkFn({
+                  data: { ticketIds: ids, status: (bulkStatus || null) as any, priority: (bulkPriority || null) as any, reason: "redo bulk action" },
+                });
+                await load();
+              },
+            });
+            bulk.clear(); setBulkStatus(""); setBulkPriority("");
+            await load();
+            if (res.failed > 0) throw new Error(`${res.failed}/${res.total} eșuate`);
+          }}
+        />
+      </BulkActionBar>
 
       {selected && <TicketThread ticketId={selected} onClose={() => { setSelected(null); load(); }} />}
     </div>
