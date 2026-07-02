@@ -52,6 +52,7 @@ import { Route as LegalRecordsOfProcessingRouteImport } from './routes/legal.rec
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalDsaRouteImport } from './routes/legal.dsa'
 import { Route as LegalDmcaRouteImport } from './routes/legal.dmca'
+import { Route as LegalDataSafetyRouteImport } from './routes/legal.data-safety'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalCommunityRouteImport } from './routes/legal.community'
 import { Route as LegalBusinessTermsRouteImport } from './routes/legal.business-terms'
@@ -283,6 +284,11 @@ const LegalDmcaRoute = LegalDmcaRouteImport.update({
   path: '/legal/dmca',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalDataSafetyRoute = LegalDataSafetyRouteImport.update({
+  id: '/legal/data-safety',
+  path: '/legal/data-safety',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalCookiesRoute = LegalCookiesRouteImport.update({
   id: '/legal/cookies',
   path: '/legal/cookies',
@@ -394,6 +400,7 @@ export interface FileRoutesByFullPath {
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
@@ -453,6 +460,7 @@ export interface FileRoutesByTo {
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
@@ -513,6 +521,7 @@ export interface FileRoutesById {
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
+  '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
@@ -574,6 +583,7 @@ export interface FileRouteTypes {
     | '/legal/business-terms'
     | '/legal/community'
     | '/legal/cookies'
+    | '/legal/data-safety'
     | '/legal/dmca'
     | '/legal/dsa'
     | '/legal/privacy'
@@ -633,6 +643,7 @@ export interface FileRouteTypes {
     | '/legal/business-terms'
     | '/legal/community'
     | '/legal/cookies'
+    | '/legal/data-safety'
     | '/legal/dmca'
     | '/legal/dsa'
     | '/legal/privacy'
@@ -692,6 +703,7 @@ export interface FileRouteTypes {
     | '/legal/business-terms'
     | '/legal/community'
     | '/legal/cookies'
+    | '/legal/data-safety'
     | '/legal/dmca'
     | '/legal/dsa'
     | '/legal/privacy'
@@ -747,6 +759,7 @@ export interface RootRouteChildren {
   LegalBusinessTermsRoute: typeof LegalBusinessTermsRoute
   LegalCommunityRoute: typeof LegalCommunityRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
+  LegalDataSafetyRoute: typeof LegalDataSafetyRoute
   LegalDmcaRoute: typeof LegalDmcaRoute
   LegalDsaRoute: typeof LegalDsaRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
@@ -1068,6 +1081,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalDmcaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/data-safety': {
+      id: '/legal/data-safety'
+      path: '/legal/data-safety'
+      fullPath: '/legal/data-safety'
+      preLoaderRoute: typeof LegalDataSafetyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/cookies': {
       id: '/legal/cookies'
       path: '/legal/cookies'
@@ -1282,6 +1302,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalBusinessTermsRoute: LegalBusinessTermsRoute,
   LegalCommunityRoute: LegalCommunityRoute,
   LegalCookiesRoute: LegalCookiesRoute,
+  LegalDataSafetyRoute: LegalDataSafetyRoute,
   LegalDmcaRoute: LegalDmcaRoute,
   LegalDsaRoute: LegalDsaRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
@@ -1302,13 +1323,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

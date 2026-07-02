@@ -17,6 +17,7 @@ const OPTIONAL_KINDS: ConsentKind[] = [
   "age_verification",
   "ai_features",
   "push_notifications",
+  "background_location",
   "marketing",
 ];
 

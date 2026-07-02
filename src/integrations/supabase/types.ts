@@ -1,5697 +1,5705 @@
-export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5";
-  };
+    PostgrestVersion: "14.5"
+  }
   public: {
     Tables: {
       ad_campaigns: {
         Row: {
-          advertiser_id: string;
-          body: string | null;
-          budget_cents: number;
-          city: string | null;
-          clicks: number;
-          created_at: string;
-          cta_label: string | null;
-          cta_url: string | null;
-          ends_at: string;
-          id: string;
-          image_url: string | null;
-          impressions: number;
-          is_seed: boolean;
-          placement: string;
-          starts_at: string;
-          status: string;
-          target_event_id: string | null;
-          title: string;
-          updated_at: string;
-        };
+          advertiser_id: string
+          body: string | null
+          budget_cents: number
+          city: string | null
+          clicks: number
+          created_at: string
+          cta_label: string | null
+          cta_url: string | null
+          ends_at: string
+          id: string
+          image_url: string | null
+          impressions: number
+          is_seed: boolean
+          placement: string
+          starts_at: string
+          status: string
+          target_event_id: string | null
+          title: string
+          updated_at: string
+        }
         Insert: {
-          advertiser_id: string;
-          body?: string | null;
-          budget_cents?: number;
-          city?: string | null;
-          clicks?: number;
-          created_at?: string;
-          cta_label?: string | null;
-          cta_url?: string | null;
-          ends_at: string;
-          id?: string;
-          image_url?: string | null;
-          impressions?: number;
-          is_seed?: boolean;
-          placement?: string;
-          starts_at?: string;
-          status?: string;
-          target_event_id?: string | null;
-          title: string;
-          updated_at?: string;
-        };
+          advertiser_id: string
+          body?: string | null
+          budget_cents?: number
+          city?: string | null
+          clicks?: number
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          ends_at: string
+          id?: string
+          image_url?: string | null
+          impressions?: number
+          is_seed?: boolean
+          placement?: string
+          starts_at?: string
+          status?: string
+          target_event_id?: string | null
+          title: string
+          updated_at?: string
+        }
         Update: {
-          advertiser_id?: string;
-          body?: string | null;
-          budget_cents?: number;
-          city?: string | null;
-          clicks?: number;
-          created_at?: string;
-          cta_label?: string | null;
-          cta_url?: string | null;
-          ends_at?: string;
-          id?: string;
-          image_url?: string | null;
-          impressions?: number;
-          is_seed?: boolean;
-          placement?: string;
-          starts_at?: string;
-          status?: string;
-          target_event_id?: string | null;
-          title?: string;
-          updated_at?: string;
-        };
+          advertiser_id?: string
+          body?: string | null
+          budget_cents?: number
+          city?: string | null
+          clicks?: number
+          created_at?: string
+          cta_label?: string | null
+          cta_url?: string | null
+          ends_at?: string
+          id?: string
+          image_url?: string | null
+          impressions?: number
+          is_seed?: boolean
+          placement?: string
+          starts_at?: string
+          status?: string
+          target_event_id?: string | null
+          title?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "ad_campaigns_advertiser_id_fkey";
-            columns: ["advertiser_id"];
-            isOneToOne: false;
-            referencedRelation: "advertisers";
-            referencedColumns: ["id"];
+            foreignKeyName: "ad_campaigns_advertiser_id_fkey"
+            columns: ["advertiser_id"]
+            isOneToOne: false
+            referencedRelation: "advertisers"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "ad_campaigns_target_event_id_fkey";
-            columns: ["target_event_id"];
-            isOneToOne: false;
-            referencedRelation: "events";
-            referencedColumns: ["id"];
+            foreignKeyName: "ad_campaigns_target_event_id_fkey"
+            columns: ["target_event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       ad_events: {
         Row: {
-          campaign_id: string;
-          created_at: string;
-          id: number;
-          kind: string;
-          user_id: string | null;
-        };
+          campaign_id: string
+          created_at: string
+          id: number
+          kind: string
+          user_id: string | null
+        }
         Insert: {
-          campaign_id: string;
-          created_at?: string;
-          id?: number;
-          kind: string;
-          user_id?: string | null;
-        };
+          campaign_id: string
+          created_at?: string
+          id?: number
+          kind: string
+          user_id?: string | null
+        }
         Update: {
-          campaign_id?: string;
-          created_at?: string;
-          id?: number;
-          kind?: string;
-          user_id?: string | null;
-        };
+          campaign_id?: string
+          created_at?: string
+          id?: number
+          kind?: string
+          user_id?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "ad_events_campaign_id_fkey";
-            columns: ["campaign_id"];
-            isOneToOne: false;
-            referencedRelation: "ad_campaigns";
-            referencedColumns: ["id"];
+            foreignKeyName: "ad_events_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "ad_campaigns"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       admin_alerts: {
         Row: {
-          acknowledged_at: string | null;
-          acknowledged_by: string | null;
-          assigned_to: string | null;
-          body: string | null;
-          created_at: string;
-          due_at: string | null;
-          escalated_at: string | null;
-          id: number;
-          is_seed: boolean;
-          kind: string;
-          parent_alert_id: number | null;
-          priority: string;
-          resolution_note: string | null;
-          resolved_at: string | null;
-          resolved_by: string | null;
-          rule_id: number | null;
-          severity: string;
-          snoozed_by: string | null;
-          snoozed_until: string | null;
-          tags: string[];
-          target_id: string | null;
-          target_table: string | null;
-          title: string;
-        };
+          acknowledged_at: string | null
+          acknowledged_by: string | null
+          assigned_to: string | null
+          body: string | null
+          created_at: string
+          due_at: string | null
+          escalated_at: string | null
+          id: number
+          is_seed: boolean
+          kind: string
+          parent_alert_id: number | null
+          priority: string
+          resolution_note: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          rule_id: number | null
+          severity: string
+          snoozed_by: string | null
+          snoozed_until: string | null
+          tags: string[]
+          target_id: string | null
+          target_table: string | null
+          title: string
+        }
         Insert: {
-          acknowledged_at?: string | null;
-          acknowledged_by?: string | null;
-          assigned_to?: string | null;
-          body?: string | null;
-          created_at?: string;
-          due_at?: string | null;
-          escalated_at?: string | null;
-          id?: number;
-          is_seed?: boolean;
-          kind: string;
-          parent_alert_id?: number | null;
-          priority?: string;
-          resolution_note?: string | null;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-          rule_id?: number | null;
-          severity?: string;
-          snoozed_by?: string | null;
-          snoozed_until?: string | null;
-          tags?: string[];
-          target_id?: string | null;
-          target_table?: string | null;
-          title: string;
-        };
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          assigned_to?: string | null
+          body?: string | null
+          created_at?: string
+          due_at?: string | null
+          escalated_at?: string | null
+          id?: number
+          is_seed?: boolean
+          kind: string
+          parent_alert_id?: number | null
+          priority?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          rule_id?: number | null
+          severity?: string
+          snoozed_by?: string | null
+          snoozed_until?: string | null
+          tags?: string[]
+          target_id?: string | null
+          target_table?: string | null
+          title: string
+        }
         Update: {
-          acknowledged_at?: string | null;
-          acknowledged_by?: string | null;
-          assigned_to?: string | null;
-          body?: string | null;
-          created_at?: string;
-          due_at?: string | null;
-          escalated_at?: string | null;
-          id?: number;
-          is_seed?: boolean;
-          kind?: string;
-          parent_alert_id?: number | null;
-          priority?: string;
-          resolution_note?: string | null;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-          rule_id?: number | null;
-          severity?: string;
-          snoozed_by?: string | null;
-          snoozed_until?: string | null;
-          tags?: string[];
-          target_id?: string | null;
-          target_table?: string | null;
-          title?: string;
-        };
+          acknowledged_at?: string | null
+          acknowledged_by?: string | null
+          assigned_to?: string | null
+          body?: string | null
+          created_at?: string
+          due_at?: string | null
+          escalated_at?: string | null
+          id?: number
+          is_seed?: boolean
+          kind?: string
+          parent_alert_id?: number | null
+          priority?: string
+          resolution_note?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          rule_id?: number | null
+          severity?: string
+          snoozed_by?: string | null
+          snoozed_until?: string | null
+          tags?: string[]
+          target_id?: string | null
+          target_table?: string | null
+          title?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "admin_alerts_parent_alert_id_fkey";
-            columns: ["parent_alert_id"];
-            isOneToOne: false;
-            referencedRelation: "admin_alerts";
-            referencedColumns: ["id"];
+            foreignKeyName: "admin_alerts_parent_alert_id_fkey"
+            columns: ["parent_alert_id"]
+            isOneToOne: false
+            referencedRelation: "admin_alerts"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "admin_alerts_rule_id_fkey";
-            columns: ["rule_id"];
-            isOneToOne: false;
-            referencedRelation: "alert_rules";
-            referencedColumns: ["id"];
+            foreignKeyName: "admin_alerts_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "alert_rules"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       admin_audit_log: {
         Row: {
-          action: string;
-          actor_email: string | null;
-          actor_id: string | null;
-          after_data: Json | null;
-          before_data: Json | null;
-          created_at: string;
-          id: number;
-          ip: unknown;
-          justification: string | null;
-          severity: string;
-          target_id: string | null;
-          target_table: string | null;
-          user_agent: string | null;
-        };
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string
+          id: number
+          ip: unknown
+          justification: string | null
+          severity: string
+          target_id: string | null
+          target_table: string | null
+          user_agent: string | null
+        }
         Insert: {
-          action: string;
-          actor_email?: string | null;
-          actor_id?: string | null;
-          after_data?: Json | null;
-          before_data?: Json | null;
-          created_at?: string;
-          id?: number;
-          ip?: unknown;
-          justification?: string | null;
-          severity?: string;
-          target_id?: string | null;
-          target_table?: string | null;
-          user_agent?: string | null;
-        };
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          id?: number
+          ip?: unknown
+          justification?: string | null
+          severity?: string
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
         Update: {
-          action?: string;
-          actor_email?: string | null;
-          actor_id?: string | null;
-          after_data?: Json | null;
-          before_data?: Json | null;
-          created_at?: string;
-          id?: number;
-          ip?: unknown;
-          justification?: string | null;
-          severity?: string;
-          target_id?: string | null;
-          target_table?: string | null;
-          user_agent?: string | null;
-        };
-        Relationships: [];
-      };
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          id?: number
+          ip?: unknown
+          justification?: string | null
+          severity?: string
+          target_id?: string | null
+          target_table?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       admin_impersonation_log: {
         Row: {
-          actor_id: string;
-          ended_at: string | null;
-          fields_accessed: Json;
-          id: string;
-          ip: unknown;
-          justification: string;
-          purpose: string;
-          started_at: string;
-          target_user_id: string;
-          ticket_id: string | null;
-          user_agent: string | null;
-        };
+          actor_id: string
+          ended_at: string | null
+          fields_accessed: Json
+          id: string
+          ip: unknown
+          justification: string
+          purpose: string
+          started_at: string
+          target_user_id: string
+          ticket_id: string | null
+          user_agent: string | null
+        }
         Insert: {
-          actor_id: string;
-          ended_at?: string | null;
-          fields_accessed?: Json;
-          id?: string;
-          ip?: unknown;
-          justification: string;
-          purpose: string;
-          started_at?: string;
-          target_user_id: string;
-          ticket_id?: string | null;
-          user_agent?: string | null;
-        };
+          actor_id: string
+          ended_at?: string | null
+          fields_accessed?: Json
+          id?: string
+          ip?: unknown
+          justification: string
+          purpose: string
+          started_at?: string
+          target_user_id: string
+          ticket_id?: string | null
+          user_agent?: string | null
+        }
         Update: {
-          actor_id?: string;
-          ended_at?: string | null;
-          fields_accessed?: Json;
-          id?: string;
-          ip?: unknown;
-          justification?: string;
-          purpose?: string;
-          started_at?: string;
-          target_user_id?: string;
-          ticket_id?: string | null;
-          user_agent?: string | null;
-        };
+          actor_id?: string
+          ended_at?: string | null
+          fields_accessed?: Json
+          id?: string
+          ip?: unknown
+          justification?: string
+          purpose?: string
+          started_at?: string
+          target_user_id?: string
+          ticket_id?: string | null
+          user_agent?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "admin_impersonation_log_ticket_id_fkey";
-            columns: ["ticket_id"];
-            isOneToOne: false;
-            referencedRelation: "support_tickets";
-            referencedColumns: ["id"];
+            foreignKeyName: "admin_impersonation_log_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       admin_ip_allowlist: {
         Row: {
-          cidr: string;
-          created_at: string;
-          created_by: string | null;
-          id: string;
-          label: string | null;
-        };
+          cidr: string
+          created_at: string
+          created_by: string | null
+          id: string
+          label: string | null
+        }
         Insert: {
-          cidr: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          label?: string | null;
-        };
+          cidr: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+        }
         Update: {
-          cidr?: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          label?: string | null;
-        };
-        Relationships: [];
-      };
+          cidr?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          label?: string | null
+        }
+        Relationships: []
+      }
       admin_login_attempts: {
         Row: {
-          created_at: string;
-          email: string | null;
-          id: number;
-          ip: unknown;
-          reason: string | null;
-          success: boolean;
-          user_agent: string | null;
-          user_id: string | null;
-        };
+          created_at: string
+          email: string | null
+          id: number
+          ip: unknown
+          reason: string | null
+          success: boolean
+          user_agent: string | null
+          user_id: string | null
+        }
         Insert: {
-          created_at?: string;
-          email?: string | null;
-          id?: number;
-          ip?: unknown;
-          reason?: string | null;
-          success?: boolean;
-          user_agent?: string | null;
-          user_id?: string | null;
-        };
+          created_at?: string
+          email?: string | null
+          id?: number
+          ip?: unknown
+          reason?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
         Update: {
-          created_at?: string;
-          email?: string | null;
-          id?: number;
-          ip?: unknown;
-          reason?: string | null;
-          success?: boolean;
-          user_agent?: string | null;
-          user_id?: string | null;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          email?: string | null
+          id?: number
+          ip?: unknown
+          reason?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       admin_mfa_status: {
         Row: {
-          enrolled: boolean;
-          enrolled_at: string | null;
-          last_verified_at: string | null;
-          updated_at: string;
-          user_id: string;
-        };
+          enrolled: boolean
+          enrolled_at: string | null
+          last_verified_at: string | null
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          enrolled?: boolean;
-          enrolled_at?: string | null;
-          last_verified_at?: string | null;
-          updated_at?: string;
-          user_id: string;
-        };
+          enrolled?: boolean
+          enrolled_at?: string | null
+          last_verified_at?: string | null
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          enrolled?: boolean;
-          enrolled_at?: string | null;
-          last_verified_at?: string | null;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          enrolled?: boolean
+          enrolled_at?: string | null
+          last_verified_at?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       admin_sensitive_access_log: {
         Row: {
-          actor_id: string;
-          created_at: string;
-          fields: string[];
-          id: number;
-          ip: unknown;
-          justification: string;
-          kind: string;
-          target_user_id: string | null;
-          user_agent: string | null;
-        };
+          actor_id: string
+          created_at: string
+          fields: string[]
+          id: number
+          ip: unknown
+          justification: string
+          kind: string
+          target_user_id: string | null
+          user_agent: string | null
+        }
         Insert: {
-          actor_id: string;
-          created_at?: string;
-          fields?: string[];
-          id?: number;
-          ip?: unknown;
-          justification: string;
-          kind: string;
-          target_user_id?: string | null;
-          user_agent?: string | null;
-        };
+          actor_id: string
+          created_at?: string
+          fields?: string[]
+          id?: number
+          ip?: unknown
+          justification: string
+          kind: string
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
         Update: {
-          actor_id?: string;
-          created_at?: string;
-          fields?: string[];
-          id?: number;
-          ip?: unknown;
-          justification?: string;
-          kind?: string;
-          target_user_id?: string | null;
-          user_agent?: string | null;
-        };
-        Relationships: [];
-      };
+          actor_id?: string
+          created_at?: string
+          fields?: string[]
+          id?: number
+          ip?: unknown
+          justification?: string
+          kind?: string
+          target_user_id?: string | null
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       advertisers: {
         Row: {
-          brand_name: string;
-          category: string;
-          contact_email: string;
-          contact_phone: string | null;
-          created_at: string;
-          id: string;
-          is_seed: boolean;
-          owner_id: string;
-          updated_at: string;
-          verified: boolean;
-          website: string | null;
-        };
+          brand_name: string
+          category: string
+          contact_email: string
+          contact_phone: string | null
+          created_at: string
+          id: string
+          is_seed: boolean
+          owner_id: string
+          updated_at: string
+          verified: boolean
+          website: string | null
+        }
         Insert: {
-          brand_name: string;
-          category?: string;
-          contact_email: string;
-          contact_phone?: string | null;
-          created_at?: string;
-          id?: string;
-          is_seed?: boolean;
-          owner_id: string;
-          updated_at?: string;
-          verified?: boolean;
-          website?: string | null;
-        };
+          brand_name: string
+          category?: string
+          contact_email: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_seed?: boolean
+          owner_id: string
+          updated_at?: string
+          verified?: boolean
+          website?: string | null
+        }
         Update: {
-          brand_name?: string;
-          category?: string;
-          contact_email?: string;
-          contact_phone?: string | null;
-          created_at?: string;
-          id?: string;
-          is_seed?: boolean;
-          owner_id?: string;
-          updated_at?: string;
-          verified?: boolean;
-          website?: string | null;
-        };
-        Relationships: [];
-      };
+          brand_name?: string
+          category?: string
+          contact_email?: string
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_seed?: boolean
+          owner_id?: string
+          updated_at?: string
+          verified?: boolean
+          website?: string | null
+        }
+        Relationships: []
+      }
       age_verifications: {
         Row: {
-          created_at: string;
-          didit_session_id: string | null;
-          estimated_age: number | null;
-          id: string;
-          provider: string;
-          result: string;
-          status_raw: string | null;
-          user_id: string;
-        };
+          created_at: string
+          didit_session_id: string | null
+          estimated_age: number | null
+          id: string
+          provider: string
+          result: string
+          status_raw: string | null
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          didit_session_id?: string | null;
-          estimated_age?: number | null;
-          id?: string;
-          provider?: string;
-          result: string;
-          status_raw?: string | null;
-          user_id: string;
-        };
+          created_at?: string
+          didit_session_id?: string | null
+          estimated_age?: number | null
+          id?: string
+          provider?: string
+          result: string
+          status_raw?: string | null
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          didit_session_id?: string | null;
-          estimated_age?: number | null;
-          id?: string;
-          provider?: string;
-          result?: string;
-          status_raw?: string | null;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          didit_session_id?: string | null
+          estimated_age?: number | null
+          id?: string
+          provider?: string
+          result?: string
+          status_raw?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       album_requests: {
         Row: {
-          created_at: string;
-          id: string;
-          owner_id: string;
-          requester_id: string;
-          status: string;
-        };
+          created_at: string
+          id: string
+          owner_id: string
+          requester_id: string
+          status: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          owner_id: string;
-          requester_id: string;
-          status?: string;
-        };
+          created_at?: string
+          id?: string
+          owner_id: string
+          requester_id: string
+          status?: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          owner_id?: string;
-          requester_id?: string;
-          status?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          owner_id?: string
+          requester_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       album_unlocks: {
         Row: {
-          granted_at: string;
-          id: string;
-          owner_id: string;
-          viewer_id: string;
-        };
+          granted_at: string
+          id: string
+          owner_id: string
+          viewer_id: string
+        }
         Insert: {
-          granted_at?: string;
-          id?: string;
-          owner_id: string;
-          viewer_id: string;
-        };
+          granted_at?: string
+          id?: string
+          owner_id: string
+          viewer_id: string
+        }
         Update: {
-          granted_at?: string;
-          id?: string;
-          owner_id?: string;
-          viewer_id?: string;
-        };
-        Relationships: [];
-      };
+          granted_at?: string
+          id?: string
+          owner_id?: string
+          viewer_id?: string
+        }
+        Relationships: []
+      }
       alert_rules: {
         Row: {
-          condition: Json;
-          created_at: string;
-          created_by: string | null;
-          description: string | null;
-          destination: Json;
-          enabled: boolean;
-          event_kind: string;
-          id: number;
-          name: string;
-          severity: string;
-          threshold: number;
-          updated_at: string;
-          window_seconds: number;
-        };
+          condition: Json
+          created_at: string
+          created_by: string | null
+          description: string | null
+          destination: Json
+          enabled: boolean
+          event_kind: string
+          id: number
+          name: string
+          severity: string
+          threshold: number
+          updated_at: string
+          window_seconds: number
+        }
         Insert: {
-          condition?: Json;
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          destination?: Json;
-          enabled?: boolean;
-          event_kind: string;
-          id?: number;
-          name: string;
-          severity?: string;
-          threshold?: number;
-          updated_at?: string;
-          window_seconds?: number;
-        };
+          condition?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          destination?: Json
+          enabled?: boolean
+          event_kind: string
+          id?: number
+          name: string
+          severity?: string
+          threshold?: number
+          updated_at?: string
+          window_seconds?: number
+        }
         Update: {
-          condition?: Json;
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          destination?: Json;
-          enabled?: boolean;
-          event_kind?: string;
-          id?: number;
-          name?: string;
-          severity?: string;
-          threshold?: number;
-          updated_at?: string;
-          window_seconds?: number;
-        };
-        Relationships: [];
-      };
+          condition?: Json
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          destination?: Json
+          enabled?: boolean
+          event_kind?: string
+          id?: number
+          name?: string
+          severity?: string
+          threshold?: number
+          updated_at?: string
+          window_seconds?: number
+        }
+        Relationships: []
+      }
       anaf_efactura_queue: {
         Row: {
-          anaf_response: string | null;
-          anaf_upload_id: string | null;
-          attempts: number;
-          created_at: string;
-          error_msg: string | null;
-          id: string;
-          invoice_id: string;
-          status: string;
-          submitted_at: string | null;
-          submitted_by: string | null;
-          ubl_xml: string | null;
-          updated_at: string;
-        };
+          anaf_response: string | null
+          anaf_upload_id: string | null
+          attempts: number
+          created_at: string
+          error_msg: string | null
+          id: string
+          invoice_id: string
+          status: string
+          submitted_at: string | null
+          submitted_by: string | null
+          ubl_xml: string | null
+          updated_at: string
+        }
         Insert: {
-          anaf_response?: string | null;
-          anaf_upload_id?: string | null;
-          attempts?: number;
-          created_at?: string;
-          error_msg?: string | null;
-          id?: string;
-          invoice_id: string;
-          status?: string;
-          submitted_at?: string | null;
-          submitted_by?: string | null;
-          ubl_xml?: string | null;
-          updated_at?: string;
-        };
+          anaf_response?: string | null
+          anaf_upload_id?: string | null
+          attempts?: number
+          created_at?: string
+          error_msg?: string | null
+          id?: string
+          invoice_id: string
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          ubl_xml?: string | null
+          updated_at?: string
+        }
         Update: {
-          anaf_response?: string | null;
-          anaf_upload_id?: string | null;
-          attempts?: number;
-          created_at?: string;
-          error_msg?: string | null;
-          id?: string;
-          invoice_id?: string;
-          status?: string;
-          submitted_at?: string | null;
-          submitted_by?: string | null;
-          ubl_xml?: string | null;
-          updated_at?: string;
-        };
+          anaf_response?: string | null
+          anaf_upload_id?: string | null
+          attempts?: number
+          created_at?: string
+          error_msg?: string | null
+          id?: string
+          invoice_id?: string
+          status?: string
+          submitted_at?: string | null
+          submitted_by?: string | null
+          ubl_xml?: string | null
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "anaf_efactura_queue_invoice_id_fkey";
-            columns: ["invoice_id"];
-            isOneToOne: true;
-            referencedRelation: "partner_invoices";
-            referencedColumns: ["id"];
+            foreignKeyName: "anaf_efactura_queue_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: true
+            referencedRelation: "partner_invoices"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       app_settings: {
         Row: {
-          category: string;
-          created_at: string;
-          description: string | null;
-          key: string;
-          updated_at: string;
-          updated_by: string | null;
-          value: Json;
-          version: number;
-        };
+          category: string
+          created_at: string
+          description: string | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+          value: Json
+          version: number
+        }
         Insert: {
-          category?: string;
-          created_at?: string;
-          description?: string | null;
-          key: string;
-          updated_at?: string;
-          updated_by?: string | null;
-          value: Json;
-          version?: number;
-        };
+          category?: string
+          created_at?: string
+          description?: string | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+          value: Json
+          version?: number
+        }
         Update: {
-          category?: string;
-          created_at?: string;
-          description?: string | null;
-          key?: string;
-          updated_at?: string;
-          updated_by?: string | null;
-          value?: Json;
-          version?: number;
-        };
-        Relationships: [];
-      };
+          category?: string
+          created_at?: string
+          description?: string | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
+          value?: Json
+          version?: number
+        }
+        Relationships: []
+      }
       app_settings_history: {
         Row: {
-          changed_at: string;
-          changed_by: string | null;
-          id: number;
-          key: string;
-          value: Json;
-          version: number;
-        };
+          changed_at: string
+          changed_by: string | null
+          id: number
+          key: string
+          value: Json
+          version: number
+        }
         Insert: {
-          changed_at?: string;
-          changed_by?: string | null;
-          id?: number;
-          key: string;
-          value: Json;
-          version: number;
-        };
+          changed_at?: string
+          changed_by?: string | null
+          id?: number
+          key: string
+          value: Json
+          version: number
+        }
         Update: {
-          changed_at?: string;
-          changed_by?: string | null;
-          id?: number;
-          key?: string;
-          value?: Json;
-          version?: number;
-        };
-        Relationships: [];
-      };
+          changed_at?: string
+          changed_by?: string | null
+          id?: number
+          key?: string
+          value?: Json
+          version?: number
+        }
+        Relationships: []
+      }
       appeals: {
         Row: {
-          action_ref: string | null;
-          created_at: string;
-          decision_reason: string | null;
-          evidence_urls: Json;
-          id: string;
-          kind: string;
-          original_reason: string | null;
-          reviewed_at: string | null;
-          reviewed_by: string | null;
-          status: string;
-          updated_at: string;
-          user_id: string;
-          user_statement: string;
-        };
+          action_ref: string | null
+          created_at: string
+          decision_reason: string | null
+          evidence_urls: Json
+          id: string
+          kind: string
+          original_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          updated_at: string
+          user_id: string
+          user_statement: string
+        }
         Insert: {
-          action_ref?: string | null;
-          created_at?: string;
-          decision_reason?: string | null;
-          evidence_urls?: Json;
-          id?: string;
-          kind: string;
-          original_reason?: string | null;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: string;
-          updated_at?: string;
-          user_id: string;
-          user_statement: string;
-        };
+          action_ref?: string | null
+          created_at?: string
+          decision_reason?: string | null
+          evidence_urls?: Json
+          id?: string
+          kind: string
+          original_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          user_statement: string
+        }
         Update: {
-          action_ref?: string | null;
-          created_at?: string;
-          decision_reason?: string | null;
-          evidence_urls?: Json;
-          id?: string;
-          kind?: string;
-          original_reason?: string | null;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          status?: string;
-          updated_at?: string;
-          user_id?: string;
-          user_statement?: string;
-        };
-        Relationships: [];
-      };
+          action_ref?: string | null
+          created_at?: string
+          decision_reason?: string | null
+          evidence_urls?: Json
+          id?: string
+          kind?: string
+          original_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          user_statement?: string
+        }
+        Relationships: []
+      }
       banned_fingerprints: {
         Row: {
-          banned_at: string;
-          banned_by: string | null;
-          fingerprint: string;
-          reason: string | null;
-        };
+          banned_at: string
+          banned_by: string | null
+          fingerprint: string
+          reason: string | null
+        }
         Insert: {
-          banned_at?: string;
-          banned_by?: string | null;
-          fingerprint: string;
-          reason?: string | null;
-        };
+          banned_at?: string
+          banned_by?: string | null
+          fingerprint: string
+          reason?: string | null
+        }
         Update: {
-          banned_at?: string;
-          banned_by?: string | null;
-          fingerprint?: string;
-          reason?: string | null;
-        };
-        Relationships: [];
-      };
+          banned_at?: string
+          banned_by?: string | null
+          fingerprint?: string
+          reason?: string | null
+        }
+        Relationships: []
+      }
       blocks: {
         Row: {
-          blocked_id: string;
-          blocker_id: string;
-          created_at: string;
-          id: string;
-        };
+          blocked_id: string
+          blocker_id: string
+          created_at: string
+          id: string
+        }
         Insert: {
-          blocked_id: string;
-          blocker_id: string;
-          created_at?: string;
-          id?: string;
-        };
+          blocked_id: string
+          blocker_id: string
+          created_at?: string
+          id?: string
+        }
         Update: {
-          blocked_id?: string;
-          blocker_id?: string;
-          created_at?: string;
-          id?: string;
-        };
-        Relationships: [];
-      };
+          blocked_id?: string
+          blocker_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: []
+      }
       breach_incidents: {
         Row: {
-          affected_users_count: number | null;
-          art33_draft: string | null;
-          art34_draft: string | null;
-          authority_notified_at: string | null;
-          closed_at: string | null;
-          containment_actions: string | null;
-          created_at: string;
-          created_by: string | null;
-          data_categories: string[] | null;
-          description: string | null;
-          discovered_at: string;
-          dpo_contact: string | null;
-          id: string;
-          is_seed: boolean;
-          notify_deadline: string;
-          root_cause: string | null;
-          severity: string;
-          status: string;
-          timeline: Json;
-          title: string;
-          users_notified_at: string | null;
-        };
+          affected_users_count: number | null
+          art33_draft: string | null
+          art34_draft: string | null
+          authority_notified_at: string | null
+          closed_at: string | null
+          containment_actions: string | null
+          created_at: string
+          created_by: string | null
+          data_categories: string[] | null
+          description: string | null
+          discovered_at: string
+          dpo_contact: string | null
+          id: string
+          is_seed: boolean
+          notify_deadline: string
+          root_cause: string | null
+          severity: string
+          status: string
+          timeline: Json
+          title: string
+          users_notified_at: string | null
+        }
         Insert: {
-          affected_users_count?: number | null;
-          art33_draft?: string | null;
-          art34_draft?: string | null;
-          authority_notified_at?: string | null;
-          closed_at?: string | null;
-          containment_actions?: string | null;
-          created_at?: string;
-          created_by?: string | null;
-          data_categories?: string[] | null;
-          description?: string | null;
-          discovered_at?: string;
-          dpo_contact?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          notify_deadline?: string;
-          root_cause?: string | null;
-          severity?: string;
-          status?: string;
-          timeline?: Json;
-          title: string;
-          users_notified_at?: string | null;
-        };
+          affected_users_count?: number | null
+          art33_draft?: string | null
+          art34_draft?: string | null
+          authority_notified_at?: string | null
+          closed_at?: string | null
+          containment_actions?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_categories?: string[] | null
+          description?: string | null
+          discovered_at?: string
+          dpo_contact?: string | null
+          id?: string
+          is_seed?: boolean
+          notify_deadline?: string
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          timeline?: Json
+          title: string
+          users_notified_at?: string | null
+        }
         Update: {
-          affected_users_count?: number | null;
-          art33_draft?: string | null;
-          art34_draft?: string | null;
-          authority_notified_at?: string | null;
-          closed_at?: string | null;
-          containment_actions?: string | null;
-          created_at?: string;
-          created_by?: string | null;
-          data_categories?: string[] | null;
-          description?: string | null;
-          discovered_at?: string;
-          dpo_contact?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          notify_deadline?: string;
-          root_cause?: string | null;
-          severity?: string;
-          status?: string;
-          timeline?: Json;
-          title?: string;
-          users_notified_at?: string | null;
-        };
-        Relationships: [];
-      };
+          affected_users_count?: number | null
+          art33_draft?: string | null
+          art34_draft?: string | null
+          authority_notified_at?: string | null
+          closed_at?: string | null
+          containment_actions?: string | null
+          created_at?: string
+          created_by?: string | null
+          data_categories?: string[] | null
+          description?: string | null
+          discovered_at?: string
+          dpo_contact?: string | null
+          id?: string
+          is_seed?: boolean
+          notify_deadline?: string
+          root_cause?: string | null
+          severity?: string
+          status?: string
+          timeline?: Json
+          title?: string
+          users_notified_at?: string | null
+        }
+        Relationships: []
+      }
       broadcast_campaigns: {
         Row: {
-          audience_filter: Json;
-          body: string;
-          channel: string;
-          created_at: string;
-          created_by: string;
-          delivered_count: number;
-          finished_at: string | null;
-          id: string;
-          link: string | null;
-          scheduled_at: string | null;
-          started_at: string | null;
-          status: string;
-          target_count: number;
-          title: string;
-          updated_at: string;
-        };
+          audience_filter: Json
+          body: string
+          channel: string
+          created_at: string
+          created_by: string
+          delivered_count: number
+          finished_at: string | null
+          id: string
+          link: string | null
+          scheduled_at: string | null
+          started_at: string | null
+          status: string
+          target_count: number
+          title: string
+          updated_at: string
+        }
         Insert: {
-          audience_filter?: Json;
-          body: string;
-          channel?: string;
-          created_at?: string;
-          created_by: string;
-          delivered_count?: number;
-          finished_at?: string | null;
-          id?: string;
-          link?: string | null;
-          scheduled_at?: string | null;
-          started_at?: string | null;
-          status?: string;
-          target_count?: number;
-          title: string;
-          updated_at?: string;
-        };
+          audience_filter?: Json
+          body: string
+          channel?: string
+          created_at?: string
+          created_by: string
+          delivered_count?: number
+          finished_at?: string | null
+          id?: string
+          link?: string | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string
+          target_count?: number
+          title: string
+          updated_at?: string
+        }
         Update: {
-          audience_filter?: Json;
-          body?: string;
-          channel?: string;
-          created_at?: string;
-          created_by?: string;
-          delivered_count?: number;
-          finished_at?: string | null;
-          id?: string;
-          link?: string | null;
-          scheduled_at?: string | null;
-          started_at?: string | null;
-          status?: string;
-          target_count?: number;
-          title?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          audience_filter?: Json
+          body?: string
+          channel?: string
+          created_at?: string
+          created_by?: string
+          delivered_count?: number
+          finished_at?: string | null
+          id?: string
+          link?: string | null
+          scheduled_at?: string | null
+          started_at?: string | null
+          status?: string
+          target_count?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       business_applications: {
         Row: {
-          accepts_dpa: boolean;
-          accepts_lgbt_charter: boolean;
-          accepts_terms: boolean;
-          address: string | null;
-          admin_notes: string | null;
-          billing_completed_at: string | null;
-          billing_email: string | null;
-          brand_name: string | null;
-          category: string | null;
-          city: string | null;
-          contact_email: string;
-          contact_name: string;
-          contact_phone: string | null;
-          contact_role: string | null;
-          country: string;
-          created_at: string;
-          cui: string | null;
-          entity_type: Database["public"]["Enums"]["business_entity_type"];
-          goals: string;
-          iban: string | null;
-          id: string;
-          is_seed: boolean;
-          is_vat_payer: boolean;
-          legal_name: string;
-          monthly_budget_eur: number | null;
-          reg_com: string | null;
-          social_links: string | null;
-          status: Database["public"]["Enums"]["business_app_status"];
-          updated_at: string;
-          user_id: string | null;
-          vat_number: string | null;
-          website: string | null;
-        };
+          accepts_dpa: boolean
+          accepts_lgbt_charter: boolean
+          accepts_terms: boolean
+          address: string | null
+          admin_notes: string | null
+          billing_completed_at: string | null
+          billing_email: string | null
+          brand_name: string | null
+          category: string | null
+          city: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone: string | null
+          contact_role: string | null
+          country: string
+          created_at: string
+          cui: string | null
+          entity_type: Database["public"]["Enums"]["business_entity_type"]
+          goals: string
+          iban: string | null
+          id: string
+          is_seed: boolean
+          is_vat_payer: boolean
+          legal_name: string
+          monthly_budget_eur: number | null
+          reg_com: string | null
+          social_links: string | null
+          status: Database["public"]["Enums"]["business_app_status"]
+          updated_at: string
+          user_id: string | null
+          vat_number: string | null
+          website: string | null
+        }
         Insert: {
-          accepts_dpa?: boolean;
-          accepts_lgbt_charter?: boolean;
-          accepts_terms?: boolean;
-          address?: string | null;
-          admin_notes?: string | null;
-          billing_completed_at?: string | null;
-          billing_email?: string | null;
-          brand_name?: string | null;
-          category?: string | null;
-          city?: string | null;
-          contact_email: string;
-          contact_name: string;
-          contact_phone?: string | null;
-          contact_role?: string | null;
-          country?: string;
-          created_at?: string;
-          cui?: string | null;
-          entity_type: Database["public"]["Enums"]["business_entity_type"];
-          goals: string;
-          iban?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          is_vat_payer?: boolean;
-          legal_name: string;
-          monthly_budget_eur?: number | null;
-          reg_com?: string | null;
-          social_links?: string | null;
-          status?: Database["public"]["Enums"]["business_app_status"];
-          updated_at?: string;
-          user_id?: string | null;
-          vat_number?: string | null;
-          website?: string | null;
-        };
+          accepts_dpa?: boolean
+          accepts_lgbt_charter?: boolean
+          accepts_terms?: boolean
+          address?: string | null
+          admin_notes?: string | null
+          billing_completed_at?: string | null
+          billing_email?: string | null
+          brand_name?: string | null
+          category?: string | null
+          city?: string | null
+          contact_email: string
+          contact_name: string
+          contact_phone?: string | null
+          contact_role?: string | null
+          country?: string
+          created_at?: string
+          cui?: string | null
+          entity_type: Database["public"]["Enums"]["business_entity_type"]
+          goals: string
+          iban?: string | null
+          id?: string
+          is_seed?: boolean
+          is_vat_payer?: boolean
+          legal_name: string
+          monthly_budget_eur?: number | null
+          reg_com?: string | null
+          social_links?: string | null
+          status?: Database["public"]["Enums"]["business_app_status"]
+          updated_at?: string
+          user_id?: string | null
+          vat_number?: string | null
+          website?: string | null
+        }
         Update: {
-          accepts_dpa?: boolean;
-          accepts_lgbt_charter?: boolean;
-          accepts_terms?: boolean;
-          address?: string | null;
-          admin_notes?: string | null;
-          billing_completed_at?: string | null;
-          billing_email?: string | null;
-          brand_name?: string | null;
-          category?: string | null;
-          city?: string | null;
-          contact_email?: string;
-          contact_name?: string;
-          contact_phone?: string | null;
-          contact_role?: string | null;
-          country?: string;
-          created_at?: string;
-          cui?: string | null;
-          entity_type?: Database["public"]["Enums"]["business_entity_type"];
-          goals?: string;
-          iban?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          is_vat_payer?: boolean;
-          legal_name?: string;
-          monthly_budget_eur?: number | null;
-          reg_com?: string | null;
-          social_links?: string | null;
-          status?: Database["public"]["Enums"]["business_app_status"];
-          updated_at?: string;
-          user_id?: string | null;
-          vat_number?: string | null;
-          website?: string | null;
-        };
-        Relationships: [];
-      };
+          accepts_dpa?: boolean
+          accepts_lgbt_charter?: boolean
+          accepts_terms?: boolean
+          address?: string | null
+          admin_notes?: string | null
+          billing_completed_at?: string | null
+          billing_email?: string | null
+          brand_name?: string | null
+          category?: string | null
+          city?: string | null
+          contact_email?: string
+          contact_name?: string
+          contact_phone?: string | null
+          contact_role?: string | null
+          country?: string
+          created_at?: string
+          cui?: string | null
+          entity_type?: Database["public"]["Enums"]["business_entity_type"]
+          goals?: string
+          iban?: string | null
+          id?: string
+          is_seed?: boolean
+          is_vat_payer?: boolean
+          legal_name?: string
+          monthly_budget_eur?: number | null
+          reg_com?: string | null
+          social_links?: string | null
+          status?: Database["public"]["Enums"]["business_app_status"]
+          updated_at?: string
+          user_id?: string | null
+          vat_number?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       consent_log: {
         Row: {
-          accepted: boolean;
-          created_at: string;
-          id: number;
-          ip: unknown;
-          kind: string;
-          user_agent: string | null;
-          user_id: string;
-          version: string;
-        };
+          accepted: boolean
+          created_at: string
+          id: number
+          ip: unknown
+          kind: string
+          user_agent: string | null
+          user_id: string
+          version: string
+        }
         Insert: {
-          accepted: boolean;
-          created_at?: string;
-          id?: number;
-          ip?: unknown;
-          kind: string;
-          user_agent?: string | null;
-          user_id: string;
-          version: string;
-        };
+          accepted: boolean
+          created_at?: string
+          id?: number
+          ip?: unknown
+          kind: string
+          user_agent?: string | null
+          user_id: string
+          version: string
+        }
         Update: {
-          accepted?: boolean;
-          created_at?: string;
-          id?: number;
-          ip?: unknown;
-          kind?: string;
-          user_agent?: string | null;
-          user_id?: string;
-          version?: string;
-        };
-        Relationships: [];
-      };
+          accepted?: boolean
+          created_at?: string
+          id?: number
+          ip?: unknown
+          kind?: string
+          user_agent?: string | null
+          user_id?: string
+          version?: string
+        }
+        Relationships: []
+      }
       conversations: {
         Row: {
-          created_at: string;
-          id: string;
-          last_message_at: string;
-          last_message_preview: string | null;
-          user_a: string;
-          user_b: string;
-        };
+          created_at: string
+          id: string
+          last_message_at: string
+          last_message_preview: string | null
+          user_a: string
+          user_b: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          last_message_at?: string;
-          last_message_preview?: string | null;
-          user_a: string;
-          user_b: string;
-        };
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          last_message_preview?: string | null
+          user_a: string
+          user_b: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          last_message_at?: string;
-          last_message_preview?: string | null;
-          user_a?: string;
-          user_b?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          last_message_at?: string
+          last_message_preview?: string | null
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
       country_risk_config: {
         Row: {
-          country_code: string;
-          country_name: string;
-          disable_discover: boolean;
-          disable_signup: boolean;
-          force_stealth: boolean;
-          hide_precise_location: boolean;
-          reason: string | null;
-          risk_level: string;
-          updated_at: string;
-          updated_by: string | null;
-        };
+          country_code: string
+          country_name: string
+          disable_discover: boolean
+          disable_signup: boolean
+          force_stealth: boolean
+          hide_precise_location: boolean
+          reason: string | null
+          risk_level: string
+          updated_at: string
+          updated_by: string | null
+        }
         Insert: {
-          country_code: string;
-          country_name: string;
-          disable_discover?: boolean;
-          disable_signup?: boolean;
-          force_stealth?: boolean;
-          hide_precise_location?: boolean;
-          reason?: string | null;
-          risk_level: string;
-          updated_at?: string;
-          updated_by?: string | null;
-        };
+          country_code: string
+          country_name: string
+          disable_discover?: boolean
+          disable_signup?: boolean
+          force_stealth?: boolean
+          hide_precise_location?: boolean
+          reason?: string | null
+          risk_level: string
+          updated_at?: string
+          updated_by?: string | null
+        }
         Update: {
-          country_code?: string;
-          country_name?: string;
-          disable_discover?: boolean;
-          disable_signup?: boolean;
-          force_stealth?: boolean;
-          hide_precise_location?: boolean;
-          reason?: string | null;
-          risk_level?: string;
-          updated_at?: string;
-          updated_by?: string | null;
-        };
-        Relationships: [];
-      };
+          country_code?: string
+          country_name?: string
+          disable_discover?: boolean
+          disable_signup?: boolean
+          force_stealth?: boolean
+          hide_precise_location?: boolean
+          reason?: string | null
+          risk_level?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       csam_hash_blocklist: {
         Row: {
-          added_at: string;
-          added_by: string | null;
-          hash: string;
-          source: string | null;
-        };
+          added_at: string
+          added_by: string | null
+          hash: string
+          source: string | null
+        }
         Insert: {
-          added_at?: string;
-          added_by?: string | null;
-          hash: string;
-          source?: string | null;
-        };
+          added_at?: string
+          added_by?: string | null
+          hash: string
+          source?: string | null
+        }
         Update: {
-          added_at?: string;
-          added_by?: string | null;
-          hash?: string;
-          source?: string | null;
-        };
-        Relationships: [];
-      };
+          added_at?: string
+          added_by?: string | null
+          hash?: string
+          source?: string | null
+        }
+        Relationships: []
+      }
       csam_ncmec_queue: {
         Row: {
-          affected_country: string | null;
-          created_at: string;
-          created_by: string | null;
-          csam_report_id: string;
-          error_msg: string | null;
-          filed_at: string | null;
-          filed_by: string | null;
-          hash_perceptual: string | null;
-          hash_sha256: string | null;
-          id: string;
-          narrative: string;
-          ncmec_case_id: string | null;
-          status: string;
-          updated_at: string;
-        };
+          affected_country: string | null
+          created_at: string
+          created_by: string | null
+          csam_report_id: string
+          error_msg: string | null
+          filed_at: string | null
+          filed_by: string | null
+          hash_perceptual: string | null
+          hash_sha256: string | null
+          id: string
+          narrative: string
+          ncmec_case_id: string | null
+          status: string
+          updated_at: string
+        }
         Insert: {
-          affected_country?: string | null;
-          created_at?: string;
-          created_by?: string | null;
-          csam_report_id: string;
-          error_msg?: string | null;
-          filed_at?: string | null;
-          filed_by?: string | null;
-          hash_perceptual?: string | null;
-          hash_sha256?: string | null;
-          id?: string;
-          narrative: string;
-          ncmec_case_id?: string | null;
-          status?: string;
-          updated_at?: string;
-        };
+          affected_country?: string | null
+          created_at?: string
+          created_by?: string | null
+          csam_report_id: string
+          error_msg?: string | null
+          filed_at?: string | null
+          filed_by?: string | null
+          hash_perceptual?: string | null
+          hash_sha256?: string | null
+          id?: string
+          narrative: string
+          ncmec_case_id?: string | null
+          status?: string
+          updated_at?: string
+        }
         Update: {
-          affected_country?: string | null;
-          created_at?: string;
-          created_by?: string | null;
-          csam_report_id?: string;
-          error_msg?: string | null;
-          filed_at?: string | null;
-          filed_by?: string | null;
-          hash_perceptual?: string | null;
-          hash_sha256?: string | null;
-          id?: string;
-          narrative?: string;
-          ncmec_case_id?: string | null;
-          status?: string;
-          updated_at?: string;
-        };
+          affected_country?: string | null
+          created_at?: string
+          created_by?: string | null
+          csam_report_id?: string
+          error_msg?: string | null
+          filed_at?: string | null
+          filed_by?: string | null
+          hash_perceptual?: string | null
+          hash_sha256?: string | null
+          id?: string
+          narrative?: string
+          ncmec_case_id?: string | null
+          status?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "csam_ncmec_queue_csam_report_id_fkey";
-            columns: ["csam_report_id"];
-            isOneToOne: false;
-            referencedRelation: "csam_reports";
-            referencedColumns: ["id"];
+            foreignKeyName: "csam_ncmec_queue_csam_report_id_fkey"
+            columns: ["csam_report_id"]
+            isOneToOne: false
+            referencedRelation: "csam_reports"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       csam_reports: {
         Row: {
-          hash: string | null;
-          id: string;
-          is_seed: boolean;
-          match_source: string | null;
-          ncmec_report_id: string | null;
-          notes: string | null;
-          photo_url: string | null;
-          reported_at: string;
-          status: string;
-          user_id: string | null;
-        };
+          hash: string | null
+          id: string
+          is_seed: boolean
+          match_source: string | null
+          ncmec_report_id: string | null
+          notes: string | null
+          photo_url: string | null
+          reported_at: string
+          status: string
+          user_id: string | null
+        }
         Insert: {
-          hash?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          match_source?: string | null;
-          ncmec_report_id?: string | null;
-          notes?: string | null;
-          photo_url?: string | null;
-          reported_at?: string;
-          status?: string;
-          user_id?: string | null;
-        };
+          hash?: string | null
+          id?: string
+          is_seed?: boolean
+          match_source?: string | null
+          ncmec_report_id?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          reported_at?: string
+          status?: string
+          user_id?: string | null
+        }
         Update: {
-          hash?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          match_source?: string | null;
-          ncmec_report_id?: string | null;
-          notes?: string | null;
-          photo_url?: string | null;
-          reported_at?: string;
-          status?: string;
-          user_id?: string | null;
-        };
-        Relationships: [];
-      };
+          hash?: string | null
+          id?: string
+          is_seed?: boolean
+          match_source?: string | null
+          ncmec_report_id?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          reported_at?: string
+          status?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       daily_rewards: {
         Row: {
-          claimed_on: string;
-          created_at: string;
-          id: string;
-          reward_amount: number;
-          reward_kind: string;
-          streak_day: number;
-          user_id: string;
-          xp_awarded: number;
-        };
+          claimed_on: string
+          created_at: string
+          id: string
+          reward_amount: number
+          reward_kind: string
+          streak_day: number
+          user_id: string
+          xp_awarded: number
+        }
         Insert: {
-          claimed_on?: string;
-          created_at?: string;
-          id?: string;
-          reward_amount: number;
-          reward_kind: string;
-          streak_day: number;
-          user_id: string;
-          xp_awarded: number;
-        };
+          claimed_on?: string
+          created_at?: string
+          id?: string
+          reward_amount: number
+          reward_kind: string
+          streak_day: number
+          user_id: string
+          xp_awarded: number
+        }
         Update: {
-          claimed_on?: string;
-          created_at?: string;
-          id?: string;
-          reward_amount?: number;
-          reward_kind?: string;
-          streak_day?: number;
-          user_id?: string;
-          xp_awarded?: number;
-        };
-        Relationships: [];
-      };
+          claimed_on?: string
+          created_at?: string
+          id?: string
+          reward_amount?: number
+          reward_kind?: string
+          streak_day?: number
+          user_id?: string
+          xp_awarded?: number
+        }
+        Relationships: []
+      }
       deletion_requests: {
         Row: {
-          id: string;
-          is_seed: boolean;
-          processed_at: string | null;
-          reason: string | null;
-          requested_at: string;
-          scheduled_for: string;
-          status: string;
-          user_id: string;
-        };
+          id: string
+          is_seed: boolean
+          processed_at: string | null
+          reason: string | null
+          requested_at: string
+          scheduled_for: string
+          status: string
+          user_id: string
+        }
         Insert: {
-          id?: string;
-          is_seed?: boolean;
-          processed_at?: string | null;
-          reason?: string | null;
-          requested_at?: string;
-          scheduled_for?: string;
-          status?: string;
-          user_id: string;
-        };
+          id?: string
+          is_seed?: boolean
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          scheduled_for?: string
+          status?: string
+          user_id: string
+        }
         Update: {
-          id?: string;
-          is_seed?: boolean;
-          processed_at?: string | null;
-          reason?: string | null;
-          requested_at?: string;
-          scheduled_for?: string;
-          status?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          id?: string
+          is_seed?: boolean
+          processed_at?: string | null
+          reason?: string | null
+          requested_at?: string
+          scheduled_for?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       device_fingerprints: {
         Row: {
-          fingerprint: string;
-          first_seen_at: string;
-          id: string;
-          last_seen_at: string;
-          user_agent: string | null;
-          user_id: string;
-        };
+          fingerprint: string
+          first_seen_at: string
+          id: string
+          last_seen_at: string
+          user_agent: string | null
+          user_id: string
+        }
         Insert: {
-          fingerprint: string;
-          first_seen_at?: string;
-          id?: string;
-          last_seen_at?: string;
-          user_agent?: string | null;
-          user_id: string;
-        };
+          fingerprint: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
         Update: {
-          fingerprint?: string;
-          first_seen_at?: string;
-          id?: string;
-          last_seen_at?: string;
-          user_agent?: string | null;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          fingerprint?: string
+          first_seen_at?: string
+          id?: string
+          last_seen_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       dsa_sor: {
         Row: {
-          action_type: string;
-          appeal_id: string | null;
-          automated: boolean;
-          category: string;
-          created_at: string;
-          created_by: string | null;
-          id: string;
-          legal_basis: string;
-          reasoning: string;
-          redress_deadline: string;
-          target_content_id: string | null;
-          target_content_type: string | null;
-          target_user_id: string | null;
-          transparency_period: string | null;
-          transparency_reported: boolean;
-        };
+          action_type: string
+          appeal_id: string | null
+          automated: boolean
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          legal_basis: string
+          reasoning: string
+          redress_deadline: string
+          target_content_id: string | null
+          target_content_type: string | null
+          target_user_id: string | null
+          transparency_period: string | null
+          transparency_reported: boolean
+        }
         Insert: {
-          action_type: string;
-          appeal_id?: string | null;
-          automated?: boolean;
-          category: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          legal_basis: string;
-          reasoning: string;
-          redress_deadline?: string;
-          target_content_id?: string | null;
-          target_content_type?: string | null;
-          target_user_id?: string | null;
-          transparency_period?: string | null;
-          transparency_reported?: boolean;
-        };
+          action_type: string
+          appeal_id?: string | null
+          automated?: boolean
+          category: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          legal_basis: string
+          reasoning: string
+          redress_deadline?: string
+          target_content_id?: string | null
+          target_content_type?: string | null
+          target_user_id?: string | null
+          transparency_period?: string | null
+          transparency_reported?: boolean
+        }
         Update: {
-          action_type?: string;
-          appeal_id?: string | null;
-          automated?: boolean;
-          category?: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          legal_basis?: string;
-          reasoning?: string;
-          redress_deadline?: string;
-          target_content_id?: string | null;
-          target_content_type?: string | null;
-          target_user_id?: string | null;
-          transparency_period?: string | null;
-          transparency_reported?: boolean;
-        };
+          action_type?: string
+          appeal_id?: string | null
+          automated?: boolean
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          legal_basis?: string
+          reasoning?: string
+          redress_deadline?: string
+          target_content_id?: string | null
+          target_content_type?: string | null
+          target_user_id?: string | null
+          transparency_period?: string | null
+          transparency_reported?: boolean
+        }
         Relationships: [
           {
-            foreignKeyName: "dsa_sor_appeal_id_fkey";
-            columns: ["appeal_id"];
-            isOneToOne: false;
-            referencedRelation: "appeals";
-            referencedColumns: ["id"];
+            foreignKeyName: "dsa_sor_appeal_id_fkey"
+            columns: ["appeal_id"]
+            isOneToOne: false
+            referencedRelation: "appeals"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       event_rsvps: {
         Row: {
-          created_at: string;
-          event_id: string;
-          id: string;
-          priority: boolean;
-          status: Database["public"]["Enums"]["rsvp_status"];
-          user_id: string;
-        };
+          created_at: string
+          event_id: string
+          id: string
+          priority: boolean
+          status: Database["public"]["Enums"]["rsvp_status"]
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          event_id: string;
-          id?: string;
-          priority?: boolean;
-          status?: Database["public"]["Enums"]["rsvp_status"];
-          user_id: string;
-        };
+          created_at?: string
+          event_id: string
+          id?: string
+          priority?: boolean
+          status?: Database["public"]["Enums"]["rsvp_status"]
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          event_id?: string;
-          id?: string;
-          priority?: boolean;
-          status?: Database["public"]["Enums"]["rsvp_status"];
-          user_id?: string;
-        };
+          created_at?: string
+          event_id?: string
+          id?: string
+          priority?: boolean
+          status?: Database["public"]["Enums"]["rsvp_status"]
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "event_rsvps_event_id_fkey";
-            columns: ["event_id"];
-            isOneToOne: false;
-            referencedRelation: "events";
-            referencedColumns: ["id"];
+            foreignKeyName: "event_rsvps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       events: {
         Row: {
-          city: string;
-          cover_url: string | null;
-          created_at: string;
-          description: string | null;
-          ends_at: string | null;
-          event_type: Database["public"]["Enums"]["event_type"];
-          geo_bucket_id: string | null;
-          host_id: string;
-          id: string;
-          is_official: boolean;
-          is_private: boolean;
-          is_published: boolean;
-          is_seed: boolean;
-          lat: number | null;
-          lng: number | null;
-          max_attendees: number | null;
-          moderated_at: string | null;
-          moderated_by: string | null;
-          moderation_status: Database["public"]["Enums"]["moderation_status"];
-          notification_radius_m: number;
-          rejection_reason: string | null;
-          starts_at: string;
-          title: string;
-          updated_at: string;
-          venue: string | null;
-        };
+          city: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          ends_at: string | null
+          event_type: Database["public"]["Enums"]["event_type"]
+          geo_bucket_id: string | null
+          host_id: string
+          id: string
+          is_official: boolean
+          is_private: boolean
+          is_published: boolean
+          is_seed: boolean
+          lat: number | null
+          lng: number | null
+          max_attendees: number | null
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_status: Database["public"]["Enums"]["moderation_status"]
+          notification_radius_m: number
+          rejection_reason: string | null
+          starts_at: string
+          title: string
+          updated_at: string
+          venue: string | null
+        }
         Insert: {
-          city: string;
-          cover_url?: string | null;
-          created_at?: string;
-          description?: string | null;
-          ends_at?: string | null;
-          event_type?: Database["public"]["Enums"]["event_type"];
-          geo_bucket_id?: string | null;
-          host_id: string;
-          id?: string;
-          is_official?: boolean;
-          is_private?: boolean;
-          is_published?: boolean;
-          is_seed?: boolean;
-          lat?: number | null;
-          lng?: number | null;
-          max_attendees?: number | null;
-          moderated_at?: string | null;
-          moderated_by?: string | null;
-          moderation_status?: Database["public"]["Enums"]["moderation_status"];
-          notification_radius_m?: number;
-          rejection_reason?: string | null;
-          starts_at: string;
-          title: string;
-          updated_at?: string;
-          venue?: string | null;
-        };
+          city: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          event_type?: Database["public"]["Enums"]["event_type"]
+          geo_bucket_id?: string | null
+          host_id: string
+          id?: string
+          is_official?: boolean
+          is_private?: boolean
+          is_published?: boolean
+          is_seed?: boolean
+          lat?: number | null
+          lng?: number | null
+          max_attendees?: number | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          notification_radius_m?: number
+          rejection_reason?: string | null
+          starts_at: string
+          title: string
+          updated_at?: string
+          venue?: string | null
+        }
         Update: {
-          city?: string;
-          cover_url?: string | null;
-          created_at?: string;
-          description?: string | null;
-          ends_at?: string | null;
-          event_type?: Database["public"]["Enums"]["event_type"];
-          geo_bucket_id?: string | null;
-          host_id?: string;
-          id?: string;
-          is_official?: boolean;
-          is_private?: boolean;
-          is_published?: boolean;
-          is_seed?: boolean;
-          lat?: number | null;
-          lng?: number | null;
-          max_attendees?: number | null;
-          moderated_at?: string | null;
-          moderated_by?: string | null;
-          moderation_status?: Database["public"]["Enums"]["moderation_status"];
-          notification_radius_m?: number;
-          rejection_reason?: string | null;
-          starts_at?: string;
-          title?: string;
-          updated_at?: string;
-          venue?: string | null;
-        };
-        Relationships: [];
-      };
+          city?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          ends_at?: string | null
+          event_type?: Database["public"]["Enums"]["event_type"]
+          geo_bucket_id?: string | null
+          host_id?: string
+          id?: string
+          is_official?: boolean
+          is_private?: boolean
+          is_published?: boolean
+          is_seed?: boolean
+          lat?: number | null
+          lng?: number | null
+          max_attendees?: number | null
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          notification_radius_m?: number
+          rejection_reason?: string | null
+          starts_at?: string
+          title?: string
+          updated_at?: string
+          venue?: string | null
+        }
+        Relationships: []
+      }
       experiment_assignments: {
         Row: {
-          assigned_at: string;
-          experiment_key: string;
-          id: string;
-          user_id: string;
-          variant: string;
-        };
+          assigned_at: string
+          experiment_key: string
+          id: string
+          user_id: string
+          variant: string
+        }
         Insert: {
-          assigned_at?: string;
-          experiment_key: string;
-          id?: string;
-          user_id: string;
-          variant: string;
-        };
+          assigned_at?: string
+          experiment_key: string
+          id?: string
+          user_id: string
+          variant: string
+        }
         Update: {
-          assigned_at?: string;
-          experiment_key?: string;
-          id?: string;
-          user_id?: string;
-          variant?: string;
-        };
-        Relationships: [];
-      };
+          assigned_at?: string
+          experiment_key?: string
+          id?: string
+          user_id?: string
+          variant?: string
+        }
+        Relationships: []
+      }
       experiment_events: {
         Row: {
-          created_at: string;
-          event: string;
-          experiment_key: string;
-          id: number;
-          user_id: string | null;
-          value: number | null;
-          variant: string;
-        };
+          created_at: string
+          event: string
+          experiment_key: string
+          id: number
+          user_id: string | null
+          value: number | null
+          variant: string
+        }
         Insert: {
-          created_at?: string;
-          event: string;
-          experiment_key: string;
-          id?: number;
-          user_id?: string | null;
-          value?: number | null;
-          variant: string;
-        };
+          created_at?: string
+          event: string
+          experiment_key: string
+          id?: number
+          user_id?: string | null
+          value?: number | null
+          variant: string
+        }
         Update: {
-          created_at?: string;
-          event?: string;
-          experiment_key?: string;
-          id?: number;
-          user_id?: string | null;
-          value?: number | null;
-          variant?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          event?: string
+          experiment_key?: string
+          id?: number
+          user_id?: string | null
+          value?: number | null
+          variant?: string
+        }
+        Relationships: []
+      }
       experiments: {
         Row: {
-          created_at: string;
-          description: string | null;
-          id: string;
-          key: string;
-          status: string;
-          updated_at: string;
-          variants: Json;
-          weights: Json;
-        };
+          created_at: string
+          description: string | null
+          id: string
+          key: string
+          status: string
+          updated_at: string
+          variants: Json
+          weights: Json
+        }
         Insert: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          key: string;
-          status?: string;
-          updated_at?: string;
-          variants?: Json;
-          weights?: Json;
-        };
+          created_at?: string
+          description?: string | null
+          id?: string
+          key: string
+          status?: string
+          updated_at?: string
+          variants?: Json
+          weights?: Json
+        }
         Update: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          key?: string;
-          status?: string;
-          updated_at?: string;
-          variants?: Json;
-          weights?: Json;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          description?: string | null
+          id?: string
+          key?: string
+          status?: string
+          updated_at?: string
+          variants?: Json
+          weights?: Json
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
-          created_at: string;
-          favorite_id: string;
-          id: string;
-          user_id: string;
-        };
+          created_at: string
+          favorite_id: string
+          id: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          favorite_id: string;
-          id?: string;
-          user_id: string;
-        };
+          created_at?: string
+          favorite_id: string
+          id?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          favorite_id?: string;
-          id?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          favorite_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       feature_flags: {
         Row: {
-          created_at: string;
-          description: string | null;
-          enabled: boolean;
-          key: string;
-          rollout_pct: number;
-          segment: Json;
-          updated_at: string;
-          updated_by: string | null;
-        };
+          created_at: string
+          description: string | null
+          enabled: boolean
+          key: string
+          rollout_pct: number
+          segment: Json
+          updated_at: string
+          updated_by: string | null
+        }
         Insert: {
-          created_at?: string;
-          description?: string | null;
-          enabled?: boolean;
-          key: string;
-          rollout_pct?: number;
-          segment?: Json;
-          updated_at?: string;
-          updated_by?: string | null;
-        };
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          key: string
+          rollout_pct?: number
+          segment?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
         Update: {
-          created_at?: string;
-          description?: string | null;
-          enabled?: boolean;
-          key?: string;
-          rollout_pct?: number;
-          segment?: Json;
-          updated_at?: string;
-          updated_by?: string | null;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          key?: string
+          rollout_pct?: number
+          segment?: Json
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       feedback: {
         Row: {
-          created_at: string;
-          id: string;
-          kind: string;
-          message: string;
-          page: string | null;
-          status: string;
-          user_agent: string | null;
-          user_id: string | null;
-        };
+          created_at: string
+          id: string
+          kind: string
+          message: string
+          page: string | null
+          status: string
+          user_agent: string | null
+          user_id: string | null
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          kind?: string;
-          message: string;
-          page?: string | null;
-          status?: string;
-          user_agent?: string | null;
-          user_id?: string | null;
-        };
+          created_at?: string
+          id?: string
+          kind?: string
+          message: string
+          page?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          kind?: string;
-          message?: string;
-          page?: string | null;
-          status?: string;
-          user_agent?: string | null;
-          user_id?: string | null;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string
+          page?: string | null
+          status?: string
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
-          group_id: string;
-          joined_at: string;
-          role: string;
-          user_id: string;
-        };
+          group_id: string
+          joined_at: string
+          role: string
+          user_id: string
+        }
         Insert: {
-          group_id: string;
-          joined_at?: string;
-          role?: string;
-          user_id: string;
-        };
+          group_id: string
+          joined_at?: string
+          role?: string
+          user_id: string
+        }
         Update: {
-          group_id?: string;
-          joined_at?: string;
-          role?: string;
-          user_id?: string;
-        };
+          group_id?: string
+          joined_at?: string
+          role?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "group_members_group_id_fkey";
-            columns: ["group_id"];
-            isOneToOne: false;
-            referencedRelation: "groups";
-            referencedColumns: ["id"];
+            foreignKeyName: "group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       group_messages: {
         Row: {
-          body: string | null;
-          created_at: string;
-          group_id: string;
-          id: string;
-          media_type: string;
-          media_url: string | null;
-          sender_id: string;
-        };
+          body: string | null
+          created_at: string
+          group_id: string
+          id: string
+          media_type: string
+          media_url: string | null
+          sender_id: string
+        }
         Insert: {
-          body?: string | null;
-          created_at?: string;
-          group_id: string;
-          id?: string;
-          media_type?: string;
-          media_url?: string | null;
-          sender_id: string;
-        };
+          body?: string | null
+          created_at?: string
+          group_id: string
+          id?: string
+          media_type?: string
+          media_url?: string | null
+          sender_id: string
+        }
         Update: {
-          body?: string | null;
-          created_at?: string;
-          group_id?: string;
-          id?: string;
-          media_type?: string;
-          media_url?: string | null;
-          sender_id?: string;
-        };
+          body?: string | null
+          created_at?: string
+          group_id?: string
+          id?: string
+          media_type?: string
+          media_url?: string | null
+          sender_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "group_messages_group_id_fkey";
-            columns: ["group_id"];
-            isOneToOne: false;
-            referencedRelation: "groups";
-            referencedColumns: ["id"];
+            foreignKeyName: "group_messages_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "groups"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       groups: {
         Row: {
-          cover_path: string | null;
-          created_at: string;
-          description: string | null;
-          id: string;
-          is_public: boolean;
-          member_count: number;
-          name: string;
-          owner_id: string;
-        };
+          cover_path: string | null
+          created_at: string
+          description: string | null
+          id: string
+          is_public: boolean
+          member_count: number
+          name: string
+          owner_id: string
+        }
         Insert: {
-          cover_path?: string | null;
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          is_public?: boolean;
-          member_count?: number;
-          name: string;
-          owner_id: string;
-        };
+          cover_path?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          member_count?: number
+          name: string
+          owner_id: string
+        }
         Update: {
-          cover_path?: string | null;
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          is_public?: boolean;
-          member_count?: number;
-          name?: string;
-          owner_id?: string;
-        };
-        Relationships: [];
-      };
+          cover_path?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_public?: boolean
+          member_count?: number
+          name?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
       illegal_content_reports: {
         Row: {
-          category: string;
-          content_type: string | null;
-          content_url: string | null;
-          created_at: string;
-          description: string;
-          handled_at: string | null;
-          handled_by: string | null;
-          id: string;
-          is_seed: boolean;
-          legal_basis: string | null;
-          reporter_email: string | null;
-          reporter_user_id: string | null;
-          resolution: string | null;
-          status: string;
-        };
+          category: string
+          content_type: string | null
+          content_url: string | null
+          created_at: string
+          description: string
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          is_seed: boolean
+          legal_basis: string | null
+          reporter_email: string | null
+          reporter_user_id: string | null
+          resolution: string | null
+          status: string
+        }
         Insert: {
-          category: string;
-          content_type?: string | null;
-          content_url?: string | null;
-          created_at?: string;
-          description: string;
-          handled_at?: string | null;
-          handled_by?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          legal_basis?: string | null;
-          reporter_email?: string | null;
-          reporter_user_id?: string | null;
-          resolution?: string | null;
-          status?: string;
-        };
+          category: string
+          content_type?: string | null
+          content_url?: string | null
+          created_at?: string
+          description: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          is_seed?: boolean
+          legal_basis?: string | null
+          reporter_email?: string | null
+          reporter_user_id?: string | null
+          resolution?: string | null
+          status?: string
+        }
         Update: {
-          category?: string;
-          content_type?: string | null;
-          content_url?: string | null;
-          created_at?: string;
-          description?: string;
-          handled_at?: string | null;
-          handled_by?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          legal_basis?: string | null;
-          reporter_email?: string | null;
-          reporter_user_id?: string | null;
-          resolution?: string | null;
-          status?: string;
-        };
-        Relationships: [];
-      };
+          category?: string
+          content_type?: string | null
+          content_url?: string | null
+          created_at?: string
+          description?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          is_seed?: boolean
+          legal_basis?: string | null
+          reporter_email?: string | null
+          reporter_user_id?: string | null
+          resolution?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       legal_document_versions: {
         Row: {
-          action: string;
-          content_md: string;
-          created_at: string;
-          edited_by: string | null;
-          id: string;
-          published_at: string | null;
-          slug: string;
-          title: string;
-          version: number;
-        };
+          action: string
+          content_md: string
+          created_at: string
+          edited_by: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          title: string
+          version: number
+        }
         Insert: {
-          action: string;
-          content_md: string;
-          created_at?: string;
-          edited_by?: string | null;
-          id?: string;
-          published_at?: string | null;
-          slug: string;
-          title: string;
-          version: number;
-        };
+          action: string
+          content_md: string
+          created_at?: string
+          edited_by?: string | null
+          id?: string
+          published_at?: string | null
+          slug: string
+          title: string
+          version: number
+        }
         Update: {
-          action?: string;
-          content_md?: string;
-          created_at?: string;
-          edited_by?: string | null;
-          id?: string;
-          published_at?: string | null;
-          slug?: string;
-          title?: string;
-          version?: number;
-        };
-        Relationships: [];
-      };
+          action?: string
+          content_md?: string
+          created_at?: string
+          edited_by?: string | null
+          id?: string
+          published_at?: string | null
+          slug?: string
+          title?: string
+          version?: number
+        }
+        Relationships: []
+      }
       legal_documents: {
         Row: {
-          content_md: string;
-          created_at: string;
-          published_at: string | null;
-          slug: string;
-          title: string;
-          updated_at: string;
-          updated_by: string | null;
-          version: number;
-        };
+          content_md: string
+          created_at: string
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
         Insert: {
-          content_md?: string;
-          created_at?: string;
-          published_at?: string | null;
-          slug: string;
-          title: string;
-          updated_at?: string;
-          updated_by?: string | null;
-          version?: number;
-        };
+          content_md?: string
+          created_at?: string
+          published_at?: string | null
+          slug: string
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
         Update: {
-          content_md?: string;
-          created_at?: string;
-          published_at?: string | null;
-          slug?: string;
-          title?: string;
-          updated_at?: string;
-          updated_by?: string | null;
-          version?: number;
-        };
-        Relationships: [];
-      };
+          content_md?: string
+          created_at?: string
+          published_at?: string | null
+          slug?: string
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       matches: {
         Row: {
-          created_at: string;
-          id: string;
-          user_a: string;
-          user_b: string;
-        };
+          created_at: string
+          id: string
+          user_a: string
+          user_b: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          user_a: string;
-          user_b: string;
-        };
+          created_at?: string
+          id?: string
+          user_a: string
+          user_b: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          user_a?: string;
-          user_b?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          user_a?: string
+          user_b?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
-          audio_duration_ms: number | null;
-          body: string;
-          conversation_id: string;
-          created_at: string;
-          deleted_at: string | null;
-          expires_at: string | null;
-          id: string;
-          location_lat: number | null;
-          location_lng: number | null;
-          media_type: string;
-          media_url: string | null;
-          reactions: Json;
-          read_at: string | null;
-          reply_to_id: string | null;
-          sender_id: string;
-          translated_text: Json | null;
-          view_once: boolean | null;
-          viewed_at: string | null;
-          voice_duration_sec: number | null;
-          voice_url: string | null;
-        };
+          audio_duration_ms: number | null
+          body: string
+          conversation_id: string
+          created_at: string
+          deleted_at: string | null
+          expires_at: string | null
+          id: string
+          location_lat: number | null
+          location_lng: number | null
+          media_type: string
+          media_url: string | null
+          reactions: Json
+          read_at: string | null
+          reply_to_id: string | null
+          sender_id: string
+          translated_text: Json | null
+          view_once: boolean | null
+          viewed_at: string | null
+          voice_duration_sec: number | null
+          voice_url: string | null
+        }
         Insert: {
-          audio_duration_ms?: number | null;
-          body: string;
-          conversation_id: string;
-          created_at?: string;
-          deleted_at?: string | null;
-          expires_at?: string | null;
-          id?: string;
-          location_lat?: number | null;
-          location_lng?: number | null;
-          media_type?: string;
-          media_url?: string | null;
-          reactions?: Json;
-          read_at?: string | null;
-          reply_to_id?: string | null;
-          sender_id: string;
-          translated_text?: Json | null;
-          view_once?: boolean | null;
-          viewed_at?: string | null;
-          voice_duration_sec?: number | null;
-          voice_url?: string | null;
-        };
+          audio_duration_ms?: number | null
+          body: string
+          conversation_id: string
+          created_at?: string
+          deleted_at?: string | null
+          expires_at?: string | null
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          media_type?: string
+          media_url?: string | null
+          reactions?: Json
+          read_at?: string | null
+          reply_to_id?: string | null
+          sender_id: string
+          translated_text?: Json | null
+          view_once?: boolean | null
+          viewed_at?: string | null
+          voice_duration_sec?: number | null
+          voice_url?: string | null
+        }
         Update: {
-          audio_duration_ms?: number | null;
-          body?: string;
-          conversation_id?: string;
-          created_at?: string;
-          deleted_at?: string | null;
-          expires_at?: string | null;
-          id?: string;
-          location_lat?: number | null;
-          location_lng?: number | null;
-          media_type?: string;
-          media_url?: string | null;
-          reactions?: Json;
-          read_at?: string | null;
-          reply_to_id?: string | null;
-          sender_id?: string;
-          translated_text?: Json | null;
-          view_once?: boolean | null;
-          viewed_at?: string | null;
-          voice_duration_sec?: number | null;
-          voice_url?: string | null;
-        };
+          audio_duration_ms?: number | null
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          expires_at?: string | null
+          id?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          media_type?: string
+          media_url?: string | null
+          reactions?: Json
+          read_at?: string | null
+          reply_to_id?: string | null
+          sender_id?: string
+          translated_text?: Json | null
+          view_once?: boolean | null
+          viewed_at?: string | null
+          voice_duration_sec?: number | null
+          voice_url?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "messages_conversation_id_fkey";
-            columns: ["conversation_id"];
-            isOneToOne: false;
-            referencedRelation: "conversations";
-            referencedColumns: ["id"];
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "messages_reply_to_id_fkey";
-            columns: ["reply_to_id"];
-            isOneToOne: false;
-            referencedRelation: "messages";
-            referencedColumns: ["id"];
+            foreignKeyName: "messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       nearby_user_reports: {
         Row: {
-          created_at: string;
-          handled_at: string | null;
-          handled_by: string | null;
-          id: string;
-          kind: string;
-          reason: string;
-          reporter_id: string;
-          status: string;
-          target_id: string;
-        };
+          created_at: string
+          handled_at: string | null
+          handled_by: string | null
+          id: string
+          kind: string
+          reason: string
+          reporter_id: string
+          status: string
+          target_id: string
+        }
         Insert: {
-          created_at?: string;
-          handled_at?: string | null;
-          handled_by?: string | null;
-          id?: string;
-          kind: string;
-          reason: string;
-          reporter_id: string;
-          status?: string;
-          target_id: string;
-        };
+          created_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          kind: string
+          reason: string
+          reporter_id: string
+          status?: string
+          target_id: string
+        }
         Update: {
-          created_at?: string;
-          handled_at?: string | null;
-          handled_by?: string | null;
-          id?: string;
-          kind?: string;
-          reason?: string;
-          reporter_id?: string;
-          status?: string;
-          target_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          handled_at?: string | null
+          handled_by?: string | null
+          id?: string
+          kind?: string
+          reason?: string
+          reporter_id?: string
+          status?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
-          actor_id: string | null;
-          body: string | null;
-          created_at: string;
-          entity_id: string | null;
-          id: string;
-          link: string | null;
-          read_at: string | null;
-          title: string;
-          type: Database["public"]["Enums"]["notification_type"];
-          user_id: string;
-        };
+          actor_id: string | null
+          body: string | null
+          created_at: string
+          entity_id: string | null
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
         Insert: {
-          actor_id?: string | null;
-          body?: string | null;
-          created_at?: string;
-          entity_id?: string | null;
-          id?: string;
-          link?: string | null;
-          read_at?: string | null;
-          title: string;
-          type: Database["public"]["Enums"]["notification_type"];
-          user_id: string;
-        };
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
         Update: {
-          actor_id?: string | null;
-          body?: string | null;
-          created_at?: string;
-          entity_id?: string | null;
-          id?: string;
-          link?: string | null;
-          read_at?: string | null;
-          title?: string;
-          type?: Database["public"]["Enums"]["notification_type"];
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          actor_id?: string | null
+          body?: string | null
+          created_at?: string
+          entity_id?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       offer_claims: {
         Row: {
-          claimed_at: string;
-          id: string;
-          offer_id: string;
-          redeemed_at: string | null;
-          redemption_code: string;
-          user_id: string;
-        };
+          claimed_at: string
+          id: string
+          offer_id: string
+          redeemed_at: string | null
+          redemption_code: string
+          user_id: string
+        }
         Insert: {
-          claimed_at?: string;
-          id?: string;
-          offer_id: string;
-          redeemed_at?: string | null;
-          redemption_code: string;
-          user_id: string;
-        };
+          claimed_at?: string
+          id?: string
+          offer_id: string
+          redeemed_at?: string | null
+          redemption_code: string
+          user_id: string
+        }
         Update: {
-          claimed_at?: string;
-          id?: string;
-          offer_id?: string;
-          redeemed_at?: string | null;
-          redemption_code?: string;
-          user_id?: string;
-        };
+          claimed_at?: string
+          id?: string
+          offer_id?: string
+          redeemed_at?: string | null
+          redemption_code?: string
+          user_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "offer_claims_offer_id_fkey";
-            columns: ["offer_id"];
-            isOneToOne: false;
-            referencedRelation: "offers";
-            referencedColumns: ["id"];
+            foreignKeyName: "offer_claims_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       offers: {
         Row: {
-          created_at: string;
-          description: string | null;
-          id: string;
-          is_published: boolean;
-          is_seed: boolean;
-          max_claims_per_user: number;
-          moderated_at: string | null;
-          moderated_by: string | null;
-          moderation_status: Database["public"]["Enums"]["moderation_status"];
-          rejection_reason: string | null;
-          terms: string | null;
-          title: string;
-          updated_at: string;
-          valid_from: string | null;
-          valid_to: string | null;
-          venue_id: string;
-        };
+          created_at: string
+          description: string | null
+          id: string
+          is_published: boolean
+          is_seed: boolean
+          max_claims_per_user: number
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_status: Database["public"]["Enums"]["moderation_status"]
+          rejection_reason: string | null
+          terms: string | null
+          title: string
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+          venue_id: string
+        }
         Insert: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          is_published?: boolean;
-          is_seed?: boolean;
-          max_claims_per_user?: number;
-          moderated_at?: string | null;
-          moderated_by?: string | null;
-          moderation_status?: Database["public"]["Enums"]["moderation_status"];
-          rejection_reason?: string | null;
-          terms?: string | null;
-          title: string;
-          updated_at?: string;
-          valid_from?: string | null;
-          valid_to?: string | null;
-          venue_id: string;
-        };
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          is_seed?: boolean
+          max_claims_per_user?: number
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          rejection_reason?: string | null
+          terms?: string | null
+          title: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          venue_id: string
+        }
         Update: {
-          created_at?: string;
-          description?: string | null;
-          id?: string;
-          is_published?: boolean;
-          is_seed?: boolean;
-          max_claims_per_user?: number;
-          moderated_at?: string | null;
-          moderated_by?: string | null;
-          moderation_status?: Database["public"]["Enums"]["moderation_status"];
-          rejection_reason?: string | null;
-          terms?: string | null;
-          title?: string;
-          updated_at?: string;
-          valid_from?: string | null;
-          valid_to?: string | null;
-          venue_id?: string;
-        };
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_published?: boolean
+          is_seed?: boolean
+          max_claims_per_user?: number
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          rejection_reason?: string | null
+          terms?: string | null
+          title?: string
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          venue_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "offers_venue_id_fkey";
-            columns: ["venue_id"];
-            isOneToOne: false;
-            referencedRelation: "venues";
-            referencedColumns: ["id"];
+            foreignKeyName: "offers_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       partner_boost_orders: {
         Row: {
-          active: boolean;
-          created_at: string;
-          ends_at: string | null;
-          event_id: string;
-          id: string;
-          invoice_id: string;
-          is_seed: boolean;
-          owner_id: string;
-          starts_at: string | null;
-        };
+          active: boolean
+          created_at: string
+          ends_at: string | null
+          event_id: string
+          id: string
+          invoice_id: string
+          is_seed: boolean
+          owner_id: string
+          starts_at: string | null
+        }
         Insert: {
-          active?: boolean;
-          created_at?: string;
-          ends_at?: string | null;
-          event_id: string;
-          id?: string;
-          invoice_id: string;
-          is_seed?: boolean;
-          owner_id: string;
-          starts_at?: string | null;
-        };
+          active?: boolean
+          created_at?: string
+          ends_at?: string | null
+          event_id: string
+          id?: string
+          invoice_id: string
+          is_seed?: boolean
+          owner_id: string
+          starts_at?: string | null
+        }
         Update: {
-          active?: boolean;
-          created_at?: string;
-          ends_at?: string | null;
-          event_id?: string;
-          id?: string;
-          invoice_id?: string;
-          is_seed?: boolean;
-          owner_id?: string;
-          starts_at?: string | null;
-        };
+          active?: boolean
+          created_at?: string
+          ends_at?: string | null
+          event_id?: string
+          id?: string
+          invoice_id?: string
+          is_seed?: boolean
+          owner_id?: string
+          starts_at?: string | null
+        }
         Relationships: [
           {
-            foreignKeyName: "partner_boost_orders_invoice_id_fkey";
-            columns: ["invoice_id"];
-            isOneToOne: false;
-            referencedRelation: "partner_invoices";
-            referencedColumns: ["id"];
+            foreignKeyName: "partner_boost_orders_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "partner_invoices"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       partner_invoice_counters: {
         Row: {
-          next_number: number;
-          series: string;
-          year: number;
-        };
+          next_number: number
+          series: string
+          year: number
+        }
         Insert: {
-          next_number?: number;
-          series: string;
-          year: number;
-        };
+          next_number?: number
+          series: string
+          year: number
+        }
         Update: {
-          next_number?: number;
-          series?: string;
-          year?: number;
-        };
-        Relationships: [];
-      };
+          next_number?: number
+          series?: string
+          year?: number
+        }
+        Relationships: []
+      }
       partner_invoices: {
         Row: {
-          billing_snapshot: Json;
-          boost_event_id: string | null;
-          confirmed_by: string | null;
-          created_at: string;
-          currency: string;
-          due_at: string;
-          id: string;
-          is_seed: boolean;
-          issued_at: string;
-          issuer_snapshot: Json;
-          kind: string;
-          notes: string | null;
-          number: number;
-          owner_id: string;
-          paid_amount_minor: number | null;
-          paid_at: string | null;
-          paid_ref: string | null;
-          payment_code: string;
-          period_end: string | null;
-          period_start: string | null;
-          plan_code: string | null;
-          series: string;
-          status: string;
-          subtotal_minor: number;
-          total_minor: number;
-          updated_at: string;
-          vat_minor: number;
-          vat_rate: number;
-          year: number;
-        };
+          billing_snapshot: Json
+          boost_event_id: string | null
+          confirmed_by: string | null
+          created_at: string
+          currency: string
+          due_at: string
+          id: string
+          is_seed: boolean
+          issued_at: string
+          issuer_snapshot: Json
+          kind: string
+          notes: string | null
+          number: number
+          owner_id: string
+          paid_amount_minor: number | null
+          paid_at: string | null
+          paid_ref: string | null
+          payment_code: string
+          period_end: string | null
+          period_start: string | null
+          plan_code: string | null
+          series: string
+          status: string
+          subtotal_minor: number
+          total_minor: number
+          updated_at: string
+          vat_minor: number
+          vat_rate: number
+          year: number
+        }
         Insert: {
-          billing_snapshot: Json;
-          boost_event_id?: string | null;
-          confirmed_by?: string | null;
-          created_at?: string;
-          currency?: string;
-          due_at: string;
-          id?: string;
-          is_seed?: boolean;
-          issued_at?: string;
-          issuer_snapshot: Json;
-          kind: string;
-          notes?: string | null;
-          number: number;
-          owner_id: string;
-          paid_amount_minor?: number | null;
-          paid_at?: string | null;
-          paid_ref?: string | null;
-          payment_code: string;
-          period_end?: string | null;
-          period_start?: string | null;
-          plan_code?: string | null;
-          series: string;
-          status?: string;
-          subtotal_minor: number;
-          total_minor: number;
-          updated_at?: string;
-          vat_minor: number;
-          vat_rate?: number;
-          year: number;
-        };
+          billing_snapshot: Json
+          boost_event_id?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          currency?: string
+          due_at: string
+          id?: string
+          is_seed?: boolean
+          issued_at?: string
+          issuer_snapshot: Json
+          kind: string
+          notes?: string | null
+          number: number
+          owner_id: string
+          paid_amount_minor?: number | null
+          paid_at?: string | null
+          paid_ref?: string | null
+          payment_code: string
+          period_end?: string | null
+          period_start?: string | null
+          plan_code?: string | null
+          series: string
+          status?: string
+          subtotal_minor: number
+          total_minor: number
+          updated_at?: string
+          vat_minor: number
+          vat_rate?: number
+          year: number
+        }
         Update: {
-          billing_snapshot?: Json;
-          boost_event_id?: string | null;
-          confirmed_by?: string | null;
-          created_at?: string;
-          currency?: string;
-          due_at?: string;
-          id?: string;
-          is_seed?: boolean;
-          issued_at?: string;
-          issuer_snapshot?: Json;
-          kind?: string;
-          notes?: string | null;
-          number?: number;
-          owner_id?: string;
-          paid_amount_minor?: number | null;
-          paid_at?: string | null;
-          paid_ref?: string | null;
-          payment_code?: string;
-          period_end?: string | null;
-          period_start?: string | null;
-          plan_code?: string | null;
-          series?: string;
-          status?: string;
-          subtotal_minor?: number;
-          total_minor?: number;
-          updated_at?: string;
-          vat_minor?: number;
-          vat_rate?: number;
-          year?: number;
-        };
+          billing_snapshot?: Json
+          boost_event_id?: string | null
+          confirmed_by?: string | null
+          created_at?: string
+          currency?: string
+          due_at?: string
+          id?: string
+          is_seed?: boolean
+          issued_at?: string
+          issuer_snapshot?: Json
+          kind?: string
+          notes?: string | null
+          number?: number
+          owner_id?: string
+          paid_amount_minor?: number | null
+          paid_at?: string | null
+          paid_ref?: string | null
+          payment_code?: string
+          period_end?: string | null
+          period_start?: string | null
+          plan_code?: string | null
+          series?: string
+          status?: string
+          subtotal_minor?: number
+          total_minor?: number
+          updated_at?: string
+          vat_minor?: number
+          vat_rate?: number
+          year?: number
+        }
         Relationships: [
           {
-            foreignKeyName: "partner_invoices_plan_code_fkey";
-            columns: ["plan_code"];
-            isOneToOne: false;
-            referencedRelation: "partner_plans";
-            referencedColumns: ["code"];
+            foreignKeyName: "partner_invoices_plan_code_fkey"
+            columns: ["plan_code"]
+            isOneToOne: false
+            referencedRelation: "partner_plans"
+            referencedColumns: ["code"]
           },
-        ];
-      };
+        ]
+      }
       partner_notification_log: {
         Row: {
-          created_at: string;
-          id: string;
-          kind: string;
-          partner_id: string;
-          recipient_count: number;
-          target_id: string | null;
-        };
+          created_at: string
+          id: string
+          kind: string
+          partner_id: string
+          recipient_count: number
+          target_id: string | null
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          kind: string;
-          partner_id: string;
-          recipient_count?: number;
-          target_id?: string | null;
-        };
+          created_at?: string
+          id?: string
+          kind: string
+          partner_id: string
+          recipient_count?: number
+          target_id?: string | null
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          kind?: string;
-          partner_id?: string;
-          recipient_count?: number;
-          target_id?: string | null;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          kind?: string
+          partner_id?: string
+          recipient_count?: number
+          target_id?: string | null
+        }
+        Relationships: []
+      }
       partner_plans: {
         Row: {
-          active: boolean;
-          code: string;
-          created_at: string;
-          description: string | null;
-          entitlements: Json;
-          name: string;
-          sort_order: number;
-          updated_at: string;
-        };
+          active: boolean
+          code: string
+          created_at: string
+          description: string | null
+          entitlements: Json
+          name: string
+          sort_order: number
+          updated_at: string
+        }
         Insert: {
-          active?: boolean;
-          code: string;
-          created_at?: string;
-          description?: string | null;
-          entitlements?: Json;
-          name: string;
-          sort_order?: number;
-          updated_at?: string;
-        };
+          active?: boolean
+          code: string
+          created_at?: string
+          description?: string | null
+          entitlements?: Json
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
         Update: {
-          active?: boolean;
-          code?: string;
-          created_at?: string;
-          description?: string | null;
-          entitlements?: Json;
-          name?: string;
-          sort_order?: number;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          active?: boolean
+          code?: string
+          created_at?: string
+          description?: string | null
+          entitlements?: Json
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       partner_status_notifications: {
         Row: {
-          created_at: string;
-          decision: string;
-          id: string;
-          item_id: string;
-          item_title: string | null;
-          kind: string;
-          partner_id: string;
-          read_at: string | null;
-          reason: string | null;
-        };
+          created_at: string
+          decision: string
+          id: string
+          item_id: string
+          item_title: string | null
+          kind: string
+          partner_id: string
+          read_at: string | null
+          reason: string | null
+        }
         Insert: {
-          created_at?: string;
-          decision: string;
-          id?: string;
-          item_id: string;
-          item_title?: string | null;
-          kind: string;
-          partner_id: string;
-          read_at?: string | null;
-          reason?: string | null;
-        };
+          created_at?: string
+          decision: string
+          id?: string
+          item_id: string
+          item_title?: string | null
+          kind: string
+          partner_id: string
+          read_at?: string | null
+          reason?: string | null
+        }
         Update: {
-          created_at?: string;
-          decision?: string;
-          id?: string;
-          item_id?: string;
-          item_title?: string | null;
-          kind?: string;
-          partner_id?: string;
-          read_at?: string | null;
-          reason?: string | null;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          decision?: string
+          id?: string
+          item_id?: string
+          item_title?: string | null
+          kind?: string
+          partner_id?: string
+          read_at?: string | null
+          reason?: string | null
+        }
+        Relationships: []
+      }
       partner_subscriptions: {
         Row: {
-          auto_invoice: boolean;
-          created_at: string;
-          current_period_end: string | null;
-          current_period_start: string | null;
-          grace_until: string | null;
-          id: string;
-          is_seed: boolean;
-          last_invoice_id: string | null;
-          owner_id: string;
-          plan_code: string;
-          status: string;
-          updated_at: string;
-        };
+          auto_invoice: boolean
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          grace_until: string | null
+          id: string
+          is_seed: boolean
+          last_invoice_id: string | null
+          owner_id: string
+          plan_code: string
+          status: string
+          updated_at: string
+        }
         Insert: {
-          auto_invoice?: boolean;
-          created_at?: string;
-          current_period_end?: string | null;
-          current_period_start?: string | null;
-          grace_until?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          last_invoice_id?: string | null;
-          owner_id: string;
-          plan_code?: string;
-          status?: string;
-          updated_at?: string;
-        };
+          auto_invoice?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          grace_until?: string | null
+          id?: string
+          is_seed?: boolean
+          last_invoice_id?: string | null
+          owner_id: string
+          plan_code?: string
+          status?: string
+          updated_at?: string
+        }
         Update: {
-          auto_invoice?: boolean;
-          created_at?: string;
-          current_period_end?: string | null;
-          current_period_start?: string | null;
-          grace_until?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          last_invoice_id?: string | null;
-          owner_id?: string;
-          plan_code?: string;
-          status?: string;
-          updated_at?: string;
-        };
+          auto_invoice?: boolean
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          grace_until?: string | null
+          id?: string
+          is_seed?: boolean
+          last_invoice_id?: string | null
+          owner_id?: string
+          plan_code?: string
+          status?: string
+          updated_at?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "partner_subscriptions_plan_code_fkey";
-            columns: ["plan_code"];
-            isOneToOne: false;
-            referencedRelation: "partner_plans";
-            referencedColumns: ["code"];
+            foreignKeyName: "partner_subscriptions_plan_code_fkey"
+            columns: ["plan_code"]
+            isOneToOne: false
+            referencedRelation: "partner_plans"
+            referencedColumns: ["code"]
           },
-        ];
-      };
+        ]
+      }
       photo_hashes: {
         Row: {
-          created_at: string;
-          csam_match: boolean;
-          id: string;
-          nudity_score: number | null;
-          phash: string;
-          photo_path: string;
-          quarantined_at: string | null;
-          scan_status: string;
-          user_id: string;
-        };
+          created_at: string
+          csam_match: boolean
+          id: string
+          nudity_score: number | null
+          phash: string
+          photo_path: string
+          quarantined_at: string | null
+          scan_status: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          csam_match?: boolean;
-          id?: string;
-          nudity_score?: number | null;
-          phash: string;
-          photo_path: string;
-          quarantined_at?: string | null;
-          scan_status?: string;
-          user_id: string;
-        };
+          created_at?: string
+          csam_match?: boolean
+          id?: string
+          nudity_score?: number | null
+          phash: string
+          photo_path: string
+          quarantined_at?: string | null
+          scan_status?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          csam_match?: boolean;
-          id?: string;
-          nudity_score?: number | null;
-          phash?: string;
-          photo_path?: string;
-          quarantined_at?: string | null;
-          scan_status?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          csam_match?: boolean
+          id?: string
+          nudity_score?: number | null
+          phash?: string
+          photo_path?: string
+          quarantined_at?: string | null
+          scan_status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       policy_evaluations: {
         Row: {
-          action_taken: string | null;
-          created_at: string;
-          id: number;
-          input: Json | null;
-          matched: boolean;
-          mode: string;
-          rule_code: string;
-          rule_version: number;
-          subject_id: string | null;
-          subject_kind: string;
-        };
+          action_taken: string | null
+          created_at: string
+          id: number
+          input: Json | null
+          matched: boolean
+          mode: string
+          rule_code: string
+          rule_version: number
+          subject_id: string | null
+          subject_kind: string
+        }
         Insert: {
-          action_taken?: string | null;
-          created_at?: string;
-          id?: number;
-          input?: Json | null;
-          matched: boolean;
-          mode: string;
-          rule_code: string;
-          rule_version: number;
-          subject_id?: string | null;
-          subject_kind: string;
-        };
+          action_taken?: string | null
+          created_at?: string
+          id?: number
+          input?: Json | null
+          matched: boolean
+          mode: string
+          rule_code: string
+          rule_version: number
+          subject_id?: string | null
+          subject_kind: string
+        }
         Update: {
-          action_taken?: string | null;
-          created_at?: string;
-          id?: number;
-          input?: Json | null;
-          matched?: boolean;
-          mode?: string;
-          rule_code?: string;
-          rule_version?: number;
-          subject_id?: string | null;
-          subject_kind?: string;
-        };
-        Relationships: [];
-      };
+          action_taken?: string | null
+          created_at?: string
+          id?: number
+          input?: Json | null
+          matched?: boolean
+          mode?: string
+          rule_code?: string
+          rule_version?: number
+          subject_id?: string | null
+          subject_kind?: string
+        }
+        Relationships: []
+      }
       policy_rule_versions: {
         Row: {
-          action: Json;
-          change_note: string | null;
-          changed_by: string | null;
-          created_at: string;
-          expression: Json;
-          id: string;
-          rule_id: string;
-          state: Database["public"]["Enums"]["policy_rule_state"];
-          version: number;
-        };
+          action: Json
+          change_note: string | null
+          changed_by: string | null
+          created_at: string
+          expression: Json
+          id: string
+          rule_id: string
+          state: Database["public"]["Enums"]["policy_rule_state"]
+          version: number
+        }
         Insert: {
-          action: Json;
-          change_note?: string | null;
-          changed_by?: string | null;
-          created_at?: string;
-          expression: Json;
-          id?: string;
-          rule_id: string;
-          state: Database["public"]["Enums"]["policy_rule_state"];
-          version: number;
-        };
+          action: Json
+          change_note?: string | null
+          changed_by?: string | null
+          created_at?: string
+          expression: Json
+          id?: string
+          rule_id: string
+          state: Database["public"]["Enums"]["policy_rule_state"]
+          version: number
+        }
         Update: {
-          action?: Json;
-          change_note?: string | null;
-          changed_by?: string | null;
-          created_at?: string;
-          expression?: Json;
-          id?: string;
-          rule_id?: string;
-          state?: Database["public"]["Enums"]["policy_rule_state"];
-          version?: number;
-        };
+          action?: Json
+          change_note?: string | null
+          changed_by?: string | null
+          created_at?: string
+          expression?: Json
+          id?: string
+          rule_id?: string
+          state?: Database["public"]["Enums"]["policy_rule_state"]
+          version?: number
+        }
         Relationships: [
           {
-            foreignKeyName: "policy_rule_versions_rule_id_fkey";
-            columns: ["rule_id"];
-            isOneToOne: false;
-            referencedRelation: "policy_rules";
-            referencedColumns: ["id"];
+            foreignKeyName: "policy_rule_versions_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "policy_rules"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       policy_rules: {
         Row: {
-          action: Json;
-          category: string;
-          code: string;
-          created_at: string;
-          created_by: string | null;
-          description: string | null;
-          expression: Json;
-          id: string;
-          state: Database["public"]["Enums"]["policy_rule_state"];
-          title: string;
-          updated_at: string;
-          updated_by: string | null;
-          version: number;
-        };
+          action: Json
+          category: string
+          code: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          expression: Json
+          id: string
+          state: Database["public"]["Enums"]["policy_rule_state"]
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
         Insert: {
-          action?: Json;
-          category: string;
-          code: string;
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          expression?: Json;
-          id?: string;
-          state?: Database["public"]["Enums"]["policy_rule_state"];
-          title: string;
-          updated_at?: string;
-          updated_by?: string | null;
-          version?: number;
-        };
+          action?: Json
+          category: string
+          code: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expression?: Json
+          id?: string
+          state?: Database["public"]["Enums"]["policy_rule_state"]
+          title: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
         Update: {
-          action?: Json;
-          category?: string;
-          code?: string;
-          created_at?: string;
-          created_by?: string | null;
-          description?: string | null;
-          expression?: Json;
-          id?: string;
-          state?: Database["public"]["Enums"]["policy_rule_state"];
-          title?: string;
-          updated_at?: string;
-          updated_by?: string | null;
-          version?: number;
-        };
-        Relationships: [];
-      };
+          action?: Json
+          category?: string
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          expression?: Json
+          id?: string
+          state?: Database["public"]["Enums"]["policy_rule_state"]
+          title?: string
+          updated_at?: string
+          updated_by?: string | null
+          version?: number
+        }
+        Relationships: []
+      }
       policy_versions: {
         Row: {
-          content_url: string | null;
-          created_by: string | null;
-          effective_at: string;
-          id: string;
-          is_seed: boolean;
-          kind: string;
-          version: string;
-        };
+          content_url: string | null
+          created_by: string | null
+          effective_at: string
+          id: string
+          is_seed: boolean
+          kind: string
+          version: string
+        }
         Insert: {
-          content_url?: string | null;
-          created_by?: string | null;
-          effective_at?: string;
-          id?: string;
-          is_seed?: boolean;
-          kind: string;
-          version: string;
-        };
+          content_url?: string | null
+          created_by?: string | null
+          effective_at?: string
+          id?: string
+          is_seed?: boolean
+          kind: string
+          version: string
+        }
         Update: {
-          content_url?: string | null;
-          created_by?: string | null;
-          effective_at?: string;
-          id?: string;
-          is_seed?: boolean;
-          kind?: string;
-          version?: string;
-        };
-        Relationships: [];
-      };
+          content_url?: string | null
+          created_by?: string | null
+          effective_at?: string
+          id?: string
+          is_seed?: boolean
+          kind?: string
+          version?: string
+        }
+        Relationships: []
+      }
       private_albums: {
         Row: {
-          created_at: string;
-          id: string;
-          owner_id: string;
-          photos: string[];
-          updated_at: string;
-        };
+          created_at: string
+          id: string
+          owner_id: string
+          photos: string[]
+          updated_at: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          owner_id: string;
-          photos?: string[];
-          updated_at?: string;
-        };
+          created_at?: string
+          id?: string
+          owner_id: string
+          photos?: string[]
+          updated_at?: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          owner_id?: string;
-          photos?: string[];
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          owner_id?: string
+          photos?: string[]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profile_live_events: {
         Row: {
-          updated_at: string;
-          user_id: string;
-        };
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          updated_at?: string;
-          user_id: string;
-        };
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profile_views: {
         Row: {
-          id: string;
-          viewed_at: string;
-          viewed_id: string;
-          viewer_id: string;
-        };
+          id: string
+          viewed_at: string
+          viewed_id: string
+          viewer_id: string
+        }
         Insert: {
-          id?: string;
-          viewed_at?: string;
-          viewed_id: string;
-          viewer_id: string;
-        };
+          id?: string
+          viewed_at?: string
+          viewed_id: string
+          viewer_id: string
+        }
         Update: {
-          id?: string;
-          viewed_at?: string;
-          viewed_id?: string;
-          viewer_id?: string;
-        };
-        Relationships: [];
-      };
+          id?: string
+          viewed_at?: string
+          viewed_id?: string
+          viewer_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
-          accept_nsfw_photos: boolean | null;
-          age_provider: string | null;
-          age_status: Database["public"]["Enums"]["age_status"];
-          age_verified_at: string | null;
-          anthem: Json | null;
-          ask_me_about: string[] | null;
-          auto_share_album_on_match: boolean;
-          banned_at: string | null;
-          banned_reason: string | null;
-          bio: string | null;
-          birthdate: string | null;
-          body_type: string | null;
-          boost_until: string | null;
-          boosts_balance: number;
-          cannabis: string | null;
-          children: string | null;
-          company: string | null;
-          created_at: string;
-          dealbreakers: string[] | null;
-          deleted_at: string | null;
-          diet: string | null;
-          discreet_mode_enabled: boolean;
-          discrete_mode: boolean;
-          display_name: string | null;
-          drinking: string | null;
-          drugs: string | null;
-          education: string | null;
-          ethnicity: string | null;
-          expectations: string[] | null;
-          friends_only_mode: boolean;
-          gender: string[] | null;
-          gender_custom: string | null;
-          height_cm: number | null;
-          hide_age: boolean;
-          hide_distance: boolean;
-          hide_online: boolean;
-          id: string;
-          ideal_match: string | null;
-          incognito: boolean;
-          interests: string[] | null;
-          is_seed: boolean;
-          job_title: string | null;
-          languages: string[] | null;
-          last_check_in_at: string | null;
-          last_seen: string;
-          leaderboard_opt_in: boolean;
-          level: number;
-          location: unknown;
-          looking_for: string[] | null;
-          looking_now_intent: string | null;
-          looking_now_until: string | null;
-          marketing_consent_at: string | null;
-          meet_at: string[] | null;
-          notification_prefs: Json;
-          onboarding_completed: boolean;
-          orientation: string[] | null;
-          partner_suspended_at: string | null;
-          partner_suspension_reason: string | null;
-          pets: string[] | null;
-          photos: string[] | null;
-          politics: string | null;
-          position: string | null;
-          preferred_language: string | null;
-          prep_status: string | null;
-          prev_location: unknown;
-          prev_location_at: string | null;
-          privacy_accepted_at: string | null;
-          privacy_accepted_version: string | null;
-          profile_completion: number;
-          profile_slug: string | null;
-          prompts: Json | null;
-          pronouns: string[] | null;
-          pronouns_custom: string | null;
-          proximity_notifications_enabled: boolean;
-          read_receipts_enabled: boolean;
-          relationship_status: string | null;
-          religion: string | null;
-          report_count: number;
-          risk_score: number;
-          risk_signals: Json;
-          risk_updated_at: string | null;
-          safety_practices: string[] | null;
-          scenes: string[] | null;
-          school: string | null;
-          sleep_schedule: string | null;
-          smoking: string | null;
-          sos_contacts: Json;
-          streak_days: number;
-          super_taps_balance: number;
-          suspended_reason: string | null;
-          suspended_until: string | null;
-          terms_accepted_at: string | null;
-          terms_accepted_version: string | null;
-          top_artists: Json | null;
-          travel_city: string | null;
-          travel_location: unknown;
-          travel_until: string | null;
-          tribes: string[];
-          tz_offset_minutes: number;
-          updated_at: string;
-          vaccinations: string[] | null;
-          verification_reason: string | null;
-          verification_selfie_path: string | null;
-          verification_status: string;
-          verified: boolean;
-          verified_at: string | null;
-          video_clip_path: string | null;
-          voice_bio_duration_sec: number | null;
-          voice_bio_url: string | null;
-          voice_prompt_duration_sec: number | null;
-          voice_prompt_path: string | null;
-          voice_prompt_question: string | null;
-          warned_at: string | null;
-          warned_reason: string | null;
-          weight_kg: number | null;
-          workout: string | null;
-          xp: number;
-          zodiac: string | null;
-        };
+          accept_nsfw_photos: boolean | null
+          age_provider: string | null
+          age_status: Database["public"]["Enums"]["age_status"]
+          age_verified_at: string | null
+          anthem: Json | null
+          ask_me_about: string[] | null
+          auto_share_album_on_match: boolean
+          banned_at: string | null
+          banned_reason: string | null
+          bio: string | null
+          birthdate: string | null
+          body_type: string | null
+          boost_until: string | null
+          boosts_balance: number
+          cannabis: string | null
+          children: string | null
+          company: string | null
+          created_at: string
+          dealbreakers: string[] | null
+          deleted_at: string | null
+          diet: string | null
+          discreet_mode_enabled: boolean
+          discrete_mode: boolean
+          display_name: string | null
+          drinking: string | null
+          drugs: string | null
+          education: string | null
+          ethnicity: string | null
+          expectations: string[] | null
+          friends_only_mode: boolean
+          gender: string[] | null
+          gender_custom: string | null
+          height_cm: number | null
+          hide_age: boolean
+          hide_distance: boolean
+          hide_online: boolean
+          id: string
+          ideal_match: string | null
+          incognito: boolean
+          interests: string[] | null
+          is_seed: boolean
+          job_title: string | null
+          languages: string[] | null
+          last_check_in_at: string | null
+          last_seen: string
+          leaderboard_opt_in: boolean
+          level: number
+          location: unknown
+          looking_for: string[] | null
+          looking_now_intent: string | null
+          looking_now_until: string | null
+          marketing_consent_at: string | null
+          meet_at: string[] | null
+          notification_prefs: Json
+          onboarding_completed: boolean
+          orientation: string[] | null
+          partner_suspended_at: string | null
+          partner_suspension_reason: string | null
+          pets: string[] | null
+          photos: string[] | null
+          politics: string | null
+          position: string | null
+          preferred_language: string | null
+          prep_status: string | null
+          prev_location: unknown
+          prev_location_at: string | null
+          privacy_accepted_at: string | null
+          privacy_accepted_version: string | null
+          profile_completion: number
+          profile_slug: string | null
+          prompts: Json | null
+          pronouns: string[] | null
+          pronouns_custom: string | null
+          proximity_notifications_enabled: boolean
+          read_receipts_enabled: boolean
+          relationship_status: string | null
+          religion: string | null
+          report_count: number
+          risk_score: number
+          risk_signals: Json
+          risk_updated_at: string | null
+          safety_practices: string[] | null
+          scenes: string[] | null
+          school: string | null
+          sleep_schedule: string | null
+          smoking: string | null
+          sos_contacts: Json
+          streak_days: number
+          super_taps_balance: number
+          suspended_reason: string | null
+          suspended_until: string | null
+          terms_accepted_at: string | null
+          terms_accepted_version: string | null
+          top_artists: Json | null
+          travel_city: string | null
+          travel_location: unknown
+          travel_until: string | null
+          tribes: string[]
+          tz_offset_minutes: number
+          updated_at: string
+          vaccinations: string[] | null
+          verification_reason: string | null
+          verification_selfie_path: string | null
+          verification_status: string
+          verified: boolean
+          verified_at: string | null
+          video_clip_path: string | null
+          voice_bio_duration_sec: number | null
+          voice_bio_url: string | null
+          voice_prompt_duration_sec: number | null
+          voice_prompt_path: string | null
+          voice_prompt_question: string | null
+          warned_at: string | null
+          warned_reason: string | null
+          weight_kg: number | null
+          workout: string | null
+          xp: number
+          zodiac: string | null
+        }
         Insert: {
-          accept_nsfw_photos?: boolean | null;
-          age_provider?: string | null;
-          age_status?: Database["public"]["Enums"]["age_status"];
-          age_verified_at?: string | null;
-          anthem?: Json | null;
-          ask_me_about?: string[] | null;
-          auto_share_album_on_match?: boolean;
-          banned_at?: string | null;
-          banned_reason?: string | null;
-          bio?: string | null;
-          birthdate?: string | null;
-          body_type?: string | null;
-          boost_until?: string | null;
-          boosts_balance?: number;
-          cannabis?: string | null;
-          children?: string | null;
-          company?: string | null;
-          created_at?: string;
-          dealbreakers?: string[] | null;
-          deleted_at?: string | null;
-          diet?: string | null;
-          discreet_mode_enabled?: boolean;
-          discrete_mode?: boolean;
-          display_name?: string | null;
-          drinking?: string | null;
-          drugs?: string | null;
-          education?: string | null;
-          ethnicity?: string | null;
-          expectations?: string[] | null;
-          friends_only_mode?: boolean;
-          gender?: string[] | null;
-          gender_custom?: string | null;
-          height_cm?: number | null;
-          hide_age?: boolean;
-          hide_distance?: boolean;
-          hide_online?: boolean;
-          id: string;
-          ideal_match?: string | null;
-          incognito?: boolean;
-          interests?: string[] | null;
-          is_seed?: boolean;
-          job_title?: string | null;
-          languages?: string[] | null;
-          last_check_in_at?: string | null;
-          last_seen?: string;
-          leaderboard_opt_in?: boolean;
-          level?: number;
-          location?: unknown;
-          looking_for?: string[] | null;
-          looking_now_intent?: string | null;
-          looking_now_until?: string | null;
-          marketing_consent_at?: string | null;
-          meet_at?: string[] | null;
-          notification_prefs?: Json;
-          onboarding_completed?: boolean;
-          orientation?: string[] | null;
-          partner_suspended_at?: string | null;
-          partner_suspension_reason?: string | null;
-          pets?: string[] | null;
-          photos?: string[] | null;
-          politics?: string | null;
-          position?: string | null;
-          preferred_language?: string | null;
-          prep_status?: string | null;
-          prev_location?: unknown;
-          prev_location_at?: string | null;
-          privacy_accepted_at?: string | null;
-          privacy_accepted_version?: string | null;
-          profile_completion?: number;
-          profile_slug?: string | null;
-          prompts?: Json | null;
-          pronouns?: string[] | null;
-          pronouns_custom?: string | null;
-          proximity_notifications_enabled?: boolean;
-          read_receipts_enabled?: boolean;
-          relationship_status?: string | null;
-          religion?: string | null;
-          report_count?: number;
-          risk_score?: number;
-          risk_signals?: Json;
-          risk_updated_at?: string | null;
-          safety_practices?: string[] | null;
-          scenes?: string[] | null;
-          school?: string | null;
-          sleep_schedule?: string | null;
-          smoking?: string | null;
-          sos_contacts?: Json;
-          streak_days?: number;
-          super_taps_balance?: number;
-          suspended_reason?: string | null;
-          suspended_until?: string | null;
-          terms_accepted_at?: string | null;
-          terms_accepted_version?: string | null;
-          top_artists?: Json | null;
-          travel_city?: string | null;
-          travel_location?: unknown;
-          travel_until?: string | null;
-          tribes?: string[];
-          tz_offset_minutes?: number;
-          updated_at?: string;
-          vaccinations?: string[] | null;
-          verification_reason?: string | null;
-          verification_selfie_path?: string | null;
-          verification_status?: string;
-          verified?: boolean;
-          verified_at?: string | null;
-          video_clip_path?: string | null;
-          voice_bio_duration_sec?: number | null;
-          voice_bio_url?: string | null;
-          voice_prompt_duration_sec?: number | null;
-          voice_prompt_path?: string | null;
-          voice_prompt_question?: string | null;
-          warned_at?: string | null;
-          warned_reason?: string | null;
-          weight_kg?: number | null;
-          workout?: string | null;
-          xp?: number;
-          zodiac?: string | null;
-        };
+          accept_nsfw_photos?: boolean | null
+          age_provider?: string | null
+          age_status?: Database["public"]["Enums"]["age_status"]
+          age_verified_at?: string | null
+          anthem?: Json | null
+          ask_me_about?: string[] | null
+          auto_share_album_on_match?: boolean
+          banned_at?: string | null
+          banned_reason?: string | null
+          bio?: string | null
+          birthdate?: string | null
+          body_type?: string | null
+          boost_until?: string | null
+          boosts_balance?: number
+          cannabis?: string | null
+          children?: string | null
+          company?: string | null
+          created_at?: string
+          dealbreakers?: string[] | null
+          deleted_at?: string | null
+          diet?: string | null
+          discreet_mode_enabled?: boolean
+          discrete_mode?: boolean
+          display_name?: string | null
+          drinking?: string | null
+          drugs?: string | null
+          education?: string | null
+          ethnicity?: string | null
+          expectations?: string[] | null
+          friends_only_mode?: boolean
+          gender?: string[] | null
+          gender_custom?: string | null
+          height_cm?: number | null
+          hide_age?: boolean
+          hide_distance?: boolean
+          hide_online?: boolean
+          id: string
+          ideal_match?: string | null
+          incognito?: boolean
+          interests?: string[] | null
+          is_seed?: boolean
+          job_title?: string | null
+          languages?: string[] | null
+          last_check_in_at?: string | null
+          last_seen?: string
+          leaderboard_opt_in?: boolean
+          level?: number
+          location?: unknown
+          looking_for?: string[] | null
+          looking_now_intent?: string | null
+          looking_now_until?: string | null
+          marketing_consent_at?: string | null
+          meet_at?: string[] | null
+          notification_prefs?: Json
+          onboarding_completed?: boolean
+          orientation?: string[] | null
+          partner_suspended_at?: string | null
+          partner_suspension_reason?: string | null
+          pets?: string[] | null
+          photos?: string[] | null
+          politics?: string | null
+          position?: string | null
+          preferred_language?: string | null
+          prep_status?: string | null
+          prev_location?: unknown
+          prev_location_at?: string | null
+          privacy_accepted_at?: string | null
+          privacy_accepted_version?: string | null
+          profile_completion?: number
+          profile_slug?: string | null
+          prompts?: Json | null
+          pronouns?: string[] | null
+          pronouns_custom?: string | null
+          proximity_notifications_enabled?: boolean
+          read_receipts_enabled?: boolean
+          relationship_status?: string | null
+          religion?: string | null
+          report_count?: number
+          risk_score?: number
+          risk_signals?: Json
+          risk_updated_at?: string | null
+          safety_practices?: string[] | null
+          scenes?: string[] | null
+          school?: string | null
+          sleep_schedule?: string | null
+          smoking?: string | null
+          sos_contacts?: Json
+          streak_days?: number
+          super_taps_balance?: number
+          suspended_reason?: string | null
+          suspended_until?: string | null
+          terms_accepted_at?: string | null
+          terms_accepted_version?: string | null
+          top_artists?: Json | null
+          travel_city?: string | null
+          travel_location?: unknown
+          travel_until?: string | null
+          tribes?: string[]
+          tz_offset_minutes?: number
+          updated_at?: string
+          vaccinations?: string[] | null
+          verification_reason?: string | null
+          verification_selfie_path?: string | null
+          verification_status?: string
+          verified?: boolean
+          verified_at?: string | null
+          video_clip_path?: string | null
+          voice_bio_duration_sec?: number | null
+          voice_bio_url?: string | null
+          voice_prompt_duration_sec?: number | null
+          voice_prompt_path?: string | null
+          voice_prompt_question?: string | null
+          warned_at?: string | null
+          warned_reason?: string | null
+          weight_kg?: number | null
+          workout?: string | null
+          xp?: number
+          zodiac?: string | null
+        }
         Update: {
-          accept_nsfw_photos?: boolean | null;
-          age_provider?: string | null;
-          age_status?: Database["public"]["Enums"]["age_status"];
-          age_verified_at?: string | null;
-          anthem?: Json | null;
-          ask_me_about?: string[] | null;
-          auto_share_album_on_match?: boolean;
-          banned_at?: string | null;
-          banned_reason?: string | null;
-          bio?: string | null;
-          birthdate?: string | null;
-          body_type?: string | null;
-          boost_until?: string | null;
-          boosts_balance?: number;
-          cannabis?: string | null;
-          children?: string | null;
-          company?: string | null;
-          created_at?: string;
-          dealbreakers?: string[] | null;
-          deleted_at?: string | null;
-          diet?: string | null;
-          discreet_mode_enabled?: boolean;
-          discrete_mode?: boolean;
-          display_name?: string | null;
-          drinking?: string | null;
-          drugs?: string | null;
-          education?: string | null;
-          ethnicity?: string | null;
-          expectations?: string[] | null;
-          friends_only_mode?: boolean;
-          gender?: string[] | null;
-          gender_custom?: string | null;
-          height_cm?: number | null;
-          hide_age?: boolean;
-          hide_distance?: boolean;
-          hide_online?: boolean;
-          id?: string;
-          ideal_match?: string | null;
-          incognito?: boolean;
-          interests?: string[] | null;
-          is_seed?: boolean;
-          job_title?: string | null;
-          languages?: string[] | null;
-          last_check_in_at?: string | null;
-          last_seen?: string;
-          leaderboard_opt_in?: boolean;
-          level?: number;
-          location?: unknown;
-          looking_for?: string[] | null;
-          looking_now_intent?: string | null;
-          looking_now_until?: string | null;
-          marketing_consent_at?: string | null;
-          meet_at?: string[] | null;
-          notification_prefs?: Json;
-          onboarding_completed?: boolean;
-          orientation?: string[] | null;
-          partner_suspended_at?: string | null;
-          partner_suspension_reason?: string | null;
-          pets?: string[] | null;
-          photos?: string[] | null;
-          politics?: string | null;
-          position?: string | null;
-          preferred_language?: string | null;
-          prep_status?: string | null;
-          prev_location?: unknown;
-          prev_location_at?: string | null;
-          privacy_accepted_at?: string | null;
-          privacy_accepted_version?: string | null;
-          profile_completion?: number;
-          profile_slug?: string | null;
-          prompts?: Json | null;
-          pronouns?: string[] | null;
-          pronouns_custom?: string | null;
-          proximity_notifications_enabled?: boolean;
-          read_receipts_enabled?: boolean;
-          relationship_status?: string | null;
-          religion?: string | null;
-          report_count?: number;
-          risk_score?: number;
-          risk_signals?: Json;
-          risk_updated_at?: string | null;
-          safety_practices?: string[] | null;
-          scenes?: string[] | null;
-          school?: string | null;
-          sleep_schedule?: string | null;
-          smoking?: string | null;
-          sos_contacts?: Json;
-          streak_days?: number;
-          super_taps_balance?: number;
-          suspended_reason?: string | null;
-          suspended_until?: string | null;
-          terms_accepted_at?: string | null;
-          terms_accepted_version?: string | null;
-          top_artists?: Json | null;
-          travel_city?: string | null;
-          travel_location?: unknown;
-          travel_until?: string | null;
-          tribes?: string[];
-          tz_offset_minutes?: number;
-          updated_at?: string;
-          vaccinations?: string[] | null;
-          verification_reason?: string | null;
-          verification_selfie_path?: string | null;
-          verification_status?: string;
-          verified?: boolean;
-          verified_at?: string | null;
-          video_clip_path?: string | null;
-          voice_bio_duration_sec?: number | null;
-          voice_bio_url?: string | null;
-          voice_prompt_duration_sec?: number | null;
-          voice_prompt_path?: string | null;
-          voice_prompt_question?: string | null;
-          warned_at?: string | null;
-          warned_reason?: string | null;
-          weight_kg?: number | null;
-          workout?: string | null;
-          xp?: number;
-          zodiac?: string | null;
-        };
-        Relationships: [];
-      };
+          accept_nsfw_photos?: boolean | null
+          age_provider?: string | null
+          age_status?: Database["public"]["Enums"]["age_status"]
+          age_verified_at?: string | null
+          anthem?: Json | null
+          ask_me_about?: string[] | null
+          auto_share_album_on_match?: boolean
+          banned_at?: string | null
+          banned_reason?: string | null
+          bio?: string | null
+          birthdate?: string | null
+          body_type?: string | null
+          boost_until?: string | null
+          boosts_balance?: number
+          cannabis?: string | null
+          children?: string | null
+          company?: string | null
+          created_at?: string
+          dealbreakers?: string[] | null
+          deleted_at?: string | null
+          diet?: string | null
+          discreet_mode_enabled?: boolean
+          discrete_mode?: boolean
+          display_name?: string | null
+          drinking?: string | null
+          drugs?: string | null
+          education?: string | null
+          ethnicity?: string | null
+          expectations?: string[] | null
+          friends_only_mode?: boolean
+          gender?: string[] | null
+          gender_custom?: string | null
+          height_cm?: number | null
+          hide_age?: boolean
+          hide_distance?: boolean
+          hide_online?: boolean
+          id?: string
+          ideal_match?: string | null
+          incognito?: boolean
+          interests?: string[] | null
+          is_seed?: boolean
+          job_title?: string | null
+          languages?: string[] | null
+          last_check_in_at?: string | null
+          last_seen?: string
+          leaderboard_opt_in?: boolean
+          level?: number
+          location?: unknown
+          looking_for?: string[] | null
+          looking_now_intent?: string | null
+          looking_now_until?: string | null
+          marketing_consent_at?: string | null
+          meet_at?: string[] | null
+          notification_prefs?: Json
+          onboarding_completed?: boolean
+          orientation?: string[] | null
+          partner_suspended_at?: string | null
+          partner_suspension_reason?: string | null
+          pets?: string[] | null
+          photos?: string[] | null
+          politics?: string | null
+          position?: string | null
+          preferred_language?: string | null
+          prep_status?: string | null
+          prev_location?: unknown
+          prev_location_at?: string | null
+          privacy_accepted_at?: string | null
+          privacy_accepted_version?: string | null
+          profile_completion?: number
+          profile_slug?: string | null
+          prompts?: Json | null
+          pronouns?: string[] | null
+          pronouns_custom?: string | null
+          proximity_notifications_enabled?: boolean
+          read_receipts_enabled?: boolean
+          relationship_status?: string | null
+          religion?: string | null
+          report_count?: number
+          risk_score?: number
+          risk_signals?: Json
+          risk_updated_at?: string | null
+          safety_practices?: string[] | null
+          scenes?: string[] | null
+          school?: string | null
+          sleep_schedule?: string | null
+          smoking?: string | null
+          sos_contacts?: Json
+          streak_days?: number
+          super_taps_balance?: number
+          suspended_reason?: string | null
+          suspended_until?: string | null
+          terms_accepted_at?: string | null
+          terms_accepted_version?: string | null
+          top_artists?: Json | null
+          travel_city?: string | null
+          travel_location?: unknown
+          travel_until?: string | null
+          tribes?: string[]
+          tz_offset_minutes?: number
+          updated_at?: string
+          vaccinations?: string[] | null
+          verification_reason?: string | null
+          verification_selfie_path?: string | null
+          verification_status?: string
+          verified?: boolean
+          verified_at?: string | null
+          video_clip_path?: string | null
+          voice_bio_duration_sec?: number | null
+          voice_bio_url?: string | null
+          voice_prompt_duration_sec?: number | null
+          voice_prompt_path?: string | null
+          voice_prompt_question?: string | null
+          warned_at?: string | null
+          warned_reason?: string | null
+          weight_kg?: number | null
+          workout?: string | null
+          xp?: number
+          zodiac?: string | null
+        }
+        Relationships: []
+      }
       proximity_notification_log: {
         Row: {
-          id: string;
-          layer: string;
-          point_id: string;
-          point_kind: string;
-          sent_at: string;
-          user_id: string;
-        };
+          id: string
+          layer: string
+          point_id: string
+          point_kind: string
+          sent_at: string
+          user_id: string
+        }
         Insert: {
-          id?: string;
-          layer: string;
-          point_id: string;
-          point_kind: string;
-          sent_at?: string;
-          user_id: string;
-        };
+          id?: string
+          layer: string
+          point_id: string
+          point_kind: string
+          sent_at?: string
+          user_id: string
+        }
         Update: {
-          id?: string;
-          layer?: string;
-          point_id?: string;
-          point_kind?: string;
-          sent_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          id?: string
+          layer?: string
+          point_id?: string
+          point_kind?: string
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
-          auth: string | null;
-          created_at: string;
-          endpoint: string | null;
-          fcm_token: string;
-          id: string;
-          kind: string;
-          last_seen_at: string;
-          p256dh: string | null;
-          platform: string | null;
-          user_agent: string | null;
-          user_id: string;
-        };
+          auth: string | null
+          created_at: string
+          endpoint: string | null
+          fcm_token: string
+          id: string
+          kind: string
+          last_seen_at: string
+          p256dh: string | null
+          platform: string | null
+          user_agent: string | null
+          user_id: string
+        }
         Insert: {
-          auth?: string | null;
-          created_at?: string;
-          endpoint?: string | null;
-          fcm_token: string;
-          id?: string;
-          kind?: string;
-          last_seen_at?: string;
-          p256dh?: string | null;
-          platform?: string | null;
-          user_agent?: string | null;
-          user_id: string;
-        };
+          auth?: string | null
+          created_at?: string
+          endpoint?: string | null
+          fcm_token: string
+          id?: string
+          kind?: string
+          last_seen_at?: string
+          p256dh?: string | null
+          platform?: string | null
+          user_agent?: string | null
+          user_id: string
+        }
         Update: {
-          auth?: string | null;
-          created_at?: string;
-          endpoint?: string | null;
-          fcm_token?: string;
-          id?: string;
-          kind?: string;
-          last_seen_at?: string;
-          p256dh?: string | null;
-          platform?: string | null;
-          user_agent?: string | null;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          auth?: string | null
+          created_at?: string
+          endpoint?: string | null
+          fcm_token?: string
+          id?: string
+          kind?: string
+          last_seen_at?: string
+          p256dh?: string | null
+          platform?: string | null
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       quest_templates: {
         Row: {
-          bonus_amount: number | null;
-          bonus_kind: string | null;
-          description: string;
-          icon: string;
-          id: string;
-          metric: string;
-          sort_order: number;
-          target: number;
-          title: string;
-          xp_reward: number;
-        };
+          bonus_amount: number | null
+          bonus_kind: string | null
+          description: string
+          icon: string
+          id: string
+          metric: string
+          sort_order: number
+          target: number
+          title: string
+          xp_reward: number
+        }
         Insert: {
-          bonus_amount?: number | null;
-          bonus_kind?: string | null;
-          description: string;
-          icon?: string;
-          id: string;
-          metric: string;
-          sort_order?: number;
-          target: number;
-          title: string;
-          xp_reward: number;
-        };
+          bonus_amount?: number | null
+          bonus_kind?: string | null
+          description: string
+          icon?: string
+          id: string
+          metric: string
+          sort_order?: number
+          target: number
+          title: string
+          xp_reward: number
+        }
         Update: {
-          bonus_amount?: number | null;
-          bonus_kind?: string | null;
-          description?: string;
-          icon?: string;
-          id?: string;
-          metric?: string;
-          sort_order?: number;
-          target?: number;
-          title?: string;
-          xp_reward?: number;
-        };
-        Relationships: [];
-      };
+          bonus_amount?: number | null
+          bonus_kind?: string | null
+          description?: string
+          icon?: string
+          id?: string
+          metric?: string
+          sort_order?: number
+          target?: number
+          title?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       queue_claims: {
         Row: {
-          actor_id: string;
-          claimed_at: string;
-          expires_at: string;
-          heartbeat_at: string;
-          id: string;
-          item_id: string;
-          queue: string;
-        };
+          actor_id: string
+          claimed_at: string
+          expires_at: string
+          heartbeat_at: string
+          id: string
+          item_id: string
+          queue: string
+        }
         Insert: {
-          actor_id: string;
-          claimed_at?: string;
-          expires_at?: string;
-          heartbeat_at?: string;
-          id?: string;
-          item_id: string;
-          queue: string;
-        };
+          actor_id: string
+          claimed_at?: string
+          expires_at?: string
+          heartbeat_at?: string
+          id?: string
+          item_id: string
+          queue: string
+        }
         Update: {
-          actor_id?: string;
-          claimed_at?: string;
-          expires_at?: string;
-          heartbeat_at?: string;
-          id?: string;
-          item_id?: string;
-          queue?: string;
-        };
-        Relationships: [];
-      };
+          actor_id?: string
+          claimed_at?: string
+          expires_at?: string
+          heartbeat_at?: string
+          id?: string
+          item_id?: string
+          queue?: string
+        }
+        Relationships: []
+      }
       rate_limit_log: {
         Row: {
-          action: string;
-          created_at: string;
-          id: number;
-          user_id: string;
-        };
+          action: string
+          created_at: string
+          id: number
+          user_id: string
+        }
         Insert: {
-          action: string;
-          created_at?: string;
-          id?: number;
-          user_id: string;
-        };
+          action: string
+          created_at?: string
+          id?: number
+          user_id: string
+        }
         Update: {
-          action?: string;
-          created_at?: string;
-          id?: number;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          action?: string
+          created_at?: string
+          id?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       referral_codes: {
         Row: {
-          code: string;
-          created_at: string;
-          id: string;
-          owner_id: string;
-          uses_count: number;
-        };
+          code: string
+          created_at: string
+          id: string
+          owner_id: string
+          uses_count: number
+        }
         Insert: {
-          code: string;
-          created_at?: string;
-          id?: string;
-          owner_id: string;
-          uses_count?: number;
-        };
+          code: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          uses_count?: number
+        }
         Update: {
-          code?: string;
-          created_at?: string;
-          id?: string;
-          owner_id?: string;
-          uses_count?: number;
-        };
-        Relationships: [];
-      };
+          code?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          uses_count?: number
+        }
+        Relationships: []
+      }
       referral_redemptions: {
         Row: {
-          code: string;
-          created_at: string;
-          id: string;
-          referred_id: string;
-          referrer_id: string;
-        };
+          code: string
+          created_at: string
+          id: string
+          referred_id: string
+          referrer_id: string
+        }
         Insert: {
-          code: string;
-          created_at?: string;
-          id?: string;
-          referred_id: string;
-          referrer_id: string;
-        };
+          code: string
+          created_at?: string
+          id?: string
+          referred_id: string
+          referrer_id: string
+        }
         Update: {
-          code?: string;
-          created_at?: string;
-          id?: string;
-          referred_id?: string;
-          referrer_id?: string;
-        };
-        Relationships: [];
-      };
+          code?: string
+          created_at?: string
+          id?: string
+          referred_id?: string
+          referrer_id?: string
+        }
+        Relationships: []
+      }
       reports: {
         Row: {
-          created_at: string;
-          details: string | null;
-          id: string;
-          is_seed: boolean;
-          moderator_notes: string | null;
-          reason: string;
-          reported_id: string;
-          reporter_id: string;
-          resolved_at: string | null;
-          resolved_by: string | null;
-          status: string;
-        };
+          created_at: string
+          details: string | null
+          id: string
+          is_seed: boolean
+          moderator_notes: string | null
+          reason: string
+          reported_id: string
+          reporter_id: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string
+        }
         Insert: {
-          created_at?: string;
-          details?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          moderator_notes?: string | null;
-          reason: string;
-          reported_id: string;
-          reporter_id: string;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-          status?: string;
-        };
+          created_at?: string
+          details?: string | null
+          id?: string
+          is_seed?: boolean
+          moderator_notes?: string | null
+          reason: string
+          reported_id: string
+          reporter_id: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
         Update: {
-          created_at?: string;
-          details?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          moderator_notes?: string | null;
-          reason?: string;
-          reported_id?: string;
-          reporter_id?: string;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-          status?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          details?: string | null
+          id?: string
+          is_seed?: boolean
+          moderator_notes?: string | null
+          reason?: string
+          reported_id?: string
+          reporter_id?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string
+        }
+        Relationships: []
+      }
       risk_flags: {
         Row: {
-          created_at: string;
-          details: Json;
-          id: string;
-          is_seed: boolean;
-          kind: string;
-          resolved_at: string | null;
-          resolved_by: string | null;
-          severity: number;
-          status: string;
-          user_id: string;
-        };
+          created_at: string
+          details: Json
+          id: string
+          is_seed: boolean
+          kind: string
+          resolved_at: string | null
+          resolved_by: string | null
+          severity: number
+          status: string
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          details?: Json;
-          id?: string;
-          is_seed?: boolean;
-          kind: string;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-          severity?: number;
-          status?: string;
-          user_id: string;
-        };
+          created_at?: string
+          details?: Json
+          id?: string
+          is_seed?: boolean
+          kind: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: number
+          status?: string
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          details?: Json;
-          id?: string;
-          is_seed?: boolean;
-          kind?: string;
-          resolved_at?: string | null;
-          resolved_by?: string | null;
-          severity?: number;
-          status?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          details?: Json
+          id?: string
+          is_seed?: boolean
+          kind?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          severity?: number
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       signup_attempts: {
         Row: {
-          created_at: string;
-          fingerprint: string | null;
-          id: number;
-          ip_hash: string | null;
-        };
+          created_at: string
+          fingerprint: string | null
+          id: number
+          ip_hash: string | null
+        }
         Insert: {
-          created_at?: string;
-          fingerprint?: string | null;
-          id?: number;
-          ip_hash?: string | null;
-        };
+          created_at?: string
+          fingerprint?: string | null
+          id?: number
+          ip_hash?: string | null
+        }
         Update: {
-          created_at?: string;
-          fingerprint?: string | null;
-          id?: number;
-          ip_hash?: string | null;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          fingerprint?: string | null
+          id?: number
+          ip_hash?: string | null
+        }
+        Relationships: []
+      }
       signup_throttle_logs: {
         Row: {
-          created_at: string;
-          fp_day: number | null;
-          fp_hour: number | null;
-          fp_prefix: string | null;
-          id: number;
-          ip_day: number | null;
-          ip_hash_prefix: string | null;
-          ip_hour: number | null;
-          reason: string;
-        };
+          created_at: string
+          fp_day: number | null
+          fp_hour: number | null
+          fp_prefix: string | null
+          id: number
+          ip_day: number | null
+          ip_hash_prefix: string | null
+          ip_hour: number | null
+          reason: string
+        }
         Insert: {
-          created_at?: string;
-          fp_day?: number | null;
-          fp_hour?: number | null;
-          fp_prefix?: string | null;
-          id?: number;
-          ip_day?: number | null;
-          ip_hash_prefix?: string | null;
-          ip_hour?: number | null;
-          reason: string;
-        };
+          created_at?: string
+          fp_day?: number | null
+          fp_hour?: number | null
+          fp_prefix?: string | null
+          id?: number
+          ip_day?: number | null
+          ip_hash_prefix?: string | null
+          ip_hour?: number | null
+          reason: string
+        }
         Update: {
-          created_at?: string;
-          fp_day?: number | null;
-          fp_hour?: number | null;
-          fp_prefix?: string | null;
-          id?: number;
-          ip_day?: number | null;
-          ip_hash_prefix?: string | null;
-          ip_hour?: number | null;
-          reason?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          fp_day?: number | null
+          fp_hour?: number | null
+          fp_prefix?: string | null
+          id?: number
+          ip_day?: number | null
+          ip_hash_prefix?: string | null
+          ip_hour?: number | null
+          reason?: string
+        }
+        Relationships: []
+      }
       sos_events: {
         Row: {
-          city: string | null;
-          contacts_notified: Json;
-          created_at: string;
-          id: string;
-          latitude: number | null;
-          longitude: number | null;
-          note: string | null;
-          resolved: boolean;
-          triggered_at: string;
-          user_id: string;
-        };
+          city: string | null
+          contacts_notified: Json
+          created_at: string
+          id: string
+          latitude: number | null
+          longitude: number | null
+          note: string | null
+          resolved: boolean
+          triggered_at: string
+          user_id: string
+        }
         Insert: {
-          city?: string | null;
-          contacts_notified?: Json;
-          created_at?: string;
-          id?: string;
-          latitude?: number | null;
-          longitude?: number | null;
-          note?: string | null;
-          resolved?: boolean;
-          triggered_at?: string;
-          user_id: string;
-        };
+          city?: string | null
+          contacts_notified?: Json
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          note?: string | null
+          resolved?: boolean
+          triggered_at?: string
+          user_id: string
+        }
         Update: {
-          city?: string | null;
-          contacts_notified?: Json;
-          created_at?: string;
-          id?: string;
-          latitude?: number | null;
-          longitude?: number | null;
-          note?: string | null;
-          resolved?: boolean;
-          triggered_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          city?: string | null
+          contacts_notified?: Json
+          created_at?: string
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          note?: string | null
+          resolved?: boolean
+          triggered_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       spatial_ref_sys: {
         Row: {
-          auth_name: string | null;
-          auth_srid: number | null;
-          proj4text: string | null;
-          srid: number;
-          srtext: string | null;
-        };
+          auth_name: string | null
+          auth_srid: number | null
+          proj4text: string | null
+          srid: number
+          srtext: string | null
+        }
         Insert: {
-          auth_name?: string | null;
-          auth_srid?: number | null;
-          proj4text?: string | null;
-          srid: number;
-          srtext?: string | null;
-        };
+          auth_name?: string | null
+          auth_srid?: number | null
+          proj4text?: string | null
+          srid: number
+          srtext?: string | null
+        }
         Update: {
-          auth_name?: string | null;
-          auth_srid?: number | null;
-          proj4text?: string | null;
-          srid?: number;
-          srtext?: string | null;
-        };
-        Relationships: [];
-      };
+          auth_name?: string | null
+          auth_srid?: number | null
+          proj4text?: string | null
+          srid?: number
+          srtext?: string | null
+        }
+        Relationships: []
+      }
       stories: {
         Row: {
-          caption: string | null;
-          created_at: string;
-          expires_at: string;
-          id: string;
-          media_path: string;
-          user_id: string;
-          view_count: number;
-        };
+          caption: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          media_path: string
+          user_id: string
+          view_count: number
+        }
         Insert: {
-          caption?: string | null;
-          created_at?: string;
-          expires_at?: string;
-          id?: string;
-          media_path: string;
-          user_id: string;
-          view_count?: number;
-        };
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_path: string
+          user_id: string
+          view_count?: number
+        }
         Update: {
-          caption?: string | null;
-          created_at?: string;
-          expires_at?: string;
-          id?: string;
-          media_path?: string;
-          user_id?: string;
-          view_count?: number;
-        };
-        Relationships: [];
-      };
+          caption?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          media_path?: string
+          user_id?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       story_views: {
         Row: {
-          id: string;
-          story_id: string;
-          viewed_at: string;
-          viewer_id: string;
-        };
+          id: string
+          story_id: string
+          viewed_at: string
+          viewer_id: string
+        }
         Insert: {
-          id?: string;
-          story_id: string;
-          viewed_at?: string;
-          viewer_id: string;
-        };
+          id?: string
+          story_id: string
+          viewed_at?: string
+          viewer_id: string
+        }
         Update: {
-          id?: string;
-          story_id?: string;
-          viewed_at?: string;
-          viewer_id?: string;
-        };
+          id?: string
+          story_id?: string
+          viewed_at?: string
+          viewer_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "story_views_story_id_fkey";
-            columns: ["story_id"];
-            isOneToOne: false;
-            referencedRelation: "stories";
-            referencedColumns: ["id"];
+            foreignKeyName: "story_views_story_id_fkey"
+            columns: ["story_id"]
+            isOneToOne: false
+            referencedRelation: "stories"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       subscriptions: {
         Row: {
-          auto_renew: boolean | null;
-          expires_at: string | null;
-          id: string;
-          is_seed: boolean;
-          original_transaction_id: string | null;
-          platform: string;
-          product_id: string;
-          purchase_token: string | null;
-          raw: Json | null;
-          started_at: string;
-          status: string;
-          updated_at: string;
-          user_id: string;
-        };
+          auto_renew: boolean | null
+          expires_at: string | null
+          id: string
+          is_seed: boolean
+          original_transaction_id: string | null
+          platform: string
+          product_id: string
+          purchase_token: string | null
+          raw: Json | null
+          started_at: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          auto_renew?: boolean | null;
-          expires_at?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          original_transaction_id?: string | null;
-          platform: string;
-          product_id: string;
-          purchase_token?: string | null;
-          raw?: Json | null;
-          started_at?: string;
-          status?: string;
-          updated_at?: string;
-          user_id: string;
-        };
+          auto_renew?: boolean | null
+          expires_at?: string | null
+          id?: string
+          is_seed?: boolean
+          original_transaction_id?: string | null
+          platform: string
+          product_id: string
+          purchase_token?: string | null
+          raw?: Json | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          auto_renew?: boolean | null;
-          expires_at?: string | null;
-          id?: string;
-          is_seed?: boolean;
-          original_transaction_id?: string | null;
-          platform?: string;
-          product_id?: string;
-          purchase_token?: string | null;
-          raw?: Json | null;
-          started_at?: string;
-          status?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          auto_renew?: boolean | null
+          expires_at?: string | null
+          id?: string
+          is_seed?: boolean
+          original_transaction_id?: string | null
+          platform?: string
+          product_id?: string
+          purchase_token?: string | null
+          raw?: Json | null
+          started_at?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       support_macros: {
         Row: {
-          active: boolean;
-          body: string;
-          category: string;
-          created_at: string;
-          created_by: string | null;
-          id: string;
-          key: string;
-          lang: string;
-          title: string;
-          updated_at: string;
-          usage_count: number;
-        };
+          active: boolean
+          body: string
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          key: string
+          lang: string
+          title: string
+          updated_at: string
+          usage_count: number
+        }
         Insert: {
-          active?: boolean;
-          body: string;
-          category?: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          key: string;
-          lang?: string;
-          title: string;
-          updated_at?: string;
-          usage_count?: number;
-        };
+          active?: boolean
+          body: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          key: string
+          lang?: string
+          title: string
+          updated_at?: string
+          usage_count?: number
+        }
         Update: {
-          active?: boolean;
-          body?: string;
-          category?: string;
-          created_at?: string;
-          created_by?: string | null;
-          id?: string;
-          key?: string;
-          lang?: string;
-          title?: string;
-          updated_at?: string;
-          usage_count?: number;
-        };
-        Relationships: [];
-      };
+          active?: boolean
+          body?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          key?: string
+          lang?: string
+          title?: string
+          updated_at?: string
+          usage_count?: number
+        }
+        Relationships: []
+      }
       support_ticket_messages: {
         Row: {
-          attachments: Json;
-          author_id: string;
-          author_role: string;
-          body: string;
-          created_at: string;
-          id: string;
-          internal_note: boolean;
-          ticket_id: string;
-        };
+          attachments: Json
+          author_id: string
+          author_role: string
+          body: string
+          created_at: string
+          id: string
+          internal_note: boolean
+          ticket_id: string
+        }
         Insert: {
-          attachments?: Json;
-          author_id: string;
-          author_role: string;
-          body: string;
-          created_at?: string;
-          id?: string;
-          internal_note?: boolean;
-          ticket_id: string;
-        };
+          attachments?: Json
+          author_id: string
+          author_role: string
+          body: string
+          created_at?: string
+          id?: string
+          internal_note?: boolean
+          ticket_id: string
+        }
         Update: {
-          attachments?: Json;
-          author_id?: string;
-          author_role?: string;
-          body?: string;
-          created_at?: string;
-          id?: string;
-          internal_note?: boolean;
-          ticket_id?: string;
-        };
+          attachments?: Json
+          author_id?: string
+          author_role?: string
+          body?: string
+          created_at?: string
+          id?: string
+          internal_note?: boolean
+          ticket_id?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "support_ticket_messages_ticket_id_fkey";
-            columns: ["ticket_id"];
-            isOneToOne: false;
-            referencedRelation: "support_tickets";
-            referencedColumns: ["id"];
+            foreignKeyName: "support_ticket_messages_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "support_tickets"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       support_tickets: {
         Row: {
-          assignee_id: string | null;
-          category: string;
-          closed_at: string | null;
-          created_at: string;
-          csat_feedback: string | null;
-          csat_score: number | null;
-          csat_submitted_at: string | null;
-          first_response_at: string | null;
-          id: string;
-          last_msg_at: string;
-          priority: string;
-          related_id: string | null;
-          related_type: string | null;
-          resolved_at: string | null;
-          status: string;
-          subject: string;
-          updated_at: string;
-          user_id: string;
-        };
+          assignee_id: string | null
+          category: string
+          closed_at: string | null
+          created_at: string
+          csat_feedback: string | null
+          csat_score: number | null
+          csat_submitted_at: string | null
+          first_response_at: string | null
+          id: string
+          last_msg_at: string
+          priority: string
+          related_id: string | null
+          related_type: string | null
+          resolved_at: string | null
+          status: string
+          subject: string
+          updated_at: string
+          user_id: string
+        }
         Insert: {
-          assignee_id?: string | null;
-          category: string;
-          closed_at?: string | null;
-          created_at?: string;
-          csat_feedback?: string | null;
-          csat_score?: number | null;
-          csat_submitted_at?: string | null;
-          first_response_at?: string | null;
-          id?: string;
-          last_msg_at?: string;
-          priority?: string;
-          related_id?: string | null;
-          related_type?: string | null;
-          resolved_at?: string | null;
-          status?: string;
-          subject: string;
-          updated_at?: string;
-          user_id: string;
-        };
+          assignee_id?: string | null
+          category: string
+          closed_at?: string | null
+          created_at?: string
+          csat_feedback?: string | null
+          csat_score?: number | null
+          csat_submitted_at?: string | null
+          first_response_at?: string | null
+          id?: string
+          last_msg_at?: string
+          priority?: string
+          related_id?: string | null
+          related_type?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject: string
+          updated_at?: string
+          user_id: string
+        }
         Update: {
-          assignee_id?: string | null;
-          category?: string;
-          closed_at?: string | null;
-          created_at?: string;
-          csat_feedback?: string | null;
-          csat_score?: number | null;
-          csat_submitted_at?: string | null;
-          first_response_at?: string | null;
-          id?: string;
-          last_msg_at?: string;
-          priority?: string;
-          related_id?: string | null;
-          related_type?: string | null;
-          resolved_at?: string | null;
-          status?: string;
-          subject?: string;
-          updated_at?: string;
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          assignee_id?: string | null
+          category?: string
+          closed_at?: string | null
+          created_at?: string
+          csat_feedback?: string | null
+          csat_score?: number | null
+          csat_submitted_at?: string | null
+          first_response_at?: string | null
+          id?: string
+          last_msg_at?: string
+          priority?: string
+          related_id?: string | null
+          related_type?: string | null
+          resolved_at?: string | null
+          status?: string
+          subject?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       swipes: {
         Row: {
-          action: string;
-          created_at: string;
-          id: string;
-          match_score: number | null;
-          swiper_id: string;
-          target_id: string;
-        };
+          action: string
+          created_at: string
+          id: string
+          match_score: number | null
+          swiper_id: string
+          target_id: string
+        }
         Insert: {
-          action: string;
-          created_at?: string;
-          id?: string;
-          match_score?: number | null;
-          swiper_id: string;
-          target_id: string;
-        };
+          action: string
+          created_at?: string
+          id?: string
+          match_score?: number | null
+          swiper_id: string
+          target_id: string
+        }
         Update: {
-          action?: string;
-          created_at?: string;
-          id?: string;
-          match_score?: number | null;
-          swiper_id?: string;
-          target_id?: string;
-        };
-        Relationships: [];
-      };
+          action?: string
+          created_at?: string
+          id?: string
+          match_score?: number | null
+          swiper_id?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
       taps: {
         Row: {
-          created_at: string;
-          emoji: string;
-          id: string;
-          receiver_id: string;
-          sender_id: string;
-        };
+          created_at: string
+          emoji: string
+          id: string
+          receiver_id: string
+          sender_id: string
+        }
         Insert: {
-          created_at?: string;
-          emoji: string;
-          id?: string;
-          receiver_id: string;
-          sender_id: string;
-        };
+          created_at?: string
+          emoji: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+        }
         Update: {
-          created_at?: string;
-          emoji?: string;
-          id?: string;
-          receiver_id?: string;
-          sender_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          emoji?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       user_quests: {
         Row: {
-          claimed_at: string | null;
-          completed_at: string | null;
-          created_at: string;
-          id: string;
-          progress: number;
-          quest_id: string;
-          user_id: string;
-          week_start: string;
-        };
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          id: string
+          progress: number
+          quest_id: string
+          user_id: string
+          week_start: string
+        }
         Insert: {
-          claimed_at?: string | null;
-          completed_at?: string | null;
-          created_at?: string;
-          id?: string;
-          progress?: number;
-          quest_id: string;
-          user_id: string;
-          week_start: string;
-        };
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number
+          quest_id: string
+          user_id: string
+          week_start: string
+        }
         Update: {
-          claimed_at?: string | null;
-          completed_at?: string | null;
-          created_at?: string;
-          id?: string;
-          progress?: number;
-          quest_id?: string;
-          user_id?: string;
-          week_start?: string;
-        };
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          progress?: number
+          quest_id?: string
+          user_id?: string
+          week_start?: string
+        }
         Relationships: [
           {
-            foreignKeyName: "user_quests_quest_id_fkey";
-            columns: ["quest_id"];
-            isOneToOne: false;
-            referencedRelation: "quest_templates";
-            referencedColumns: ["id"];
+            foreignKeyName: "user_quests_quest_id_fkey"
+            columns: ["quest_id"]
+            isOneToOne: false
+            referencedRelation: "quest_templates"
+            referencedColumns: ["id"]
           },
-        ];
-      };
+        ]
+      }
       user_roles: {
         Row: {
-          created_at: string;
-          id: string;
-          role: Database["public"]["Enums"]["app_role"];
-          user_id: string;
-        };
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          role: Database["public"]["Enums"]["app_role"];
-          user_id: string;
-        };
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          role?: Database["public"]["Enums"]["app_role"];
-          user_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       venues: {
         Row: {
-          address: string | null;
-          category: string;
-          city: string | null;
-          cover_url: string | null;
-          created_at: string;
-          description: string | null;
-          geo_bucket_id: string;
-          id: string;
-          is_official: boolean;
-          is_published: boolean;
-          is_seed: boolean;
-          lat: number;
-          lng: number;
-          moderated_at: string | null;
-          moderated_by: string | null;
-          moderation_status: Database["public"]["Enums"]["moderation_status"];
-          name: string;
-          notification_radius_m: number;
-          opening_hours: Json | null;
-          owner_id: string | null;
-          phone_e164: string | null;
-          rejection_reason: string | null;
-          slug: string | null;
-          updated_at: string;
-          website: string | null;
-        };
+          address: string | null
+          category: string
+          city: string | null
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          geo_bucket_id: string
+          id: string
+          is_official: boolean
+          is_published: boolean
+          is_seed: boolean
+          lat: number
+          lng: number
+          moderated_at: string | null
+          moderated_by: string | null
+          moderation_status: Database["public"]["Enums"]["moderation_status"]
+          name: string
+          notification_radius_m: number
+          opening_hours: Json | null
+          owner_id: string | null
+          phone_e164: string | null
+          rejection_reason: string | null
+          slug: string | null
+          updated_at: string
+          website: string | null
+        }
         Insert: {
-          address?: string | null;
-          category?: string;
-          city?: string | null;
-          cover_url?: string | null;
-          created_at?: string;
-          description?: string | null;
-          geo_bucket_id?: string;
-          id?: string;
-          is_official?: boolean;
-          is_published?: boolean;
-          is_seed?: boolean;
-          lat: number;
-          lng: number;
-          moderated_at?: string | null;
-          moderated_by?: string | null;
-          moderation_status?: Database["public"]["Enums"]["moderation_status"];
-          name: string;
-          notification_radius_m?: number;
-          opening_hours?: Json | null;
-          owner_id?: string | null;
-          phone_e164?: string | null;
-          rejection_reason?: string | null;
-          slug?: string | null;
-          updated_at?: string;
-          website?: string | null;
-        };
+          address?: string | null
+          category?: string
+          city?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          geo_bucket_id?: string
+          id?: string
+          is_official?: boolean
+          is_published?: boolean
+          is_seed?: boolean
+          lat: number
+          lng: number
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          name: string
+          notification_radius_m?: number
+          opening_hours?: Json | null
+          owner_id?: string | null
+          phone_e164?: string | null
+          rejection_reason?: string | null
+          slug?: string | null
+          updated_at?: string
+          website?: string | null
+        }
         Update: {
-          address?: string | null;
-          category?: string;
-          city?: string | null;
-          cover_url?: string | null;
-          created_at?: string;
-          description?: string | null;
-          geo_bucket_id?: string;
-          id?: string;
-          is_official?: boolean;
-          is_published?: boolean;
-          is_seed?: boolean;
-          lat?: number;
-          lng?: number;
-          moderated_at?: string | null;
-          moderated_by?: string | null;
-          moderation_status?: Database["public"]["Enums"]["moderation_status"];
-          name?: string;
-          notification_radius_m?: number;
-          opening_hours?: Json | null;
-          owner_id?: string | null;
-          phone_e164?: string | null;
-          rejection_reason?: string | null;
-          slug?: string | null;
-          updated_at?: string;
-          website?: string | null;
-        };
-        Relationships: [];
-      };
+          address?: string | null
+          category?: string
+          city?: string | null
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          geo_bucket_id?: string
+          id?: string
+          is_official?: boolean
+          is_published?: boolean
+          is_seed?: boolean
+          lat?: number
+          lng?: number
+          moderated_at?: string | null
+          moderated_by?: string | null
+          moderation_status?: Database["public"]["Enums"]["moderation_status"]
+          name?: string
+          notification_radius_m?: number
+          opening_hours?: Json | null
+          owner_id?: string | null
+          phone_e164?: string | null
+          rejection_reason?: string | null
+          slug?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       web_vitals: {
         Row: {
-          created_at: string;
-          id: number;
-          metric: string;
-          path: string | null;
-          rating: string | null;
-          user_agent: string | null;
-          user_id: string | null;
-          value: number;
-        };
+          created_at: string
+          id: number
+          metric: string
+          path: string | null
+          rating: string | null
+          user_agent: string | null
+          user_id: string | null
+          value: number
+        }
         Insert: {
-          created_at?: string;
-          id?: number;
-          metric: string;
-          path?: string | null;
-          rating?: string | null;
-          user_agent?: string | null;
-          user_id?: string | null;
-          value: number;
-        };
+          created_at?: string
+          id?: number
+          metric: string
+          path?: string | null
+          rating?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          value: number
+        }
         Update: {
-          created_at?: string;
-          id?: number;
-          metric?: string;
-          path?: string | null;
-          rating?: string | null;
-          user_agent?: string | null;
-          user_id?: string | null;
-          value?: number;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: number
+          metric?: string
+          path?: string | null
+          rating?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          value?: number
+        }
+        Relationships: []
+      }
       woofs: {
         Row: {
-          created_at: string;
-          id: string;
-          receiver_id: string;
-          sender_id: string;
-        };
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          receiver_id: string;
-          sender_id: string;
-        };
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          receiver_id?: string;
-          sender_id?: string;
-        };
-        Relationships: [];
-      };
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
       xp_events: {
         Row: {
-          created_at: string;
-          id: string;
-          kind: string;
-          meta: Json;
-          user_id: string;
-          xp: number;
-        };
+          created_at: string
+          id: string
+          kind: string
+          meta: Json
+          user_id: string
+          xp: number
+        }
         Insert: {
-          created_at?: string;
-          id?: string;
-          kind: string;
-          meta?: Json;
-          user_id: string;
-          xp: number;
-        };
+          created_at?: string
+          id?: string
+          kind: string
+          meta?: Json
+          user_id: string
+          xp: number
+        }
         Update: {
-          created_at?: string;
-          id?: string;
-          kind?: string;
-          meta?: Json;
-          user_id?: string;
-          xp?: number;
-        };
-        Relationships: [];
-      };
-    };
+          created_at?: string
+          id?: string
+          kind?: string
+          meta?: Json
+          user_id?: string
+          xp?: number
+        }
+        Relationships: []
+      }
+    }
     Views: {
       admin_moderation_queue: {
         Row: {
-          city: string | null;
-          cover_url: string | null;
-          created_at: string | null;
-          description: string | null;
-          id: string | null;
-          is_published: boolean | null;
-          kind: string | null;
-          moderation_status: Database["public"]["Enums"]["moderation_status"] | null;
-          owner_id: string | null;
-          rejection_reason: string | null;
-          title: string | null;
-          updated_at: string | null;
-        };
-        Relationships: [];
-      };
+          city: string | null
+          cover_url: string | null
+          created_at: string | null
+          description: string | null
+          id: string | null
+          is_published: boolean | null
+          kind: string | null
+          moderation_status:
+            | Database["public"]["Enums"]["moderation_status"]
+            | null
+          owner_id: string | null
+          rejection_reason: string | null
+          title: string | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
       geography_columns: {
         Row: {
-          coord_dimension: number | null;
-          f_geography_column: unknown;
-          f_table_catalog: unknown;
-          f_table_name: unknown;
-          f_table_schema: unknown;
-          srid: number | null;
-          type: string | null;
-        };
-        Relationships: [];
-      };
+          coord_dimension: number | null
+          f_geography_column: unknown
+          f_table_catalog: unknown
+          f_table_name: unknown
+          f_table_schema: unknown
+          srid: number | null
+          type: string | null
+        }
+        Relationships: []
+      }
       geometry_columns: {
         Row: {
-          coord_dimension: number | null;
-          f_geometry_column: unknown;
-          f_table_catalog: string | null;
-          f_table_name: unknown;
-          f_table_schema: unknown;
-          srid: number | null;
-          type: string | null;
-        };
+          coord_dimension: number | null
+          f_geometry_column: unknown
+          f_table_catalog: string | null
+          f_table_name: unknown
+          f_table_schema: unknown
+          srid: number | null
+          type: string | null
+        }
         Insert: {
-          coord_dimension?: number | null;
-          f_geometry_column?: unknown;
-          f_table_catalog?: string | null;
-          f_table_name?: unknown;
-          f_table_schema?: unknown;
-          srid?: number | null;
-          type?: string | null;
-        };
+          coord_dimension?: number | null
+          f_geometry_column?: unknown
+          f_table_catalog?: string | null
+          f_table_name?: unknown
+          f_table_schema?: unknown
+          srid?: number | null
+          type?: string | null
+        }
         Update: {
-          coord_dimension?: number | null;
-          f_geometry_column?: unknown;
-          f_table_catalog?: string | null;
-          f_table_name?: unknown;
-          f_table_schema?: unknown;
-          srid?: number | null;
-          type?: string | null;
-        };
-        Relationships: [];
-      };
-    };
+          coord_dimension?: number | null
+          f_geometry_column?: unknown
+          f_table_catalog?: string | null
+          f_table_name?: unknown
+          f_table_schema?: unknown
+          srid?: number | null
+          type?: string | null
+        }
+        Relationships: []
+      }
+    }
     Functions: {
       _postgis_deprecate: {
-        Args: { newname: string; oldname: string; version: string };
-        Returns: undefined;
-      };
+        Args: { newname: string; oldname: string; version: string }
+        Returns: undefined
+      }
       _postgis_index_extent: {
-        Args: { col: string; tbl: unknown };
-        Returns: unknown;
-      };
-      _postgis_pgsql_version: { Args: never; Returns: string };
-      _postgis_scripts_pgsql_version: { Args: never; Returns: string };
+        Args: { col: string; tbl: unknown }
+        Returns: unknown
+      }
+      _postgis_pgsql_version: { Args: never; Returns: string }
+      _postgis_scripts_pgsql_version: { Args: never; Returns: string }
       _postgis_selectivity: {
-        Args: { att_name: string; geom: unknown; mode?: string; tbl: unknown };
-        Returns: number;
-      };
+        Args: { att_name: string; geom: unknown; mode?: string; tbl: unknown }
+        Returns: number
+      }
       _postgis_stats: {
-        Args: { ""?: string; att_name: string; tbl: unknown };
-        Returns: string;
-      };
+        Args: { ""?: string; att_name: string; tbl: unknown }
+        Returns: string
+      }
       _st_3dintersects: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       _st_contains: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       _st_containsproperly: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       _st_coveredby:
         | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       _st_covers:
         | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       _st_crosses: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       _st_dwithin: {
         Args: {
-          geog1: unknown;
-          geog2: unknown;
-          tolerance: number;
-          use_spheroid?: boolean;
-        };
-        Returns: boolean;
-      };
-      _st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+          geog1: unknown
+          geog2: unknown
+          tolerance: number
+          use_spheroid?: boolean
+        }
+        Returns: boolean
+      }
+      _st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       _st_intersects: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       _st_linecrossingdirection: {
-        Args: { line1: unknown; line2: unknown };
-        Returns: number;
-      };
+        Args: { line1: unknown; line2: unknown }
+        Returns: number
+      }
       _st_longestline: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       _st_maxdistance: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
       _st_orderingequals: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       _st_overlaps: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      _st_sortablehash: { Args: { geom: unknown }; Returns: number };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      _st_sortablehash: { Args: { geom: unknown }; Returns: number }
       _st_touches: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       _st_voronoi: {
         Args: {
-          clip?: unknown;
-          g1: unknown;
-          return_polygons?: boolean;
-          tolerance?: number;
-        };
-        Returns: unknown;
-      };
-      _st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
-      addauth: { Args: { "": string }; Returns: boolean };
+          clip?: unknown
+          g1: unknown
+          return_polygons?: boolean
+          tolerance?: number
+        }
+        Returns: unknown
+      }
+      _st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      addauth: { Args: { "": string }; Returns: boolean }
       addgeometrycolumn:
         | {
             Args: {
-              catalog_name: string;
-              column_name: string;
-              new_dim: number;
-              new_srid_in: number;
-              new_type: string;
-              schema_name: string;
-              table_name: string;
-              use_typmod?: boolean;
-            };
-            Returns: string;
+              catalog_name: string
+              column_name: string
+              new_dim: number
+              new_srid_in: number
+              new_type: string
+              schema_name: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
           }
         | {
             Args: {
-              column_name: string;
-              new_dim: number;
-              new_srid: number;
-              new_type: string;
-              schema_name: string;
-              table_name: string;
-              use_typmod?: boolean;
-            };
-            Returns: string;
+              column_name: string
+              new_dim: number
+              new_srid: number
+              new_type: string
+              schema_name: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
           }
         | {
             Args: {
-              column_name: string;
-              new_dim: number;
-              new_srid: number;
-              new_type: string;
-              table_name: string;
-              use_typmod?: boolean;
-            };
-            Returns: string;
-          };
+              column_name: string
+              new_dim: number
+              new_srid: number
+              new_type: string
+              table_name: string
+              use_typmod?: boolean
+            }
+            Returns: string
+          }
       admin_add_risk_flag_note: {
-        Args: { _flag_id: string; _note: string };
-        Returns: undefined;
-      };
-      admin_analytics_summary: { Args: never; Returns: Json };
+        Args: { _flag_id: string; _note: string }
+        Returns: undefined
+      }
+      admin_analytics_summary: { Args: never; Returns: Json }
       admin_assign_alert: {
-        Args: { _alert_id: number; _assignee: string; _due?: string };
-        Returns: undefined;
-      };
+        Args: { _alert_id: number; _assignee: string; _due?: string }
+        Returns: undefined
+      }
       admin_can_access_sensitive: {
-        Args: { _kind: string; _user_id: string };
-        Returns: boolean;
-      };
+        Args: { _kind: string; _user_id: string }
+        Returns: boolean
+      }
       admin_cancel_invoice: {
-        Args: { _invoice_id: string; _reason: string };
-        Returns: string;
-      };
+        Args: { _invoice_id: string; _reason: string }
+        Returns: string
+      }
       admin_confirm_invoice_payment: {
         Args: {
-          _amount_minor: number;
-          _invoice_id: string;
-          _paid_at?: string;
-          _paid_ref: string;
-        };
-        Returns: string;
-      };
+          _amount_minor: number
+          _invoice_id: string
+          _paid_at?: string
+          _paid_ref: string
+        }
+        Returns: string
+      }
       admin_decide_appeal: {
         Args: {
-          _appeal_id: string;
-          _decision: string;
-          _decision_reason: string;
-        };
-        Returns: undefined;
-      };
-      admin_funnel_stats: { Args: { _days?: number }; Returns: Json };
-      admin_get_my_role: { Args: never; Returns: string };
+          _appeal_id: string
+          _decision: string
+          _decision_reason: string
+        }
+        Returns: undefined
+      }
+      admin_funnel_stats: { Args: { _days?: number }; Returns: Json }
+      admin_get_my_role: { Args: never; Returns: string }
       admin_legal_document_history: {
-        Args: { _slug: string };
+        Args: { _slug: string }
         Returns: {
-          action: string;
-          content_md: string;
-          created_at: string;
-          edited_by: string | null;
-          id: string;
-          published_at: string | null;
-          slug: string;
-          title: string;
-          version: number;
-        }[];
+          action: string
+          content_md: string
+          created_at: string
+          edited_by: string | null
+          id: string
+          published_at: string | null
+          slug: string
+          title: string
+          version: number
+        }[]
         SetofOptions: {
-          from: "*";
-          to: "legal_document_versions";
-          isOneToOne: false;
-          isSetofReturn: true;
-        };
-      };
+          from: "*"
+          to: "legal_document_versions"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_list_legal_documents: {
-        Args: never;
+        Args: never
         Returns: {
-          content_md: string;
-          created_at: string;
-          published_at: string | null;
-          slug: string;
-          title: string;
-          updated_at: string;
-          updated_by: string | null;
-          version: number;
-        }[];
+          content_md: string
+          created_at: string
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }[]
         SetofOptions: {
-          from: "*";
-          to: "legal_documents";
-          isOneToOne: false;
-          isSetofReturn: true;
-        };
-      };
+          from: "*"
+          to: "legal_documents"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       admin_moderate_item: {
         Args: {
-          p_decision: string;
-          p_id: string;
-          p_is_official?: boolean;
-          p_kind: string;
-          p_notification_radius_m?: number;
-          p_reason?: string;
-        };
-        Returns: Json;
-      };
+          p_decision: string
+          p_id: string
+          p_is_official?: boolean
+          p_kind: string
+          p_notification_radius_m?: number
+          p_reason?: string
+        }
+        Returns: Json
+      }
       admin_new_account_review_queue: {
-        Args: { _limit?: number };
+        Args: { _limit?: number }
         Returns: {
-          account_created_at: string;
-          banned_at: string;
-          details: Json;
-          display_name: string;
-          flag_created_at: string;
-          flag_id: string;
-          report_count: number;
-          risk_score: number;
-          severity: number;
-          suspended_until: string;
-          user_id: string;
-          verified: boolean;
-        }[];
-      };
+          account_created_at: string
+          banned_at: string
+          details: Json
+          display_name: string
+          flag_created_at: string
+          flag_id: string
+          report_count: number
+          risk_score: number
+          severity: number
+          suspended_until: string
+          user_id: string
+          verified: boolean
+        }[]
+      }
       admin_publish_legal_document: {
-        Args: { _slug: string };
+        Args: { _slug: string }
         Returns: {
-          content_md: string;
-          created_at: string;
-          published_at: string | null;
-          slug: string;
-          title: string;
-          updated_at: string;
-          updated_by: string | null;
-          version: number;
-        };
+          content_md: string
+          created_at: string
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
         SetofOptions: {
-          from: "*";
-          to: "legal_documents";
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
-      };
+          from: "*"
+          to: "legal_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_rate_limit_stats: {
-        Args: { _window_hours?: number };
-        Returns: Json;
-      };
-      admin_recompute_user_risk: { Args: { _user_id: string }; Returns: Json };
-      admin_reinstate_partner: { Args: { p_user_id: string }; Returns: Json };
+        Args: { _window_hours?: number }
+        Returns: Json
+      }
+      admin_recompute_user_risk: { Args: { _user_id: string }; Returns: Json }
+      admin_reinstate_partner: { Args: { p_user_id: string }; Returns: Json }
       admin_resolve_risk_flag: {
-        Args: { _decision: string; _flag_id: string; _notes?: string };
-        Returns: undefined;
-      };
+        Args: { _decision: string; _flag_id: string; _notes?: string }
+        Returns: undefined
+      }
       admin_retention_cohorts: {
-        Args: { _days?: number };
+        Args: { _days?: number }
         Returns: {
-          cohort_day: string;
-          d1: number;
-          d30: number;
-          d7: number;
-          signups: number;
-        }[];
-      };
-      admin_revenue_stats: { Args: never; Returns: Json };
-      admin_risk_dashboard: { Args: { _window_hours?: number }; Returns: Json };
+          cohort_day: string
+          d1: number
+          d30: number
+          d7: number
+          signups: number
+        }[]
+      }
+      admin_revenue_stats: { Args: never; Returns: Json }
+      admin_risk_dashboard: { Args: { _window_hours?: number }; Returns: Json }
       admin_risk_queue: {
-        Args: { _limit?: number };
+        Args: { _limit?: number }
         Returns: {
-          banned_at: string;
-          display_name: string;
-          duplicate_photo_accounts: number;
-          last_flag_at: string;
-          open_flags: number;
-          recent_flag_kinds: string[];
-          report_count: number;
-          risk_score: number;
-          risk_signals: Json;
-          suspended_until: string;
-          user_id: string;
-          verified: boolean;
-        }[];
-      };
+          banned_at: string
+          display_name: string
+          duplicate_photo_accounts: number
+          last_flag_at: string
+          open_flags: number
+          recent_flag_kinds: string[]
+          report_count: number
+          risk_score: number
+          risk_signals: Json
+          suspended_until: string
+          user_id: string
+          verified: boolean
+        }[]
+      }
       admin_security_signals: {
-        Args: { _window_hours?: number };
-        Returns: Json;
-      };
+        Args: { _window_hours?: number }
+        Returns: Json
+      }
       admin_set_risk_flag_status: {
-        Args: { _flag_id: string; _note?: string; _status: string };
-        Returns: undefined;
-      };
+        Args: { _flag_id: string; _note?: string; _status: string }
+        Returns: undefined
+      }
       admin_signup_throttle_stats: {
-        Args: { _window_hours?: number };
-        Returns: Json;
-      };
+        Args: { _window_hours?: number }
+        Returns: Json
+      }
       admin_staff_ticket_action: {
         Args: {
-          _assignee: string;
-          _new_status: string;
-          _priority: string;
-          _ticket_id: string;
-        };
-        Returns: undefined;
-      };
+          _assignee: string
+          _new_status: string
+          _priority: string
+          _ticket_id: string
+        }
+        Returns: undefined
+      }
       admin_suspend_partner: {
-        Args: { p_reason: string; p_user_id: string };
-        Returns: Json;
-      };
+        Args: { p_reason: string; p_user_id: string }
+        Returns: Json
+      }
       admin_unpublish_legal_document: {
-        Args: { _slug: string };
+        Args: { _slug: string }
         Returns: {
-          content_md: string;
-          created_at: string;
-          published_at: string | null;
-          slug: string;
-          title: string;
-          updated_at: string;
-          updated_by: string | null;
-          version: number;
-        };
+          content_md: string
+          created_at: string
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
         SetofOptions: {
-          from: "*";
-          to: "legal_documents";
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
-      };
+          from: "*"
+          to: "legal_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_update_setting: {
-        Args: { _actor: string; _key: string; _value: Json };
-        Returns: Json;
-      };
+        Args: { _actor: string; _key: string; _value: Json }
+        Returns: Json
+      }
       admin_upsert_legal_document: {
-        Args: { _content_md: string; _slug: string; _title: string };
+        Args: { _content_md: string; _slug: string; _title: string }
         Returns: {
-          content_md: string;
-          created_at: string;
-          published_at: string | null;
-          slug: string;
-          title: string;
-          updated_at: string;
-          updated_by: string | null;
-          version: number;
-        };
+          content_md: string
+          created_at: string
+          published_at: string | null
+          slug: string
+          title: string
+          updated_at: string
+          updated_by: string | null
+          version: number
+        }
         SetofOptions: {
-          from: "*";
-          to: "legal_documents";
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
-      };
-      app_role_values: { Args: never; Returns: string[] };
-      assert_account_usable: { Args: never; Returns: undefined };
-      assert_age_verified: { Args: never; Returns: undefined };
-      assert_email_allowed: { Args: { _email: string }; Returns: boolean };
+          from: "*"
+          to: "legal_documents"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      app_role_values: { Args: never; Returns: string[] }
+      assert_account_usable: { Args: never; Returns: undefined }
+      assert_age_verified: { Args: never; Returns: undefined }
+      assert_email_allowed: { Args: { _email: string }; Returns: boolean }
       award_xp: {
-        Args: { _kind: string; _meta?: Json; _user_id: string; _xp: number };
-        Returns: undefined;
-      };
-      billing_tick: { Args: never; Returns: Json };
+        Args: { _kind: string; _meta?: Json; _user_id: string; _xp: number }
+        Returns: undefined
+      }
+      billing_tick: { Args: never; Returns: Json }
       breach_add_timeline_event: {
-        Args: { _breach_id: string; _kind: string; _note: string };
-        Returns: undefined;
-      };
-      bucket_distance_m: { Args: { d: number }; Returns: number };
+        Args: { _breach_id: string; _kind: string; _note: string }
+        Returns: undefined
+      }
+      bucket_distance_m: { Args: { d: number }; Returns: number }
       check_rate_limit: {
-        Args: { _action: string; _max: number; _window_seconds: number };
-        Returns: boolean;
-      };
+        Args: { _action: string; _max: number; _window_seconds: number }
+        Returns: boolean
+      }
       check_signup_throttle: {
-        Args: { _fingerprint: string; _ip_hash: string };
-        Returns: undefined;
-      };
+        Args: { _fingerprint: string; _ip_hash: string }
+        Returns: undefined
+      }
       claim_business_application_by_code: {
-        Args: { _app_id: string };
-        Returns: Json;
-      };
-      claim_daily_reward: { Args: never; Returns: Json };
+        Args: { _app_id: string }
+        Returns: Json
+      }
+      claim_daily_reward: { Args: never; Returns: Json }
       claim_offer: {
-        Args: { p_offer_id: string };
+        Args: { p_offer_id: string }
         Returns: {
-          claim_id: string;
-          redemption_code: string;
-        }[];
-      };
-      claim_quest_reward: { Args: { _quest_id: string }; Returns: Json };
+          claim_id: string
+          redemption_code: string
+        }[]
+      }
+      claim_quest_reward: { Args: { _quest_id: string }; Returns: Json }
       claim_queue_item: {
-        Args: { _item_id: string; _queue: string; _ttl_seconds?: number };
+        Args: { _item_id: string; _queue: string; _ttl_seconds?: number }
         Returns: {
-          actor_id: string;
-          claimed_at: string;
-          expires_at: string;
-          stolen: boolean;
-        }[];
-      };
-      cleanup_expired_queue_claims: { Args: never; Returns: number };
-      cleanup_rate_limit_log: { Args: never; Returns: number };
-      cleanup_signup_attempts: { Args: never; Returns: undefined };
-      cleanup_signup_throttle_logs: { Args: never; Returns: undefined };
+          actor_id: string
+          claimed_at: string
+          expires_at: string
+          stolen: boolean
+        }[]
+      }
+      cleanup_expired_queue_claims: { Args: never; Returns: number }
+      cleanup_rate_limit_log: { Args: never; Returns: number }
+      cleanup_signup_attempts: { Args: never; Returns: undefined }
+      cleanup_signup_throttle_logs: { Args: never; Returns: undefined }
       compute_geo_bucket_id: {
-        Args: { p_lat: number; p_lng: number };
-        Returns: string;
-      };
+        Args: { p_lat: number; p_lng: number }
+        Returns: string
+      }
       compute_profile_completion: {
-        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] };
-        Returns: number;
-      };
-      compute_user_risk: { Args: { _user_id: string }; Returns: Json };
+        Args: { p: Database["public"]["Tables"]["profiles"]["Row"] }
+        Returns: number
+      }
+      compute_user_risk: { Args: { _user_id: string }; Returns: Json }
       consent_kinds: {
-        Args: never;
+        Args: never
         Returns: {
-          art9: boolean;
-          current_version: string;
-          description: string;
-          kind: string;
-          required: boolean;
-        }[];
-      };
-      current_week_start: { Args: never; Returns: string };
-      detect_admin_anomalies: { Args: never; Returns: number };
-      disablelongtransactions: { Args: never; Returns: string };
+          art9: boolean
+          current_version: string
+          description: string
+          kind: string
+          required: boolean
+        }[]
+      }
+      current_week_start: { Args: never; Returns: string }
+      detect_admin_anomalies: { Args: never; Returns: number }
+      disablelongtransactions: { Args: never; Returns: string }
       discover_profiles: {
         Args: {
-          _body?: string[];
-          _genders?: string[];
-          _limit?: number;
-          _looking_for?: string[];
-          _looking_now_only?: boolean;
-          _max_age?: number;
-          _max_height?: number;
-          _max_km?: number;
-          _min_age?: number;
-          _min_height?: number;
-          _offset?: number;
-          _online_only?: boolean;
-          _orientation?: string[];
-          _position?: string[];
-          _sort?: string;
-          _tab?: string;
-          _tribes?: string[];
-          _verified_only?: boolean;
-          _viewer: string;
-          _with_photo_only?: boolean;
-        };
+          _body?: string[]
+          _genders?: string[]
+          _limit?: number
+          _looking_for?: string[]
+          _looking_now_only?: boolean
+          _max_age?: number
+          _max_height?: number
+          _max_km?: number
+          _min_age?: number
+          _min_height?: number
+          _offset?: number
+          _online_only?: boolean
+          _orientation?: string[]
+          _position?: string[]
+          _sort?: string
+          _tab?: string
+          _tribes?: string[]
+          _verified_only?: boolean
+          _viewer: string
+          _with_photo_only?: boolean
+        }
         Returns: {
-          bio: string;
-          birthdate: string;
-          body_type: string;
-          boost_until: string;
-          display_name: string;
-          distance_m: number;
-          ethnicity: string;
-          gender: string[];
-          height_cm: number;
-          hide_age: boolean;
-          hide_distance: boolean;
-          hide_online: boolean;
-          id: string;
-          interests: string[];
-          last_seen: string;
-          looking_for: string[];
-          looking_now_intent: string;
-          looking_now_until: string;
-          orientation: string[];
-          photos: string[];
-          position: string;
-          prompts: Json;
-          pronouns: string[];
-          relationship_status: string;
-          score: number;
-          travel_city: string;
-          travel_until: string;
-          tribes: string[];
-          verified: boolean;
-          weight_kg: number;
-        }[];
-      };
-      distance_bucket_label: { Args: { d: number }; Returns: string };
+          bio: string
+          birthdate: string
+          body_type: string
+          boost_until: string
+          display_name: string
+          distance_m: number
+          ethnicity: string
+          gender: string[]
+          height_cm: number
+          hide_age: boolean
+          hide_distance: boolean
+          hide_online: boolean
+          id: string
+          interests: string[]
+          last_seen: string
+          looking_for: string[]
+          looking_now_intent: string
+          looking_now_until: string
+          orientation: string[]
+          photos: string[]
+          position: string
+          prompts: Json
+          pronouns: string[]
+          relationship_status: string
+          score: number
+          travel_city: string
+          travel_until: string
+          tribes: string[]
+          verified: boolean
+          weight_kg: number
+        }[]
+      }
+      distance_bucket_label: { Args: { d: number }; Returns: string }
       dropgeometrycolumn:
         | {
             Args: {
-              catalog_name: string;
-              column_name: string;
-              schema_name: string;
-              table_name: string;
-            };
-            Returns: string;
+              catalog_name: string
+              column_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
           }
         | {
             Args: {
-              column_name: string;
-              schema_name: string;
-              table_name: string;
-            };
-            Returns: string;
+              column_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
           }
-        | { Args: { column_name: string; table_name: string }; Returns: string };
+        | { Args: { column_name: string; table_name: string }; Returns: string }
       dropgeometrytable:
         | {
             Args: {
-              catalog_name: string;
-              schema_name: string;
-              table_name: string;
-            };
-            Returns: string;
+              catalog_name: string
+              schema_name: string
+              table_name: string
+            }
+            Returns: string
           }
         | { Args: { schema_name: string; table_name: string }; Returns: string }
-        | { Args: { table_name: string }; Returns: string };
+        | { Args: { table_name: string }; Returns: string }
       dsa_record_sor: {
         Args: {
-          _action_type: string;
-          _automated: boolean;
-          _category: string;
-          _legal_basis: string;
-          _reasoning: string;
-          _target_content_id: string;
-          _target_content_type: string;
-          _target_user_id: string;
-        };
-        Returns: string;
-      };
-      enablelongtransactions: { Args: never; Returns: string };
-      ensure_referral_code: { Args: never; Returns: string };
-      equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
-      geometry: { Args: { "": string }; Returns: unknown };
+          _action_type: string
+          _automated: boolean
+          _category: string
+          _legal_basis: string
+          _reasoning: string
+          _target_content_id: string
+          _target_content_type: string
+          _target_user_id: string
+        }
+        Returns: string
+      }
+      enablelongtransactions: { Args: never; Returns: string }
+      ensure_referral_code: { Args: never; Returns: string }
+      equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      geometry: { Args: { "": string }; Returns: unknown }
       geometry_above: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_below: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_cmp: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
       geometry_contained_3d: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_contains: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_contains_3d: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_distance_box: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
       geometry_distance_centroid: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
       geometry_eq: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_ge: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_gt: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_le: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_left: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_lt: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_overabove: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_overbelow: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_overlaps: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_overlaps_3d: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_overleft: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_overright: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_right: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_same: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_same_3d: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       geometry_within: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      geomfromewkt: { Args: { "": string }; Returns: unknown };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      geomfromewkt: { Args: { "": string }; Returns: unknown }
       get_country_risk: {
-        Args: { _country_code: string };
+        Args: { _country_code: string }
         Returns: {
-          country_code: string;
-          disable_discover: boolean;
-          disable_signup: boolean;
-          force_stealth: boolean;
-          hide_precise_location: boolean;
-          reason: string;
-          risk_level: string;
-        }[];
-      };
+          country_code: string
+          disable_discover: boolean
+          disable_signup: boolean
+          force_stealth: boolean
+          hide_precise_location: boolean
+          reason: string
+          risk_level: string
+        }[]
+      }
       get_local_leaderboard: {
-        Args: { _radius_km?: number };
+        Args: { _radius_km?: number }
         Returns: {
-          display_name: string;
-          level: number;
-          photo_url: string;
-          rank: number;
-          streak_days: number;
-          user_id: string;
-          weekly_xp: number;
-        }[];
-      };
-      get_my_gamification: { Args: never; Returns: Json };
+          display_name: string
+          level: number
+          photo_url: string
+          rank: number
+          streak_days: number
+          user_id: string
+          weekly_xp: number
+        }[]
+      }
+      get_my_gamification: { Args: never; Returns: Json }
       get_my_quests: {
-        Args: never;
+        Args: never
         Returns: {
-          bonus_amount: number;
-          bonus_kind: string;
-          claimed: boolean;
-          completed: boolean;
-          description: string;
-          icon: string;
-          id: string;
-          metric: string;
-          progress: number;
-          target: number;
-          title: string;
-          xp_reward: number;
-        }[];
-      };
-      get_or_create_conversation: { Args: { _other: string }; Returns: string };
+          bonus_amount: number
+          bonus_kind: string
+          claimed: boolean
+          completed: boolean
+          description: string
+          icon: string
+          id: string
+          metric: string
+          progress: number
+          target: number
+          title: string
+          xp_reward: number
+        }[]
+      }
+      get_or_create_conversation: { Args: { _other: string }; Returns: string }
       get_public_profiles: {
-        Args: { _ids: string[] };
+        Args: { _ids: string[] }
         Returns: {
-          bio: string;
-          birthdate: string;
-          body_type: string;
-          boost_until: string;
-          display_name: string;
-          gender: string;
-          height_cm: number;
-          hide_age: boolean;
-          hide_distance: boolean;
-          hide_online: boolean;
-          id: string;
-          incognito: boolean;
-          interests: string[];
-          last_seen: string;
-          looking_now_until: string;
-          photos: string[];
-          position: string;
-          profile_slug: string;
-          pronouns: string;
-          travel_city: string;
-          travel_until: string;
-          tribes: string[];
-          verified: boolean;
-        }[];
-      };
-      gettransactionid: { Args: never; Returns: unknown };
+          bio: string
+          birthdate: string
+          body_type: string
+          boost_until: string
+          display_name: string
+          gender: string
+          height_cm: number
+          hide_age: boolean
+          hide_distance: boolean
+          hide_online: boolean
+          id: string
+          incognito: boolean
+          interests: string[]
+          last_seen: string
+          looking_now_until: string
+          photos: string[]
+          position: string
+          profile_slug: string
+          pronouns: string
+          travel_city: string
+          travel_until: string
+          tribes: string[]
+          verified: boolean
+        }[]
+      }
+      gettransactionid: { Args: never; Returns: unknown }
       has_active_consent: {
-        Args: { _kind: string; _user_id: string };
-        Returns: boolean;
-      };
-      has_active_subscription: { Args: { _user: string }; Returns: boolean };
+        Args: { _kind: string; _user_id: string }
+        Returns: boolean
+      }
+      has_active_subscription: { Args: { _user: string }; Returns: boolean }
       has_any_role: {
         Args: {
-          _roles: Database["public"]["Enums"]["app_role"][];
-          _user_id: string;
-        };
-        Returns: boolean;
-      };
+          _roles: Database["public"]["Enums"]["app_role"][]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       has_role: {
         Args: {
-          _role: Database["public"]["Enums"]["app_role"];
-          _user_id: string;
-        };
-        Returns: boolean;
-      };
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
       heartbeat_queue_claim: {
-        Args: { _item_id: string; _queue: string; _ttl_seconds?: number };
-        Returns: string;
-      };
-      increment_macro_usage: { Args: { _key: string }; Returns: undefined };
+        Args: { _item_id: string; _queue: string; _ttl_seconds?: number }
+        Returns: string
+      }
+      increment_macro_usage: { Args: { _key: string }; Returns: undefined }
       increment_quest_progress: {
-        Args: { _delta?: number; _metric: string; _user_id: string };
-        Returns: undefined;
-      };
-      is_admin_or_above: { Args: { _user_id: string }; Returns: boolean };
-      is_blocked_between: { Args: { a: string; b: string }; Returns: boolean };
+        Args: { _delta?: number; _metric: string; _user_id: string }
+        Returns: undefined
+      }
+      is_admin_or_above: { Args: { _user_id: string }; Returns: boolean }
+      is_blocked_between: { Args: { a: string; b: string }; Returns: boolean }
       is_conversation_participant: {
-        Args: { _conv_id: string; _user_id: string };
-        Returns: boolean;
-      };
-      is_disposable_email: { Args: { _email: string }; Returns: boolean };
-      is_fingerprint_banned: { Args: { _fp: string }; Returns: boolean };
+        Args: { _conv_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_disposable_email: { Args: { _email: string }; Returns: boolean }
+      is_fingerprint_banned: { Args: { _fp: string }; Returns: boolean }
       is_group_member: {
-        Args: { _group_id: string; _user_id: string };
-        Returns: boolean;
-      };
-      is_staff: { Args: { _user_id: string }; Returns: boolean };
-      list_my_block_relations: { Args: never; Returns: string[] };
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_staff: { Args: { _user_id: string }; Returns: boolean }
+      list_my_block_relations: { Args: never; Returns: string[] }
       list_queue_claims: {
-        Args: { _queue: string };
+        Args: { _queue: string }
         Returns: {
-          actor_id: string;
-          claimed_at: string;
-          display_name: string;
-          expires_at: string;
-          item_id: string;
-        }[];
-      };
-      longtransactionsenabled: { Args: never; Returns: boolean };
-      mark_inactive_for_deletion: { Args: never; Returns: number };
-      mark_message_viewed: { Args: { _msg_id: string }; Returns: undefined };
+          actor_id: string
+          claimed_at: string
+          display_name: string
+          expires_at: string
+          item_id: string
+        }[]
+      }
+      longtransactionsenabled: { Args: never; Returns: boolean }
+      mark_inactive_for_deletion: { Args: never; Returns: number }
+      mark_message_viewed: { Args: { _msg_id: string }; Returns: undefined }
       moderator_ban_user: {
-        Args: { _reason: string; _target: string };
-        Returns: undefined;
-      };
+        Args: { _reason: string; _target: string }
+        Returns: undefined
+      }
       moderator_suspend_user: {
-        Args: { _hours: number; _reason: string; _target: string };
-        Returns: undefined;
-      };
-      moderator_verify_user: { Args: { _target: string }; Returns: undefined };
+        Args: { _hours: number; _reason: string; _target: string }
+        Returns: undefined
+      }
+      moderator_verify_user: { Args: { _target: string }; Returns: undefined }
       moderator_warn_user: {
-        Args: { _reason: string; _target: string };
-        Returns: undefined;
-      };
+        Args: { _reason: string; _target: string }
+        Returns: undefined
+      }
       nearby_points: {
-        Args: { p_bucket_id: string; p_kinds?: string[] };
+        Args: { p_bucket_id: string; p_kinds?: string[] }
         Returns: {
-          category: string;
-          city: string;
-          cover_url: string;
-          description: string;
-          ends_at: string;
-          id: string;
-          kind: string;
-          lat: number;
-          lng: number;
-          name: string;
-          starts_at: string;
-          venue_id: string;
-        }[];
-      };
-      neighbour_buckets: { Args: { p_bucket_id: string }; Returns: string[] };
+          category: string
+          city: string
+          cover_url: string
+          description: string
+          ends_at: string
+          id: string
+          kind: string
+          lat: number
+          lng: number
+          name: string
+          starts_at: string
+          venue_id: string
+        }[]
+      }
+      neighbour_buckets: { Args: { p_bucket_id: string }; Returns: string[] }
       next_invoice_number: {
-        Args: { _series: string; _year: number };
-        Returns: number;
-      };
+        Args: { _series: string; _year: number }
+        Returns: number
+      }
       notify_user: {
         Args: {
-          _actor_id: string;
-          _body: string;
-          _entity_id: string;
-          _link: string;
-          _title: string;
-          _type: Database["public"]["Enums"]["notification_type"];
-          _user_id: string;
-        };
-        Returns: undefined;
-      };
+          _actor_id: string
+          _body: string
+          _entity_id: string
+          _link: string
+          _title: string
+          _type: Database["public"]["Enums"]["notification_type"]
+          _user_id: string
+        }
+        Returns: undefined
+      }
       offer_stats: {
-        Args: { p_offer_id: string };
+        Args: { p_offer_id: string }
         Returns: {
-          claim_count: number;
-          redeemed_count: number;
-        }[];
-      };
+          claim_count: number
+          redeemed_count: number
+        }[]
+      }
       partner_active_entitlements: {
-        Args: { _owner_id: string };
-        Returns: Json;
-      };
+        Args: { _owner_id: string }
+        Returns: Json
+      }
       partner_can_send_notification: {
-        Args: { p_partner_id: string };
-        Returns: boolean;
-      };
+        Args: { p_partner_id: string }
+        Returns: boolean
+      }
       partner_create_invoice: {
         Args: {
-          _boost_event_id?: string;
-          _boost_price_minor?: number;
-          _kind: string;
-          _owner_id: string;
-          _plan_code?: string;
-        };
-        Returns: string;
-      };
-      partner_get_quota_usage: { Args: { p_user: string }; Returns: Json };
+          _boost_event_id?: string
+          _boost_price_minor?: number
+          _kind: string
+          _owner_id: string
+          _plan_code?: string
+        }
+        Returns: string
+      }
+      partner_get_quota_usage: { Args: { p_user: string }; Returns: Json }
       policy_evaluate: {
         Args: {
-          _category: string;
-          _input: Json;
-          _subject_id: string;
-          _subject_kind: string;
-        };
-        Returns: Json;
-      };
+          _category: string
+          _input: Json
+          _subject_id: string
+          _subject_kind: string
+        }
+        Returns: Json
+      }
       policy_set_state: {
         Args: {
-          p_new_state: Database["public"]["Enums"]["policy_rule_state"];
-          p_note?: string;
-          p_rule_id: string;
-        };
-        Returns: undefined;
-      };
+          p_new_state: Database["public"]["Enums"]["policy_rule_state"]
+          p_note?: string
+          p_rule_id: string
+        }
+        Returns: undefined
+      }
       policy_simulate: {
-        Args: { p_days?: number; p_rule_code: string };
+        Args: { p_days?: number; p_rule_code: string }
         Returns: {
-          by_day: Json;
-          match_rate: number;
-          matched: number;
-          total: number;
-        }[];
-      };
+          by_day: Json
+          match_rate: number
+          matched: number
+          total: number
+        }[]
+      }
       policy_upsert_rule: {
         Args: {
-          p_action: Json;
-          p_category: string;
-          p_change_note?: string;
-          p_code: string;
-          p_description: string;
-          p_expression: Json;
-          p_title: string;
-        };
-        Returns: string;
-      };
+          p_action: Json
+          p_category: string
+          p_change_note?: string
+          p_code: string
+          p_description: string
+          p_expression: Json
+          p_title: string
+        }
+        Returns: string
+      }
       populate_geometry_columns:
         | { Args: { tbl_oid: unknown; use_typmod?: boolean }; Returns: number }
-        | { Args: { use_typmod?: boolean }; Returns: string };
+        | { Args: { use_typmod?: boolean }; Returns: string }
       postgis_constraint_dims: {
-        Args: { geomcolumn: string; geomschema: string; geomtable: string };
-        Returns: number;
-      };
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: number
+      }
       postgis_constraint_srid: {
-        Args: { geomcolumn: string; geomschema: string; geomtable: string };
-        Returns: number;
-      };
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: number
+      }
       postgis_constraint_type: {
-        Args: { geomcolumn: string; geomschema: string; geomtable: string };
-        Returns: string;
-      };
-      postgis_extensions_upgrade: { Args: never; Returns: string };
-      postgis_full_version: { Args: never; Returns: string };
-      postgis_geos_version: { Args: never; Returns: string };
-      postgis_lib_build_date: { Args: never; Returns: string };
-      postgis_lib_revision: { Args: never; Returns: string };
-      postgis_lib_version: { Args: never; Returns: string };
-      postgis_libjson_version: { Args: never; Returns: string };
-      postgis_liblwgeom_version: { Args: never; Returns: string };
-      postgis_libprotobuf_version: { Args: never; Returns: string };
-      postgis_libxml_version: { Args: never; Returns: string };
-      postgis_proj_version: { Args: never; Returns: string };
-      postgis_scripts_build_date: { Args: never; Returns: string };
-      postgis_scripts_installed: { Args: never; Returns: string };
-      postgis_scripts_released: { Args: never; Returns: string };
-      postgis_svn_version: { Args: never; Returns: string };
+        Args: { geomcolumn: string; geomschema: string; geomtable: string }
+        Returns: string
+      }
+      postgis_extensions_upgrade: { Args: never; Returns: string }
+      postgis_full_version: { Args: never; Returns: string }
+      postgis_geos_version: { Args: never; Returns: string }
+      postgis_lib_build_date: { Args: never; Returns: string }
+      postgis_lib_revision: { Args: never; Returns: string }
+      postgis_lib_version: { Args: never; Returns: string }
+      postgis_libjson_version: { Args: never; Returns: string }
+      postgis_liblwgeom_version: { Args: never; Returns: string }
+      postgis_libprotobuf_version: { Args: never; Returns: string }
+      postgis_libxml_version: { Args: never; Returns: string }
+      postgis_proj_version: { Args: never; Returns: string }
+      postgis_scripts_build_date: { Args: never; Returns: string }
+      postgis_scripts_installed: { Args: never; Returns: string }
+      postgis_scripts_released: { Args: never; Returns: string }
+      postgis_svn_version: { Args: never; Returns: string }
       postgis_type_name: {
         Args: {
-          coord_dimension: number;
-          geomname: string;
-          use_new_name?: boolean;
-        };
-        Returns: string;
-      };
-      postgis_version: { Args: never; Returns: string };
-      postgis_wagyu_version: { Args: never; Returns: string };
-      purge_scheduled_deletions: { Args: never; Returns: number };
-      recompute_risk_score: { Args: { _uid: string }; Returns: number };
-      recompute_user_risk: { Args: { _user_id: string }; Returns: Json };
+          coord_dimension: number
+          geomname: string
+          use_new_name?: boolean
+        }
+        Returns: string
+      }
+      postgis_version: { Args: never; Returns: string }
+      postgis_wagyu_version: { Args: never; Returns: string }
+      purge_scheduled_deletions: { Args: never; Returns: number }
+      recompute_risk_score: { Args: { _uid: string }; Returns: number }
+      recompute_user_risk: { Args: { _user_id: string }; Returns: Json }
       record_age_verification: {
         Args: {
-          p_didit_session?: string;
-          p_estimated_age?: number;
-          p_result: string;
-          p_status_raw?: string;
-          p_user_id: string;
-        };
-        Returns: undefined;
-      };
+          p_didit_session?: string
+          p_estimated_age?: number
+          p_result: string
+          p_status_raw?: string
+          p_user_id: string
+        }
+        Returns: undefined
+      }
       record_consent: {
-        Args: { _accepted?: boolean; _kind: string; _version?: string };
-        Returns: undefined;
-      };
+        Args: { _accepted?: boolean; _kind: string; _version?: string }
+        Returns: undefined
+      }
       record_photo_hash: {
-        Args: { _path: string; _phash: string };
-        Returns: undefined;
-      };
-      redeem_referral: { Args: { _code: string }; Returns: Json };
+        Args: { _path: string; _phash: string }
+        Returns: undefined
+      }
+      redeem_referral: { Args: { _code: string }; Returns: Json }
       register_device_fingerprint: {
-        Args: { _fp: string; _ua: string };
-        Returns: boolean;
-      };
+        Args: { _fp: string; _ua: string }
+        Returns: boolean
+      }
       release_queue_item: {
-        Args: { _item_id: string; _queue: string };
-        Returns: boolean;
-      };
+        Args: { _item_id: string; _queue: string }
+        Returns: boolean
+      }
       rl_enforce: {
-        Args: { _action: string; _max: number; _window_seconds: number };
-        Returns: undefined;
-      };
-      security_invariants_snapshot: { Args: never; Returns: Json };
-      seed_content_summary: { Args: never; Returns: Json };
+        Args: { _action: string; _max: number; _window_seconds: number }
+        Returns: undefined
+      }
+      security_invariants_snapshot: { Args: never; Returns: Json }
+      seed_content_summary: { Args: never; Returns: Json }
       set_looking_now:
         | { Args: { _hours: number; _intent?: string }; Returns: undefined }
-        | { Args: { _hours: number; _intent: string }; Returns: undefined };
+        | { Args: { _hours: number; _intent: string }; Returns: undefined }
       st_3dclosestpoint: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_3ddistance: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
       st_3dintersects: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       st_3dlongestline: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_3dmakebox: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_3dmaxdistance: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
       st_3dshortestline: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_addpoint: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_angle:
         | { Args: { line1: unknown; line2: unknown }; Returns: number }
         | {
-            Args: { pt1: unknown; pt2: unknown; pt3: unknown; pt4?: unknown };
-            Returns: number;
-          };
+            Args: { pt1: unknown; pt2: unknown; pt3: unknown; pt4?: unknown }
+            Returns: number
+          }
       st_area:
         | { Args: { geog: unknown; use_spheroid?: boolean }; Returns: number }
-        | { Args: { "": string }; Returns: number };
+        | { Args: { "": string }; Returns: number }
       st_asencodedpolyline: {
-        Args: { geom: unknown; nprecision?: number };
-        Returns: string;
-      };
-      st_asewkt: { Args: { "": string }; Returns: string };
+        Args: { geom: unknown; nprecision?: number }
+        Returns: string
+      }
+      st_asewkt: { Args: { "": string }; Returns: string }
       st_asgeojson:
         | {
-            Args: { geog: unknown; maxdecimaldigits?: number; options?: number };
-            Returns: string;
+            Args: { geog: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
           }
         | {
-            Args: { geom: unknown; maxdecimaldigits?: number; options?: number };
-            Returns: string;
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
           }
         | {
             Args: {
-              geom_column?: string;
-              maxdecimaldigits?: number;
-              pretty_bool?: boolean;
-              r: Record<string, unknown>;
-            };
-            Returns: string;
+              geom_column?: string
+              maxdecimaldigits?: number
+              pretty_bool?: boolean
+              r: Record<string, unknown>
+            }
+            Returns: string
           }
-        | { Args: { "": string }; Returns: string };
+        | { Args: { "": string }; Returns: string }
       st_asgml:
         | {
             Args: {
-              geog: unknown;
-              id?: string;
-              maxdecimaldigits?: number;
-              nprefix?: string;
-              options?: number;
-            };
-            Returns: string;
+              geog: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+            }
+            Returns: string
           }
         | {
-            Args: { geom: unknown; maxdecimaldigits?: number; options?: number };
-            Returns: string;
+            Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+            Returns: string
           }
         | { Args: { "": string }; Returns: string }
         | {
             Args: {
-              geog: unknown;
-              id?: string;
-              maxdecimaldigits?: number;
-              nprefix?: string;
-              options?: number;
-              version: number;
-            };
-            Returns: string;
+              geog: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+              version: number
+            }
+            Returns: string
           }
         | {
             Args: {
-              geom: unknown;
-              id?: string;
-              maxdecimaldigits?: number;
-              nprefix?: string;
-              options?: number;
-              version: number;
-            };
-            Returns: string;
-          };
+              geom: unknown
+              id?: string
+              maxdecimaldigits?: number
+              nprefix?: string
+              options?: number
+              version: number
+            }
+            Returns: string
+          }
       st_askml:
         | {
-            Args: { geog: unknown; maxdecimaldigits?: number; nprefix?: string };
-            Returns: string;
+            Args: { geog: unknown; maxdecimaldigits?: number; nprefix?: string }
+            Returns: string
           }
         | {
-            Args: { geom: unknown; maxdecimaldigits?: number; nprefix?: string };
-            Returns: string;
+            Args: { geom: unknown; maxdecimaldigits?: number; nprefix?: string }
+            Returns: string
           }
-        | { Args: { "": string }; Returns: string };
+        | { Args: { "": string }; Returns: string }
       st_aslatlontext: {
-        Args: { geom: unknown; tmpl?: string };
-        Returns: string;
-      };
-      st_asmarc21: { Args: { format?: string; geom: unknown }; Returns: string };
+        Args: { geom: unknown; tmpl?: string }
+        Returns: string
+      }
+      st_asmarc21: { Args: { format?: string; geom: unknown }; Returns: string }
       st_asmvtgeom: {
         Args: {
-          bounds: unknown;
-          buffer?: number;
-          clip_geom?: boolean;
-          extent?: number;
-          geom: unknown;
-        };
-        Returns: unknown;
-      };
+          bounds: unknown
+          buffer?: number
+          clip_geom?: boolean
+          extent?: number
+          geom: unknown
+        }
+        Returns: unknown
+      }
       st_assvg:
         | {
-            Args: { geog: unknown; maxdecimaldigits?: number; rel?: number };
-            Returns: string;
+            Args: { geog: unknown; maxdecimaldigits?: number; rel?: number }
+            Returns: string
           }
         | {
-            Args: { geom: unknown; maxdecimaldigits?: number; rel?: number };
-            Returns: string;
+            Args: { geom: unknown; maxdecimaldigits?: number; rel?: number }
+            Returns: string
           }
-        | { Args: { "": string }; Returns: string };
-      st_astext: { Args: { "": string }; Returns: string };
+        | { Args: { "": string }; Returns: string }
+      st_astext: { Args: { "": string }; Returns: string }
       st_astwkb:
         | {
             Args: {
-              geom: unknown;
-              prec?: number;
-              prec_m?: number;
-              prec_z?: number;
-              with_boxes?: boolean;
-              with_sizes?: boolean;
-            };
-            Returns: string;
+              geom: unknown
+              prec?: number
+              prec_m?: number
+              prec_z?: number
+              with_boxes?: boolean
+              with_sizes?: boolean
+            }
+            Returns: string
           }
         | {
             Args: {
-              geom: unknown[];
-              ids: number[];
-              prec?: number;
-              prec_m?: number;
-              prec_z?: number;
-              with_boxes?: boolean;
-              with_sizes?: boolean;
-            };
-            Returns: string;
-          };
+              geom: unknown[]
+              ids: number[]
+              prec?: number
+              prec_m?: number
+              prec_z?: number
+              with_boxes?: boolean
+              with_sizes?: boolean
+            }
+            Returns: string
+          }
       st_asx3d: {
-        Args: { geom: unknown; maxdecimaldigits?: number; options?: number };
-        Returns: string;
-      };
+        Args: { geom: unknown; maxdecimaldigits?: number; options?: number }
+        Returns: string
+      }
       st_azimuth:
         | { Args: { geog1: unknown; geog2: unknown }; Returns: number }
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: number };
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
       st_boundingdiagonal: {
-        Args: { fits?: boolean; geom: unknown };
-        Returns: unknown;
-      };
+        Args: { fits?: boolean; geom: unknown }
+        Returns: unknown
+      }
       st_buffer:
         | {
-            Args: { geom: unknown; options?: string; radius: number };
-            Returns: unknown;
+            Args: { geom: unknown; options?: string; radius: number }
+            Returns: unknown
           }
         | {
-            Args: { geom: unknown; quadsegs: number; radius: number };
-            Returns: unknown;
-          };
-      st_centroid: { Args: { "": string }; Returns: unknown };
+            Args: { geom: unknown; quadsegs: number; radius: number }
+            Returns: unknown
+          }
+      st_centroid: { Args: { "": string }; Returns: unknown }
       st_clipbybox2d: {
-        Args: { box: unknown; geom: unknown };
-        Returns: unknown;
-      };
+        Args: { box: unknown; geom: unknown }
+        Returns: unknown
+      }
       st_closestpoint: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
-      st_collect: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
+      st_collect: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
       st_concavehull: {
         Args: {
-          param_allow_holes?: boolean;
-          param_geom: unknown;
-          param_pctconvex: number;
-        };
-        Returns: unknown;
-      };
+          param_allow_holes?: boolean
+          param_geom: unknown
+          param_pctconvex: number
+        }
+        Returns: unknown
+      }
       st_contains: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       st_containsproperly: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
-      st_coorddim: { Args: { geometry: unknown }; Returns: number };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
+      st_coorddim: { Args: { geometry: unknown }; Returns: number }
       st_coveredby:
         | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       st_covers:
         | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
-      st_crosses: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_crosses: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       st_curvetoline: {
-        Args: { flags?: number; geom: unknown; tol?: number; toltype?: number };
-        Returns: unknown;
-      };
+        Args: { flags?: number; geom: unknown; tol?: number; toltype?: number }
+        Returns: unknown
+      }
       st_delaunaytriangles: {
-        Args: { flags?: number; g1: unknown; tolerance?: number };
-        Returns: unknown;
-      };
+        Args: { flags?: number; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
       st_difference: {
-        Args: { geom1: unknown; geom2: unknown; gridsize?: number };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
       st_disjoint: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       st_distance:
         | {
-            Args: { geog1: unknown; geog2: unknown; use_spheroid?: boolean };
-            Returns: number;
+            Args: { geog1: unknown; geog2: unknown; use_spheroid?: boolean }
+            Returns: number
           }
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: number };
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
       st_distancesphere:
         | { Args: { geom1: unknown; geom2: unknown }; Returns: number }
         | {
-            Args: { geom1: unknown; geom2: unknown; radius: number };
-            Returns: number;
-          };
+            Args: { geom1: unknown; geom2: unknown; radius: number }
+            Returns: number
+          }
       st_distancespheroid: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
       st_dwithin: {
         Args: {
-          geog1: unknown;
-          geog2: unknown;
-          tolerance: number;
-          use_spheroid?: boolean;
-        };
-        Returns: boolean;
-      };
-      st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+          geog1: unknown
+          geog2: unknown
+          tolerance: number
+          use_spheroid?: boolean
+        }
+        Returns: boolean
+      }
+      st_equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       st_expand:
         | { Args: { box: unknown; dx: number; dy: number }; Returns: unknown }
         | {
-            Args: { box: unknown; dx: number; dy: number; dz?: number };
-            Returns: unknown;
+            Args: { box: unknown; dx: number; dy: number; dz?: number }
+            Returns: unknown
           }
         | {
             Args: {
-              dm?: number;
-              dx: number;
-              dy: number;
-              dz?: number;
-              geom: unknown;
-            };
-            Returns: unknown;
-          };
-      st_force3d: { Args: { geom: unknown; zvalue?: number }; Returns: unknown };
+              dm?: number
+              dx: number
+              dy: number
+              dz?: number
+              geom: unknown
+            }
+            Returns: unknown
+          }
+      st_force3d: { Args: { geom: unknown; zvalue?: number }; Returns: unknown }
       st_force3dm: {
-        Args: { geom: unknown; mvalue?: number };
-        Returns: unknown;
-      };
+        Args: { geom: unknown; mvalue?: number }
+        Returns: unknown
+      }
       st_force3dz: {
-        Args: { geom: unknown; zvalue?: number };
-        Returns: unknown;
-      };
+        Args: { geom: unknown; zvalue?: number }
+        Returns: unknown
+      }
       st_force4d: {
-        Args: { geom: unknown; mvalue?: number; zvalue?: number };
-        Returns: unknown;
-      };
+        Args: { geom: unknown; mvalue?: number; zvalue?: number }
+        Returns: unknown
+      }
       st_generatepoints:
         | { Args: { area: unknown; npoints: number }; Returns: unknown }
         | {
-            Args: { area: unknown; npoints: number; seed: number };
-            Returns: unknown;
-          };
-      st_geogfromtext: { Args: { "": string }; Returns: unknown };
-      st_geographyfromtext: { Args: { "": string }; Returns: unknown };
+            Args: { area: unknown; npoints: number; seed: number }
+            Returns: unknown
+          }
+      st_geogfromtext: { Args: { "": string }; Returns: unknown }
+      st_geographyfromtext: { Args: { "": string }; Returns: unknown }
       st_geohash:
         | { Args: { geog: unknown; maxchars?: number }; Returns: string }
-        | { Args: { geom: unknown; maxchars?: number }; Returns: string };
-      st_geomcollfromtext: { Args: { "": string }; Returns: unknown };
+        | { Args: { geom: unknown; maxchars?: number }; Returns: string }
+      st_geomcollfromtext: { Args: { "": string }; Returns: unknown }
       st_geometricmedian: {
         Args: {
-          fail_if_not_converged?: boolean;
-          g: unknown;
-          max_iter?: number;
-          tolerance?: number;
-        };
-        Returns: unknown;
-      };
-      st_geometryfromtext: { Args: { "": string }; Returns: unknown };
-      st_geomfromewkt: { Args: { "": string }; Returns: unknown };
+          fail_if_not_converged?: boolean
+          g: unknown
+          max_iter?: number
+          tolerance?: number
+        }
+        Returns: unknown
+      }
+      st_geometryfromtext: { Args: { "": string }; Returns: unknown }
+      st_geomfromewkt: { Args: { "": string }; Returns: unknown }
       st_geomfromgeojson:
         | { Args: { "": Json }; Returns: unknown }
         | { Args: { "": Json }; Returns: unknown }
-        | { Args: { "": string }; Returns: unknown };
-      st_geomfromgml: { Args: { "": string }; Returns: unknown };
-      st_geomfromkml: { Args: { "": string }; Returns: unknown };
-      st_geomfrommarc21: { Args: { marc21xml: string }; Returns: unknown };
-      st_geomfromtext: { Args: { "": string }; Returns: unknown };
-      st_gmltosql: { Args: { "": string }; Returns: unknown };
-      st_hasarc: { Args: { geometry: unknown }; Returns: boolean };
+        | { Args: { "": string }; Returns: unknown }
+      st_geomfromgml: { Args: { "": string }; Returns: unknown }
+      st_geomfromkml: { Args: { "": string }; Returns: unknown }
+      st_geomfrommarc21: { Args: { marc21xml: string }; Returns: unknown }
+      st_geomfromtext: { Args: { "": string }; Returns: unknown }
+      st_gmltosql: { Args: { "": string }; Returns: unknown }
+      st_hasarc: { Args: { geometry: unknown }; Returns: boolean }
       st_hausdorffdistance: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
       st_hexagon: {
-        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number };
-        Returns: unknown;
-      };
+        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number }
+        Returns: unknown
+      }
       st_hexagongrid: {
-        Args: { bounds: unknown; size: number };
-        Returns: Record<string, unknown>[];
-      };
+        Args: { bounds: unknown; size: number }
+        Returns: Record<string, unknown>[]
+      }
       st_interpolatepoint: {
-        Args: { line: unknown; point: unknown };
-        Returns: number;
-      };
+        Args: { line: unknown; point: unknown }
+        Returns: number
+      }
       st_intersection: {
-        Args: { geom1: unknown; geom2: unknown; gridsize?: number };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
       st_intersects:
         | { Args: { geog1: unknown; geog2: unknown }; Returns: boolean }
-        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+        | { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       st_isvaliddetail: {
-        Args: { flags?: number; geom: unknown };
-        Returns: Database["public"]["CompositeTypes"]["valid_detail"];
+        Args: { flags?: number; geom: unknown }
+        Returns: Database["public"]["CompositeTypes"]["valid_detail"]
         SetofOptions: {
-          from: "*";
-          to: "valid_detail";
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
-      };
+          from: "*"
+          to: "valid_detail"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       st_length:
         | { Args: { geog: unknown; use_spheroid?: boolean }; Returns: number }
-        | { Args: { "": string }; Returns: number };
-      st_letters: { Args: { font?: Json; letters: string }; Returns: unknown };
+        | { Args: { "": string }; Returns: number }
+      st_letters: { Args: { font?: Json; letters: string }; Returns: unknown }
       st_linecrossingdirection: {
-        Args: { line1: unknown; line2: unknown };
-        Returns: number;
-      };
+        Args: { line1: unknown; line2: unknown }
+        Returns: number
+      }
       st_linefromencodedpolyline: {
-        Args: { nprecision?: number; txtin: string };
-        Returns: unknown;
-      };
-      st_linefromtext: { Args: { "": string }; Returns: unknown };
+        Args: { nprecision?: number; txtin: string }
+        Returns: unknown
+      }
+      st_linefromtext: { Args: { "": string }; Returns: unknown }
       st_linelocatepoint: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
-      st_linetocurve: { Args: { geometry: unknown }; Returns: unknown };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
+      st_linetocurve: { Args: { geometry: unknown }; Returns: unknown }
       st_locatealong: {
-        Args: { geometry: unknown; leftrightoffset?: number; measure: number };
-        Returns: unknown;
-      };
+        Args: { geometry: unknown; leftrightoffset?: number; measure: number }
+        Returns: unknown
+      }
       st_locatebetween: {
         Args: {
-          frommeasure: number;
-          geometry: unknown;
-          leftrightoffset?: number;
-          tomeasure: number;
-        };
-        Returns: unknown;
-      };
+          frommeasure: number
+          geometry: unknown
+          leftrightoffset?: number
+          tomeasure: number
+        }
+        Returns: unknown
+      }
       st_locatebetweenelevations: {
-        Args: { fromelevation: number; geometry: unknown; toelevation: number };
-        Returns: unknown;
-      };
+        Args: { fromelevation: number; geometry: unknown; toelevation: number }
+        Returns: unknown
+      }
       st_longestline: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_makebox2d: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_makeline: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_makevalid: {
-        Args: { geom: unknown; params: string };
-        Returns: unknown;
-      };
+        Args: { geom: unknown; params: string }
+        Returns: unknown
+      }
       st_maxdistance: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: number;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: number
+      }
       st_minimumboundingcircle: {
-        Args: { inputgeom: unknown; segs_per_quarter?: number };
-        Returns: unknown;
-      };
-      st_mlinefromtext: { Args: { "": string }; Returns: unknown };
-      st_mpointfromtext: { Args: { "": string }; Returns: unknown };
-      st_mpolyfromtext: { Args: { "": string }; Returns: unknown };
-      st_multilinestringfromtext: { Args: { "": string }; Returns: unknown };
-      st_multipointfromtext: { Args: { "": string }; Returns: unknown };
-      st_multipolygonfromtext: { Args: { "": string }; Returns: unknown };
-      st_node: { Args: { g: unknown }; Returns: unknown };
-      st_normalize: { Args: { geom: unknown }; Returns: unknown };
+        Args: { inputgeom: unknown; segs_per_quarter?: number }
+        Returns: unknown
+      }
+      st_mlinefromtext: { Args: { "": string }; Returns: unknown }
+      st_mpointfromtext: { Args: { "": string }; Returns: unknown }
+      st_mpolyfromtext: { Args: { "": string }; Returns: unknown }
+      st_multilinestringfromtext: { Args: { "": string }; Returns: unknown }
+      st_multipointfromtext: { Args: { "": string }; Returns: unknown }
+      st_multipolygonfromtext: { Args: { "": string }; Returns: unknown }
+      st_node: { Args: { g: unknown }; Returns: unknown }
+      st_normalize: { Args: { geom: unknown }; Returns: unknown }
       st_offsetcurve: {
-        Args: { distance: number; line: unknown; params?: string };
-        Returns: unknown;
-      };
+        Args: { distance: number; line: unknown; params?: string }
+        Returns: unknown
+      }
       st_orderingequals: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       st_overlaps: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: boolean;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: boolean
+      }
       st_perimeter: {
-        Args: { geog: unknown; use_spheroid?: boolean };
-        Returns: number;
-      };
-      st_pointfromtext: { Args: { "": string }; Returns: unknown };
+        Args: { geog: unknown; use_spheroid?: boolean }
+        Returns: number
+      }
+      st_pointfromtext: { Args: { "": string }; Returns: unknown }
       st_pointm: {
         Args: {
-          mcoordinate: number;
-          srid?: number;
-          xcoordinate: number;
-          ycoordinate: number;
-        };
-        Returns: unknown;
-      };
+          mcoordinate: number
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+        }
+        Returns: unknown
+      }
       st_pointz: {
         Args: {
-          srid?: number;
-          xcoordinate: number;
-          ycoordinate: number;
-          zcoordinate: number;
-        };
-        Returns: unknown;
-      };
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+          zcoordinate: number
+        }
+        Returns: unknown
+      }
       st_pointzm: {
         Args: {
-          mcoordinate: number;
-          srid?: number;
-          xcoordinate: number;
-          ycoordinate: number;
-          zcoordinate: number;
-        };
-        Returns: unknown;
-      };
-      st_polyfromtext: { Args: { "": string }; Returns: unknown };
-      st_polygonfromtext: { Args: { "": string }; Returns: unknown };
+          mcoordinate: number
+          srid?: number
+          xcoordinate: number
+          ycoordinate: number
+          zcoordinate: number
+        }
+        Returns: unknown
+      }
+      st_polyfromtext: { Args: { "": string }; Returns: unknown }
+      st_polygonfromtext: { Args: { "": string }; Returns: unknown }
       st_project: {
-        Args: { azimuth: number; distance: number; geog: unknown };
-        Returns: unknown;
-      };
+        Args: { azimuth: number; distance: number; geog: unknown }
+        Returns: unknown
+      }
       st_quantizecoordinates: {
         Args: {
-          g: unknown;
-          prec_m?: number;
-          prec_x: number;
-          prec_y?: number;
-          prec_z?: number;
-        };
-        Returns: unknown;
-      };
+          g: unknown
+          prec_m?: number
+          prec_x: number
+          prec_y?: number
+          prec_z?: number
+        }
+        Returns: unknown
+      }
       st_reduceprecision: {
-        Args: { geom: unknown; gridsize: number };
-        Returns: unknown;
-      };
-      st_relate: { Args: { geom1: unknown; geom2: unknown }; Returns: string };
+        Args: { geom: unknown; gridsize: number }
+        Returns: unknown
+      }
+      st_relate: { Args: { geom1: unknown; geom2: unknown }; Returns: string }
       st_removerepeatedpoints: {
-        Args: { geom: unknown; tolerance?: number };
-        Returns: unknown;
-      };
+        Args: { geom: unknown; tolerance?: number }
+        Returns: unknown
+      }
       st_segmentize: {
-        Args: { geog: unknown; max_segment_length: number };
-        Returns: unknown;
-      };
+        Args: { geog: unknown; max_segment_length: number }
+        Returns: unknown
+      }
       st_setsrid:
         | { Args: { geog: unknown; srid: number }; Returns: unknown }
-        | { Args: { geom: unknown; srid: number }; Returns: unknown };
+        | { Args: { geom: unknown; srid: number }; Returns: unknown }
       st_sharedpaths: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_shortestline: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_simplifypolygonhull: {
-        Args: { geom: unknown; is_outer?: boolean; vertex_fraction: number };
-        Returns: unknown;
-      };
-      st_split: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown };
+        Args: { geom: unknown; is_outer?: boolean; vertex_fraction: number }
+        Returns: unknown
+      }
+      st_split: { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
       st_square: {
-        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number };
-        Returns: unknown;
-      };
+        Args: { cell_i: number; cell_j: number; origin?: unknown; size: number }
+        Returns: unknown
+      }
       st_squaregrid: {
-        Args: { bounds: unknown; size: number };
-        Returns: Record<string, unknown>[];
-      };
+        Args: { bounds: unknown; size: number }
+        Returns: Record<string, unknown>[]
+      }
       st_srid:
         | { Args: { geog: unknown }; Returns: number }
-        | { Args: { geom: unknown }; Returns: number };
+        | { Args: { geom: unknown }; Returns: number }
       st_subdivide: {
-        Args: { geom: unknown; gridsize?: number; maxvertices?: number };
-        Returns: unknown[];
-      };
+        Args: { geom: unknown; gridsize?: number; maxvertices?: number }
+        Returns: unknown[]
+      }
       st_swapordinates: {
-        Args: { geom: unknown; ords: unknown };
-        Returns: unknown;
-      };
+        Args: { geom: unknown; ords: unknown }
+        Returns: unknown
+      }
       st_symdifference: {
-        Args: { geom1: unknown; geom2: unknown; gridsize?: number };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown; gridsize?: number }
+        Returns: unknown
+      }
       st_symmetricdifference: {
-        Args: { geom1: unknown; geom2: unknown };
-        Returns: unknown;
-      };
+        Args: { geom1: unknown; geom2: unknown }
+        Returns: unknown
+      }
       st_tileenvelope: {
         Args: {
-          bounds?: unknown;
-          margin?: number;
-          x: number;
-          y: number;
-          zoom: number;
-        };
-        Returns: unknown;
-      };
-      st_touches: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
+          bounds?: unknown
+          margin?: number
+          x: number
+          y: number
+          zoom: number
+        }
+        Returns: unknown
+      }
+      st_touches: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       st_transform:
         | {
-            Args: { from_proj: string; geom: unknown; to_proj: string };
-            Returns: unknown;
+            Args: { from_proj: string; geom: unknown; to_proj: string }
+            Returns: unknown
           }
         | {
-            Args: { from_proj: string; geom: unknown; to_srid: number };
-            Returns: unknown;
+            Args: { from_proj: string; geom: unknown; to_srid: number }
+            Returns: unknown
           }
-        | { Args: { geom: unknown; to_proj: string }; Returns: unknown };
-      st_triangulatepolygon: { Args: { g1: unknown }; Returns: unknown };
+        | { Args: { geom: unknown; to_proj: string }; Returns: unknown }
+      st_triangulatepolygon: { Args: { g1: unknown }; Returns: unknown }
       st_union:
         | { Args: { geom1: unknown; geom2: unknown }; Returns: unknown }
         | {
-            Args: { geom1: unknown; geom2: unknown; gridsize: number };
-            Returns: unknown;
-          };
+            Args: { geom1: unknown; geom2: unknown; gridsize: number }
+            Returns: unknown
+          }
       st_voronoilines: {
-        Args: { extend_to?: unknown; g1: unknown; tolerance?: number };
-        Returns: unknown;
-      };
+        Args: { extend_to?: unknown; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
       st_voronoipolygons: {
-        Args: { extend_to?: unknown; g1: unknown; tolerance?: number };
-        Returns: unknown;
-      };
-      st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean };
-      st_wkbtosql: { Args: { wkb: string }; Returns: unknown };
-      st_wkttosql: { Args: { "": string }; Returns: unknown };
+        Args: { extend_to?: unknown; g1: unknown; tolerance?: number }
+        Returns: unknown
+      }
+      st_within: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      st_wkbtosql: { Args: { wkb: string }; Returns: unknown }
+      st_wkttosql: { Args: { "": string }; Returns: unknown }
       st_wrapx: {
-        Args: { geom: unknown; move: number; wrap: number };
-        Returns: unknown;
-      };
-      start_age_verification: { Args: never; Returns: undefined };
+        Args: { geom: unknown; move: number; wrap: number }
+        Returns: unknown
+      }
+      start_age_verification: { Args: never; Returns: undefined }
       submit_ticket_csat: {
-        Args: { _feedback?: string; _score: number; _ticket_id: string };
-        Returns: undefined;
-      };
+        Args: { _feedback?: string; _score: number; _ticket_id: string }
+        Returns: undefined
+      }
       toggle_message_reaction: {
-        Args: { _emoji: string; _msg_id: string };
-        Returns: Json;
-      };
-      touch_last_seen: { Args: never; Returns: undefined };
+        Args: { _emoji: string; _msg_id: string }
+        Returns: Json
+      }
+      touch_last_seen: { Args: never; Returns: undefined }
       try_record_proximity_hit: {
-        Args: { p_id: string; p_kind: string; p_layer?: string };
-        Returns: Json;
-      };
-      unlockrows: { Args: { "": string }; Returns: number };
-      unsend_message: { Args: { _message_id: string }; Returns: undefined };
+        Args: { p_id: string; p_kind: string; p_layer?: string }
+        Returns: Json
+      }
+      unlockrows: { Args: { "": string }; Returns: number }
+      unsend_message: { Args: { _message_id: string }; Returns: undefined }
       update_my_location: {
-        Args: { lat: number; lng: number };
-        Returns: undefined;
-      };
+        Args: { lat: number; lng: number }
+        Returns: undefined
+      }
       updategeometrysrid: {
         Args: {
-          catalogn_name: string;
-          column_name: string;
-          new_srid_in: number;
-          schema_name: string;
-          table_name: string;
-        };
-        Returns: string;
-      };
-      wipe_seed_admin_appendonly: { Args: never; Returns: Json };
-    };
+          catalogn_name: string
+          column_name: string
+          new_srid_in: number
+          schema_name: string
+          table_name: string
+        }
+        Returns: string
+      }
+      wipe_seed_admin_appendonly: { Args: never; Returns: Json }
+    }
     Enums: {
-      age_status: "unverified" | "pending" | "verified" | "failed" | "expired";
+      age_status: "unverified" | "pending" | "verified" | "failed" | "expired"
       app_role:
         | "admin"
         | "moderator"
@@ -5701,8 +5709,8 @@ export type Database = {
         | "support"
         | "auditor"
         | "read_only"
-        | "partner";
-      business_app_status: "pending" | "reviewing" | "approved" | "rejected";
+        | "partner"
+      business_app_status: "pending" | "reviewing" | "approved" | "rejected"
       business_entity_type:
         | "srl"
         | "pfa"
@@ -5713,9 +5721,13 @@ export type Database = {
         | "fundatie"
         | "brand"
         | "organizator_eveniment"
-        | "altul";
-      event_type: "party" | "bar" | "pride" | "private" | "meetup" | "other";
-      moderation_status: "pending" | "approved" | "rejected" | "changes_requested";
+        | "altul"
+      event_type: "party" | "bar" | "pride" | "private" | "meetup" | "other"
+      moderation_status:
+        | "pending"
+        | "approved"
+        | "rejected"
+        | "changes_requested"
       notification_type:
         | "match"
         | "message"
@@ -5725,138 +5737,140 @@ export type Database = {
         | "event_rsvp"
         | "event_reminder"
         | "tap"
-        | "admin_message";
-      policy_rule_state: "draft" | "shadow" | "enforcing" | "archived";
-      rsvp_status: "going" | "interested";
-    };
+        | "admin_message"
+      policy_rule_state: "draft" | "shadow" | "enforcing" | "archived"
+      rsvp_status: "going" | "interested"
+    }
     CompositeTypes: {
       geometry_dump: {
-        path: number[] | null;
-        geom: unknown;
-      };
+        path: number[] | null
+        geom: unknown
+      }
       valid_detail: {
-        valid: boolean | null;
-        reason: string | null;
-        location: unknown;
-      };
-    };
-  };
-};
+        valid: boolean | null
+        reason: string | null
+        location: unknown
+      }
+    }
+  }
+}
 
-type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
         DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
       DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
-      Row: infer R;
+      Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
-        Row: infer R;
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
       }
       ? R
       : never
-    : never;
+    : never
 
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I;
+      Insert: infer I
     }
     ? I
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Insert: infer I;
+        Insert: infer I
       }
       ? I
       : never
-    : never;
+    : never
 
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
     | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
 > = DefaultSchemaTableNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U;
+      Update: infer U
     }
     ? U
     : never
   : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
     ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
-        Update: infer U;
+        Update: infer U
       }
       ? U
       : never
-    : never;
+    : never
 
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
     | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
 > = DefaultSchemaEnumNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
-    : never;
+    : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
     | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof DatabaseWithoutInternals;
+    schema: keyof DatabaseWithoutInternals
   }
     ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends {
-  schema: keyof DatabaseWithoutInternals;
+  schema: keyof DatabaseWithoutInternals
 }
   ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never;
+    : never
 
 export const Constants = {
   public: {
@@ -5887,7 +5901,12 @@ export const Constants = {
         "altul",
       ],
       event_type: ["party", "bar", "pride", "private", "meetup", "other"],
-      moderation_status: ["pending", "approved", "rejected", "changes_requested"],
+      moderation_status: [
+        "pending",
+        "approved",
+        "rejected",
+        "changes_requested",
+      ],
       notification_type: [
         "match",
         "message",
@@ -5903,4 +5922,4 @@ export const Constants = {
       rsvp_status: ["going", "interested"],
     },
   },
-} as const;
+} as const
