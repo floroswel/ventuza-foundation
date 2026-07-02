@@ -52,6 +52,8 @@ import { IntelligenceDashboardPanel } from "@/components/admin/IntelligenceDashb
 import { KillSwitchesPanel } from "@/components/admin/KillSwitchesPanel";
 import { LegalP0Panel } from "@/components/admin/LegalP0Panel";
 import { PolicyEnginePanel } from "@/components/admin/PolicyEnginePanel";
+import { EnterpriseUsersPanel } from "@/components/admin/EnterpriseUsersPanel";
+
 
 
 function AgeGateDevBanner() {
