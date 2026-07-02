@@ -46,10 +46,9 @@ export const adminGetSecuritySignals = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => Input.parse(d ?? {}))
   .handler(async ({ data, context }): Promise<SecuritySignals> => {
-    const { data: result, error } = await (context.supabase as any).rpc(
-      "admin_security_signals",
-      { _window_hours: data.windowHours ?? 24 },
-    );
+    const { data: result, error } = await (context.supabase as any).rpc("admin_security_signals", {
+      _window_hours: data.windowHours ?? 24,
+    });
     if (error) throw new Error(error.message);
     return result as SecuritySignals;
   });

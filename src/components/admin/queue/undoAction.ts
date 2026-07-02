@@ -2,11 +2,11 @@
 import { toast } from "sonner";
 
 export type UndoOptions = {
-  label: string;                          // "Ban aplicat pentru @user"
-  undoLabel?: string;                     // "Undo"
-  timeoutMs?: number;                     // 5000
-  onCommit: () => Promise<void> | void;   // rulat DACĂ nu s-a apăsat undo
-  onUndo?: () => void;                    // callback opțional la anulare
+  label: string; // "Ban aplicat pentru @user"
+  undoLabel?: string; // "Undo"
+  timeoutMs?: number; // 5000
+  onCommit: () => Promise<void> | void; // rulat DACĂ nu s-a apăsat undo
+  onUndo?: () => void; // callback opțional la anulare
 };
 
 /**
@@ -19,15 +19,23 @@ export function withUndo(opts: UndoOptions) {
   let undone = false;
   const timer = setTimeout(async () => {
     if (undone) return;
-    try { await onCommit(); }
-    catch (e: any) { toast.error(e?.message ?? "Eroare la aplicare"); }
+    try {
+      await onCommit();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Eroare la aplicare");
+    }
   }, timeoutMs);
 
   toast(label, {
     duration: timeoutMs,
     action: {
       label: undoLabel,
-      onClick: () => { undone = true; clearTimeout(timer); onUndo?.(); toast.success("Anulat"); },
+      onClick: () => {
+        undone = true;
+        clearTimeout(timer);
+        onUndo?.();
+        toast.success("Anulat");
+      },
     },
   });
 }

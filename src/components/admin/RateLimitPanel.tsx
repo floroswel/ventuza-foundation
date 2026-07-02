@@ -1,12 +1,15 @@
 import { useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
-  Activity, AlertTriangle, RefreshCw, ShieldAlert, Timer, Users as UsersIcon,
+  Activity,
+  AlertTriangle,
+  RefreshCw,
+  ShieldAlert,
+  Timer,
+  Users as UsersIcon,
 } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus, LastCheckBadge } from "@/components/admin/PanelStatus";
-import {
-  adminGetRateLimitStats, type RateLimitStats,
-} from "@/lib/admin-ratelimit.functions";
+import { adminGetRateLimitStats, type RateLimitStats } from "@/lib/admin-ratelimit.functions";
 
 const WINDOW_OPTIONS = [
   { v: 1, l: "1h" },
@@ -19,7 +22,10 @@ const WINDOW_OPTIONS = [
 function fmtDate(iso: string | null) {
   if (!iso) return "—";
   return new Date(iso).toLocaleString("ro-RO", {
-    month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -231,7 +237,9 @@ function RateLimitContent({ stats }: { stats: RateLimitStats }) {
                       <div className="font-mono text-[10px] text-muted-foreground">{o.user_id}</div>
                     </Td>
                     <Td className="font-mono text-xs">{o.action}</Td>
-                    <Td align="right" className="font-semibold">{o.hits}</Td>
+                    <Td align="right" className="font-semibold">
+                      {o.hits}
+                    </Td>
                     <Td className="text-xs text-muted-foreground">{fmtDate(o.last_seen)}</Td>
                     <Td>
                       {o.banned_at ? (
@@ -264,14 +272,20 @@ function RateLimitContent({ stats }: { stats: RateLimitStats }) {
 
 /* ---------- mini UI helpers ---------- */
 function Kpi({
-  label, value, tone,
-}: { label: string; value: number; tone?: "warning" | "danger" }) {
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone?: "warning" | "danger";
+}) {
   const toneCls =
     tone === "danger"
       ? "border-red-500/40 bg-red-500/5"
       : tone === "warning"
-      ? "border-orange-500/40 bg-orange-500/5"
-      : "border-border bg-surface";
+        ? "border-orange-500/40 bg-orange-500/5"
+        : "border-border bg-surface";
   return (
     <div className={`rounded-2xl border p-3 ${toneCls}`}>
       <div className="text-[10px] uppercase text-muted-foreground">{label}</div>
@@ -281,8 +295,16 @@ function Kpi({
 }
 
 function Section({
-  title, icon, hint, children,
-}: { title: string; icon?: React.ReactNode; hint?: string; children: React.ReactNode }) {
+  title,
+  icon,
+  hint,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  hint?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
@@ -303,8 +325,14 @@ function Th({ children, align = "left" }: { children: React.ReactNode; align?: "
   );
 }
 function Td({
-  children, align = "left", className = "",
-}: { children: React.ReactNode; align?: "left" | "right"; className?: string }) {
+  children,
+  align = "left",
+  className = "",
+}: {
+  children: React.ReactNode;
+  align?: "left" | "right";
+  className?: string;
+}) {
   return (
     <td className={`px-3 py-2 ${align === "right" ? "text-right" : "text-left"} ${className}`}>
       {children}

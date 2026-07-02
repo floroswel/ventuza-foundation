@@ -9,7 +9,6 @@ import { fetchConversations, type ConversationListItem } from "@/lib/chat";
 import { StoriesStrip } from "@/components/StoriesStrip";
 import { cn } from "@/lib/utils";
 
-
 export const Route = createFileRoute("/messages/")({
   head: () => ({ meta: [{ title: "Messages — Ventuza" }] }),
   component: MessagesPage,
@@ -39,8 +38,16 @@ function MessagesPage() {
     void load();
     const ch = supabase
       .channel(`conv-list:${user!.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "conversations" }, () => void load())
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () => void load())
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "conversations" },
+        () => void load(),
+      )
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "messages" },
+        () => void load(),
+      )
       .subscribe();
     return () => {
       alive = false;
@@ -58,7 +65,6 @@ function MessagesPage() {
       </div>
 
       <div className="flex-1 px-3 py-3">
-
         {loading ? (
           <div className="flex items-center justify-center py-24 text-muted-foreground">
             <Loader2 className="size-5 animate-spin" />
@@ -70,7 +76,6 @@ function MessagesPage() {
             body="Deschide un profil în Discover și apasă Mesaj ca să începi."
           />
         ) : (
-
           <ul className="space-y-1">
             {items.map((c) => (
               <li key={c.id}>
@@ -81,7 +86,11 @@ function MessagesPage() {
                 >
                   <div className="size-12 shrink-0 overflow-hidden rounded-full bg-muted">
                     {c.other_photo ? (
-                      <img src={c.other_photo} alt={c.other_name ?? ""} className="size-full object-cover" />
+                      <img
+                        src={c.other_photo}
+                        alt={c.other_name ?? ""}
+                        className="size-full object-cover"
+                      />
                     ) : (
                       <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
                         {(c.other_name ?? "?").slice(0, 1)}
@@ -90,10 +99,17 @@ function MessagesPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
-                      <p className={cn("truncate text-sm", c.unread ? "font-semibold" : "font-medium")}>
+                      <p
+                        className={cn(
+                          "truncate text-sm",
+                          c.unread ? "font-semibold" : "font-medium",
+                        )}
+                      >
                         {c.other_name ?? "Unknown"}
                       </p>
-                      <span className="text-[10px] text-muted-foreground">{formatWhen(c.last_message_at)}</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        {formatWhen(c.last_message_at)}
+                      </span>
                     </div>
                     <p
                       className={cn(

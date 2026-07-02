@@ -95,7 +95,10 @@ export function Kpi({
         {icon && <span className="text-[var(--admin-text-faint)]">{icon}</span>}
       </div>
       <div className="mt-1.5 flex items-baseline gap-2">
-        <MonoNumber value={value} className="text-2xl font-semibold leading-none text-[var(--admin-text)]" />
+        <MonoNumber
+          value={value}
+          className="text-2xl font-semibold leading-none text-[var(--admin-text)]"
+        />
         {delta != null && (
           <span className={`inline-flex items-center gap-0.5 text-[10px] ${deltaColor}`}>
             <DeltaIcon className="size-3" />
@@ -103,19 +106,27 @@ export function Kpi({
           </span>
         )}
       </div>
-      {hint && (
-        <p className="mt-1 truncate text-[10px] text-[var(--admin-text-faint)]">{hint}</p>
-      )}
+      {hint && <p className="mt-1 truncate text-[10px] text-[var(--admin-text-faint)]">{hint}</p>}
     </div>
   );
 }
 
-type StatusTone = "pending" | "approved" | "rejected" | "active" | "suspended" | "banned" | "info" | "neutral";
+type StatusTone =
+  | "pending"
+  | "approved"
+  | "rejected"
+  | "active"
+  | "suspended"
+  | "banned"
+  | "info"
+  | "neutral";
 
 const STATUS_STYLES: Record<StatusTone, string> = {
   pending: "bg-[var(--admin-warn-soft)] text-[var(--admin-warn)] ring-[var(--admin-warn)]/40",
-  approved: "bg-[var(--admin-success-soft)] text-[var(--admin-success)] ring-[var(--admin-success)]/40",
-  rejected: "bg-[var(--admin-danger-soft)] text-[var(--admin-danger)] ring-[var(--admin-danger)]/40",
+  approved:
+    "bg-[var(--admin-success-soft)] text-[var(--admin-success)] ring-[var(--admin-success)]/40",
+  rejected:
+    "bg-[var(--admin-danger-soft)] text-[var(--admin-danger)] ring-[var(--admin-danger)]/40",
   active: "bg-[var(--admin-accent-soft)] text-[var(--admin-accent)] ring-[var(--admin-accent)]/40",
   suspended: "bg-[var(--admin-warn-soft)] text-[var(--admin-warn)] ring-[var(--admin-warn)]/40",
   banned: "bg-[var(--admin-danger-soft)] text-[var(--admin-danger)] ring-[var(--admin-danger)]/50",
@@ -145,7 +156,10 @@ type Severity = "low" | "medium" | "high" | "critical";
 const SEVERITY_MAP: Record<Severity, { cls: string; label: string }> = {
   low: { cls: "bg-white/5 text-[var(--admin-text-dim)] ring-white/10", label: "low" },
   medium: { cls: "bg-blue-500/15 text-blue-300 ring-blue-400/30", label: "medium" },
-  high: { cls: "bg-[var(--admin-warn-soft)] text-[var(--admin-warn)] ring-[var(--admin-warn)]/50", label: "high" },
+  high: {
+    cls: "bg-[var(--admin-warn-soft)] text-[var(--admin-warn)] ring-[var(--admin-warn)]/50",
+    label: "high",
+  },
   critical: {
     cls: "bg-[var(--admin-danger-soft)] text-[var(--admin-danger)] ring-[var(--admin-danger)]/60 shadow-[0_0_14px_-2px_oklch(0.66_0.21_25/0.5)]",
     label: "critical",

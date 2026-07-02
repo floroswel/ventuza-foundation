@@ -19,7 +19,11 @@ type Prefs = { pronouns: string; friends_only_mode: boolean; preferred_language:
 /** Card grupând diferențiatorii unici Ventuza: pronume, mod prieteni, traducere, PIN, mod discret. */
 export function UniquesCard() {
   const { user } = useAuth();
-  const [prefs, setPrefs] = useState<Prefs>({ pronouns: "", friends_only_mode: false, preferred_language: "ro" });
+  const [prefs, setPrefs] = useState<Prefs>({
+    pronouns: "",
+    friends_only_mode: false,
+    preferred_language: "ro",
+  });
   const [saving, setSaving] = useState(false);
   const [pinSet, setPinSet] = useState(false);
   const [pinDraft, setPinDraft] = useState("");
@@ -27,9 +31,11 @@ export function UniquesCard() {
   useEffect(() => {
     if (!user) return;
     setPinSet(hasPin());
-    supabase.from("profiles")
+    supabase
+      .from("profiles")
       .select("pronouns_custom, friends_only_mode, preferred_language")
-      .eq("id", user.id).maybeSingle()
+      .eq("id", user.id)
+      .maybeSingle()
       .then(({ data }) => {
         if (!data) return;
         setPrefs({
@@ -45,11 +51,14 @@ export function UniquesCard() {
     const merged = { ...prefs, ...next };
     setPrefs(merged);
     setSaving(true);
-    const { error } = await supabase.from("profiles").update({
-      pronouns_custom: merged.pronouns,
-      friends_only_mode: merged.friends_only_mode,
-      preferred_language: merged.preferred_language,
-    }).eq("id", user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        pronouns_custom: merged.pronouns,
+        friends_only_mode: merged.friends_only_mode,
+        preferred_language: merged.preferred_language,
+      })
+      .eq("id", user.id);
     setSaving(false);
     if (error) toast.error(error.message);
   }
@@ -61,7 +70,9 @@ export function UniquesCard() {
       setPinDraft("");
       window.dispatchEvent(new Event("vz:pin-changed"));
       toast.success("PIN activat. Aplicația se va bloca la următoarea deschidere.");
-    } catch (e) { toast.error((e as Error).message); }
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
   }
 
   function removePin() {
@@ -93,13 +104,19 @@ export function UniquesCard() {
           </div>
 
           <div>
-            <label className="text-xs text-muted-foreground">Limbă preferată (pentru AI Translator în chat)</label>
+            <label className="text-xs text-muted-foreground">
+              Limbă preferată (pentru AI Translator în chat)
+            </label>
             <select
               value={prefs.preferred_language}
               onChange={(e) => save({ preferred_language: e.target.value })}
               className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
             >
-              {LANGS.map((l) => <option key={l.value} value={l.value}>{l.label}</option>)}
+              {LANGS.map((l) => (
+                <option key={l.value} value={l.value}>
+                  {l.label}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -112,9 +129,12 @@ export function UniquesCard() {
                 Profilul tău apare doar pentru networking/prietenii — fără context dating/NSFW.
               </p>
             </div>
-            <input type="checkbox" checked={prefs.friends_only_mode}
+            <input
+              type="checkbox"
+              checked={prefs.friends_only_mode}
               onChange={(e) => save({ friends_only_mode: e.target.checked })}
-              className="mt-1 size-4 accent-primary" />
+              className="mt-1 size-4 accent-primary"
+            />
           </label>
         </div>
       </section>
@@ -137,14 +157,19 @@ export function UniquesCard() {
               placeholder="min. 4 cifre"
               className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
             />
-            <button onClick={applyPin} disabled={pinDraft.length < 4}
-              className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground disabled:opacity-50">
+            <button
+              onClick={applyPin}
+              disabled={pinDraft.length < 4}
+              className="rounded-full bg-primary px-4 py-2 text-xs font-medium text-primary-foreground disabled:opacity-50"
+            >
               Activează
             </button>
           </div>
         ) : (
-          <button onClick={removePin}
-            className="mt-3 w-full rounded-full border border-border bg-background py-2 text-xs hover:border-destructive hover:text-destructive">
+          <button
+            onClick={removePin}
+            className="mt-3 w-full rounded-full border border-border bg-background py-2 text-xs hover:border-destructive hover:text-destructive"
+          >
             Dezactivează PIN-ul
           </button>
         )}

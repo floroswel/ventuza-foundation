@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Flag, Loader2 } from "lucide-react";
@@ -58,7 +64,10 @@ export function ReportBlockDialog({
     if (!reason) return toast.error("Alege un motiv");
     setBusy(true);
     try {
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user) throw new Error("Nu ești autentificat");
       if (user.id === targetUserId) throw new Error("cannot report yourself");
@@ -74,7 +83,10 @@ export function ReportBlockDialog({
       if (alsoBlock) {
         const { error: blockError } = await supabase
           .from("blocks")
-          .upsert({ blocker_id: user.id, blocked_id: targetUserId }, { onConflict: "blocker_id,blocked_id" });
+          .upsert(
+            { blocker_id: user.id, blocked_id: targetUserId },
+            { onConflict: "blocker_id,blocked_id" },
+          );
         if (blockError) throw blockError;
         onBlocked?.();
       }
@@ -110,8 +122,17 @@ export function ReportBlockDialog({
         </DialogHeader>
         <div className="space-y-2">
           {REASONS.map((r) => (
-            <label key={r.id} className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm ${reason === r.id ? "border-primary bg-primary/10" : "border-border"}`}>
-              <input type="radio" name="reason" checked={reason === r.id} onChange={() => setReason(r.id)} className="accent-primary" />
+            <label
+              key={r.id}
+              className={`flex cursor-pointer items-center gap-2 rounded-xl border px-3 py-2 text-sm ${reason === r.id ? "border-primary bg-primary/10" : "border-border"}`}
+            >
+              <input
+                type="radio"
+                name="reason"
+                checked={reason === r.id}
+                onChange={() => setReason(r.id)}
+                className="accent-primary"
+              />
               {r.label}
             </label>
           ))}
@@ -123,10 +144,18 @@ export function ReportBlockDialog({
             className="w-full rounded-xl border border-border bg-background p-2 text-sm outline-none focus:border-primary"
           />
           <div className="flex gap-2 pt-2">
-            <button disabled={busy} onClick={() => submit(false)} className="flex-1 rounded-full border border-border px-3 py-2 text-xs font-medium disabled:opacity-50">
+            <button
+              disabled={busy}
+              onClick={() => submit(false)}
+              className="flex-1 rounded-full border border-border px-3 py-2 text-xs font-medium disabled:opacity-50"
+            >
               {busy && <Loader2 className="mr-1 inline size-3 animate-spin" />} Doar raportează
             </button>
-            <button disabled={busy} onClick={() => submit(true)} className="flex-1 rounded-full bg-destructive px-3 py-2 text-xs font-medium text-destructive-foreground disabled:opacity-50">
+            <button
+              disabled={busy}
+              onClick={() => submit(true)}
+              className="flex-1 rounded-full bg-destructive px-3 py-2 text-xs font-medium text-destructive-foreground disabled:opacity-50"
+            >
               Raportează + Blochează
             </button>
           </div>

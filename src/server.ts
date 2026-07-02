@@ -44,13 +44,20 @@ function applySecurityHeaders(response: Response, url: URL): Response {
   headers.set("X-Content-Type-Options", "nosniff");
   headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
   headers.set("X-Frame-Options", "SAMEORIGIN");
-  headers.set("Permissions-Policy", "camera=(self), microphone=(self), geolocation=(self), payment=()");
+  headers.set(
+    "Permissions-Policy",
+    "camera=(self), microphone=(self), geolocation=(self), payment=()",
+  );
   // Admin route stays out of search engines
   if (url.pathname.startsWith("/admin")) {
     headers.set("X-Robots-Tag", "noindex, nofollow");
     headers.set("Cache-Control", "no-store");
   }
-  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
 }
 
 export default {

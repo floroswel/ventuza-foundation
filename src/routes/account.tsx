@@ -21,10 +21,7 @@ import { BottomNav } from "@/components/BottomNav";
 export const Route = createFileRoute("/account")({
   ssr: false,
   head: () => ({
-    meta: [
-      { title: "Cont — Ventuza" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Cont — Ventuza" }, { name: "robots", content: "noindex" }],
   }),
   component: AccountPage,
 });
@@ -53,7 +50,9 @@ function AccountPage() {
     if (!user) return;
     supabase
       .from("profiles")
-      .select("display_name, photo_url, age_status, hide_online, discrete_mode, boost_until, looking_now_until")
+      .select(
+        "display_name, photo_url, age_status, hide_online, discrete_mode, boost_until, looking_now_until",
+      )
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => setProfile(data as ProfileSummary | null));
@@ -84,7 +83,8 @@ function AccountPage() {
   const online = !profile?.hide_online;
   const stealth = !!profile?.discrete_mode;
   const boostActive = profile?.boost_until && new Date(profile.boost_until).getTime() > Date.now();
-  const nowActive = profile?.looking_now_until && new Date(profile.looking_now_until).getTime() > Date.now();
+  const nowActive =
+    profile?.looking_now_until && new Date(profile.looking_now_until).getTime() > Date.now();
 
   return (
     <div className="min-h-screen bg-background pb-28">
@@ -192,21 +192,9 @@ function AccountPage() {
 
         {/* Menu */}
         <section className="overflow-hidden rounded-2xl border border-border/50 bg-surface/40">
-          <MenuRow
-            to="/favorites"
-            icon={<Album className="size-5" />}
-            label="Albume & favorite"
-          />
-          <MenuRow
-            to="/safety"
-            icon={<ShieldCheck className="size-5" />}
-            label="Siguranță"
-          />
-          <MenuRow
-            to="/quests"
-            icon={<Flame className="size-5" />}
-            label="Quests & recompense"
-          />
+          <MenuRow to="/favorites" icon={<Album className="size-5" />} label="Albume & favorite" />
+          <MenuRow to="/safety" icon={<ShieldCheck className="size-5" />} label="Siguranță" />
+          <MenuRow to="/quests" icon={<Flame className="size-5" />} label="Quests & recompense" />
           <MenuRow
             href="mailto:support@ventuza.eu"
             icon={<HelpCircle className="size-5" />}
@@ -214,9 +202,7 @@ function AccountPage() {
           />
         </section>
 
-        <p className="pb-4 text-center text-[11px] text-muted-foreground">
-          Ventuza · {user.email}
-        </p>
+        <p className="pb-4 text-center text-[11px] text-muted-foreground">Ventuza · {user.email}</p>
       </div>
 
       <BottomNav />

@@ -4,15 +4,30 @@ import { CheckCircle2, Circle } from "lucide-react";
 type Check = { key: string; label: string; done: boolean; href?: string };
 
 export function ProfileCompleteness({ profile, onEdit }: { profile: any; onEdit: () => void }) {
-  const checks: Check[] = useMemo(() => [
-    { key: "photos", label: "Adaugă cel puțin 3 poze", done: (profile.photos?.length ?? 0) >= 3 },
-    { key: "bio", label: "Scrie un bio", done: !!profile.bio && profile.bio.length > 30 },
-    { key: "prompts", label: "Răspunde la un prompt", done: !!profile.prompts?.some((p: any) => p.answer?.trim()) },
-    { key: "interests", label: "Alege minim 3 interese", done: (profile.interests?.length ?? 0) >= 3 },
-    { key: "tribes", label: "Selectează un tribe", done: (profile.tribes?.length ?? 0) > 0 },
-    { key: "stats", label: "Completează stats (înălțime/body)", done: !!(profile.height_cm || profile.body_type) },
-    { key: "verified", label: "Verifică-ți contul", done: !!profile.verified_at },
-  ], [profile]);
+  const checks: Check[] = useMemo(
+    () => [
+      { key: "photos", label: "Adaugă cel puțin 3 poze", done: (profile.photos?.length ?? 0) >= 3 },
+      { key: "bio", label: "Scrie un bio", done: !!profile.bio && profile.bio.length > 30 },
+      {
+        key: "prompts",
+        label: "Răspunde la un prompt",
+        done: !!profile.prompts?.some((p: any) => p.answer?.trim()),
+      },
+      {
+        key: "interests",
+        label: "Alege minim 3 interese",
+        done: (profile.interests?.length ?? 0) >= 3,
+      },
+      { key: "tribes", label: "Selectează un tribe", done: (profile.tribes?.length ?? 0) > 0 },
+      {
+        key: "stats",
+        label: "Completează stats (înălțime/body)",
+        done: !!(profile.height_cm || profile.body_type),
+      },
+      { key: "verified", label: "Verifică-ți contul", done: !!profile.verified_at },
+    ],
+    [profile],
+  );
 
   const done = checks.filter((c) => c.done).length;
   const pct = Math.round((done / checks.length) * 100);
@@ -44,12 +59,15 @@ export function ProfileCompleteness({ profile, onEdit }: { profile: any; onEdit:
             <span>{c.label}</span>
           </li>
         ))}
-        {checks.filter((c) => c.done).slice(0, 2).map((c) => (
-          <li key={c.key} className="flex items-center gap-2 text-sm text-foreground/70">
-            <CheckCircle2 className="size-4 shrink-0 text-primary" />
-            <span className="line-through opacity-60">{c.label}</span>
-          </li>
-        ))}
+        {checks
+          .filter((c) => c.done)
+          .slice(0, 2)
+          .map((c) => (
+            <li key={c.key} className="flex items-center gap-2 text-sm text-foreground/70">
+              <CheckCircle2 className="size-4 shrink-0 text-primary" />
+              <span className="line-through opacity-60">{c.label}</span>
+            </li>
+          ))}
       </ul>
     </section>
   );

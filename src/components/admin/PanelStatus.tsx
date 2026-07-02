@@ -53,8 +53,9 @@ export function useAdminPanelLoad<T>(
       });
   };
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { run(); }, deps);
+  useEffect(() => {
+    run();
+  }, deps);
 
   // Auto-refresh: re-run loader every `autoRefreshMs` so the panel stays
   // in sync with the latest batch and the "last check" timestamp advances.
@@ -96,11 +97,18 @@ export function LastCheckBadge({
   }
   const sec = Math.max(0, Math.floor((Date.now() - at.getTime()) / 1000));
   const rel =
-    sec < 5 ? "acum" :
-    sec < 60 ? `acum ${sec}s` :
-    sec < 3600 ? `acum ${Math.floor(sec / 60)}m` :
-    `acum ${Math.floor(sec / 3600)}h`;
-  const abs = at.toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    sec < 5
+      ? "acum"
+      : sec < 60
+        ? `acum ${sec}s`
+        : sec < 3600
+          ? `acum ${Math.floor(sec / 60)}m`
+          : `acum ${Math.floor(sec / 3600)}h`;
+  const abs = at.toLocaleTimeString("ro-RO", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
   const stale = sec > 120;
   return (
     <span
@@ -117,9 +125,12 @@ export function LastCheckBadge({
   );
 }
 
-
 export function PanelStatus({
-  state, isEmpty, emptyHint, retry, children,
+  state,
+  isEmpty,
+  emptyHint,
+  retry,
+  children,
 }: {
   state: PanelState<any>;
   isEmpty?: boolean;
@@ -148,8 +159,8 @@ export function PanelStatus({
             <p className="mt-1 break-words text-xs text-red-200/90">{state.error}</p>
             {state.forbidden && (
               <p className="mt-2 text-[11px] text-red-200/70">
-                Acest panou necesită un rol pe care contul tău nu îl are
-                (ex: <code>super_admin</code> sau <code>auditor</code>).
+                Acest panou necesită un rol pe care contul tău nu îl are (ex:{" "}
+                <code>super_admin</code> sau <code>auditor</code>).
               </p>
             )}
             {retry && (

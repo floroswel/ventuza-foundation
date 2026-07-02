@@ -24,13 +24,22 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 async function reqMeta() {
   let ip: string | null = null;
   let ua: string | null = null;
-  try { ip = getRequestIP({ xForwardedFor: true }) ?? null; } catch { /* noop */ }
-  try { ua = getRequestHeader("user-agent") ?? null; } catch { /* noop */ }
+  try {
+    ip = getRequestIP({ xForwardedFor: true }) ?? null;
+  } catch {
+    /* noop */
+  }
+  try {
+    ua = getRequestHeader("user-agent") ?? null;
+  } catch {
+    /* noop */
+  }
   return { ip, ua };
 }
 
 async function assertRole(
-  supabase: any, userId: string,
+  supabase: any,
+  userId: string,
   roles: Array<"super_admin" | "admin" | "auditor" | "moderator" | "support" | "read_only">,
 ) {
   const { data, error } = await supabase.rpc("has_any_role", { _user_id: userId, _roles: roles });
@@ -39,9 +48,13 @@ async function assertRole(
 }
 
 async function logAudit(opts: {
-  actorId: string; action: string;
-  targetTable?: string | null; targetId?: string | null;
-  before?: any; after?: any; justification?: string | null;
+  actorId: string;
+  action: string;
+  targetTable?: string | null;
+  targetId?: string | null;
+  before?: any;
+  after?: any;
+  justification?: string | null;
   severity?: "info" | "warning" | "critical";
 }) {
   const meta = await reqMeta();
@@ -56,7 +69,8 @@ async function logAudit(opts: {
     after_data: opts.after ?? null,
     justification: opts.justification ?? null,
     severity: opts.severity ?? "info",
-    ip: meta.ip, user_agent: meta.ua,
+    ip: meta.ip,
+    user_agent: meta.ua,
   });
 }
 
@@ -74,47 +88,90 @@ export const adminGetUserActivity = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    await assertRole(context.supabase, context.userId,
-      ["super_admin", "admin", "auditor", "moderator", "support"]);
+    await assertRole(context.supabase, context.userId, [
+      "super_admin",
+      "admin",
+      "auditor",
+      "moderator",
+      "support",
+    ]);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
 
-    const [authUser, devices, subs, invoicesPaid, reportsMade, reportsRcvd,
-           pushSubs, deletionReqs, riskFlags] = await Promise.all([
+    const [
+      authUser,
+      devices,
+      subs,
+      invoicesPaid,
+      reportsMade,
+      reportsRcvd,
+      pushSubs,
+      deletionReqs,
+      riskFlags,
+    ] = await Promise.all([
       sa.auth.admin.getUserById(data.userId),
-      sa.from("device_fingerprints")
+      sa
+        .from("device_fingerprints")
         .select("id, first_seen_at, last_seen_at, fingerprint, user_agent")
-        .eq("user_id", data.userId).order("last_seen_at", { ascending: false }).limit(10),
-      sa.from("subscriptions")
+        .eq("user_id", data.userId)
+        .order("last_seen_at", { ascending: false })
+        .limit(10),
+      sa
+        .from("subscriptions")
         .select("id, status, platform, product_id, started_at, expires_at, auto_renew, updated_at")
-        .eq("user_id", data.userId).order("started_at", { ascending: false }).limit(20),
-      sa.from("partner_invoices")
+        .eq("user_id", data.userId)
+        .order("started_at", { ascending: false })
+        .limit(20),
+      sa
+        .from("partner_invoices")
         .select("id, series, number, year, total_minor, currency, status, issued_at, paid_at")
-        .eq("owner_id", data.userId).order("issued_at", { ascending: false }).limit(20),
-      sa.from("reports")
+        .eq("owner_id", data.userId)
+        .order("issued_at", { ascending: false })
+        .limit(20),
+      sa
+        .from("reports")
         .select("id, reported_id, reason, status, created_at")
-        .eq("reporter_id", data.userId).order("created_at", { ascending: false }).limit(20),
-      sa.from("reports")
+        .eq("reporter_id", data.userId)
+        .order("created_at", { ascending: false })
+        .limit(20),
+      sa
+        .from("reports")
         .select("id, reporter_id, reason, status, created_at")
-        .eq("reported_id", data.userId).order("created_at", { ascending: false }).limit(20),
-      sa.from("push_subscriptions")
+        .eq("reported_id", data.userId)
+        .order("created_at", { ascending: false })
+        .limit(20),
+      sa
+        .from("push_subscriptions")
         .select("id, kind, platform, created_at, last_seen_at")
-        .eq("user_id", data.userId).order("created_at", { ascending: false }).limit(10),
-      sa.from("deletion_requests")
+        .eq("user_id", data.userId)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      sa
+        .from("deletion_requests")
         .select("id, status, scheduled_at, created_at")
-        .eq("user_id", data.userId).order("created_at", { ascending: false }).limit(5),
-      sa.from("risk_flags")
+        .eq("user_id", data.userId)
+        .order("created_at", { ascending: false })
+        .limit(5),
+      sa
+        .from("risk_flags")
         .select("id, kind, severity, status, created_at, resolved_at")
-        .eq("user_id", data.userId).order("created_at", { ascending: false }).limit(20),
+        .eq("user_id", data.userId)
+        .order("created_at", { ascending: false })
+        .limit(20),
     ]);
 
     // Mască fingerprint + user_agent: doar prefixul / familia, ca să nu se poată reconstitui.
     const safeDevices = (devices.data ?? []).map((d: any) => ({
-      id: d.id, first_seen_at: d.first_seen_at, last_seen_at: d.last_seen_at,
-      fingerprint_prefix: typeof d.fingerprint === "string" ? d.fingerprint.slice(0, 8) + "…" : null,
-      ua_family: typeof d.user_agent === "string"
-        ? (d.user_agent.match(/(Chrome|Firefox|Safari|Edge|Mobile)[\/\s][\d.]*/)?.[0] ?? "unknown")
-        : null,
+      id: d.id,
+      first_seen_at: d.first_seen_at,
+      last_seen_at: d.last_seen_at,
+      fingerprint_prefix:
+        typeof d.fingerprint === "string" ? d.fingerprint.slice(0, 8) + "…" : null,
+      ua_family:
+        typeof d.user_agent === "string"
+          ? (d.user_agent.match(/(Chrome|Firefox|Safari|Edge|Mobile)[\/\s][\d.]*/)?.[0] ??
+            "unknown")
+          : null,
     }));
 
     return {
@@ -143,12 +200,17 @@ export const adminGetUserActivity = createServerFn({ method: "POST" })
 
 const UpdateProfileInput = z.object({
   userId: z.string().uuid(),
-  changes: z.object({
-    display_name: z.string().trim().min(1).max(60).optional(),
-    bio: z.string().trim().max(500).optional(),
-    birthdate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(), // YYYY-MM-DD; triggerul DB refuză <18
-    travel_city: z.string().trim().max(80).optional(),
-  }).refine((c) => Object.keys(c).length > 0, { message: "Niciun câmp de modificat" }),
+  changes: z
+    .object({
+      display_name: z.string().trim().min(1).max(60).optional(),
+      bio: z.string().trim().max(500).optional(),
+      birthdate: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/)
+        .optional(), // YYYY-MM-DD; triggerul DB refuză <18
+      travel_city: z.string().trim().max(80).optional(),
+    })
+    .refine((c) => Object.keys(c).length > 0, { message: "Niciun câmp de modificat" }),
   justification: z.string().min(10).max(500),
 });
 
@@ -164,18 +226,25 @@ export const adminUpdateUserProfile = createServerFn({ method: "POST" })
     const sa = supabaseAdmin as any;
 
     const cols = Object.keys(data.changes).join(",");
-    const { data: before, error: e0 } = await sa.from("profiles")
-      .select(cols).eq("id", data.userId).maybeSingle();
+    const { data: before, error: e0 } = await sa
+      .from("profiles")
+      .select(cols)
+      .eq("id", data.userId)
+      .maybeSingle();
     if (e0) throw new Error(e0.message);
 
     const { error } = await sa.from("profiles").update(data.changes).eq("id", data.userId);
     if (error) throw new Error(`Update eșuat: ${error.message}`);
 
     await logAudit({
-      actorId: context.userId, action: "user.profile_update",
-      targetTable: "profiles", targetId: data.userId,
-      before, after: data.changes,
-      justification: data.justification, severity: "warning",
+      actorId: context.userId,
+      action: "user.profile_update",
+      targetTable: "profiles",
+      targetId: data.userId,
+      before,
+      after: data.changes,
+      justification: data.justification,
+      severity: "warning",
     });
     return { ok: true };
   });
@@ -212,10 +281,14 @@ export const adminChangeUserEmail = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
 
     await logAudit({
-      actorId: context.userId, action: "user.email_change",
-      targetTable: "auth.users", targetId: data.userId,
-      before: { email: oldEmail }, after: { email: data.newEmail },
-      justification: data.justification, severity: "critical",
+      actorId: context.userId,
+      action: "user.email_change",
+      targetTable: "auth.users",
+      targetId: data.userId,
+      before: { email: oldEmail },
+      after: { email: data.newEmail },
+      justification: data.justification,
+      severity: "critical",
     });
     return { ok: true };
   });
@@ -244,27 +317,36 @@ export const adminPushUnicast = createServerFn({ method: "POST" })
     const sa = supabaseAdmin as any;
 
     // 1) Notificare in-app (apare în clopoțel chiar dacă push-ul e off).
-    const { data: notif, error: nerr } = await sa.from("notifications").insert({
-      user_id: data.userId,
-      type: "admin_message",
-      title: data.title,
-      body: data.body,
-      link: data.url ?? null,
-      actor_id: context.userId,
-    }).select("id").maybeSingle();
+    const { data: notif, error: nerr } = await sa
+      .from("notifications")
+      .insert({
+        user_id: data.userId,
+        type: "admin_message",
+        title: data.title,
+        body: data.body,
+        link: data.url ?? null,
+        actor_id: context.userId,
+      })
+      .select("id")
+      .maybeSingle();
     if (nerr) throw new Error(`notificare in-app eșuată: ${nerr.message}`);
 
     // 2) Push web — respectă opt-out hard `master_push=false` (GDPR/PECR).
-    const { data: prof } = await sa.from("profiles")
-      .select("notification_prefs").eq("id", data.userId).maybeSingle();
+    const { data: prof } = await sa
+      .from("profiles")
+      .select("notification_prefs")
+      .eq("id", data.userId)
+      .maybeSingle();
     const prefs = (prof?.notification_prefs ?? {}) as Record<string, unknown>;
     let pushDelivered = 0;
     let pushSkipped: string | null = null;
     if (prefs.master_push === false) {
       pushSkipped = "master_off";
     } else {
-      const { data: subs } = await sa.from("push_subscriptions")
-        .select("id, endpoint, p256dh, auth, kind").eq("user_id", data.userId);
+      const { data: subs } = await sa
+        .from("push_subscriptions")
+        .select("id, endpoint, p256dh, auth, kind")
+        .eq("user_id", data.userId);
       if (subs?.length) {
         const { sendOne } = await import("./web-push.server");
         for (const s of subs) {
@@ -281,10 +363,19 @@ export const adminPushUnicast = createServerFn({ method: "POST" })
     }
 
     await logAudit({
-      actorId: context.userId, action: "user.push_unicast",
-      targetTable: "notifications", targetId: notif?.id ?? null,
-      after: { title: data.title, body: data.body, url: data.url, push_delivered: pushDelivered, push_skipped: pushSkipped },
-      justification: data.justification, severity: "info",
+      actorId: context.userId,
+      action: "user.push_unicast",
+      targetTable: "notifications",
+      targetId: notif?.id ?? null,
+      after: {
+        title: data.title,
+        body: data.body,
+        url: data.url,
+        push_delivered: pushDelivered,
+        push_skipped: pushSkipped,
+      },
+      justification: data.justification,
+      severity: "info",
     });
     return { ok: true, notificationId: notif?.id, pushDelivered, pushSkipped };
   });
@@ -294,21 +385,34 @@ export const adminPushUnicast = createServerFn({ method: "POST" })
    ================================================================= */
 export const adminQuickFindUser = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    q: z.string().trim().min(2).max(120),
-  }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        q: z.string().trim().min(2).max(120),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
-    await assertRole(context.supabase, context.userId,
-      ["super_admin", "admin", "auditor", "moderator", "support"]);
+    await assertRole(context.supabase, context.userId, [
+      "super_admin",
+      "admin",
+      "auditor",
+      "moderator",
+      "support",
+    ]);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
     const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.q);
     if (isUuid) {
-      const { data: p } = await sa.from("profiles")
-        .select("id, display_name, created_at, banned_at").eq("id", data.q).maybeSingle();
+      const { data: p } = await sa
+        .from("profiles")
+        .select("id, display_name, created_at, banned_at")
+        .eq("id", data.q)
+        .maybeSingle();
       return p ? [p] : [];
     }
-    const { data: rows, error } = await sa.from("profiles")
+    const { data: rows, error } = await sa
+      .from("profiles")
       .select("id, display_name, created_at, banned_at")
       .ilike("display_name", `%${data.q}%`)
       .order("created_at", { ascending: false })

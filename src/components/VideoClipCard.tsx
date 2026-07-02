@@ -18,9 +18,14 @@ export function VideoClipCard({ userId, videoPath, onChange }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (!videoPath) { setSigned(null); return; }
+    if (!videoPath) {
+      setSigned(null);
+      return;
+    }
     (async () => {
-      const { data } = await supabase.storage.from("profile-media").createSignedUrl(videoPath, 3600);
+      const { data } = await supabase.storage
+        .from("profile-media")
+        .createSignedUrl(videoPath, 3600);
       if (data?.signedUrl) setSigned(data.signedUrl);
     })();
   }, [videoPath]);
@@ -49,12 +54,16 @@ export function VideoClipCard({ userId, videoPath, onChange }: Props) {
       const ext = (file.name.split(".").pop() || "mp4").toLowerCase();
       const path = `${userId}/video-${crypto.randomUUID()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("profile-media").upload(path, file, {
-        contentType: file.type, upsert: false,
+        contentType: file.type,
+        upsert: false,
       });
       if (upErr) throw upErr;
       if (videoPath) await supabase.storage.from("profile-media").remove([videoPath]);
 
-      const { error } = await supabase.from("profiles").update({ video_clip_path: path }).eq("id", userId);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ video_clip_path: path })
+        .eq("id", userId);
       if (error) throw error;
       onChange(path);
       toast.success("Clip salvat.");
@@ -70,7 +79,10 @@ export function VideoClipCard({ userId, videoPath, onChange }: Props) {
     if (!videoPath) return;
     setBusy(true);
     await supabase.storage.from("profile-media").remove([videoPath]);
-    const { error } = await supabase.from("profiles").update({ video_clip_path: null }).eq("id", userId);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ video_clip_path: null })
+      .eq("id", userId);
     setBusy(false);
     if (error) return toast.error(error.message);
     onChange(null);

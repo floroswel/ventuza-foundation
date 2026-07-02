@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -59,7 +67,12 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
       .channel(`notifications:${user.id}`)
       .on(
         "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
         (payload) => {
           const n = payload.new as NotificationRow;
           setNotifications((prev) => [n, ...prev].slice(0, 100));
@@ -73,21 +86,35 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
       )
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
         (payload) => {
           const n = payload.new as NotificationRow;
           setNotifications((prev) => prev.map((x) => (x.id === n.id ? n : x)));
           // Recount
-          fetchUnreadCount().then(setUnread).catch(() => {});
+          fetchUnreadCount()
+            .then(setUnread)
+            .catch(() => {});
         },
       )
       .on(
         "postgres_changes",
-        { event: "DELETE", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
+        {
+          event: "DELETE",
+          schema: "public",
+          table: "notifications",
+          filter: `user_id=eq.${user.id}`,
+        },
         (payload) => {
           const oldId = (payload.old as { id: string }).id;
           setNotifications((prev) => prev.filter((x) => x.id !== oldId));
-          fetchUnreadCount().then(setUnread).catch(() => {});
+          fetchUnreadCount()
+            .then(setUnread)
+            .catch(() => {});
         },
       )
       .subscribe();
@@ -98,7 +125,9 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
   const markAllRead = useCallback(async () => {
     await markAllReadApi();
-    setNotifications((prev) => prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() })));
+    setNotifications((prev) =>
+      prev.map((n) => (n.read_at ? n : { ...n, read_at: new Date().toISOString() })),
+    );
     setUnread(0);
   }, []);
 
@@ -106,7 +135,9 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     if (ids.length === 0) return;
     await markReadApi(ids);
     setNotifications((prev) =>
-      prev.map((n) => (ids.includes(n.id) && !n.read_at ? { ...n, read_at: new Date().toISOString() } : n)),
+      prev.map((n) =>
+        ids.includes(n.id) && !n.read_at ? { ...n, read_at: new Date().toISOString() } : n,
+      ),
     );
     setUnread((c) => Math.max(0, c - ids.length));
   }, []);
@@ -139,7 +170,8 @@ const EMPTY_CTX: Ctx = {
 export function useNotifications() {
   const ctx = useContext(NotificationsContext);
   if (!ctx) {
-    if (typeof console !== "undefined") console.warn("[notifications] provider missing — using empty fallback");
+    if (typeof console !== "undefined")
+      console.warn("[notifications] provider missing — using empty fallback");
     return EMPTY_CTX;
   }
   return ctx;

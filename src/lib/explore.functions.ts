@@ -19,8 +19,20 @@ export const getExploreCities = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const sb = context.supabase;
     const [venuesRes, eventsRes, travelersRes] = await Promise.all([
-      sb.from("venues").select("city, cover_url").eq("is_published", true).eq("moderation_status", "approved").not("city", "is", null).limit(2000),
-      sb.from("events").select("city, cover_url").eq("is_published", true).eq("moderation_status", "approved").not("city", "is", null).limit(2000),
+      sb
+        .from("venues")
+        .select("city, cover_url")
+        .eq("is_published", true)
+        .eq("moderation_status", "approved")
+        .not("city", "is", null)
+        .limit(2000),
+      sb
+        .from("events")
+        .select("city, cover_url")
+        .eq("is_published", true)
+        .eq("moderation_status", "approved")
+        .not("city", "is", null)
+        .limit(2000),
       sb.from("profiles").select("travel_city").not("travel_city", "is", null).limit(5000),
     ]);
     const byCity = new Map<string, ExploreCity>();

@@ -59,17 +59,46 @@ function ResetPasswordPage() {
         {ready && (
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="pw" className="text-xs uppercase tracking-[0.18em] text-muted-foreground">New password</Label>
+              <Label
+                htmlFor="pw"
+                className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
+              >
+                New password
+              </Label>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <Input id="pw" type="password" minLength={8} required value={password} onChange={(e) => setPassword(e.target.value)} className="pl-10" />
+                <Input
+                  id="pw"
+                  type="password"
+                  minLength={8}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="pl-10"
+                />
               </div>
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="pw2" className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Confirm password</Label>
-              <Input id="pw2" type="password" minLength={8} required value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+              <Label
+                htmlFor="pw2"
+                className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
+              >
+                Confirm password
+              </Label>
+              <Input
+                id="pw2"
+                type="password"
+                minLength={8}
+                required
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+              />
             </div>
-            <Button type="submit" disabled={submitting} className="h-12 w-full rounded-full text-sm uppercase tracking-[0.18em]">
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="h-12 w-full rounded-full text-sm uppercase tracking-[0.18em]"
+            >
               {submitting ? <Loader2 className="size-4 animate-spin" /> : "Update password"}
             </Button>
           </form>

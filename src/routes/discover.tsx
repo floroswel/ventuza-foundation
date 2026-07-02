@@ -1,7 +1,30 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { BadgeCheck, ChevronLeft, ChevronRight, Compass, Eye, EyeOff, Flame, Hand, Heart, LayoutGrid, Layers, Loader2, MapPin, MessageCircle, Plane, Radar, Rocket, Ruler, Sparkles, SlidersHorizontal, Star, X } from "lucide-react";
+import {
+  BadgeCheck,
+  ChevronLeft,
+  ChevronRight,
+  Compass,
+  Eye,
+  EyeOff,
+  Flame,
+  Hand,
+  Heart,
+  LayoutGrid,
+  Layers,
+  Loader2,
+  MapPin,
+  MessageCircle,
+  Plane,
+  Radar,
+  Rocket,
+  Ruler,
+  Sparkles,
+  SlidersHorizontal,
+  Star,
+  X,
+} from "lucide-react";
 import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
@@ -18,11 +41,26 @@ import { GoldenHourBadge } from "@/components/GoldenHourBadge";
 import { QuickFiltersStrip } from "@/components/QuickFiltersStrip";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
-  DEFAULT_FILTERS, fetchDiscover, requestAndStoreLocation,
-  signPhotos, formatDistance, ageFrom, isOnline, formatLastSeen, formatHeight,
-  type DiscoverFilters, type DiscoverProfile,
+  DEFAULT_FILTERS,
+  fetchDiscover,
+  requestAndStoreLocation,
+  signPhotos,
+  formatDistance,
+  ageFrom,
+  isOnline,
+  formatLastSeen,
+  formatHeight,
+  type DiscoverFilters,
+  type DiscoverProfile,
 } from "@/lib/discover";
-import { addFavorite, isFavorite, removeFavorite, sendTap, TAP_EMOJIS, type TapEmoji } from "@/lib/social";
+import {
+  addFavorite,
+  isFavorite,
+  removeFavorite,
+  sendTap,
+  TAP_EMOJIS,
+  type TapEmoji,
+} from "@/lib/social";
 import { sendWoof, hasWoofed } from "@/lib/ads";
 import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
@@ -30,7 +68,6 @@ import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
-
 
 export const Route = createFileRoute("/discover")({
   head: () => ({ meta: [{ title: "Discover — Ventuza" }] }),
@@ -55,15 +92,23 @@ function DiscoverPage() {
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
-  const [match, setMatch] = useState<{ id: string; name: string; photo: string | null } | null>(null);
+  const [match, setMatch] = useState<{ id: string; name: string; photo: string | null } | null>(
+    null,
+  );
   const [selected, setSelected] = useState<DiscoverProfile | null>(null);
   const [incognito, setIncognito] = useState(false);
   const [incognitoBusy, setIncognitoBusy] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("incognito").eq("id", user.id).maybeSingle()
-      .then(({ data }) => { if (data) setIncognito(!!data.incognito); });
+    supabase
+      .from("profiles")
+      .select("incognito")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setIncognito(!!data.incognito);
+      });
   }, [user]);
 
   const toggleIncognito = useCallback(async () => {
@@ -77,7 +122,9 @@ function DiscoverPage() {
       setIncognito(!next);
       toast.error(error.message);
     } else {
-      toast.success(next ? "Mod incognito activat — profilul tău e ascuns" : "Ești din nou vizibil");
+      toast.success(
+        next ? "Mod incognito activat — profilul tău e ascuns" : "Ești din nou vizibil",
+      );
     }
   }, [user, incognito, incognitoBusy]);
 
@@ -98,7 +145,11 @@ function DiscoverPage() {
     if (!user || locStatus !== "unknown") return;
     requestAndStoreLocation().then((r) => {
       setLocStatus(r.ok ? "granted" : "denied");
-      if (!r.ok) toast.message("Locație indisponibilă", { id: "loc-unavailable", description: "Îți arătăm rezultate pe baza filtrelor tale." });
+      if (!r.ok)
+        toast.message("Locație indisponibilă", {
+          id: "loc-unavailable",
+          description: "Îți arătăm rezultate pe baza filtrelor tale.",
+        });
     });
   }, [user, locStatus]);
 
@@ -145,8 +196,9 @@ function DiscoverPage() {
     }
   }, [debouncedFilters, user]);
 
-
-  useEffect(() => { void load(); }, [load]);
+  useEffect(() => {
+    void load();
+  }, [load]);
 
   // Realtime: refresh online status periodically (last_seen lives in profiles)
   useEffect(() => {
@@ -161,10 +213,16 @@ function DiscoverPage() {
   // Realtime location/discover refresh: profile location changes reorder nearby people.
   useEffect(() => {
     if (!user) return;
-    const refresh = () => { void load(); };
+    const refresh = () => {
+      void load();
+    };
     const ch = supabase
       .channel(`discover-profiles:${user.id}`)
-      .on("postgres_changes", { event: "*", schema: "public", table: "profile_live_events" }, refresh)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profile_live_events" },
+        refresh,
+      )
       .subscribe();
     const t = setInterval(refresh, 20_000);
     return () => {
@@ -192,50 +250,67 @@ function DiscoverPage() {
             .maybeSingle();
           const path = prof?.photos?.[0];
           const signed = path ? (await signPhotos([path]))[path] : null;
-          setMatch({ id: otherId, name: prof?.display_name ?? "Someone wonderful", photo: signed ?? null });
+          setMatch({
+            id: otherId,
+            name: prof?.display_name ?? "Someone wonderful",
+            photo: signed ?? null,
+          });
         },
       )
       .subscribe();
-    return () => { supabase.removeChannel(ch); };
+    return () => {
+      supabase.removeChannel(ch);
+    };
   }, [user]);
-
-
 
   const visible = useMemo(() => {
     if (tab === "fresh") {
-      return [...profiles].sort((a, b) => new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime());
+      return [...profiles].sort(
+        (a, b) => new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime(),
+      );
     }
     return profiles;
   }, [profiles, tab]);
 
-  const handleDecision = useCallback(async (target: DiscoverProfile, action: "like" | "pass" | "super") => {
-    if (!user) return;
-    setSelected(null);
+  const handleDecision = useCallback(
+    async (target: DiscoverProfile, action: "like" | "pass" | "super") => {
+      if (!user) return;
+      setSelected(null);
 
-    const { error } = await supabase.from("swipes").insert({
-      swiper_id: user.id, target_id: target.id, action,
-    });
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-
-    // Remove from grid only after DB confirms
-    setProfiles((p) => p.filter((x) => x.id !== target.id));
-
-    if (action === "like" || action === "super") {
-      const { data: m } = await supabase
-        .from("matches")
-        .select("id")
-        .or(`and(user_a.eq.${user.id},user_b.eq.${target.id}),and(user_a.eq.${target.id},user_b.eq.${user.id})`)
-        .maybeSingle();
-      if (m) {
-        const photoPath = target.photos?.[0];
-        const signed = photoPath ? (await signPhotos([photoPath]))[photoPath] : null;
-        setMatch({ id: target.id, name: target.display_name ?? "Someone wonderful", photo: signed ?? null });
+      const { error } = await supabase.from("swipes").insert({
+        swiper_id: user.id,
+        target_id: target.id,
+        action,
+      });
+      if (error) {
+        toast.error(error.message);
+        return;
       }
-    }
-  }, [user]);
+
+      // Remove from grid only after DB confirms
+      setProfiles((p) => p.filter((x) => x.id !== target.id));
+
+      if (action === "like" || action === "super") {
+        const { data: m } = await supabase
+          .from("matches")
+          .select("id")
+          .or(
+            `and(user_a.eq.${user.id},user_b.eq.${target.id}),and(user_a.eq.${target.id},user_b.eq.${user.id})`,
+          )
+          .maybeSingle();
+        if (m) {
+          const photoPath = target.photos?.[0];
+          const signed = photoPath ? (await signPhotos([photoPath]))[photoPath] : null;
+          setMatch({
+            id: target.id,
+            name: target.display_name ?? "Someone wonderful",
+            photo: signed ?? null,
+          });
+        }
+      }
+    },
+    [user],
+  );
 
   return (
     <main className="relative min-h-dvh bg-background pb-28">
@@ -251,7 +326,12 @@ function DiscoverPage() {
                 onClick={() => pickView("grid")}
                 aria-label="Grid"
                 title="Grilă (Grindr/Scruff)"
-                className={cn("flex size-8 items-center justify-center rounded-full transition", view === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+                className={cn(
+                  "flex size-8 items-center justify-center rounded-full transition",
+                  view === "grid"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
               >
                 <LayoutGrid className="size-4" />
               </button>
@@ -259,7 +339,12 @@ function DiscoverPage() {
                 onClick={() => pickView("swipe")}
                 aria-label="Swipe"
                 title="Swipe (Tinder)"
-                className={cn("flex size-8 items-center justify-center rounded-full transition", view === "swipe" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground")}
+                className={cn(
+                  "flex size-8 items-center justify-center rounded-full transition",
+                  view === "swipe"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
+                )}
               >
                 <Layers className="size-4" />
               </button>
@@ -268,7 +353,11 @@ function DiscoverPage() {
               onClick={toggleIncognito}
               disabled={incognitoBusy}
               aria-label={incognito ? "Dezactivează incognito" : "Activează incognito"}
-              title={incognito ? "Ești invizibil — apasă ca să revii la vizibil" : "Mod incognito — ascunde-ți profilul din Discover"}
+              title={
+                incognito
+                  ? "Ești invizibil — apasă ca să revii la vizibil"
+                  : "Mod incognito — ascunde-ți profilul din Discover"
+              }
               className={cn(
                 "flex size-9 items-center justify-center rounded-full border transition",
                 incognito
@@ -276,7 +365,13 @@ function DiscoverPage() {
                   : "border-border bg-surface text-muted-foreground hover:text-foreground",
               )}
             >
-              {incognitoBusy ? <Loader2 className="size-4 animate-spin" /> : incognito ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+              {incognitoBusy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : incognito ? (
+                <EyeOff className="size-4" />
+              ) : (
+                <Eye className="size-4" />
+              )}
             </button>
             <Link
               to="/cruise"
@@ -297,21 +392,28 @@ function DiscoverPage() {
         </div>
 
         <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
-          <TabBtn active={tab === "nearby"} onClick={() => setTab("nearby")}>Nearby</TabBtn>
-          <TabBtn active={tab === "fresh"} onClick={() => setTab("fresh")}>Fresh</TabBtn>
+          <TabBtn active={tab === "nearby"} onClick={() => setTab("nearby")}>
+            Nearby
+          </TabBtn>
+          <TabBtn active={tab === "fresh"} onClick={() => setTab("fresh")}>
+            Fresh
+          </TabBtn>
           <GoldenHourBadge className="ml-1 flex-shrink-0" />
         </div>
-
-
 
         <QuickFiltersStrip value={filters} onChange={setFilters} />
       </header>
 
       <DailyRewardCard />
-      
-      <div className="px-3 pt-2"><SponsoredBanner placement="discover_card" /></div>
+
+      <div className="px-3 pt-2">
+        <SponsoredBanner placement="discover_card" />
+      </div>
       {loading ? (
-        <CenterMessage icon={<Loader2 className="size-6 animate-spin text-primary" />} title="Finding people…" />
+        <CenterMessage
+          icon={<Loader2 className="size-6 animate-spin text-primary" />}
+          title="Finding people…"
+        />
       ) : loadError ? (
         <CenterMessage
           icon={<Compass className="size-8 text-destructive" />}
@@ -336,10 +438,14 @@ function DiscoverPage() {
               </Button>
             ) : loadError.code === "not_authenticated" ? (
               <Button asChild variant="hero">
-                <Link to="/auth" search={{ mode: "login" }}>Autentifică-te</Link>
+                <Link to="/auth" search={{ mode: "login" }}>
+                  Autentifică-te
+                </Link>
               </Button>
             ) : (
-              <Button variant="hero" onClick={() => load()}>Reîncearcă</Button>
+              <Button variant="hero" onClick={() => load()}>
+                Reîncearcă
+              </Button>
             )
           }
         />
@@ -352,14 +458,15 @@ function DiscoverPage() {
           currentDistanceKm={filters.maxDistanceKm}
           onExpandDistance={(km) => setFilters({ ...filters, maxDistanceKm: km })}
         />
-
-
       ) : view === "swipe" ? (
         <>
           {autoExpanded != null && (
             <div className="mx-3 mt-2 rounded-md border border-primary/30 bg-primary/5 px-3 py-2 text-xs text-muted-foreground">
-              N-am găsit nimeni la {filters.maxDistanceKm ?? 25} km. Îți arătăm rezultate
-              până la <span className="font-medium text-primary">{autoExpanded === 5000 ? "nivel național" : `${autoExpanded} km`}</span>.{" "}
+              N-am găsit nimeni la {filters.maxDistanceKm ?? 25} km. Îți arătăm rezultate până la{" "}
+              <span className="font-medium text-primary">
+                {autoExpanded === 5000 ? "nivel național" : `${autoExpanded} km`}
+              </span>
+              .{" "}
               <button
                 className="underline"
                 onClick={() => setFilters({ ...filters, maxDistanceKm: autoExpanded })}
@@ -372,15 +479,21 @@ function DiscoverPage() {
         </>
       ) : (
         <>
-          <OnlineRow profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)} onOpen={setSelected} />
+          <OnlineRow
+            profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)}
+            onOpen={setSelected}
+          />
           <PosterRow
             title="Global"
             emoji="🌍"
             profiles={(() => {
-              const travelers = visible.filter((p) => p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date()));
-              const pool = travelers.length >= 3
-                ? travelers
-                : [...visible].sort((a, b) => (b.distance_m ?? 0) - (a.distance_m ?? 0));
+              const travelers = visible.filter(
+                (p) => p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date()),
+              );
+              const pool =
+                travelers.length >= 3
+                  ? travelers
+                  : [...visible].sort((a, b) => (b.distance_m ?? 0) - (a.distance_m ?? 0));
               return pool.slice(0, 9);
             })()}
             onOpen={setSelected}
@@ -388,49 +501,77 @@ function DiscoverPage() {
           <PosterRow
             title="New & nearby"
             profiles={[...visible]
-              .sort((a, b) => (a.distance_m ?? Number.MAX_SAFE_INTEGER) - (b.distance_m ?? Number.MAX_SAFE_INTEGER))
+              .sort(
+                (a, b) =>
+                  (a.distance_m ?? Number.MAX_SAFE_INTEGER) -
+                  (b.distance_m ?? Number.MAX_SAFE_INTEGER),
+              )
               .slice(0, 12)}
             onOpen={setSelected}
           />
           <div className="px-4 pb-1 pt-4">
-            <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">Toți din grid</p>
+            <p className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+              Toți din grid
+            </p>
           </div>
           <Cascade profiles={visible} onOpen={setSelected} />
         </>
       )}
 
-
-      <FiltersDrawer open={filtersOpen} onClose={() => setFiltersOpen(false)} value={filters} onApply={setFilters} />
+      <FiltersDrawer
+        open={filtersOpen}
+        onClose={() => setFiltersOpen(false)}
+        value={filters}
+        onApply={setFilters}
+      />
       <MatchModal
         open={!!match}
         onClose={() => setMatch(null)}
         otherName={match?.name ?? ""}
         otherPhotoUrl={match?.photo ?? null}
-        onSendFirstMessage={match ? async () => {
+        onSendFirstMessage={
+          match
+            ? async () => {
+                try {
+                  const cid = await getOrCreateConversation(match.id);
+                  setMatch(null);
+                  navigate({ to: "/messages/$id", params: { id: cid } });
+                } catch (e) {
+                  toast.error(e instanceof Error ? e.message : "Nu am putut deschide conversația");
+                }
+              }
+            : undefined
+        }
+      />
+      <ProfileSheet
+        profile={selected}
+        currentUserId={user?.id ?? null}
+        onClose={() => setSelected(null)}
+        onDecision={handleDecision}
+        onMessage={async (p) => {
           try {
-            const cid = await getOrCreateConversation(match.id);
-            setMatch(null);
+            const cid = await getOrCreateConversation(p.id);
+            setSelected(null);
             navigate({ to: "/messages/$id", params: { id: cid } });
           } catch (e) {
-            toast.error(e instanceof Error ? e.message : "Nu am putut deschide conversația");
+            toast.error(e instanceof Error ? e.message : "Couldn't open chat");
           }
-        } : undefined}
+        }}
       />
-      <ProfileSheet profile={selected} currentUserId={user?.id ?? null} onClose={() => setSelected(null)} onDecision={handleDecision} onMessage={async (p) => {
-        try {
-          const cid = await getOrCreateConversation(p.id);
-          setSelected(null);
-          navigate({ to: "/messages/$id", params: { id: cid } });
-        } catch (e) {
-          toast.error(e instanceof Error ? e.message : "Couldn't open chat");
-        }
-      }} />
       <BottomNav />
     </main>
   );
 }
 
-function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+function TabBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
     <button
       onClick={onClick}
@@ -471,12 +612,7 @@ function SwipeDeck({
         }}
       >
         {stack.map((p, i) => (
-          <SwipeCard
-            key={p.id}
-            profile={p}
-            stackIndex={i}
-            onDecision={(a) => onDecision(p, a)}
-          />
+          <SwipeCard key={p.id} profile={p} stackIndex={i} onDecision={(a) => onDecision(p, a)} />
         ))}
       </div>
       <div className="mt-5 mx-auto max-w-md">
@@ -488,7 +624,13 @@ function SwipeDeck({
     </div>
   );
 }
-function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p: DiscoverProfile) => void }) {
+function OnlineRow({
+  profiles,
+  onOpen,
+}: {
+  profiles: DiscoverProfile[];
+  onOpen: (p: DiscoverProfile) => void;
+}) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const { bySender } = useUnreadMessages();
   useEffect(() => {
@@ -508,8 +650,19 @@ function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: 
           const url = path ? urls[path] : null;
           const unread = bySender[p.id] ?? 0;
           return (
-            <button key={p.id} onClick={() => onOpen(p)} className="group flex shrink-0 flex-col items-center gap-1">
-              <span className={cn("relative block size-[66px] rounded-full p-[2px]", unread > 0 ? "snake-border bg-transparent" : "bg-gradient-to-tr from-primary via-primary-glow to-primary")}>
+            <button
+              key={p.id}
+              onClick={() => onOpen(p)}
+              className="group flex shrink-0 flex-col items-center gap-1"
+            >
+              <span
+                className={cn(
+                  "relative block size-[66px] rounded-full p-[2px]",
+                  unread > 0
+                    ? "snake-border bg-transparent"
+                    : "bg-gradient-to-tr from-primary via-primary-glow to-primary",
+                )}
+              >
                 <span className="relative z-[3] block size-full overflow-hidden rounded-full bg-surface ring-2 ring-background">
                   {url ? (
                     <img src={url} alt={p.display_name ?? ""} className="size-full object-cover" />
@@ -526,7 +679,9 @@ function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: 
                   </span>
                 )}
               </span>
-              <span className="max-w-[68px] truncate text-[10px] text-foreground/80">{p.display_name}</span>
+              <span className="max-w-[68px] truncate text-[10px] text-foreground/80">
+                {p.display_name}
+              </span>
             </button>
           );
         })}
@@ -535,8 +690,13 @@ function OnlineRow({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: 
   );
 }
 
-
-function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p: DiscoverProfile) => void }) {
+function Cascade({
+  profiles,
+  onOpen,
+}: {
+  profiles: DiscoverProfile[];
+  onOpen: (p: DiscoverProfile) => void;
+}) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const { bySender } = useUnreadMessages();
   useEffect(() => {
@@ -562,7 +722,12 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
             )}
           >
             {url ? (
-              <img src={url} alt={p.display_name ?? ""} loading="lazy" className="size-full object-cover transition-transform group-active:scale-95" />
+              <img
+                src={url}
+                alt={p.display_name ?? ""}
+                loading="lazy"
+                className="size-full object-cover transition-transform group-active:scale-95"
+              />
             ) : (
               <div className="flex size-full items-center justify-center text-2xl text-muted-foreground/40">
                 {p.display_name?.[0]?.toUpperCase() ?? "?"}
@@ -571,7 +736,8 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
             <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/0 to-transparent" />
             {unread > 0 && (
               <span className="absolute left-1.5 top-1.5 z-10 flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white shadow-[0_0_10px_rgba(244,63,94,0.75)] ring-2 ring-black/40">
-                <MessageCircle className="mr-0.5 size-2.5" />{unread > 9 ? "9+" : unread}
+                <MessageCircle className="mr-0.5 size-2.5" />
+                {unread > 9 ? "9+" : unread}
               </span>
             )}
             {online && (
@@ -581,12 +747,18 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
               />
             )}
             {p.boost_until && new Date(p.boost_until) > new Date() && (
-              <span aria-label="boosted" className="absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-lg backdrop-blur">
+              <span
+                aria-label="boosted"
+                className="absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-lg backdrop-blur"
+              >
                 <Rocket className="size-2.5" /> BOOST
               </span>
             )}
             {!(p.boost_until && new Date(p.boost_until) > new Date()) && p.verified && (
-              <span aria-label="verified" className="absolute left-1.5 top-1.5 rounded-full bg-black/60 p-0.5 backdrop-blur">
+              <span
+                aria-label="verified"
+                className="absolute left-1.5 top-1.5 rounded-full bg-black/60 p-0.5 backdrop-blur"
+              >
                 <BadgeCheck className="size-3.5 text-primary" />
               </span>
             )}
@@ -603,14 +775,19 @@ function Cascade({ profiles, onOpen }: { profiles: DiscoverProfile[]; onOpen: (p
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 p-1.5 text-left">
               <div className="min-w-0">
                 <p className="truncate text-[11px] font-medium leading-tight text-white">
-                  {p.display_name}{age ? <span className="text-white/70">, {age}</span> : null}
+                  {p.display_name}
+                  {age ? <span className="text-white/70">, {age}</span> : null}
                 </p>
                 {p.tribes && p.tribes.length > 0 && (
-                  <p className="truncate text-[9px] uppercase tracking-wider text-primary/90">{p.tribes.slice(0, 2).join(" · ")}</p>
+                  <p className="truncate text-[9px] uppercase tracking-wider text-primary/90">
+                    {p.tribes.slice(0, 2).join(" · ")}
+                  </p>
                 )}
               </div>
               {p.distance_m != null && (
-                <span className="shrink-0 text-[10px] text-white/70">{formatDistance(p.distance_m)}</span>
+                <span className="shrink-0 text-[10px] text-white/70">
+                  {formatDistance(p.distance_m)}
+                </span>
               )}
             </div>
           </button>
@@ -653,7 +830,8 @@ function PosterRow({
           const online = isOnline(p.last_seen);
           const age = ageFrom(p.birthdate);
           const unread = bySender[p.id] ?? 0;
-          const traveler = p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date());
+          const traveler =
+            p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date());
           return (
             <button
               key={p.id}
@@ -664,7 +842,12 @@ function PosterRow({
               )}
             >
               {url ? (
-                <img src={url} alt={p.display_name ?? ""} loading="lazy" className="size-full object-cover transition-transform duration-300 group-active:scale-[0.97]" />
+                <img
+                  src={url}
+                  alt={p.display_name ?? ""}
+                  loading="lazy"
+                  className="size-full object-cover transition-transform duration-300 group-active:scale-[0.97]"
+                />
               ) : (
                 <div className="flex size-full items-center justify-center text-3xl text-muted-foreground/40">
                   {p.display_name?.[0]?.toUpperCase() ?? "?"}
@@ -688,7 +871,9 @@ function PosterRow({
               )}
               <div className="absolute inset-x-0 bottom-0 space-y-0.5 p-2.5">
                 <div className="flex items-center gap-1.5">
-                  {online && <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />}
+                  {online && (
+                    <span className="size-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />
+                  )}
                   <p className="truncate text-sm font-semibold leading-tight text-white">
                     {p.display_name}
                     {age ? <span className="font-normal text-white/70">, {age}</span> : null}
@@ -711,11 +896,12 @@ function PosterRow({
   );
 }
 
-
-
-
 function ProfileSheet({
-  profile, currentUserId, onClose, onDecision, onMessage,
+  profile,
+  currentUserId,
+  onClose,
+  onDecision,
+  onMessage,
 }: {
   profile: DiscoverProfile | null;
   currentUserId: string | null;
@@ -726,7 +912,10 @@ function ProfileSheet({
   const [urls, setUrls] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    if (!profile?.photos?.length) { setUrls({}); return; }
+    if (!profile?.photos?.length) {
+      setUrls({});
+      return;
+    }
     signPhotos(profile.photos).then(setUrls);
   }, [profile]);
 
@@ -737,11 +926,13 @@ function ProfileSheet({
   const online = isOnline(profile.last_seen);
   const heightStr = formatHeight(profile.height_cm);
 
-
   const signedPhotos = photos.map((p) => urls[p]).filter(Boolean) as string[];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/80 backdrop-blur-sm sm:items-end" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/80 backdrop-blur-sm sm:items-end"
+      onClick={onClose}
+    >
       <div
         onClick={(e) => e.stopPropagation()}
         className="relative h-full w-full overflow-y-auto border-border bg-surface sm:h-auto sm:max-h-[92dvh] sm:max-w-md sm:rounded-t-3xl sm:border"
@@ -763,12 +954,18 @@ function ProfileSheet({
               <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent" />
               <div className="relative p-5">
                 <h2 className="flex items-center gap-2 font-display text-3xl font-medium text-white">
-                  {profile.display_name}{age ? <span className="text-white/70">, {age}</span> : null}
+                  {profile.display_name}
+                  {age ? <span className="text-white/70">, {age}</span> : null}
                   {profile.verified && <BadgeCheck className="size-5 text-primary" />}
                 </h2>
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85">
                   <span className="inline-flex items-center gap-1.5">
-                    <span className={cn("size-1.5 rounded-full", online ? "bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" : "bg-white/40")} />
+                    <span
+                      className={cn(
+                        "size-1.5 rounded-full",
+                        online ? "bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" : "bg-white/40",
+                      )}
+                    />
                     {lastSeenText}
                   </span>
                   <span className="inline-flex items-center gap-1">
@@ -786,51 +983,71 @@ function ProfileSheet({
           }
         />
 
-
-
         <div className="space-y-5 px-5 pb-6 pt-4">
           {profile.tribes && profile.tribes.length > 0 && (
             <TagBlock label="Tribes" values={profile.tribes} gold />
           )}
 
-          {(profile.body_type || profile.position || profile.ethnicity || profile.relationship_status || profile.weight_kg) && (
+          {(profile.body_type ||
+            profile.position ||
+            profile.ethnicity ||
+            profile.relationship_status ||
+            profile.weight_kg) && (
             <div className="grid grid-cols-2 gap-2 rounded-2xl border border-border bg-background/50 p-3 text-xs">
               {profile.body_type && <Stat label="Body" value={profile.body_type} />}
               {profile.position && <Stat label="Position" value={profile.position} />}
               {profile.ethnicity && <Stat label="Ethnicity" value={profile.ethnicity} />}
               {profile.weight_kg && <Stat label="Weight" value={`${profile.weight_kg} kg`} />}
-              {profile.relationship_status && <Stat label="Status" value={profile.relationship_status} />}
+              {profile.relationship_status && (
+                <Stat label="Status" value={profile.relationship_status} />
+              )}
               {/* hiv_status nu mai este expus în Discover (date de sănătate / GDPR Art. 9). */}
             </div>
           )}
 
           {profile.pronouns?.length ? (
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">{profile.pronouns.join(" · ")}</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+              {profile.pronouns.join(" · ")}
+            </p>
           ) : null}
 
-          {profile.bio && <p className="text-sm leading-relaxed text-foreground/90">{profile.bio}</p>}
+          {profile.bio && (
+            <p className="text-sm leading-relaxed text-foreground/90">{profile.bio}</p>
+          )}
 
           {profile.prompts && profile.prompts.length > 0 && (
             <div className="space-y-2">
-              {profile.prompts.filter((p) => p.question && p.answer).map((p, i) => (
-                <div key={i} className="rounded-2xl border border-border bg-background/40 p-3">
-                  <p className="text-[10px] uppercase tracking-wider text-primary">{p.question}</p>
-                  <p className="mt-1 text-sm">{p.answer}</p>
-                </div>
-              ))}
+              {profile.prompts
+                .filter((p) => p.question && p.answer)
+                .map((p, i) => (
+                  <div key={i} className="rounded-2xl border border-border bg-background/40 p-3">
+                    <p className="text-[10px] uppercase tracking-wider text-primary">
+                      {p.question}
+                    </p>
+                    <p className="mt-1 text-sm">{p.answer}</p>
+                  </div>
+                ))}
             </div>
           )}
 
-          {profile.looking_for?.length ? <TagBlock label="Looking for" values={profile.looking_for} /> : null}
-          {profile.interests?.length ? <TagBlock label="Interests" values={profile.interests} /> : null}
+          {profile.looking_for?.length ? (
+            <TagBlock label="Looking for" values={profile.looking_for} />
+          ) : null}
+          {profile.interests?.length ? (
+            <TagBlock label="Interests" values={profile.interests} />
+          ) : null}
 
-          {currentUserId && <PrivateAlbumViewer ownerId={profile.id} currentUserId={currentUserId} />}
+          {currentUserId && (
+            <PrivateAlbumViewer ownerId={profile.id} currentUserId={currentUserId} />
+          )}
 
           {profile.looking_now_until && new Date(profile.looking_now_until) > new Date() && (
             <div className="flex items-center gap-2 rounded-2xl border border-rose-500/40 bg-rose-500/10 px-3 py-2 text-xs text-rose-200">
               <Flame className="size-3.5 text-rose-400" />
               <span className="font-medium uppercase tracking-wider">Right now</span>
-              {profile.looking_now_intent && <span className="truncate text-rose-100/80">· {profile.looking_now_intent}</span>}
+              {profile.looking_now_intent && (
+                <span className="truncate text-rose-100/80">· {profile.looking_now_intent}</span>
+              )}
             </div>
           )}
 
@@ -869,32 +1086,56 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
   const [woofed, setWoofed] = useState(false);
 
   useEffect(() => {
-    isFavorite(targetId).then(setFav).catch(() => {});
-    hasWoofed(targetId).then(setWoofed).catch(() => {});
+    isFavorite(targetId)
+      .then(setFav)
+      .catch(() => {});
+    hasWoofed(targetId)
+      .then(setWoofed)
+      .catch(() => {});
     setTapped(null);
   }, [targetId]);
 
   async function toggleFav() {
     setBusy(true);
     try {
-      if (fav) { await removeFavorite(targetId); setFav(false); toast.success("Eliminat din favorite"); }
-      else { await addFavorite(targetId); setFav(true); toast.success("Adăugat la favorite"); }
-    } catch (e) { toast.error((e as Error).message); }
-    finally { setBusy(false); }
+      if (fav) {
+        await removeFavorite(targetId);
+        setFav(false);
+        toast.success("Eliminat din favorite");
+      } else {
+        await addFavorite(targetId);
+        setFav(true);
+        toast.success("Adăugat la favorite");
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function woof() {
     if (woofed) return;
     setWoofed(true);
-    try { await sendWoof(targetId); toast.success(`🐻 Woof trimis lui ${targetName}`); }
-    catch (e) { setWoofed(false); toast.error((e as Error).message); }
+    try {
+      await sendWoof(targetId);
+      toast.success(`🐻 Woof trimis lui ${targetName}`);
+    } catch (e) {
+      setWoofed(false);
+      toast.error((e as Error).message);
+    }
   }
 
   async function tap(emoji: TapEmoji) {
     if (tapped) return;
     setTapped(emoji);
-    try { await sendTap(targetId, emoji); toast.success(`${emoji} trimis lui ${targetName}`); }
-    catch (e) { setTapped(null); toast.error((e as Error).message); }
+    try {
+      await sendTap(targetId, emoji);
+      toast.success(`${emoji} trimis lui ${targetName}`);
+    } catch (e) {
+      setTapped(null);
+      toast.error((e as Error).message);
+    }
   }
 
   return (
@@ -911,7 +1152,9 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
             title="Woof — un salut prietenos, fără presiune"
             className={cn(
               "flex h-8 items-center gap-1 rounded-full border px-2.5 text-xs transition-colors",
-              woofed ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:text-primary",
+              woofed
+                ? "border-primary bg-primary/15 text-primary"
+                : "border-border text-muted-foreground hover:text-primary",
             )}
           >
             🐻 <span>Woof</span>
@@ -922,7 +1165,9 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
             aria-label={fav ? "Elimină de la favorite" : "Adaugă la favorite"}
             className={cn(
               "flex size-8 items-center justify-center rounded-full border transition-colors",
-              fav ? "border-primary bg-primary/15 text-primary" : "border-border text-muted-foreground hover:text-primary",
+              fav
+                ? "border-primary bg-primary/15 text-primary"
+                : "border-border text-muted-foreground hover:text-primary",
             )}
           >
             <Star className={cn("size-4", fav && "fill-primary")} />
@@ -951,11 +1196,12 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
   );
 }
 
-
 function TagBlock({ label, values, gold }: { label: string; values: string[]; gold?: boolean }) {
   return (
     <div>
-      <p className="mb-1.5 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">{label}</p>
+      <p className="mb-1.5 text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
+        {label}
+      </p>
       <div className="flex flex-wrap gap-1.5">
         {values.map((v) => (
           <span
@@ -1005,7 +1251,11 @@ function EmptyState({
         icon={<Compass className="size-8 text-primary" />}
         title="Activează locația"
         desc="Avem nevoie de zonă (aproximativă) ca să-ți arătăm cine e prin apropiere. Locația ta exactă rămâne pe device. Fără locație nu îți putem arăta oameni potriviți, dar îți putem trimite notificare când apar."
-        action={<Button variant="hero" onClick={onRefresh}>Permite locația</Button>}
+        action={
+          <Button variant="hero" onClick={onRefresh}>
+            Permite locația
+          </Button>
+        }
       />
     );
   }
@@ -1018,9 +1268,13 @@ function EmptyState({
         action={
           <div className="flex flex-wrap justify-center gap-2">
             {onResetFilters && (
-              <Button variant="hero" onClick={onResetFilters}>Relaxează filtrele</Button>
+              <Button variant="hero" onClick={onResetFilters}>
+                Relaxează filtrele
+              </Button>
             )}
-            <Button variant="outline" onClick={onRefresh}>Reîncarcă</Button>
+            <Button variant="outline" onClick={onRefresh}>
+              Reîncarcă
+            </Button>
           </div>
         }
       />
@@ -1037,19 +1291,35 @@ function EmptyState({
       action={
         <div className="flex flex-wrap justify-center gap-2">
           {onExpandDistance && (
-            <Button variant="hero" onClick={() => onExpandDistance(next)}>Extinde la {nextLabel}</Button>
+            <Button variant="hero" onClick={() => onExpandDistance(next)}>
+              Extinde la {nextLabel}
+            </Button>
           )}
-          <Button variant="outline" onClick={onRefresh}>Reîncarcă</Button>
+          <Button variant="outline" onClick={onRefresh}>
+            Reîncarcă
+          </Button>
         </div>
       }
     />
   );
 }
 
-function CenterMessage({ icon, title, desc, action }: { icon: React.ReactNode; title: string; desc?: string; action?: React.ReactNode }) {
+function CenterMessage({
+  icon,
+  title,
+  desc,
+  action,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  desc?: string;
+  action?: React.ReactNode;
+}) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 px-8 pt-32 text-center">
-      <div className="flex size-16 items-center justify-center rounded-full border border-primary/30 bg-surface glow-gold">{icon}</div>
+      <div className="flex size-16 items-center justify-center rounded-full border border-primary/30 bg-surface glow-gold">
+        {icon}
+      </div>
       <h2 className="wordmark mt-2 text-2xl font-medium">{title}</h2>
       {desc && <p className="max-w-xs text-sm text-muted-foreground">{desc}</p>}
       {action && <div className="mt-3">{action}</div>}
@@ -1107,7 +1377,11 @@ function MatchScoreBadge({ target }: { target: DiscoverProfile }) {
         },
       });
       setResult(res);
-      try { if (cacheKey) sessionStorage.setItem(cacheKey, JSON.stringify(res)); } catch { /* ignore */ }
+      try {
+        if (cacheKey) sessionStorage.setItem(cacheKey, JSON.stringify(res));
+      } catch {
+        /* ignore */
+      }
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "AI eșuat");
     } finally {
@@ -1118,7 +1392,9 @@ function MatchScoreBadge({ target }: { target: DiscoverProfile }) {
   if (result) {
     return (
       <div className="mt-3 inline-flex max-w-full items-start gap-2 rounded-2xl border border-primary/40 bg-black/50 px-3 py-2 text-xs text-white backdrop-blur">
-        <span className="font-display text-lg font-medium text-primary leading-none">{result.score}</span>
+        <span className="font-display text-lg font-medium text-primary leading-none">
+          {result.score}
+        </span>
         <span className="leading-snug text-white/85">{result.reason}</span>
       </div>
     );

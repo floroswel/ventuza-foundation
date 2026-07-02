@@ -11,11 +11,13 @@ export const claimBusinessApplicationByCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ appId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
-    const { data: res, error } = await context.supabase
-      .rpc("claim_business_application_by_code", { _app_id: data.appId });
+    const { data: res, error } = await context.supabase.rpc("claim_business_application_by_code", {
+      _app_id: data.appId,
+    });
     if (error) {
       const m = error.message || "";
-      if (/already_claimed/.test(m)) throw new Error("Această cerere e deja revendicată de alt cont.");
+      if (/already_claimed/.test(m))
+        throw new Error("Această cerere e deja revendicată de alt cont.");
       if (/not_found/.test(m)) throw new Error("Cod inexistent. Verifică ID-ul cererii.");
       throw new Error(m || "Nu am putut revendica cererea.");
     }

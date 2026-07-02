@@ -24,9 +24,7 @@ export type RevenueCatCancelResult = {
   status?: number;
 };
 
-export async function cancelRevenueCatForUser(
-  appUserId: string,
-): Promise<RevenueCatCancelResult> {
+export async function cancelRevenueCatForUser(appUserId: string): Promise<RevenueCatCancelResult> {
   const key = process.env.REVENUECAT_SECRET_API_KEY;
   if (!key) {
     return {

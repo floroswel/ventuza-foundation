@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { Loader2, Save, Upload, EyeOff, History, FileText, ExternalLink, CheckCircle2 } from "lucide-react";
+import {
+  Loader2,
+  Save,
+  Upload,
+  EyeOff,
+  History,
+  FileText,
+  ExternalLink,
+  CheckCircle2,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { supabase } from "@/integrations/supabase/client";
@@ -33,7 +42,10 @@ function ErrorBanner({ error, onRetry }: { error: string; onRetry?: () => void }
       <div className="font-semibold text-destructive">{denied ? "Acces refuzat" : "Eroare"}</div>
       <div className="mt-1 text-destructive/90">{error}</div>
       {onRetry && (
-        <button onClick={onRetry} className="mt-2 rounded border border-destructive/40 px-3 py-1 text-xs text-destructive hover:bg-destructive/10">
+        <button
+          onClick={onRetry}
+          className="mt-2 rounded border border-destructive/40 px-3 py-1 text-xs text-destructive hover:bg-destructive/10"
+        >
           Reîncearcă
         </button>
       )}
@@ -121,7 +133,9 @@ export function LegalDocsAdminPanel() {
       toast.error("Salvare eșuată înainte de publicare: " + saveErr.message);
       return;
     }
-    const { data, error } = await supabase.rpc("admin_publish_legal_document", { _slug: activeSlug });
+    const { data, error } = await supabase.rpc("admin_publish_legal_document", {
+      _slug: activeSlug,
+    });
     setPublishing(false);
     if (error) {
       toast.error("Publicare eșuată: " + error.message);
@@ -134,8 +148,11 @@ export function LegalDocsAdminPanel() {
 
   const unpublish = async () => {
     if (!activeSlug) return;
-    if (!confirm("Depublici documentul? Userii vor vedea din nou versiunea statică built-in.")) return;
-    const { data, error } = await supabase.rpc("admin_unpublish_legal_document", { _slug: activeSlug });
+    if (!confirm("Depublici documentul? Userii vor vedea din nou versiunea statică built-in."))
+      return;
+    const { data, error } = await supabase.rpc("admin_unpublish_legal_document", {
+      _slug: activeSlug,
+    });
     if (error) {
       toast.error("Depublicare eșuată: " + error.message);
       return;
@@ -147,7 +164,9 @@ export function LegalDocsAdminPanel() {
 
   const loadHistory = async () => {
     if (!activeSlug) return;
-    const { data, error } = await supabase.rpc("admin_legal_document_history", { _slug: activeSlug });
+    const { data, error } = await supabase.rpc("admin_legal_document_history", {
+      _slug: activeSlug,
+    });
     if (error) {
       toast.error("Nu pot încărca istoricul: " + error.message);
       return;
@@ -172,8 +191,16 @@ export function LegalDocsAdminPanel() {
       </div>
     );
   }
-  if (error) return <div className="p-4"><ErrorBanner error={error} onRetry={load} /></div>;
-  if (docs.length === 0) return <div className="p-6 text-sm text-muted-foreground">Nu există sloturi legale definite.</div>;
+  if (error)
+    return (
+      <div className="p-4">
+        <ErrorBanner error={error} onRetry={load} />
+      </div>
+    );
+  if (docs.length === 0)
+    return (
+      <div className="p-6 text-sm text-muted-foreground">Nu există sloturi legale definite.</div>
+    );
 
   return (
     <div className="grid gap-4 p-4 md:grid-cols-[260px_1fr]">
@@ -194,11 +221,15 @@ export function LegalDocsAdminPanel() {
                 >
                   <div className="min-w-0">
                     <div className="truncate font-medium">{d.title}</div>
-                    <div className="truncate text-[11px] text-muted-foreground">/legal/{d.slug} · v{d.version}</div>
+                    <div className="truncate text-[11px] text-muted-foreground">
+                      /legal/{d.slug} · v{d.version}
+                    </div>
                   </div>
                   <span
                     className={`shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${
-                      published ? "bg-emerald-500/15 text-emerald-400" : "bg-muted text-muted-foreground"
+                      published
+                        ? "bg-emerald-500/15 text-emerald-400"
+                        : "bg-muted text-muted-foreground"
                     }`}
                     title={published ? "Publicat" : "Draft / static fallback"}
                   >
@@ -220,7 +251,9 @@ export function LegalDocsAdminPanel() {
                 <div className="text-xs text-muted-foreground">
                   slug <code>{active.slug}</code> · v{active.version} ·{" "}
                   {active.published_at ? (
-                    <span className="text-emerald-400">publicat {new Date(active.published_at).toLocaleString("ro-RO")}</span>
+                    <span className="text-emerald-400">
+                      publicat {new Date(active.published_at).toLocaleString("ro-RO")}
+                    </span>
                   ) : (
                     <span>nepublicat (userii văd versiunea statică built-in)</span>
                   )}
@@ -252,19 +285,26 @@ export function LegalDocsAdminPanel() {
 
             {historyOpen && (
               <div className="rounded-lg border border-border bg-card/40 p-3">
-                <div className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Ultimele 100 versiuni</div>
+                <div className="mb-2 text-xs font-semibold uppercase text-muted-foreground">
+                  Ultimele 100 versiuni
+                </div>
                 {history.length === 0 ? (
                   <div className="text-xs text-muted-foreground">Nicio versiune înregistrată.</div>
                 ) : (
                   <ul className="max-h-64 space-y-1 overflow-auto text-xs">
                     {history.map((v) => (
-                      <li key={v.id} className="flex items-center justify-between gap-2 rounded border border-border/60 p-2">
+                      <li
+                        key={v.id}
+                        className="flex items-center justify-between gap-2 rounded border border-border/60 p-2"
+                      >
                         <div className="min-w-0">
                           <div className="font-medium">
                             v{v.version} · {v.action}
                             {v.published_at ? " · publicat" : ""}
                           </div>
-                          <div className="text-muted-foreground">{new Date(v.created_at).toLocaleString("ro-RO")}</div>
+                          <div className="text-muted-foreground">
+                            {new Date(v.created_at).toLocaleString("ro-RO")}
+                          </div>
                         </div>
                         <button
                           onClick={() => restoreVersion(v)}
@@ -280,7 +320,9 @@ export function LegalDocsAdminPanel() {
             )}
 
             <div className="rounded-lg border border-border bg-card/40 p-3">
-              <label className="mb-1 block text-xs font-semibold uppercase text-muted-foreground">Titlu</label>
+              <label className="mb-1 block text-xs font-semibold uppercase text-muted-foreground">
+                Titlu
+              </label>
               <input
                 value={draftTitle}
                 onChange={(e) => setDraftTitle(e.target.value)}
@@ -292,7 +334,9 @@ export function LegalDocsAdminPanel() {
               </label>
               {preview ? (
                 <div className="prose prose-invert min-h-[400px] max-w-none rounded-md border border-border bg-background p-3 text-sm">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{draftBody || "*Preview gol.*"}</ReactMarkdown>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {draftBody || "*Preview gol.*"}
+                  </ReactMarkdown>
                 </div>
               ) : (
                 <textarea
@@ -327,23 +371,34 @@ export function LegalDocsAdminPanel() {
                     disabled={saving || !dirty}
                     className="inline-flex items-center gap-1 rounded border border-border px-3 py-1.5 text-xs hover:bg-accent disabled:opacity-50"
                   >
-                    {saving ? <Loader2 className="size-3 animate-spin" /> : <Save className="size-3" />} Salvează draft
+                    {saving ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <Save className="size-3" />
+                    )}{" "}
+                    Salvează draft
                   </button>
                   <button
                     onClick={publish}
                     disabled={publishing}
                     className="inline-flex items-center gap-1 rounded bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
                   >
-                    {publishing ? <Loader2 className="size-3 animate-spin" /> : <Upload className="size-3" />} Publică live
+                    {publishing ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <Upload className="size-3" />
+                    )}{" "}
+                    Publică live
                   </button>
                 </div>
               </div>
             </div>
 
             <p className="text-[11px] text-muted-foreground">
-              Publicarea se propagă instant prin realtime către toate device-urile. Depublicarea revine la textul static
-              built-in din cod. Toate acțiunile sunt logate în <code>admin_audit_log</code> + istoric complet în{" "}
-              <code>legal_document_versions</code>.
+              Publicarea se propagă instant prin realtime către toate device-urile. Depublicarea
+              revine la textul static built-in din cod. Toate acțiunile sunt logate în{" "}
+              <code>admin_audit_log</code> + istoric complet în <code>legal_document_versions</code>
+              .
             </p>
           </>
         ) : (

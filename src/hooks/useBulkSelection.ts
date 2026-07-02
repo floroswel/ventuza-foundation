@@ -15,7 +15,8 @@ export function useBulkSelection<Row extends { id: string }>(rows: Row[]) {
   const toggle = useCallback((id: string) => {
     setSet((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id); else next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
   }, []);
@@ -23,7 +24,10 @@ export function useBulkSelection<Row extends { id: string }>(rows: Row[]) {
   const setMany = useCallback((targetIds: string[], checked: boolean) => {
     setSet((prev) => {
       const next = new Set(prev);
-      for (const id of targetIds) { if (checked) next.add(id); else next.delete(id); }
+      for (const id of targetIds) {
+        if (checked) next.add(id);
+        else next.delete(id);
+      }
       return next;
     });
   }, []);

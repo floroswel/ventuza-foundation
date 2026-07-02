@@ -42,7 +42,10 @@ export function eventTypeLabel(t: EventType) {
   return EVENT_TYPE_LABEL[t] ?? t;
 }
 
-export async function listUpcomingEvents(opts?: { city?: string; type?: EventType | "all" }): Promise<EventWithMeta[]> {
+export async function listUpcomingEvents(opts?: {
+  city?: string;
+  type?: EventType | "all";
+}): Promise<EventWithMeta[]> {
   const nowIso = new Date().toISOString();
   let q = supabase
     .from("events")
@@ -83,7 +86,11 @@ export async function listUpcomingEvents(opts?: { city?: string; type?: EventTyp
   const goingCount = new Map<string, number>();
   const interestedCount = new Map<string, number>();
   const myMap = new Map<string, RsvpStatus>();
-  for (const r of (rsvps ?? []) as Array<{ event_id: string; user_id: string; status: RsvpStatus }>) {
+  for (const r of (rsvps ?? []) as Array<{
+    event_id: string;
+    user_id: string;
+    status: RsvpStatus;
+  }>) {
     if (r.status === "going") goingCount.set(r.event_id, (goingCount.get(r.event_id) ?? 0) + 1);
     else interestedCount.set(r.event_id, (interestedCount.get(r.event_id) ?? 0) + 1);
     if (myId && r.user_id === myId) myMap.set(r.event_id, r.status);
@@ -111,7 +118,8 @@ export async function getEvent(id: string): Promise<EventWithMeta | null> {
   ]);
 
   const myId = me.user?.id ?? null;
-  let going = 0, interested = 0;
+  let going = 0,
+    interested = 0;
   let my: RsvpStatus | null = null;
   for (const r of (rsvps ?? []) as Array<{ user_id: string; status: RsvpStatus }>) {
     if (r.status === "going") going++;
@@ -143,7 +151,11 @@ export async function listEventAttendees(eventId: string) {
     .select("id, display_name, photos")
     .in("id", ids);
   const map = new Map<string, { display_name: string | null; photos: string[] | null }>();
-  for (const p of (profs ?? []) as Array<{ id: string; display_name: string | null; photos: string[] | null }>) {
+  for (const p of (profs ?? []) as Array<{
+    id: string;
+    display_name: string | null;
+    photos: string[] | null;
+  }>) {
     map.set(p.id, p);
   }
   return rows.map((r) => ({
@@ -159,7 +171,11 @@ export async function setRsvp(eventId: string, status: RsvpStatus | null) {
   const uid = me.user?.id;
   if (!uid) throw new Error("Not signed in");
   if (status === null) {
-    const { error } = await supabase.from("event_rsvps").delete().eq("event_id", eventId).eq("user_id", uid);
+    const { error } = await supabase
+      .from("event_rsvps")
+      .delete()
+      .eq("event_id", eventId)
+      .eq("user_id", uid);
     if (error) throw error;
     return;
   }

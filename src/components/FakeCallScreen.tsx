@@ -5,7 +5,13 @@ import { PhoneIncoming, PhoneOff } from "lucide-react";
  * Simulates an incoming phone call. Useful as a fake-emergency exit during
  * an uncomfortable in-person meeting. Auto-vibrates and plays ring on open.
  */
-export function FakeCallScreen({ onClose, callerName = "Mama" }: { onClose: () => void; callerName?: string }) {
+export function FakeCallScreen({
+  onClose,
+  callerName = "Mama",
+}: {
+  onClose: () => void;
+  callerName?: string;
+}) {
   const [accepted, setAccepted] = useState(false);
   const [secs, setSecs] = useState(0);
 

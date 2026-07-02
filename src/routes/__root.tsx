@@ -27,7 +27,6 @@ import "@/lib/i18n";
 import { FeedbackWidget } from "@/components/FeedbackWidget";
 import { ConsentPromptHost } from "@/components/ConsentPromptHost";
 
-
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -95,15 +94,35 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#0E0D0B" },
       { title: "Ventuza — Dating, elevated." },
-      { name: "description", content: "Ventuza is a premium, inclusive dating experience. Meet people who match your depth." },
+      {
+        name: "description",
+        content:
+          "Ventuza is a premium, inclusive dating experience. Meet people who match your depth.",
+      },
       { property: "og:title", content: "Ventuza — Dating, elevated." },
-      { property: "og:description", content: "Ventuza is a premium, inclusive dating experience. Meet people who match your depth." },
+      {
+        property: "og:description",
+        content:
+          "Ventuza is a premium, inclusive dating experience. Meet people who match your depth.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:title", content: "Ventuza — Dating, elevated." },
-      { name: "twitter:description", content: "Ventuza is a premium, inclusive dating experience. Meet people who match your depth." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/14c4abb2-308d-4a85-8862-ba47e7f22abd/id-preview-e4594ec3--31f90140-a9a7-481a-b09d-ae4df6103241.lovable.app-1781988056548.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/14c4abb2-308d-4a85-8862-ba47e7f22abd/id-preview-e4594ec3--31f90140-a9a7-481a-b09d-ae4df6103241.lovable.app-1781988056548.png" },
+      {
+        name: "twitter:description",
+        content:
+          "Ventuza is a premium, inclusive dating experience. Meet people who match your depth.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/14c4abb2-308d-4a85-8862-ba47e7f22abd/id-preview-e4594ec3--31f90140-a9a7-481a-b09d-ae4df6103241.lovable.app-1781988056548.png",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/14c4abb2-308d-4a85-8862-ba47e7f22abd/id-preview-e4594ec3--31f90140-a9a7-481a-b09d-ae4df6103241.lovable.app-1781988056548.png",
+      },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -163,7 +182,9 @@ function RootComponent() {
         if (c?.analytics) {
           import("@/lib/web-vitals").then(({ initWebVitals }) => initWebVitals());
         }
-      } catch {/* ignore */}
+      } catch {
+        /* ignore */
+      }
     };
     maybeInitVitals();
     const onConsent = () => maybeInitVitals();
@@ -175,12 +196,11 @@ function RootComponent() {
       if (ref && !localStorage.getItem("pending_ref")) {
         localStorage.setItem("pending_ref", ref.toUpperCase());
       }
-    } catch {/* ignore */}
+    } catch {
+      /* ignore */
+    }
     return () => window.removeEventListener("ventuza:consent", onConsent);
   }, []);
-
-
-
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -194,15 +214,11 @@ function RootComponent() {
           <TravelWarning />
           <PinLockGate />
           <Toaster theme="dark" position="top-center" richColors />
-          
+
           <FeedbackWidget />
           <ConsentPromptHost />
-
-
-
         </NotificationsProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
 }
-

@@ -55,8 +55,8 @@ export function CookieBanner() {
       {!showCustom ? (
         <>
           <p className="text-xs leading-relaxed text-foreground">
-            Folosim cookie-uri esențiale pentru autentificare și siguranță. Cu acordul tău,
-            adăugăm analytics anonime și măsurători de marketing pentru îmbunătățirea aplicației.{" "}
+            Folosim cookie-uri esențiale pentru autentificare și siguranță. Cu acordul tău, adăugăm
+            analytics anonime și măsurători de marketing pentru îmbunătățirea aplicației.{" "}
             <Link to="/legal/cookies" className="underline">
               Detalii
             </Link>
@@ -88,8 +88,18 @@ export function CookieBanner() {
           <p className="text-sm font-medium">Alege ce permiți</p>
           <div className="mt-3 space-y-2">
             <Row label="Esențiale" desc="Login, sesiune, securitate. Necesare." checked disabled />
-            <Row label="Analytics" desc="Statistici anonime de utilizare." checked={analytics} onChange={setAnalytics} />
-            <Row label="Marketing" desc="Măsurători campanii și recomandări." checked={marketing} onChange={setMarketing} />
+            <Row
+              label="Analytics"
+              desc="Statistici anonime de utilizare."
+              checked={analytics}
+              onChange={setAnalytics}
+            />
+            <Row
+              label="Marketing"
+              desc="Măsurători campanii și recomandări."
+              checked={marketing}
+              onChange={setMarketing}
+            />
           </div>
           <div className="mt-3 flex gap-2">
             <button

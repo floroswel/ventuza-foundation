@@ -22,16 +22,23 @@ export const createSupportTicket = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => CreateTicketIn.parse(d))
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
-    const { data: t, error } = await sb.from("support_tickets").insert({
-      user_id: context.userId,
-      category: data.category,
-      subject: data.subject,
-      related_type: data.relatedType ?? null,
-      related_id: data.relatedId ?? null,
-    }).select("id").single();
+    const { data: t, error } = await sb
+      .from("support_tickets")
+      .insert({
+        user_id: context.userId,
+        category: data.category,
+        subject: data.subject,
+        related_type: data.relatedType ?? null,
+        related_id: data.relatedId ?? null,
+      })
+      .select("id")
+      .single();
     if (error) throw new Error(error.message);
     const { error: mErr } = await sb.from("support_ticket_messages").insert({
-      ticket_id: t.id, author_id: context.userId, author_role: "user", body: data.body,
+      ticket_id: t.id,
+      author_id: context.userId,
+      author_role: "user",
+      body: data.body,
     });
     if (mErr) throw new Error(mErr.message);
     return { id: t.id };
@@ -41,9 +48,12 @@ export const createSupportTicket = createServerFn({ method: "POST" })
 export const listMyTickets = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data, error } = await context.supabase.from("support_tickets")
+    const { data, error } = await context.supabase
+      .from("support_tickets")
       .select("id, subject, category, status, priority, last_msg_at, created_at")
-      .eq("user_id", context.userId).order("last_msg_at", { ascending: false }).limit(200);
+      .eq("user_id", context.userId)
+      .order("last_msg_at", { ascending: false })
+      .limit(200);
     if (error) throw new Error(error.message);
     return data ?? [];
   });
@@ -63,9 +73,14 @@ export const adminListTickets = createServerFn({ method: "POST" })
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
-    let q = sa.from("support_tickets")
-      .select("id, user_id, subject, category, status, priority, assignee_id, first_response_at, last_msg_at, created_at", { count: "exact" })
-      .order("last_msg_at", { ascending: false }).limit(data.limit);
+    let q = sa
+      .from("support_tickets")
+      .select(
+        "id, user_id, subject, category, status, priority, assignee_id, first_response_at, last_msg_at, created_at",
+        { count: "exact" },
+      )
+      .order("last_msg_at", { ascending: false })
+      .limit(data.limit);
     if (data.status !== "all") q = q.eq("status", data.status);
     if (data.priority !== "all") q = q.eq("priority", data.priority);
     if (data.assignee) q = q.eq("assignee_id", data.assignee);
@@ -91,13 +106,18 @@ export const getTicketThread = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ ticketId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     const sb = context.supabase;
-    const { data: t, error } = await sb.from("support_tickets")
-      .select("*").eq("id", data.ticketId).maybeSingle();
+    const { data: t, error } = await sb
+      .from("support_tickets")
+      .select("*")
+      .eq("id", data.ticketId)
+      .maybeSingle();
     if (error) throw new Error(error.message);
     if (!t) throw new Error("Ticket inexistent");
-    const { data: msgs, error: mErr } = await sb.from("support_ticket_messages")
+    const { data: msgs, error: mErr } = await sb
+      .from("support_ticket_messages")
       .select("id, author_id, author_role, body, internal_note, created_at")
-      .eq("ticket_id", data.ticketId).order("created_at", { ascending: true });
+      .eq("ticket_id", data.ticketId)
+      .order("created_at", { ascending: true });
     if (mErr) throw new Error(mErr.message);
     return { ticket: t, messages: msgs ?? [] };
   });
@@ -117,9 +137,11 @@ export const replyToTicket = createServerFn({ method: "POST" })
     const isStaff = !!role;
     if (data.internalNote && !isStaff) throw new Error("Doar staff-ul poate adăuga note interne");
     const { error } = await sb.from("support_ticket_messages").insert({
-      ticket_id: data.ticketId, author_id: context.userId,
+      ticket_id: data.ticketId,
+      author_id: context.userId,
       author_role: isStaff ? "staff" : "user",
-      body: data.body, internal_note: data.internalNote,
+      body: data.body,
+      internal_note: data.internalNote,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -186,7 +208,8 @@ export const adminBulkTicketAction = createServerFn({ method: "POST" })
       before_state: null,
       after_state: {
         count: data.ticketIds.length,
-        ok, failed,
+        ok,
+        failed,
         status: data.status ?? null,
         priority: data.priority ?? null,
         assignee: data.assignee ?? null,
@@ -197,7 +220,6 @@ export const adminBulkTicketAction = createServerFn({ method: "POST" })
     return { total: data.ticketIds.length, ok, failed, results };
   });
 
-
 /* ---------------- STAFF: KPI inbox ---------------- */
 export const adminTicketStats = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -205,11 +227,31 @@ export const adminTicketStats = createServerFn({ method: "GET" })
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
-    const [{ count: open }, { count: urgent }, { count: unassigned }, { count: waiting }] = await Promise.all([
-      sa.from("support_tickets").select("id", { head: true, count: "exact" }).eq("status", "open"),
-      sa.from("support_tickets").select("id", { head: true, count: "exact" }).eq("priority", "urgent").in("status", ["open", "pending", "waiting_user"]),
-      sa.from("support_tickets").select("id", { head: true, count: "exact" }).is("assignee_id", null).in("status", ["open", "pending"]),
-      sa.from("support_tickets").select("id", { head: true, count: "exact" }).eq("status", "waiting_user"),
-    ]);
-    return { open: open ?? 0, urgent: urgent ?? 0, unassigned: unassigned ?? 0, waiting: waiting ?? 0 };
+    const [{ count: open }, { count: urgent }, { count: unassigned }, { count: waiting }] =
+      await Promise.all([
+        sa
+          .from("support_tickets")
+          .select("id", { head: true, count: "exact" })
+          .eq("status", "open"),
+        sa
+          .from("support_tickets")
+          .select("id", { head: true, count: "exact" })
+          .eq("priority", "urgent")
+          .in("status", ["open", "pending", "waiting_user"]),
+        sa
+          .from("support_tickets")
+          .select("id", { head: true, count: "exact" })
+          .is("assignee_id", null)
+          .in("status", ["open", "pending"]),
+        sa
+          .from("support_tickets")
+          .select("id", { head: true, count: "exact" })
+          .eq("status", "waiting_user"),
+      ]);
+    return {
+      open: open ?? 0,
+      urgent: urgent ?? 0,
+      unassigned: unassigned ?? 0,
+      waiting: waiting ?? 0,
+    };
   });

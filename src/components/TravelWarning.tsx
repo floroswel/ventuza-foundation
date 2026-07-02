@@ -4,11 +4,63 @@ import { AlertTriangle, X } from "lucide-react";
 // 76 țări unde relațiile same-sex sunt criminalizate (ILGA World 2024).
 // Codurile ISO 3166-1 alpha-2. Lista include țări cu pedepse penale active.
 const HOSTILE_COUNTRIES = new Set([
-  "AF", "DZ", "BD", "BN", "CM", "TD", "KM", "CG", "EG", "ER", "ET", "GM", "GH",
-  "GN", "GY", "IR", "IQ", "JM", "KE", "KW", "LB", "LY", "MY", "MV", "MR", "MA",
-  "MM", "NA", "OM", "PK", "PS", "QA", "SA", "SN", "SL", "SO", "SS", "LK", "SD",
-  "SY", "TZ", "TG", "TN", "TM", "UG", "AE", "UZ", "YE", "ZM", "ZW", "BI", "ER",
-  "LR", "MW", "NG", "GW", "ST",
+  "AF",
+  "DZ",
+  "BD",
+  "BN",
+  "CM",
+  "TD",
+  "KM",
+  "CG",
+  "EG",
+  "ER",
+  "ET",
+  "GM",
+  "GH",
+  "GN",
+  "GY",
+  "IR",
+  "IQ",
+  "JM",
+  "KE",
+  "KW",
+  "LB",
+  "LY",
+  "MY",
+  "MV",
+  "MR",
+  "MA",
+  "MM",
+  "NA",
+  "OM",
+  "PK",
+  "PS",
+  "QA",
+  "SA",
+  "SN",
+  "SL",
+  "SO",
+  "SS",
+  "LK",
+  "SD",
+  "SY",
+  "TZ",
+  "TG",
+  "TN",
+  "TM",
+  "UG",
+  "AE",
+  "UZ",
+  "YE",
+  "ZM",
+  "ZW",
+  "BI",
+  "ER",
+  "LR",
+  "MW",
+  "NG",
+  "GW",
+  "ST",
 ]);
 
 const DISMISS_KEY = "ventuza_travel_warning_dismissed";
@@ -59,7 +111,11 @@ export function TravelWarning() {
             locația și întâlnirile. Activează modul incognito din Setări.
           </p>
         </div>
-        <button onClick={dismiss} aria-label="Închide" className="rounded-full p-1 hover:bg-amber-800/50">
+        <button
+          onClick={dismiss}
+          aria-label="Închide"
+          className="rounded-full p-1 hover:bg-amber-800/50"
+        >
           <X className="size-4" />
         </button>
       </div>

@@ -30,9 +30,16 @@ type Props = {
 export function TurnstileWidget({ onToken, onExpire, theme = "auto" }: Props) {
   const ref = useRef<TurnstileInstance | null>(null);
 
-  useEffect(() => () => {
-    try { ref.current?.remove(); } catch { /* noop */ }
-  }, []);
+  useEffect(
+    () => () => {
+      try {
+        ref.current?.remove();
+      } catch {
+        /* noop */
+      }
+    },
+    [],
+  );
 
   if (!isTurnstileConfigured()) return null;
 
@@ -43,8 +50,12 @@ export function TurnstileWidget({ onToken, onExpire, theme = "auto" }: Props) {
         siteKey={SITE_KEY}
         options={{ theme, size: "flexible" }}
         onSuccess={onToken}
-        onExpire={() => { onExpire?.(); }}
-        onError={() => { onExpire?.(); }}
+        onExpire={() => {
+          onExpire?.();
+        }}
+        onError={() => {
+          onExpire?.();
+        }}
       />
     </div>
   );

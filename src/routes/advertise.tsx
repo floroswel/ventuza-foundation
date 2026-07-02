@@ -1,7 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { ChevronLeft, Megaphone, BarChart3, Sparkles, Users, MapPin, Loader2, Plus, ExternalLink } from "lucide-react";
+import {
+  ChevronLeft,
+  Megaphone,
+  BarChart3,
+  Sparkles,
+  Users,
+  MapPin,
+  Loader2,
+  Plus,
+  ExternalLink,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { getMyAdvertiser, listMyCampaigns, type Advertiser, type AdCampaign } from "@/lib/ads";
@@ -12,7 +22,11 @@ export const Route = createFileRoute("/advertise")({
   head: () => ({
     meta: [
       { title: "Promovează businessul tău — Ventuza Ads" },
-      { name: "description", content: "Ajunge la mii de utilizatori LGBTQ+ în România. Cluburi, baruri, evenimente, branduri." },
+      {
+        name: "description",
+        content:
+          "Ajunge la mii de utilizatori LGBTQ+ în România. Cluburi, baruri, evenimente, branduri.",
+      },
     ],
   }),
   component: AdvertisePage,
@@ -83,7 +97,10 @@ function AdvertisePage() {
   return (
     <div className="min-h-screen bg-background pb-32">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur">
-        <Link to="/profile" className="flex size-9 items-center justify-center rounded-full border border-border">
+        <Link
+          to="/profile"
+          className="flex size-9 items-center justify-center rounded-full border border-border"
+        >
           <ChevronLeft className="size-4" />
         </Link>
         <h1 className="flex items-center gap-2 text-base font-semibold">
@@ -117,9 +134,10 @@ function BusinessGate({ pendingApp }: { pendingApp: { status: string } | null })
       <Megaphone className="size-7 text-primary" />
       <h2 className="mt-2 text-lg font-semibold">Cont B2B necesar</h2>
       <p className="mt-2 text-sm text-muted-foreground">
-        Reclamele și evenimentele promovate sunt rezervate <span className="font-semibold text-foreground">partenerilor B2B aprobați</span>{" "}
-        (firme, branduri, ONG-uri, organizatori). Utilizatorii obișnuiți pot folosi gratuit toate funcțiile aplicației,
-        dar nu pot publica anunțuri comerciale.
+        Reclamele și evenimentele promovate sunt rezervate{" "}
+        <span className="font-semibold text-foreground">partenerilor B2B aprobați</span> (firme,
+        branduri, ONG-uri, organizatori). Utilizatorii obișnuiți pot folosi gratuit toate funcțiile
+        aplicației, dar nu pot publica anunțuri comerciale.
       </p>
 
       {pendingApp ? (
@@ -127,7 +145,8 @@ function BusinessGate({ pendingApp }: { pendingApp: { status: string } | null })
           <p className="font-semibold">Cererea ta a fost trimisă</p>
           <p className="mt-1">{statusLabel[pendingApp.status] ?? `Status: ${pendingApp.status}`}</p>
           <p className="mt-2 text-[10px] text-amber-200/70">
-            Te contactăm pe email în max 3 zile lucrătoare. După aprobare, acces automat la dashboard Ads.
+            Te contactăm pe email în max 3 zile lucrătoare. După aprobare, acces automat la
+            dashboard Ads.
           </p>
         </div>
       ) : (
@@ -140,7 +159,10 @@ function BusinessGate({ pendingApp }: { pendingApp: { status: string } | null })
       )}
 
       <p className="mt-3 text-center text-[10px] text-muted-foreground">
-        Sau scrie la <a href="mailto:business@ventuza.app" className="text-primary">business@ventuza.app</a>
+        Sau scrie la{" "}
+        <a href="mailto:business@ventuza.app" className="text-primary">
+          business@ventuza.app
+        </a>
       </p>
     </section>
   );
@@ -189,19 +211,35 @@ function OnboardAdvertiser({ onCreated }: { onCreated: (a: Advertiser) => void }
         <Megaphone className="size-7 text-primary" />
         <h2 className="mt-2 text-lg font-semibold">Promovează-ți businessul</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ventuza e <span className="font-semibold text-foreground">100% gratuit</span> pentru utilizatori. Ne susținem
-          prin parteneriate cu cluburi, baruri, evenimente și branduri LGBTQ-friendly din România.
+          Ventuza e <span className="font-semibold text-foreground">100% gratuit</span> pentru
+          utilizatori. Ne susținem prin parteneriate cu cluburi, baruri, evenimente și branduri
+          LGBTQ-friendly din România.
         </p>
       </section>
 
       <ul className="space-y-2">
         {[
-          { icon: Users, t: "Audiență verificată", d: "Utilizatori reali, verificați prin selfie + AI." },
+          {
+            icon: Users,
+            t: "Audiență verificată",
+            d: "Utilizatori reali, verificați prin selfie + AI.",
+          },
           { icon: MapPin, t: "Targetare pe oraș", d: "Promovează doar în orașele unde operezi." },
-          { icon: BarChart3, t: "Statistici clare", d: "Vezi impressions și click-uri în timp real." },
-          { icon: Sparkles, t: "Format nativ", d: "Apari în Events sau Discover, fără să sufoci experiența." },
+          {
+            icon: BarChart3,
+            t: "Statistici clare",
+            d: "Vezi impressions și click-uri în timp real.",
+          },
+          {
+            icon: Sparkles,
+            t: "Format nativ",
+            d: "Apari în Events sau Discover, fără să sufoci experiența.",
+          },
         ].map(({ icon: I, t, d }) => (
-          <li key={t} className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-3">
+          <li
+            key={t}
+            className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-3"
+          >
             <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
               <I className="size-4" />
             </span>
@@ -236,7 +274,9 @@ function OnboardAdvertiser({ onCreated }: { onCreated: (a: Advertiser) => void }
                 type="button"
                 onClick={() => setCategory(id)}
                 className={`flex flex-col items-center gap-1 rounded-xl border p-2 text-[10px] ${
-                  category === id ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
+                  category === id
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground"
                 }`}
               >
                 <I className="size-4" />
@@ -317,7 +357,9 @@ function AdvertiserDashboard({ adv, campaigns }: { adv: Advertiser; campaigns: A
       </Link>
 
       <section>
-        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Campaniile mele</h3>
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Campaniile mele
+        </h3>
         {campaigns.length === 0 ? (
           <p className="rounded-2xl border border-border bg-surface p-4 text-center text-xs text-muted-foreground">
             Nu ai încă nicio campanie. Creează prima și ajunge la audiența ta.
@@ -354,11 +396,15 @@ function AdvertiserDashboard({ adv, campaigns }: { adv: Advertiser; campaigns: A
       <section className="rounded-2xl border border-border bg-surface p-4">
         <p className="text-xs font-semibold">Cum funcționează plata?</p>
         <p className="mt-1 text-xs text-muted-foreground">
-          După ce trimiți campania, echipa Ventuza o aprobă în 24h și îți comunică pe email factura proforma. Plata e prin
-          transfer bancar sau Stripe. Tarife: <span className="font-medium text-foreground">de la 99 RON / săptămână</span> pentru
-          un banner local.
+          După ce trimiți campania, echipa Ventuza o aprobă în 24h și îți comunică pe email factura
+          proforma. Plata e prin transfer bancar sau Stripe. Tarife:{" "}
+          <span className="font-medium text-foreground">de la 99 RON / săptămână</span> pentru un
+          banner local.
         </p>
-        <a href="mailto:ads@ventuza.app" className="mt-2 inline-flex items-center gap-1 text-xs text-primary">
+        <a
+          href="mailto:ads@ventuza.app"
+          className="mt-2 inline-flex items-center gap-1 text-xs text-primary"
+        >
           Contact direct: ads@ventuza.app
         </a>
       </section>
@@ -374,5 +420,11 @@ function StatusPill({ status }: { status: string }) {
     ended: "bg-muted text-muted-foreground",
     rejected: "bg-red-500/15 text-red-500",
   };
-  return <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${map[status] ?? "bg-muted"}`}>{status}</span>;
+  return (
+    <span
+      className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${map[status] ?? "bg-muted"}`}
+    >
+      {status}
+    </span>
+  );
 }

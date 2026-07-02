@@ -10,7 +10,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { BottomNav } from "@/components/BottomNav";
 
-
 export const Route = createFileRoute("/groups")({
   ssr: false,
   head: () => ({ meta: [{ title: "Squads — Ventuza" }, { name: "robots", content: "noindex" }] }),
@@ -35,7 +34,6 @@ function GroupsPage() {
   const [creating, setCreating] = useState(false);
   const [query, setQuery] = useState("");
 
-
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
@@ -49,7 +47,11 @@ function GroupsPage() {
       .eq("user_id", user.id);
     const myIds = (memberRows ?? []).map((r) => r.group_id);
     const { data: mineGroups } = myIds.length
-      ? await supabase.from("groups").select("*").in("id", myIds).order("created_at", { ascending: false })
+      ? await supabase
+          .from("groups")
+          .select("*")
+          .in("id", myIds)
+          .order("created_at", { ascending: false })
       : { data: [] as Group[] };
     setMine((mineGroups ?? []) as Group[]);
 
@@ -63,11 +65,15 @@ function GroupsPage() {
     setLoading(false);
   }
 
-  useEffect(() => { refresh(); /* eslint-disable-line react-hooks/exhaustive-deps */ }, [user]);
+  useEffect(() => {
+    refresh();
+  }, [user]);
 
   async function join(g: Group) {
     if (!user) return;
-    const { error } = await supabase.from("group_members").insert({ group_id: g.id, user_id: user.id, role: "member" });
+    const { error } = await supabase
+      .from("group_members")
+      .insert({ group_id: g.id, user_id: user.id, role: "member" });
     if (error) return toast.error(error.message);
     toast.success(`Te-ai alăturat ${g.name}`);
     refresh();
@@ -76,35 +82,63 @@ function GroupsPage() {
   return (
     <main className="min-h-dvh bg-background pb-28">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border/60 bg-background/95 px-4 py-3 backdrop-blur">
-        <button onClick={() => navigate({ to: "/discover" })} className="text-muted-foreground hover:text-foreground" aria-label="Back">
+        <button
+          onClick={() => navigate({ to: "/discover" })}
+          className="text-muted-foreground hover:text-foreground"
+          aria-label="Back"
+        >
           <ChevronLeft className="size-5" />
         </button>
         <h1 className="wordmark text-lg">Squads</h1>
-        <button onClick={() => setCreating(true)} aria-label="New squad" className="rounded-full bg-primary p-1.5 text-primary-foreground">
+        <button
+          onClick={() => setCreating(true)}
+          aria-label="New squad"
+          className="rounded-full bg-primary p-1.5 text-primary-foreground"
+        >
           <Plus className="size-4" />
         </button>
       </header>
 
       {loading ? (
-        <div className="flex justify-center py-16"><Loader2 className="size-6 animate-spin text-primary" /></div>
+        <div className="flex justify-center py-16">
+          <Loader2 className="size-6 animate-spin text-primary" />
+        </div>
       ) : (
         <div className="space-y-8 px-4 py-6">
           <section>
-            <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">Squads tale</h2>
+            <h2 className="mb-3 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Squads tale
+            </h2>
             {mine.length === 0 ? (
               <p className="rounded-2xl border border-border bg-surface p-6 text-center text-sm text-muted-foreground">
                 N-ai squad-uri încă. Creează unul sau alătură-te mai jos.
               </p>
             ) : (
               <ul className="space-y-2">
-                {mine.map((g) => <GroupCard key={g.id} g={g} action={<Button size="sm" variant="hero" onClick={() => navigate({ to: "/groups/$id", params: { id: g.id } })}>Deschide</Button>} />)}
+                {mine.map((g) => (
+                  <GroupCard
+                    key={g.id}
+                    g={g}
+                    action={
+                      <Button
+                        size="sm"
+                        variant="hero"
+                        onClick={() => navigate({ to: "/groups/$id", params: { id: g.id } })}
+                      >
+                        Deschide
+                      </Button>
+                    }
+                  />
+                ))}
               </ul>
             )}
           </section>
 
           <section>
             <div className="mb-3 flex items-center gap-2">
-              <h2 className="flex-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">Descoperă</h2>
+              <h2 className="flex-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                Descoperă
+              </h2>
             </div>
             <div className="relative mb-3">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -118,19 +152,36 @@ function GroupsPage() {
             {(() => {
               const q = query.trim().toLowerCase();
               const filtered = q
-                ? discover.filter((g) => g.name.toLowerCase().includes(q) || (g.description ?? "").toLowerCase().includes(q))
+                ? discover.filter(
+                    (g) =>
+                      g.name.toLowerCase().includes(q) ||
+                      (g.description ?? "").toLowerCase().includes(q),
+                  )
                 : discover;
               if (filtered.length === 0) {
-                return <p className="text-sm text-muted-foreground">{q ? "Niciun rezultat." : "Niciun squad public momentan."}</p>;
+                return (
+                  <p className="text-sm text-muted-foreground">
+                    {q ? "Niciun rezultat." : "Niciun squad public momentan."}
+                  </p>
+                );
               }
               return (
                 <ul className="space-y-2">
-                  {filtered.map((g) => <GroupCard key={g.id} g={g} action={<Button size="sm" variant="subtle" onClick={() => join(g)}>Alătură-te</Button>} />)}
+                  {filtered.map((g) => (
+                    <GroupCard
+                      key={g.id}
+                      g={g}
+                      action={
+                        <Button size="sm" variant="subtle" onClick={() => join(g)}>
+                          Alătură-te
+                        </Button>
+                      }
+                    />
+                  ))}
                 </ul>
               );
             })()}
           </section>
-
         </div>
       )}
 
@@ -138,7 +189,11 @@ function GroupsPage() {
         <CreateGroupDrawer
           userId={user.id}
           onClose={() => setCreating(false)}
-          onCreated={(id) => { setCreating(false); refresh(); navigate({ to: "/groups/$id", params: { id } }); }}
+          onCreated={(id) => {
+            setCreating(false);
+            refresh();
+            navigate({ to: "/groups/$id", params: { id } });
+          }}
         />
       )}
       <BottomNav />
@@ -155,7 +210,10 @@ function GroupCard({ g, action }: { g: Group; action: React.ReactNode }) {
         </div>
         <div>
           <p className="font-medium">{g.name}</p>
-          <p className="text-xs text-muted-foreground">{g.member_count} {g.member_count === 1 ? "membru" : "membri"}{g.description ? ` • ${g.description.slice(0, 40)}` : ""}</p>
+          <p className="text-xs text-muted-foreground">
+            {g.member_count} {g.member_count === 1 ? "membru" : "membri"}
+            {g.description ? ` • ${g.description.slice(0, 40)}` : ""}
+          </p>
         </div>
       </div>
       {action}
@@ -163,7 +221,15 @@ function GroupCard({ g, action }: { g: Group; action: React.ReactNode }) {
   );
 }
 
-function CreateGroupDrawer({ userId, onClose, onCreated }: { userId: string; onClose: () => void; onCreated: (id: string) => void }) {
+function CreateGroupDrawer({
+  userId,
+  onClose,
+  onCreated,
+}: {
+  userId: string;
+  onClose: () => void;
+  onCreated: (id: string) => void;
+}) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isPublic, setIsPublic] = useState(true);
@@ -174,11 +240,21 @@ function CreateGroupDrawer({ userId, onClose, onCreated }: { userId: string; onC
     setSaving(true);
     const { data, error } = await supabase
       .from("groups")
-      .insert({ name: name.trim().slice(0, 80), description: description.trim().slice(0, 280) || null, is_public: isPublic, owner_id: userId })
+      .insert({
+        name: name.trim().slice(0, 80),
+        description: description.trim().slice(0, 280) || null,
+        is_public: isPublic,
+        owner_id: userId,
+      })
       .select("id")
       .single();
-    if (error || !data) { setSaving(false); return toast.error(error?.message ?? "Eroare"); }
-    await supabase.from("group_members").insert({ group_id: data.id, user_id: userId, role: "owner" });
+    if (error || !data) {
+      setSaving(false);
+      return toast.error(error?.message ?? "Eroare");
+    }
+    await supabase
+      .from("group_members")
+      .insert({ group_id: data.id, user_id: userId, role: "owner" });
     setSaving(false);
     onCreated(data.id);
   }
@@ -186,7 +262,9 @@ function CreateGroupDrawer({ userId, onClose, onCreated }: { userId: string; onC
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <header className="flex items-center justify-between border-b border-border/50 px-6 py-4">
-        <button onClick={onClose} className="text-muted-foreground">Renunță</button>
+        <button onClick={onClose} className="text-muted-foreground">
+          Renunță
+        </button>
         <h2 className="font-display text-lg">Squad nou</h2>
         <Button onClick={create} variant="hero" size="sm" disabled={saving}>
           {saving && <Loader2 className="size-3 animate-spin" />} Creează
@@ -195,18 +273,38 @@ function CreateGroupDrawer({ userId, onClose, onCreated }: { userId: string; onC
       <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
         <div className="space-y-2">
           <Label>Nume</Label>
-          <Input value={name} maxLength={80} onChange={(e) => setName(e.target.value)} className="h-12 bg-surface border-border" placeholder="Ex: Bucharest Bears" />
+          <Input
+            value={name}
+            maxLength={80}
+            onChange={(e) => setName(e.target.value)}
+            className="h-12 bg-surface border-border"
+            placeholder="Ex: Bucharest Bears"
+          />
         </div>
         <div className="space-y-2">
           <Label>Descriere</Label>
-          <Textarea value={description} maxLength={280} rows={4} onChange={(e) => setDescription(e.target.value)} className="bg-surface border-border" placeholder="Despre ce e squad-ul?" />
+          <Textarea
+            value={description}
+            maxLength={280}
+            rows={4}
+            onChange={(e) => setDescription(e.target.value)}
+            className="bg-surface border-border"
+            placeholder="Despre ce e squad-ul?"
+          />
         </div>
         <label className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
           <div>
             <p className="text-sm font-medium">Public</p>
-            <p className="text-xs text-muted-foreground">Oricine îl poate găsi și se poate alătura.</p>
+            <p className="text-xs text-muted-foreground">
+              Oricine îl poate găsi și se poate alătura.
+            </p>
           </div>
-          <input type="checkbox" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} className="size-5 accent-primary" />
+          <input
+            type="checkbox"
+            checked={isPublic}
+            onChange={(e) => setIsPublic(e.target.checked)}
+            className="size-5 accent-primary"
+          />
         </label>
       </div>
     </div>

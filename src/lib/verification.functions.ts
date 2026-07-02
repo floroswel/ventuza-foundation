@@ -24,7 +24,10 @@ export const verifySelfie = createServerFn({ method: "POST" })
         {
           role: "user",
           content: [
-            { type: "text", text: "Poza 1: SELFIE LIVE (cu degetul mare ridicat). Poza 2: POZA DE PROFIL." },
+            {
+              type: "text",
+              text: "Poza 1: SELFIE LIVE (cu degetul mare ridicat). Poza 2: POZA DE PROFIL.",
+            },
             { type: "image_url", image_url: { url: data.selfieUrl } },
             { type: "image_url", image_url: { url: data.mainPhotoUrl } },
           ],
@@ -34,7 +37,12 @@ export const verifySelfie = createServerFn({ method: "POST" })
       maxTokens: 200,
       json: true,
     });
-    let parsed: { same_person: boolean; gesture_visible: boolean; real_selfie: boolean; reason: string };
+    let parsed: {
+      same_person: boolean;
+      gesture_visible: boolean;
+      real_selfie: boolean;
+      reason: string;
+    };
     try {
       parsed = JSON.parse(raw);
     } catch {

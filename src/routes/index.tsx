@@ -8,13 +8,22 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Ventuza — Dating, elevated." },
-      { name: "description", content: "A premium, inclusive dating experience for people who want more than a swipe." },
+      {
+        name: "description",
+        content: "A premium, inclusive dating experience for people who want more than a swipe.",
+      },
       { property: "og:title", content: "Ventuza — Dating, elevated." },
-      { property: "og:description", content: "Meet people who match your depth — not just your swipe." },
+      {
+        property: "og:description",
+        content: "Meet people who match your depth — not just your swipe.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Ventuza — Dating, elevated." },
-      { name: "twitter:description", content: "Meet people who match your depth — not just your swipe." },
+      {
+        name: "twitter:description",
+        content: "Meet people who match your depth — not just your swipe.",
+      },
     ],
   }),
   component: Welcome,
@@ -84,8 +93,14 @@ function Welcome() {
 
         <p className="mt-8 max-w-xs text-[11px] leading-relaxed text-muted-foreground">
           By continuing you agree to our{" "}
-          <Link to="/legal/terms" className="text-primary hover:underline">Terms</Link> and{" "}
-          <Link to="/legal/privacy" className="text-primary hover:underline">Privacy Policy</Link>.
+          <Link to="/legal/terms" className="text-primary hover:underline">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link to="/legal/privacy" className="text-primary hover:underline">
+            Privacy Policy
+          </Link>
+          .
         </p>
 
         <div className="mt-12 flex w-full max-w-xs flex-col items-stretch gap-3">

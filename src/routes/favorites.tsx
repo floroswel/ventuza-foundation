@@ -64,7 +64,10 @@ function FavoritesPage() {
   return (
     <div className="min-h-dvh bg-background pb-24">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/60 bg-background/85 px-4 py-3 backdrop-blur">
-        <Link to="/profile" className="flex size-9 items-center justify-center rounded-full border border-border">
+        <Link
+          to="/profile"
+          className="flex size-9 items-center justify-center rounded-full border border-border"
+        >
           <ChevronLeft className="size-4" />
         </Link>
         <h1 className="flex items-center gap-2 text-base font-semibold">
@@ -75,11 +78,14 @@ function FavoritesPage() {
 
       <div className="mx-auto max-w-md px-3 py-4">
         {loading ? (
-          <div className="flex justify-center py-20"><Loader2 className="size-5 animate-spin text-primary" /></div>
+          <div className="flex justify-center py-20">
+            <Loader2 className="size-5 animate-spin text-primary" />
+          </div>
         ) : rows.length === 0 ? (
           <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
             <Star className="mx-auto mb-2 size-8 text-primary/60" />
-            Nu ai salvat încă pe nimeni la favorite. Apasă ⭐ pe un profil în Discover ca să-l salvezi aici.
+            Nu ai salvat încă pe nimeni la favorite. Apasă ⭐ pe un profil în Discover ca să-l
+            salvezi aici.
           </div>
         ) : (
           <ul className="grid grid-cols-2 gap-2">
@@ -88,20 +94,37 @@ function FavoritesPage() {
               const photoUrl = photo ? urls[photo] : null;
               const online = r.last_seen ? isOnline(r.last_seen) : false;
               return (
-                <li key={r.favorite_id} className="overflow-hidden rounded-2xl border border-border bg-surface">
-                  <button onClick={() => openChat(r.favorite_id)} className="relative block aspect-[3/4] w-full bg-background">
+                <li
+                  key={r.favorite_id}
+                  className="overflow-hidden rounded-2xl border border-border bg-surface"
+                >
+                  <button
+                    onClick={() => openChat(r.favorite_id)}
+                    className="relative block aspect-[3/4] w-full bg-background"
+                  >
                     {photoUrl ? (
-                      <img src={photoUrl} alt={r.display_name ?? ""} className="size-full object-cover" />
+                      <img
+                        src={photoUrl}
+                        alt={r.display_name ?? ""}
+                        className="size-full object-cover"
+                      />
                     ) : (
                       <div className="grid size-full place-items-center text-3xl text-muted-foreground/40">
                         {r.display_name?.[0]?.toUpperCase() ?? "?"}
                       </div>
                     )}
                     <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent p-2">
-                      <p className="truncate text-xs font-medium text-white">{r.display_name ?? "Anonim"}</p>
+                      <p className="truncate text-xs font-medium text-white">
+                        {r.display_name ?? "Anonim"}
+                      </p>
                       {r.last_seen && (
                         <p className="text-[10px] text-white/70">
-                          <span className={cn("mr-1 inline-block size-1.5 rounded-full", online ? "bg-emerald-400" : "bg-white/40")} />
+                          <span
+                            className={cn(
+                              "mr-1 inline-block size-1.5 rounded-full",
+                              online ? "bg-emerald-400" : "bg-white/40",
+                            )}
+                          />
                           {formatLastSeen(r.last_seen)}
                         </p>
                       )}

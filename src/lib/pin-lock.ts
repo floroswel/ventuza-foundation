@@ -6,7 +6,9 @@ const UNLOCKED_KEY = "vz_pin_unlocked"; // session-scoped (sessionStorage)
 
 async function hash(pin: string) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(pin));
-  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  return Array.from(new Uint8Array(buf))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
 }
 
 export function hasPin(): boolean {

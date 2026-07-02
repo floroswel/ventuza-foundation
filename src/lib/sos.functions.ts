@@ -21,7 +21,9 @@ export const triggerSos = createServerFn({ method: "POST" })
       .eq("id", userId)
       .maybeSingle();
 
-    const contacts = (profile?.sos_contacts as Array<{ name?: string; phone?: string; email?: string }> | null) ?? [];
+    const contacts =
+      (profile?.sos_contacts as Array<{ name?: string; phone?: string; email?: string }> | null) ??
+      [];
 
     const { data: row, error } = await supabase
       .from("sos_events")

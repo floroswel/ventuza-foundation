@@ -18,16 +18,18 @@
 import { supabase } from "@/integrations/supabase/client";
 
 /** True dacă rulăm pe un host considerat PRODUCȚIE. */
-export function isProductionHost(hostname = typeof window !== "undefined" ? window.location.hostname : ""): boolean {
+export function isProductionHost(
+  hostname = typeof window !== "undefined" ? window.location.hostname : "",
+): boolean {
   if (!hostname) return true; // SSR / unknown → assume prod (fail-safe)
   const h = hostname.toLowerCase();
   // Excepții dev/preview cunoscute
   if (h === "localhost" || h === "127.0.0.1" || h.endsWith(".local")) return false;
-  if (h.startsWith("id-preview--")) return false;        // Lovable in-editor preview
-  if (h.endsWith("-dev.lovable.app")) return false;      // Lovable preview stable URL
+  if (h.startsWith("id-preview--")) return false; // Lovable in-editor preview
+  if (h.endsWith("-dev.lovable.app")) return false; // Lovable preview stable URL
   if (h.endsWith("--dev.lovable.app")) return false;
-  if (h.endsWith(".lovableproject.com")) return false;   // Lovable sandbox preview (editor iframe)
-  if (h.endsWith(".lovable.dev")) return false;          // Lovable dev preview
+  if (h.endsWith(".lovableproject.com")) return false; // Lovable sandbox preview (editor iframe)
+  if (h.endsWith(".lovable.dev")) return false; // Lovable dev preview
   // Orice altceva = PROD. Exemple recunoscute ca PROD:
   //   ventuza.eu, www.ventuza.eu (custom domain),
   //   ventuza-foundation.lovable.app (Lovable published URL).

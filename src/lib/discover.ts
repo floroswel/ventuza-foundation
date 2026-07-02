@@ -10,7 +10,7 @@ export type DiscoverFilters = {
   tribes: string[];
   bodyTypes: string[];
   positions: string[];
-  
+
   minHeight: number | null;
   maxHeight: number | null;
   onlineOnly: boolean;
@@ -29,7 +29,7 @@ export const DEFAULT_FILTERS: DiscoverFilters = {
   tribes: [],
   bodyTypes: [],
   positions: [],
-  
+
   minHeight: null,
   maxHeight: null,
   onlineOnly: false,
@@ -196,7 +196,10 @@ export async function fetchDiscover(
       );
     }
     if (msg.includes("age_verification_required")) {
-      throw make("age_verification_required", "Trebuie să-ți verifici vârsta înainte de a folosi Discover.");
+      throw make(
+        "age_verification_required",
+        "Trebuie să-ți verifici vârsta înainte de a folosi Discover.",
+      );
     }
     if (msg.includes("not_authenticated") || msg.includes("forbidden")) {
       throw make("not_authenticated", "Sesiune expirată. Autentifică-te din nou.");
@@ -211,7 +214,10 @@ export async function signPhotos(paths: string[]): Promise<Record<string, string
   await Promise.all(
     paths.map(async (p) => {
       // Passthrough for full http(s) URLs (demo seed photos)
-      if (/^https?:\/\//i.test(p)) { out[p] = p; return; }
+      if (/^https?:\/\//i.test(p)) {
+        out[p] = p;
+        return;
+      }
       const { data } = await supabase.storage.from("profile-photos").createSignedUrl(p, 3600);
       if (data?.signedUrl) out[p] = data.signedUrl;
     }),
@@ -220,5 +226,8 @@ export async function signPhotos(paths: string[]): Promise<Record<string, string
 }
 
 export async function logProfileView(viewedId: string) {
-  await supabase.from("profile_views").insert({ viewed_id: viewedId, viewer_id: (await supabase.auth.getUser()).data.user?.id ?? "" } as never);
+  await supabase.from("profile_views").insert({
+    viewed_id: viewedId,
+    viewer_id: (await supabase.auth.getUser()).data.user?.id ?? "",
+  } as never);
 }

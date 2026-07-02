@@ -86,12 +86,19 @@ export function usePremium() {
 
       const offerings = await Purchases.getOfferings();
       const all = offerings.all ?? {};
-      let pkg = null as unknown as Awaited<ReturnType<typeof Purchases.getOfferings>>["current"] extends infer C
-        ? C extends { availablePackages: Array<infer P> } ? P : null
+      let pkg = null as unknown as Awaited<
+        ReturnType<typeof Purchases.getOfferings>
+      >["current"] extends infer C
+        ? C extends { availablePackages: Array<infer P> }
+          ? P
+          : null
         : null;
       for (const off of Object.values(all)) {
         const found = off.availablePackages.find((p) => p.product.identifier === productId);
-        if (found) { pkg = found as never; break; }
+        if (found) {
+          pkg = found as never;
+          break;
+        }
       }
       if (!pkg) throw new Error(`Produsul ${productId} nu există în RevenueCat.`);
 

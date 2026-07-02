@@ -3,7 +3,13 @@ import { Music, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-type Anthem = { title: string; artist: string; url?: string; preview_url?: string; cover_url?: string } | null;
+type Anthem = {
+  title: string;
+  artist: string;
+  url?: string;
+  preview_url?: string;
+  cover_url?: string;
+} | null;
 
 type Props = {
   userId: string;
@@ -24,7 +30,11 @@ export function MusicAnthemCard({ userId, anthem, onChange }: Props) {
       return;
     }
     setBusy(true);
-    const next: Anthem = { title: title.trim(), artist: artist.trim(), url: link.trim() || undefined };
+    const next: Anthem = {
+      title: title.trim(),
+      artist: artist.trim(),
+      url: link.trim() || undefined,
+    };
     const { error } = await supabase.from("profiles").update({ anthem: next }).eq("id", userId);
     setBusy(false);
     if (error) return toast.error(error.message);
@@ -39,7 +49,9 @@ export function MusicAnthemCard({ userId, anthem, onChange }: Props) {
     setBusy(false);
     if (error) return toast.error(error.message);
     onChange(null);
-    setTitle(""); setArtist(""); setLink("");
+    setTitle("");
+    setArtist("");
+    setLink("");
     setEditing(true);
   }
 
@@ -59,13 +71,26 @@ export function MusicAnthemCard({ userId, anthem, onChange }: Props) {
             <p className="truncate font-medium">{anthem.title}</p>
             <p className="truncate text-sm text-muted-foreground">{anthem.artist}</p>
             {anthem.url && (
-              <a href={anthem.url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">
+              <a
+                href={anthem.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-primary underline"
+              >
                 Ascultă
               </a>
             )}
           </div>
-          <button onClick={() => setEditing(true)} className="text-xs text-muted-foreground underline">Edit</button>
-          <button onClick={remove} className="rounded-full p-2 text-muted-foreground hover:text-destructive">
+          <button
+            onClick={() => setEditing(true)}
+            className="text-xs text-muted-foreground underline"
+          >
+            Edit
+          </button>
+          <button
+            onClick={remove}
+            className="rounded-full p-2 text-muted-foreground hover:text-destructive"
+          >
             <Trash2 className="size-4" />
           </button>
         </div>
@@ -100,7 +125,10 @@ export function MusicAnthemCard({ userId, anthem, onChange }: Props) {
               {busy ? <Loader2 className="size-3 animate-spin" /> : "Salvează"}
             </button>
             {anthem && (
-              <button onClick={() => setEditing(false)} className="rounded-full border border-border px-4 py-2 text-xs">
+              <button
+                onClick={() => setEditing(false)}
+                className="rounded-full border border-border px-4 py-2 text-xs"
+              >
                 Anulează
               </button>
             )}

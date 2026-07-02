@@ -11,8 +11,7 @@ import { describe, it, expect } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 
 const url = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
-const key =
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY;
+const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY;
 
 describe("public.app_role enum", () => {
   it("conține valoarea 'partner' (regresie admin-partners)", async () => {
@@ -30,9 +29,7 @@ describe("public.app_role enum", () => {
     const values = (data as string[]) ?? [];
     expect(values).toContain("partner");
     // Sanity — alte roluri folosite în cod
-    expect(values).toEqual(
-      expect.arrayContaining(["admin", "moderator", "user", "super_admin"]),
-    );
+    expect(values).toEqual(expect.arrayContaining(["admin", "moderator", "user", "super_admin"]));
   });
 
   it("interogarea user_roles cu role='partner' NU aruncă enum error", async () => {

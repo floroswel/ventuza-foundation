@@ -22,7 +22,9 @@ export const createAdvertiser = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     // Caller must hold the 'business' or 'admin' role.
     const { data: roles } = await context.supabase
-      .from("user_roles").select("role").eq("user_id", context.userId);
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId);
     const ok = (roles ?? []).some((r) => r.role === "business" || r.role === "admin");
     if (!ok) throw new Error("Acces rezervat partenerilor aprobați.");
 
@@ -67,7 +69,10 @@ export const createAdCampaign = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     // Ownership check — RLS would catch it too, but fail fast with a clear message.
     const { data: adv } = await context.supabase
-      .from("advertisers").select("owner_id").eq("id", data.advertiser_id).maybeSingle();
+      .from("advertisers")
+      .select("owner_id")
+      .eq("id", data.advertiser_id)
+      .maybeSingle();
     if (!adv || adv.owner_id !== context.userId) throw new Error("Nu ai acces la acest brand.");
 
     const startMs = new Date(data.starts_at).getTime();
@@ -77,7 +82,8 @@ export const createAdCampaign = createServerFn({ method: "POST" })
     }
     const days = Math.max(1, Math.ceil((endMs - startMs) / 86_400_000));
     const price = PLACEMENT_PRICES[data.placement];
-    if (days < price.minDays) throw new Error(`Minim ${price.minDays} zile pentru acest placement.`);
+    if (days < price.minDays)
+      throw new Error(`Minim ${price.minDays} zile pentru acest placement.`);
     const budgetCents = days * price.perDayEur * 100;
 
     const { data: row, error } = await context.supabase

@@ -59,7 +59,8 @@ export const adminGetOverview = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
 
     const since24h = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
     const since7d = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
@@ -137,7 +138,8 @@ export const adminListTables = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
     const results = await Promise.all(
       ALLOWED_TABLES.map(async (t) => {
         const { count } = await supabaseAdmin.from(t).select("*", { count: "exact", head: true });
@@ -167,11 +169,21 @@ const SENSITIVE_COLUMNS: Record<string, string[]> = {
     // Orientare / identitate sexuală (Art. 9 — viața sexuală) — break-glass
     // kind='orientation'. Pe o app queer `gender` + `tribes` + `pronouns` pot
     // dezvălui orientarea indirect, deci sunt tratate la fel.
-    "orientation", "gender", "gender_custom", "pronouns", "pronouns_custom", "tribes",
+    "orientation",
+    "gender",
+    "gender_custom",
+    "pronouns",
+    "pronouns_custom",
+    "tribes",
     // Locație precisă — break-glass kind='location' (super_admin)
-    "location", "prev_location", "travel_location",
+    "location",
+    "prev_location",
+    "travel_location",
     // Contact / credențiale
-    "phone_e164", "email_hash", "pin_hash", "pin_lock_until",
+    "phone_e164",
+    "email_hash",
+    "pin_hash",
+    "pin_lock_until",
   ],
   messages: ["body", "media_url", "voice_url", "caption"],
   group_messages: ["body", "media_url"],
@@ -200,9 +212,20 @@ function safeColumnsFor(table: string): string {
   }
   if (table === "profiles") {
     return [
-      "id","display_name","travel_city","verified","banned_at","suspended_until",
-      "report_count","level","xp","created_at","updated_at","last_active_at",
-      "is_premium","age",
+      "id",
+      "display_name",
+      "travel_city",
+      "verified",
+      "banned_at",
+      "suspended_until",
+      "report_count",
+      "level",
+      "xp",
+      "created_at",
+      "updated_at",
+      "last_active_at",
+      "is_premium",
+      "age",
     ].join(",");
   }
   return "*";
@@ -214,7 +237,8 @@ export const adminListRows = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ListInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
     const limit = data.limit ?? 50;
     const offset = data.offset ?? 0;
     const projection = safeColumnsFor(data.table);
@@ -230,7 +254,10 @@ export const adminListRows = createServerFn({ method: "POST" })
     q = q.range(offset, offset + limit - 1);
     const { data: rows, count, error } = await q;
     if (error) {
-      let q2: any = supabaseAdmin.from(data.table).select(projection, { count: "exact" }).range(offset, offset + limit - 1);
+      let q2: any = supabaseAdmin
+        .from(data.table)
+        .select(projection, { count: "exact" })
+        .range(offset, offset + limit - 1);
       if (data.search && data.searchColumn) q2 = q2.ilike(data.searchColumn, `%${data.search}%`);
       const r2 = await q2;
       if (r2.error) throw new Error(r2.error.message);
@@ -252,7 +279,8 @@ export const adminUpdateRow = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => UpdateInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
     const idCol = data.idColumn ?? "id";
     const { error } = await supabaseAdmin.from(data.table).update(data.patch).eq(idCol, data.id);
     if (error) throw new Error(error.message);
@@ -271,7 +299,8 @@ export const adminDeleteRow = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => DeleteInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
     const idCol = data.idColumn ?? "id";
     const { error } = await supabaseAdmin.from(data.table).delete().eq(idCol, data.id);
     if (error) throw new Error(error.message);
@@ -289,13 +318,21 @@ export const adminInsertRow = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => InsertInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
-    const { data: row, error } = await supabaseAdmin.from(data.table).insert(data.values).select().single();
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
+    const { data: row, error } = await supabaseAdmin
+      .from(data.table)
+      .insert(data.values)
+      .select()
+      .single();
     if (error) throw new Error(error.message);
     return { row };
   });
 
-const SearchUsersInput = z.object({ q: z.string().max(200).optional(), limit: z.number().int().min(1).max(100).optional() });
+const SearchUsersInput = z.object({
+  q: z.string().max(200).optional(),
+  limit: z.number().int().min(1).max(100).optional(),
+});
 
 /** Search users (profiles + auth email via admin). */
 export const adminSearchUsers = createServerFn({ method: "POST" })
@@ -303,24 +340,32 @@ export const adminSearchUsers = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => SearchUsersInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
     const limit = data.limit ?? 50;
     let q: any = supabaseAdmin
       .from("profiles")
-      .select("id, display_name, travel_city, verified, banned_at, suspended_until, report_count, level, xp, created_at")
+      .select(
+        "id, display_name, travel_city, verified, banned_at, suspended_until, report_count, level, xp, created_at",
+      )
       .order("created_at", { ascending: false })
       .limit(limit);
     if (data.q) {
-      q = q.or(`display_name.ilike.%${data.q}%,travel_city.ilike.%${data.q}%,id.eq.${isUuid(data.q) ? data.q : "00000000-0000-0000-0000-000000000000"}`);
+      q = q.or(
+        `display_name.ilike.%${data.q}%,travel_city.ilike.%${data.q}%,id.eq.${isUuid(data.q) ? data.q : "00000000-0000-0000-0000-000000000000"}`,
+      );
     }
     const { data: rows, error } = await q;
     if (error) throw new Error(error.message);
 
     // Roles
     const ids = (rows ?? []).map((r: any) => r.id);
-    let rolesByUser: Record<string, string[]> = {};
+    const rolesByUser: Record<string, string[]> = {};
     if (ids.length) {
-      const { data: roles } = await supabaseAdmin.from("user_roles").select("user_id, role").in("user_id", ids);
+      const { data: roles } = await supabaseAdmin
+        .from("user_roles")
+        .select("user_id, role")
+        .in("user_id", ids);
       (roles ?? []).forEach((r: any) => {
         rolesByUser[r.user_id] = rolesByUser[r.user_id] ?? [];
         rolesByUser[r.user_id].push(r.role);
@@ -346,7 +391,8 @@ export const adminGrantRole = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { assertAdminMfa } = await import("./admin-mfa-guard");
     await assertAdminMfa(context.userId);
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
     const { error } = await supabaseAdmin
       .from("user_roles")
       .upsert({ user_id: data.userId, role: data.role }, { onConflict: "user_id,role" });
@@ -362,7 +408,8 @@ export const adminRevokeRole = createServerFn({ method: "POST" })
     await assertAdmin(context.supabase, context.userId);
     const { assertAdminMfa } = await import("./admin-mfa-guard");
     await assertAdminMfa(context.userId);
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
     const { error } = await supabaseAdmin
       .from("user_roles")
       .delete()
@@ -385,7 +432,8 @@ export const adminBroadcast = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => BroadcastInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
 
     let q: any = supabaseAdmin.from("profiles").select("id");
     if (data.audience === "verified") q = q.eq("verified", true);
@@ -394,7 +442,10 @@ export const adminBroadcast = createServerFn({ method: "POST" })
 
     let userIds: string[] = (profs ?? []).map((p: any) => p.id);
     if (data.audience === "business") {
-      const { data: bizRoles } = await supabaseAdmin.from("user_roles").select("user_id").eq("role", "business");
+      const { data: bizRoles } = await supabaseAdmin
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "business");
       const set = new Set((bizRoles ?? []).map((r: any) => r.user_id));
       userIds = userIds.filter((id) => set.has(id));
     }
@@ -427,7 +478,8 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     if (data.userId === context.userId) throw new Error("Nu te poți șterge pe tine.");
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server"); const supabaseAdmin = _sa as any;
+    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
+    const supabaseAdmin = _sa as any;
     const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
     if (error) throw new Error(error.message);
     return { ok: true };

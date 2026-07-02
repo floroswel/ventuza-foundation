@@ -35,7 +35,9 @@ export function DailyRewardCard() {
 
   useEffect(() => {
     void refresh();
-    const t = setInterval(() => { void refresh(); }, 60_000);
+    const t = setInterval(() => {
+      void refresh();
+    }, 60_000);
     return () => clearInterval(t);
   }, []);
 
@@ -63,7 +65,9 @@ export function DailyRewardCard() {
         { duration: 3500 },
       );
       // Brief delay so the user sees the burst before the card collapses.
-      setTimeout(() => { void refresh(); }, 700);
+      setTimeout(() => {
+        void refresh();
+      }, 700);
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Eroare";
       if (msg.includes("already_claimed")) {
@@ -80,7 +84,7 @@ export function DailyRewardCard() {
   if (loading || !state) return null;
   if (state.claimed_today) return null;
 
-  const nextDay = Math.min(7, ((state.streak_days) % 7) + 1);
+  const nextDay = Math.min(7, (state.streak_days % 7) + 1);
   const xpInLevel = state.xp - state.level_xp_start;
   const xpForNext = state.level_xp_end - state.level_xp_start;
   const pct = Math.min(100, Math.round((xpInLevel / Math.max(1, xpForNext)) * 100));
@@ -139,7 +143,9 @@ export function DailyRewardCard() {
           </div>
           <div className="leading-tight">
             <p className="text-sm font-semibold">
-              {state.streak_days > 0 ? `Streak: ${state.streak_days} zile` : "Începe-ți streak-ul azi"}
+              {state.streak_days > 0
+                ? `Streak: ${state.streak_days} zile`
+                : "Începe-ți streak-ul azi"}
             </p>
             <p className="text-[11px] text-muted-foreground">
               Lvl {state.level} · {xpInLevel}/{xpForNext} XP

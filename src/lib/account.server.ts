@@ -33,9 +33,7 @@ export async function purgeUserAccount(
 
   // 2) Storage cleanup (cascade FK nu acoperă obiectele din storage).
   try {
-    const { data: files } = await supabaseAdmin.storage
-      .from("profile-photos")
-      .list(userId);
+    const { data: files } = await supabaseAdmin.storage.from("profile-photos").list(userId);
     if (files && files.length) {
       await supabaseAdmin.storage
         .from("profile-photos")
@@ -55,7 +53,9 @@ export async function purgeUserAccount(
       status: "processed",
       processed_at: new Date().toISOString(),
     });
-  } catch { /* dreptul la ștergere prevalează */ }
+  } catch {
+    /* dreptul la ștergere prevalează */
+  }
 
   // 4) Audit log dacă a acționat un admin.
   if (extra?.actorId) {
@@ -69,7 +69,9 @@ export async function purgeUserAccount(
         severity: "critical",
         after_data: { reason, rcNote },
       });
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 
   // 5) Hard delete — cascade FK pe schema publică.

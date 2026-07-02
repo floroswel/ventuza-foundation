@@ -1,6 +1,11 @@
 import { useEffect, useState } from "react";
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
@@ -33,7 +38,9 @@ export function ConsentPromptHost() {
 
   useEffect(() => {
     push = (r) => setQueue((q) => [...q, r]);
-    return () => { push = null; };
+    return () => {
+      push = null;
+    };
   }, []);
 
   const close = (ok: boolean) => {
@@ -43,7 +50,12 @@ export function ConsentPromptHost() {
   };
 
   return (
-    <Dialog open={!!current} onOpenChange={(o) => { if (!o) close(false); }}>
+    <Dialog
+      open={!!current}
+      onOpenChange={(o) => {
+        if (!o) close(false);
+      }}
+    >
       <DialogContent className="max-w-md">
         {current && (
           <>
@@ -55,8 +67,12 @@ export function ConsentPromptHost() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter className="gap-2 sm:gap-2">
-              <Button variant="outline" onClick={() => close(false)}>Nu acum</Button>
-              <Button variant="hero" onClick={() => close(true)}>Activează</Button>
+              <Button variant="outline" onClick={() => close(false)}>
+                Nu acum
+              </Button>
+              <Button variant="hero" onClick={() => close(true)}>
+                Activează
+              </Button>
             </DialogFooter>
           </>
         )}

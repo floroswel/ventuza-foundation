@@ -97,7 +97,9 @@ function ExplorePage() {
           />
         </div>
 
-        {tab === "events" ? <EventsPanel /> : (
+        {tab === "events" ? (
+          <EventsPanel />
+        ) : (
           <VenturePanel
             cities={filtered}
             loading={isLoading}
@@ -168,7 +170,8 @@ function VenturePanel({
         <Globe className="mx-auto size-8 text-muted-foreground" />
         <p className="mt-3 text-sm font-medium">Nu sunt încă orașe active</p>
         <p className="text-xs text-muted-foreground">
-          Comunitatea crește. Când parteneri publică venues sau useri activează travel, orașele apar aici.
+          Comunitatea crește. Când parteneri publică venues sau useri activează travel, orașele apar
+          aici.
         </p>
       </div>
     );
@@ -211,12 +214,8 @@ function CityCard({ city, onOpen }: { city: ExploreCity; onOpen: () => void }) {
           {city.travelers > 0 && (
             <Chip icon={<Plane className="size-3.5" />} label={city.travelers} />
           )}
-          {city.events > 0 && (
-            <Chip icon={<Ticket className="size-3.5" />} label={city.events} />
-          )}
-          {city.venues > 0 && (
-            <Chip icon={<Users className="size-3.5" />} label={city.venues} />
-          )}
+          {city.events > 0 && <Chip icon={<Ticket className="size-3.5" />} label={city.events} />}
+          {city.venues > 0 && <Chip icon={<Users className="size-3.5" />} label={city.venues} />}
         </div>
       </div>
     </button>

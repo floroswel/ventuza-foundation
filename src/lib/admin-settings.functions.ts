@@ -15,14 +15,23 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 async function reqMeta() {
   let ip: string | null = null;
   let ua: string | null = null;
-  try { ip = getRequestIP({ xForwardedFor: true }) ?? null; } catch { /* noop */ }
-  try { ua = getRequestHeader("user-agent") ?? null; } catch { /* noop */ }
+  try {
+    ip = getRequestIP({ xForwardedFor: true }) ?? null;
+  } catch {
+    /* noop */
+  }
+  try {
+    ua = getRequestHeader("user-agent") ?? null;
+  } catch {
+    /* noop */
+  }
   return { ip, ua };
 }
 
 async function assertAdmin(supabase: any, userId: string) {
   const { data } = await supabase.rpc("has_any_role", {
-    _user_id: userId, _roles: ["admin", "super_admin"],
+    _user_id: userId,
+    _roles: ["admin", "super_admin"],
   });
   if (!data) throw new Error("Forbidden: rol admin/super_admin necesar");
 }
@@ -51,20 +60,29 @@ export const adminUpdateSetting = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
-    const { data: before } = await sa.from("app_settings")
-      .select("value, version").eq("key", data.key).maybeSingle();
+    const { data: before } = await sa
+      .from("app_settings")
+      .select("value, version")
+      .eq("key", data.key)
+      .maybeSingle();
     const { data: r, error } = await sa.rpc("admin_update_setting", {
-      _key: data.key, _value: data.value, _actor: context.userId,
+      _key: data.key,
+      _value: data.value,
+      _actor: context.userId,
     });
     if (error) throw new Error(error.message);
     const meta = await reqMeta();
     await sa.from("admin_audit_log").insert({
-      actor_id: context.userId, action: "settings.update",
-      target_table: "app_settings", target_id: data.key,
+      actor_id: context.userId,
+      action: "settings.update",
+      target_table: "app_settings",
+      target_id: data.key,
       before_data: before ?? null,
       after_data: { value: data.value },
       justification: data.justification,
-      severity: "info", ip: meta.ip, user_agent: meta.ua,
+      severity: "info",
+      ip: meta.ip,
+      user_agent: meta.ua,
     });
     return r as any;
   });
@@ -75,8 +93,11 @@ export const adminSettingHistory = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     const { data: rows } = await context.supabase
-      .from("app_settings_history").select("*")
-      .eq("key", data.key).order("version", { ascending: false }).limit(50);
+      .from("app_settings_history")
+      .select("*")
+      .eq("key", data.key)
+      .order("version", { ascending: false })
+      .limit(50);
     return { rows: (rows ?? []) as any[] };
   });
 
@@ -107,7 +128,11 @@ export const adminUpsertFlag = createServerFn({ method: "POST" })
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
-    const { data: before } = await sa.from("feature_flags").select("*").eq("key", data.key).maybeSingle();
+    const { data: before } = await sa
+      .from("feature_flags")
+      .select("*")
+      .eq("key", data.key)
+      .maybeSingle();
     const patch: any = { updated_by: context.userId, updated_at: new Date().toISOString() };
     if (data.enabled !== undefined) patch.enabled = data.enabled;
     if (data.rollout_pct !== undefined) patch.rollout_pct = data.rollout_pct;
@@ -117,11 +142,16 @@ export const adminUpsertFlag = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     const meta = await reqMeta();
     await sa.from("admin_audit_log").insert({
-      actor_id: context.userId, action: "feature_flag.upsert",
-      target_table: "feature_flags", target_id: data.key,
-      before_data: before ?? null, after_data: patch,
+      actor_id: context.userId,
+      action: "feature_flag.upsert",
+      target_table: "feature_flags",
+      target_id: data.key,
+      before_data: before ?? null,
+      after_data: patch,
       justification: data.justification,
-      severity: "info", ip: meta.ip, user_agent: meta.ua,
+      severity: "info",
+      ip: meta.ip,
+      user_agent: meta.ua,
     });
     return { ok: true as const };
   });

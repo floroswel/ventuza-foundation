@@ -34,7 +34,9 @@ export function DateVibesCard({ userId, vibes, onChange }: Props) {
   }
 
   const filled =
-    (form.ask_me_about?.length ?? 0) + (form.dealbreakers?.length ?? 0) + (form.ideal_match ? 1 : 0);
+    (form.ask_me_about?.length ?? 0) +
+    (form.dealbreakers?.length ?? 0) +
+    (form.ideal_match ? 1 : 0);
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-5">
@@ -57,18 +59,29 @@ export function DateVibesCard({ userId, vibes, onChange }: Props) {
           )}
           {form.ask_me_about && form.ask_me_about.length > 0 && (
             <div>
-              <p className="mb-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">Ask me about</p>
+              <p className="mb-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                Ask me about
+              </p>
               <div className="flex flex-wrap gap-1.5">
-                {form.ask_me_about.map((v) => <Chip key={v} active>💬 {v}</Chip>)}
+                {form.ask_me_about.map((v) => (
+                  <Chip key={v} active>
+                    💬 {v}
+                  </Chip>
+                ))}
               </div>
             </div>
           )}
           {form.dealbreakers && form.dealbreakers.length > 0 && (
             <div>
-              <p className="mb-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">Dealbreakers</p>
+              <p className="mb-1.5 text-[10px] uppercase tracking-wider text-muted-foreground">
+                Dealbreakers
+              </p>
               <div className="flex flex-wrap gap-1.5">
                 {form.dealbreakers.map((v) => (
-                  <span key={v} className="rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1 text-xs text-destructive">
+                  <span
+                    key={v}
+                    className="rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1 text-xs text-destructive"
+                  >
                     🚫 {v}
                   </span>
                 ))}
@@ -81,7 +94,9 @@ export function DateVibesCard({ userId, vibes, onChange }: Props) {
       {open && (
         <div className="mt-4 space-y-4">
           <div>
-            <p className="mb-1.5 text-xs text-muted-foreground">Cum arată matchul ideal pentru tine?</p>
+            <p className="mb-1.5 text-xs text-muted-foreground">
+              Cum arată matchul ideal pentru tine?
+            </p>
             <textarea
               value={form.ideal_match ?? ""}
               onChange={(e) => setForm({ ...form, ideal_match: e.target.value })}
@@ -96,7 +111,11 @@ export function DateVibesCard({ userId, vibes, onChange }: Props) {
             <p className="mb-1.5 text-xs text-muted-foreground">Întreabă-mă despre</p>
             <div className="flex flex-wrap gap-1.5">
               {ASK_ME_ABOUT_OPTIONS.map((o) => (
-                <Chip key={o} active={form.ask_me_about?.includes(o)} onClick={() => setForm({ ...form, ask_me_about: toggle(form.ask_me_about, o) })}>
+                <Chip
+                  key={o}
+                  active={form.ask_me_about?.includes(o)}
+                  onClick={() => setForm({ ...form, ask_me_about: toggle(form.ask_me_about, o) })}
+                >
                   {o}
                 </Chip>
               ))}
@@ -107,7 +126,11 @@ export function DateVibesCard({ userId, vibes, onChange }: Props) {
             <p className="mb-1.5 text-xs text-muted-foreground">Dealbreakers</p>
             <div className="flex flex-wrap gap-1.5">
               {DEALBREAKER_OPTIONS.map((o) => (
-                <Chip key={o} active={form.dealbreakers?.includes(o)} onClick={() => setForm({ ...form, dealbreakers: toggle(form.dealbreakers, o) })}>
+                <Chip
+                  key={o}
+                  active={form.dealbreakers?.includes(o)}
+                  onClick={() => setForm({ ...form, dealbreakers: toggle(form.dealbreakers, o) })}
+                >
                   {o}
                 </Chip>
               ))}

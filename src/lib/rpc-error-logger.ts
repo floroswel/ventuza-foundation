@@ -99,9 +99,12 @@ async function gatherAuthDiagnostics() {
       jwt_role: (claims?.role as string | undefined) ?? null,
       jwt_aud: (claims?.aud as string | undefined) ?? null,
       jwt_iss: (claims?.iss as string | undefined) ?? null,
-      app_role: (claims?.app_metadata as { provider?: string; role?: string } | undefined)?.role ?? null,
+      app_role:
+        (claims?.app_metadata as { provider?: string; role?: string } | undefined)?.role ?? null,
       provider:
-        (claims?.app_metadata as { provider?: string } | undefined)?.provider ?? session?.user?.app_metadata?.provider ?? null,
+        (claims?.app_metadata as { provider?: string } | undefined)?.provider ??
+        session?.user?.app_metadata?.provider ??
+        null,
       access_token_fingerprint: tokenFingerprint(access),
       has_refresh_token: !!session?.refresh_token,
       token_expires_at: expiresAt ?? null,
@@ -136,10 +139,9 @@ export async function logRpcError(error: unknown, ctx: RpcErrorContext): Promise
 
   if (denied) {
     // group collapsed pentru lizibilitate, dar marcat ca error
-    // eslint-disable-next-line no-console
+
     console.error(`[RPC denied] ${ctx.rpc}`, payload);
   } else {
-    // eslint-disable-next-line no-console
     console.warn(`[RPC error] ${ctx.rpc}`, payload);
   }
 

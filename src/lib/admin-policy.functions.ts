@@ -3,7 +3,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { z } from "zod";
 
 const upsertSchema = z.object({
-  code: z.string().min(3).max(80).regex(/^[a-z0-9_.-]+$/i),
+  code: z
+    .string()
+    .min(3)
+    .max(80)
+    .regex(/^[a-z0-9_.-]+$/i),
   category: z.string().min(2).max(40),
   title: z.string().min(3).max(160),
   description: z.string().max(2000).optional().default(""),
@@ -17,7 +21,9 @@ export const policyListRules = createServerFn({ method: "GET" })
   .handler(async ({ context }) => {
     const { data, error } = await context.supabase
       .from("policy_rules")
-      .select("id,code,category,title,description,state,version,expression,action,updated_at,updated_by")
+      .select(
+        "id,code,category,title,description,state,version,expression,action,updated_at,updated_by",
+      )
       .order("category", { ascending: true })
       .order("code", { ascending: true });
     if (error) throw new Error(error.message);
@@ -56,11 +62,15 @@ export const policyUpsertRule = createServerFn({ method: "POST" })
 
 export const policySetState = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    ruleId: z.string().uuid(),
-    state: z.enum(["draft", "shadow", "enforcing", "archived"]),
-    note: z.string().max(500).optional(),
-  }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        ruleId: z.string().uuid(),
+        state: z.enum(["draft", "shadow", "enforcing", "archived"]),
+        note: z.string().max(500).optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase.rpc as any)("policy_set_state", {
       p_rule_id: data.ruleId,
@@ -73,10 +83,14 @@ export const policySetState = createServerFn({ method: "POST" })
 
 export const policySimulate = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    ruleCode: z.string().min(1),
-    days: z.number().int().min(1).max(90).default(7),
-  }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        ruleCode: z.string().min(1),
+        days: z.number().int().min(1).max(90).default(7),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase.rpc("policy_simulate", {
       p_rule_code: data.ruleCode,
@@ -94,10 +108,14 @@ export const policySimulate = createServerFn({ method: "POST" })
 
 export const policyRecentEvaluations = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    ruleCode: z.string().min(1),
-    limit: z.number().int().min(1).max(200).default(50),
-  }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        ruleCode: z.string().min(1),
+        limit: z.number().int().min(1).max(200).default(50),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { data: rows, error } = await context.supabase
       .from("policy_evaluations")

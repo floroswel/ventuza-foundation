@@ -9,7 +9,9 @@ export function ReferralCard() {
   const [redeemCode, setRedeemCode] = useState("");
   const [redeeming, setRedeeming] = useState(false);
 
-  useEffect(() => { getMyReferralCode().then(setCode); }, []);
+  useEffect(() => {
+    getMyReferralCode().then(setCode);
+  }, []);
 
   const link = code ? referralLink(code) : "";
 
@@ -24,7 +26,15 @@ export function ReferralCard() {
   async function share() {
     if (!link) return;
     if (navigator.share) {
-      try { await navigator.share({ title: "Ventuza", text: "Hai pe Ventuza — primești 100 XP", url: link }); } catch {/* user cancelled */}
+      try {
+        await navigator.share({
+          title: "Ventuza",
+          text: "Hai pe Ventuza — primești 100 XP",
+          url: link,
+        });
+      } catch {
+        /* user cancelled */
+      }
     } else {
       await copy();
     }
@@ -61,7 +71,11 @@ export function ReferralCard() {
       {code && (
         <div className="mb-3 flex items-center gap-2 rounded-lg bg-background/80 p-2">
           <code className="flex-1 truncate text-sm font-mono">{code}</code>
-          <button onClick={copy} className="rounded-md p-1.5 hover:bg-muted" aria-label="Copiază link">
+          <button
+            onClick={copy}
+            className="rounded-md p-1.5 hover:bg-muted"
+            aria-label="Copiază link"
+          >
             {copied ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
           </button>
           <button onClick={share} className="rounded-md p-1.5 hover:bg-muted" aria-label="Share">

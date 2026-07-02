@@ -6,8 +6,8 @@ type Tone = "ok" | "warn" | "breach";
 export type SlaThreshold = { warn_minutes: number; breach_minutes: number };
 
 const TONE_CLS: Record<Tone, string> = {
-  ok:     "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
-  warn:   "border-amber-500/40 bg-amber-500/10 text-amber-200",
+  ok: "border-emerald-500/40 bg-emerald-500/10 text-emerald-300",
+  warn: "border-amber-500/40 bg-amber-500/10 text-amber-200",
   breach: "border-red-500/40 bg-red-500/10 text-red-200",
 };
 

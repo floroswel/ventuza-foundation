@@ -2,16 +2,20 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, XCircle, Clock, Bell, Image as ImgIcon, Shield, ChevronLeft } from "lucide-react";
+import {
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Bell,
+  Image as ImgIcon,
+  Shield,
+  ChevronLeft,
+} from "lucide-react";
 import { StatusNotificationsBell } from "@/components/partner/StatusNotificationsBell";
-
 
 export const Route = createFileRoute("/partner/guide")({
   head: () => ({
-    meta: [
-      { title: "Ghid pentru parteneri — Ventuza" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Ghid pentru parteneri — Ventuza" }, { name: "robots", content: "noindex" }],
   }),
   component: PartnerGuide,
 });
@@ -79,17 +83,16 @@ function PartnerGuide() {
         <StatusNotificationsBell />
       </div>
 
-
       <p className="text-sm text-muted-foreground">
-        Citește o dată acest ghid înainte să postezi. Te scutește de respingeri și
-        ajunge mai repede la utilizatori.
+        Citește o dată acest ghid înainte să postezi. Te scutește de respingeri și ajunge mai repede
+        la utilizatori.
       </p>
 
       <Section icon={CheckCircle2} title="Ce poți posta">
         <p>
           Trei tipuri de conținut: <strong>Local</strong> (spațiu permanent),{" "}
-          <strong>Eveniment</strong> (cu dată) și <strong>Ofertă</strong> (promoție
-          legată de un local al tău).
+          <strong>Eveniment</strong> (cu dată) și <strong>Ofertă</strong> (promoție legată de un
+          local al tău).
         </p>
         <GoodBad
           good={[
@@ -137,9 +140,8 @@ function PartnerGuide() {
 
       <Section icon={Shield} title="De ce moderăm">
         <p>
-          Fiecare postare este verificată de echipa noastră înainte să devină
-          publică. Nu există auto-publicare. Asta protejează utilizatorii de spam,
-          conținut ilegal sau înșelător.
+          Fiecare postare este verificată de echipa noastră înainte să devină publică. Nu există
+          auto-publicare. Asta protejează utilizatorii de spam, conținut ilegal sau înșelător.
         </p>
         <div className="flex items-center gap-2 text-xs">
           <Clock className="w-3 h-3" /> SLA: 1–2 zile lucrătoare.
@@ -148,25 +150,25 @@ function PartnerGuide() {
 
       <Section icon={Bell} title="Cum funcționează notificările de proximitate">
         <p>
-          Când postarea ta este aprobată, utilizatorii aflați în raza pe care ai
-          setat-o (max 10 km) pot primi o notificare scurtă: „📍 [Nume] • 450m”.
+          Când postarea ta este aprobată, utilizatorii aflați în raza pe care ai setat-o (max 10 km)
+          pot primi o notificare scurtă: „📍 [Nume] • 450m”.
         </p>
         <ul className="list-disc pl-4 space-y-1">
           <li>
-            <strong>Cooldown 24h per punct</strong> — un user e notificat o singură
-            dată per loc/eveniment pe zi.
+            <strong>Cooldown 24h per punct</strong> — un user e notificat o singură dată per
+            loc/eveniment pe zi.
           </li>
           <li>
-            <strong>Plafon zilnic per user</strong> — limităm câte notificări de
-            proximitate primește un user pe zi, indiferent de partener.
+            <strong>Plafon zilnic per user</strong> — limităm câte notificări de proximitate
+            primește un user pe zi, indiferent de partener.
           </li>
           <li>
-            <strong>Ore liniștite</strong> — fără notificări noaptea, default
-            22:00–08:00 (configurat per user).
+            <strong>Ore liniștite</strong> — fără notificări noaptea, default 22:00–08:00
+            (configurat per user).
           </li>
           <li>
-            <strong>NU controlezi aceste limite</strong>. Toate notificările tale
-            trec prin aceeași politică anti-spam. Userii nu sunt bombardați.
+            <strong>NU controlezi aceste limite</strong>. Toate notificările tale trec prin aceeași
+            politică anti-spam. Userii nu sunt bombardați.
           </li>
         </ul>
       </Section>
@@ -181,9 +183,8 @@ function PartnerGuide() {
 
       <Section icon={Clock} title="Limite cont (quota)">
         <p>
-          Fiecare cont partener are o limită de locuri, evenimente și oferte
-          active, în funcție de plan. O vezi sus în portal („Limite cont”).
-          Pentru limite mai mari →{" "}
+          Fiecare cont partener are o limită de locuri, evenimente și oferte active, în funcție de
+          plan. O vezi sus în portal („Limite cont”). Pentru limite mai mari →{" "}
           <Link to="/partner/billing" className="underline">
             Facturare & abonament
           </Link>

@@ -14,10 +14,7 @@ import { Bell, MapPin, Moon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useConsent } from "@/lib/use-consent";
-import {
-  getProximityStatus,
-  setProximityEnabled,
-} from "@/lib/proximity.functions";
+import { getProximityStatus, setProximityEnabled } from "@/lib/proximity.functions";
 
 export function ProximityNotificationsCard() {
   const auth = useAuth();
@@ -37,14 +34,18 @@ export function ProximityNotificationsCard() {
       .eq("id", userId)
       .maybeSingle()
       .then(({ data }) => setEnabledLocal(data?.proximity_notifications_enabled ?? true));
-    void fetchStatus().then(setStatus).catch(() => {});
+    void fetchStatus()
+      .then(setStatus)
+      .catch(() => {});
   }, [userId, fetchStatus]);
 
   async function onToggle(v: boolean) {
     setEnabledLocal(v);
     try {
       await setEnabled({ data: { enabled: v } });
-      toast.success(v ? "Notificări de proximitate activate" : "Notificări de proximitate dezactivate");
+      toast.success(
+        v ? "Notificări de proximitate activate" : "Notificări de proximitate dezactivate",
+      );
     } catch (e) {
       setEnabledLocal(!v);
       toast.error("Nu am putut salva preferința");
@@ -98,7 +99,8 @@ export function ProximityNotificationsCard() {
             {status.sentLast24h}/{status.dailyCap} azi
           </Badge>
           <Badge variant="outline" className="gap-1">
-            <Moon className="h-3 w-3" /> {status.quietStart}:00–{String(status.quietEnd).padStart(2,"0")}:00 liniște
+            <Moon className="h-3 w-3" /> {status.quietStart}:00–
+            {String(status.quietEnd).padStart(2, "0")}:00 liniște
           </Badge>
           <Badge variant="outline">cooldown {status.cooldownHours}h/loc</Badge>
         </div>
@@ -110,8 +112,8 @@ export function ProximityNotificationsCard() {
           <div className="flex-1">
             <h4 className="font-medium text-sm">Notificări și cu app-ul închis (geofencing)</h4>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Necesită permisiune pentru locație în fundal. Calculul rămâne pe dispozitiv;
-              NU înregistrăm traseul tău. Funcționează doar pe mobil (Capacitor).
+              Necesită permisiune pentru locație în fundal. Calculul rămâne pe dispozitiv; NU
+              înregistrăm traseul tău. Funcționează doar pe mobil (Capacitor).
             </p>
             {bgConsent.active ? (
               <div className="mt-2 flex items-center gap-2">

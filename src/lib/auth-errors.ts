@@ -83,7 +83,11 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
   }
 
   // EMAIL NOT CONFIRMED
-  if (msg.includes("email not confirmed") || msg.includes("email_not_confirmed") || msg.includes("confirmation")) {
+  if (
+    msg.includes("email not confirmed") ||
+    msg.includes("email_not_confirmed") ||
+    msg.includes("confirmation")
+  ) {
     return {
       code: "email_not_confirmed",
       message: "Confirmă-ți emailul ca să continui. Verifică inbox-ul (și Spam).",
@@ -91,7 +95,11 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
   }
 
   // INVALID CREDENTIALS
-  if (msg.includes("invalid login") || msg.includes("invalid_credentials") || msg.includes("invalid credentials")) {
+  if (
+    msg.includes("invalid login") ||
+    msg.includes("invalid_credentials") ||
+    msg.includes("invalid credentials")
+  ) {
     return {
       code: "invalid_credentials",
       message: "Email sau parolă incorectă.",
@@ -100,7 +108,11 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
   }
 
   // ALREADY REGISTERED
-  if (msg.includes("already registered") || msg.includes("user already") || msg.includes("already exists")) {
+  if (
+    msg.includes("already registered") ||
+    msg.includes("user already") ||
+    msg.includes("already exists")
+  ) {
     return {
       code: "user_already_exists",
       message: "Există deja un cont cu acest email. Încearcă autentificarea.",
@@ -108,8 +120,14 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
   }
 
   // WEAK PASSWORD
-  if (msg.includes("password") && (msg.includes("weak") || msg.includes("short") || msg.includes("characters"))) {
-    return { code: "weak_password", message: "Parolă prea slabă. Folosește minim 8 caractere, litere și cifre." };
+  if (
+    msg.includes("password") &&
+    (msg.includes("weak") || msg.includes("short") || msg.includes("characters"))
+  ) {
+    return {
+      code: "weak_password",
+      message: "Parolă prea slabă. Folosește minim 8 caractere, litere și cifre.",
+    };
   }
 
   // EMAIL INVALID
@@ -128,15 +146,17 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
 
   // AGE
   if (msg.includes("age_verification_required")) {
-    return { code: "age_required", message: "Trebuie să-ți verifici vârsta înainte de a continua." };
+    return {
+      code: "age_required",
+      message: "Trebuie să-ți verifici vârsta înainte de a continua.",
+    };
   }
 
   // SIGNUP THROTTLE (IP / device fingerprint)
   if (msg.includes("signup_throttled_ip")) {
     return {
       code: "signup_throttled",
-      message:
-        "Prea multe conturi create de pe această conexiune. Încearcă din nou peste o oră.",
+      message: "Prea multe conturi create de pe această conexiune. Încearcă din nou peste o oră.",
       retryAfterSec: 3600,
       resetCaptcha: true,
     };
@@ -144,8 +164,7 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
   if (msg.includes("signup_throttled_fingerprint") || msg.includes("signup_throttled")) {
     return {
       code: "signup_throttled",
-      message:
-        "Prea multe conturi create de pe acest dispozitiv. Încearcă din nou peste o oră.",
+      message: "Prea multe conturi create de pe acest dispozitiv. Încearcă din nou peste o oră.",
       retryAfterSec: 3600,
       resetCaptcha: true,
     };

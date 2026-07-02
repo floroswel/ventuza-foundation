@@ -33,9 +33,7 @@ export function NearbyMap({ user, points, onSelect }: Props) {
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
-    const center: [number, number] = user
-      ? [user.lng, user.lat]
-      : [26.1025, 44.4268]; // București fallback
+    const center: [number, number] = user ? [user.lng, user.lat] : [26.1025, 44.4268]; // București fallback
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: OSM_STYLE,
@@ -83,8 +81,8 @@ export function NearbyMap({ user, points, onSelect }: Props) {
         p.kind === "event"
           ? "hsl(var(--accent))"
           : p.kind === "offer"
-          ? "hsl(var(--destructive))"
-          : "hsl(var(--secondary))";
+            ? "hsl(var(--destructive))"
+            : "hsl(var(--secondary))";
       el.style.cssText = `width:26px;height:26px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:${color};border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);cursor:pointer;display:flex;align-items:center;justify-content:center;`;
       el.innerHTML = `<span style="transform:rotate(45deg);font-size:12px;color:white;font-weight:700;">${p.kind === "event" ? "E" : p.kind === "offer" ? "%" : "•"}</span>`;
       el.addEventListener("click", (e) => {

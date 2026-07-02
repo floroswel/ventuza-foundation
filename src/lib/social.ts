@@ -67,7 +67,10 @@ export async function listFavorites(): Promise<FavoriteRow[]> {
   const ids = (favs ?? []).map((f) => f.favorite_id);
   if (!ids.length) return [];
   const { data: profs } = await supabase.rpc("get_public_profiles", { _ids: ids });
-  const map = new Map<string, { display_name: string | null; photos: string[] | null; last_seen: string | null }>();
+  const map = new Map<
+    string,
+    { display_name: string | null; photos: string[] | null; last_seen: string | null }
+  >();
   (profs ?? []).forEach((p) =>
     map.set((p as { id: string }).id, {
       display_name: (p as { display_name: string | null }).display_name,
@@ -83,12 +86,18 @@ export async function listFavorites(): Promise<FavoriteRow[]> {
 }
 
 export async function setLookingNow(hours: number, intent?: string) {
-  const { error } = await supabase.rpc("set_looking_now", { _hours: hours, _intent: intent ?? undefined });
+  const { error } = await supabase.rpc("set_looking_now", {
+    _hours: hours,
+    _intent: intent ?? undefined,
+  });
   if (error) throw error;
 }
 
 export async function toggleMessageReaction(messageId: string, emoji: ReactionEmoji) {
-  const { data, error } = await supabase.rpc("toggle_message_reaction", { _msg_id: messageId, _emoji: emoji });
+  const { data, error } = await supabase.rpc("toggle_message_reaction", {
+    _msg_id: messageId,
+    _emoji: emoji,
+  });
   if (error) throw error;
   return data as Record<string, string[]>;
 }

@@ -53,20 +53,36 @@ function OfferDetailPage() {
   if (isLoading) return <div className="p-6">Se încarcă…</div>;
   if (!offer) return <div className="p-6">Oferta nu mai este disponibilă.</div>;
 
-  const venue = offer.venues as { id: string; name: string; address: string | null; city: string | null } | null;
+  const venue = offer.venues as {
+    id: string;
+    name: string;
+    address: string | null;
+    city: string | null;
+  } | null;
   const validTo = offer.valid_to ? new Date(offer.valid_to) : null;
 
   return (
     <div className="container max-w-2xl py-4 px-3 space-y-4">
       <Button asChild variant="ghost" size="sm">
-        <Link to="/nearby"><ArrowLeft className="h-4 w-4 mr-1" />Înapoi</Link>
+        <Link to="/nearby">
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          Înapoi
+        </Link>
       </Button>
       <Card className="p-5 space-y-3">
-        <Badge variant="secondary"><Tag className="h-3 w-3 mr-1" />Ofertă</Badge>
+        <Badge variant="secondary">
+          <Tag className="h-3 w-3 mr-1" />
+          Ofertă
+        </Badge>
         <h1 className="text-2xl font-bold">{offer.title}</h1>
         {venue && (
-          <Link to="/venues/$id" params={{ id: venue.id }} className="text-sm text-primary underline">
-            {venue.name}{venue.city ? ` · ${venue.city}` : ""}
+          <Link
+            to="/venues/$id"
+            params={{ id: venue.id }}
+            className="text-sm text-primary underline"
+          >
+            {venue.name}
+            {venue.city ? ` · ${venue.city}` : ""}
           </Link>
         )}
         {offer.description && <p className="text-sm">{offer.description}</p>}
@@ -95,13 +111,20 @@ function OfferDetailPage() {
             onClick={() => mutation.mutate()}
             disabled={mutation.isPending}
           >
-            {mutation.isPending ? "Se revendică…" : (<><Check className="h-4 w-4 mr-2" />Revendică</>)}
+            {mutation.isPending ? (
+              "Se revendică…"
+            ) : (
+              <>
+                <Check className="h-4 w-4 mr-2" />
+                Revendică
+              </>
+            )}
           </Button>
         )}
       </Card>
       <p className="text-[10px] text-muted-foreground text-center px-4">
-        Revendicarea înregistrează doar contul tău și un cod unic. Partenerul vede doar numărul total
-        de revendicări, nu identitatea ta.
+        Revendicarea înregistrează doar contul tău și un cod unic. Partenerul vede doar numărul
+        total de revendicări, nu identitatea ta.
       </p>
     </div>
   );

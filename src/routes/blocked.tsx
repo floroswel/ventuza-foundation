@@ -55,7 +55,10 @@ function BlockedPage() {
   return (
     <div className="min-h-dvh bg-background pb-24">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/60 bg-background/85 px-4 py-3 backdrop-blur">
-        <Link to="/settings" className="flex size-9 items-center justify-center rounded-full border border-border">
+        <Link
+          to="/settings"
+          className="flex size-9 items-center justify-center rounded-full border border-border"
+        >
           <ChevronLeft className="size-4" />
         </Link>
         <h1 className="flex items-center gap-2 text-base font-semibold">
@@ -66,7 +69,9 @@ function BlockedPage() {
 
       <div className="mx-auto max-w-md px-4 py-4">
         {loading ? (
-          <div className="flex justify-center py-20"><Loader2 className="size-5 animate-spin text-primary" /></div>
+          <div className="flex justify-center py-20">
+            <Loader2 className="size-5 animate-spin text-primary" />
+          </div>
         ) : rows.length === 0 ? (
           <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
             Nu ai blocat pe nimeni.
@@ -77,7 +82,10 @@ function BlockedPage() {
               const photo = r.photos?.[0];
               const photoUrl = photo ? urls[photo] : null;
               return (
-                <li key={r.blocked_id} className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3">
+                <li
+                  key={r.blocked_id}
+                  className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3"
+                >
                   <div className="size-12 shrink-0 overflow-hidden rounded-full bg-background">
                     {photoUrl ? (
                       <img src={photoUrl} alt="" className="size-full object-cover" />
@@ -89,7 +97,9 @@ function BlockedPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{r.display_name ?? "Anonim"}</p>
-                    <p className="text-[10px] text-muted-foreground">Blocat {new Date(r.created_at).toLocaleDateString("ro-RO")}</p>
+                    <p className="text-[10px] text-muted-foreground">
+                      Blocat {new Date(r.created_at).toLocaleDateString("ro-RO")}
+                    </p>
                   </div>
                   <button
                     onClick={() => handleUnblock(r.blocked_id)}

@@ -14,9 +14,7 @@ import { describe, it, expect } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 
 const url = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
-const key =
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
-  process.env.SUPABASE_PUBLISHABLE_KEY;
+const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY;
 
 function client() {
   if (!url || !key) {
@@ -63,9 +61,7 @@ describe("Security invariants — comportament live anonim", () => {
     const { error } = await supabase.rpc("assert_account_usable");
     expect(error).not.toBeNull();
     // gate-ul rulează (nu primește răspuns OK fără sesiune)
-    expect(error?.message ?? "").toMatch(
-      /not_authenticated|permission|denied|forbidden|JWT/i,
-    );
+    expect(error?.message ?? "").toMatch(/not_authenticated|permission|denied|forbidden|JWT/i);
   });
 
   it("discover_profiles refuză apelantul anonim (gate activ)", async () => {
@@ -76,9 +72,7 @@ describe("Security invariants — comportament live anonim", () => {
     });
     expect(error).not.toBeNull();
     // Acceptăm orice formă de refuz, dar NU vrem să vedem date returnate.
-    expect(error?.message ?? "").toMatch(
-      /forbidden|not_authenticated|permission|denied|JWT/i,
-    );
+    expect(error?.message ?? "").toMatch(/forbidden|not_authenticated|permission|denied|JWT/i);
   });
 
   it("discover_profiles cu _limit=9999 NU este permis anonim (cap-ul rămâne aplicat server-side)", async () => {

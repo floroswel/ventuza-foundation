@@ -1,6 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Flame, Ghost, ImageIcon, LogOut, Pencil, Settings as SettingsIcon, Shield, Sparkles, Zap } from "lucide-react";
+import {
+  Flame,
+  Ghost,
+  ImageIcon,
+  LogOut,
+  Pencil,
+  Settings as SettingsIcon,
+  Shield,
+  Sparkles,
+  Zap,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,18 +48,25 @@ export function QuickProfileDrawer() {
       setMe(d);
       const first = d.photos?.[0];
       if (first) {
-        const { data: s } = await supabase.storage.from("profile-photos").createSignedUrl(first, 3600);
+        const { data: s } = await supabase.storage
+          .from("profile-photos")
+          .createSignedUrl(first, 3600);
         if (!cancel) setSignedAvatar(s?.signedUrl ?? null);
       }
     })();
-    return () => { cancel = true; };
+    return () => {
+      cancel = true;
+    };
   }, [user, open]);
 
   async function toggleIncognito(next: boolean) {
     if (!user || !me) return;
     setSavingHide(true);
     setMe({ ...me, hide_online: next });
-    const { error } = await supabase.from("profiles").update({ hide_online: next }).eq("id", user.id);
+    const { error } = await supabase
+      .from("profiles")
+      .update({ hide_online: next })
+      .eq("id", user.id);
     setSavingHide(false);
     if (error) {
       toast.error(error.message);
@@ -98,13 +115,16 @@ export function QuickProfileDrawer() {
           <span
             className={cn(
               "absolute bottom-0 right-0 size-2.5 rounded-full ring-2 ring-background",
-              incognito ? "bg-zinc-500" : "bg-emerald-500"
+              incognito ? "bg-zinc-500" : "bg-emerald-500",
             )}
           />
         </button>
       </SheetTrigger>
 
-      <SheetContent side="left" className="w-[88vw] max-w-[360px] overflow-y-auto bg-background p-0">
+      <SheetContent
+        side="left"
+        className="w-[88vw] max-w-[360px] overflow-y-auto bg-background p-0"
+      >
         <div className="flex flex-col gap-5 p-5 pb-10">
           {/* Avatar + name */}
           <div className="flex flex-col items-center gap-3 pt-2">
@@ -133,7 +153,7 @@ export function QuickProfileDrawer() {
               onClick={() => toggleIncognito(false)}
               className={cn(
                 "flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium transition",
-                !incognito ? "bg-emerald-500/15 text-emerald-300" : "text-muted-foreground"
+                !incognito ? "bg-emerald-500/15 text-emerald-300" : "text-muted-foreground",
               )}
             >
               <span className="size-2 rounded-full bg-emerald-500" /> Online
@@ -143,7 +163,7 @@ export function QuickProfileDrawer() {
               onClick={() => toggleIncognito(true)}
               className={cn(
                 "flex items-center justify-center gap-2 rounded-full py-2 text-sm font-medium transition",
-                incognito ? "bg-zinc-700 text-foreground" : "text-muted-foreground"
+                incognito ? "bg-zinc-700 text-foreground" : "text-muted-foreground",
               )}
             >
               <Ghost className="size-4" /> Incognito
@@ -152,7 +172,9 @@ export function QuickProfileDrawer() {
 
           {/* Add-ons */}
           <div>
-            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">Add-ons</p>
+            <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.22em] text-muted-foreground">
+              Add-ons
+            </p>
             <div className="space-y-2">
               <Link
                 to="/premium"
@@ -189,7 +211,10 @@ export function QuickProfileDrawer() {
                 {rightNowActive && me?.looking_now_until ? (
                   <p className="mt-1 text-[11px] text-rose-200">
                     Activ până la{" "}
-                    {new Date(me.looking_now_until).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" })}
+                    {new Date(me.looking_now_until).toLocaleTimeString("ro-RO", {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </p>
                 ) : (
                   <div className="mt-2 grid grid-cols-4 gap-1.5">
@@ -216,7 +241,9 @@ export function QuickProfileDrawer() {
             className="flex items-center justify-between rounded-2xl bg-gradient-to-br from-primary/20 via-primary/10 to-transparent px-4 py-4 ring-1 ring-primary/30"
           >
             <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Choose a plan</p>
+              <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
+                Choose a plan
+              </p>
               <p className="mt-1 text-base font-semibold">Ventuza Premium</p>
               <p className="text-[11px] text-muted-foreground">Vezi mai mulți, fii văzut primul</p>
             </div>
@@ -225,10 +252,30 @@ export function QuickProfileDrawer() {
 
           {/* Menu */}
           <div className="divide-y divide-border rounded-2xl border border-border bg-surface">
-            <MenuLink to="/profile" icon={<Pencil className="size-4" />} label="Edit Profile" onClick={() => setOpen(false)} />
-            <MenuLink to="/profile" icon={<ImageIcon className="size-4" />} label="My Albums" onClick={() => setOpen(false)} />
-            <MenuLink to="/safety" icon={<Shield className="size-4" />} label="Safety & Privacy Center" onClick={() => setOpen(false)} />
-            <MenuLink to="/settings" icon={<SettingsIcon className="size-4" />} label="Settings" onClick={() => setOpen(false)} />
+            <MenuLink
+              to="/profile"
+              icon={<Pencil className="size-4" />}
+              label="Edit Profile"
+              onClick={() => setOpen(false)}
+            />
+            <MenuLink
+              to="/profile"
+              icon={<ImageIcon className="size-4" />}
+              label="My Albums"
+              onClick={() => setOpen(false)}
+            />
+            <MenuLink
+              to="/safety"
+              icon={<Shield className="size-4" />}
+              label="Safety & Privacy Center"
+              onClick={() => setOpen(false)}
+            />
+            <MenuLink
+              to="/settings"
+              icon={<SettingsIcon className="size-4" />}
+              label="Settings"
+              onClick={() => setOpen(false)}
+            />
           </div>
 
           <button
@@ -247,7 +294,17 @@ export function QuickProfileDrawer() {
   );
 }
 
-function MenuLink({ to, icon, label, onClick }: { to: string; icon: React.ReactNode; label: string; onClick?: () => void }) {
+function MenuLink({
+  to,
+  icon,
+  label,
+  onClick,
+}: {
+  to: string;
+  icon: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+}) {
   return (
     <Link
       to={to}

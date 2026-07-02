@@ -11,7 +11,9 @@ export function useDeviceFingerprint() {
     let cancelled = false;
     (async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user || cancelled) return;
         const fp = await computeDeviceFingerprint();
         if (cancelled) return;
@@ -30,6 +32,8 @@ export function useDeviceFingerprint() {
         // best-effort; never block UX
       }
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 }

@@ -1,12 +1,18 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import {
-  Crown, Search, Command as CmdIcon, Activity, Circle, ChevronLeft, Rows3, Rows4,
+  Crown,
+  Search,
+  Command as CmdIcon,
+  Activity,
+  Circle,
+  ChevronLeft,
+  Rows3,
+  Rows4,
   type LucideIcon,
 } from "lucide-react";
 import { CommandPaletteV2 } from "./CommandPaletteV2";
 import { UndoRedoToolbar } from "./queue/UndoRedoToolbar";
 import { useAdminUndoShortcuts } from "./queue/useActionJournal";
-
 
 export type NavItem = {
   id: string;
@@ -68,11 +74,12 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
     return GROUP_ORDER.filter((k) => g[k]?.length).map((k) => [k, g[k]!] as const);
   }, [visible]);
 
-
-
-
   return (
-    <div data-admin data-density={density} className="relative min-h-dvh bg-[var(--admin-bg)] text-[var(--admin-text)]">
+    <div
+      data-admin
+      data-density={density}
+      className="relative min-h-dvh bg-[var(--admin-bg)] text-[var(--admin-text)]"
+    >
       {/* Ambient backdrop */}
       <div aria-hidden className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
         <div className="absolute -top-32 left-1/2 h-[420px] w-[820px] -translate-x-1/2 rounded-full bg-[radial-gradient(closest-side,oklch(0.82_0.115_85/0.18),transparent_70%)] blur-2xl" />
@@ -101,7 +108,9 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
             {!collapsed && (
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold tracking-tight">Ventuza Control</p>
-                <p className="text-[10px] uppercase tracking-[0.18em] text-primary/80">Command Deck</p>
+                <p className="text-[10px] uppercase tracking-[0.18em] text-primary/80">
+                  Command Deck
+                </p>
               </div>
             )}
             <button
@@ -109,7 +118,9 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
               className="ml-auto rounded-md p-1 text-muted-foreground hover:bg-surface-elevated hover:text-foreground"
               aria-label="Toggle sidebar"
             >
-              <ChevronLeft className={`size-4 transition-transform ${collapsed ? "rotate-180" : ""}`} />
+              <ChevronLeft
+                className={`size-4 transition-transform ${collapsed ? "rotate-180" : ""}`}
+              />
             </button>
           </div>
 
@@ -185,11 +196,21 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
                 <UndoRedoToolbar />
                 <button
                   onClick={() => setDensity((d) => (d === "compact" ? "comfortable" : "compact"))}
-                  title={density === "compact" ? "Treci la densitate confortabilă" : "Treci la densitate compactă"}
+                  title={
+                    density === "compact"
+                      ? "Treci la densitate confortabilă"
+                      : "Treci la densitate compactă"
+                  }
                   className="flex items-center gap-1.5 rounded-full border border-border/60 bg-surface/60 px-3 py-1.5 text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground"
                 >
-                  {density === "compact" ? <Rows4 className="size-3.5" /> : <Rows3 className="size-3.5" />}
-                  <span className="hidden xl:inline">{density === "compact" ? "Compact" : "Confort"}</span>
+                  {density === "compact" ? (
+                    <Rows4 className="size-3.5" />
+                  ) : (
+                    <Rows3 className="size-3.5" />
+                  )}
+                  <span className="hidden xl:inline">
+                    {density === "compact" ? "Compact" : "Confort"}
+                  </span>
                 </button>
                 <div className="flex items-center gap-2 rounded-full border border-border/60 bg-surface/60 px-3 py-1.5 text-xs text-muted-foreground">
                   <Activity className="size-3.5 text-emerald-400" />
@@ -238,7 +259,6 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
         items={visible}
         onSelectNav={onSelect}
       />
-
     </div>
   );
 }

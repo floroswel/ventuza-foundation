@@ -33,8 +33,7 @@ function AccountDeletionPage() {
           <h1 className="text-3xl font-bold tracking-tight">Ștergere cont Ventuza</h1>
           <p className="text-muted-foreground">
             Îți poți șterge contul oricând, gratuit, fără justificare. Mai jos găsești cele două
-            metode disponibile, ce date eliminăm imediat și ce date păstrăm pentru obligații
-            legale.
+            metode disponibile, ce date eliminăm imediat și ce date păstrăm pentru obligații legale.
           </p>
         </header>
 
@@ -94,8 +93,8 @@ function AccountDeletionPage() {
           </h2>
           <ul className="list-disc pl-6 space-y-1 text-sm text-muted-foreground">
             <li>
-              <strong className="text-foreground">Facturi B2B</strong> — 10 ani (Cod Fiscal RO,
-              Art. 25 Legea Contabilității). Doar pentru conturi de partener.
+              <strong className="text-foreground">Facturi B2B</strong> — 10 ani (Cod Fiscal RO, Art.
+              25 Legea Contabilității). Doar pentru conturi de partener.
             </li>
             <li>
               <strong className="text-foreground">Loguri de moderare și abuse</strong> — 12 luni,
@@ -106,8 +105,8 @@ function AccountDeletionPage() {
               legală raportare NCMEC / ANPDCP).
             </li>
             <li>
-              <strong className="text-foreground">Rapoarte DSA</strong> — anonimizate, 6 luni
-              (Art. 24 DSA).
+              <strong className="text-foreground">Rapoarte DSA</strong> — anonimizate, 6 luni (Art.
+              24 DSA).
             </li>
           </ul>
         </section>
@@ -117,7 +116,10 @@ function AccountDeletionPage() {
           <p className="text-sm text-muted-foreground">
             VOMIX GENIUS S.R.L. · CUI RO43025661 · Str. Constructorilor 39, Voievoda, Teleorman
             <br />
-            DPO: <a className="text-primary underline" href="mailto:dpo@ventuza.eu">dpo@ventuza.eu</a>
+            DPO:{" "}
+            <a className="text-primary underline" href="mailto:dpo@ventuza.eu">
+              dpo@ventuza.eu
+            </a>
             {" · "}
             Privacy:{" "}
             <Link to="/legal/privacy" className="text-primary underline">

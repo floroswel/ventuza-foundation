@@ -1,5 +1,16 @@
 import { useEffect, useRef, useState } from "react";
-import { AlertCircle, CheckCircle2, ChevronLeft, ChevronRight, Loader2, Plus, ShieldCheck, Star, Upload, X } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Plus,
+  ShieldCheck,
+  Star,
+  Upload,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +20,14 @@ import { computePhash } from "@/lib/phash";
 
 const MAX_PHOTOS = 6;
 const MAX_SIZE_MB = 8;
-const ACCEPTED_TYPES = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/heic", "image/heif"] as const;
+const ACCEPTED_TYPES = [
+  "image/jpeg",
+  "image/jpg",
+  "image/png",
+  "image/webp",
+  "image/heic",
+  "image/heif",
+] as const;
 const ACCEPTED_EXT = ["jpg", "jpeg", "png", "webp", "heic", "heif"];
 
 type QueueStatus = "queued" | "uploading" | "moderating" | "done" | "error";
@@ -28,8 +46,10 @@ function isAcceptedFile(file: File): { ok: true } | { ok: false; reason: string 
   const ext = (file.name.split(".").pop() || "").toLowerCase();
   const typeOk = type ? (ACCEPTED_TYPES as readonly string[]).includes(type) : false;
   const extOk = ACCEPTED_EXT.includes(ext);
-  if (!typeOk && !extOk) return { ok: false, reason: "format nesuportat (doar JPG, PNG, WEBP, HEIC)" };
-  if (file.size > MAX_SIZE_MB * 1024 * 1024) return { ok: false, reason: `depășește ${MAX_SIZE_MB} MB` };
+  if (!typeOk && !extOk)
+    return { ok: false, reason: "format nesuportat (doar JPG, PNG, WEBP, HEIC)" };
+  if (file.size > MAX_SIZE_MB * 1024 * 1024)
+    return { ok: false, reason: `depășește ${MAX_SIZE_MB} MB` };
   if (file.size === 0) return { ok: false, reason: "fișier gol" };
   return { ok: true };
 }
@@ -46,13 +66,18 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
     (async () => {
       const out: Record<string, string> = {};
       for (const p of photos) {
-        if (p.startsWith("http")) { out[p] = p; continue; }
+        if (p.startsWith("http")) {
+          out[p] = p;
+          continue;
+        }
         const { data } = await supabase.storage.from("profile-photos").createSignedUrl(p, 3600);
         if (data?.signedUrl) out[p] = data.signedUrl;
       }
       if (!cancelled) setSigned(out);
     })();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [photos]);
 
   function updateQueue(id: string, patch: Partial<QueueItem>) {
@@ -79,7 +104,9 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
     const list = all.slice(0, room);
     const dropped = all.length - list.length;
     if (dropped > 0) {
-      toast.warning(`Am păstrat primele ${list.length} poze. ${dropped} nu încap (max ${MAX_PHOTOS}).`);
+      toast.warning(
+        `Am păstrat primele ${list.length} poze. ${dropped} nu încap (max ${MAX_PHOTOS}).`,
+      );
     }
 
     // Preflight validation → build the queue up-front so userul vede tot ce urmează
@@ -119,7 +146,9 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         // AI moderation — BLOCKING
         updateQueue(item.id, { status: "moderating" });
         try {
-          const { data: signedData } = await supabase.storage.from("profile-photos").createSignedUrl(path, 300);
+          const { data: signedData } = await supabase.storage
+            .from("profile-photos")
+            .createSignedUrl(path, 300);
           if (signedData?.signedUrl) {
             const mod = await moderate({ data: { photoUrl: signedData.signedUrl } });
             if (!mod.allowed) {
@@ -133,7 +162,10 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           }
         } catch (modErr) {
           await supabase.storage.from("profile-photos").remove([path]);
-          updateQueue(item.id, { status: "error", error: `moderare eșuată: ${(modErr as Error).message}` });
+          updateQueue(item.id, {
+            status: "error",
+            error: `moderare eșuată: ${(modErr as Error).message}`,
+          });
           continue;
         }
 
@@ -141,7 +173,9 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         try {
           const phash = await computePhash(file);
           if (phash) await supabase.rpc("record_photo_hash", { _path: path, _phash: phash });
-        } catch { /* non-blocking */ }
+        } catch {
+          /* non-blocking */
+        }
 
         added.push(path);
         updateQueue(item.id, { status: "done" });
@@ -151,7 +185,9 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         await savePhotos([...photos, ...added]);
         toast.success(`${added.length} ${added.length > 1 ? "poze urcate" : "poză urcată"}.`);
       }
-      const errored = initial.filter((it) => it.status === "error" || queue.find((q) => q.id === it.id)?.status === "error").length;
+      const errored = initial.filter(
+        (it) => it.status === "error" || queue.find((q) => q.id === it.id)?.status === "error",
+      ).length;
       if (errored > 0 && added.length === 0) {
         toast.error("Nicio poză nu a trecut de validare.");
       }
@@ -194,7 +230,9 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
           Poze · {photos.length}/{MAX_PHOTOS}
         </p>
-        <p className="text-[10px] text-muted-foreground">Tap ★ pentru principală · ◂ ▸ pentru reordonare</p>
+        <p className="text-[10px] text-muted-foreground">
+          Tap ★ pentru principală · ◂ ▸ pentru reordonare
+        </p>
       </div>
       <p className="text-[11px] text-muted-foreground">
         JPG, PNG, WEBP sau HEIC · max {MAX_SIZE_MB} MB / poză · maxim {MAX_PHOTOS} poze
@@ -284,31 +322,48 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         >
           {queue.map((it) => {
             const label =
-              it.status === "queued" ? "În așteptare"
-              : it.status === "uploading" ? "Se urcă"
-              : it.status === "moderating" ? "Se verifică"
-              : it.status === "done" ? "Gata"
-              : "Eroare";
+              it.status === "queued"
+                ? "În așteptare"
+                : it.status === "uploading"
+                  ? "Se urcă"
+                  : it.status === "moderating"
+                    ? "Se verifică"
+                    : it.status === "done"
+                      ? "Gata"
+                      : "Eroare";
             const Icon =
-              it.status === "done" ? CheckCircle2
-              : it.status === "error" ? AlertCircle
-              : it.status === "moderating" ? ShieldCheck
-              : it.status === "uploading" ? Upload
-              : Loader2;
+              it.status === "done"
+                ? CheckCircle2
+                : it.status === "error"
+                  ? AlertCircle
+                  : it.status === "moderating"
+                    ? ShieldCheck
+                    : it.status === "uploading"
+                      ? Upload
+                      : Loader2;
             const tone =
-              it.status === "done" ? "text-emerald-500"
-              : it.status === "error" ? "text-destructive"
-              : "text-muted-foreground";
-            const spinning = it.status === "uploading" || it.status === "moderating" || it.status === "queued";
+              it.status === "done"
+                ? "text-emerald-500"
+                : it.status === "error"
+                  ? "text-destructive"
+                  : "text-muted-foreground";
+            const spinning =
+              it.status === "uploading" || it.status === "moderating" || it.status === "queued";
             return (
               <div key={it.id} className="flex items-center gap-2 text-xs">
                 <Icon
-                  className={cn("size-3.5 shrink-0", tone, spinning && it.status === "queued" && "animate-spin")}
+                  className={cn(
+                    "size-3.5 shrink-0",
+                    tone,
+                    spinning && it.status === "queued" && "animate-spin",
+                  )}
                   aria-hidden="true"
                 />
                 <span className="min-w-0 flex-1 truncate">{it.name}</span>
                 <span className="shrink-0 text-[10px] text-muted-foreground">{it.sizeMb} MB</span>
-                <span className={cn("shrink-0 text-[10px] font-medium uppercase tracking-wider", tone)}>
+                <span
+                  className={cn("shrink-0 text-[10px] font-medium uppercase tracking-wider", tone)}
+                >
                   {label}
                 </span>
                 {it.status !== "done" && it.status !== "error" && (
@@ -316,7 +371,11 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
                     <span
                       className={cn(
                         "block h-full rounded-full bg-primary",
-                        it.status === "queued" ? "w-1/6" : it.status === "uploading" ? "w-1/2 animate-pulse" : "w-5/6 animate-pulse",
+                        it.status === "queued"
+                          ? "w-1/6"
+                          : it.status === "uploading"
+                            ? "w-1/2 animate-pulse"
+                            : "w-5/6 animate-pulse",
                       )}
                     />
                   </span>

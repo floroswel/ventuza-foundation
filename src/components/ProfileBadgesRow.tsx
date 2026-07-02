@@ -39,12 +39,14 @@ export function ProfileBadgesRow({ profile }: { profile: ProfileLike }) {
 
     const completeness =
       (profile.photos?.length ?? 0) >= 4 &&
-      !!profile.bio && profile.bio.length > 40 &&
+      !!profile.bio &&
+      profile.bio.length > 40 &&
       (profile.interests?.length ?? 0) >= 3 &&
       (profile.tribes?.length ?? 0) > 0 &&
       !!(profile.height_cm || profile.body_type) &&
       profile.prompts?.some((p: any) => p?.answer?.trim());
-    if (completeness) out.push({ key: "complete", label: "Top profil", icon: Trophy, tone: "amber" });
+    if (completeness)
+      out.push({ key: "complete", label: "Top profil", icon: Trophy, tone: "amber" });
 
     if ((profile.photos?.length ?? 0) >= 6) {
       out.push({ key: "gallery", label: "Gallery", icon: Star, tone: "rose" });
@@ -63,13 +65,19 @@ export function ProfileBadgesRow({ profile }: { profile: ProfileLike }) {
       {badges.map((b) => {
         const Icon = b.icon;
         const cls =
-          b.tone === "gold" ? "border-amber-400/50 bg-amber-400/10 text-amber-300" :
-          b.tone === "primary" ? "border-primary/40 bg-primary/10 text-primary" :
-          b.tone === "emerald" ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300" :
-          b.tone === "violet" ? "border-violet-400/40 bg-violet-400/10 text-violet-300" :
-          b.tone === "amber" ? "border-amber-300/40 bg-amber-300/10 text-amber-300" :
-          b.tone === "rose" ? "border-rose-400/40 bg-rose-400/10 text-rose-300" :
-          "border-orange-400/40 bg-orange-400/10 text-orange-300";
+          b.tone === "gold"
+            ? "border-amber-400/50 bg-amber-400/10 text-amber-300"
+            : b.tone === "primary"
+              ? "border-primary/40 bg-primary/10 text-primary"
+              : b.tone === "emerald"
+                ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
+                : b.tone === "violet"
+                  ? "border-violet-400/40 bg-violet-400/10 text-violet-300"
+                  : b.tone === "amber"
+                    ? "border-amber-300/40 bg-amber-300/10 text-amber-300"
+                    : b.tone === "rose"
+                      ? "border-rose-400/40 bg-rose-400/10 text-rose-300"
+                      : "border-orange-400/40 bg-orange-400/10 text-orange-300";
         return (
           <span
             key={b.key}

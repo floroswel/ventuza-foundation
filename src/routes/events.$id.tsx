@@ -3,7 +3,16 @@ import { useEffect, useState } from "react";
 import { ChevronLeft, Clock, Loader2, MapPin, Trash2, Users } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { BottomNav } from "@/components/BottomNav";
-import { deleteEvent, eventTypeLabel, formatEventDate, getEvent, listEventAttendees, setRsvp, type EventWithMeta, type RsvpStatus } from "@/lib/events";
+import {
+  deleteEvent,
+  eventTypeLabel,
+  formatEventDate,
+  getEvent,
+  listEventAttendees,
+  setRsvp,
+  type EventWithMeta,
+  type RsvpStatus,
+} from "@/lib/events";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -12,7 +21,12 @@ export const Route = createFileRoute("/events/$id")({
   component: EventDetailPage,
 });
 
-type Attendee = { user_id: string; status: RsvpStatus; display_name: string | null; photo: string | null };
+type Attendee = {
+  user_id: string;
+  status: RsvpStatus;
+  display_name: string | null;
+  photo: string | null;
+};
 
 async function signPhoto(p: string | null): Promise<string | null> {
   if (!p) return null;
@@ -58,7 +72,6 @@ function EventDetailPage() {
     if (!user) return;
     setLoading(true);
     refresh();
-     
   }, [user, id]);
 
   const handleRsvp = async (status: RsvpStatus) => {
@@ -96,7 +109,10 @@ function EventDetailPage() {
   }
 
   const isHost = user?.id === event.host_id;
-  const full = event.max_attendees != null && event.going_count >= event.max_attendees && event.my_rsvp !== "going";
+  const full =
+    event.max_attendees != null &&
+    event.going_count >= event.max_attendees &&
+    event.my_rsvp !== "going";
 
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-32">
@@ -106,7 +122,10 @@ function EventDetailPage() {
         </Link>
         <h1 className="line-clamp-1 text-base font-semibold tracking-tight">{event.title}</h1>
         {isHost && (
-          <button onClick={handleDelete} className="ml-auto rounded-full p-2 text-muted-foreground hover:text-destructive">
+          <button
+            onClick={handleDelete}
+            className="ml-auto rounded-full p-2 text-muted-foreground hover:text-destructive"
+          >
             <Trash2 className="size-4" />
           </button>
         )}
@@ -127,11 +146,13 @@ function EventDetailPage() {
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li className="flex items-center gap-2">
               <Clock className="size-4 text-primary/70" />
-              {formatEventDate(event.starts_at)}{event.ends_at ? ` → ${formatEventDate(event.ends_at)}` : ""}
+              {formatEventDate(event.starts_at)}
+              {event.ends_at ? ` → ${formatEventDate(event.ends_at)}` : ""}
             </li>
             <li className="flex items-center gap-2">
               <MapPin className="size-4 text-primary/70" />
-              {event.city}{event.venue ? ` · ${event.venue}` : ""}
+              {event.city}
+              {event.venue ? ` · ${event.venue}` : ""}
             </li>
             <li className="flex items-center gap-2">
               <Users className="size-4 text-primary/70" />
@@ -141,7 +162,9 @@ function EventDetailPage() {
           </ul>
 
           {event.description && (
-            <p className="mt-4 whitespace-pre-wrap text-sm text-foreground/90">{event.description}</p>
+            <p className="mt-4 whitespace-pre-wrap text-sm text-foreground/90">
+              {event.description}
+            </p>
           )}
         </div>
 
@@ -165,7 +188,9 @@ function EventDetailPage() {
                       <span className="absolute inset-0 rounded-full ring-2 ring-amber-400/70" />
                     )}
                   </div>
-                  <p className="mt-1 truncate text-[11px] text-muted-foreground">{a.display_name ?? "Unknown"}</p>
+                  <p className="mt-1 truncate text-[11px] text-muted-foreground">
+                    {a.display_name ?? "Unknown"}
+                  </p>
                 </li>
               ))}
             </ul>

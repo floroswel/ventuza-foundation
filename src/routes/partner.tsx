@@ -31,8 +31,23 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, AlertTriangle, MapPin, Image as ImgIcon, BarChart3, ChevronLeft, BookOpen } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Loader2,
+  Plus,
+  AlertTriangle,
+  MapPin,
+  Image as ImgIcon,
+  BarChart3,
+  ChevronLeft,
+  BookOpen,
+} from "lucide-react";
 import { toast } from "sonner";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
@@ -42,10 +57,7 @@ import { StatusTiles } from "@/components/partner/StatusTiles";
 
 export const Route = createFileRoute("/partner")({
   head: () => ({
-    meta: [
-      { title: "Portal Partener — Ventuza" },
-      { name: "robots", content: "noindex" },
-    ],
+    meta: [{ title: "Portal Partener — Ventuza" }, { name: "robots", content: "noindex" }],
   }),
   component: PartnerPortal,
 });
@@ -55,10 +67,16 @@ export const Route = createFileRoute("/partner")({
 function StatusBadge({ status }: { status: string | null }) {
   const map: Record<string, { label: string; cls: string }> = {
     draft: { label: "Draft", cls: "bg-muted text-muted-foreground" },
-    pending: { label: "În așteptare", cls: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300" },
+    pending: {
+      label: "În așteptare",
+      cls: "bg-yellow-500/15 text-yellow-700 dark:text-yellow-300",
+    },
     approved: { label: "Aprobat", cls: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300" },
     rejected: { label: "Respins", cls: "bg-red-500/15 text-red-700 dark:text-red-300" },
-    changes_requested: { label: "Cere modificări", cls: "bg-orange-500/15 text-orange-700 dark:text-orange-300" },
+    changes_requested: {
+      label: "Cere modificări",
+      cls: "bg-orange-500/15 text-orange-700 dark:text-orange-300",
+    },
   };
   const m = map[status ?? "pending"] ?? map.pending;
   return <span className={`px-2 py-0.5 rounded text-xs font-medium ${m.cls}`}>{m.label}</span>;
@@ -86,7 +104,11 @@ function PartnerPortal() {
     | { kind: "stats"; offerId: string; title: string }
   >(null);
   const [wizardOpen, setWizardOpen] = useState(false);
-  const [pendingApp, setPendingApp] = useState<{ id: string; status: string; legal_name: string | null } | null>(null);
+  const [pendingApp, setPendingApp] = useState<{
+    id: string;
+    status: string;
+    legal_name: string | null;
+  } | null>(null);
   const [pendingChecked, setPendingChecked] = useState(false);
   const [pendingError, setPendingError] = useState<string | null>(null);
 
@@ -104,7 +126,8 @@ function PartnerPortal() {
     ]);
     if (iRes.status === "fulfilled") setItems(iRes.value);
     if (qRes.status === "fulfilled") setQuota(qRes.value);
-    const err = (iRes.status === "rejected" && iRes.reason) || (qRes.status === "rejected" && qRes.reason);
+    const err =
+      (iRes.status === "rejected" && iRes.reason) || (qRes.status === "rejected" && qRes.reason);
     if (err) {
       const msg = (err as Error).message ?? "Eroare la încărcare";
       if (msg.startsWith("suspended:")) setSuspendedMsg(msg.replace(/^suspended:\s*/, ""));
@@ -158,16 +181,28 @@ function PartnerPortal() {
       }, 15000);
       const ch = supabase
         .channel(`user-roles-${user.id}`)
-        .on("postgres_changes", { event: "INSERT", schema: "public", table: "user_roles", filter: `user_id=eq.${user.id}` }, () => {
-          window.location.reload();
-        })
+        .on(
+          "postgres_changes",
+          {
+            event: "INSERT",
+            schema: "public",
+            table: "user_roles",
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            window.location.reload();
+          },
+        )
         .subscribe();
-      return () => { alive = false; clearInterval(interval); supabase.removeChannel(ch); };
+      return () => {
+        alive = false;
+        clearInterval(interval);
+        supabase.removeChannel(ch);
+      };
     }
     refresh();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, roles, authLoading, rolesLoading]);
-
 
   if (authLoading || rolesLoading)
     return (
@@ -192,10 +227,18 @@ function PartnerPortal() {
         <div className="max-w-xl mx-auto p-6 space-y-4">
           <h1 className="text-2xl font-semibold">Portal Partener</h1>
           <div className="rounded border border-destructive/40 bg-destructive/5 p-4 text-sm">
-            <p className="font-medium text-destructive">Nu am putut verifica statusul cererii tale.</p>
+            <p className="font-medium text-destructive">
+              Nu am putut verifica statusul cererii tale.
+            </p>
             <p className="text-xs text-muted-foreground mt-1">{pendingError}</p>
           </div>
-          <Button onClick={() => { setPendingChecked(false); setPendingError(null); window.location.reload(); }}>
+          <Button
+            onClick={() => {
+              setPendingChecked(false);
+              setPendingError(null);
+              window.location.reload();
+            }}
+          >
             Reîncearcă
           </Button>
         </div>
@@ -252,7 +295,9 @@ function PartnerPortal() {
               )}
               <div className="flex items-center gap-2 pt-1">
                 <p className="text-[11px] text-muted-foreground">ID cerere:</p>
-                <code className="font-mono text-[11px] bg-muted px-1.5 py-0.5 rounded break-all">{fullId}</code>
+                <code className="font-mono text-[11px] bg-muted px-1.5 py-0.5 rounded break-all">
+                  {fullId}
+                </code>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -271,7 +316,9 @@ function PartnerPortal() {
           </Card>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" size="sm" asChild>
-              <Link to="/partner/guide"><BookOpen className="w-4 h-4 mr-1" /> Vezi ghidul partenerului</Link>
+              <Link to="/partner/guide">
+                <BookOpen className="w-4 h-4 mr-1" /> Vezi ghidul partenerului
+              </Link>
             </Button>
             {pendingApp.status === "needs_info" ? (
               <Button size="sm" asChild>
@@ -340,23 +387,22 @@ function PartnerPortal() {
       {quota && <QuotaPanel quota={quota} />}
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Button
-          size="lg"
-          disabled={suspended}
-          onClick={() => setWizardOpen(true)}
-        >
+        <Button size="lg" disabled={suspended} onClick={() => setWizardOpen(true)}>
           <Plus className="w-4 h-4 mr-1" /> Postare nouă (ghidat)
         </Button>
         <div className="flex flex-wrap gap-2">
           <Link to="/partner/billing">
-            <Button variant="outline" size="sm">Facturare & abonament →</Button>
+            <Button variant="outline" size="sm">
+              Facturare & abonament →
+            </Button>
           </Link>
           <Link to="/business/dashboard">
-            <Button variant="outline" size="sm">Campanii publicitare →</Button>
+            <Button variant="outline" size="sm">
+              Campanii publicitare →
+            </Button>
           </Link>
         </div>
       </div>
-
 
       <Tabs defaultValue="venues">
         <TabsList className="grid grid-cols-3 w-full">
@@ -409,11 +455,14 @@ function PartnerPortal() {
               Adaugă întâi un loc înainte să creezi o ofertă.
             </p>
           )}
-          {!loading && items.venues.length > 0 && !items.venues.some((v: any) => v.moderation_status === "approved") && (
-            <p className="text-sm text-muted-foreground">
-              Ai locuri adăugate, dar niciunul aprobat încă. Ofertele se pot atașa doar pe locuri aprobate.
-            </p>
-          )}
+          {!loading &&
+            items.venues.length > 0 &&
+            !items.venues.some((v: any) => v.moderation_status === "approved") && (
+              <p className="text-sm text-muted-foreground">
+                Ai locuri adăugate, dar niciunul aprobat încă. Ofertele se pot atașa doar pe locuri
+                aprobate.
+              </p>
+            )}
           {items.offers.map((o: any) => (
             <ItemRow
               key={o.id}
@@ -492,12 +541,20 @@ function PartnerPortal() {
 
 /* ============================== SUB-COMPONENTS ============================ */
 
-function QuotaPanel({ quota }: { quota: NonNullable<Awaited<ReturnType<typeof partnerGetQuota>>> }) {
+function QuotaPanel({
+  quota,
+}: {
+  quota: NonNullable<Awaited<ReturnType<typeof partnerGetQuota>>>;
+}) {
   const rows = [
     { l: "Locuri", used: quota.venues, max: quota.quotas.max_venues },
     { l: "Evenimente", used: quota.events, max: quota.quotas.max_events },
     { l: "Oferte active", used: quota.offers, max: quota.quotas.max_active_offers },
-    { l: "Drafts (ultima oră)", used: quota.drafts_last_hour, max: quota.quotas.max_drafts_per_hour },
+    {
+      l: "Drafts (ultima oră)",
+      used: quota.drafts_last_hour,
+      max: quota.quotas.max_drafts_per_hour,
+    },
   ];
   return (
     <Card>
@@ -564,9 +621,10 @@ function ItemRow(props: {
           {props.subtitle && (
             <div className="text-xs text-muted-foreground truncate">{props.subtitle}</div>
           )}
-          {props.reason && (props.status === "rejected" || props.status === "changes_requested") && (
-            <div className="text-xs text-orange-600 mt-1">Motiv staff: {props.reason}</div>
-          )}
+          {props.reason &&
+            (props.status === "rejected" || props.status === "changes_requested") && (
+              <div className="text-xs text-orange-600 mt-1">Motiv staff: {props.reason}</div>
+            )}
         </div>
         <div className="flex flex-col gap-1">
           {props.onEdit && (
@@ -661,12 +719,22 @@ async function uploadCover(userId: string, file: File): Promise<string> {
   if (error) throw new Error(error.message);
   // TTL 5 ani — evită spargerea imaginilor după 30 zile. Bucket-ul rămâne privat;
   // re-semnarea on-read va veni la refactorul `cover_path` (Val 6).
-  const { data } = await supabase.storage.from("venue-media").createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
+  const { data } = await supabase.storage
+    .from("venue-media")
+    .createSignedUrl(path, 60 * 60 * 24 * 365 * 5);
   if (!data?.signedUrl) throw new Error("Nu s-a putut obține URL.");
   return data.signedUrl;
 }
 
-function VenueDialog({ row, onClose, onSaved }: { row?: any; onClose: () => void; onSaved: () => void }) {
+function VenueDialog({
+  row,
+  onClose,
+  onSaved,
+}: {
+  row?: any;
+  onClose: () => void;
+  onSaved: () => void;
+}) {
   const { user } = useAuth();
   const create = useServerFn(partnerCreateVenue);
   const update = useServerFn(partnerUpdateVenue);
@@ -730,31 +798,58 @@ function VenueDialog({ row, onClose, onSaved }: { row?: any; onClose: () => void
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
               <Label>Nume *</Label>
-              <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={120} />
+              <Input
+                value={form.name}
+                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                maxLength={120}
+              />
             </div>
             <div>
               <Label>Categorie</Label>
-              <Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} placeholder="bar, club, restaurant…" />
+              <Input
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                placeholder="bar, club, restaurant…"
+              />
             </div>
             <div>
               <Label>Oraș</Label>
-              <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+              <Input
+                value={form.city}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+              />
             </div>
             <div className="col-span-2">
               <Label>Descriere</Label>
-              <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} maxLength={4000} rows={3} />
+              <Textarea
+                value={form.description}
+                onChange={(e) => setForm({ ...form, description: e.target.value })}
+                maxLength={4000}
+                rows={3}
+              />
             </div>
             <div className="col-span-2">
               <Label>Adresă</Label>
-              <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} />
+              <Input
+                value={form.address}
+                onChange={(e) => setForm({ ...form, address: e.target.value })}
+              />
             </div>
             <div>
               <Label>Website</Label>
-              <Input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://…" />
+              <Input
+                value={form.website}
+                onChange={(e) => setForm({ ...form, website: e.target.value })}
+                placeholder="https://…"
+              />
             </div>
             <div>
               <Label>Telefon (E.164)</Label>
-              <Input value={form.phone_e164} onChange={(e) => setForm({ ...form, phone_e164: e.target.value })} placeholder="+40…" />
+              <Input
+                value={form.phone_e164}
+                onChange={(e) => setForm({ ...form, phone_e164: e.target.value })}
+                placeholder="+40…"
+              />
             </div>
           </div>
 
@@ -887,39 +982,69 @@ function EventDialog({
         <div className="space-y-3">
           <div>
             <Label>Titlu *</Label>
-            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={160} />
+            <Input
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              maxLength={160}
+            />
           </div>
           <div>
             <Label>Descriere</Label>
-            <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
+            <Textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={3}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Început *</Label>
-              <Input type="datetime-local" value={form.starts_at} onChange={(e) => setForm({ ...form, starts_at: e.target.value })} />
+              <Input
+                type="datetime-local"
+                value={form.starts_at}
+                onChange={(e) => setForm({ ...form, starts_at: e.target.value })}
+              />
             </div>
             <div>
               <Label>Sfârșit</Label>
-              <Input type="datetime-local" value={form.ends_at} onChange={(e) => setForm({ ...form, ends_at: e.target.value })} />
+              <Input
+                type="datetime-local"
+                value={form.ends_at}
+                onChange={(e) => setForm({ ...form, ends_at: e.target.value })}
+              />
             </div>
             <div>
               <Label>Oraș</Label>
-              <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} />
+              <Input
+                value={form.city}
+                onChange={(e) => setForm({ ...form, city: e.target.value })}
+              />
             </div>
             <div>
               <Label>Capacitate</Label>
-              <Input type="number" value={form.max_attendees} onChange={(e) => setForm({ ...form, max_attendees: e.target.value })} />
+              <Input
+                type="number"
+                value={form.max_attendees}
+                onChange={(e) => setForm({ ...form, max_attendees: e.target.value })}
+              />
             </div>
           </div>
           <div>
             <Label>Loc</Label>
-            <Input value={form.venue} onChange={(e) => setForm({ ...form, venue: e.target.value })} />
+            <Input
+              value={form.venue}
+              onChange={(e) => setForm({ ...form, venue: e.target.value })}
+            />
           </div>
           <div>
             <Label className="flex items-center gap-1">
               <MapPin className="w-4 h-4" /> Locație *
             </Label>
-            <PinMap lat={form.lat} lng={form.lng} onChange={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))} />
+            <PinMap
+              lat={form.lat}
+              lng={form.lng}
+              onChange={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
+            />
           </div>
           <div>
             <Label>Imagine de copertă</Label>
@@ -938,7 +1063,9 @@ function EventDialog({
                 }
               }}
             />
-            {form.cover_url && <img src={form.cover_url} alt="" className="mt-2 max-h-32 rounded" />}
+            {form.cover_url && (
+              <img src={form.cover_url} alt="" className="mt-2 max-h-32 rounded" />
+            )}
           </div>
         </div>
         <DialogFooter>
@@ -1037,28 +1164,52 @@ function OfferDialog({
           </div>
           <div>
             <Label>Titlu *</Label>
-            <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} maxLength={160} />
+            <Input
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              maxLength={160}
+            />
           </div>
           <div>
             <Label>Descriere</Label>
-            <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={2} />
+            <Textarea
+              value={form.description}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+              rows={2}
+            />
           </div>
           <div>
             <Label>Condiții / termeni</Label>
-            <Textarea value={form.terms} onChange={(e) => setForm({ ...form, terms: e.target.value })} rows={2} />
+            <Textarea
+              value={form.terms}
+              onChange={(e) => setForm({ ...form, terms: e.target.value })}
+              rows={2}
+            />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
               <Label>Valabil de la</Label>
-              <Input type="datetime-local" value={form.valid_from} onChange={(e) => setForm({ ...form, valid_from: e.target.value })} />
+              <Input
+                type="datetime-local"
+                value={form.valid_from}
+                onChange={(e) => setForm({ ...form, valid_from: e.target.value })}
+              />
             </div>
             <div>
               <Label>Valabil până la</Label>
-              <Input type="datetime-local" value={form.valid_to} onChange={(e) => setForm({ ...form, valid_to: e.target.value })} />
+              <Input
+                type="datetime-local"
+                value={form.valid_to}
+                onChange={(e) => setForm({ ...form, valid_to: e.target.value })}
+              />
             </div>
             <div>
               <Label>Max revendicări/user</Label>
-              <Input type="number" value={form.max_claims_per_user} onChange={(e) => setForm({ ...form, max_claims_per_user: e.target.value })} />
+              <Input
+                type="number"
+                value={form.max_claims_per_user}
+                onChange={(e) => setForm({ ...form, max_claims_per_user: e.target.value })}
+              />
             </div>
           </div>
         </div>
@@ -1077,7 +1228,15 @@ function OfferDialog({
 
 /* ----------------------------- STATS DIALOG ------------------------------ */
 
-function StatsDialog({ offerId, title, onClose }: { offerId: string; title: string; onClose: () => void }) {
+function StatsDialog({
+  offerId,
+  title,
+  onClose,
+}: {
+  offerId: string;
+  title: string;
+  onClose: () => void;
+}) {
   const get = useServerFn(partnerGetOfferStats);
   const [stats, setStats] = useState<any>(null);
   useEffect(() => {
@@ -1127,7 +1286,9 @@ function ClaimByCodeCard({ onClaimed }: { onClaimed: () => void }) {
         const { id } = JSON.parse(raw);
         if (id && typeof id === "string") setCode(id);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }, []);
   async function submit() {
     const id = code.trim();
@@ -1136,7 +1297,11 @@ function ClaimByCodeCard({ onClaimed }: { onClaimed: () => void }) {
     try {
       const res = await claim({ data: { appId: id } });
       toast.success(`Cerere revendicată: ${res.legal_name ?? id} (${res.status})`);
-      try { localStorage.removeItem("vz_biz_app"); } catch { /* ignore */ }
+      try {
+        localStorage.removeItem("vz_biz_app");
+      } catch {
+        /* ignore */
+      }
       onClaimed();
     } catch (e: any) {
       toast.error(e?.message ?? "Eroare");
@@ -1151,10 +1316,16 @@ function ClaimByCodeCard({ onClaimed }: { onClaimed: () => void }) {
       </CardHeader>
       <CardContent className="space-y-2">
         <p className="text-xs text-muted-foreground">
-          Dacă ai trimis cererea fără cont (sau cu alt email), introdu aici ID-ul afișat după submit ca să o legăm de contul tău.
+          Dacă ai trimis cererea fără cont (sau cu alt email), introdu aici ID-ul afișat după submit
+          ca să o legăm de contul tău.
         </p>
         <div className="flex gap-2">
-          <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="ex: 1a2b3c4d-..." className="font-mono text-xs" />
+          <Input
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="ex: 1a2b3c4d-..."
+            className="font-mono text-xs"
+          />
           <Button disabled={busy} onClick={submit}>
             {busy ? <Loader2 className="size-4 animate-spin" /> : "Revendică"}
           </Button>

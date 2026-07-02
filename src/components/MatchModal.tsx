@@ -5,7 +5,13 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EnablePushButton } from "@/components/EnablePushButton";
 
-function SendFirstMessageButton({ onSend, onDone }: { onSend: () => void | Promise<void>; onDone?: () => void }) {
+function SendFirstMessageButton({
+  onSend,
+  onDone,
+}: {
+  onSend: () => void | Promise<void>;
+  onDone?: () => void;
+}) {
   const [busy, setBusy] = useState(false);
   return (
     <Button
@@ -23,7 +29,13 @@ function SendFirstMessageButton({ onSend, onDone }: { onSend: () => void | Promi
         }
       }}
     >
-      {busy ? <><Loader2 className="size-4 animate-spin mr-2" /> Se deschide…</> : "Trimite primul mesaj"}
+      {busy ? (
+        <>
+          <Loader2 className="size-4 animate-spin mr-2" /> Se deschide…
+        </>
+      ) : (
+        "Trimite primul mesaj"
+      )}
     </Button>
   );
 }
@@ -33,11 +45,17 @@ const GOLD_PALETTE = ["#E8C66B", "#F2D98D", "#C9A24A", "#FFFFFF", "#B8860B"];
 function vibrate(pattern: number | number[]) {
   try {
     if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(pattern);
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 }
 
 export function MatchModal({
-  open, onClose, otherName, otherPhotoUrl, onSendFirstMessage,
+  open,
+  onClose,
+  otherName,
+  otherPhotoUrl,
+  onSendFirstMessage,
 }: {
   open: boolean;
   onClose: () => void;
@@ -50,14 +68,24 @@ export function MatchModal({
   const [phase, setPhase] = useState<0 | 1 | 2 | 3>(0);
 
   useEffect(() => {
-    if (!open) { setPhase(0); return; }
+    if (!open) {
+      setPhase(0);
+      return;
+    }
 
     // Haptic chord — 3 escalating taps
     vibrate([40, 60, 60, 60, 90]);
 
     // Canvas-confetti golden burst from sides + center pop
     const colors = GOLD_PALETTE;
-    confetti({ particleCount: 80, spread: 90, startVelocity: 45, origin: { y: 0.5 }, colors, scalar: 1.1 });
+    confetti({
+      particleCount: 80,
+      spread: 90,
+      startVelocity: 45,
+      origin: { y: 0.5 },
+      colors,
+      scalar: 1.1,
+    });
     const end = Date.now() + 1800;
     (function frame() {
       confetti({ particleCount: 5, angle: 60, spread: 70, origin: { x: 0, y: 0.7 }, colors });
@@ -66,8 +94,14 @@ export function MatchModal({
     })();
 
     // Phase progression for ceremony text
-    const t1 = setTimeout(() => { setPhase(1); vibrate(30); }, 300);
-    const t2 = setTimeout(() => { setPhase(2); vibrate(30); }, 900);
+    const t1 = setTimeout(() => {
+      setPhase(1);
+      vibrate(30);
+    }, 300);
+    const t2 = setTimeout(() => {
+      setPhase(2);
+      vibrate(30);
+    }, 900);
     const t3 = setTimeout(() => setPhase(3), 1500);
 
     // Custom gold particle layer on canvas (drifting embers)
@@ -91,7 +125,10 @@ export function MatchModal({
         for (const p of particles) {
           p.y += p.vy * devicePixelRatio;
           p.x += p.vx * devicePixelRatio;
-          if (p.y < -10) { p.y = cv.height + 10; p.x = Math.random() * cv.width; }
+          if (p.y < -10) {
+            p.y = cv.height + 10;
+            p.x = Math.random() * cv.width;
+          }
           ctx.beginPath();
           ctx.fillStyle = `rgba(232, 198, 107, ${p.a})`;
           ctx.shadowColor = "#E8C66B";
@@ -102,29 +139,43 @@ export function MatchModal({
         raf = requestAnimationFrame(tick);
       };
       tick();
-      return () => { cancelAnimationFrame(raf); clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+      return () => {
+        cancelAnimationFrame(raf);
+        clearTimeout(t1);
+        clearTimeout(t2);
+        clearTimeout(t3);
+      };
     }
-    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); };
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
   }, [open]);
 
   return (
     <AnimatePresence>
       {open && (
         <motion.div
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-background/95 p-6 backdrop-blur-xl"
         >
           <canvas ref={canvasRef} className="pointer-events-none absolute inset-0 size-full" />
 
           <motion.div
-            initial={{ scale: 0.85, y: 30 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0 }}
+            initial={{ scale: 0.85, y: 30 }}
+            animate={{ scale: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0 }}
             transition={{ type: "spring", stiffness: 220, damping: 22 }}
             className="relative z-10 w-full max-w-sm overflow-hidden rounded-3xl border border-primary/40 bg-surface/90 p-8 text-center glow-gold backdrop-blur"
           >
             <div className="pride-bar absolute inset-x-0 top-0 h-1" />
 
             <motion.div
-              initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
               className="flex items-center justify-center gap-2 text-xs uppercase tracking-[0.4em] text-primary"
             >
               <Sparkles className="size-3" /> A new connection <Sparkles className="size-3" />
@@ -140,7 +191,8 @@ export function MatchModal({
             </motion.h2>
 
             <motion.p
-              initial={{ opacity: 0 }} animate={phase >= 2 ? { opacity: 1 } : {}}
+              initial={{ opacity: 0 }}
+              animate={phase >= 2 ? { opacity: 1 } : {}}
               className="mt-2 text-muted-foreground"
             >
               You and <span className="text-foreground">{otherName}</span> liked each other.
@@ -165,11 +217,7 @@ export function MatchModal({
               {onSendFirstMessage && (
                 <SendFirstMessageButton onSend={onSendFirstMessage} onDone={onClose} />
               )}
-              <Button
-                variant={onSendFirstMessage ? "outline" : "hero"}
-                size="lg"
-                onClick={onClose}
-              >
+              <Button variant={onSendFirstMessage ? "outline" : "hero"} size="lg" onClick={onClose}>
                 Keep discovering
               </Button>
               {/* Prompt push: după primul match, oferim activarea notificărilor

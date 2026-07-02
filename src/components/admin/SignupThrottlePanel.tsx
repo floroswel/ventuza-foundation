@@ -26,7 +26,10 @@ const REASON_LABEL: Record<string, string> = {
 function fmtDate(iso: string | null | undefined) {
   if (!iso) return "—";
   return new Date(iso).toLocaleString("ro-RO", {
-    month: "short", day: "2-digit", hour: "2-digit", minute: "2-digit",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -108,8 +111,8 @@ function Content({ stats }: { stats: SignupThrottleStats }) {
       <div className="rounded-2xl border border-border bg-surface p-3 text-[11px] text-muted-foreground">
         <ShieldAlert className="mr-1 inline size-3" />
         Plafoane active: <b>IP</b> {stats.caps.ip_per_hour}/oră, {stats.caps.ip_per_day}/zi ·{" "}
-        <b>Fingerprint</b> {stats.caps.fp_per_hour}/oră, {stats.caps.fp_per_day}/zi.
-        IP-urile sunt stocate hash-uite SHA-256 (sărate) — niciun IP în clar.
+        <b>Fingerprint</b> {stats.caps.fp_per_hour}/oră, {stats.caps.fp_per_day}/zi. IP-urile sunt
+        stocate hash-uite SHA-256 (sărate) — niciun IP în clar.
       </div>
 
       {stats.totals.blocks_logged > 0 && (
@@ -118,18 +121,20 @@ function Content({ stats }: { stats: SignupThrottleStats }) {
           icon={<ShieldAlert className="size-4 text-red-300" />}
         >
           <div className="mb-2 flex flex-wrap gap-1">
-            {(["ip_hourly_cap","ip_daily_cap","fp_hourly_cap","fp_daily_cap"] as const).map((k) => {
-              const n = stats.blocks_by_reason[k] ?? 0;
-              if (!n) return null;
-              return (
-                <span
-                  key={k}
-                  className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] text-red-300"
-                >
-                  {REASON_LABEL[k]} · {n}
-                </span>
-              );
-            })}
+            {(["ip_hourly_cap", "ip_daily_cap", "fp_hourly_cap", "fp_daily_cap"] as const).map(
+              (k) => {
+                const n = stats.blocks_by_reason[k] ?? 0;
+                if (!n) return null;
+                return (
+                  <span
+                    key={k}
+                    className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] text-red-300"
+                  >
+                    {REASON_LABEL[k]} · {n}
+                  </span>
+                );
+              },
+            )}
           </div>
           <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
             <table className="w-full text-xs">
@@ -146,7 +151,9 @@ function Content({ stats }: { stats: SignupThrottleStats }) {
               <tbody>
                 {stats.recent_blocks.map((b, i) => (
                   <tr key={i} className="border-t border-border">
-                    <Td className="whitespace-nowrap text-muted-foreground">{fmtDate(b.created_at)}</Td>
+                    <Td className="whitespace-nowrap text-muted-foreground">
+                      {fmtDate(b.created_at)}
+                    </Td>
                     <Td>
                       <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] text-red-300">
                         {REASON_LABEL[b.reason] ?? b.reason}
@@ -154,8 +161,12 @@ function Content({ stats }: { stats: SignupThrottleStats }) {
                     </Td>
                     <Td className="font-mono text-[10px]">{b.ip_hash_prefix ?? "—"}</Td>
                     <Td className="font-mono text-[10px]">{b.fp_prefix ?? "—"}</Td>
-                    <Td align="right">{b.ip_hour} · {b.ip_day}</Td>
-                    <Td align="right">{b.fp_hour} · {b.fp_day}</Td>
+                    <Td align="right">
+                      {b.ip_hour} · {b.ip_day}
+                    </Td>
+                    <Td align="right">
+                      {b.fp_hour} · {b.fp_day}
+                    </Td>
                   </tr>
                 ))}
               </tbody>
@@ -165,22 +176,14 @@ function Content({ stats }: { stats: SignupThrottleStats }) {
       )}
 
       <Section title={`Top IP-uri (${stats.top_ips.length})`} icon={<Globe className="size-4" />}>
-        <Table
-          rows={stats.top_ips}
-          idKey="ip_hash"
-          label="IP hash"
-        />
+        <Table rows={stats.top_ips} idKey="ip_hash" label="IP hash" />
       </Section>
 
       <Section
         title={`Top fingerprints (${stats.top_fingerprints.length})`}
         icon={<Fingerprint className="size-4" />}
       >
-        <Table
-          rows={stats.top_fingerprints}
-          idKey="fingerprint"
-          label="Fingerprint"
-        />
+        <Table rows={stats.top_fingerprints} idKey="fingerprint" label="Fingerprint" />
       </Section>
 
       <p className="text-[10px] text-muted-foreground">
@@ -236,7 +239,9 @@ function Table({ rows, idKey, label }: { rows: Row[]; idKey: string; label: stri
                     {short(id)}
                   </button>
                 </Td>
-                <Td align="right" className="font-semibold">{r.total}</Td>
+                <Td align="right" className="font-semibold">
+                  {r.total}
+                </Td>
                 <Td align="right" className={r.last_hour > 0 ? "text-orange-300" : ""}>
                   {r.last_hour}
                 </Td>
@@ -261,14 +266,20 @@ function Table({ rows, idKey, label }: { rows: Row[]; idKey: string; label: stri
 }
 
 function Kpi({
-  label, value, tone,
-}: { label: string; value: number; tone?: "warning" | "danger" }) {
+  label,
+  value,
+  tone,
+}: {
+  label: string;
+  value: number;
+  tone?: "warning" | "danger";
+}) {
   const toneCls =
     tone === "danger"
       ? "border-red-500/40 bg-red-500/5"
       : tone === "warning"
-      ? "border-orange-500/40 bg-orange-500/5"
-      : "border-border bg-surface";
+        ? "border-orange-500/40 bg-orange-500/5"
+        : "border-border bg-surface";
   return (
     <div className={`rounded-2xl border p-3 ${toneCls}`}>
       <div className="text-[10px] uppercase text-muted-foreground">{label}</div>
@@ -278,8 +289,14 @@ function Kpi({
 }
 
 function Section({
-  title, icon, children,
-}: { title: string; icon?: React.ReactNode; children: React.ReactNode }) {
+  title,
+  icon,
+  children,
+}: {
+  title: string;
+  icon?: React.ReactNode;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center gap-2">
@@ -299,8 +316,14 @@ function Th({ children, align = "left" }: { children: React.ReactNode; align?: "
   );
 }
 function Td({
-  children, align = "left", className = "",
-}: { children: React.ReactNode; align?: "left" | "right"; className?: string }) {
+  children,
+  align = "left",
+  className = "",
+}: {
+  children: React.ReactNode;
+  align?: "left" | "right";
+  className?: string;
+}) {
   return (
     <td className={`px-3 py-2 ${align === "right" ? "text-right" : "text-left"} ${className}`}>
       {children}

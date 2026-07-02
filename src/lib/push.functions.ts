@@ -15,22 +15,20 @@ export const savePushSubscription = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => SubInput.parse(d))
   .handler(async ({ data, context }) => {
     // Upsert by endpoint (1 subscription per browser).
-    const { error } = await context.supabase
-      .from("push_subscriptions")
-      .upsert(
-        {
-          user_id: context.userId,
-          endpoint: data.endpoint,
-          p256dh: data.p256dh,
-          auth: data.auth,
-          user_agent: data.userAgent ?? null,
-          platform: "web",
-          kind: "webpush",
-          fcm_token: data.endpoint, // legacy NOT NULL column — reuse endpoint
-          last_seen_at: new Date().toISOString(),
-        },
-        { onConflict: "endpoint" },
-      );
+    const { error } = await context.supabase.from("push_subscriptions").upsert(
+      {
+        user_id: context.userId,
+        endpoint: data.endpoint,
+        p256dh: data.p256dh,
+        auth: data.auth,
+        user_agent: data.userAgent ?? null,
+        platform: "web",
+        kind: "webpush",
+        fcm_token: data.endpoint, // legacy NOT NULL column — reuse endpoint
+        last_seen_at: new Date().toISOString(),
+      },
+      { onConflict: "endpoint" },
+    );
     if (error) throw error;
     // Loghează consimțământul push (acordare). Vezi consent-registry + AGENTS.md.
     await context.supabase.rpc("record_consent", {
@@ -146,4 +144,3 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     }
     return { delivered };
   });
-

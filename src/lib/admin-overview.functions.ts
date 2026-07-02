@@ -57,8 +57,11 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
         starts.map(async (s) => {
           const from = new Date(s).toISOString();
           const to = new Date(s + DAY).toISOString();
-          const { count } = await sa.from(table).select("*", { count: "exact", head: true })
-            .gte(dateCol, from).lt(dateCol, to);
+          const { count } = await sa
+            .from(table)
+            .select("*", { count: "exact", head: true })
+            .gte(dateCol, from)
+            .lt(dateCol, to);
           return { day: from.slice(5, 10), count: count ?? 0 };
         }),
       );
@@ -68,30 +71,56 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
 
     const [
       // KPI base
-      profilesAll, profiles24h, profiles48to24, profiles7d, profilesPrev7d,
-      verified, banned, suspended,
-      messages24h, messagesPrev24h,
-      matches24h, matchesPrev24h,
+      profilesAll,
+      profiles24h,
+      profiles48to24,
+      profiles7d,
+      profilesPrev7d,
+      verified,
+      banned,
+      suspended,
+      messages24h,
+      messagesPrev24h,
+      matches24h,
+      matchesPrev24h,
       // Trends
-      trendSignups, trendMessages, trendMatches,
+      trendSignups,
+      trendMessages,
+      trendMatches,
       // Queues + oldest
-      reportsPending, reportsOldest,
-      appealsPending, appealsOldest,
-      csamPending, csamOldest,
+      reportsPending,
+      reportsOldest,
+      appealsPending,
+      appealsOldest,
+      csamPending,
+      csamOldest,
       dsaLast7d,
-      breachOpen, breachOldest,
-      supportOpen, supportOldest, supportUrgent,
-      deletionPending, deletionOldest,
-      bizPending, bizOldest,
-      venuesPending, eventsPending, offersPending,
+      breachOpen,
+      breachOldest,
+      supportOpen,
+      supportOldest,
+      supportUrgent,
+      deletionPending,
+      deletionOldest,
+      bizPending,
+      bizOldest,
+      venuesPending,
+      eventsPending,
+      offersPending,
       gdprSar,
       // Content
-      eventsAll, events24h,
-      adsActive, adsPending,
-      sos7d, sos24h,
+      eventsAll,
+      events24h,
+      adsActive,
+      adsPending,
+      sos7d,
+      sos24h,
       // Revenue
-      subsActive, subsGrace, subsDowngraded,
-      invoicesPaidMonth, invoicesOutstanding,
+      subsActive,
+      subsGrace,
+      subsDowngraded,
+      invoicesPaidMonth,
+      invoicesOutstanding,
       // Kill-switches + flags
       flagsAll,
       // Moderators online
@@ -99,11 +128,15 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
       // Recent critical
       recentAudit,
       // Funnel
-      signup7d, ageVerified7d, birthdate7d, msgSenders7d,
+      signup7d,
+      ageVerified7d,
+      birthdate7d,
+      msgSenders7d,
       // Geography
       topCitiesRaw,
       // Risk
-      riskHigh, riskQueue,
+      riskHigh,
+      riskQueue,
       // Suspended partners
       partnerSuspended,
     ] = await Promise.all([
@@ -130,14 +163,24 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
       oldest("csam_ncmec_queue", "created_at", (q) => q.eq("status", "pending")),
       head("dsa_sor", (q) => q.gte("created_at", since7d)),
       head("breach_incidents", (q) => q.in("status", ["detected", "investigating", "notifying"])),
-      oldest("breach_incidents", "discovered_at", (q) => q.in("status", ["detected", "investigating", "notifying"])),
-      head("support_tickets", (q) => q.in("status", ["open", "pending", "waiting_user", "in_progress"])),
-      oldest("support_tickets", "created_at", (q) => q.in("status", ["open", "pending", "waiting_user", "in_progress"])),
-      head("support_tickets", (q) => q.in("status", ["open", "pending", "in_progress"]).eq("priority", "urgent")),
+      oldest("breach_incidents", "discovered_at", (q) =>
+        q.in("status", ["detected", "investigating", "notifying"]),
+      ),
+      head("support_tickets", (q) =>
+        q.in("status", ["open", "pending", "waiting_user", "in_progress"]),
+      ),
+      oldest("support_tickets", "created_at", (q) =>
+        q.in("status", ["open", "pending", "waiting_user", "in_progress"]),
+      ),
+      head("support_tickets", (q) =>
+        q.in("status", ["open", "pending", "in_progress"]).eq("priority", "urgent"),
+      ),
       head("deletion_requests", (q) => q.eq("status", "pending")),
       oldest("deletion_requests", "created_at", (q) => q.eq("status", "pending")),
       head("business_applications", (q) => q.in("status", ["pending", "reviewing"])),
-      oldest("business_applications", "created_at", (q) => q.in("status", ["pending", "reviewing"])),
+      oldest("business_applications", "created_at", (q) =>
+        q.in("status", ["pending", "reviewing"]),
+      ),
       head("venues", (q) => q.eq("moderation_status", "pending")),
       head("events", (q) => q.eq("moderation_status", "pending")),
       head("offers", (q) => q.eq("moderation_status", "pending")),
@@ -151,18 +194,37 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
       head("partner_subscriptions", (q) => q.eq("status", "active")),
       head("partner_subscriptions", (q) => q.eq("status", "grace")),
       head("partner_subscriptions", (q) => q.eq("status", "free_downgraded")),
-      sa.from("partner_invoices").select("total_minor, currency").eq("status", "paid").gte("issued_at", monthStart),
-      sa.from("partner_invoices").select("total_minor, currency, due_at").in("status", ["issued", "sent", "overdue"]),
+      sa
+        .from("partner_invoices")
+        .select("total_minor, currency")
+        .eq("status", "paid")
+        .gte("issued_at", monthStart),
+      sa
+        .from("partner_invoices")
+        .select("total_minor, currency, due_at")
+        .in("status", ["issued", "sent", "overdue"]),
       sa.from("feature_flags").select("key, enabled, updated_at"),
       sa.from("queue_claims").select("queue, claimed_by, expires_at").gt("expires_at", nowIso),
-      sa.from("admin_audit_log").select("id, action, target_table, actor_id, severity, created_at, metadata")
-        .in("severity", ["critical", "high"]).order("created_at", { ascending: false }).limit(10),
+      sa
+        .from("admin_audit_log")
+        .select("id, action, target_table, actor_id, severity, created_at, metadata")
+        .in("severity", ["critical", "high"])
+        .order("created_at", { ascending: false })
+        .limit(10),
       // Funnel (last 7d)
       head("profiles", (q) => q.gte("created_at", since7d)),
       head("profiles", (q) => q.gte("created_at", since7d).eq("age_status", "verified")),
       head("profiles", (q) => q.gte("created_at", since7d).not("birthdate", "is", null)),
-      sa.rpc("count_distinct_message_senders_since", { _since: since7d }).then((r: any) => r).catch(() => ({ data: null })),
-      sa.from("profiles").select("city").gte("created_at", since24h).not("city", "is", null).limit(1000),
+      sa
+        .rpc("count_distinct_message_senders_since", { _since: since7d })
+        .then((r: any) => r)
+        .catch(() => ({ data: null })),
+      sa
+        .from("profiles")
+        .select("city")
+        .gte("created_at", since24h)
+        .not("city", "is", null)
+        .limit(1000),
       head("risk_flags", (q) => q.gte("score", 70).gte("created_at", since7d)),
       head("risk_flags", (q) => q.eq("status", "pending")),
       head("profiles", (q) => q.not("partner_suspended_at", "is", null)),
@@ -180,12 +242,21 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
     const revenueMonth = currencyOf(invoicesPaidMonth.data);
     const outstandingRows: any[] = invoicesOutstanding.data ?? [];
     const outstanding = currencyOf(outstandingRows);
-    const overdueCount = outstandingRows.filter((r) => r.due_at && new Date(r.due_at).getTime() < now).length;
+    const overdueCount = outstandingRows.filter(
+      (r) => r.due_at && new Date(r.due_at).getTime() < now,
+    ).length;
 
     // Kill switches — flags critice care sunt OFF
     const CRITICAL_FLAGS = new Set([
-      "age_verification", "csam_hash_blocking", "ai_moderation", "push_notifications",
-      "signup", "chat", "discover", "matching", "proximity_notifications",
+      "age_verification",
+      "csam_hash_blocking",
+      "ai_moderation",
+      "push_notifications",
+      "signup",
+      "chat",
+      "discover",
+      "matching",
+      "proximity_notifications",
     ]);
     const flags = flagsAll.data ?? [];
     const killedCritical = flags.filter((f: any) => CRITICAL_FLAGS.has(f.key) && !f.enabled);
@@ -194,7 +265,9 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
     const claims = activeClaims.data ?? [];
     const onlineOperators = new Set(claims.map((c: any) => c.claimed_by)).size;
     const claimsByQueue: Record<string, number> = {};
-    claims.forEach((c: any) => { claimsByQueue[c.queue] = (claimsByQueue[c.queue] ?? 0) + 1; });
+    claims.forEach((c: any) => {
+      claimsByQueue[c.queue] = (claimsByQueue[c.queue] ?? 0) + 1;
+    });
 
     // Top orașe 24h signups
     const cityCounts: Record<string, number> = {};
@@ -204,7 +277,8 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
       cityCounts[c] = (cityCounts[c] ?? 0) + 1;
     });
     const topCities = Object.entries(cityCounts)
-      .sort((a, b) => b[1] - a[1]).slice(0, 5)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
       .map(([city, count]) => ({ city, count }));
 
     // SLA helpers
@@ -249,18 +323,94 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
         matches: trendMatches,
       },
       queues: [
-        { key: "reports", label: "Rapoarte users", pending: reportsPending.count ?? 0, oldestMin: ageMinutes(reportsOldest, "created_at"), route: "reports" },
-        { key: "appeals", label: "Apeluri DSA", pending: appealsPending.count ?? 0, oldestMin: ageMinutes(appealsOldest, "created_at"), route: "appeals" },
-        { key: "csam", label: "CSAM → NCMEC", pending: csamPending.count ?? 0, oldestMin: ageMinutes(csamOldest, "created_at"), route: "csam", sla: 24 * 60 },
-        { key: "support", label: "Support tickets", pending: supportOpen.count ?? 0, oldestMin: ageMinutes(supportOldest, "created_at"), urgent: supportUrgent.count ?? 0, route: "support" },
-        { key: "deletion", label: "Ștergere cont (GDPR)", pending: deletionPending.count ?? 0, oldestMin: ageMinutes(deletionOldest, "created_at"), route: "gdpr", sla: 30 * 24 * 60 },
-        { key: "business", label: "Aplicații business", pending: bizPending.count ?? 0, oldestMin: ageMinutes(bizOldest, "created_at"), route: "biz" },
-        { key: "partners_venues", label: "Venues pending", pending: venuesPending.count ?? 0, oldestMin: null, route: "partners" },
-        { key: "partners_events", label: "Events pending", pending: eventsPending.count ?? 0, oldestMin: null, route: "partners" },
-        { key: "partners_offers", label: "Oferte pending", pending: offersPending.count ?? 0, oldestMin: null, route: "partners" },
-        { key: "breach", label: "Breșe active", pending: breachOpen.count ?? 0, oldestMin: ageMinutes(breachOldest, "discovered_at"), route: "breach", sla: 72 * 60 },
-        { key: "risk", label: "Risc — cerere review", pending: riskQueue.count ?? 0, oldestMin: null, route: "riskqueue" },
-        { key: "dsa_recent", label: "DSA SoR (7 zile)", pending: dsaLast7d.count ?? 0, oldestMin: null, route: "dsa" },
+        {
+          key: "reports",
+          label: "Rapoarte users",
+          pending: reportsPending.count ?? 0,
+          oldestMin: ageMinutes(reportsOldest, "created_at"),
+          route: "reports",
+        },
+        {
+          key: "appeals",
+          label: "Apeluri DSA",
+          pending: appealsPending.count ?? 0,
+          oldestMin: ageMinutes(appealsOldest, "created_at"),
+          route: "appeals",
+        },
+        {
+          key: "csam",
+          label: "CSAM → NCMEC",
+          pending: csamPending.count ?? 0,
+          oldestMin: ageMinutes(csamOldest, "created_at"),
+          route: "csam",
+          sla: 24 * 60,
+        },
+        {
+          key: "support",
+          label: "Support tickets",
+          pending: supportOpen.count ?? 0,
+          oldestMin: ageMinutes(supportOldest, "created_at"),
+          urgent: supportUrgent.count ?? 0,
+          route: "support",
+        },
+        {
+          key: "deletion",
+          label: "Ștergere cont (GDPR)",
+          pending: deletionPending.count ?? 0,
+          oldestMin: ageMinutes(deletionOldest, "created_at"),
+          route: "gdpr",
+          sla: 30 * 24 * 60,
+        },
+        {
+          key: "business",
+          label: "Aplicații business",
+          pending: bizPending.count ?? 0,
+          oldestMin: ageMinutes(bizOldest, "created_at"),
+          route: "biz",
+        },
+        {
+          key: "partners_venues",
+          label: "Venues pending",
+          pending: venuesPending.count ?? 0,
+          oldestMin: null,
+          route: "partners",
+        },
+        {
+          key: "partners_events",
+          label: "Events pending",
+          pending: eventsPending.count ?? 0,
+          oldestMin: null,
+          route: "partners",
+        },
+        {
+          key: "partners_offers",
+          label: "Oferte pending",
+          pending: offersPending.count ?? 0,
+          oldestMin: null,
+          route: "partners",
+        },
+        {
+          key: "breach",
+          label: "Breșe active",
+          pending: breachOpen.count ?? 0,
+          oldestMin: ageMinutes(breachOldest, "discovered_at"),
+          route: "breach",
+          sla: 72 * 60,
+        },
+        {
+          key: "risk",
+          label: "Risc — cerere review",
+          pending: riskQueue.count ?? 0,
+          oldestMin: null,
+          route: "riskqueue",
+        },
+        {
+          key: "dsa_recent",
+          label: "DSA SoR (7 zile)",
+          pending: dsaLast7d.count ?? 0,
+          oldestMin: null,
+          route: "dsa",
+        },
       ],
       moderation: {
         reportsPending: reportsPending.count ?? 0,
@@ -291,8 +441,12 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
         totalActiveClaims: claims.length,
       },
       recentAudit: (recentAudit.data ?? []).map((r: any) => ({
-        id: r.id, action: r.action, targetTable: r.target_table,
-        actorId: r.actor_id, severity: r.severity, createdAt: r.created_at,
+        id: r.id,
+        action: r.action,
+        targetTable: r.target_table,
+        actorId: r.actor_id,
+        severity: r.severity,
+        createdAt: r.created_at,
       })),
       funnel: {
         signup7d: signup7d.count ?? 0,
@@ -314,17 +468,39 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
   });
 
 function buildAnomalies(x: {
-  deltaSignupsDay: number; deltaMessagesDay: number; sos24h: number;
-  csamPending: number; breachOpen: number; overdueCount: number; killedCritical: number;
+  deltaSignupsDay: number;
+  deltaMessagesDay: number;
+  sos24h: number;
+  csamPending: number;
+  breachOpen: number;
+  overdueCount: number;
+  killedCritical: number;
 }) {
   const out: { severity: "critical" | "warn" | "info"; text: string }[] = [];
-  if (x.killedCritical > 0) out.push({ severity: "critical", text: `${x.killedCritical} kill-switch(uri) critice sunt OFF` });
-  if (x.breachOpen > 0) out.push({ severity: "critical", text: `${x.breachOpen} breșă/breșe deschise (GDPR Art. 33 — 72h)` });
-  if (x.csamPending > 0) out.push({ severity: "critical", text: `${x.csamPending} raport(uri) CSAM în așteptare — SLA 24h NCMEC` });
-  if (x.sos24h > 0) out.push({ severity: "critical", text: `${x.sos24h} eveniment(e) SOS în ultimele 24h` });
-  if (x.deltaSignupsDay <= -40) out.push({ severity: "warn", text: `Signups −${Math.abs(x.deltaSignupsDay)}% D/D` });
-  else if (x.deltaSignupsDay >= 200) out.push({ severity: "warn", text: `Signups +${x.deltaSignupsDay}% D/D (posibil botnet)` });
-  if (x.deltaMessagesDay <= -40) out.push({ severity: "warn", text: `Mesaje −${Math.abs(x.deltaMessagesDay)}% D/D` });
-  if (x.overdueCount > 0) out.push({ severity: "warn", text: `${x.overdueCount} factură/facturi partener overdue` });
+  if (x.killedCritical > 0)
+    out.push({
+      severity: "critical",
+      text: `${x.killedCritical} kill-switch(uri) critice sunt OFF`,
+    });
+  if (x.breachOpen > 0)
+    out.push({
+      severity: "critical",
+      text: `${x.breachOpen} breșă/breșe deschise (GDPR Art. 33 — 72h)`,
+    });
+  if (x.csamPending > 0)
+    out.push({
+      severity: "critical",
+      text: `${x.csamPending} raport(uri) CSAM în așteptare — SLA 24h NCMEC`,
+    });
+  if (x.sos24h > 0)
+    out.push({ severity: "critical", text: `${x.sos24h} eveniment(e) SOS în ultimele 24h` });
+  if (x.deltaSignupsDay <= -40)
+    out.push({ severity: "warn", text: `Signups −${Math.abs(x.deltaSignupsDay)}% D/D` });
+  else if (x.deltaSignupsDay >= 200)
+    out.push({ severity: "warn", text: `Signups +${x.deltaSignupsDay}% D/D (posibil botnet)` });
+  if (x.deltaMessagesDay <= -40)
+    out.push({ severity: "warn", text: `Mesaje −${Math.abs(x.deltaMessagesDay)}% D/D` });
+  if (x.overdueCount > 0)
+    out.push({ severity: "warn", text: `${x.overdueCount} factură/facturi partener overdue` });
   return out;
 }

@@ -24,7 +24,11 @@ export const adminListMacros = createServerFn({ method: "GET" })
 
 const UpsertIn = z.object({
   id: z.string().uuid().nullable().optional(),
-  key: z.string().min(2).max(80).regex(/^[a-z0-9_]+$/i),
+  key: z
+    .string()
+    .min(2)
+    .max(80)
+    .regex(/^[a-z0-9_]+$/i),
   title: z.string().min(2).max(200),
   category: z.string().min(2).max(40),
   body: z.string().min(5).max(8000),
@@ -39,8 +43,12 @@ export const adminUpsertMacro = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
     const payload = {
-      key: data.key, title: data.title, category: data.category,
-      body: data.body, lang: data.lang, active: data.active,
+      key: data.key,
+      title: data.title,
+      category: data.category,
+      body: data.body,
+      lang: data.lang,
+      active: data.active,
       created_by: context.userId,
     };
     if (data.id) {
@@ -71,8 +79,11 @@ export const adminDeleteMacro = createServerFn({ method: "POST" })
     const { error } = await sa.from("support_macros").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     await sa.from("admin_audit_log").insert({
-      actor_id: context.userId, action: "macros.delete",
-      target_type: "support_macros", target_id: data.id, severity: "info",
+      actor_id: context.userId,
+      action: "macros.delete",
+      target_type: "support_macros",
+      target_id: data.id,
+      severity: "info",
     });
     return { ok: true };
   });
@@ -89,14 +100,20 @@ export const adminUseMacro = createServerFn({ method: "POST" })
 // USER-side: submit CSAT on own resolved ticket
 export const submitTicketCsat = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({
-    ticketId: z.string().uuid(),
-    score: z.number().int().min(1).max(5),
-    feedback: z.string().max(2000).optional(),
-  }).parse(d))
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        ticketId: z.string().uuid(),
+        score: z.number().int().min(1).max(5),
+        feedback: z.string().max(2000).optional(),
+      })
+      .parse(d),
+  )
   .handler(async ({ data, context }) => {
     const { error } = await (context.supabase as any).rpc("submit_ticket_csat", {
-      _ticket_id: data.ticketId, _score: data.score, _feedback: data.feedback ?? undefined,
+      _ticket_id: data.ticketId,
+      _score: data.score,
+      _feedback: data.feedback ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -110,7 +127,8 @@ export const adminCsatStats = createServerFn({ method: "GET" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
     const since = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString();
-    const { data, error } = await sa.from("support_tickets")
+    const { data, error } = await sa
+      .from("support_tickets")
       .select("csat_score")
       .gte("csat_submitted_at", since)
       .not("csat_score", "is", null);

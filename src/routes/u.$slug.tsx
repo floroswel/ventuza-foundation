@@ -7,7 +7,6 @@ import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { formatHeight } from "@/lib/discover";
 
-
 export const Route = createFileRoute("/u/$slug")({
   head: ({ params }) => ({
     meta: [
@@ -22,7 +21,8 @@ export const Route = createFileRoute("/u/$slug")({
 
 function age(iso?: string | null) {
   if (!iso) return null;
-  const d = new Date(iso); const n = new Date();
+  const d = new Date(iso);
+  const n = new Date();
   let a = n.getFullYear() - d.getFullYear();
   const m = n.getMonth() - d.getMonth();
   if (m < 0 || (m === 0 && n.getDate() < d.getDate())) a--;
@@ -50,22 +50,27 @@ function PublicProfilePage() {
       if (paths.length) {
         const urls: string[] = [];
         for (const p of paths) {
-          const { data: s } = await supabase.storage.from("profile-photos").createSignedUrl(p, 3600);
+          const { data: s } = await supabase.storage
+            .from("profile-photos")
+            .createSignedUrl(p, 3600);
           if (s?.signedUrl) urls.push(s.signedUrl);
         }
         setSignedPhotos(urls);
       }
       if (data?.voice_prompt_path) {
-        const { data: s } = await supabase.storage.from("profile-media").createSignedUrl(data.voice_prompt_path, 3600);
+        const { data: s } = await supabase.storage
+          .from("profile-media")
+          .createSignedUrl(data.voice_prompt_path, 3600);
         if (s?.signedUrl) setSignedVoice(s.signedUrl);
       }
       if (data?.video_clip_path) {
-        const { data: s } = await supabase.storage.from("profile-media").createSignedUrl(data.video_clip_path, 3600);
+        const { data: s } = await supabase.storage
+          .from("profile-media")
+          .createSignedUrl(data.video_clip_path, 3600);
         if (s?.signedUrl) setSignedVideo(s.signedUrl);
       }
     })();
   }, [slug]);
-
 
   if (loading) {
     return (
@@ -79,8 +84,12 @@ function PublicProfilePage() {
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background px-6 text-center">
         <h1 className="text-xl font-medium">Profil indisponibil</h1>
-        <p className="text-sm text-muted-foreground">Link-ul nu mai este valid sau profilul a fost ascuns.</p>
-        <Link to="/" className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground">Acasă</Link>
+        <p className="text-sm text-muted-foreground">
+          Link-ul nu mai este valid sau profilul a fost ascuns.
+        </p>
+        <Link to="/" className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground">
+          Acasă
+        </Link>
       </main>
     );
   }
@@ -106,20 +115,23 @@ function PublicProfilePage() {
               <div className="relative px-6 pb-6 pt-8">
                 <h1 className="wordmark text-4xl text-white">
                   {profile.display_name}
-                  {age(profile.birthdate) && <span className="ml-2 text-white/80">{age(profile.birthdate)}</span>}
+                  {age(profile.birthdate) && (
+                    <span className="ml-2 text-white/80">{age(profile.birthdate)}</span>
+                  )}
                 </h1>
                 {profile.verified_at && (
                   <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur">
                     <BadgeCheck className="size-3" /> Verified
                   </span>
                 )}
-                <div className="mt-3"><ProfileBadgesRow profile={profile} /></div>
+                <div className="mt-3">
+                  <ProfileBadgesRow profile={profile} />
+                </div>
               </div>
             </>
           }
         />
       </section>
-
 
       <div className="space-y-6 px-6 pt-6">
         {signedVideo && (
@@ -134,7 +146,8 @@ function PublicProfilePage() {
         {signedVoice && (
           <div className="rounded-2xl border border-border bg-surface p-5">
             <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-              <Mic className="size-4 text-primary" /> {profile.voice_prompt_question || "Voice prompt"}
+              <Mic className="size-4 text-primary" />{" "}
+              {profile.voice_prompt_question || "Voice prompt"}
             </div>
             <audio controls src={signedVoice} className="w-full" />
           </div>
@@ -147,7 +160,16 @@ function PublicProfilePage() {
             </div>
             <p className="font-medium">{profile.anthem.title}</p>
             <p className="text-sm text-muted-foreground">{profile.anthem.artist}</p>
-            {profile.anthem.url && <a href={profile.anthem.url} target="_blank" rel="noreferrer" className="text-xs text-primary underline">Ascultă</a>}
+            {profile.anthem.url && (
+              <a
+                href={profile.anthem.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-xs text-primary underline"
+              >
+                Ascultă
+              </a>
+            )}
           </div>
         )}
 
@@ -162,8 +184,16 @@ function PublicProfilePage() {
 
         {profile.ask_me_about?.length > 0 && (
           <section>
-            <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">Ask me about</h2>
-            <div className="flex flex-wrap gap-2">{profile.ask_me_about.map((t: string) => <Chip key={t} active>💬 {t}</Chip>)}</div>
+            <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Ask me about
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {profile.ask_me_about.map((t: string) => (
+                <Chip key={t} active>
+                  💬 {t}
+                </Chip>
+              ))}
+            </div>
           </section>
         )}
 
@@ -176,15 +206,31 @@ function PublicProfilePage() {
 
         {profile.interests?.length > 0 && (
           <section>
-            <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">Interests</h2>
-            <div className="flex flex-wrap gap-2">{profile.interests.map((i: string) => <Chip key={i} active>{i}</Chip>)}</div>
+            <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Interests
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {profile.interests.map((i: string) => (
+                <Chip key={i} active>
+                  {i}
+                </Chip>
+              ))}
+            </div>
           </section>
         )}
 
         {profile.tribes?.length > 0 && (
           <section>
-            <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">Tribes</h2>
-            <div className="flex flex-wrap gap-2">{profile.tribes.map((t: string) => <Chip key={t} active>{t}</Chip>)}</div>
+            <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Tribes
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {profile.tribes.map((t: string) => (
+                <Chip key={t} active>
+                  {t}
+                </Chip>
+              ))}
+            </div>
           </section>
         )}
 
@@ -192,10 +238,30 @@ function PublicProfilePage() {
           <section>
             <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">Stats</h2>
             <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border bg-surface p-4 text-sm">
-              {formatHeight(profile.height_cm) && <div><p className="text-[10px] uppercase text-muted-foreground">Height</p><p>{formatHeight(profile.height_cm)}</p></div>}
-              {profile.body_type && <div><p className="text-[10px] uppercase text-muted-foreground">Body</p><p>{profile.body_type}</p></div>}
-              {profile.job_title && <div><p className="text-[10px] uppercase text-muted-foreground">Job</p><p>{profile.job_title}</p></div>}
-              {profile.zodiac && <div><p className="text-[10px] uppercase text-muted-foreground">Zodiac</p><p>{profile.zodiac}</p></div>}
+              {formatHeight(profile.height_cm) && (
+                <div>
+                  <p className="text-[10px] uppercase text-muted-foreground">Height</p>
+                  <p>{formatHeight(profile.height_cm)}</p>
+                </div>
+              )}
+              {profile.body_type && (
+                <div>
+                  <p className="text-[10px] uppercase text-muted-foreground">Body</p>
+                  <p>{profile.body_type}</p>
+                </div>
+              )}
+              {profile.job_title && (
+                <div>
+                  <p className="text-[10px] uppercase text-muted-foreground">Job</p>
+                  <p>{profile.job_title}</p>
+                </div>
+              )}
+              {profile.zodiac && (
+                <div>
+                  <p className="text-[10px] uppercase text-muted-foreground">Zodiac</p>
+                  <p>{profile.zodiac}</p>
+                </div>
+              )}
             </div>
           </section>
         )}
