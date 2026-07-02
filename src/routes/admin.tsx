@@ -188,6 +188,7 @@ function AdminDashboard() {
     { id: "policies",   label: "Politici",    icon: FileText,    group: "Compliance" },
     { id: "policyengine", label: "Policy Engine · reguli/shadow", icon: Scale, group: "Compliance", adminOnly: true, hint: "Rules-as-code, versionare, backtest, shadow mode" },
     { id: "audit",      label: "Audit",       icon: ScrollText,  group: "Compliance" },
+    { id: "legaldocs",  label: "Documente legale · CMS", icon: FileText, group: "Compliance", adminOnly: true, hint: "Editează live Termeni, Privacy, DSA etc." },
 
     // Business
     { id: "ads",      label: "Ads",            icon: Megaphone,   group: "Business" },
