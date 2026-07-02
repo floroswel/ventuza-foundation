@@ -182,6 +182,7 @@ function AdminDashboard() {
     { id: "breach",     label: "Breșe",       icon: AlertOctagon,group: "Compliance", adminOnly: true },
     { id: "legalp0",    label: "Legal P0 · NCMEC/DSA/Country", icon: ShieldAlert, group: "Compliance", adminOnly: true, hint: "CSAM+NCMEC, breach 72h, DSA SoR, country-risk, e-Factura" },
     { id: "policies",   label: "Politici",    icon: FileText,    group: "Compliance" },
+    { id: "policyengine", label: "Policy Engine · reguli/shadow", icon: Scale, group: "Compliance", adminOnly: true, hint: "Rules-as-code, versionare, backtest, shadow mode" },
     { id: "audit",      label: "Audit",       icon: ScrollText,  group: "Compliance" },
 
     // Business
