@@ -55,6 +55,11 @@ export const generateBio = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => BioInput.parse(d))
   .handler(async ({ data, context }) => {
     await requireAiConsent(context.supabase, context.userId);
+    void evalAiPolicy(context.supabase, context.userId, "generateBio", {
+      input_len: JSON.stringify(data).length,
+      interests_count: data.interests?.length ?? 0,
+      vibe: data.vibe,
+    });
     const sys =
       "Ești un copywriter pentru o app gay de dating (Ventuza). Scrii bio-uri scurte, autentice, fără clișee, fără emoji excesive, fără hashtag-uri. Max 280 caractere. Răspunzi DOAR cu bio-ul, fără ghilimele.";
     const facts = [
@@ -75,6 +80,7 @@ export const generateBio = createServerFn({ method: "POST" })
     });
     return { bio: text };
   });
+
 
 // ---------- Wingman / opener ----------
 const OpenerInput = z.object({
