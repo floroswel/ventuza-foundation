@@ -18,6 +18,7 @@ import { ClaimBadge } from "@/components/admin/queue/ClaimBadge";
 import { useQueueClaim } from "@/components/admin/queue/useQueueClaim";
 import { useKeyboardShortcuts, ShortcutsHint } from "@/components/admin/queue/useKeyboardShortcuts";
 import { pushAction } from "@/components/admin/queue/useActionJournal";
+import { reportSlaFailure } from "@/lib/admin-sla-telemetry";
 import { SavedViewsBar } from "@/components/admin/SavedViewsBar";
 import { useSavedViews } from "@/hooks/useSavedViews";
 import { useBulkSelection } from "@/hooks/useBulkSelection";
