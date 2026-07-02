@@ -41,7 +41,7 @@ export const policyUpsertRule = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => upsertSchema.parse(d))
   .handler(async ({ data, context }) => {
-    const { data: id, error } = await context.supabase.rpc("policy_upsert_rule", {
+    const { data: id, error } = await (context.supabase.rpc as any)("policy_upsert_rule", {
       p_code: data.code,
       p_category: data.category,
       p_title: data.title,
@@ -62,7 +62,7 @@ export const policySetState = createServerFn({ method: "POST" })
     note: z.string().max(500).optional(),
   }).parse(d))
   .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.rpc("policy_set_state", {
+    const { error } = await (context.supabase.rpc as any)("policy_set_state", {
       p_rule_id: data.ruleId,
       p_new_state: data.state,
       p_note: data.note ?? null,
