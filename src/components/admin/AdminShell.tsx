@@ -4,6 +4,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { CommandPaletteV2 } from "./CommandPaletteV2";
+import { UndoRedoToolbar } from "./queue/UndoRedoToolbar";
+import { useAdminUndoShortcuts } from "./queue/useActionJournal";
 
 
 export type NavItem = {
@@ -31,6 +33,7 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
   const [collapsed, setCollapsed] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [now, setNow] = useState(() => new Date());
+  useAdminUndoShortcuts();
 
   const [density, setDensity] = useState<"comfortable" | "compact">(() => {
     if (typeof window === "undefined") return "comfortable";
@@ -179,6 +182,7 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
               </button>
 
               <div className="ml-auto hidden items-center gap-2 lg:flex">
+                <UndoRedoToolbar />
                 <button
                   onClick={() => setDensity((d) => (d === "compact" ? "comfortable" : "compact"))}
                   title={density === "compact" ? "Treci la densitate confortabilă" : "Treci la densitate compactă"}
