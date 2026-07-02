@@ -97,6 +97,7 @@ function AuthPage() {
   const search = Route.useSearch();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const countryGate = useCountryGate();
   const [mode, setMode] = useState<"login" | "signup">(search.mode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
