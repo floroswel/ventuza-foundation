@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { adminGetOverview } from "@/lib/admin.functions";
-import { Activity, Database, Cpu, Globe, RefreshCw, ShieldCheck, Loader2 } from "lucide-react";
+import { Activity, AlertTriangle, Database, Cpu, Globe, RefreshCw, ShieldCheck, Loader2 } from "lucide-react";
 
 type Probe = { label: string; ok: boolean; detail: string; latency?: number };
 
@@ -10,9 +10,12 @@ export function SystemHealthPanel() {
   const [probes, setProbes] = useState<Probe[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
+  const [fatal, setFatal] = useState<string | null>(null);
 
   async function run() {
     setLoading(true);
+    setFatal(null);
+    try {
     const results: Probe[] = [];
 
     // 1. Backend RPC roundtrip
@@ -57,9 +60,13 @@ export function SystemHealthPanel() {
       detail: "geolocation" in navigator ? "disponibil" : "indisponibil",
     });
 
-    setProbes(results);
-    setLastCheck(new Date());
-    setLoading(false);
+      setProbes(results);
+      setLastCheck(new Date());
+    } catch (e: unknown) {
+      setFatal(e instanceof Error ? e.message : String(e));
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -91,6 +98,24 @@ export function SystemHealthPanel() {
           <RefreshCw className="size-3" /> Verifică
         </button>
       </div>
+
+      {fatal && (
+        <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm">
+          <div className="flex items-start gap-2">
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-400" />
+            <div className="flex-1">
+              <p className="font-semibold text-red-300">Eroare la rularea probelor</p>
+              <p className="mt-1 break-words text-xs text-red-200/90">{fatal}</p>
+              <button
+                onClick={run}
+                className="mt-2 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/10"
+              >
+                Reîncearcă
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {loading && probes.length === 0 ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">

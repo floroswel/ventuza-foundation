@@ -41,6 +41,11 @@ function ErrorBanner({ error, onRetry }: { error: string; onRetry?: () => void }
     <div className="rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm">
       <div className="font-semibold text-destructive">{denied ? "Acces refuzat" : "Eroare"}</div>
       <div className="mt-1 text-destructive/90">{error}</div>
+      {denied && (
+        <div className="mt-2 text-[11px] text-destructive/80">
+          Editarea documentelor legale necesită rol <code>super_admin</code>.
+        </div>
+      )}
       {onRetry && (
         <button
           onClick={onRetry}

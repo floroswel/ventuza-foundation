@@ -152,10 +152,18 @@ export function DemoSeedPanel({ isSuperAdmin }: { isSuperAdmin: boolean }) {
         <p className="mt-1 text-xs text-muted-foreground">
           Sumar curent: <code>{totals}</code>
         </p>
+        {inProd && (
+          <p className="mt-3 rounded-md border border-red-500/40 bg-red-500/10 p-2 text-[11px] text-red-300">
+            <AlertOctagon className="mr-1 inline size-3" />
+            <b>Producție:</b> „Populează conținut demo” este dezactivat. Folosește doar pe dev/preview.
+            „Șterge tot conținutul demo” rămâne activ pentru curățare urgentă.
+          </p>
+        )}
         <div className="mt-4 flex flex-wrap gap-2">
           <button
             onClick={onSeed}
-            disabled={busy !== null}
+            disabled={busy !== null || inProd}
+            title={inProd ? "Dezactivat în producție" : undefined}
             className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-xs font-medium text-primary-foreground disabled:opacity-50"
           >
             {busy === "seed" ? (
