@@ -328,7 +328,7 @@ function DiscoverPage() {
             for meeting people privately.
           </p>
         </div>
-        <BottomNav active="discover" />
+        <BottomNav />
       </main>
     );
   }
