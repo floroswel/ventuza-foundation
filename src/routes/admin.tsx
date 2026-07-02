@@ -260,6 +260,7 @@ function AdminDashboard() {
       {section === "killswitch" && isAdmin && <KillSwitchesPanel />}
       {section === "legalp0" && isAdmin && <LegalP0Panel />}
       {section === "policyengine" && isAdmin && <PolicyEnginePanel />}
+      {section === "legaldocs" && isAdmin && <LegalDocsAdminPanel />}
     </AdminShell>
   );
 }
