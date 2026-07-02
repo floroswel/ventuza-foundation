@@ -9,7 +9,6 @@ import {
   adminToggleAlertRule,
   adminSimulateAlertRule,
 } from "@/lib/admin-enterprise.functions";
-import { AdminPanelError } from "@/components/admin/PanelStatus";
 import { ReasonDialog } from "@/components/admin/ReasonDialog";
 
 type Rule = {
