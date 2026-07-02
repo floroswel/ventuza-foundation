@@ -26,6 +26,7 @@ import { EnablePushButton } from "@/components/EnablePushButton";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ReferralCard } from "@/components/ReferralCard";
 import { ConsentsCard } from "@/components/settings/ConsentsCard";
+import { ConsentsHistoryCard } from "@/components/settings/ConsentsHistoryCard";
 import { ProximityNotificationsCard } from "@/components/settings/ProximityNotificationsCard";
 
 export const Route = createFileRoute("/settings")({
