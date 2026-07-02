@@ -350,11 +350,23 @@ export function EnterpriseUsersPanel({ meId }: { meId: string }) {
       </GlassCard>
 
       {/* ---- STATES ---- */}
-      {error && <AdminPanelError error={error} onRetry={() => loadRows(filters)} />}
+      {error && (
+        <div className="flex items-start gap-2 rounded-2xl border border-red-500/40 bg-red-500/5 p-3 text-xs text-red-200">
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-red-400" />
+          <div className="flex-1">
+            <p className="font-semibold text-red-300">Eroare la încărcarea utilizatorilor</p>
+            <p className="mt-0.5 break-words">{error}</p>
+          </div>
+          <button onClick={() => loadRows(filters)} className="rounded-full border border-red-500/40 px-3 py-1 text-red-200 hover:bg-red-500/10">Reîncearcă</button>
+        </div>
+      )}
       {!error && loading && rows.length === 0 && <SkeletonTable rows={8} cols={7} />}
       {!error && !loading && rows.length === 0 && (
-        <AdminPanelEmpty label="Niciun utilizator pentru filtrele curente." />
+        <div className="rounded-2xl border border-[var(--admin-border)] bg-[var(--admin-surface)] p-8 text-center text-sm text-[var(--admin-text-dim)]">
+          Niciun utilizator pentru filtrele curente.
+        </div>
       )}
+
 
       {/* ---- TABLE ---- */}
       {!error && rows.length > 0 && (
