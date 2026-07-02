@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Loader2, RefreshCw, Send } from "lucide-react";
 import {
   adminListTickets, adminTicketStats, getTicketThread, replyToTicket, adminTicketAction,
+  adminBulkTicketAction,
 } from "@/lib/admin-support.functions";
 import { getSlaThresholds, listQueueClaims } from "@/lib/admin-queue.functions";
 import { GlassCard, Kpi, SectionTitle, StatusBadge } from "@/components/admin/ui/primitives";
@@ -14,6 +15,10 @@ import { useKeyboardShortcuts, ShortcutsHint } from "@/components/admin/queue/us
 import { pushAction } from "@/components/admin/queue/useActionJournal";
 import { SavedViewsBar } from "@/components/admin/SavedViewsBar";
 import { useSavedViews } from "@/hooks/useSavedViews";
+import { useBulkSelection } from "@/hooks/useBulkSelection";
+import { BulkActionBar } from "@/components/admin/ui/BulkActionBar";
+import { ReasonDialog } from "@/components/admin/ReasonDialog";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
 type SupportFilters = {
