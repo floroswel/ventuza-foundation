@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { adminGetOverview } from "@/lib/admin.functions";
-import { Activity, Database, Cpu, Globe, RefreshCw, ShieldCheck, Loader2 } from "lucide-react";
+import { Activity, AlertTriangle, Database, Cpu, Globe, RefreshCw, ShieldCheck, Loader2 } from "lucide-react";
 
 type Probe = { label: string; ok: boolean; detail: string; latency?: number };
 
@@ -10,9 +10,12 @@ export function SystemHealthPanel() {
   const [probes, setProbes] = useState<Probe[]>([]);
   const [loading, setLoading] = useState(true);
   const [lastCheck, setLastCheck] = useState<Date | null>(null);
+  const [fatal, setFatal] = useState<string | null>(null);
 
   async function run() {
     setLoading(true);
+    setFatal(null);
+    try {
     const results: Probe[] = [];
 
     // 1. Backend RPC roundtrip
