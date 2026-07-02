@@ -3,6 +3,8 @@ import {
   Crown, Search, Command as CmdIcon, Activity, Circle, ChevronLeft, Rows3, Rows4,
   type LucideIcon,
 } from "lucide-react";
+import { CommandPaletteV2 } from "./CommandPaletteV2";
+
 
 export type NavItem = {
   id: string;
@@ -232,51 +234,14 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
         </div>
       </div>
 
-      {/* Command palette */}
-      {paletteOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-start justify-center bg-background/70 px-4 pt-[12vh] backdrop-blur-md"
-          onClick={() => setPaletteOpen(false)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-xl overflow-hidden rounded-2xl border border-primary/30 bg-surface/95 shadow-[0_30px_120px_-20px_oklch(0.82_0.115_85/0.35)]"
-          >
-            <div className="flex items-center gap-2 border-b border-border/60 px-4 py-3">
-              <Search className="size-4 text-muted-foreground" />
-              <input
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder="Comandă… (ex: rapoarte, GDPR, parteneri)"
-                className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-              />
-              <kbd className="rounded-md border border-border/60 bg-background/60 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground">ESC</kbd>
-            </div>
-            <ul className="max-h-[50vh] overflow-y-auto p-2">
-              {filtered.length === 0 && (
-                <li className="px-3 py-6 text-center text-xs text-muted-foreground">Niciun rezultat.</li>
-              )}
-              {filtered.map((it) => (
-                <li key={it.id}>
-                  <button
-                    onClick={() => {
-                      onSelect(it.id);
-                      setPaletteOpen(false);
-                      setQuery("");
-                    }}
-                    className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm hover:bg-primary/10"
-                  >
-                    <it.icon className="size-4 text-primary" />
-                    <span className="flex-1 truncate">{it.label}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{it.group}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      )}
+      {/* Command palette v2 (entity + action + nav) */}
+      <CommandPaletteV2
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        items={visible}
+        onSelectNav={onSelect}
+      />
+
     </div>
   );
 }
