@@ -222,7 +222,7 @@ function AdminDashboard() {
       roleLabel={roleLabel}
       banner={<><AgeGateDevBanner /><DemoSeedBanner /></>}
     >
-      {section === "overview" && isAdmin && <OverviewPanel />}
+      {section === "overview" && isAdmin && <OverviewPanelRich onNavigate={(id) => setSection(id as Section)} />}
       {section === "alerts" && <AlertsPanel />}
       {section === "copilot" && <AiCopilotPanel />}
       {section === "users" && isAdmin && <UsersPanel meId={user!.id} />}
