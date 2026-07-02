@@ -227,6 +227,7 @@ function AdminDashboard() {
     >
       {section === "overview" && isAdmin && <OverviewPanelRich onNavigate={(id: string) => setSection(id as Section)} />}
       {section === "alerts" && <AlertsPanel />}
+      {section === "alertrules" && isAdmin && <AlertRulesPanel />}
       {section === "copilot" && <AiCopilotPanel />}
       {section === "users" && isAdmin && <UsersPanel meId={user!.id} />}
       {section === "reports" && <ReportsPanel meId={user!.id} />}
