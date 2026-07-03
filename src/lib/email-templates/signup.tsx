@@ -25,31 +25,29 @@ export const SignupEmail = ({
   recipient,
   confirmationUrl,
 }: SignupEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="ro" dir="ltr">
     <Head />
-    <Preview>Confirm your email for {siteName}</Preview>
+    <Preview>Confirmă adresa de email pentru {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm your email</Heading>
+        <Heading style={h1}>Confirmă adresa ta de email</Heading>
         <Text style={text}>
-          Thanks for signing up for{' '}
+          Bine ai venit pe{' '}
           <Link href={siteUrl} style={link}>
             <strong>{siteName}</strong>
           </Link>
-          !
-        </Text>
-        <Text style={text}>
-          Please confirm your email address (
+          . Pentru a-ți activa contul, confirmă adresa{' '}
           <Link href={`mailto:${recipient}`} style={link}>
             {recipient}
           </Link>
-          ) by clicking the button below:
+          .
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Verify Email
+          Confirmă emailul
         </Button>
         <Text style={footer}>
-          If you didn't create an account, you can safely ignore this email.
+          Dacă nu ai creat un cont pe Ventuza, poți ignora acest mesaj — nu se
+          va întâmpla nimic.
         </Text>
       </Container>
     </Body>
