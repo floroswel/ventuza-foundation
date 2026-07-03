@@ -57,7 +57,7 @@ function NearbyPage() {
   void auth;
 
   const [coords, setCoords] = useState<Coords | null>(null);
-  const [geoError, setGeoError] = useState<string | null>(null);
+  const [geoError, setGeoError] = useState<Error | null>(null);
   const [radiusM, setRadiusM] = useState<number>(2000);
   const [view, setView] = useState<"list" | "map">("list");
   const [kind, setKind] = useState<NearbyKind>("event");
