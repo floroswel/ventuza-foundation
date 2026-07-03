@@ -2337,6 +2337,68 @@ export type Database = {
           },
         ]
       }
+      partner_broadcasts: {
+        Row: {
+          body: string
+          city: string | null
+          created_at: string
+          deep_link: string | null
+          id: string
+          partner_id: string
+          plan_code: string | null
+          radius_m: number | null
+          recipients_delivered: number
+          recipients_targeted: number
+          sent_at: string | null
+          status: string
+          target_kind: string
+          title: string
+          venue_id: string | null
+        }
+        Insert: {
+          body: string
+          city?: string | null
+          created_at?: string
+          deep_link?: string | null
+          id?: string
+          partner_id: string
+          plan_code?: string | null
+          radius_m?: number | null
+          recipients_delivered?: number
+          recipients_targeted?: number
+          sent_at?: string | null
+          status?: string
+          target_kind: string
+          title: string
+          venue_id?: string | null
+        }
+        Update: {
+          body?: string
+          city?: string | null
+          created_at?: string
+          deep_link?: string | null
+          id?: string
+          partner_id?: string
+          plan_code?: string | null
+          radius_m?: number | null
+          recipients_delivered?: number
+          recipients_targeted?: number
+          sent_at?: string | null
+          status?: string
+          target_kind?: string
+          title?: string
+          venue_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_broadcasts_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_invoice_counters: {
         Row: {
           next_number: number
@@ -2961,6 +3023,7 @@ export type Database = {
           notification_prefs: Json
           onboarding_completed: boolean
           orientation: string[] | null
+          partner_announcements_enabled: boolean
           partner_suspended_at: string | null
           partner_suspension_reason: string | null
           pets: string[] | null
@@ -3084,6 +3147,7 @@ export type Database = {
           notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
+          partner_announcements_enabled?: boolean
           partner_suspended_at?: string | null
           partner_suspension_reason?: string | null
           pets?: string[] | null
@@ -3207,6 +3271,7 @@ export type Database = {
           notification_prefs?: Json
           onboarding_completed?: boolean
           orientation?: string[] | null
+          partner_announcements_enabled?: boolean
           partner_suspended_at?: string | null
           partner_suspension_reason?: string | null
           pets?: string[] | null
@@ -5345,6 +5410,7 @@ export type Database = {
         Args: { _owner_id: string }
         Returns: Json
       }
+      partner_broadcast_quota_status: { Args: never; Returns: Json }
       partner_can_send_notification: {
         Args: { p_partner_id: string }
         Returns: boolean
@@ -5360,6 +5426,35 @@ export type Database = {
         Returns: string
       }
       partner_get_quota_usage: { Args: { p_user: string }; Returns: Json }
+      partner_list_my_broadcasts: {
+        Args: { _limit?: number }
+        Returns: {
+          body: string
+          city: string
+          created_at: string
+          id: string
+          radius_m: number
+          recipients_delivered: number
+          recipients_targeted: number
+          sent_at: string
+          status: string
+          target_kind: string
+          title: string
+          venue_id: string
+        }[]
+      }
+      partner_send_broadcast: {
+        Args: {
+          p_body: string
+          p_city?: string
+          p_deep_link?: string
+          p_radius_m?: number
+          p_target_kind: string
+          p_title: string
+          p_venue_id?: string
+        }
+        Returns: Json
+      }
       policy_evaluate: {
         Args: {
           _category: string
@@ -6183,6 +6278,7 @@ export type Database = {
         | "event_reminder"
         | "tap"
         | "admin_message"
+        | "partner_broadcast"
       policy_rule_state: "draft" | "shadow" | "enforcing" | "archived"
       rsvp_status: "going" | "interested"
     }
@@ -6363,6 +6459,7 @@ export const Constants = {
         "event_reminder",
         "tap",
         "admin_message",
+        "partner_broadcast",
       ],
       policy_rule_state: ["draft", "shadow", "enforcing", "archived"],
       rsvp_status: ["going", "interested"],
