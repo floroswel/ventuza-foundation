@@ -120,13 +120,27 @@ function NearbyPage() {
       .map((p) => p.id);
     if (venueIds.length === 0) {
       setVenueBadges({});
+      setVenueBadgesLoading(false);
+      setVenueBadgesError(false);
       return;
     }
+    setVenueBadgesLoading(true);
+    setVenueBadgesError(false);
+    let cancelled = false;
     void fetchVenueBadges(venueIds)
-      .then((map) => setVenueBadges(map))
+      .then((map) => {
+        if (cancelled) return;
+        setVenueBadges((prev) => ({ ...prev, ...map }));
+      })
       .catch(() => {
-        /* non-fatal */
+        if (!cancelled) setVenueBadgesError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setVenueBadgesLoading(false);
       });
+    return () => {
+      cancelled = true;
+    };
   }, [data, fetchVenueBadges]);
 
   const errorKind = useMemo<"permission" | "network" | null>(() => {
