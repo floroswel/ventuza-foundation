@@ -182,15 +182,21 @@ function DiscoverPage() {
       // userului (nu rescriem `filters`) — doar arătăm rezultate marcate
       // "raza extinsă". Userul rămâne în control.
       if (data.length === 0) {
-        const ladder = [25, 50, 200, 5000];
+        // O singură treaptă de fallback ca să economisim quota (10 apeluri/h server-side).
         const current = debouncedFilters.maxDistanceKm ?? 25;
-        for (const km of ladder) {
-          if (km <= current) continue;
-          const alt = await fetchDiscover({ ...debouncedFilters, maxDistanceKm: km }, "distance");
-          if (alt.length > 0) {
-            data = alt;
-            setAutoExpanded(km);
-            break;
+        const fallbackKm = current < 5000 ? 5000 : null;
+        if (fallbackKm) {
+          try {
+            const alt = await fetchDiscover(
+              { ...debouncedFilters, maxDistanceKm: fallbackKm },
+              "distance",
+            );
+            if (alt.length > 0) {
+              data = alt;
+              setAutoExpanded(fallbackKm);
+            }
+          } catch {
+            // ignorăm erori pe fallback — arătăm empty state, nu blocăm ecranul
           }
         }
       }
