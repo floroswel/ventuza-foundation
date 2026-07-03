@@ -30,7 +30,10 @@ export type BadgeDef = {
   colorClass: string;
   priority: number;
   criteria: string;
+  /** Când/în ce condiții expiră badge-ul. `null` = permanent. */
+  expiry: string | null;
 };
+
 
 export const BADGES: Record<BadgeCode, BadgeDef> = {
   verified: {
