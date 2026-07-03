@@ -210,7 +210,7 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
 
     return (
       <Dialog open={open} onOpenChange={onClose}>
-        <DialogContent className="max-w-xl">
+        <DialogContent className="w-[calc(100vw-1rem)] sm:w-full sm:max-w-xl max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Postare nouă — pas 1 din 5</DialogTitle>
             <DialogDescription>Ce vrei să postezi?</DialogDescription>
