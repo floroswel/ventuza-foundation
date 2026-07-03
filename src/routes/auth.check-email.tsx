@@ -19,13 +19,21 @@ export const Route = createFileRoute("/auth/check-email")({
 });
 
 function CheckEmailPage() {
-  const { email } = Route.useSearch();
+  const search = Route.useSearch();
+  const [email, setEmail] = useState<string | undefined>(search.email);
   const [cooldown, setCooldown] = useState(60);
   const [resending, setResending] = useState(false);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaNonce, setCaptchaNonce] = useState(0);
   const [resendError, setResendError] = useState<FriendlyAuthError | null>(null);
   const captchaRequired = isTurnstileConfigured();
+
+  useEffect(() => {
+    if (email) return;
+    supabase.auth.getUser().then(({ data }) => {
+      if (data.user?.email) setEmail(data.user.email);
+    });
+  }, [email]);
 
   useEffect(() => {
     if (cooldown <= 0) return;
