@@ -372,7 +372,7 @@ Legendă severitate: 🔴 blocker enterprise · 🟠 gap serios · 🟡 polish �
 6. 🔴 **Chaos / GameDay scheduler** (test-uri programate de failover).
 7. 🔴 **Fraud rings dashboard** (grafuri de conturi legate).
 8. 🔴 **Content policy versioning** (community guidelines cu diff public).
-9. 🔴 **Age assurance dashboard** (Didit conversion, failure reasons, cost/verificare).
+9. 🔴 **Age assurance dashboard** (conversion internă, failure reasons, throughput moderatori).
 10. 🟠 **Payment reconciliation** (bancă vs partner_invoices vs subscriptions).
 11. 🟠 **Legal hold** (freeze date la un user pt litigiu — nu se șterg).
 12. 🟠 **Regulator inbox** (ANSPDCP, ANCOM, EC Digital Services queries tracker).
