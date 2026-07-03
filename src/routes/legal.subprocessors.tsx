@@ -221,8 +221,8 @@ function SubsPage() {
         <h2 className="mt-8 text-base font-semibold">Minimizarea datelor</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
           <li>
-            <strong>Didit</strong> primește doar selfie + ID intern pentru age check — niciodată
-            orientare, date de sănătate sau locație.
+            <strong>Verificare identitate</strong> se face 100% intern (liveness + moderator uman)
+            fără procesator extern KYC — nu partajăm selfie-uri sau documente cu terți.
           </li>
           <li>
             <strong>RevenueCat</strong> și <strong>Google Play Billing</strong> primesc doar
