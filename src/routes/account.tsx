@@ -217,12 +217,42 @@ function AccountPage() {
           <MenuRow to="/favorites" icon={<Album className="size-5" />} label="Albume & favorite" />
           <MenuRow to="/safety" icon={<ShieldCheck className="size-5" />} label="Siguranță" />
           <MenuRow to="/quests" icon={<Flame className="size-5" />} label="Quests & recompense" />
-          <MenuRow
-            href="mailto:support@ventuza.eu"
-            icon={<HelpCircle className="size-5" />}
-            label="Contact suport"
-          />
+          <MenuRow to="/discover" icon={<Users className="size-5" />} label="Vezi profile demo" />
         </section>
+
+        {/* Support — direct chat OR email */}
+        <section className="rounded-2xl border border-border/50 bg-surface/40 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="grid size-9 place-items-center rounded-full bg-primary/15 text-primary">
+              <HelpCircle className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold">Contact suport</p>
+              <p className="text-[11px] text-muted-foreground">
+                Răspundem în 24h lucrătoare. Alege canalul preferat.
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <a
+              href="https://wa.me/40712345678?text=Salut%20Ventuza%2C%20am%20nevoie%20de%20ajutor%20cu%3A%20"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium hover:bg-surface"
+            >
+              <MessageCircle className="size-4 text-emerald-500" />
+              Chat direct
+            </a>
+            <a
+              href={`mailto:support@ventuza.eu?subject=${encodeURIComponent("Suport Ventuza")}&body=${encodeURIComponent(`\n\n---\nUser: ${user.email ?? ""}\nID: ${user.id}`)}`}
+              className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium hover:bg-surface"
+            >
+              <Mail className="size-4 text-rose-500" />
+              Email
+            </a>
+          </div>
+        </section>
+
 
         <p className="pb-4 text-center text-[11px] text-muted-foreground">Ventuza · {user.email}</p>
       </div>
