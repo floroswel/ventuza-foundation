@@ -771,6 +771,37 @@ function PasswordResetDialog({ userId, onDone }: { userId: string; onDone: () =>
   );
 }
 
+function ResendConfirmationDialog({ userId, onDone }: { userId: string; onDone: () => void }) {
+  const fn = useServerFn(adminResendConfirmationEmail);
+  const m = useMutation({
+    mutationFn: (j: string) => fn({ data: { userId, justification: j } }),
+    onSuccess: (r) => {
+      toast.success(`Email de confirmare retrimis către ${r?.email ?? "user"}.`);
+    },
+    onError: (e) => {
+      toast.error(String((e as Error)?.message ?? e));
+    },
+  });
+  return (
+    <ReasonDialog
+      trigger={
+        <Button variant="outline" size="sm">
+          <Mail className="h-4 w-4 mr-1" /> Retrimite confirmare email
+        </Button>
+      }
+      title="Retrimite emailul de confirmare"
+      description="Userul primește din nou emailul de confirmare a contului. Funcționează doar dacă emailul nu este deja confirmat."
+      confirmLabel="Trimite"
+      minLen={5}
+      onConfirm={async (j) => {
+        await m.mutateAsync(j);
+        onDone();
+      }}
+    />
+  );
+}
+
+
 function ManualAgeVerifyDialog({
   userId,
   verified,
