@@ -20,7 +20,8 @@ export type ConsentKind =
   | "ai_features"
   | "push_notifications"
   | "background_location"
-  | "marketing";
+  | "marketing"
+  | "partner_announcements";
 
 export interface ConsentMeta {
   kind: ConsentKind;
