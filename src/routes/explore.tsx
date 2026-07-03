@@ -190,11 +190,11 @@ function VenturePanel({
   );
 }
 
-function CityCard({ city, onOpen }: { city: ExploreCity; onOpen: () => void }) {
+function CityCard({ city, onOpen }: { city: ExploreCity; onOpen: (city?: string) => void }) {
   const hue = hashHue(city.city);
   return (
     <button
-      onClick={onOpen}
+      onClick={() => onOpen(city.city)}
       className="group relative block h-56 w-full overflow-hidden rounded-2xl border border-border/50 text-left"
     >
       {city.cover_url ? (
