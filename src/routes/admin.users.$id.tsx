@@ -443,6 +443,7 @@ function ActionsBar({
       <PushUnicastDialog userId={userId} onDone={onSuccess} />
       <ForceLogoutDialog userId={userId} onDone={onSuccess} />
       <PasswordResetDialog userId={userId} onDone={onSuccess} />
+      <ResendConfirmationDialog userId={userId} onDone={onSuccess} />
       <ManualAgeVerifyDialog userId={userId} verified={profile.verified} onDone={onSuccess} />
       {profile.banned_at ? (
         <UnbanDialog userId={userId} onDone={onSuccess} />
