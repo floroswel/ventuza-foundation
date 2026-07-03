@@ -6,18 +6,16 @@ import {
   Container,
   Head,
   Heading,
+  Hr,
   Html,
   Link,
   Preview,
+  Section,
   Text,
 } from '@react-email/components'
 
 interface EmailChangeEmailProps {
   siteName: string
-  // oldEmail is the user's current address (HookData.OldEmail). For the
-  // NEW-recipient half of a secure email_change fanout, `email` equals the
-  // recipient (NEW), so the "from" line must render oldEmail to read
-  // "from OLD to NEW" instead of "from NEW to NEW".
   oldEmail: string
   email: string
   newEmail: string
@@ -30,33 +28,36 @@ export const EmailChangeEmail = ({
   newEmail,
   confirmationUrl,
 }: EmailChangeEmailProps) => (
-  <Html lang="en" dir="ltr">
+  <Html lang="ro" dir="ltr">
     <Head />
-    <Preview>Confirm your email change for {siteName}</Preview>
+    <Preview>Confirmă schimbarea adresei de email pentru {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirm your email change</Heading>
+        <Section style={header}>
+          <Heading style={brand}>{siteName}</Heading>
+          <Text style={tagline}>Dating, elevated.</Text>
+        </Section>
+        <Hr style={hr} />
+        <Heading style={h1}>Confirmă adresa nouă de email</Heading>
         <Text style={text}>
-          You requested to change your email address for {siteName} from{' '}
-          <Link href={`mailto:${oldEmail}`} style={link}>
-            {oldEmail}
-          </Link>{' '}
-          to{' '}
-          <Link href={`mailto:${newEmail}`} style={link}>
-            {newEmail}
-          </Link>
-          .
+          Ai cerut schimbarea adresei de email a contului {siteName} de la{' '}
+          <Link href={`mailto:${oldEmail}`} style={linkPlain}>{oldEmail}</Link>{' '}
+          la{' '}
+          <Link href={`mailto:${newEmail}`} style={linkPlain}>{newEmail}</Link>.
         </Text>
-        <Text style={text}>
-          Click the button below to confirm this change:
+        <Section style={buttonWrap}>
+          <Button style={button} href={confirmationUrl}>Confirmă schimbarea</Button>
+        </Section>
+        <Text style={smallText}>
+          Sau copiază acest link:<br />
+          <Link href={confirmationUrl} style={linkPlain}>{confirmationUrl}</Link>
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Confirm Email Change
-        </Button>
+        <Hr style={hr} />
         <Text style={footer}>
-          If you didn't request this change, please secure your account
-          immediately.
+          Dacă nu tu ai cerut această schimbare, securizează-ți contul imediat
+          din setări.
         </Text>
+        <Text style={footerBrand}>{siteName} · Bucharest, RO</Text>
       </Container>
     </Body>
   </Html>
@@ -64,27 +65,17 @@ export const EmailChangeEmail = ({
 
 export default EmailChangeEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const link = { color: 'inherit', textDecoration: 'underline' }
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif", margin: 0, padding: 0 }
+const container = { padding: '40px 32px', maxWidth: '560px', margin: '0 auto' }
+const header = { textAlign: 'center' as const, padding: '0 0 16px' }
+const brand = { fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '34px', fontWeight: 500 as const, color: '#0E0D0B', letterSpacing: '0.08em', margin: 0 }
+const tagline = { fontSize: '11px', color: '#8a7d6b', letterSpacing: '0.24em', textTransform: 'uppercase' as const, margin: '6px 0 0' }
+const hr = { borderColor: '#e8e2d6', margin: '24px 0' }
+const h1 = { fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '28px', fontWeight: 500 as const, color: '#0E0D0B', margin: '0 0 16px', lineHeight: '1.2' }
+const text = { fontSize: '15px', color: '#2a2a2a', lineHeight: '1.65', margin: '0 0 20px' }
+const smallText = { fontSize: '12px', color: '#8a8578', lineHeight: '1.6', margin: '20px 0 0', wordBreak: 'break-all' as const }
+const buttonWrap = { textAlign: 'center' as const, margin: '8px 0 20px' }
+const button = { backgroundColor: '#0E0D0B', color: '#ffffff', fontSize: '15px', fontWeight: 500 as const, borderRadius: '999px', padding: '14px 36px', textDecoration: 'none', display: 'inline-block', letterSpacing: '0.02em' }
+const linkPlain = { color: '#8a7d6b', textDecoration: 'underline', wordBreak: 'break-all' as const }
+const footer = { fontSize: '12px', color: '#8a8578', margin: '0 0 12px', lineHeight: '1.6' }
+const footerBrand = { fontSize: '11px', color: '#8a8578', textAlign: 'center' as const, margin: '20px 0 0', letterSpacing: '0.08em' }
