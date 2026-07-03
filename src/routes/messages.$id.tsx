@@ -165,6 +165,27 @@ function ThreadPage() {
     }
   }
 
+  function quickLike(m: MessageRow) {
+    if (m.deleted_at) return;
+    setHeartPulseFor(m.id);
+    window.setTimeout(() => {
+      setHeartPulseFor((cur) => (cur === m.id ? null : cur));
+    }, 700);
+    void handleReact(m.id, "❤️");
+  }
+
+  function handleBubbleTap(m: MessageRow) {
+    // Double-tap detection pentru mobile (onDoubleClick nu se declanșează pe touch).
+    const now = Date.now();
+    const last = lastTapRef.current;
+    if (last && last.id === m.id && now - last.ts < 300) {
+      lastTapRef.current = null;
+      quickLike(m);
+    } else {
+      lastTapRef.current = { id: m.id, ts: now };
+    }
+  }
+
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
