@@ -365,7 +365,7 @@ Legendă severitate: 🔴 blocker enterprise · 🟠 gap serios · 🟡 polish �
 ## Ce lipsește COMPLET (nu există niciun tab)
 
 1. 🔴 **Trust Center public** (uptime, incidente, DPA download self-serve).
-2. 🔴 **Vendor risk register** (Didit, AI, push, hosting — SOC2, ISO, DPA status).
+2. 🔴 **Vendor risk register** (AI, push, hosting — SOC2, ISO, DPA status).
 3. 🔴 **Data retention dashboard** (câte rânduri > politica, auto-purge status).
 4. 🔴 **Backup & restore drill** (last successful restore test, RPO/RTO).
 5. 🔴 **Runbooks in-app** (playbook per tip incident, linkat la kill switches).
