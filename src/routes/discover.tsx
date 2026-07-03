@@ -156,7 +156,8 @@ function DiscoverPage() {
       if (!r.ok)
         toast.message("Locație indisponibilă", {
           id: "loc-unavailable",
-          description: "Îți arătăm rezultate pe baza filtrelor tale.",
+          description: r.error ?? "Îți arătăm rezultate pe baza filtrelor tale.",
+          duration: 6000,
         });
     });
   }, [user, locStatus]);
@@ -181,15 +182,21 @@ function DiscoverPage() {
       // userului (nu rescriem `filters`) — doar arătăm rezultate marcate
       // "raza extinsă". Userul rămâne în control.
       if (data.length === 0) {
-        const ladder = [25, 50, 200, 5000];
+        // O singură treaptă de fallback ca să economisim quota (10 apeluri/h server-side).
         const current = debouncedFilters.maxDistanceKm ?? 25;
-        for (const km of ladder) {
-          if (km <= current) continue;
-          const alt = await fetchDiscover({ ...debouncedFilters, maxDistanceKm: km }, "distance");
-          if (alt.length > 0) {
-            data = alt;
-            setAutoExpanded(km);
-            break;
+        const fallbackKm = current < 5000 ? 5000 : null;
+        if (fallbackKm) {
+          try {
+            const alt = await fetchDiscover(
+              { ...debouncedFilters, maxDistanceKm: fallbackKm },
+              "distance",
+            );
+            if (alt.length > 0) {
+              data = alt;
+              setAutoExpanded(fallbackKm);
+            }
+          } catch {
+            // ignorăm erori pe fallback — arătăm empty state, nu blocăm ecranul
           }
         }
       }
@@ -241,29 +248,42 @@ function DiscoverPage() {
   }, [user]);
 
   // Realtime location/discover refresh: profile location changes reorder nearby people.
+  // Rate-limited server-side (10 calls/hour). Așa că:
+  // - NU mai facem setInterval periodic (spamma quota și genera "discover_rate_limited").
+  // - Facem refresh DOAR pe evenimente realtime, debounced la max 1 apel / 60s.
   useEffect(() => {
     if (!user) return;
-    // Dacă avem o eroare terminală (email neconfirmat, vârstă neverificată, sesiune expirată),
-    // nu mai facem refresh — altfel se acumulează toast-uri și cereri inutile la DB.
     const terminal =
       loadError?.code === "email_not_confirmed" ||
       loadError?.code === "age_verification_required" ||
-      loadError?.code === "not_authenticated";
+      loadError?.code === "not_authenticated" ||
+      loadError?.code === "discover_rate_limited";
     if (terminal) return;
-    const refresh = () => {
-      void load();
+
+    let lastRefresh = Date.now();
+    let pending: ReturnType<typeof setTimeout> | null = null;
+    const REFRESH_MIN_INTERVAL = 60_000;
+    const scheduleRefresh = () => {
+      const elapsed = Date.now() - lastRefresh;
+      const wait = Math.max(0, REFRESH_MIN_INTERVAL - elapsed);
+      if (pending) return;
+      pending = setTimeout(() => {
+        pending = null;
+        lastRefresh = Date.now();
+        void load();
+      }, wait);
     };
+
     const ch = supabase
       .channel(`discover-profiles:${user.id}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "profile_live_events" },
-        refresh,
+        scheduleRefresh,
       )
       .subscribe();
-    const t = setInterval(refresh, 20_000);
     return () => {
-      clearInterval(t);
+      if (pending) clearTimeout(pending);
       supabase.removeChannel(ch);
     };
   }, [user, load, loadError?.code]);
