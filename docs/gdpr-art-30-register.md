@@ -341,14 +341,14 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 
 Identificate la generarea acestui registru, din analiza schemei reale:
 
-1. **🟧 A4 — selfie Didit ca date biometrice**: temeiul 9(2)(a) este înregistrat la onboarding global (`terms`/`privacy`) dar **nu** există un consent_log dedicat `age_verification` separat de termenii generali. **Acțiune:** adaugă în onboarding (`src/routes/n.tsx`) un consent explicit `kind='age_verification'` înainte de redirect către Didit.
+1. **✅ A4 — selfie ca date biometrice**: procesat 100% intern (bucket privat + moderator uman), fără Didit sau alt procesator KYC. Consent explicit `kind='internal_verification'` înregistrat în `consent_log` înainte de captura selfie-urilor. Retenție 30 zile.
 2. **🟧 A17 — AI Gateway**: bio assist trimite text liber la model US potențial; lipsește un disclosure explicit + checkbox de consimțământ în UI-ul de bio assist. **Acțiune:** adaugă tooltip + consent la prima utilizare per user; loghează în `consent_log` kind `ai_features`.
 3. **🟧 A6 — push consent dual**: consimțământul de push este browser-level (Notification API) + opt-in app-level. Lipsește înregistrare în `consent_log` (kind `push_notifications`). **Acțiune:** loghează în `consent_log` la activare/dezactivare.
 4. **🟥 DPIA obligatoriu (Art. 35)**: combinația orientare + locație + monitorizare sistematică + risc minori impune DPIA formal. **Acțiune:** redactare DPIA + anexare la registru înainte de lansare comercială publică.
 5. **🟧 TIA (Transfer Impact Assessment)** post-Schrems II pentru toți procesatorii US (P2, P3, P4, P5, P7, P8). **Acțiune:** redactare TIA și anexare.
 6. **✅ Eliminare completă procesare HIV**: coloanele `hiv_status_enc` / `hiv_test_date_enc` au fost dropate din `profiles`, funcțiile `get_user_health` / `set_user_health` și triggerele `enforce_health_consent` / `cascade_health_consent_withdrawal` au fost șterse. Kind-ul `health_data` a fost scos din `consent_kinds`. Zero date HIV mai există în bază.
 7. **🟧 DPO desemnat oficial** (Art. 37) — neînregistrat. **Acțiune:** numire formală + notificare ANSPDCP.
-8. **🟧 DPA Didit + RevenueCat + Lovable**: semnate manual din dashboard — confirmă starea fiecăruia și anexează copii.
+8. **🟧 DPA RevenueCat + Lovable**: semnate manual din dashboard — confirmă starea fiecăruia și anexează copii.
 
 ---
 
