@@ -6,7 +6,7 @@ export const Route = createFileRoute("/legal/badges")({
   component: BadgesCatalog,
 });
 
-function BadgesCatalog() {
+export function BadgesCatalog() {
   const all = sortBadges(Object.keys(BADGES));
   const users = all.filter((b) => b.target === "user");
   const venues = all.filter((b) => b.target !== "user");
