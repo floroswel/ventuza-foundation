@@ -365,12 +365,15 @@ function StepView({
   data,
   setData,
   user,
+  birthdateLocked,
 }: {
   step: (typeof STEPS)[number];
   data: Data;
   setData: (d: Data) => void;
   user?: string;
+  birthdateLocked?: boolean;
 }) {
+
   switch (step) {
     case "basics":
       return (
