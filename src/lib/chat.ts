@@ -39,7 +39,9 @@ export type ConversationListItem = {
   last_message_at: string;
   unread: boolean;
   unread_count: number;
+  other_online: boolean;
 };
+
 
 async function signPhoto(path: string | null): Promise<string | null> {
   if (!path) return null;
