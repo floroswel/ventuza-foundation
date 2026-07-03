@@ -612,8 +612,10 @@ function DiscoverPage() {
       />
       <ProfileSheet
         profile={selected}
+        allProfiles={visible}
         currentUserId={user?.id ?? null}
         onClose={() => setSelected(null)}
+        onNavigate={(p) => setSelected(p)}
         onDecision={handleDecision}
         onMessage={async (p) => {
           try {
