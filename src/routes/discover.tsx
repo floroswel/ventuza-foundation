@@ -188,6 +188,20 @@ function DiscoverPage() {
         }
       }
       setProfiles(data);
+      // Fetch server-side badges for the loaded profiles (fire-and-forget).
+      if (data.length > 0) {
+        void getUserBadgesBatchFn({ data: { userIds: data.map((d) => d.id) } })
+          .then(({ rows }) => {
+            const next: Record<string, string[]> = {};
+            for (const r of rows) next[r.user_id] = r.badges ?? [];
+            setBadgesMap(next);
+          })
+          .catch(() => {
+            /* non-fatal */
+          });
+      } else {
+        setBadgesMap({});
+      }
     } catch (e) {
       const message = e instanceof Error ? e.message : "Couldn't load discover";
       const code = (e as { code?: string } | null)?.code;
