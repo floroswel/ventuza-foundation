@@ -1,68 +1,51 @@
 import * as React from 'react'
+import { Body, Button, Container, Head, Heading, Hr, Html, Link, Preview, Section, Text } from '@react-email/components'
+import { getEmailStrings, type EmailLocale } from './i18n'
 
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
-
-interface EmailChangeEmailProps {
+interface Props {
   siteName: string
   oldEmail: string
   email: string
   newEmail: string
   confirmationUrl: string
+  locale?: EmailLocale
 }
 
-export const EmailChangeEmail = ({
-  siteName,
-  oldEmail,
-  newEmail,
-  confirmationUrl,
-}: EmailChangeEmailProps) => (
-  <Html lang="ro" dir="ltr">
-    <Head />
-    <Preview>Confirmă schimbarea adresei de email pentru {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={header}>
-          <Heading style={brand}>{siteName}</Heading>
-          <Text style={tagline}>Dating, elevated.</Text>
-        </Section>
-        <Hr style={hr} />
-        <Heading style={h1}>Confirmă adresa nouă de email</Heading>
-        <Text style={text}>
-          Ai cerut schimbarea adresei de email a contului {siteName} de la{' '}
-          <Link href={`mailto:${oldEmail}`} style={linkPlain}>{oldEmail}</Link>{' '}
-          la{' '}
-          <Link href={`mailto:${newEmail}`} style={linkPlain}>{newEmail}</Link>.
-        </Text>
-        <Section style={buttonWrap}>
-          <Button style={button} href={confirmationUrl}>Confirmă schimbarea</Button>
-        </Section>
-        <Text style={smallText}>
-          Sau copiază acest link:<br />
-          <Link href={confirmationUrl} style={linkPlain}>{confirmationUrl}</Link>
-        </Text>
-        <Hr style={hr} />
-        <Text style={footer}>
-          Dacă nu tu ai cerut această schimbare, securizează-ți contul imediat
-          din setări.
-        </Text>
-        <Text style={footerBrand}>{siteName} · Bucharest, RO</Text>
-      </Container>
-    </Body>
-  </Html>
-)
-
+export const EmailChangeEmail = ({ siteName, oldEmail, newEmail, confirmationUrl, locale }: Props) => {
+  const t = getEmailStrings(locale)
+  return (
+    <Html lang={(locale as string) || 'ro'} dir="ltr">
+      <Head />
+      <Preview>{t.emailChange.preview(siteName)}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Section style={header}>
+            <Heading style={brand}>{siteName}</Heading>
+            <Text style={tagline}>{t.common.tagline}</Text>
+          </Section>
+          <Hr style={hr} />
+          <Heading style={h1}>{t.emailChange.heading}</Heading>
+          <Text style={text}>
+            {t.emailChange.bodyPrefix(siteName)}
+            <Link href={`mailto:${oldEmail}`} style={linkPlain}>{oldEmail}</Link>
+            {t.emailChange.bodyConnector}
+            <Link href={`mailto:${newEmail}`} style={linkPlain}>{newEmail}</Link>.
+          </Text>
+          <Section style={buttonWrap}>
+            <Button style={button} href={confirmationUrl}>{t.emailChange.cta}</Button>
+          </Section>
+          <Text style={smallText}>
+            {t.common.fallbackLink}<br />
+            <Link href={confirmationUrl} style={linkPlain}>{confirmationUrl}</Link>
+          </Text>
+          <Hr style={hr} />
+          <Text style={footer}>{t.emailChange.ignore}</Text>
+          <Text style={footerBrand}>{siteName} · {t.common.footerLocation}</Text>
+        </Container>
+      </Body>
+    </Html>
+  )
+}
 export default EmailChangeEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif", margin: 0, padding: 0 }

@@ -1,60 +1,39 @@
 import * as React from 'react'
+import { Body, Button, Container, Head, Heading, Hr, Html, Link, Preview, Section, Text } from '@react-email/components'
+import { getEmailStrings, type EmailLocale } from './i18n'
 
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
+interface Props { siteName: string; confirmationUrl: string; locale?: EmailLocale }
 
-interface RecoveryEmailProps {
-  siteName: string
-  confirmationUrl: string
+export const RecoveryEmail = ({ siteName, confirmationUrl, locale }: Props) => {
+  const t = getEmailStrings(locale)
+  return (
+    <Html lang={(locale as string) || 'ro'} dir="ltr">
+      <Head />
+      <Preview>{t.recovery.preview(siteName)}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Section style={header}>
+            <Heading style={brand}>{siteName}</Heading>
+            <Text style={tagline}>{t.common.tagline}</Text>
+          </Section>
+          <Hr style={hr} />
+          <Heading style={h1}>{t.recovery.heading}</Heading>
+          <Text style={text}>{t.recovery.body(siteName)}</Text>
+          <Section style={buttonWrap}>
+            <Button style={button} href={confirmationUrl}>{t.recovery.cta}</Button>
+          </Section>
+          <Text style={smallText}>
+            {t.common.fallbackLink}<br />
+            <Link href={confirmationUrl} style={linkPlain}>{confirmationUrl}</Link>
+          </Text>
+          <Hr style={hr} />
+          <Text style={footer}>{t.recovery.ignore}</Text>
+          <Text style={footerBrand}>{siteName} · {t.common.footerLocation}</Text>
+        </Container>
+      </Body>
+    </Html>
+  )
 }
-
-export const RecoveryEmail = ({ siteName, confirmationUrl }: RecoveryEmailProps) => (
-  <Html lang="ro" dir="ltr">
-    <Head />
-    <Preview>Resetare parolă {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={header}>
-          <Heading style={brand}>{siteName}</Heading>
-          <Text style={tagline}>Dating, elevated.</Text>
-        </Section>
-        <Hr style={hr} />
-        <Heading style={h1}>Resetează-ți parola</Heading>
-        <Text style={text}>
-          Am primit o cerere de resetare a parolei contului tău {siteName}.
-          Apasă butonul de mai jos pentru a alege o parolă nouă. Link-ul este
-          valabil o oră.
-        </Text>
-        <Section style={buttonWrap}>
-          <Button style={button} href={confirmationUrl}>Resetează parola</Button>
-        </Section>
-        <Text style={smallText}>
-          Sau copiază acest link în browser:<br />
-          <Link href={confirmationUrl} style={linkPlain}>{confirmationUrl}</Link>
-        </Text>
-        <Hr style={hr} />
-        <Text style={footer}>
-          Dacă nu ai cerut resetarea parolei, ignoră acest email — parola ta
-          rămâne neschimbată. Pentru siguranță suplimentară, activează
-          autentificarea în doi pași din setările contului.
-        </Text>
-        <Text style={footerBrand}>{siteName} · Bucharest, RO</Text>
-      </Container>
-    </Body>
-  </Html>
-)
-
 export default RecoveryEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif", margin: 0, padding: 0 }

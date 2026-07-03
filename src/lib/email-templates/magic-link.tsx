@@ -1,57 +1,39 @@
 import * as React from 'react'
+import { Body, Button, Container, Head, Heading, Hr, Html, Link, Preview, Section, Text } from '@react-email/components'
+import { getEmailStrings, type EmailLocale } from './i18n'
 
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
+interface Props { siteName: string; confirmationUrl: string; locale?: EmailLocale }
 
-interface MagicLinkEmailProps {
-  siteName: string
-  confirmationUrl: string
+export const MagicLinkEmail = ({ siteName, confirmationUrl, locale }: Props) => {
+  const t = getEmailStrings(locale)
+  return (
+    <Html lang={(locale as string) || 'ro'} dir="ltr">
+      <Head />
+      <Preview>{t.magicLink.preview(siteName)}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Section style={header}>
+            <Heading style={brand}>{siteName}</Heading>
+            <Text style={tagline}>{t.common.tagline}</Text>
+          </Section>
+          <Hr style={hr} />
+          <Heading style={h1}>{t.magicLink.heading}</Heading>
+          <Text style={text}>{t.magicLink.body(siteName)}</Text>
+          <Section style={buttonWrap}>
+            <Button style={button} href={confirmationUrl}>{t.magicLink.cta}</Button>
+          </Section>
+          <Text style={smallText}>
+            {t.common.fallbackLink}<br />
+            <Link href={confirmationUrl} style={linkPlain}>{confirmationUrl}</Link>
+          </Text>
+          <Hr style={hr} />
+          <Text style={footer}>{t.magicLink.ignore}</Text>
+          <Text style={footerBrand}>{siteName} · {t.common.footerLocation}</Text>
+        </Container>
+      </Body>
+    </Html>
+  )
 }
-
-export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProps) => (
-  <Html lang="ro" dir="ltr">
-    <Head />
-    <Preview>Link-ul tău de conectare {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={header}>
-          <Heading style={brand}>{siteName}</Heading>
-          <Text style={tagline}>Dating, elevated.</Text>
-        </Section>
-        <Hr style={hr} />
-        <Heading style={h1}>Conectare rapidă</Heading>
-        <Text style={text}>
-          Apasă butonul de mai jos pentru a te conecta la {siteName}. Link-ul
-          expiră în scurt timp și poate fi folosit o singură dată.
-        </Text>
-        <Section style={buttonWrap}>
-          <Button style={button} href={confirmationUrl}>Conectează-mă</Button>
-        </Section>
-        <Text style={smallText}>
-          Sau copiază acest link în browser:<br />
-          <Link href={confirmationUrl} style={linkPlain}>{confirmationUrl}</Link>
-        </Text>
-        <Hr style={hr} />
-        <Text style={footer}>
-          Dacă nu ai cerut acest link, ignoră emailul.
-        </Text>
-        <Text style={footerBrand}>{siteName} · Bucharest, RO</Text>
-      </Container>
-    </Body>
-  </Html>
-)
-
 export default MagicLinkEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif", margin: 0, padding: 0 }

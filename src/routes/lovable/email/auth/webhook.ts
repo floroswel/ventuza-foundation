@@ -10,15 +10,7 @@ import { MagicLinkEmail } from '@/lib/email-templates/magic-link'
 import { RecoveryEmail } from '@/lib/email-templates/recovery'
 import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
-
-const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Confirmă-ți contul Ventuza',
-  invite: 'Ești invitat pe Ventuza',
-  magiclink: 'Link-ul tău de conectare Ventuza',
-  recovery: 'Resetare parolă Ventuza',
-  email_change: 'Confirmă noua ta adresă de email',
-  reauthentication: 'Codul tău de verificare Ventuza',
-}
+import { getEmailStrings, normalizeLocale, type EmailLocale } from '@/lib/email-templates/i18n'
 
 // Template mapping
 const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
@@ -29,6 +21,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
   email_change: EmailChangeEmail,
   reauthentication: ReauthenticationEmail,
 }
+
 
 // Configuration
 const SITE_NAME = "Ventuza"
@@ -143,10 +136,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           newEmail: payload.data.new_email,
         }
 
-        // Render React Email to HTML and plain text
-        const element = React.createElement(EmailTemplate, templateProps)
-        const html = await render(element)
-        const text = await render(element, { plainText: true })
+        // (Rendering happens after locale detection below.)
 
         // Enqueue email for async processing by the dispatcher (process-email-queue).
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
@@ -161,6 +151,41 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
         }
 
         const supabase = createClient(supabaseUrl, supabaseServiceKey)
+
+        // Detect recipient language: profiles.preferred_language → auth.users
+        // raw_user_meta_data.locale → default 'ro'. Best-effort; failures fall
+        // back to default without blocking the send.
+        let locale: EmailLocale = 'ro'
+        try {
+          const recipientEmail = payload.data.email
+          if (recipientEmail) {
+            const { data: prof } = await supabase
+              .from('profiles')
+              .select('preferred_language')
+              .ilike('email', recipientEmail)
+              .maybeSingle()
+            if (prof?.preferred_language) {
+              locale = normalizeLocale(prof.preferred_language)
+            } else {
+              const { data: usersPage } = await supabase.auth.admin.listUsers({ page: 1, perPage: 200 })
+              const authUser = usersPage?.users?.find(
+                (u: any) => (u.email || '').toLowerCase() === recipientEmail.toLowerCase()
+              )
+              const metaLocale = (authUser?.user_metadata as any)?.locale
+                ?? (authUser?.user_metadata as any)?.preferred_language
+              if (metaLocale) locale = normalizeLocale(metaLocale)
+            }
+          }
+        } catch (e) {
+          console.warn('Language detection failed, falling back to default', { error: (e as Error).message })
+        }
+
+        // Attach locale to template props and render.
+        const finalProps = { ...templateProps, locale }
+        const element = React.createElement(EmailTemplate, finalProps)
+        const html = await render(element)
+        const text = await render(element, { plainText: true })
+
         const messageId = crypto.randomUUID()
 
         // Log pending BEFORE enqueue so we have a record even if enqueue crashes
@@ -171,6 +196,9 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           status: 'pending',
         })
 
+        const subjects = getEmailStrings(locale).subjects
+        const subject = subjects[emailType as keyof typeof subjects] || 'Notification'
+
         const { error: enqueueError } = await supabase.rpc('enqueue_email', {
           queue_name: 'auth_emails',
           payload: {
@@ -179,7 +207,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
             to: payload.data.email,
             from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
             sender_domain: SENDER_DOMAIN,
-            subject: EMAIL_SUBJECTS[emailType] || 'Notification',
+            subject,
             html,
             text,
             purpose: 'transactional',
