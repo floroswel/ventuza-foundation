@@ -151,6 +151,43 @@ export const adminTriggerPasswordReset = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** Retrimite emailul de confirmare a contului (userilor cu `email_confirmed_at IS NULL`). */
+export const adminResendConfirmationEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        userId: z.string().uuid(),
+        justification: z.string().min(5).max(500),
+      })
+      .parse(d),
+  )
+  .handler(async ({ data, context }) => {
+    await assertRole(context.supabase, context.userId, ["super_admin", "admin", "support"]);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sa = supabaseAdmin as any;
+    const { data: u, error: e1 } = await sa.auth.admin.getUserById(data.userId);
+    if (e1) throw new Error(e1.message);
+    const email = u?.user?.email;
+    if (!email) throw new Error("User fără email — retrimitere imposibilă");
+    if (u?.user?.email_confirmed_at) {
+      throw new Error("Emailul este deja confirmat.");
+    }
+    // `generateLink` cu type=signup regenerează link-ul de confirmare și,
+    // dacă hook-ul de emailuri e activ, îl retrimite către user.
+    const { error } = await sa.auth.admin.generateLink({ type: "signup", email });
+    if (error) throw new Error(error.message);
+    await logAudit({
+      actorId: context.userId,
+      action: "user.resend_confirmation_email",
+      targetTable: "auth.users",
+      targetId: data.userId,
+      justification: data.justification,
+      severity: "info",
+    });
+    return { ok: true, email };
+  });
+
 /** Override manual verificare vârstă (Didit). Critical + justificare obligatorie. */
 export const adminManualAgeVerify = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
