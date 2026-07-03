@@ -136,10 +136,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           newEmail: payload.data.new_email,
         }
 
-        // Render React Email to HTML and plain text
-        const element = React.createElement(EmailTemplate, templateProps)
-        const html = await render(element)
-        const text = await render(element, { plainText: true })
+        // (Rendering happens after locale detection below.)
 
         // Enqueue email for async processing by the dispatcher (process-email-queue).
         const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
