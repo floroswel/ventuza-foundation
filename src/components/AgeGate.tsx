@@ -7,7 +7,7 @@ import { useAuth } from "@/lib/auth-context";
 import { shouldEnforceAgeGate } from "@/lib/age-gate-policy";
 
 /**
- * AgeGate — VERIFICARE INTERNĂ (post-Didit redesign).
+ * AgeGate — VERIFICARE INTERNĂ.
  *
  * Fluxul nou (liveness intern + review moderator) trăiește la /verify.
  * AgeGate blochează accesul la rutele adult pentru useri neverificati

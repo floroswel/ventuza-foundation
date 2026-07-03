@@ -9,10 +9,11 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  * Reguli (vezi AGENTS.md → "REGULĂ — ADMIN"):
  *  - `orientation` → DOAR super_admin
  *  - `location`    → DOAR super_admin (returnează coordonate proprii)
- *  - `selfie`      → admin sau super_admin
  *  - `messages`    → admin sau super_admin
  *
- * Notă: kind='health' a fost eliminat — Ventuza nu mai procesează date HIV.
+ * Notă: kind='health' și kind='selfie' au fost eliminate. Ventuza nu mai
+ * procesează date HIV, iar imaginile de verificare identitate se accesează
+ * exclusiv prin panoul intern (`/admin/verification`) cu signed URL de 30s.
  */
 
 async function reqMeta() {
@@ -29,7 +30,7 @@ async function reqMeta() {
 
 const RevealInput = z.object({
   targetUserId: z.string().uuid(),
-  kind: z.enum(["orientation", "location", "selfie", "messages"]),
+  kind: z.enum(["orientation", "location", "messages"]),
   justification: z.string().min(10).max(500),
   conversationId: z.string().uuid().optional(),
   limit: z.number().int().min(1).max(100).optional(),
@@ -74,15 +75,10 @@ export const adminBreakGlassReveal = createServerFn({ method: "POST" })
         .maybeSingle();
       payload = { profile: p ?? null };
       fields = ["location", "travel_city"];
-    } else if (data.kind === "selfie") {
-      const { data: v } = await sa
-        .from("age_verifications")
-        .select("id,user_id,status,selfie_url,document_url,created_at,completed_at")
-        .eq("user_id", data.targetUserId)
-        .order("created_at", { ascending: false })
-        .limit(5);
-      payload = { verifications: v ?? [] };
-      fields = ["selfie_url", "document_url"];
+    // 'selfie' eliminat — imaginile de verificare trăiesc în bucket privat
+    // și se accesează exclusiv prin `verification_signed_url` (30s) din panoul
+    // intern de moderare, cu audit propriu.
+
     } else if (data.kind === "messages") {
       const limit = data.limit ?? 50;
       let q: any = sa

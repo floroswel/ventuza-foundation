@@ -43,7 +43,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
-import { adminResetOwnAgeVerification } from "@/lib/admin-age-reset.functions";
+
 
 // Helper: extrage mesajul de eroare din ce ne dă serverul (server fns aruncă Error,
 // uneori cu prefix "Forbidden:" / "denied" → afișăm clar utilizatorului DE CE).
@@ -1560,45 +1560,8 @@ export function SecurityPanel() {
           </div>
         )}
       </div>
-
-      <AgeResetCard />
     </div>
   );
 }
 
-function AgeResetCard() {
-  const resetFn = useServerFn(adminResetOwnAgeVerification);
-  const [busy, setBusy] = useState(false);
-
-  const run = async () => {
-    if (!confirm("Resetez age_status pe contul tău la 'unverified'? Vei relua fluxul Didit.")) return;
-    setBusy(true);
-    try {
-      const res = await resetFn();
-      toast.success(`Age status resetat (era: ${(res as any)?.before?.age_status ?? "necunoscut"}). Deschide o pagină gated pentru a reporni Didit.`);
-    } catch (e: any) {
-      toast.error(e?.message ?? "Nu am putut reseta.");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="rounded-2xl border border-border bg-surface p-4">
-      <p className="text-sm font-semibold">Resetează verificarea vârstei (contul tău)</p>
-      <p className="mt-1 text-xs text-muted-foreground">
-        Șterge <code>age_status</code>, <code>age_verified_at</code> și sesiunile Didit anterioare
-        pentru contul curent. Acțiune auditată. După reset, deschide orice ecran gated (ex. /discover)
-        și reia fluxul Didit o singură dată curat.
-      </p>
-      <button
-        onClick={run}
-        disabled={busy}
-        className="mt-3 w-full rounded-full border border-destructive/40 bg-destructive/10 py-2 text-sm text-destructive disabled:opacity-50"
-      >
-        {busy ? "Se resetează…" : "Resetează age_status"}
-      </button>
-    </div>
-  );
-}
 

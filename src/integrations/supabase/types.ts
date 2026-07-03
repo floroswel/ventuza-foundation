@@ -477,36 +477,6 @@ export type Database = {
         }
         Relationships: []
       }
-      age_verifications: {
-        Row: {
-          created_at: string
-          estimated_age: number | null
-          id: string
-          method: string
-          provider: string
-          result: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          estimated_age?: number | null
-          id?: string
-          method?: string
-          provider?: string
-          result: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          estimated_age?: number | null
-          id?: string
-          method?: string
-          provider?: string
-          result?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       album_requests: {
         Row: {
           created_at: string
@@ -5479,16 +5449,6 @@ export type Database = {
       }
       recompute_risk_score: { Args: { _uid: string }; Returns: number }
       recompute_user_risk: { Args: { _user_id: string }; Returns: Json }
-      record_age_verification: {
-        Args: {
-          p_didit_session?: string
-          p_estimated_age?: number
-          p_result: string
-          p_status_raw?: string
-          p_user_id: string
-        }
-        Returns: undefined
-      }
       record_consent: {
         Args: {
           _accepted?: boolean
