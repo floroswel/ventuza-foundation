@@ -103,7 +103,11 @@ function PartnerBroadcastsPage() {
         },
       }),
     onSuccess: (r) => {
-      toast.success(`Trimis către ${r.recipients} useri. Ai mai rămas cu ${r.remaining} anunțuri săptămâna asta.`);
+      const push = (r as any).push_delivered ?? 0;
+      const emails = (r as any).emails_queued ?? 0;
+      toast.success(
+        `Trimis către ${r.recipients} useri (push: ${push}, email: ${emails}). Rămase săptămâna asta: ${r.remaining}.`,
+      );
       setTitle("");
       setBody("");
       qc.invalidateQueries({ queryKey: ["partner-broadcast-quota"] });
