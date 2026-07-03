@@ -32,16 +32,25 @@ import { Loader2, Copy, Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { StatusNotificationsBell } from "@/components/partner/StatusNotificationsBell";
+import { PartnerAccessGate } from "@/components/partner/PartnerAccessGate";
 
 export const Route = createFileRoute("/partner/billing")({
   head: () => ({
     meta: [{ title: "Facturare — Ventuza Partners" }, { name: "robots", content: "noindex" }],
   }),
-  component: PartnerBilling,
+  component: PartnerBillingRoute,
 });
 
 const RON = (m: number | null | undefined) =>
   ((m ?? 0) / 100).toLocaleString("ro-RO", { style: "currency", currency: "RON" });
+
+function PartnerBillingRoute() {
+  return (
+    <PartnerAccessGate pageLabel="Facturare partener">
+      <PartnerBilling />
+    </PartnerAccessGate>
+  );
+}
 
 function PartnerBilling() {
   const { user } = useAuth();
