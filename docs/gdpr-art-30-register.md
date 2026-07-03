@@ -98,20 +98,20 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 
 ---
 
-## A4. Verificare vârstă (18+) — Didit
+## A4. Verificare vârstă (18+) — flux intern (liveness + moderator)
 
 | | |
 |---|---|
 | **Scop** | Confirmare vârstă minimă legală (DSA + protecție minori); blocare conturi sub 18 ani. |
-| **Persoane vizate** | Utilizatori în onboarding. |
-| **Categorii date — normale** | `age_verifications` (`status`, `estimated_age`, `decision_at`, `vendor_session_id`, `vendor_data=user_id`). |
-| **🟥 Categorii Art. 9 — date biometrice** | Selfie capturat în fluxul hosted Didit. Nu stocăm noi datele biometrice rezultate; doar rezultatul estimării (`estimated_age`). Path selfie pe storage: `profiles.verification_selfie_path` (owner-only). |
+| **Persoane vizate** | Utilizatori în onboarding + oricine cere re-verificare. |
+| **Categorii date — normale** | `verification_requests` (status, decision, method, score, submitted_at, decided_at, ip_hash, ua_hash, country). Fără PII brut. |
+| **🟥 Categorii Art. 9 — date biometrice** | 3 selfie-uri live cu challenge-uri de gest (liveness), stocate în bucket privat `verification` cu path pe `verification_images.storage_path` (owner + moderator claim only). Nu partajăm imaginile cu procesatori externi. |
 | **Temei Art. 6** | 6(1)(c) obligație legală (DSA Art. 28, protecție minori) + 6(1)(f) interes legitim (prevenirea accesului minorilor la conținut adult). |
-| **Temei Art. 9** | 9(2)(a) consimțământ explicit pentru biometric (înregistrat în `consent_log` kind `age_verification` la pornirea fluxului) + 9(2)(g) interes public substanțial (protecția minorilor). |
-| **Destinatari** | P1 (status + path), P6 Didit (selfie + vendor_data), P8 (runtime + webhook `/api/public/age-webhook`). |
-| **Transfer extra-UE** | — (Didit este în UE). |
-| **Retenție** | `age_verifications`: 24 luni (audit + reapelare). Selfie storage: ștergere la `deleteMyAccount` + politică Didit. |
-| **Măsuri tehnice** | Webhook semnat HMAC, validare în `src/routes/api/public/age-webhook.ts`. `vendor_data` = doar UUID intern. Niciun PII suplimentar trimis la Didit. |
+| **Temei Art. 9** | 9(2)(a) consimțământ explicit `kind='internal_verification'` înregistrat în `consent_log` înainte de captura selfie-urilor + 9(2)(g) interes public substanțial (protecția minorilor). |
+| **Destinatari** | P1 (metadata + imagini în storage privat), P8 (runtime). Fără procesator KYC extern. |
+| **Transfer extra-UE** | — (imaginile trăiesc în bucket UE la P1). |
+| **Retenție** | Imagini: ≤30 zile de la decizie (`verification_purge_expired`). Metadata deciziei: pe durata contului. |
+| **Măsuri tehnice** | RLS strict pe `verification_requests` + `verification_images`. Signed URL 30s pentru moderator via `verification_signed_url`. Watermark cu moderator_id + timestamp în UI. Audit append-only în `verification_audit`. Second reviewer nu vede decizia primului. |
 
 ---
 
