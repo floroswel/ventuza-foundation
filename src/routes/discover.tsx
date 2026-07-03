@@ -156,7 +156,8 @@ function DiscoverPage() {
       if (!r.ok)
         toast.message("Locație indisponibilă", {
           id: "loc-unavailable",
-          description: "Îți arătăm rezultate pe baza filtrelor tale.",
+          description: r.error ?? "Îți arătăm rezultate pe baza filtrelor tale.",
+          duration: 6000,
         });
     });
   }, [user, locStatus]);
