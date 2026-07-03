@@ -99,15 +99,16 @@ function VerifyPage() {
 
   useEffect(() => {
     if (!user) return;
+    const uid = user.id;
     let alive = true;
     async function load() {
       setLoading(true);
       const [profileRes, requestRes, challengeRes] = await Promise.all([
-        supabase.from("profiles").select("age_status").eq("id", user.id).maybeSingle(),
+        supabase.from("profiles").select("age_status").eq("id", uid).maybeSingle(),
         supabase
           .from("verification_requests")
           .select("id,status,reason,reason_code,submitted_at,decided_at")
-          .eq("user_id", user.id)
+          .eq("user_id", uid)
           .order("submitted_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
@@ -234,9 +235,9 @@ function VerifyPage() {
       const { data: requestId, error: submitError } = await supabase.rpc("verification_submit_request", {
         p_challenges: challenges,
         p_image_paths: paths,
-        p_ip_hash: null,
-        p_ua_hash: ua,
-        p_country: null,
+        p_ip_hash: undefined,
+        p_ua_hash: ua ?? undefined,
+        p_country: undefined,
       });
       if (submitError) throw submitError;
 

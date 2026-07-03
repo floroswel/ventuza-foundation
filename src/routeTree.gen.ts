@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VisitorsRouteImport } from './routes/visitors'
+import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as SalePitchRouteImport } from './routes/sale-pitch'
@@ -76,6 +77,11 @@ import { Route as ApiPublicHooksBillingTickRouteImport } from './routes/api/publ
 const VisitorsRoute = VisitorsRouteImport.update({
   id: '/visitors',
   path: '/visitors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyRoute = VerifyRouteImport.update({
+  id: '/verify',
+  path: '/verify',
   getParentRoute: () => rootRouteImport,
 } as any)
 const StatusRoute = StatusRouteImport.update({
@@ -422,6 +428,7 @@ export interface FileRoutesByFullPath {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
+  '/verify': typeof VerifyRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
@@ -487,6 +494,7 @@ export interface FileRoutesByTo {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
+  '/verify': typeof VerifyRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
@@ -553,6 +561,7 @@ export interface FileRoutesById {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
+  '/verify': typeof VerifyRoute
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
@@ -620,6 +629,7 @@ export interface FileRouteTypes {
     | '/sale-pitch'
     | '/settings'
     | '/status'
+    | '/verify'
     | '/visitors'
     | '/advertise/new'
     | '/auth/check-email'
@@ -685,6 +695,7 @@ export interface FileRouteTypes {
     | '/sale-pitch'
     | '/settings'
     | '/status'
+    | '/verify'
     | '/visitors'
     | '/advertise/new'
     | '/auth/check-email'
@@ -750,6 +761,7 @@ export interface FileRouteTypes {
     | '/sale-pitch'
     | '/settings'
     | '/status'
+    | '/verify'
     | '/visitors'
     | '/advertise/new'
     | '/auth/check-email'
@@ -816,6 +828,7 @@ export interface RootRouteChildren {
   SalePitchRoute: typeof SalePitchRoute
   SettingsRoute: typeof SettingsRoute
   StatusRoute: typeof StatusRoute
+  VerifyRoute: typeof VerifyRoute
   VisitorsRoute: typeof VisitorsRoute
   LegalAgePolicyRoute: typeof LegalAgePolicyRoute
   LegalBadgesRoute: typeof LegalBadgesRoute
@@ -850,6 +863,13 @@ declare module '@tanstack/react-router' {
       path: '/visitors'
       fullPath: '/visitors'
       preLoaderRoute: typeof VisitorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify': {
+      id: '/verify'
+      path: '/verify'
+      fullPath: '/verify'
+      preLoaderRoute: typeof VerifyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/status': {
@@ -1400,6 +1420,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalePitchRoute: SalePitchRoute,
   SettingsRoute: SettingsRoute,
   StatusRoute: StatusRoute,
+  VerifyRoute: VerifyRoute,
   VisitorsRoute: VisitorsRoute,
   LegalAgePolicyRoute: LegalAgePolicyRoute,
   LegalBadgesRoute: LegalBadgesRoute,
