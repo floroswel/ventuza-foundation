@@ -84,6 +84,9 @@ function AccountPage() {
   }
 
   const verified = profile?.age_status === "verified";
+  const pending = profile?.age_status === "pending" || profile?.age_status === "in_review";
+  const rejected = profile?.age_status === "rejected";
+
   const online = !profile?.hide_online;
   const stealth = !!profile?.discrete_mode;
   const boostActive = profile?.boost_until && new Date(profile.boost_until).getTime() > Date.now();
@@ -128,6 +131,14 @@ function AccountPage() {
                   <BadgeCheck className="size-3 text-white" />
                 </span>
               )}
+              {pending && (
+                <span
+                  className="absolute -bottom-0.5 -right-0.5 grid size-5 place-items-center rounded-full bg-amber-500 ring-2 ring-background"
+                  aria-label="Verificare în curs"
+                >
+                  <Loader2 className="size-3 animate-spin text-white" />
+                </span>
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <p className="truncate text-lg font-semibold">
@@ -137,12 +148,24 @@ function AccountPage() {
                 <p className="mt-1 inline-flex items-center gap-1 text-xs text-emerald-400">
                   <BadgeCheck className="size-3.5" /> Verificat
                 </p>
+              ) : pending ? (
+                <p className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-amber-400">
+                  <Loader2 className="size-3.5 animate-spin" /> Verificare în curs
+                </p>
+              ) : rejected ? (
+                <p className="mt-1 text-xs text-rose-400">Verificare respinsă — reîncearcă</p>
               ) : (
                 <p className="mt-1 text-xs text-muted-foreground">Cont neverificat</p>
               )}
             </div>
           </Link>
-          {!verified ? (
+          {verified ? (
+            <ChevronRight className="size-4 text-muted-foreground" />
+          ) : pending ? (
+            <span className="shrink-0 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-[10px] font-bold uppercase tracking-wide text-amber-300">
+              În curs
+            </span>
+          ) : (
             <button
               type="button"
               onClick={() => {
@@ -153,12 +176,37 @@ function AccountPage() {
               }}
               className="shrink-0 rounded-full bg-gradient-to-r from-primary to-fuchsia-500 px-3.5 py-2 text-[11px] font-bold uppercase tracking-wide text-white shadow-[0_6px_18px_-6px_rgba(217,70,239,0.7)] transition-transform active:scale-95"
             >
-              Verifică-te
+              {rejected ? "Reîncearcă" : "Verifică-te"}
             </button>
-          ) : (
-            <ChevronRight className="size-4 text-muted-foreground" />
           )}
         </div>
+
+        {pending && (
+          <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-amber-500/20">
+                <Loader2 className="size-4 animate-spin text-amber-300" />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="text-sm font-semibold text-amber-100">Verificare în curs</p>
+                <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
+                  Am primit selfie-ul și documentul. Partenerul de verificare (Didit) le
+                  procesează acum — de obicei durează sub 5 minute, dar poate ajunge la câteva
+                  ore în orele de vârf.
+                </p>
+                <ol className="mt-3 space-y-1.5 text-[11px] text-amber-100/70">
+                  <li>1. Analiză automată document + selfie</li>
+                  <li>2. Confirmare vârstă ≥ 18 ani</li>
+                  <li>3. Activare acces la Discover și mesagerie</li>
+                </ol>
+                <p className="mt-3 text-[11px] text-amber-100/60">
+                  Îți trimitem notificare când e gata. Nu e nevoie să reîncerci.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
 
         {/* Support CTA — Ventuza e gratuit, o "susține" */}
         <Link
