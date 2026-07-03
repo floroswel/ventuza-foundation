@@ -45,7 +45,7 @@ describe("Security invariants — introspecție RPC", () => {
 
     // Rate limit + page cap (anti-scrape)
     expect(snap.discover_max_per_call_50).toBe(true);
-    expect(snap.discover_max_calls_per_hour_10).toBe(true);
+    expect(snap.discover_max_calls_per_hour_60).toBe(true);
     expect(snap.discover_inserts_rate_limit_log).toBe(true);
     expect(snap.discover_raises_rate_limited).toBe(true);
 
