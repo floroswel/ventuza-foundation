@@ -196,13 +196,20 @@ function DiscoverPage() {
       setProfiles(data);
       // Fetch server-side badges for the loaded profiles (fire-and-forget).
       if (data.length > 0) {
+        setBadgesLoading(true);
+        setBadgesError(false);
         void fetchUserBadges(data.map((d) => d.id))
-          .then((map) => setBadgesMap(map))
+          .then((map) => {
+            setBadgesMap((prev) => ({ ...prev, ...map }));
+          })
           .catch(() => {
-            /* non-fatal */
-          });
+            setBadgesError(true);
+          })
+          .finally(() => setBadgesLoading(false));
       } else {
         setBadgesMap({});
+        setBadgesLoading(false);
+        setBadgesError(false);
       }
     } catch (e) {
       const message = e instanceof Error ? e.message : "Couldn't load discover";
