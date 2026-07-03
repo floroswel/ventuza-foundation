@@ -732,9 +732,11 @@ function OnlineRow({
 function Cascade({
   profiles,
   onOpen,
+  badgesMap,
 }: {
   profiles: DiscoverProfile[];
   onOpen: (p: DiscoverProfile) => void;
+  badgesMap: Record<string, string[]>;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const { bySender } = useUnreadMessages();
