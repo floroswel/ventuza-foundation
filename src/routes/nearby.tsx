@@ -120,12 +120,8 @@ function NearbyPage() {
       setVenueBadges({});
       return;
     }
-    void fetchVenueBadges({ data: { venueIds } })
-      .then(({ rows }: { rows: Array<{ venue_id: string; badges: string[] }> }) => {
-        const next: Record<string, string[]> = {};
-        for (const r of rows) next[r.venue_id] = r.badges ?? [];
-        setVenueBadges(next);
-      })
+    void fetchVenueBadges(venueIds)
+      .then((map) => setVenueBadges(map))
       .catch(() => {
         /* non-fatal */
       });
