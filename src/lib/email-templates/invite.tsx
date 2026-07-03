@@ -1,59 +1,43 @@
 import * as React from 'react'
+import { Body, Button, Container, Head, Heading, Hr, Html, Link, Preview, Section, Text } from '@react-email/components'
+import { getEmailStrings, type EmailLocale } from './i18n'
 
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Link,
-  Preview,
-  Section,
-  Text,
-} from '@react-email/components'
+interface Props { siteName: string; siteUrl: string; confirmationUrl: string; locale?: EmailLocale }
 
-interface InviteEmailProps {
-  siteName: string
-  siteUrl: string
-  confirmationUrl: string
+export const InviteEmail = ({ siteName, siteUrl, confirmationUrl, locale }: Props) => {
+  const t = getEmailStrings(locale)
+  return (
+    <Html lang={(locale as string) || 'ro'} dir="ltr">
+      <Head />
+      <Preview>{t.invite.preview(siteName)}</Preview>
+      <Body style={main}>
+        <Container style={container}>
+          <Section style={header}>
+            <Heading style={brand}>{siteName}</Heading>
+            <Text style={tagline}>{t.common.tagline}</Text>
+          </Section>
+          <Hr style={hr} />
+          <Heading style={h1}>{t.invite.heading}</Heading>
+          <Text style={text}>
+            {t.invite.bodyPrefix}
+            <Link href={siteUrl} style={linkStrong}><strong>{siteName}</strong></Link>
+            {t.invite.bodySuffix}
+          </Text>
+          <Section style={buttonWrap}>
+            <Button style={button} href={confirmationUrl}>{t.invite.cta}</Button>
+          </Section>
+          <Text style={smallText}>
+            {t.common.fallbackLink}<br />
+            <Link href={confirmationUrl} style={linkPlain}>{confirmationUrl}</Link>
+          </Text>
+          <Hr style={hr} />
+          <Text style={footer}>{t.invite.ignore}</Text>
+          <Text style={footerBrand}>{siteName} · {t.common.footerLocation}</Text>
+        </Container>
+      </Body>
+    </Html>
+  )
 }
-
-export const InviteEmail = ({ siteName, siteUrl, confirmationUrl }: InviteEmailProps) => (
-  <Html lang="ro" dir="ltr">
-    <Head />
-    <Preview>Ești invitat pe {siteName}</Preview>
-    <Body style={main}>
-      <Container style={container}>
-        <Section style={header}>
-          <Heading style={brand}>{siteName}</Heading>
-          <Text style={tagline}>Dating, elevated.</Text>
-        </Section>
-        <Hr style={hr} />
-        <Heading style={h1}>Ai fost invitat.</Heading>
-        <Text style={text}>
-          Cineva te-a invitat să te alături comunității{' '}
-          <Link href={siteUrl} style={linkStrong}><strong>{siteName}</strong></Link>
-          . Acceptă invitația pentru a-ți crea contul și a începe.
-        </Text>
-        <Section style={buttonWrap}>
-          <Button style={button} href={confirmationUrl}>Acceptă invitația</Button>
-        </Section>
-        <Text style={smallText}>
-          Sau copiază acest link:<br />
-          <Link href={confirmationUrl} style={linkPlain}>{confirmationUrl}</Link>
-        </Text>
-        <Hr style={hr} />
-        <Text style={footer}>
-          Dacă nu ai așteptat o invitație, ignoră acest email.
-        </Text>
-        <Text style={footerBrand}>{siteName} · Bucharest, RO</Text>
-      </Container>
-    </Body>
-  </Html>
-)
-
 export default InviteEmail
 
 const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif", margin: 0, padding: 0 }
