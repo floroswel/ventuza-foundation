@@ -27,7 +27,7 @@ export const savePushSubscription = createServerFn({ method: "POST" })
         fcm_token: data.endpoint, // legacy NOT NULL column — reuse endpoint
         last_seen_at: new Date().toISOString(),
       },
-      { onConflict: "endpoint" },
+      { onConflict: "fcm_token" },
     );
     if (error) throw error;
     // Loghează consimțământul push (acordare). Vezi consent-registry + AGENTS.md.
