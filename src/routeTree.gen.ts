@@ -67,6 +67,7 @@ import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
+import { Route as AuthenticatedPartnerBroadcastsRouteImport } from './routes/_authenticated/partner.broadcasts'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -363,6 +364,12 @@ const AdminUsersIdRoute = AdminUsersIdRouteImport.update({
   path: '/users/$id',
   getParentRoute: () => AdminRoute,
 } as any)
+const AuthenticatedPartnerBroadcastsRoute =
+  AuthenticatedPartnerBroadcastsRouteImport.update({
+    id: '/_authenticated/partner/broadcasts',
+    path: '/partner/broadcasts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
     id: '/lovable/email/queue/process',
@@ -442,6 +449,7 @@ export interface FileRoutesByFullPath {
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
+  '/partner/broadcasts': typeof AuthenticatedPartnerBroadcastsRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -506,6 +514,7 @@ export interface FileRoutesByTo {
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages': typeof MessagesIndexRoute
+  '/partner/broadcasts': typeof AuthenticatedPartnerBroadcastsRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -571,6 +580,7 @@ export interface FileRoutesById {
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
+  '/_authenticated/partner/broadcasts': typeof AuthenticatedPartnerBroadcastsRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -637,6 +647,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/venues/$id'
     | '/messages/'
+    | '/partner/broadcasts'
     | '/admin/users/$id'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -701,6 +712,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/venues/$id'
     | '/messages'
+    | '/partner/broadcasts'
     | '/admin/users/$id'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -765,6 +777,7 @@ export interface FileRouteTypes {
     | '/u/$slug'
     | '/venues/$id'
     | '/messages/'
+    | '/_authenticated/partner/broadcasts'
     | '/admin/users/$id'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -823,6 +836,7 @@ export interface RootRouteChildren {
   USlugRoute: typeof USlugRoute
   VenuesIdRoute: typeof VenuesIdRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
+  AuthenticatedPartnerBroadcastsRoute: typeof AuthenticatedPartnerBroadcastsRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
   ApiPublicSignupGuardRoute: typeof ApiPublicSignupGuardRoute
   ApiPublicHooksBillingTickRoute: typeof ApiPublicHooksBillingTickRoute
@@ -1239,6 +1253,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/_authenticated/partner/broadcasts': {
+      id: '/_authenticated/partner/broadcasts'
+      path: '/partner/broadcasts'
+      fullPath: '/partner/broadcasts'
+      preLoaderRoute: typeof AuthenticatedPartnerBroadcastsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
       path: '/lovable/email/queue/process'
@@ -1398,6 +1419,7 @@ const rootRouteChildren: RootRouteChildren = {
   USlugRoute: USlugRoute,
   VenuesIdRoute: VenuesIdRoute,
   MessagesIndexRoute: MessagesIndexRoute,
+  AuthenticatedPartnerBroadcastsRoute: AuthenticatedPartnerBroadcastsRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
   ApiPublicSignupGuardRoute: ApiPublicSignupGuardRoute,
   ApiPublicHooksBillingTickRoute: ApiPublicHooksBillingTickRoute,
