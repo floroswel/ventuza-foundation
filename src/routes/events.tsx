@@ -26,7 +26,26 @@ import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { EmptyState } from "@/components/EmptyState";
 import { toast } from "sonner";
 
+type EventsSearch = { city?: string; type?: EventType | "all" };
+
 export const Route = createFileRoute("/events")({
+  validateSearch: (raw: Record<string, unknown>): EventsSearch => {
+    const rawType = typeof raw.type === "string" ? raw.type : undefined;
+    const allowed: Array<EventType | "all"> = [
+      "all",
+      "party",
+      "bar",
+      "pride",
+      "meetup",
+      "other",
+      "private",
+    ];
+    const type = allowed.includes(rawType as EventType | "all")
+      ? (rawType as EventType | "all")
+      : undefined;
+    const city = typeof raw.city === "string" && raw.city.trim() ? raw.city.trim() : undefined;
+    return { city, type };
+  },
   head: () => ({
     meta: [
       { title: "Events — Ventuza" },
@@ -40,14 +59,21 @@ const TYPES: Array<EventType | "all"> = ["all", "party", "bar", "pride", "meetup
 
 function EventsPage() {
   const { user, loading: authLoading } = useAuth();
+  const search = Route.useSearch();
 
   const navigate = useNavigate();
   const [events, setEvents] = useState<EventWithMeta[]>([]);
   const [loading, setLoading] = useState(true);
-  const [type, setType] = useState<EventType | "all">("all");
-  const [city, setCity] = useState("");
+  const [type, setType] = useState<EventType | "all">(search.type ?? "all");
+  const [city, setCity] = useState(search.city ?? "");
   const [creating, setCreating] = useState(false);
   const [view, setView] = useState<"list" | "map">("list");
+
+  // Reflect search-param changes (când vii din Explore cu ?city=Bucuresti).
+  useEffect(() => {
+    if (search.city !== undefined) setCity(search.city);
+    if (search.type !== undefined) setType(search.type);
+  }, [search.city, search.type]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });

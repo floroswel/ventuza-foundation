@@ -104,7 +104,12 @@ function ExplorePage() {
             cities={filtered}
             loading={isLoading}
             error={error as Error | null}
-            onOpen={() => navigate({ to: "/events" })}
+            onOpen={(cityName) =>
+              navigate({
+                to: "/events",
+                search: cityName ? { city: cityName } : {},
+              })
+            }
           />
         )}
       </div>
@@ -148,7 +153,7 @@ function VenturePanel({
   cities: ExploreCity[];
   loading: boolean;
   error: Error | null;
-  onOpen: () => void;
+  onOpen: (city?: string) => void;
 }) {
   if (loading) {
     return (
@@ -185,11 +190,11 @@ function VenturePanel({
   );
 }
 
-function CityCard({ city, onOpen }: { city: ExploreCity; onOpen: () => void }) {
+function CityCard({ city, onOpen }: { city: ExploreCity; onOpen: (city?: string) => void }) {
   const hue = hashHue(city.city);
   return (
     <button
-      onClick={onOpen}
+      onClick={() => onOpen(city.city)}
       className="group relative block h-56 w-full overflow-hidden rounded-2xl border border-border/50 text-left"
     >
       {city.cover_url ? (
