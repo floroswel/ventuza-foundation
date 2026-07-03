@@ -191,8 +191,8 @@ export const adminResendConfirmationEmail = createServerFn({ method: "POST" })
 // NOTE: Adminul nu mai poate acorda „verified" direct pe cont. Aprobarea
 // vine exclusiv din panoul intern de verificare (`/admin/verification`) prin
 // `verification_moderator_decide`, care este auditat și dublu-review-uit
-// când e cazul. Vechiul `adminManualAgeVerify` (bazat pe fallback-ul Didit)
-// a fost eliminat împreună cu tabelul `age_verifications`.
+// când e cazul.
+
 
 
 /** Vizualizare combinată user — profil mascat + consents + verificări + reports. */
