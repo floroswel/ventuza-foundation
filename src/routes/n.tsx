@@ -150,29 +150,40 @@ function Onboarding() {
   }, [step, data, hydrated, user?.id]);
 
   // Guard: dacă userul a terminat deja onboarding-ul, redirect către /discover.
+  // În plus, prefill birthdate + display_name dacă există deja în profil
+  // (setate la signup) — să nu întrebăm a doua oară.
+  const [birthdateLocked, setBirthdateLocked] = useState(false);
   useEffect(() => {
-    if (!user) return;
+    if (!user || !hydrated) return;
     let alive = true;
     supabase
       .from("profiles")
-      .select("onboarding_completed")
+      .select("onboarding_completed, birthdate, display_name")
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data: row }) => {
-        if (!alive) return;
-        if (row?.onboarding_completed) {
+        if (!alive || !row) return;
+        if (row.onboarding_completed) {
           try {
             localStorage.removeItem(STORAGE_KEY);
           } catch {
             /* noop */
           }
           navigate({ to: "/discover", replace: true });
+          return;
         }
+        setData((prev) => ({
+          ...prev,
+          birthdate: prev.birthdate || (row.birthdate ?? ""),
+          display_name: prev.display_name || (row.display_name ?? ""),
+        }));
+        if (row.birthdate) setBirthdateLocked(true);
       });
     return () => {
       alive = false;
     };
-  }, [user?.id, navigate]);
+  }, [user?.id, hydrated, navigate]);
+
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", search: { mode: "login" } });
