@@ -293,9 +293,9 @@ export const adminGetUserView = createServerFn({ method: "POST" })
       }
     }
     const activeSub = (activeSubs.data ?? [])[0] ?? null;
-    const enrichedProfile = p
+    const enrichedProfile: any = p
       ? {
-          ...(p as Record<string, unknown>),
+          ...(p as any),
           age,
           is_premium: !!activeSub,
           last_active_at: (p as any).last_seen ?? null,
