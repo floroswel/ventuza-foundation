@@ -35,7 +35,7 @@
 | **P3** | Google OAuth (Sign-In) | SUA | SCC + DPF |
 | **P4** | Push services (FCM / APNs / Mozilla autopush) | SUA + mixt | SCC + DPF |
 | **P5** | RevenueCat | SUA | SCC + DPF |
-| ~~**P6**~~ | ~~Didit~~ (eliminat — verificare 100% internă) | — | — |
+| ~~**P6**~~ | (procesator KYC extern eliminat — verificare 100% internă) | — | — |
 | **P7** | Lovable AI Gateway | UE/SUA în funcție de model | SCC dacă model US |
 | **P8** | Cloudflare Workers (runtime) | Global edge | SCC + DPF |
 | **P9** | ANAF (lookup CUI business) | RO | — (operator independent, nu procesator) |
