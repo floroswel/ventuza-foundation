@@ -255,10 +255,11 @@ export const adminModerateItem = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     await assertStaff(context.supabase, context.userId);
-    // MFA cerut pentru aprobare cu rază > 5km (evită abuzuri de spam notificări)
-    // sau pentru marcare oficială / respingere definitivă.
+    // MFA cerut DOAR pentru acțiuni cu impact ridicat: respingere definitivă,
+    // marcare oficială, sau aprobare cu rază de notificare > 5km (anti-spam push).
+    // Aprobările obișnuite (rază implicită, non-oficial) nu cer MFA.
     const needsMfa =
-      data.decision !== "changes_requested" ||
+      data.decision === "rejected" ||
       (data.notification_radius_m ?? 0) > 5000 ||
       data.is_official === true;
     if (needsMfa) {
