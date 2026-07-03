@@ -744,10 +744,14 @@ function Cascade({
   profiles,
   onOpen,
   badgesMap,
+  badgesLoading,
+  badgesError,
 }: {
   profiles: DiscoverProfile[];
   onOpen: (p: DiscoverProfile) => void;
   badgesMap: Record<string, string[]>;
+  badgesLoading: boolean;
+  badgesError: boolean;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const { bySender } = useUnreadMessages();
