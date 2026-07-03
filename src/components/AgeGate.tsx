@@ -86,10 +86,14 @@ export function AgeGate() {
   }, [user?.id]);
 
   if (authLoading || !user || !isGated) return null;
+  // User-initiated verification (buton "Verifică-te" din /account) forțează
+  // afișarea modalului chiar dacă feature flag-ul e OFF în preview.
+  const userForced =
+    typeof window !== "undefined" && sessionStorage.getItem("force_age_gate") === "1";
   // DEV BYPASS: dacă enforcement-ul e oprit (feature flag OFF + host non-prod),
   // nu afișăm modal și nu pornim Didit. Codul Didit rămâne intact, doar UI-ul
   // de blocare e ocolit. Producția forțează enforce=true în age-gate-policy.
-  if (!enforce) {
+  if (!enforce && !userForced) {
     if (typeof window !== "undefined" && !(window as any).__ageGateDevWarned) {
       (window as any).__ageGateDevWarned = true;
 

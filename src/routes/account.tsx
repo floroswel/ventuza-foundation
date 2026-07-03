@@ -28,8 +28,8 @@ export const Route = createFileRoute("/account")({
 
 type ProfileSummary = {
   display_name: string | null;
-  photo_url: string | null;
   age_status: string | null;
+  photos: string[] | null;
   hide_online: boolean | null;
   discrete_mode: boolean | null;
   boost_until: string | null;
@@ -51,7 +51,7 @@ function AccountPage() {
     supabase
       .from("profiles")
       .select(
-        "display_name, photo_url, age_status, hide_online, discrete_mode, boost_until, looking_now_until",
+        "display_name, photos, age_status, hide_online, discrete_mode, boost_until, looking_now_until",
       )
       .eq("id", user.id)
       .maybeSingle()
@@ -112,8 +112,8 @@ function AccountPage() {
             className="flex min-w-0 flex-1 items-center gap-4 rounded-xl transition-transform active:scale-[0.98]"
           >
             <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-muted ring-2 ring-primary/30">
-              {profile?.photo_url ? (
-                <img src={profile.photo_url} alt="" className="h-full w-full object-cover" />
+              {profile?.photos?.[0] ? (
+                <img src={profile.photos[0]} alt="" className="h-full w-full object-cover" />
               ) : (
                 <div className="grid h-full w-full place-items-center text-2xl">
                   {(profile?.display_name ?? user.email ?? "?").slice(0, 1).toUpperCase()}
@@ -141,7 +141,12 @@ function AccountPage() {
           {!verified ? (
             <button
               type="button"
-              onClick={() => navigate({ to: "/discover" })}
+              onClick={() => {
+                try {
+                  sessionStorage.setItem("force_age_gate", "1");
+                } catch {}
+                navigate({ to: "/discover" });
+              }}
               className="shrink-0 rounded-full bg-gradient-to-r from-primary to-fuchsia-500 px-3.5 py-2 text-[11px] font-bold uppercase tracking-wide text-white shadow-[0_6px_18px_-6px_rgba(217,70,239,0.7)] transition-transform active:scale-95"
             >
               Verifică-te
