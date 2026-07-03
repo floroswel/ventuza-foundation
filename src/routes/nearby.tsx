@@ -152,12 +152,7 @@ function NearbyPage() {
   if (geoError && !coords) {
     const isDenied = geoError instanceof GeoError && geoError.code === "denied";
     const isUnavailable = geoError instanceof GeoError && geoError.code === "unavailable";
-    const [retrying, setRetrying] = [
-      // eslint-disable-next-line react-hooks/rules-of-hooks
-      undefined,
-      undefined,
-    ];
-    void retrying;
+
     return (
       <div className="container max-w-2xl py-8">
         <Card className="p-6">
