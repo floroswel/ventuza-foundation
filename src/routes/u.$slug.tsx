@@ -255,7 +255,7 @@ function PublicProfilePage() {
             <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
               <Heart className="size-4 text-primary" /> Match ideal
             </div>
-            <p className="italic text-foreground/85">"{profile.ideal_match}"</p>
+            <p className="italic text-foreground/85">"{displayIdeal}"</p>
           </div>
         )}
 
