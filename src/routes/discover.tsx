@@ -242,29 +242,42 @@ function DiscoverPage() {
   }, [user]);
 
   // Realtime location/discover refresh: profile location changes reorder nearby people.
+  // Rate-limited server-side (10 calls/hour). Așa că:
+  // - NU mai facem setInterval periodic (spamma quota și genera "discover_rate_limited").
+  // - Facem refresh DOAR pe evenimente realtime, debounced la max 1 apel / 60s.
   useEffect(() => {
     if (!user) return;
-    // Dacă avem o eroare terminală (email neconfirmat, vârstă neverificată, sesiune expirată),
-    // nu mai facem refresh — altfel se acumulează toast-uri și cereri inutile la DB.
     const terminal =
       loadError?.code === "email_not_confirmed" ||
       loadError?.code === "age_verification_required" ||
-      loadError?.code === "not_authenticated";
+      loadError?.code === "not_authenticated" ||
+      loadError?.code === "discover_rate_limited";
     if (terminal) return;
-    const refresh = () => {
-      void load();
+
+    let lastRefresh = Date.now();
+    let pending: ReturnType<typeof setTimeout> | null = null;
+    const REFRESH_MIN_INTERVAL = 60_000;
+    const scheduleRefresh = () => {
+      const elapsed = Date.now() - lastRefresh;
+      const wait = Math.max(0, REFRESH_MIN_INTERVAL - elapsed);
+      if (pending) return;
+      pending = setTimeout(() => {
+        pending = null;
+        lastRefresh = Date.now();
+        void load();
+      }, wait);
     };
+
     const ch = supabase
       .channel(`discover-profiles:${user.id}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "profile_live_events" },
-        refresh,
+        scheduleRefresh,
       )
       .subscribe();
-    const t = setInterval(refresh, 20_000);
     return () => {
-      clearInterval(t);
+      if (pending) clearTimeout(pending);
       supabase.removeChannel(ch);
     };
   }, [user, load, loadError?.code]);
