@@ -793,13 +793,10 @@ function Cascade({
                 <Rocket className="size-2.5" /> BOOST
               </span>
             )}
-            {!(p.boost_until && new Date(p.boost_until) > new Date()) && p.verified && (
-              <span
-                aria-label="verified"
-                className="absolute left-1.5 top-1.5 rounded-full bg-black/60 p-0.5 backdrop-blur"
-              >
-                <BadgeCheck className="size-3.5 text-primary" />
-              </span>
+            {!(p.boost_until && new Date(p.boost_until) > new Date()) && (badgesMap[p.id]?.length ?? 0) > 0 && (
+              <div className="absolute left-1.5 top-1.5">
+                <BadgeStrip codes={badgesMap[p.id] ?? []} max={3} size="xs" />
+              </div>
             )}
             {p.looking_now_until && new Date(p.looking_now_until) > new Date() && (
               <span className="absolute right-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-rose-500/95 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-lg backdrop-blur">
