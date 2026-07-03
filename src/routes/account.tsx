@@ -51,7 +51,7 @@ function AccountPage() {
     supabase
       .from("profiles")
       .select(
-        "display_name, photo_url, age_status, hide_online, discrete_mode, boost_until, looking_now_until",
+        "display_name, photos, age_status, hide_online, discrete_mode, boost_until, looking_now_until",
       )
       .eq("id", user.id)
       .maybeSingle()
