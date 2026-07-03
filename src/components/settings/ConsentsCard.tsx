@@ -56,7 +56,7 @@ export function ConsentsCard() {
         _version: CONSENT_REGISTRY[kind].currentVersion,
         _accepted: accepted,
         _user_agent:
-          typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 512) : null,
+          typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 512) : undefined,
       });
       if (error) throw error;
       setState((s) => ({ ...s, [kind]: accepted }));
