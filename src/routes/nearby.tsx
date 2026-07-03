@@ -111,6 +111,26 @@ function NearbyPage() {
     staleTime: 30_000,
   });
 
+  // Fetch server-side venue badges for the loaded points.
+  useEffect(() => {
+    const venueIds = (data?.points ?? [])
+      .filter((p) => p.kind === "venue")
+      .map((p) => p.id);
+    if (venueIds.length === 0) {
+      setVenueBadges({});
+      return;
+    }
+    void fetchVenueBadges({ data: { venueIds } })
+      .then(({ rows }: { rows: Array<{ venue_id: string; badges: string[] }> }) => {
+        const next: Record<string, string[]> = {};
+        for (const r of rows) next[r.venue_id] = r.badges ?? [];
+        setVenueBadges(next);
+      })
+      .catch(() => {
+        /* non-fatal */
+      });
+  }, [data, fetchVenueBadges]);
+
   const errorKind = useMemo<"permission" | "network" | null>(() => {
     if (!error) return null;
     const msg = String((error as Error)?.message ?? error ?? "").toLowerCase();
