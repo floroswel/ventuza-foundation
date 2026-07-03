@@ -84,7 +84,12 @@ function MessagesPage() {
                   params={{ id: c.id }}
                   className="flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-muted/40"
                 >
-                  <div className="size-12 shrink-0 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={cn(
+                      "size-12 shrink-0 overflow-hidden rounded-full bg-muted",
+                      c.unread_count > 0 && "snake-border",
+                    )}
+                  >
                     {c.other_photo ? (
                       <img
                         src={c.other_photo}
@@ -97,6 +102,7 @@ function MessagesPage() {
                       </div>
                     )}
                   </div>
+
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <p
