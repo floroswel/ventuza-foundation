@@ -153,7 +153,9 @@ export async function fetchConversations(meId: string): Promise<ConversationList
       last_message_at: r.last_message_at,
       unread: count > 0,
       unread_count: count,
+      other_online: info?.online ?? false,
     };
+
   });
 }
 
