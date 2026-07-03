@@ -141,7 +141,12 @@ function AccountPage() {
           {!verified ? (
             <button
               type="button"
-              onClick={() => navigate({ to: "/discover" })}
+              onClick={() => {
+                try {
+                  sessionStorage.setItem("force_age_gate", "1");
+                } catch {}
+                navigate({ to: "/discover" });
+              }}
               className="shrink-0 rounded-full bg-gradient-to-r from-primary to-fuchsia-500 px-3.5 py-2 text-[11px] font-bold uppercase tracking-wide text-white shadow-[0_6px_18px_-6px_rgba(217,70,239,0.7)] transition-transform active:scale-95"
             >
               Verifică-te
