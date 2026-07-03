@@ -45,23 +45,32 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
   }
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>, viewOnce: boolean) {
-    const f = e.target.files?.[0];
+    const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (!f) return;
-    if (f.size > 8 * 1024 * 1024) {
-      toast.error("Imagine prea mare (max 8MB)");
+    if (!files.length) return;
+    const MAX = 10;
+    if (files.length > MAX) {
+      toast.error(`Maxim ${MAX} imagini deodată`);
       return;
     }
     setBusy(true);
     try {
-      const m = await sendMediaMessage(conversationId, { kind: "image", file: f, viewOnce });
-      onSent(m);
+      for (const f of files) {
+        if (f.size > 8 * 1024 * 1024) {
+          toast.error(`"${f.name}" e prea mare (max 8MB)`);
+          continue;
+        }
+        const m = await sendMediaMessage(conversationId, { kind: "image", file: f, viewOnce });
+        onSent(m);
+      }
+      if (files.length > 1) toast.success(`${files.length} imagini trimise`);
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
       setBusy(false);
     }
   }
+
 
   async function shareLocation() {
     setOpen(false);
@@ -199,6 +208,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
         ref={fileRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={(e) => handleFile(e, false)}
       />
@@ -206,10 +216,11 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
         ref={fileOnceRef}
         type="file"
         accept="image/*"
-        capture="environment"
+        multiple
         className="hidden"
         onChange={(e) => handleFile(e, true)}
       />
+
       <div className="relative">
         <button
           type="button"
@@ -224,17 +235,18 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
           <Plus className="size-5" />
         </button>
         {open && (
-          <div className="absolute bottom-14 left-0 z-30 w-44 rounded-2xl border border-border bg-popover p-1 shadow-xl">
+          <div className="absolute bottom-14 left-0 z-30 w-52 rounded-2xl border border-border bg-popover p-1 shadow-xl">
             <MenuItem
               icon={<Camera className="size-4" />}
-              label="Foto"
+              label="Foto (una sau mai multe)"
               onClick={() => pickPhoto(false)}
             />
             <MenuItem
               icon={<Timer className="size-4" />}
-              label="Foto view-once"
+              label="Foto o singură vizualizare"
               onClick={() => pickPhoto(true)}
             />
+
             <MenuItem
               icon={<Mic className="size-4" />}
               label="Voice note"
