@@ -153,12 +153,27 @@ function DiscoverPage() {
     if (!user || locStatus !== "unknown") return;
     requestAndStoreLocation().then((r) => {
       setLocStatus(r.ok ? "granted" : "denied");
-      if (!r.ok)
+      if (r.ok) {
+        // Informăm userul o singură dată că poate opri oricând locația din
+        // browser (🔒 lângă URL) sau din setările sistemului — fără să-l
+        // punem să se plimbe prin app ca să o activeze.
+        const KEY = "vz_loc_hint_shown";
+        if (typeof localStorage !== "undefined" && !localStorage.getItem(KEY)) {
+          localStorage.setItem(KEY, "1");
+          toast.success("Locație activată", {
+            id: "loc-enabled",
+            description:
+              "Îți arătăm profiluri din apropiere. Poți opri oricând locația din 🔒 (lângă URL) sau din setările telefonului.",
+            duration: 7000,
+          });
+        }
+      } else {
         toast.message("Locație indisponibilă", {
           id: "loc-unavailable",
           description: r.error ?? "Îți arătăm rezultate pe baza filtrelor tale.",
           duration: 6000,
         });
+      }
     });
   }, [user, locStatus]);
 
