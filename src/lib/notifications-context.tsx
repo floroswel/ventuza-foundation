@@ -64,6 +64,11 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     refresh();
   }, [refresh]);
 
+  // Prime AudioContext on first user gesture (iOS/Safari requirement)
+  useEffect(() => {
+    primeNotificationSound();
+  }, []);
+
   // Realtime subscription
   useEffect(() => {
     if (!user) return;
