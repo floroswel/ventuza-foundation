@@ -41,7 +41,7 @@ OPTIONAL_KINDS = [
 
 # Cuvinte-cheie așteptate pe /legal/data-safety per kind
 KEYWORDS = {
-    "age_verification": ["Selfie verificare vârstă", "Didit"],
+    "internal_verification": ["Selfie verificare vârstă", "liveness"],
     "ai_features": ["funcții AI", "Lovable AI"],
     "push_notifications": ["Notificări push", "FCM"],
     "background_location": ["Locație în fundal", "geofencing"],
