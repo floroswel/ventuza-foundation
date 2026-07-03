@@ -66,13 +66,13 @@ const ACTIVITIES: Activity[] = [
   },
   {
     id: "A4",
-    name: "Verificare vârstă (18+) — Didit",
-    purpose: "Confirmare vârstă minimă, blocare minori.",
+    name: "Verificare vârstă (18+) — flux intern",
+    purpose: "Confirmare vârstă minimă prin liveness (3 selfie challenge) + review moderator uman.",
     art9: true,
     legalBasis: "6(1)(c) obligație legală (DSA) + 6(1)(f)",
-    art9Basis: "9(2)(a) + 9(2)(g) interes public substanțial (biometric)",
-    processors: "P1, P6 Didit, P8",
-    retention: "24 luni; selfie șters la deleteMyAccount",
+    art9Basis: "9(2)(a) consimțământ explicit + 9(2)(g) interes public substanțial (biometric)",
+    processors: "P1, P8 (fără procesator KYC extern)",
+    retention: "≤30 zile pentru imagini; decizia rămâne pe cont",
   },
   {
     id: "A5",
