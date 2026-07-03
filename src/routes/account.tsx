@@ -8,11 +8,15 @@ import {
   Flame,
   HelpCircle,
   Loader2,
+  Mail,
+  MessageCircle,
   Rocket,
   Ticket,
   ShieldCheck,
   Sparkles,
+  Users,
 } from "lucide-react";
+
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
