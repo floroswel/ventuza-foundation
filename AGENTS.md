@@ -183,14 +183,14 @@ push, marketing) trece printr-un singur registru de consimțăminte:
 Reguli obligatorii:
 
 1. Consimțământul se înregistrează în `consent_log` **ÎNAINTE** de prelucrare
-   (înainte de apelul către Didit, AI Gateway, înregistrare push etc.).
+   (înainte de capturarea selfie-urilor de verificare, AI Gateway, înregistrare push etc.).
 2. Toate consimțămintele opționale sunt **opt-in** explicit (nu opt-out, nu
    pre-bifate).
 3. **Retragerea oprește prelucrarea și șterge datele unde se aplică:**
    - `health_data` → triggerul `cascade_health_consent_withdrawal` setează
      coloanele HIV pe NULL.
-   - `age_verification` → blochează `startAgeVerification` (nu re-trimite selfie
-     la Didit).
+   - `internal_verification` → blochează submisia de noi cereri și marchează
+     imaginile pentru ștergere imediată (`verification_purge_expired`).
    - `ai_features` → blochează toate server-fn-urile din `src/lib/ai.functions.ts`.
    - `push_notifications` → UI-ul dezabonează `pushManager.subscription`.
 4. UI-ul afișează clar **cine procesează** (procesatorul din
@@ -279,14 +279,14 @@ sau tabele cu prefix `admin_*`.
    (`adminListRows`) NU proiectează: `profiles.hiv_status_enc`,
    `hiv_test_date_enc`, `health_data_consent_at`, `location`, `prev_location`,
    `travel_location`, `phone_e164`, `pin_hash`; `messages.body / media_url /
-   voice_url / caption`; `age_verifications.selfie_url / document_url /
-   raw_payload`; `push_subscriptions.endpoint / auth / p256dh`;
+   voice_url / caption`; `verification_images.storage_path`,
+   `verification_requests.ip_hash / ua_hash`; `push_subscriptions.endpoint / auth / p256dh`;
    `device_fingerprints.fingerprint / user_agent / ip`. Orice coloană nouă
    sensibilă se adaugă în `SENSITIVE_COLUMNS` și în `safeColumnsFor`.
 
 4. **Break-glass obligatoriu pentru dezvăluire.** Singura cale pentru a vedea
    datele sensibile listate mai sus este `adminBreakGlassReveal` cu:
-   `targetUserId`, `kind ∈ {health, location, selfie, messages}`,
+   `targetUserId`, `kind ∈ {health, location, messages}`,
    `justification ≥ 10 caractere`. Server-side se verifică
    `admin_can_access_sensitive(actor, kind)`:
    - `health`   → DOAR `super_admin`
@@ -370,8 +370,9 @@ câmpuri sub formă brută între useri (vezi RPC `discover_profiles`).
 
 ## REGULĂ — AGE GATE (permanentă)
 
-Verificarea de vârstă (Didit) este OBLIGATORIE în producție. Dating app cu
-risc legal: minori + conținut adult. Această regulă nu se negociază.
+Verificarea de vârstă (flux intern: liveness + moderator) este OBLIGATORIE în
+producție. Dating app cu risc legal: minori + conținut adult. Această regulă nu
+se negociază.
 
 1. **Sursa de adevăr UI**: `src/lib/age-gate-policy.ts → shouldEnforceAgeGate()`.
    - Producție (orice host care NU e `localhost`, `127.0.0.1`, `*.local`,
@@ -386,9 +387,11 @@ risc legal: minori + conținut adult. Această regulă nu se negociază.
    toggle `age_verification` pe ON. În producție acest pas este redundant
    (codul forțează ON), dar îl facem oricum pentru curățenie + paritate
    între medii.
-4. **Codul Didit (`startAgeVerification`, webhook, RPC-uri DB, triggere
-   consimțământ) rămâne intact** chiar și când flag-ul e OFF. Bypass-ul e
-   strict la nivel de UX (componenta `AgeGate` nu afișează modal). Triggerele
+4. **Fluxul de verificare** este 100% intern (liveness + moderator uman) și
+   trăiește în `verification_requests` / `verification_images` cu RLS strict
+   și retenție 30 zile. Nu există procesator KYC extern. Bypass-ul dev este
+   strict la nivel de UX (componenta `AgeGate` nu redirecționează la `/verify`
+   când flag-ul e OFF ȘI host-ul e non-prod). Triggerele
    `enforce_health_consent`, `cascade_health_consent_withdrawal` și restul
    protecțiilor de date NU sunt afectate.
 5. **Code review automat:** orice diff care
@@ -612,7 +615,7 @@ REGULĂ — COLOANA `birthdate` E CANONICĂ
 Data nașterii se scrie EXCLUSIV în coloana `public.profiles.birthdate` (date).
 Coloana `birth_date` (cu underscore) a fost orfană și e ștearsă. Orice cod care
 introduce `birth_date` trebuie REFUZAT — age gate, discover, `enforce_min_age_trg`,
-Didit și onboarding (/n) folosesc `birthdate`. OAuth signup nu poate intra în
+verificarea internă și onboarding (/n) folosesc `birthdate`. OAuth signup nu poate intra în
 aplicație fără `birthdate` non-null: `SessionGuards` redirecționează către /n
 dacă lipsește, iar triggerul DB refuză orice valoare <18 ani.
 

@@ -145,7 +145,7 @@ Legendă severitate: 🔴 blocker enterprise · 🟠 gap serios · 🟡 polish �
 1. Fără scheduler: SAR trebuie răspuns în 30 zile — countdown vizibil.
 2. Fără template DPA response.
 3. Fără "data map" per user (unde sunt datele lui: DB, storage, backups, analytics, procesatori terți).
-4. Fără trigger la procesatori (Didit, AI, push) pentru erasure downstream.
+4. Fără trigger la procesatori (AI, push) pentru erasure downstream.
 5. Fără verificare identitate cerută înainte de SAR (evită data leak).
 6. Fără istoric SAR + status (pending/completed/refused cu motiv).
 7. Fără log "cine a văzut datele exportate" (double-audit).
@@ -365,14 +365,14 @@ Legendă severitate: 🔴 blocker enterprise · 🟠 gap serios · 🟡 polish �
 ## Ce lipsește COMPLET (nu există niciun tab)
 
 1. 🔴 **Trust Center public** (uptime, incidente, DPA download self-serve).
-2. 🔴 **Vendor risk register** (Didit, AI, push, hosting — SOC2, ISO, DPA status).
+2. 🔴 **Vendor risk register** (AI, push, hosting — SOC2, ISO, DPA status).
 3. 🔴 **Data retention dashboard** (câte rânduri > politica, auto-purge status).
 4. 🔴 **Backup & restore drill** (last successful restore test, RPO/RTO).
 5. 🔴 **Runbooks in-app** (playbook per tip incident, linkat la kill switches).
 6. 🔴 **Chaos / GameDay scheduler** (test-uri programate de failover).
 7. 🔴 **Fraud rings dashboard** (grafuri de conturi legate).
 8. 🔴 **Content policy versioning** (community guidelines cu diff public).
-9. 🔴 **Age assurance dashboard** (Didit conversion, failure reasons, cost/verificare).
+9. 🔴 **Age assurance dashboard** (conversion internă, failure reasons, throughput moderatori).
 10. 🟠 **Payment reconciliation** (bancă vs partner_invoices vs subscriptions).
 11. 🟠 **Legal hold** (freeze date la un user pt litigiu — nu se șterg).
 12. 🟠 **Regulator inbox** (ANSPDCP, ANCOM, EC Digital Services queries tracker).

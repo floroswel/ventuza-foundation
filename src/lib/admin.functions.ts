@@ -189,7 +189,10 @@ const SENSITIVE_COLUMNS: Record<string, string[]> = {
   group_messages: ["body", "media_url"],
   // CSAM never-render: photo_url NU se proiectează niciodată în UI admin.
   csam_reports: ["photo_url"],
-  age_verifications: ["selfie_url", "document_url", "raw_payload"],
+  // Verificarea internă: imaginile trăiesc în bucket privat + `verification_images.storage_path`.
+  // Nu se proiectează în listinguri; accesul se face doar prin RPC-ul `verification_signed_url` (30s).
+  verification_images: ["storage_path"],
+  verification_requests: ["ip_hash", "ua_hash"],
   push_subscriptions: ["endpoint", "auth", "p256dh"],
   device_fingerprints: ["fingerprint", "user_agent", "ip"],
   // Anonimitatea raportorului DSA — illegal_content_reports este anonim by design.
@@ -204,8 +207,9 @@ function safeColumnsFor(table: string): string {
     // Niciodată photo_url. Doar referință/hash + status.
     return "id, user_id, hash, match_source, ncmec_report_id, reported_at, status, notes";
   }
-  if (table === "age_verifications") {
-    return "id, user_id, status, created_at, completed_at";
+  if (table === "verification_requests") {
+    // Metadata queue-ului de verificare — fără PII/imagini/hash-uri IP.
+    return "id, user_id, status, decision, method, needs_second, submitted_at, decided_at, moderator_id";
   }
   if (table === "illegal_content_reports") {
     return "id, category, content_type, content_url, description, legal_basis, status, handled_by, handled_at, resolution, created_at";

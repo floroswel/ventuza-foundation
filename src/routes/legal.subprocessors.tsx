@@ -82,17 +82,8 @@ const ROWS: Row[] = [
     dpa: "https://www.revenuecat.com/dpa/",
     codeRef: "src/lib/revenuecat.server.ts",
   },
-  {
-    name: "Didit",
-    purpose: "Verificare vârstă (18+) prin selfie + estimare AI",
-    data: "Selfie capturat în fluxul lor hosted, vendor_data=user_id intern, callback URL. Fără orientare, fără date de sănătate, fără locație precisă, fără mesaje.",
-    sensitive: true,
-    region: "UE",
-    extraEU: false,
-    transfer: "Intra-UE.",
-    dpa: "https://didit.me/legal/dpa",
-    codeRef: "src/lib/age-verification.functions.ts",
-  },
+  // Verificarea de identitate se face 100% intern (liveness + moderator uman),
+  // fără procesator extern KYC.
   {
     name: "Lovable AI Gateway",
     purpose: "Moderare conținut, generare text (bio assist), embeddings",
@@ -107,7 +98,7 @@ const ROWS: Row[] = [
   {
     name: "Cloudflare, Inc.",
     purpose: "Edge runtime (Workers) pentru server functions + CDN asseturi",
-    data: "Toate request-urile HTTP/S în tranzit (headere, IP, payload), inclusiv date sensibile spre Supabase/Didit/Google. Procesare in-memory, fără persistență la noi.",
+    data: "Toate request-urile HTTP/S în tranzit (headere, IP, payload), inclusiv date sensibile spre Supabase/Google. Procesare in-memory, fără persistență la noi.",
     sensitive: true,
     region: "Extra-UE (edge global, inclusiv SUA)",
     extraEU: true,
@@ -230,8 +221,8 @@ function SubsPage() {
         <h2 className="mt-8 text-base font-semibold">Minimizarea datelor</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
           <li>
-            <strong>Didit</strong> primește doar selfie + ID intern pentru age check — niciodată
-            orientare, date de sănătate sau locație.
+            <strong>Verificare identitate</strong> se face 100% intern (liveness + moderator uman)
+            fără procesator extern KYC — nu partajăm selfie-uri sau documente cu terți.
           </li>
           <li>
             <strong>RevenueCat</strong> și <strong>Google Play Billing</strong> primesc doar

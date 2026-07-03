@@ -35,7 +35,7 @@
 | **P3** | Google OAuth (Sign-In) | SUA | SCC + DPF |
 | **P4** | Push services (FCM / APNs / Mozilla autopush) | SUA + mixt | SCC + DPF |
 | **P5** | RevenueCat | SUA | SCC + DPF |
-| **P6** | Didit (age verification) | UE | — |
+| ~~**P6**~~ | (procesator KYC extern eliminat — verificare 100% internă) | — | — |
 | **P7** | Lovable AI Gateway | UE/SUA în funcție de model | SCC dacă model US |
 | **P8** | Cloudflare Workers (runtime) | Global edge | SCC + DPF |
 | **P9** | ANAF (lookup CUI business) | RO | — (operator independent, nu procesator) |
@@ -98,20 +98,20 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 
 ---
 
-## A4. Verificare vârstă (18+) — Didit
+## A4. Verificare vârstă (18+) — flux intern (liveness + moderator)
 
 | | |
 |---|---|
 | **Scop** | Confirmare vârstă minimă legală (DSA + protecție minori); blocare conturi sub 18 ani. |
-| **Persoane vizate** | Utilizatori în onboarding. |
-| **Categorii date — normale** | `age_verifications` (`status`, `estimated_age`, `decision_at`, `vendor_session_id`, `vendor_data=user_id`). |
-| **🟥 Categorii Art. 9 — date biometrice** | Selfie capturat în fluxul hosted Didit. Nu stocăm noi datele biometrice rezultate; doar rezultatul estimării (`estimated_age`). Path selfie pe storage: `profiles.verification_selfie_path` (owner-only). |
+| **Persoane vizate** | Utilizatori în onboarding + oricine cere re-verificare. |
+| **Categorii date — normale** | `verification_requests` (status, decision, method, score, submitted_at, decided_at, ip_hash, ua_hash, country). Fără PII brut. |
+| **🟥 Categorii Art. 9 — date biometrice** | 3 selfie-uri live cu challenge-uri de gest (liveness), stocate în bucket privat `verification` cu path pe `verification_images.storage_path` (owner + moderator claim only). Nu partajăm imaginile cu procesatori externi. |
 | **Temei Art. 6** | 6(1)(c) obligație legală (DSA Art. 28, protecție minori) + 6(1)(f) interes legitim (prevenirea accesului minorilor la conținut adult). |
-| **Temei Art. 9** | 9(2)(a) consimțământ explicit pentru biometric (înregistrat în `consent_log` kind `age_verification` la pornirea fluxului) + 9(2)(g) interes public substanțial (protecția minorilor). |
-| **Destinatari** | P1 (status + path), P6 Didit (selfie + vendor_data), P8 (runtime + webhook `/api/public/age-webhook`). |
-| **Transfer extra-UE** | — (Didit este în UE). |
-| **Retenție** | `age_verifications`: 24 luni (audit + reapelare). Selfie storage: ștergere la `deleteMyAccount` + politică Didit. |
-| **Măsuri tehnice** | Webhook semnat HMAC, validare în `src/routes/api/public/age-webhook.ts`. `vendor_data` = doar UUID intern. Niciun PII suplimentar trimis la Didit. |
+| **Temei Art. 9** | 9(2)(a) consimțământ explicit `kind='internal_verification'` înregistrat în `consent_log` înainte de captura selfie-urilor + 9(2)(g) interes public substanțial (protecția minorilor). |
+| **Destinatari** | P1 (metadata + imagini în storage privat), P8 (runtime). Fără procesator KYC extern. |
+| **Transfer extra-UE** | — (imaginile trăiesc în bucket UE la P1). |
+| **Retenție** | Imagini: ≤30 zile de la decizie (`verification_purge_expired`). Metadata deciziei: pe durata contului. |
+| **Măsuri tehnice** | RLS strict pe `verification_requests` + `verification_images`. Signed URL 30s pentru moderator via `verification_signed_url`. Watermark cu moderator_id + timestamp în UI. Audit append-only în `verification_audit`. Second reviewer nu vede decizia primului. |
 
 ---
 
@@ -211,7 +211,7 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 | **🟥 Categorii Art. 9** | Da — exportul include orientare + sănătate dacă au fost completate. |
 | **Temei Art. 6** | 6(1)(c) obligație legală (GDPR). |
 | **Temei Art. 9** | 9(2)(a) consimțământul inițial acoperă restituirea către persoana vizată. |
-| **Destinatari** | P1, P5 RevenueCat (anulare via `cancelRevenueCatForUser`), P8. Nu trimitem la P6 (Didit) cerere de ștergere automată — necesită follow-up manual conform DPA. |
+| **Destinatari** | P1, P5 RevenueCat (anulare via `cancelRevenueCatForUser`), P8. Fără procesator KYC extern de notificat. |
 | **Transfer extra-UE** | P5, P8 — SCC + DPF. |
 | **Retenție** | `deletion_requests`: 3 ani (dovadă conformitate). Restul: cascade DELETE imediat. |
 | **Măsuri tehnice** | `deleteMyAccount` în `src/lib/account.functions.ts` — log → cancel RevenueCat → `auth.admin.deleteUser` (cascade) → cleanup storage. Export: `exportMyData`. |
@@ -341,14 +341,14 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 
 Identificate la generarea acestui registru, din analiza schemei reale:
 
-1. **🟧 A4 — selfie Didit ca date biometrice**: temeiul 9(2)(a) este înregistrat la onboarding global (`terms`/`privacy`) dar **nu** există un consent_log dedicat `age_verification` separat de termenii generali. **Acțiune:** adaugă în onboarding (`src/routes/n.tsx`) un consent explicit `kind='age_verification'` înainte de redirect către Didit.
+1. **✅ A4 — selfie ca date biometrice**: procesat 100% intern (bucket privat + moderator uman), fără procesator KYC extern. Consent explicit `kind='internal_verification'` înregistrat în `consent_log` înainte de captura selfie-urilor. Retenție 30 zile.
 2. **🟧 A17 — AI Gateway**: bio assist trimite text liber la model US potențial; lipsește un disclosure explicit + checkbox de consimțământ în UI-ul de bio assist. **Acțiune:** adaugă tooltip + consent la prima utilizare per user; loghează în `consent_log` kind `ai_features`.
 3. **🟧 A6 — push consent dual**: consimțământul de push este browser-level (Notification API) + opt-in app-level. Lipsește înregistrare în `consent_log` (kind `push_notifications`). **Acțiune:** loghează în `consent_log` la activare/dezactivare.
 4. **🟥 DPIA obligatoriu (Art. 35)**: combinația orientare + locație + monitorizare sistematică + risc minori impune DPIA formal. **Acțiune:** redactare DPIA + anexare la registru înainte de lansare comercială publică.
 5. **🟧 TIA (Transfer Impact Assessment)** post-Schrems II pentru toți procesatorii US (P2, P3, P4, P5, P7, P8). **Acțiune:** redactare TIA și anexare.
 6. **✅ Eliminare completă procesare HIV**: coloanele `hiv_status_enc` / `hiv_test_date_enc` au fost dropate din `profiles`, funcțiile `get_user_health` / `set_user_health` și triggerele `enforce_health_consent` / `cascade_health_consent_withdrawal` au fost șterse. Kind-ul `health_data` a fost scos din `consent_kinds`. Zero date HIV mai există în bază.
 7. **🟧 DPO desemnat oficial** (Art. 37) — neînregistrat. **Acțiune:** numire formală + notificare ANSPDCP.
-8. **🟧 DPA Didit + RevenueCat + Lovable**: semnate manual din dashboard — confirmă starea fiecăruia și anexează copii.
+8. **🟧 DPA RevenueCat + Lovable**: semnate manual din dashboard — confirmă starea fiecăruia și anexează copii.
 
 ---
 

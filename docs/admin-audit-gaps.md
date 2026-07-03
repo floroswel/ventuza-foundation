@@ -48,7 +48,7 @@ Cu ✅ = există și e conectat. Cu ⚠️ = există parțial. Cu ❌ = lipseșt
 - ❌ **Cronologie unificată** (login-uri + rapoarte + ban-uri + break-glass + tickete) într-un singur timeline. User360 le arată pe cartonașe separate. 🟠 P1.
 - ❌ **Export dosar user** ca PDF/JSON semnat (pentru cereri Art. 15 tratate manual, sau DPA). 🟠 P1.
 - ❌ **Shadow ban / rate-limit interactivitate** (nu ban complet, ci "mesajele lui nu ajung la nimeni nou"). Toate app-urile mari au. 🔴 P0 anti-abuse.
-- ❌ **Verify override** (marcheaz-un user "verified" fără Didit, cu motiv). Utile la creator/celeb. 🟡 P2.
+- ❌ **Verify override** (marcheaz-un user "verified" fără liveness, cu motiv). Utile la creator/celeb. 🟡 P2.
 - ❌ **Reset PIN privat album** din admin (user și-a uitat PIN). 🟡 P2.
 
 ---
@@ -218,7 +218,7 @@ Cu ✅ = există și e conectat. Cu ⚠️ = există parțial. Cu ❌ = lipseșt
 - ❌ **Device fingerprint clustering** (cross-account detection). Există date, nu există UI. 🔴 P0.
 - ❌ **Velocity rules configurabile din UI** (astăzi hardcodat). 🟠 P1.
 - ❌ **IP intelligence** (VPN/TOR/datacenter/geo mismatch) — integrare IPQS / MaxMind. 🔴 P0.
-- ❌ **Face-match verificare vs poze profil** (Didit face-only vs photo library) — anti-catfishing serios. 🟠 P1.
+- ❌ **Face-match verificare vs poze profil** (selfie liveness intern vs photo library) — anti-catfishing serios. 🟠 P1.
 - ❌ **Behavior scoring** (message-to-match ratio, time-to-first-message, block rate) → risk score compus. 🟠 P1.
 - ❌ **Honeypot profiles** pentru detectare scam-bots. 🟡 P2 dar foarte eficient.
 - ❌ **Payment fraud** (chargeback tracker) — la parteneri. 🟠 P1.

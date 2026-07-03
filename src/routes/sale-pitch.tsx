@@ -41,7 +41,7 @@ const STACK = [
   },
   { k: "Mobil", v: "Capacitor 6 (Android + iOS), Google Play Billing + RTDN webhook" },
   { k: "AI", v: "Lovable AI Gateway (wingman, bio, moderare foto, copilot admin)" },
-  { k: "Verificare", v: "Didit (KYC + age gate)" },
+  { k: "Verificare", v: "Liveness intern (3 selfie challenge) + moderator uman" },
   {
     k: "Geo",
     v: "Bucket distance privacy-preserving, 2 straturi proximity (foreground + geofencing)",
@@ -116,7 +116,7 @@ const DAY_30 = [
   "Semnare .aab + publicare Google Play (asset deja pregătit, lipsește signing key)",
   "Completare Data Safety form Play Store",
   "Migrare DNS ventuza.eu pe cumpărător",
-  "Handover credențiale: Supabase, Cloudflare, Didit, Lovable Cloud, Google Play Console",
+  "Handover credențiale: Supabase, Cloudflare, Lovable Cloud, Google Play Console",
   "Onboarding 3-5 venues plătitoare în București (lead-uri demo deja în DB)",
   "Setup billing real cu prima emitere facturi recurente prin pg_cron (cod live)",
   "Transfer DPO formal + actualizare /legal/privacy",
@@ -251,8 +251,9 @@ function SalePitch() {
               consimțământ activ; retragerea cascadează în NULL în aceeași tranzacție.
             </p>
             <p>
-              · <strong>Verificare vârstă</strong> Didit integrată, forțată ON în producție via{" "}
-              <code>shouldEnforceAgeGate</code> (host-based, nu flag-based).
+              · <strong>Verificare vârstă</strong> flux intern (liveness + moderator uman),
+              forțată ON în producție via <code>shouldEnforceAgeGate</code> (host-based, nu
+              flag-based). Imaginile trăiesc într-un bucket privat și se șterg în 30 zile.
             </p>
             <p>
               · <strong>CSAM no-render</strong>: rapoartele nu expun <code>photo_url</code>; doar

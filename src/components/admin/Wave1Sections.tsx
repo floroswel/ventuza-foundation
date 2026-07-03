@@ -30,7 +30,6 @@ import {
   adminGetUserConsentHistory,
   adminForceLogout,
   adminTriggerPasswordReset,
-  adminManualAgeVerify,
   adminCancelDeletion,
   adminPurgeUserAccount,
   adminRunPurgeNow,
@@ -42,14 +41,13 @@ import { adminGetDeletionRequests } from "@/lib/admin-enterprise.functions";
 /* =================================================================
    M1 — USER DETAIL DRAWER (mascat by default + break-glass)
 ================================================================= */
-type Kind = "health" | "orientation" | "location" | "selfie" | "messages";
+type Kind = "health" | "orientation" | "location" | "messages";
 
 export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => void }) {
   const getView = useServerFn(adminGetUserView);
   const getConsents = useServerFn(adminGetUserConsentHistory);
   const forceLogout = useServerFn(adminForceLogout);
   const passwordReset = useServerFn(adminTriggerPasswordReset);
-  const manualVerify = useServerFn(adminManualAgeVerify);
   const purge = useServerFn(adminPurgeUserAccount);
   const reveal = useServerFn(adminBreakGlassReveal);
 
@@ -117,17 +115,9 @@ export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose:
       toast.error(e.message);
     }
   };
-  const onManualVerify = async (verified: boolean) => {
-    const j = ask(`Justificare ${verified ? "APROBARE" : "RESPINGERE"} manuală vârstă (min 10):`);
-    if (!j) return;
-    try {
-      await manualVerify({ data: { userId, verified, justification: j } });
-      toast.success("Aplicat");
-      load();
-    } catch (e: any) {
-      toast.error(e.message);
-    }
-  };
+  // Aprobarea manuală „vârstă" a fost eliminată — verificarea trece exclusiv prin
+  // panoul intern (`/admin/verification`) unde un moderator ia decizia auditată.
+
   const onPurge = async () => {
     if (!confirm("Ștergere completă cont (RC cancel + storage + cascade). Ireversibil. Continui?"))
       return;
@@ -184,10 +174,10 @@ export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose:
               </div>
               <p className="mt-1 text-[10px] text-red-300/80">
                 Necesită rol corespunzător + justificare. Logat în admin_sensitive_access_log
-                (high). Health/Location/Orientation = super_admin. Selfie/Messages = admin+.
+                (high). Health/Location/Orientation = super_admin. Messages = admin+.
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {(["health", "orientation", "location", "selfie", "messages"] as Kind[]).map(
+                {(["health", "orientation", "location", "messages"] as Kind[]).map(
                   (k) => (
                     <button
                       key={k}
@@ -241,18 +231,12 @@ export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose:
                 >
                   <KeyRound className="mr-1 inline size-3" /> Reset parolă
                 </button>
-                <button
-                  onClick={() => onManualVerify(true)}
+                <a
+                  href="/admin/verification"
                   className="rounded-full bg-green-500/15 px-3 py-1.5 text-xs text-green-400"
                 >
-                  <BadgeCheck className="mr-1 inline size-3" /> Aprobă vârsta
-                </button>
-                <button
-                  onClick={() => onManualVerify(false)}
-                  className="rounded-full bg-red-500/15 px-3 py-1.5 text-xs text-red-400"
-                >
-                  Respinge vârsta
-                </button>
+                  <BadgeCheck className="mr-1 inline size-3" /> Coadă verificare
+                </a>
                 <button
                   onClick={onPurge}
                   className="rounded-full bg-red-700/20 px-3 py-1.5 text-xs text-red-400"

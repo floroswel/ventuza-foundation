@@ -63,7 +63,7 @@ function SafetyCenter() {
         <Tip
           icon={<ShieldCheck />}
           title="Verificare 18+ obligatorie"
-          body="Folosim Didit (verificare reală cu act de identitate) pentru a ne asigura că platforma este doar pentru adulți. Datele documentelor nu rămân la noi."
+          body="Folosim un flux intern de liveness cu selfie (3 gesturi random) verificat manual de moderatori. Imaginile trăiesc în bucket privat și se șterg automat în 30 de zile."
         />
         <Tip
           icon={<MapPin />}

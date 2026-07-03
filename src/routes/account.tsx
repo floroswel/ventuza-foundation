@@ -190,9 +190,8 @@ function AccountPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-amber-100">Verificare în curs</p>
                 <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
-                  Am primit selfie-ul și documentul. Partenerul de verificare (Didit) le
-                  procesează acum — de obicei durează sub 5 minute, dar poate ajunge la câteva
-                  ore în orele de vârf.
+                  Am primit selfie-urile tale de liveness. Un moderator intern le verifică în cel
+                  mai scurt timp — de obicei sub câteva ore. Te anunțăm imediat ce decizia e gata.
                 </p>
                 <ol className="mt-3 space-y-1.5 text-[11px] text-amber-100/70">
                   <li>1. Analiză automată document + selfie</li>

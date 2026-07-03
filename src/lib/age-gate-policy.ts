@@ -8,8 +8,8 @@
  *   - În PRODUCȚIE (host publicat, custom domain) age gate-ul este FORȚAT ON
  *     indiferent de flag. Nu există switch care să-l oprească pe live.
  *
- * Această regulă este oglindită pe server în `requireAgeGateEnforcement`
- * (src/lib/age-verification.functions.ts) și documentată în
+ * Această regulă este oglindită pe server în gate-urile SECURITY DEFINER
+ * (`assert_age_verified` / `assert_account_usable`) și documentată în
  * MOBILE.md + AGENTS.md.
  *
  * TODO[age-gate]: Când reactivezi flag-ul în admin → șterge banner-ul de

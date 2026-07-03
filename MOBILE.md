@@ -112,10 +112,8 @@ Toate sunt opționale pentru lansarea v1 — îmi spui când vrei să le adăug�
 ## Age Verification — bypass DEV / forțat ON în producție
 
 **Status curent (DEV):** `feature_flags.age_verification.enabled = false`.
-AgeGate-ul Didit este OCOLIT pe `localhost`, `id-preview--*.lovable.app` și
-`*-dev.lovable.app`. Codul Didit (server fn, webhook, triggere DB) NU a fost
-șters — doar componenta UI `AgeGate` nu afișează modalul când flag-ul e OFF
-ȘI host-ul e non-prod.
+AgeGate-ul intern este OCOLIT pe `localhost`, `id-preview--*.lovable.app` și
+`*-dev.lovable.app` pentru viteză de development.
 
 **Producția**: `src/lib/age-gate-policy.ts → shouldEnforceAgeGate()` întoarce
 `true` necondiționat pe orice host care NU e dev/preview. Nu există cale să
@@ -127,8 +125,11 @@ producția forțează `enforce=true`.
 1. Intră în **Admin → Securitate → Feature flags** (sau direct
    `adminUpsertFlag({ key: 'age_verification', enabled: true })`).
 2. Toggle `age_verification` pe **ON**. Banner-ul galben din admin dispare.
-3. Verifică pe preview (`id-preview--*.lovable.app`) că modalul Didit reapare
-   pentru un user `age_status = 'unverified'`.
+3. Verifică pe preview (`id-preview--*.lovable.app`) că fluxul intern de
+   verificare (`/verify`) apare pentru un user `verification_status = 'unverified'`.
+4. Publică. Producția funcționează identic, dar overriding-ul hard
+   garantează că nici flag-ul setat greșit pe OFF nu poate dezactiva gate-ul
+   în mediul live.
 4. Publică. Producția funcționează identic, dar overriding-ul hard
    garantează că nici flag-ul setat greșit pe OFF nu poate dezactiva gate-ul
    în mediul live.

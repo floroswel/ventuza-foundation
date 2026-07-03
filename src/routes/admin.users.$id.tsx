@@ -62,7 +62,6 @@ import {
   adminForceLogout,
   adminTriggerPasswordReset,
   adminResendConfirmationEmail,
-  adminManualAgeVerify,
   adminCancelDeletion,
 } from "@/lib/admin-wave1.functions";
 import { adminBanUser, adminUnbanUser, adminSuspendUser } from "@/lib/admin-enterprise.functions";
@@ -210,8 +209,8 @@ function User360Page() {
             <KV label="Ascunde vârsta" value={profile.hide_age ? "DA" : "NU"} />
             <KV label="Oraș (călătorie)" value={profile.travel_city ?? "—"} />
             <KV label="Limbă preferată" value={profile.preferred_language ?? "—"} />
-            <KV label="Verificat (Didit)" value={profile.verified ? "DA" : "NU"} />
-            <KV label="Age status" value={profile.age_status ?? "—"} />
+            <KV label="Verificat (identitate)" value={profile.verified ? "DA" : "NU"} />
+            <KV label="Verificare (status intern)" value={profile.verification_status ?? profile.age_status ?? "—"} />
             <KV label="Premium (subscripție activă)" value={profile.is_premium ? "DA" : "NU"} />
             {profile.active_subscription && (
               <KV
@@ -405,15 +404,16 @@ function User360Page() {
           </Card>
           <Card className="p-4">
             <div className="text-sm font-semibold mb-2">
-              Verificări vârstă (Didit + override manual)
+              Cereri verificare identitate (internă)
             </div>
             <MiniTable
               rows={view.verifications}
               cols={[
-                { k: "provider", h: "Sursă" },
-                { k: "result", h: "Rezultat" },
-                { k: "estimated_age", h: "Vârstă estim." },
-                { k: "created_at", h: "Data", fmt: fmtDate },
+                { k: "method", h: "Metodă" },
+                { k: "status", h: "Status" },
+                { k: "decision", h: "Decizie" },
+                { k: "submitted_at", h: "Trimis", fmt: fmtDate },
+                { k: "decided_at", h: "Decis", fmt: fmtDate },
               ]}
             />
           </Card>
@@ -444,7 +444,13 @@ function ActionsBar({
       <ForceLogoutDialog userId={userId} onDone={onSuccess} />
       <PasswordResetDialog userId={userId} onDone={onSuccess} />
       <ResendConfirmationDialog userId={userId} onDone={onSuccess} />
-      <ManualAgeVerifyDialog userId={userId} verified={profile.verified} onDone={onSuccess} />
+      <a
+        href="/admin/verification"
+        className="inline-flex items-center rounded-md border border-input bg-background px-3 h-9 text-sm font-medium hover:bg-accent"
+      >
+        <CheckCircle2 className="h-4 w-4 mr-1" />
+        Coadă verificare
+      </a>
       {profile.banned_at ? (
         <UnbanDialog userId={userId} onDone={onSuccess} />
       ) : (
@@ -802,55 +808,10 @@ function ResendConfirmationDialog({ userId, onDone }: { userId: string; onDone: 
 }
 
 
-function ManualAgeVerifyDialog({
-  userId,
-  verified,
-  onDone,
-}: {
-  userId: string;
-  verified: boolean;
-  onDone: () => void;
-}) {
-  const [makeVerified, setMakeVerified] = useState<boolean>(!verified);
-  const fn = useServerFn(adminManualAgeVerify);
-  const m = useMutation({
-    mutationFn: (j: string) => fn({ data: { userId, verified: makeVerified, justification: j } }),
-  });
-  return (
-    <ReasonDialog
-      trigger={
-        <Button variant="outline" size="sm">
-          {verified ? (
-            <XCircle className="h-4 w-4 mr-1" />
-          ) : (
-            <CheckCircle2 className="h-4 w-4 mr-1" />
-          )}
-          Override vârstă
-        </Button>
-      }
-      title="Override manual verificare vârstă"
-      description="Folosește DOAR când Didit eșuează și userul a trimis documente prin alt canal."
-      confirmLabel={makeVerified ? "Aprobă" : "Respinge"}
-      destructive={!makeVerified}
-      onConfirm={async (j) => {
-        await m.mutateAsync(j);
-        onDone();
-      }}
-      fields={
-        <div className="flex items-center gap-3 text-sm">
-          <label className="flex items-center gap-2">
-            <input type="radio" checked={makeVerified} onChange={() => setMakeVerified(true)} />{" "}
-            Aprobă (verified=true)
-          </label>
-          <label className="flex items-center gap-2">
-            <input type="radio" checked={!makeVerified} onChange={() => setMakeVerified(false)} />{" "}
-            Respinge (verified=false)
-          </label>
-        </div>
-      }
-    />
-  );
-}
+// Verificarea trece exclusiv prin panoul intern (`/admin/verification`) unde
+// moderatorii internali decid pe baza selfie-urilor live cu challenge-uri.
+
+
 
 function BanDialog({ userId, onDone }: { userId: string; onDone: () => void }) {
   const fn = useServerFn(adminBanUser);

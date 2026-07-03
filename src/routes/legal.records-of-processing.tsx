@@ -66,13 +66,13 @@ const ACTIVITIES: Activity[] = [
   },
   {
     id: "A4",
-    name: "Verificare vârstă (18+) — Didit",
-    purpose: "Confirmare vârstă minimă, blocare minori.",
+    name: "Verificare vârstă (18+) — flux intern",
+    purpose: "Confirmare vârstă minimă prin liveness (3 selfie challenge) + review moderator uman.",
     art9: true,
     legalBasis: "6(1)(c) obligație legală (DSA) + 6(1)(f)",
-    art9Basis: "9(2)(a) + 9(2)(g) interes public substanțial (biometric)",
-    processors: "P1, P6 Didit, P8",
-    retention: "24 luni; selfie șters la deleteMyAccount",
+    art9Basis: "9(2)(a) consimțământ explicit + 9(2)(g) interes public substanțial (biometric)",
+    processors: "P1, P8 (fără procesator KYC extern)",
+    retention: "≤30 zile pentru imagini; decizia rămâne pe cont",
   },
   {
     id: "A5",
@@ -207,14 +207,15 @@ const ACTIVITIES: Activity[] = [
 ];
 
 const TODOS = [
-  "A4 — consent_log dedicat kind='age_verification' înainte de redirect la Didit.",
+  "A4 — consent_log dedicat kind='internal_verification' înainte de captarea selfie-urilor.",
   "A17 — disclosure + consent explicit pentru AI features (kind='ai_features').",
   "A6 — log push activate/dezactivate în consent_log (kind='push_notifications').",
   "DPIA formal (Art. 35) — combinație sănătate + orientare + locație + minori.",
   "TIA post-Schrems II pentru toți procesatorii US (P2/P3/P4/P5/P7/P8).",
   "Procesare HIV eliminată complet (coloane dropate, funcții șterse, kind consent scos).",
+  "Procesator KYC extern eliminat — verificare 100% internă cu moderator uman.",
   "Desemnare DPO oficial (Art. 37) + contact public.",
-  "Confirmare DPA semnate pentru Didit, RevenueCat, Lovable (Supabase).",
+  "Confirmare DPA semnate pentru RevenueCat, Lovable (Supabase).",
 ];
 
 function RoPAPage() {

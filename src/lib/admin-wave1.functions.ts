@@ -188,50 +188,12 @@ export const adminResendConfirmationEmail = createServerFn({ method: "POST" })
     return { ok: true, email };
   });
 
-/** Override manual verificare vârstă (Didit). Critical + justificare obligatorie. */
-export const adminManualAgeVerify = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) =>
-    z
-      .object({
-        userId: z.string().uuid(),
-        verified: z.boolean(),
-        justification: z.string().min(10).max(500),
-      })
-      .parse(d),
-  )
-  .handler(async ({ data, context }) => {
-    await assertRole(context.supabase, context.userId, ["super_admin", "admin"]);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const sa = supabaseAdmin as any;
-    const { data: before } = await sa
-      .from("profiles")
-      .select("verified")
-      .eq("id", data.userId)
-      .maybeSingle();
-    const { error } = await sa
-      .from("profiles")
-      .update({ verified: data.verified })
-      .eq("id", data.userId);
-    if (error) throw new Error(error.message);
-    await sa.from("age_verifications").insert({
-      user_id: data.userId,
-      provider: "manual_override",
-      result: data.verified ? "approved" : "rejected",
-      status_raw: `admin_override:${context.userId}`,
-    });
-    await logAudit({
-      actorId: context.userId,
-      action: `age.manual_${data.verified ? "approve" : "reject"}`,
-      targetTable: "profiles",
-      targetId: data.userId,
-      before,
-      after: { verified: data.verified },
-      justification: data.justification,
-      severity: "critical",
-    });
-    return { ok: true };
-  });
+// NOTE: Adminul nu mai poate acorda „verified" direct pe cont. Aprobarea
+// vine exclusiv din panoul intern de verificare (`/admin/verification`) prin
+// `verification_moderator_decide`, care este auditat și dublu-review-uit
+// când e cazul.
+
+
 
 /** Vizualizare combinată user — profil mascat + consents + verificări + reports. */
 export const adminGetUserView = createServerFn({ method: "POST" })
@@ -260,7 +222,10 @@ export const adminGetUserView = createServerFn({ method: "POST" })
       "verified_at",
       "age_status",
       "age_verified_at",
-      "age_provider",
+      "verification_status",
+      "verification_method",
+      "verification_reason",
+      "verification_reviewed_by",
       "hide_age",
       "birthdate",
       "banned_at",
@@ -298,10 +263,10 @@ export const adminGetUserView = createServerFn({ method: "POST" })
         .order("created_at", { ascending: false })
         .limit(50),
       sa
-        .from("age_verifications")
-        .select("id, provider, result, estimated_age, created_at")
+        .from("verification_requests")
+        .select("id, status, decision, method, needs_second, submitted_at, decided_at")
         .eq("user_id", data.userId)
-        .order("created_at", { ascending: false })
+        .order("submitted_at", { ascending: false })
         .limit(20),
       sa
         .from("reports")
