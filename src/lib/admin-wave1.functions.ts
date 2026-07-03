@@ -210,24 +210,49 @@ export const adminGetUserView = createServerFn({ method: "POST" })
     ]);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
+    // NOTE: `age` și `is_premium` NU există ca coloane pe `public.profiles` —
+    // le derivăm mai jos (din `birthdate`, respectiv din `subscriptions.status='active'`).
+    // Ultima activitate = `last_seen` (aliasat ca `last_active_at` pentru UI).
     const SAFE_PROFILE = [
       "id",
       "display_name",
+      "profile_slug",
+      "bio",
       "travel_city",
       "verified",
+      "verified_at",
+      "age_status",
+      "age_verified_at",
+      "age_provider",
+      "hide_age",
+      "birthdate",
       "banned_at",
       "banned_reason",
+      "warned_at",
+      "warned_reason",
       "suspended_until",
+      "suspended_reason",
+      "deleted_at",
+      "partner_suspended_at",
+      "partner_suspension_reason",
       "report_count",
+      "risk_score",
+      "risk_updated_at",
       "level",
       "xp",
+      "streak_days",
+      "boost_until",
+      "boosts_balance",
+      "super_taps_balance",
+      "profile_completion",
+      "onboarding_completed",
+      "preferred_language",
       "created_at",
       "updated_at",
-      "last_active_at",
-      "is_premium",
-      "age",
+      "last_seen",
+      "last_check_in_at",
     ].join(",");
-    const [prof, consents, verifs, reports, roles] = await Promise.all([
+    const [prof, consents, verifs, reports, roles, activeSubs] = await Promise.all([
       sa.from("profiles").select(SAFE_PROFILE).eq("id", data.userId).maybeSingle(),
       sa
         .from("consent_log")
@@ -248,9 +273,37 @@ export const adminGetUserView = createServerFn({ method: "POST" })
         .order("created_at", { ascending: false })
         .limit(20),
       sa.from("user_roles").select("role").eq("user_id", data.userId),
+      sa
+        .from("subscriptions")
+        .select("id, status, platform, product_id, expires_at")
+        .eq("user_id", data.userId)
+        .eq("status", "active")
+        .order("expires_at", { ascending: false })
+        .limit(1),
     ]);
+    const p = prof.data ?? null;
+    let age: number | null = null;
+    if (p && (p as any).birthdate) {
+      const bd = new Date((p as any).birthdate as string);
+      if (!isNaN(bd.getTime())) {
+        const now = new Date();
+        age = now.getFullYear() - bd.getFullYear();
+        const m = now.getMonth() - bd.getMonth();
+        if (m < 0 || (m === 0 && now.getDate() < bd.getDate())) age -= 1;
+      }
+    }
+    const activeSub = (activeSubs.data ?? [])[0] ?? null;
+    const enrichedProfile = p
+      ? {
+          ...(p as Record<string, unknown>),
+          age,
+          is_premium: !!activeSub,
+          last_active_at: (p as any).last_seen ?? null,
+          active_subscription: activeSub,
+        }
+      : null;
     return {
-      profile: prof.data ?? null,
+      profile: enrichedProfile,
       consents: consents.data ?? [],
       verifications: verifs.data ?? [],
       reports: reports.data ?? [],
