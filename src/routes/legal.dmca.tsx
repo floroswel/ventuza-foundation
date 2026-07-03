@@ -13,7 +13,7 @@ export const Route = createFileRoute("/legal/dmca")({
           "Procedura de notificare și retragere a conținutului care încalcă drepturile de autor pe Ventuza.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza-foundation.lovable.app/legal/dmca" }],
+    links: [{ rel: "canonical", href: "https://ventuza.app/legal/dmca" }],
   }),
   component: DmcaPage,
 });

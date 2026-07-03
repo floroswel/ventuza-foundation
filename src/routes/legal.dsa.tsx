@@ -12,7 +12,7 @@ export const Route = createFileRoute("/legal/dsa")({
         content: "Raport de transparență și punct unic de contact conform Digital Services Act.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza-foundation.lovable.app/legal/dsa" }],
+    links: [{ rel: "canonical", href: "https://ventuza.app/legal/dsa" }],
   }),
   component: DsaPage,
 });

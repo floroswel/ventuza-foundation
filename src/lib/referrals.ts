@@ -21,6 +21,6 @@ export function referralLink(code: string): string {
   const origin =
     typeof window !== "undefined"
       ? window.location.origin
-      : "https://ventuza-foundation.lovable.app";
+      : "https://ventuza.app";
   return `${origin}/?ref=${code}`;
 }

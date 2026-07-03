@@ -9,7 +9,7 @@ export const Route = createFileRoute("/legal/community")({
       { title: "Reguli comunitate — Ventuza" },
       { name: "description", content: "Cum ne purtăm pe Ventuza. Reguli clare, consecințe clare." },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza-foundation.lovable.app/legal/community" }],
+    links: [{ rel: "canonical", href: "https://ventuza.app/legal/community" }],
   }),
   component: CommunityPage,
 });
