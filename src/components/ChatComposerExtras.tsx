@@ -235,17 +235,18 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
           <Plus className="size-5" />
         </button>
         {open && (
-          <div className="absolute bottom-14 left-0 z-30 w-44 rounded-2xl border border-border bg-popover p-1 shadow-xl">
+          <div className="absolute bottom-14 left-0 z-30 w-52 rounded-2xl border border-border bg-popover p-1 shadow-xl">
             <MenuItem
               icon={<Camera className="size-4" />}
-              label="Foto"
+              label="Foto (una sau mai multe)"
               onClick={() => pickPhoto(false)}
             />
             <MenuItem
               icon={<Timer className="size-4" />}
-              label="Foto view-once"
+              label="Foto o singură vizualizare"
               onClick={() => pickPhoto(true)}
             />
+
             <MenuItem
               icon={<Mic className="size-4" />}
               label="Voice note"
