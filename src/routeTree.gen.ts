@@ -57,6 +57,7 @@ import { Route as LegalDataSafetyRouteImport } from './routes/legal.data-safety'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalCommunityRouteImport } from './routes/legal.community'
 import { Route as LegalBusinessTermsRouteImport } from './routes/legal.business-terms'
+import { Route as LegalBadgesRouteImport } from './routes/legal.badges'
 import { Route as LegalAgePolicyRouteImport } from './routes/legal.age-policy'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
@@ -310,6 +311,11 @@ const LegalBusinessTermsRoute = LegalBusinessTermsRouteImport.update({
   path: '/legal/business-terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalBadgesRoute = LegalBadgesRouteImport.update({
+  id: '/legal/badges',
+  path: '/legal/badges',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalAgePolicyRoute = LegalAgePolicyRouteImport.update({
   id: '/legal/age-policy',
   path: '/legal/age-policy',
@@ -404,6 +410,7 @@ export interface FileRoutesByFullPath {
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
   '/legal/age-policy': typeof LegalAgePolicyRoute
+  '/legal/badges': typeof LegalBadgesRoute
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -465,6 +472,7 @@ export interface FileRoutesByTo {
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
   '/legal/age-policy': typeof LegalAgePolicyRoute
+  '/legal/badges': typeof LegalBadgesRoute
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -527,6 +535,7 @@ export interface FileRoutesById {
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
   '/legal/age-policy': typeof LegalAgePolicyRoute
+  '/legal/badges': typeof LegalBadgesRoute
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
@@ -590,6 +599,7 @@ export interface FileRouteTypes {
     | '/events/$id'
     | '/groups/$id'
     | '/legal/age-policy'
+    | '/legal/badges'
     | '/legal/business-terms'
     | '/legal/community'
     | '/legal/cookies'
@@ -651,6 +661,7 @@ export interface FileRouteTypes {
     | '/events/$id'
     | '/groups/$id'
     | '/legal/age-policy'
+    | '/legal/badges'
     | '/legal/business-terms'
     | '/legal/community'
     | '/legal/cookies'
@@ -712,6 +723,7 @@ export interface FileRouteTypes {
     | '/events/$id'
     | '/groups/$id'
     | '/legal/age-policy'
+    | '/legal/badges'
     | '/legal/business-terms'
     | '/legal/community'
     | '/legal/cookies'
@@ -769,6 +781,7 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   VisitorsRoute: typeof VisitorsRoute
   LegalAgePolicyRoute: typeof LegalAgePolicyRoute
+  LegalBadgesRoute: typeof LegalBadgesRoute
   LegalBusinessTermsRoute: typeof LegalBusinessTermsRoute
   LegalCommunityRoute: typeof LegalCommunityRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
@@ -1129,6 +1142,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalBusinessTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/badges': {
+      id: '/legal/badges'
+      path: '/legal/badges'
+      fullPath: '/legal/badges'
+      preLoaderRoute: typeof LegalBadgesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/age-policy': {
       id: '/legal/age-policy'
       path: '/legal/age-policy'
@@ -1320,6 +1340,7 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   VisitorsRoute: VisitorsRoute,
   LegalAgePolicyRoute: LegalAgePolicyRoute,
+  LegalBadgesRoute: LegalBadgesRoute,
   LegalBusinessTermsRoute: LegalBusinessTermsRoute,
   LegalCommunityRoute: LegalCommunityRoute,
   LegalCookiesRoute: LegalCookiesRoute,
