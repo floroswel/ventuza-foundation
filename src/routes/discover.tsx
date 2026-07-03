@@ -553,7 +553,7 @@ function DiscoverPage() {
               Toți din grid
             </p>
           </div>
-          <Cascade profiles={visible} onOpen={setSelected} />
+          <Cascade profiles={visible} onOpen={setSelected} badgesMap={badgesMap} />
         </>
       )}
 
