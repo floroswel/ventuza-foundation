@@ -1,17 +1,23 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "@tanstack/react-router";
-import { useServerFn } from "@tanstack/react-start";
+import { useLocation, useNavigate } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import { ShieldCheck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
-import { startAgeVerification } from "@/lib/age-verification.functions";
 import { shouldEnforceAgeGate } from "@/lib/age-gate-policy";
-import { toast } from "sonner";
 
-// Routes that require a verified age before access.
-// All adult-content/social surfaces must be gated. /cruise (Right Now feed),
-// /nearby (location-aware list), /visitors, /favorites are explicitly included.
+/**
+ * AgeGate — VERIFICARE INTERNĂ (post-Didit redesign).
+ *
+ * Fluxul nou (liveness intern + review moderator) trăiește la /verify.
+ * AgeGate blochează accesul la rutele adult pentru useri neverificati
+ * sau la status 'failed/expired' și îi redirecționează către /verify.
+ *
+ * Regula de acces limitat pending: user cu age_status='pending' vede TOATE
+ * ecranele care nu sunt în GATED_PREFIXES (poate edita profil, vedea safety,
+ * legal, settings) dar nu poate accesa discover/messages/etc.
+ */
+
 const GATED_PREFIXES = [
   "/discover",
   "/messages",
@@ -23,7 +29,6 @@ const GATED_PREFIXES = [
   "/quests",
   "/cruise",
   "/nearby",
-  "/profile",
 ];
 
 type Status = "unverified" | "pending" | "verified" | "failed" | "expired" | null;
@@ -31,79 +36,26 @@ type Status = "unverified" | "pending" | "verified" | "failed" | "expired" | nul
 export function AgeGate() {
   const { user, loading: authLoading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const { t } = useTranslation();
   const [status, setStatus] = useState<Status>(null);
   const [checking, setChecking] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  // Feature-flag gate. ⚠️ KILL-SWITCH TEMPORAR: producția respectă flag-ul.
-  // Vezi src/lib/age-gate-policy.ts + AGENTS.md → REGULĂ AGE GATE.
-  // Fail-closed: inițial true → conținut adult nu apare niciodată înainte ca
-  // policy-ul async să-l permită explicit. Loading overlay-ul de mai jos
-  // acoperă flash-ul cât timp `status === null`.
   const [enforce, setEnforce] = useState<boolean>(true);
-  // GDPR Art. 9 — selfie-ul biometric e date sensibile; consimțământul e opt-in,
-  // distinct de terms/privacy. Vezi src/lib/consent-registry.ts (kind=age_verification).
-  const [consent, setConsent] = useState(false);
-  const startFn = useServerFn(startAgeVerification);
 
   const isGated = GATED_PREFIXES.some((p) => location.pathname.startsWith(p));
 
-  const [reason, setReason] = useState<string | null>(null);
-
   const refresh = async (uid: string) => {
     setChecking(true);
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from("profiles")
-      .select("age_status, age_verified_at")
+      .select("age_status")
       .eq("id", uid)
       .maybeSingle();
-    if (error) {
-      console.error("[AgeGate] profile read error:", error);
-      setReason(`Eroare citire profil: ${error.message}`);
-    }
-    const raw = (data?.age_status as Status) ?? "unverified";
-    let next = raw;
-    let healed = false;
-    if (next === "pending") {
-      const { data: reset, error: resetErr } = await supabase.rpc(
-        "reset_stale_age_verification",
-        { _user_id: uid },
-      );
-      if (resetErr) console.error("[AgeGate] reset_stale error:", resetErr);
-      if (reset === true) {
-        next = "unverified";
-        healed = true;
-      }
-    }
-    const reasonText =
-      next === "verified"
-        ? null
-        : next === "pending"
-          ? `Status = pending (verificare Didit în curs). Aștept webhook-ul; dacă rămâne >30 min se resetează automat.`
-          : next === "failed"
-            ? "Status = failed (Didit a respins verificarea). Reia fluxul."
-            : next === "expired"
-              ? "Status = expired (verificarea anterioară a expirat). Reia fluxul."
-              : healed
-                ? "Status a fost pending prea mult (>30 min) și a fost resetat automat la unverified. Reia verificarea."
-                : "Status = unverified (nu ai completat încă verificarea vârstei).";
-    setReason(reasonText);
-    console.info("[AgeGate] check", {
-      uid,
-      path: location.pathname,
-      raw_status: raw,
-      effective_status: next,
-      auto_healed: healed,
-      verified_at: data?.age_verified_at ?? null,
-      provider_ref: null,
-      reason: reasonText,
-    });
-    setStatus(next);
+    setStatus((data?.age_status as Status) ?? "unverified");
     setChecking(false);
   };
 
   useEffect(() => {
-    // Recheck policy on every nav (TTL cache în age-gate-policy).
     void shouldEnforceAgeGate().then(setEnforce);
   }, [location.pathname]);
 
@@ -116,7 +68,6 @@ export function AgeGate() {
     void refresh(user.id);
   }, [user?.id, location.pathname]);
 
-  // Re-check when tab regains focus (user returning from Didit).
   useEffect(() => {
     if (!user) return;
     const onFocus = () => void refresh(user.id);
@@ -129,25 +80,12 @@ export function AgeGate() {
   }, [user?.id]);
 
   if (authLoading || !user || !isGated) return null;
-  // User-initiated verification (buton "Verifică-te" din /account) forțează
-  // afișarea modalului chiar dacă feature flag-ul e OFF în preview.
+
   const userForced =
     typeof window !== "undefined" && sessionStorage.getItem("force_age_gate") === "1";
-  // DEV BYPASS: dacă enforcement-ul e oprit (feature flag OFF + host non-prod),
-  // nu afișăm modal și nu pornim Didit. Codul Didit rămâne intact, doar UI-ul
-  // de blocare e ocolit. Producția forțează enforce=true în age-gate-policy.
-  if (!enforce && !userForced) {
-    if (typeof window !== "undefined" && !(window as any).__ageGateDevWarned) {
-      (window as any).__ageGateDevWarned = true;
 
-      console.warn(
-        "⚠️ [DEV] AGE VERIFICATION DEZACTIVAT prin feature_flags.age_verification. Se reactivează automat în producție.",
-      );
-    }
-    return null;
-  }
-  // Cât timp status-ul se încarcă afișăm un overlay opac, NU `null`. Altfel apare
-  // un flash de conținut ne-gated înainte să se randeze modalul.
+  if (!enforce && !userForced) return null;
+
   if (checking || status === null) {
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-xl">
@@ -157,34 +95,8 @@ export function AgeGate() {
   }
   if (status === "verified") return null;
 
-  const handleStart = async () => {
-    if (!consent) {
-      toast.error("Trebuie să accepți procesarea imaginii biometrice de către Didit.");
-      return;
-    }
-    setSubmitting(true);
-    try {
-      // Înregistrează consimțământul ÎNAINTE de a porni Didit. Vezi AGENTS.md.
-      const { error: consentErr } = await supabase.rpc("record_consent", {
-        _kind: "age_verification",
-        _accepted: true,
-      });
-      if (consentErr) throw consentErr;
-
-      const callbackUrl = `${window.location.origin}${location.pathname}`;
-      const result = await startFn({ data: { callbackUrl } });
-      if (!result.ok) {
-        toast.error(result.message ?? "Nu am putut porni verificarea.");
-        setSubmitting(false);
-        return;
-      }
-      window.location.href = result.url;
-    } catch (err) {
-      console.error(err);
-      toast.error("Nu am putut porni verificarea. Încearcă din nou.");
-      setSubmitting(false);
-    }
-  };
+  // Pending — arată mesaj că e în review + link către /verify pentru status
+  const isPending = status === "pending";
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-xl px-6">
@@ -192,76 +104,29 @@ export function AgeGate() {
         <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
           <ShieldCheck className="w-8 h-8 text-primary" />
         </div>
-
         <div className="space-y-2">
-          <h1 className="text-2xl font-semibold tracking-tight">{t("age.title")}</h1>
-          <p className="text-sm text-muted-foreground leading-relaxed">{t("age.desc")}</p>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {isPending ? "Verificare în curs" : t("age.title")}
+          </h1>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            {isPending
+              ? "Am primit selfie-urile tale. Un moderator le verifică în cel mai scurt timp. Îți trimitem notificare imediat ce decidem."
+              : "Contul tău trebuie verificat pentru a accesa această secțiune. Verificarea durează 30–60 secunde și se face printr-un scurt liveness cu selfie."}
+          </p>
         </div>
 
-        {status === "pending" && (
-          <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="w-4 h-4 animate-spin" />
-            {t("age.pending")}
-          </div>
-        )}
-
-        {status === "failed" && <p className="text-sm text-destructive">{t("age.failed")}</p>}
-
-        {reason && (
-          <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-left text-xs text-muted-foreground">
-            <div className="font-medium text-foreground mb-1">De ce vezi acest ecran:</div>
-            {reason}
-          </div>
-        )}
-
-
-        <label className="flex items-start gap-2 text-left text-xs text-muted-foreground leading-relaxed cursor-pointer">
-          <input
-            type="checkbox"
-            checked={consent}
-            onChange={(e) => setConsent(e.target.checked)}
-            className="mt-0.5 h-4 w-4 rounded border-border"
-          />
-          <span>
-            Sunt de acord ca un selfie biometric să fie trimis către{" "}
-            <a
-              href="https://didit.me/privacy-policy"
-              target="_blank"
-              rel="noreferrer"
-              className="underline"
-            >
-              Didit
-            </a>{" "}
-            pentru estimarea vârstei. Imaginea este prelucrată conform politicii Didit (păstrată
-            maxim 30 zile) și nu este folosită în alte scopuri. Pot retrage acest consimțământ din
-            Setări → Confidențialitate.
-          </span>
-        </label>
-
         <button
-          onClick={handleStart}
-          disabled={submitting || !consent}
-          className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
+          onClick={() => navigate({ to: "/verify" as never })}
+          className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          {submitting ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              {t("age.opening")}
-            </>
-          ) : status === "pending" ? (
-            t("age.resume")
-          ) : (
-            t("age.cta")
-          )}
+          {isPending ? "Vezi statusul" : "Începe verificarea"}
         </button>
 
-        {status === "pending" && user && (
-          <button
-            onClick={() => void refresh(user.id)}
-            className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
-          >
-            {t("age.check")}
-          </button>
+        {isPending && (
+          <p className="text-xs text-muted-foreground">
+            Poți continua să folosești profilul, setările și paginile de siguranță în timp ce
+            aștepți.
+          </p>
         )}
       </div>
     </div>

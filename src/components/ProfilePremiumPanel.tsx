@@ -52,10 +52,7 @@ function VerificationCard({ userId, mainPhotoPath, verificationStatus, onUpdate 
 
       await supabase
         .from("profiles")
-        .update({
-          verification_selfie_path: path,
-          verification_status: "pending",
-        })
+        .update({ verification_status: "pending" })
         .eq("id", userId);
 
       const res = await verify({ data: { selfieUrl: sa.signedUrl, mainPhotoUrl: sb.signedUrl } });

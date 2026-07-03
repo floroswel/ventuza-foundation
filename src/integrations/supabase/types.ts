@@ -480,32 +480,29 @@ export type Database = {
       age_verifications: {
         Row: {
           created_at: string
-          didit_session_id: string | null
           estimated_age: number | null
           id: string
+          method: string
           provider: string
           result: string
-          status_raw: string | null
           user_id: string
         }
         Insert: {
           created_at?: string
-          didit_session_id?: string | null
           estimated_age?: number | null
           id?: string
+          method?: string
           provider?: string
           result: string
-          status_raw?: string | null
           user_id: string
         }
         Update: {
           created_at?: string
-          didit_session_id?: string | null
           estimated_age?: number | null
           id?: string
+          method?: string
           provider?: string
           result?: string
-          status_raw?: string | null
           user_id?: string
         }
         Relationships: []
@@ -2940,7 +2937,6 @@ export type Database = {
         Row: {
           accept_nsfw_photos: boolean | null
           age_pending_at: string | null
-          age_provider: string | null
           age_status: Database["public"]["Enums"]["age_status"]
           age_verified_at: string | null
           anthem: Json | null
@@ -3040,9 +3036,12 @@ export type Database = {
           tz_offset_minutes: number
           updated_at: string
           vaccinations: string[] | null
+          verification_method: string | null
           verification_reason: string | null
-          verification_selfie_path: string | null
+          verification_reviewed_by: string | null
+          verification_score: number | null
           verification_status: string
+          verification_version: number
           verified: boolean
           verified_at: string | null
           video_clip_path: string | null
@@ -3061,7 +3060,6 @@ export type Database = {
         Insert: {
           accept_nsfw_photos?: boolean | null
           age_pending_at?: string | null
-          age_provider?: string | null
           age_status?: Database["public"]["Enums"]["age_status"]
           age_verified_at?: string | null
           anthem?: Json | null
@@ -3161,9 +3159,12 @@ export type Database = {
           tz_offset_minutes?: number
           updated_at?: string
           vaccinations?: string[] | null
+          verification_method?: string | null
           verification_reason?: string | null
-          verification_selfie_path?: string | null
+          verification_reviewed_by?: string | null
+          verification_score?: number | null
           verification_status?: string
+          verification_version?: number
           verified?: boolean
           verified_at?: string | null
           video_clip_path?: string | null
@@ -3182,7 +3183,6 @@ export type Database = {
         Update: {
           accept_nsfw_photos?: boolean | null
           age_pending_at?: string | null
-          age_provider?: string | null
           age_status?: Database["public"]["Enums"]["age_status"]
           age_verified_at?: string | null
           anthem?: Json | null
@@ -3282,9 +3282,12 @@ export type Database = {
           tz_offset_minutes?: number
           updated_at?: string
           vaccinations?: string[] | null
+          verification_method?: string | null
           verification_reason?: string | null
-          verification_selfie_path?: string | null
+          verification_reviewed_by?: string | null
+          verification_score?: number | null
           verification_status?: string
+          verification_version?: number
           verified?: boolean
           verified_at?: string | null
           video_clip_path?: string | null
@@ -4184,6 +4187,201 @@ export type Database = {
         }
         Relationships: []
       }
+      verification_audit: {
+        Row: {
+          action: string
+          country: string | null
+          created_at: string
+          decision: string | null
+          id: string
+          ip_hash: string | null
+          metadata: Json | null
+          moderator_id: string | null
+          reason: string | null
+          request_id: string | null
+          review_duration_ms: number | null
+          ua_hash: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          country?: string | null
+          created_at?: string
+          decision?: string | null
+          id?: string
+          ip_hash?: string | null
+          metadata?: Json | null
+          moderator_id?: string | null
+          reason?: string | null
+          request_id?: string | null
+          review_duration_ms?: number | null
+          ua_hash?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          country?: string | null
+          created_at?: string
+          decision?: string | null
+          id?: string
+          ip_hash?: string | null
+          metadata?: Json | null
+          moderator_id?: string | null
+          reason?: string | null
+          request_id?: string | null
+          review_duration_ms?: number | null
+          ua_hash?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_audit_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "verification_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_images: {
+        Row: {
+          captured_at: string
+          challenge_code: string
+          deleted_at: string | null
+          id: string
+          order_idx: number
+          request_id: string
+          storage_path: string
+        }
+        Insert: {
+          captured_at?: string
+          challenge_code: string
+          deleted_at?: string | null
+          id?: string
+          order_idx: number
+          request_id: string
+          storage_path: string
+        }
+        Update: {
+          captured_at?: string
+          challenge_code?: string
+          deleted_at?: string | null
+          id?: string
+          order_idx?: number
+          request_id?: string
+          storage_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_images_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "verification_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      verification_requests: {
+        Row: {
+          appeal_of: string | null
+          challenges: Json
+          claimed_at: string | null
+          confidence: string | null
+          country: string | null
+          created_at: string
+          decided_at: string | null
+          decision: string | null
+          id: string
+          ip_hash: string | null
+          is_seed: boolean
+          method: string
+          moderator_id: string | null
+          needs_second: boolean
+          reason: string | null
+          reason_code: string | null
+          retention_until: string
+          review_duration_ms: number | null
+          score: number | null
+          second_decision: string | null
+          second_moderator_id: string | null
+          second_reason: string | null
+          status: string
+          submitted_at: string
+          ua_hash: string | null
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          appeal_of?: string | null
+          challenges: Json
+          claimed_at?: string | null
+          confidence?: string | null
+          country?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_seed?: boolean
+          method?: string
+          moderator_id?: string | null
+          needs_second?: boolean
+          reason?: string | null
+          reason_code?: string | null
+          retention_until?: string
+          review_duration_ms?: number | null
+          score?: number | null
+          second_decision?: string | null
+          second_moderator_id?: string | null
+          second_reason?: string | null
+          status?: string
+          submitted_at?: string
+          ua_hash?: string | null
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          appeal_of?: string | null
+          challenges?: Json
+          claimed_at?: string | null
+          confidence?: string | null
+          country?: string | null
+          created_at?: string
+          decided_at?: string | null
+          decision?: string | null
+          id?: string
+          ip_hash?: string | null
+          is_seed?: boolean
+          method?: string
+          moderator_id?: string | null
+          needs_second?: boolean
+          reason?: string | null
+          reason_code?: string | null
+          retention_until?: string
+          review_duration_ms?: number | null
+          score?: number | null
+          second_decision?: string | null
+          second_moderator_id?: string | null
+          second_reason?: string | null
+          status?: string
+          submitted_at?: string
+          ua_hash?: string | null
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "verification_requests_appeal_of_fkey"
+            columns: ["appeal_of"]
+            isOneToOne: false
+            referencedRelation: "verification_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       web_vitals: {
         Row: {
           created_at: string
@@ -4689,6 +4887,7 @@ export type Database = {
       assert_account_usable: { Args: never; Returns: undefined }
       assert_age_verified: { Args: never; Returns: undefined }
       assert_email_allowed: { Args: { _email: string }; Returns: boolean }
+      assert_verification_or_limited: { Args: never; Returns: undefined }
       award_xp: {
         Args: { _kind: string; _meta?: Json; _user_id: string; _xp: number }
         Returns: undefined
@@ -4746,7 +4945,7 @@ export type Database = {
         Args: never
         Returns: {
           art9: boolean
-          current_version: string
+          current_version: number
           description: string
           kind: string
           required: boolean
@@ -5094,6 +5293,7 @@ export type Database = {
         Returns: boolean
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      is_verification_staff: { Args: { _uid: string }; Returns: boolean }
       list_my_block_relations: { Args: never; Returns: string[] }
       list_queue_claims: {
         Args: { _queue: string }
@@ -5906,7 +6106,6 @@ export type Database = {
         Args: { geom: unknown; move: number; wrap: number }
         Returns: unknown
       }
-      start_age_verification: { Args: never; Returns: undefined }
       submit_ticket_csat: {
         Args: { _feedback?: string; _score: number; _ticket_id: string }
         Returns: undefined
@@ -5936,6 +6135,51 @@ export type Database = {
         }
         Returns: string
       }
+      verification_generate_challenges: { Args: never; Returns: Json }
+      verification_list_purgeable_paths: {
+        Args: never
+        Returns: {
+          request_id: string
+          storage_path: string
+        }[]
+      }
+      verification_mark_purged: {
+        Args: { p_request_ids: string[] }
+        Returns: number
+      }
+      verification_moderator_claim: {
+        Args: never
+        Returns: {
+          challenge_codes: string[]
+          challenges: Json
+          image_ids: string[]
+          image_paths: string[]
+          is_second_review: boolean
+          request_id: string
+          submitted_at: string
+          version: number
+        }[]
+      }
+      verification_moderator_decide: {
+        Args: {
+          p_confidence: string
+          p_decision: string
+          p_reason: string
+          p_reason_code: string
+          p_request_id: string
+        }
+        Returns: undefined
+      }
+      verification_submit_request: {
+        Args: {
+          p_challenges: Json
+          p_country?: string
+          p_image_paths: string[]
+          p_ip_hash?: string
+          p_ua_hash?: string
+        }
+        Returns: string
+      }
       wipe_seed_admin_appendonly: { Args: never; Returns: Json }
     }
     Enums: {
@@ -5950,6 +6194,7 @@ export type Database = {
         | "auditor"
         | "read_only"
         | "partner"
+        | "verification_moderator"
       business_app_status: "pending" | "reviewing" | "approved" | "rejected"
       business_entity_type:
         | "srl"
@@ -6126,6 +6371,7 @@ export const Constants = {
         "auditor",
         "read_only",
         "partner",
+        "verification_moderator",
       ],
       business_app_status: ["pending", "reviewing", "approved", "rejected"],
       business_entity_type: [

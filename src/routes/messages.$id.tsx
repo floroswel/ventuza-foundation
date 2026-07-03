@@ -136,10 +136,7 @@ function ThreadPage() {
       if (!sa?.signedUrl || !sb?.signedUrl) throw new Error("Nu am putut accesa pozele.");
       await supabase
         .from("profiles")
-        .update({
-          verification_selfie_path: path,
-          verification_status: "pending",
-        })
+        .update({ verification_status: "pending" })
         .eq("id", user.id);
       const res = await verifyFn({ data: { selfieUrl: sa.signedUrl, mainPhotoUrl: sb.signedUrl } });
       if (res.verified) {
