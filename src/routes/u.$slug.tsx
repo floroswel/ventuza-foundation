@@ -35,11 +35,30 @@ function age(iso?: string | null) {
 
 function PublicProfilePage() {
   const { slug } = Route.useParams();
+  const { i18n } = useTranslation();
   const [profile, setProfile] = useState<any | null>(null);
   const [signedPhotos, setSignedPhotos] = useState<string[]>([]);
   const [signedVoice, setSignedVoice] = useState<string | null>(null);
   const [signedVideo, setSignedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [translation, setTranslation] = useState<{
+    bio?: string | null;
+    ideal_match?: string | null;
+    prompts?: Array<{ q?: string; a?: string }> | null;
+    lang: string;
+  } | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const doTranslate = useServerFn(translateProfile);
+
+  const viewerLang = (i18n.language || "ro").slice(0, 2);
+  const authorLang: string | undefined = profile?.preferred_language ?? undefined;
+  const canTranslate =
+    !!profile &&
+    !!viewerLang &&
+    (!authorLang || authorLang !== viewerLang) &&
+    (profile.bio || profile.ideal_match || (Array.isArray(profile.prompts) && profile.prompts.length));
+
 
   useEffect(() => {
     (async () => {
