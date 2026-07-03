@@ -1,11 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { BadgeCheck, Loader2, Mic, Music, ArrowLeft, Heart, Video } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useServerFn } from "@tanstack/react-start";
+import { BadgeCheck, Languages, Loader2, Mic, Music, ArrowLeft, Heart, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Chip } from "@/components/Chip";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { formatHeight } from "@/lib/discover";
+import { translateProfile } from "@/lib/translate.functions";
+
 
 export const Route = createFileRoute("/u/$slug")({
   head: ({ params }) => ({
@@ -31,11 +35,30 @@ function age(iso?: string | null) {
 
 function PublicProfilePage() {
   const { slug } = Route.useParams();
+  const { i18n } = useTranslation();
   const [profile, setProfile] = useState<any | null>(null);
   const [signedPhotos, setSignedPhotos] = useState<string[]>([]);
   const [signedVoice, setSignedVoice] = useState<string | null>(null);
   const [signedVideo, setSignedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [translation, setTranslation] = useState<{
+    bio?: string | null;
+    ideal_match?: string | null;
+    prompts?: Array<{ q?: string; a?: string }> | null;
+    lang: string;
+  } | null>(null);
+  const [showOriginal, setShowOriginal] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const doTranslate = useServerFn(translateProfile);
+
+  const viewerLang = (i18n.language || "ro").slice(0, 2);
+  const authorLang: string | undefined = profile?.preferred_language ?? undefined;
+  const canTranslate =
+    !!profile &&
+    !!viewerLang &&
+    (!authorLang || authorLang !== viewerLang) &&
+    (profile.bio || profile.ideal_match || (Array.isArray(profile.prompts) && profile.prompts.length));
+
 
   useEffect(() => {
     (async () => {
@@ -71,6 +94,36 @@ function PublicProfilePage() {
       }
     })();
   }, [slug]);
+
+  // Auto-translate if viewer's language differs from author's stated language.
+  useEffect(() => {
+    if (!canTranslate || translation) return;
+    const supported = ["ro", "en", "es", "fr", "de", "it", "pt", "pl"];
+    if (!supported.includes(viewerLang)) return;
+    setTranslating(true);
+    doTranslate({ data: { profileId: profile.id, targetLang: viewerLang as any } })
+      .then((r: any) => {
+        if (r?.skipped) return;
+        setTranslation({
+          bio: r.bio ?? null,
+          ideal_match: r.ideal_match ?? null,
+          prompts: r.prompts ?? null,
+          lang: viewerLang,
+        });
+      })
+      .catch(() => {})
+      .finally(() => setTranslating(false));
+  }, [canTranslate, translation, viewerLang, profile, doTranslate]);
+
+  const displayBio = useMemo(() => {
+    if (translation && !showOriginal && translation.bio) return translation.bio;
+    return profile?.bio;
+  }, [translation, showOriginal, profile]);
+  const displayIdeal = useMemo(() => {
+    if (translation && !showOriginal && translation.ideal_match) return translation.ideal_match;
+    return profile?.ideal_match;
+  }, [translation, showOriginal, profile]);
+
 
   if (loading) {
     return (
@@ -134,6 +187,30 @@ function PublicProfilePage() {
       </section>
 
       <div className="space-y-6 px-6 pt-6">
+        {(translating || translation) && canTranslate && (
+          <div className="flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1.5 text-[11px] text-muted-foreground">
+            <Languages className="size-3.5 text-primary" />
+            {translating ? (
+              <span>Se traduce…</span>
+            ) : (
+              <>
+                <span>
+                  Tradus automat în {translation!.lang.toUpperCase()}
+                  {authorLang ? ` din ${authorLang.toUpperCase()}` : ""}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowOriginal((v) => !v)}
+                  className="ml-auto rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-background"
+                >
+                  {showOriginal ? "Vezi tradus" : "Vezi original"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+
         {signedVideo && (
           <div className="rounded-2xl border border-border bg-surface p-3">
             <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
@@ -178,7 +255,7 @@ function PublicProfilePage() {
             <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
               <Heart className="size-4 text-primary" /> Match ideal
             </div>
-            <p className="italic text-foreground/85">"{profile.ideal_match}"</p>
+            <p className="italic text-foreground/85">"{displayIdeal}"</p>
           </div>
         )}
 
@@ -200,7 +277,7 @@ function PublicProfilePage() {
         {profile.bio && (
           <section>
             <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">About</h2>
-            <p className="whitespace-pre-wrap text-foreground/90">{profile.bio}</p>
+            <p className="whitespace-pre-wrap text-foreground/90">{displayBio}</p>
           </section>
         )}
 

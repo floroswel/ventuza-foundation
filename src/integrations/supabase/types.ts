@@ -2754,6 +2754,44 @@ export type Database = {
         }
         Relationships: []
       }
+      profile_translations: {
+        Row: {
+          created_at: string
+          field: string
+          profile_id: string
+          source_lang: string | null
+          target_lang: string
+          text_hash: string
+          translated: string
+        }
+        Insert: {
+          created_at?: string
+          field: string
+          profile_id: string
+          source_lang?: string | null
+          target_lang: string
+          text_hash: string
+          translated: string
+        }
+        Update: {
+          created_at?: string
+          field?: string
+          profile_id?: string
+          source_lang?: string | null
+          target_lang?: string
+          text_hash?: string
+          translated?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_translations_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_views: {
         Row: {
           id: string
