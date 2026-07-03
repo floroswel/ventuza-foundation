@@ -48,23 +48,56 @@ export function AgeGate() {
 
   const isGated = GATED_PREFIXES.some((p) => location.pathname.startsWith(p));
 
+  const [reason, setReason] = useState<string | null>(null);
+
   const refresh = async (uid: string) => {
     setChecking(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("profiles")
-      .select("age_status")
+      .select("age_status, age_verified_at, age_verification_provider_ref")
       .eq("id", uid)
       .maybeSingle();
-    let next = (data?.age_status as Status) ?? "unverified";
-    // Auto-heal: dacă e blocat pe "pending" mai mult decât pragul din
-    // app_settings.age_verification_stale (default 30 min), RPC-ul îl resetează
-    // la "unverified" și userul poate reporni fluxul fără intervenție staff.
-    if (next === "pending") {
-      const { data: reset } = await supabase.rpc("reset_stale_age_verification", {
-        _user_id: uid,
-      });
-      if (reset === true) next = "unverified";
+    if (error) {
+      console.error("[AgeGate] profile read error:", error);
+      setReason(`Eroare citire profil: ${error.message}`);
     }
+    const raw = (data?.age_status as Status) ?? "unverified";
+    let next = raw;
+    let healed = false;
+    if (next === "pending") {
+      const { data: reset, error: resetErr } = await supabase.rpc(
+        "reset_stale_age_verification",
+        { _user_id: uid },
+      );
+      if (resetErr) console.error("[AgeGate] reset_stale error:", resetErr);
+      if (reset === true) {
+        next = "unverified";
+        healed = true;
+      }
+    }
+    const reasonText =
+      next === "verified"
+        ? null
+        : next === "pending"
+          ? `Status = pending (verificare Didit în curs, ref=${data?.age_verification_provider_ref ?? "n/a"}). Aștept webhook-ul; dacă rămâne >30 min se resetează automat.`
+          : next === "failed"
+            ? "Status = failed (Didit a respins verificarea). Reia fluxul."
+            : next === "expired"
+              ? "Status = expired (verificarea anterioară a expirat). Reia fluxul."
+              : healed
+                ? "Status a fost pending prea mult (>30 min) și a fost resetat automat la unverified. Reia verificarea."
+                : "Status = unverified (nu ai completat încă verificarea vârstei).";
+    setReason(reasonText);
+    console.info("[AgeGate] check", {
+      uid,
+      path: location.pathname,
+      raw_status: raw,
+      effective_status: next,
+      auto_healed: healed,
+      verified_at: data?.age_verified_at ?? null,
+      provider_ref: data?.age_verification_provider_ref ?? null,
+      reason: reasonText,
+    });
     setStatus(next);
     setChecking(false);
   };
