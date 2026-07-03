@@ -28,6 +28,8 @@ import {
 import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
+import { getUserBadgesBatch } from "@/lib/badges.functions";
+import { BadgeStrip } from "@/components/BadgeStrip";
 import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
 import { getOrCreateConversation } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
