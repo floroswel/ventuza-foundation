@@ -10,14 +10,16 @@ import { MagicLinkEmail } from '@/lib/email-templates/magic-link'
 import { RecoveryEmail } from '@/lib/email-templates/recovery'
 import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
+import { getEmailStrings, normalizeLocale, type EmailLocale } from '@/lib/email-templates/i18n'
 
-const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Confirmă-ți contul Ventuza',
-  invite: 'Ești invitat pe Ventuza',
-  magiclink: 'Link-ul tău de conectare Ventuza',
-  recovery: 'Resetare parolă Ventuza',
-  email_change: 'Confirmă noua ta adresă de email',
-  reauthentication: 'Codul tău de verificare Ventuza',
+// Template mapping
+const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
+  signup: SignupEmail,
+  invite: InviteEmail,
+  magiclink: MagicLinkEmail,
+  recovery: RecoveryEmail,
+  email_change: EmailChangeEmail,
+  reauthentication: ReauthenticationEmail,
 }
 
 // Template mapping
