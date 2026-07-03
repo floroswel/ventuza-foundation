@@ -6,8 +6,11 @@ import {
   Container,
   Head,
   Heading,
+  Hr,
   Html,
+  Link,
   Preview,
+  Section,
   Text,
 } from '@react-email/components'
 
@@ -16,26 +19,34 @@ interface MagicLinkEmailProps {
   confirmationUrl: string
 }
 
-export const MagicLinkEmail = ({
-  siteName,
-  confirmationUrl,
-}: MagicLinkEmailProps) => (
-  <Html lang="en" dir="ltr">
+export const MagicLinkEmail = ({ siteName, confirmationUrl }: MagicLinkEmailProps) => (
+  <Html lang="ro" dir="ltr">
     <Head />
-    <Preview>Your login link for {siteName}</Preview>
+    <Preview>Link-ul tău de conectare {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Your login link</Heading>
+        <Section style={header}>
+          <Heading style={brand}>{siteName}</Heading>
+          <Text style={tagline}>Dating, elevated.</Text>
+        </Section>
+        <Hr style={hr} />
+        <Heading style={h1}>Conectare rapidă</Heading>
         <Text style={text}>
-          Click the button below to log in to {siteName}. This link will expire
-          shortly.
+          Apasă butonul de mai jos pentru a te conecta la {siteName}. Link-ul
+          expiră în scurt timp și poate fi folosit o singură dată.
         </Text>
-        <Button style={button} href={confirmationUrl}>
-          Log In
-        </Button>
+        <Section style={buttonWrap}>
+          <Button style={button} href={confirmationUrl}>Conectează-mă</Button>
+        </Section>
+        <Text style={smallText}>
+          Sau copiază acest link în browser:<br />
+          <Link href={confirmationUrl} style={linkPlain}>{confirmationUrl}</Link>
+        </Text>
+        <Hr style={hr} />
         <Text style={footer}>
-          If you didn't request this link, you can safely ignore this email.
+          Dacă nu ai cerut acest link, ignoră emailul.
         </Text>
+        <Text style={footerBrand}>{siteName} · Bucharest, RO</Text>
       </Container>
     </Body>
   </Html>
@@ -43,26 +54,17 @@ export const MagicLinkEmail = ({
 
 export default MagicLinkEmail
 
-const main = { backgroundColor: '#ffffff', fontFamily: 'Arial, sans-serif' }
-const container = { padding: '20px 25px' }
-const h1 = {
-  fontSize: '22px',
-  fontWeight: 'bold' as const,
-  color: '#000000',
-  margin: '0 0 20px',
-}
-const text = {
-  fontSize: '14px',
-  color: '#55575d',
-  lineHeight: '1.5',
-  margin: '0 0 25px',
-}
-const button = {
-  backgroundColor: '#000000',
-  color: '#ffffff',
-  fontSize: '14px',
-  borderRadius: '8px',
-  padding: '12px 20px',
-  textDecoration: 'none',
-}
-const footer = { fontSize: '12px', color: '#999999', margin: '30px 0 0' }
+const main = { backgroundColor: '#ffffff', fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, Arial, sans-serif", margin: 0, padding: 0 }
+const container = { padding: '40px 32px', maxWidth: '560px', margin: '0 auto' }
+const header = { textAlign: 'center' as const, padding: '0 0 16px' }
+const brand = { fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '34px', fontWeight: 500 as const, color: '#0E0D0B', letterSpacing: '0.08em', margin: 0 }
+const tagline = { fontSize: '11px', color: '#8a7d6b', letterSpacing: '0.24em', textTransform: 'uppercase' as const, margin: '6px 0 0' }
+const hr = { borderColor: '#e8e2d6', margin: '24px 0' }
+const h1 = { fontFamily: "'Cormorant Garamond', Georgia, serif", fontSize: '28px', fontWeight: 500 as const, color: '#0E0D0B', margin: '0 0 16px', lineHeight: '1.2' }
+const text = { fontSize: '15px', color: '#2a2a2a', lineHeight: '1.65', margin: '0 0 20px' }
+const smallText = { fontSize: '12px', color: '#8a8578', lineHeight: '1.6', margin: '20px 0 0', wordBreak: 'break-all' as const }
+const buttonWrap = { textAlign: 'center' as const, margin: '8px 0 20px' }
+const button = { backgroundColor: '#0E0D0B', color: '#ffffff', fontSize: '15px', fontWeight: 500 as const, borderRadius: '999px', padding: '14px 36px', textDecoration: 'none', display: 'inline-block', letterSpacing: '0.02em' }
+const linkPlain = { color: '#8a7d6b', textDecoration: 'underline', wordBreak: 'break-all' as const }
+const footer = { fontSize: '12px', color: '#8a8578', margin: '0 0 12px', lineHeight: '1.6' }
+const footerBrand = { fontSize: '11px', color: '#8a8578', textAlign: 'center' as const, margin: '20px 0 0', letterSpacing: '0.08em' }
