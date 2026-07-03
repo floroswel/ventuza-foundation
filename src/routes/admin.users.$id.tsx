@@ -61,6 +61,7 @@ import {
 import {
   adminForceLogout,
   adminTriggerPasswordReset,
+  adminResendConfirmationEmail,
   adminManualAgeVerify,
   adminCancelDeletion,
 } from "@/lib/admin-wave1.functions";
