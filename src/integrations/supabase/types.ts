@@ -2343,9 +2343,11 @@ export type Database = {
           city: string | null
           created_at: string
           deep_link: string | null
+          emails_queued: number
           id: string
           partner_id: string
           plan_code: string | null
+          push_delivered: number
           radius_m: number | null
           recipients_delivered: number
           recipients_targeted: number
@@ -2360,9 +2362,11 @@ export type Database = {
           city?: string | null
           created_at?: string
           deep_link?: string | null
+          emails_queued?: number
           id?: string
           partner_id: string
           plan_code?: string | null
+          push_delivered?: number
           radius_m?: number | null
           recipients_delivered?: number
           recipients_targeted?: number
@@ -2377,9 +2381,11 @@ export type Database = {
           city?: string | null
           created_at?: string
           deep_link?: string | null
+          emails_queued?: number
           id?: string
           partner_id?: string
           plan_code?: string | null
+          push_delivered?: number
           radius_m?: number | null
           recipients_delivered?: number
           recipients_targeted?: number
