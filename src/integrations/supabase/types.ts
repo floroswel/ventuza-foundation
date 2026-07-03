@@ -4914,7 +4914,21 @@ export type Database = {
         }[]
       }
       get_user_badges: { Args: { _user_id: string }; Returns: string[] }
+      get_user_badges_batch: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          badges: string[]
+          user_id: string
+        }[]
+      }
       get_venue_badges: { Args: { _venue_id: string }; Returns: string[] }
+      get_venue_badges_batch: {
+        Args: { _venue_ids: string[] }
+        Returns: {
+          badges: string[]
+          venue_id: string
+        }[]
+      }
       gettransactionid: { Args: never; Returns: unknown }
       has_active_consent: {
         Args: { _kind: string; _user_id: string }
