@@ -1,11 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { BadgeCheck, Loader2, Mic, Music, ArrowLeft, Heart, Video } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { useServerFn } from "@tanstack/react-start";
+import { BadgeCheck, Languages, Loader2, Mic, Music, ArrowLeft, Heart, Video } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Chip } from "@/components/Chip";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { formatHeight } from "@/lib/discover";
+import { translateProfile } from "@/lib/translate.functions";
+
 
 export const Route = createFileRoute("/u/$slug")({
   head: ({ params }) => ({
