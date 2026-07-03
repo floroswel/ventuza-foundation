@@ -57,9 +57,10 @@ function AgePolicyPage() {
                 forțată ON indiferent de feature flags.
               </li>
               <li>
-                <strong>Verificare independentă (Didit)</strong> — selfie + act de identitate,
-                procesate de furnizorul certificat <em>Didit GmbH</em> (Berlin, DE). Ventuza
-                primește doar verdictul (aprobat/respins). Documentul nu rămâne la noi.
+                <strong>Verificare internă (liveness + moderator)</strong> — 3 selfie-uri live cu
+                gesturi random (challenge), stocate în bucket privat și revizuite manual de un
+                moderator Ventuza. Nu implicăm procesator KYC extern. Imaginile se șterg automat
+                în 30 de zile de la decizie.
               </li>
               <li>
                 <strong>Detecție comportamentală</strong> — semnale (limbaj, fotografii, raportări)
