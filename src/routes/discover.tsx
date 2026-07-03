@@ -215,7 +215,12 @@ function DiscoverPage() {
       const message = e instanceof Error ? e.message : "Couldn't load discover";
       const code = (e as { code?: string } | null)?.code;
       setLoadError({ message, code });
-      toast.error(message);
+      // Terminal errors already shown inline (CenterMessage + CTA) — don't toast on repeat.
+      const inlineOnly =
+        code === "email_not_confirmed" ||
+        code === "age_verification_required" ||
+        code === "not_authenticated";
+      if (!inlineOnly) toast.error(message, { id: `discover-load-${code ?? "err"}` });
     } finally {
       setLoading(false);
     }
@@ -238,6 +243,13 @@ function DiscoverPage() {
   // Realtime location/discover refresh: profile location changes reorder nearby people.
   useEffect(() => {
     if (!user) return;
+    // Dacă avem o eroare terminală (email neconfirmat, vârstă neverificată, sesiune expirată),
+    // nu mai facem refresh — altfel se acumulează toast-uri și cereri inutile la DB.
+    const terminal =
+      loadError?.code === "email_not_confirmed" ||
+      loadError?.code === "age_verification_required" ||
+      loadError?.code === "not_authenticated";
+    if (terminal) return;
     const refresh = () => {
       void load();
     };
@@ -254,7 +266,7 @@ function DiscoverPage() {
       clearInterval(t);
       supabase.removeChannel(ch);
     };
-  }, [user, load]);
+  }, [user, load, loadError?.code]);
 
   // Realtime: new match notifications (when someone else likes me back)
   useEffect(() => {
