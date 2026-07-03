@@ -18,6 +18,10 @@ import {
   type NotificationRow,
 } from "@/lib/notifications";
 import { toast } from "sonner";
+import {
+  playNotificationSound,
+  primeNotificationSound,
+} from "@/lib/notification-sound";
 
 type Ctx = {
   notifications: NotificationRow[];
