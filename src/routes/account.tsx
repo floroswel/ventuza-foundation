@@ -28,7 +28,6 @@ export const Route = createFileRoute("/account")({
 
 type ProfileSummary = {
   display_name: string | null;
-  photo_url: string | null;
   age_status: string | null;
   photos: string[] | null;
   hide_online: boolean | null;
