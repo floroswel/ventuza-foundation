@@ -56,10 +56,16 @@ export async function getOrCreateConversation(otherUserId: string): Promise<stri
   return data as string;
 }
 
+export type PublicProfileMini = {
+  name: string | null;
+  photo: string | null;
+  online: boolean;
+};
+
 export async function fetchPublicProfiles(
   ids: string[],
-): Promise<Map<string, { name: string | null; photo: string | null }>> {
-  const map = new Map<string, { name: string | null; photo: string | null }>();
+): Promise<Map<string, PublicProfileMini>> {
+  const map = new Map<string, PublicProfileMini>();
   if (!ids.length) return map;
   const { data, error } = await supabase.rpc("get_public_profiles", { _ids: ids });
   if (error) {
@@ -70,14 +76,26 @@ export async function fetchPublicProfiles(
     id: string;
     display_name: string | null;
     photos: string[] | null;
+    last_seen: string | null;
+    hide_online: boolean | null;
   }>;
+  const now = Date.now();
   await Promise.all(
     rows.map(async (p) => {
-      map.set(p.id, { name: p.display_name, photo: await signPhoto(p.photos?.[0] ?? null) });
+      const isOnline =
+        !p.hide_online &&
+        !!p.last_seen &&
+        now - new Date(p.last_seen).getTime() < 15 * 60 * 1000;
+      map.set(p.id, {
+        name: p.display_name,
+        photo: await signPhoto(p.photos?.[0] ?? null),
+        online: isOnline,
+      });
     }),
   );
   return map;
 }
+
 
 export async function fetchConversations(meId: string): Promise<ConversationListItem[]> {
   // Exclude any user with whom there is a bilateral block (either direction).
