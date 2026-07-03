@@ -13,7 +13,7 @@ type Props = {
   badges?: string[];
 };
 
-export function NearbyCard({ point, onSelect }: Props) {
+export function NearbyCard({ point, onSelect, badges }: Props) {
   const isEvent = point.kind === "event";
   const isOffer = point.kind === "offer";
   const isVenue = point.kind === "venue";
