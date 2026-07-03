@@ -474,7 +474,12 @@ function DiscoverPage() {
           action={
             loadError.code === "email_not_confirmed" ? (
               <Button asChild variant="hero">
-                <Link to="/auth/check-email">Retrimite emailul</Link>
+                <Link
+                  to="/auth/check-email"
+                  search={{ email: user?.email ?? undefined }}
+                >
+                  Retrimite emailul
+                </Link>
               </Button>
             ) : loadError.code === "age_verification_required" ? (
               <Button asChild variant="hero">
