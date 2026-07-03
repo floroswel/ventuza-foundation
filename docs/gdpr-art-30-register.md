@@ -341,7 +341,7 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 
 Identificate la generarea acestui registru, din analiza schemei reale:
 
-1. **✅ A4 — selfie ca date biometrice**: procesat 100% intern (bucket privat + moderator uman), fără Didit sau alt procesator KYC. Consent explicit `kind='internal_verification'` înregistrat în `consent_log` înainte de captura selfie-urilor. Retenție 30 zile.
+1. **✅ A4 — selfie ca date biometrice**: procesat 100% intern (bucket privat + moderator uman), fără procesator KYC extern. Consent explicit `kind='internal_verification'` înregistrat în `consent_log` înainte de captura selfie-urilor. Retenție 30 zile.
 2. **🟧 A17 — AI Gateway**: bio assist trimite text liber la model US potențial; lipsește un disclosure explicit + checkbox de consimțământ în UI-ul de bio assist. **Acțiune:** adaugă tooltip + consent la prima utilizare per user; loghează în `consent_log` kind `ai_features`.
 3. **🟧 A6 — push consent dual**: consimțământul de push este browser-level (Notification API) + opt-in app-level. Lipsește înregistrare în `consent_log` (kind `push_notifications`). **Acțiune:** loghează în `consent_log` la activare/dezactivare.
 4. **🟥 DPIA obligatoriu (Art. 35)**: combinația orientare + locație + monitorizare sistematică + risc minori impune DPIA formal. **Acțiune:** redactare DPIA + anexare la registru înainte de lansare comercială publică.
