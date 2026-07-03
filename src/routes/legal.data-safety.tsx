@@ -130,7 +130,7 @@ const ITEMS: DataItem[] = [
     userDeletable: true,
     art9: true,
     howToControl:
-      "Consimțământ „Verificare identitate internă" în Setări. Retragerea blochează re-verificarea și marchează imaginile pentru ștergere imediată.",
+      'Consimțământ „Verificare identitate internă" în Setări. Retragerea blochează re-verificarea și marchează imaginile pentru ștergere imediată.',
     controlHref: "/settings",
     processors: [],
   },
