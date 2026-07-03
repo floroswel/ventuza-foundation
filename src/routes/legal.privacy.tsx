@@ -58,8 +58,9 @@ function PrivacyPage() {
                     tribes) — Art. 9(1) date privind viața sexuală.
                   </li>
                   <li>
-                    <strong>Selfie de verificare 18+</strong> — Art. 9(1) date biometrice, procesate
-                    de Didit și șterse după verificare.
+                    <strong>Selfie de verificare 18+</strong> — Art. 9(1) date biometrice,
+                    capturate în app-ul nostru, stocate în bucket privat și revizuite manual de
+                    moderatorii Ventuza. Se șterg automat în 30 de zile.
                   </li>
                 </ul>
                 <p className="mt-2 text-xs text-muted-foreground">
