@@ -32,6 +32,7 @@ import { Loader2, Copy, Check, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "@tanstack/react-router";
 import { StatusNotificationsBell } from "@/components/partner/StatusNotificationsBell";
+import { PartnerAccessGate } from "@/components/partner/PartnerAccessGate";
 
 export const Route = createFileRoute("/partner/billing")({
   head: () => ({
