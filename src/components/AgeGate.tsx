@@ -207,6 +207,14 @@ export function AgeGate() {
 
         {status === "failed" && <p className="text-sm text-destructive">{t("age.failed")}</p>}
 
+        {reason && (
+          <div className="rounded-md border border-border bg-muted/40 px-3 py-2 text-left text-xs text-muted-foreground">
+            <div className="font-medium text-foreground mb-1">De ce vezi acest ecran:</div>
+            {reason}
+          </div>
+        )}
+
+
         <label className="flex items-start gap-2 text-left text-xs text-muted-foreground leading-relaxed cursor-pointer">
           <input
             type="checkbox"
