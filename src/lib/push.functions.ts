@@ -14,22 +14,56 @@ export const savePushSubscription = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => SubInput.parse(d))
   .handler(async ({ data, context }) => {
-    // Upsert by endpoint (1 subscription per browser).
-    const { error } = await context.supabase.from("push_subscriptions").upsert(
-      {
-        user_id: context.userId,
-        endpoint: data.endpoint,
-        p256dh: data.p256dh,
-        auth: data.auth,
-        user_agent: data.userAgent ?? null,
-        platform: "web",
-        kind: "webpush",
-        fcm_token: data.endpoint, // legacy NOT NULL column — reuse endpoint
-        last_seen_at: new Date().toISOString(),
-      },
-      { onConflict: "fcm_token" },
-    );
+    const row = {
+      user_id: context.userId,
+      endpoint: data.endpoint,
+      p256dh: data.p256dh,
+      auth: data.auth,
+      user_agent: data.userAgent ?? null,
+      platform: "web",
+      kind: "webpush",
+      fcm_token: data.endpoint, // legacy NOT NULL column — reuse endpoint
+      last_seen_at: new Date().toISOString(),
+    };
+
+    // Attempt 1: upsert by fcm_token (1 subscription per browser).
+    let { error } = await context.supabase
+      .from("push_subscriptions")
+      .upsert(row, { onConflict: "fcm_token" });
+
+    // Auto-repair: if a unique/PK conflict happens on another column (endpoint
+    // owned by an old/stale row, sau abonare orfană de la un login precedent),
+    // ștergem înregistrările vechi cu același endpoint și reîncercăm.
+    const isConflict = (e: typeof error) => {
+      if (!e) return false;
+      const code = (e as { code?: string }).code ?? "";
+      const msg = (e.message ?? "").toLowerCase();
+      return (
+        code === "23505" ||
+        code === "409" ||
+        msg.includes("duplicate") ||
+        msg.includes("conflict") ||
+        msg.includes("unique")
+      );
+    };
+
+    if (isConflict(error)) {
+      // Ștergem orice rând vechi cu acest endpoint (indiferent de user_id —
+      // e același browser fizic; ownership-ul se rescrie prin re-insert).
+      // Folosim admin ca să curățăm și rândurile orfane (alt user_id).
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .from("push_subscriptions")
+        .delete()
+        .or(`endpoint.eq.${data.endpoint},fcm_token.eq.${data.endpoint}`);
+
+      // Retry: insert curat.
+      const retry = await context.supabase.from("push_subscriptions").insert(row);
+      error = retry.error;
+    }
+
     if (error) throw error;
+
     // Loghează consimțământul push (acordare). Vezi consent-registry + AGENTS.md.
     await context.supabase.rpc("record_consent", {
       _kind: "push_notifications",
@@ -38,6 +72,7 @@ export const savePushSubscription = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
 
 const UnsubInput = z.object({ endpoint: z.string().url() });
 export const removePushSubscription = createServerFn({ method: "POST" })
