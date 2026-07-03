@@ -266,14 +266,15 @@ export const adminModerateItem = createServerFn({ method: "POST" })
       const { assertAdminMfa } = await import("./admin-mfa-guard");
       await assertAdminMfa(context.userId);
     }
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await (supabaseAdmin as any).rpc("admin_moderate_item", {
+    // Folosim clientul autentificat, nu supabaseAdmin, ca `auth.uid()` să fie
+    // populat în RPC-ul SECURITY DEFINER (verifică `is_staff(auth.uid())` intern).
+    const { error } = await context.supabase.rpc("admin_moderate_item", {
       p_kind: data.kind,
       p_id: data.id,
       p_decision: data.decision,
-      p_reason: data.reason ?? null,
-      p_notification_radius_m: data.notification_radius_m ?? null,
-      p_is_official: data.is_official ?? null,
+      p_reason: data.reason ?? undefined,
+      p_notification_radius_m: data.notification_radius_m ?? undefined,
+      p_is_official: data.is_official ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
