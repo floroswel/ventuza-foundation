@@ -808,9 +808,9 @@ function ResendConfirmationDialog({ userId, onDone }: { userId: string; onDone: 
 }
 
 
-// ManualAgeVerifyDialog eliminat împreună cu fluxul Didit — verificarea trece
-// exclusiv prin panoul intern (`/admin/verification`) unde moderatorii internali
-// decid pe baza selfie-urilor live cu challenge-uri.
+// Verificarea trece exclusiv prin panoul intern (`/admin/verification`) unde
+// moderatorii internali decid pe baza selfie-urilor live cu challenge-uri.
+
 
 
 function BanDialog({ userId, onDone }: { userId: string; onDone: () => void }) {
