@@ -54,7 +54,7 @@ export function AgeGate() {
     setChecking(true);
     const { data, error } = await supabase
       .from("profiles")
-      .select("age_status, age_verified_at, age_verification_provider_ref")
+      .select("age_status, age_verified_at")
       .eq("id", uid)
       .maybeSingle();
     if (error) {
