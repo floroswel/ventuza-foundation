@@ -395,6 +395,11 @@ function PartnerPortal() {
           <Plus className="w-4 h-4 mr-1" /> Postare nouă (ghidat)
         </Button>
         <div className="flex flex-wrap gap-2">
+          <Link to="/partner/broadcasts">
+            <Button variant="outline" size="sm">
+              📣 Anunțuri către useri →
+            </Button>
+          </Link>
           <Link to="/partner/billing">
             <Button variant="outline" size="sm">
               Facturare & abonament →
