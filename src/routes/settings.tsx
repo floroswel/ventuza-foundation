@@ -28,6 +28,7 @@ import { ReferralCard } from "@/components/ReferralCard";
 import { ConsentsCard } from "@/components/settings/ConsentsCard";
 import { ConsentsHistoryCard } from "@/components/settings/ConsentsHistoryCard";
 import { ProximityNotificationsCard } from "@/components/settings/ProximityNotificationsCard";
+import { NotificationSoundCard } from "@/components/settings/NotificationSoundCard";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
