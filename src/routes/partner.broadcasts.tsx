@@ -35,7 +35,7 @@ import {
   partnerListApprovedVenues,
 } from "@/lib/partner-broadcasts.functions";
 
-export const Route = createFileRoute("/_authenticated/partner/broadcasts")({
+export const Route = createFileRoute("/partner/broadcasts")({
   head: () => ({
     meta: [
       { title: "Anunțuri — Partener Ventuza" },
