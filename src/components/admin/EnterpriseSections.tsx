@@ -43,6 +43,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+import { adminResetOwnAgeVerification } from "@/lib/admin-age-reset.functions";
 
 // Helper: extrage mesajul de eroare din ce ne dă serverul (server fns aruncă Error,
 // uneori cu prefix "Forbidden:" / "denied" → afișăm clar utilizatorului DE CE).
