@@ -7,22 +7,24 @@ import { cn } from "@/lib/utils";
  * Returns minutes-until or minutes-remaining for countdown.
  */
 export function useGoldenHour() {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
+    setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 60_000);
     return () => clearInterval(id);
   }, []);
+  if (!now) return { active: false, minutesLeft: 0, minutesUntil: 0, ready: false };
   const h = now.getHours();
   const m = now.getMinutes();
   const active = h >= 18 && h < 20;
   const minutesLeft = active ? (20 - h) * 60 - m : 0;
   const minutesUntil = !active && h < 18 ? (18 - h) * 60 - m : 0;
-  return { active, minutesLeft, minutesUntil };
+  return { active, minutesLeft, minutesUntil, ready: true };
 }
 
 export function GoldenHourBadge({ className }: { className?: string }) {
-  const { active, minutesLeft } = useGoldenHour();
-  if (!active) return null;
+  const { active, minutesLeft, ready } = useGoldenHour();
+  if (!ready || !active) return null;
   const hrs = Math.floor(minutesLeft / 60);
   const mins = minutesLeft % 60;
   return (
