@@ -82,17 +82,8 @@ const ROWS: Row[] = [
     dpa: "https://www.revenuecat.com/dpa/",
     codeRef: "src/lib/revenuecat.server.ts",
   },
-  {
-    name: "Didit",
-    purpose: "Verificare vârstă (18+) prin selfie + estimare AI",
-    data: "Selfie capturat în fluxul lor hosted, vendor_data=user_id intern, callback URL. Fără orientare, fără date de sănătate, fără locație precisă, fără mesaje.",
-    sensitive: true,
-    region: "UE",
-    extraEU: false,
-    transfer: "Intra-UE.",
-    dpa: "https://didit.me/legal/dpa",
-    codeRef: "src/lib/age-verification.functions.ts",
-  },
+  // NOTE: Didit a fost eliminat din stivă. Verificarea de identitate se face
+  // 100% intern (liveness + moderator uman), fără procesator extern KYC.
   {
     name: "Lovable AI Gateway",
     purpose: "Moderare conținut, generare text (bio assist), embeddings",
