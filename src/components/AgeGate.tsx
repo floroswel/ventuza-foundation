@@ -79,7 +79,7 @@ export function AgeGate() {
       next === "verified"
         ? null
         : next === "pending"
-          ? `Status = pending (verificare Didit în curs, ref=${data?.age_verification_provider_ref ?? "n/a"}). Aștept webhook-ul; dacă rămâne >30 min se resetează automat.`
+          ? `Status = pending (verificare Didit în curs). Aștept webhook-ul; dacă rămâne >30 min se resetează automat.`
           : next === "failed"
             ? "Status = failed (Didit a respins verificarea). Reia fluxul."
             : next === "expired"
@@ -95,7 +95,7 @@ export function AgeGate() {
       effective_status: next,
       auto_healed: healed,
       verified_at: data?.age_verified_at ?? null,
-      provider_ref: data?.age_verification_provider_ref ?? null,
+      provider_ref: null,
       reason: reasonText,
     });
     setStatus(next);
