@@ -82,8 +82,8 @@ const ROWS: Row[] = [
     dpa: "https://www.revenuecat.com/dpa/",
     codeRef: "src/lib/revenuecat.server.ts",
   },
-  // NOTE: Didit a fost eliminat din stivă. Verificarea de identitate se face
-  // 100% intern (liveness + moderator uman), fără procesator extern KYC.
+  // Verificarea de identitate se face 100% intern (liveness + moderator uman),
+  // fără procesator extern KYC.
   {
     name: "Lovable AI Gateway",
     purpose: "Moderare conținut, generare text (bio assist), embeddings",
