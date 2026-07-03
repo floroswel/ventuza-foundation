@@ -95,6 +95,36 @@ function PublicProfilePage() {
     })();
   }, [slug]);
 
+  // Auto-translate if viewer's language differs from author's stated language.
+  useEffect(() => {
+    if (!canTranslate || translation) return;
+    const supported = ["ro", "en", "es", "fr", "de", "it", "pt", "pl"];
+    if (!supported.includes(viewerLang)) return;
+    setTranslating(true);
+    doTranslate({ data: { profileId: profile.id, targetLang: viewerLang as any } })
+      .then((r: any) => {
+        if (r?.skipped) return;
+        setTranslation({
+          bio: r.bio ?? null,
+          ideal_match: r.ideal_match ?? null,
+          prompts: r.prompts ?? null,
+          lang: viewerLang,
+        });
+      })
+      .catch(() => {})
+      .finally(() => setTranslating(false));
+  }, [canTranslate, translation, viewerLang, profile, doTranslate]);
+
+  const displayBio = useMemo(() => {
+    if (translation && !showOriginal && translation.bio) return translation.bio;
+    return profile?.bio;
+  }, [translation, showOriginal, profile]);
+  const displayIdeal = useMemo(() => {
+    if (translation && !showOriginal && translation.ideal_match) return translation.ideal_match;
+    return profile?.ideal_match;
+  }, [translation, showOriginal, profile]);
+
+
   if (loading) {
     return (
       <main className="flex min-h-dvh items-center justify-center bg-background">
