@@ -67,6 +67,8 @@ function NearbyPage() {
   const fetchNearby = useServerFn(getNearbyPoints);
   const fetchVenueBadges = useCachedVenueBadges();
   const [venueBadges, setVenueBadges] = useState<Record<string, string[]>>({});
+  const [venueBadgesLoading, setVenueBadgesLoading] = useState(false);
+  const [venueBadgesError, setVenueBadgesError] = useState(false);
 
   // Initial coords + watch significant movement
   useEffect(() => {
@@ -118,13 +120,27 @@ function NearbyPage() {
       .map((p) => p.id);
     if (venueIds.length === 0) {
       setVenueBadges({});
+      setVenueBadgesLoading(false);
+      setVenueBadgesError(false);
       return;
     }
+    setVenueBadgesLoading(true);
+    setVenueBadgesError(false);
+    let cancelled = false;
     void fetchVenueBadges(venueIds)
-      .then((map) => setVenueBadges(map))
+      .then((map) => {
+        if (cancelled) return;
+        setVenueBadges((prev) => ({ ...prev, ...map }));
+      })
       .catch(() => {
-        /* non-fatal */
+        if (!cancelled) setVenueBadgesError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setVenueBadgesLoading(false);
       });
+    return () => {
+      cancelled = true;
+    };
   }, [data, fetchVenueBadges]);
 
   const errorKind = useMemo<"permission" | "network" | null>(() => {
@@ -330,14 +346,21 @@ function NearbyPage() {
             />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {filtered.map((p) => (
-                <NearbyCard
-                  key={`${p.kind}:${p.id}`}
-                  point={p}
-                  onSelect={handleSelectOnMap}
-                  badges={p.kind === "venue" ? venueBadges[p.id] : undefined}
-                />
-              ))}
+              {filtered.map((p) => {
+                const isVenue = p.kind === "venue";
+                const hasEntry =
+                  isVenue && Object.prototype.hasOwnProperty.call(venueBadges, p.id);
+                return (
+                  <NearbyCard
+                    key={`${p.kind}:${p.id}`}
+                    point={p}
+                    onSelect={handleSelectOnMap}
+                    badges={isVenue ? venueBadges[p.id] : undefined}
+                    badgesLoading={isVenue && !hasEntry && venueBadgesLoading}
+                    badgesError={isVenue && venueBadgesError && !hasEntry}
+                  />
+                );
+              })}
             </div>
           )}
         </TabsContent>

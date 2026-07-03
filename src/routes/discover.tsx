@@ -95,6 +95,8 @@ function DiscoverPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [badgesMap, setBadgesMap] = useState<Record<string, string[]>>({});
+  const [badgesLoading, setBadgesLoading] = useState(false);
+  const [badgesError, setBadgesError] = useState(false);
   const fetchUserBadges = useCachedUserBadges();
   const [loading, setLoading] = useState(true);
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
@@ -194,13 +196,20 @@ function DiscoverPage() {
       setProfiles(data);
       // Fetch server-side badges for the loaded profiles (fire-and-forget).
       if (data.length > 0) {
+        setBadgesLoading(true);
+        setBadgesError(false);
         void fetchUserBadges(data.map((d) => d.id))
-          .then((map) => setBadgesMap(map))
+          .then((map) => {
+            setBadgesMap((prev) => ({ ...prev, ...map }));
+          })
           .catch(() => {
-            /* non-fatal */
-          });
+            setBadgesError(true);
+          })
+          .finally(() => setBadgesLoading(false));
       } else {
         setBadgesMap({});
+        setBadgesLoading(false);
+        setBadgesError(false);
       }
     } catch (e) {
       const message = e instanceof Error ? e.message : "Couldn't load discover";
@@ -549,7 +558,13 @@ function DiscoverPage() {
               Toți din grid
             </p>
           </div>
-          <Cascade profiles={visible} onOpen={setSelected} badgesMap={badgesMap} />
+          <Cascade
+            profiles={visible}
+            onOpen={setSelected}
+            badgesMap={badgesMap}
+            badgesLoading={badgesLoading}
+            badgesError={badgesError}
+          />
         </>
       )}
 
@@ -729,10 +744,14 @@ function Cascade({
   profiles,
   onOpen,
   badgesMap,
+  badgesLoading,
+  badgesError,
 }: {
   profiles: DiscoverProfile[];
   onOpen: (p: DiscoverProfile) => void;
   badgesMap: Record<string, string[]>;
+  badgesLoading: boolean;
+  badgesError: boolean;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const { bySender } = useUnreadMessages();
@@ -791,11 +810,26 @@ function Cascade({
                 <Rocket className="size-2.5" /> BOOST
               </span>
             )}
-            {!(p.boost_until && new Date(p.boost_until) > new Date()) && (badgesMap[p.id]?.length ?? 0) > 0 && (
-              <div className="absolute left-1.5 top-1.5">
-                <BadgeStrip codes={badgesMap[p.id] ?? []} max={3} size="xs" />
-              </div>
-            )}
+            {!(p.boost_until && new Date(p.boost_until) > new Date()) && (() => {
+              const hasEntry = Object.prototype.hasOwnProperty.call(badgesMap, p.id);
+              const codes = badgesMap[p.id] ?? [];
+              // Show skeleton only while the initial batch is in-flight AND
+              // this profile hasn't been resolved yet. Once resolved (even to
+              // an empty list), we render the final state to avoid flicker.
+              if (!hasEntry && badgesLoading) {
+                return (
+                  <div className="absolute left-1.5 top-1.5">
+                    <BadgeStrip codes={[]} max={3} size="xs" loading />
+                  </div>
+                );
+              }
+              if (codes.length === 0 || badgesError) return null;
+              return (
+                <div className="absolute left-1.5 top-1.5">
+                  <BadgeStrip codes={codes} max={3} size="xs" />
+                </div>
+              );
+            })()}
             {p.looking_now_until && new Date(p.looking_now_until) > new Date() && (
               <span className="absolute right-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-rose-500/95 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-lg backdrop-blur">
                 <Flame className="size-2.5" /> NOW
