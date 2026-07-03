@@ -54,6 +54,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { PostingWizard } from "@/components/partner/PostingWizard";
 import { StatusNotificationsBell } from "@/components/partner/StatusNotificationsBell";
 import { StatusTiles } from "@/components/partner/StatusTiles";
+import { BackButton } from "@/components/BackButton";
 
 export const Route = createFileRoute("/partner")({
   head: () => ({
@@ -225,6 +226,7 @@ function PartnerPortal() {
     if (pendingError) {
       return (
         <div className="max-w-xl mx-auto p-6 space-y-4">
+          <BackButton fallback="/" />
           <h1 className="text-2xl font-semibold">Portal Partener</h1>
           <div className="rounded border border-destructive/40 bg-destructive/5 p-4 text-sm">
             <p className="font-medium text-destructive">
@@ -277,6 +279,7 @@ function PartnerPortal() {
       const s = statusLabels[pendingApp.status] ?? statusLabels.pending;
       return (
         <div className="max-w-xl mx-auto p-6 space-y-4">
+          <BackButton fallback="/" />
           <h1 className="text-2xl font-semibold">Portal Partener</h1>
           <Card className={s.cls}>
             <CardContent className="pt-6 space-y-2">
@@ -335,6 +338,7 @@ function PartnerPortal() {
     }
     return (
       <div className="max-w-xl mx-auto p-6 space-y-4">
+        <BackButton fallback="/" />
         <h1 className="text-2xl font-semibold">Portal Partener</h1>
         <p className="text-muted-foreground">
           Acest portal este disponibil doar conturilor partener aprobate. Aplică pentru un cont
