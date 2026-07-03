@@ -216,7 +216,7 @@ function VerifyPage() {
         _kind: "internal_verification",
         _version: CONSENT_REGISTRY.internal_verification.currentVersion,
         _accepted: true,
-        _user_agent: ua,
+        _user_agent: ua ?? undefined,
       });
       if (consentError) throw consentError;
 
