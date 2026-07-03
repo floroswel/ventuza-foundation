@@ -277,7 +277,7 @@ function PublicProfilePage() {
         {profile.bio && (
           <section>
             <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">About</h2>
-            <p className="whitespace-pre-wrap text-foreground/90">{profile.bio}</p>
+            <p className="whitespace-pre-wrap text-foreground/90">{displayBio}</p>
           </section>
         )}
 
