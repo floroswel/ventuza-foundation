@@ -150,32 +150,64 @@ function NearbyPage() {
   }, []);
 
   if (geoError && !coords) {
+    const isDenied = geoError instanceof GeoError && geoError.code === "denied";
+    const isUnavailable = geoError instanceof GeoError && geoError.code === "unavailable";
+    const [retrying, setRetrying] = [
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      undefined,
+      undefined,
+    ];
+    void retrying;
     return (
       <div className="container max-w-2xl py-8">
         <Card className="p-6">
           <MapPin className="h-8 w-8 text-muted-foreground mb-3" />
           <h1 className="text-xl font-semibold mb-2">Activează locația</h1>
-          <p className="text-sm text-muted-foreground mb-4">
+          <p className="text-sm text-muted-foreground mb-3">
             Pentru a vedea ce e aproape de tine, avem nevoie de permisiunea pentru locație.{" "}
-            <strong>Coordonatele tale exacte rămân pe dispozitiv</strong> — serverul primește doar o
-            zonă aproximativă de ~5 km, atât cât e necesar ca să-ți trimită locurile potrivite.
+            <strong>Coordonatele tale exacte rămân pe dispozitiv</strong> — serverul primește doar
+            o zonă aproximativă de ~5 km.
           </p>
-          <Button
-            onClick={() =>
-              getCurrentCoords({ maxAgeMs: 0 })
-                .then((c) => {
-                  setGeoError(null);
-                  setCoords(c);
-                })
-                .catch((e) => setGeoError(String(e?.message ?? e)))
-            }
-          >
-            Permite locația
-          </Button>
+          <div className="mb-4 rounded-md border border-border bg-muted/40 p-3 text-xs">
+            <p className="font-medium text-foreground">
+              {isDenied
+                ? "Permisiunea e blocată în browser"
+                : isUnavailable
+                  ? "Geolocation indisponibilă"
+                  : "Eroare la citirea locației"}
+            </p>
+            <p className="text-muted-foreground">
+              {geoError instanceof Error ? geoError.message : String(geoError)}
+            </p>
+            {isDenied && (
+              <ul className="mt-2 list-disc pl-4 text-muted-foreground">
+                <li>Chrome/Edge: iconița 🔒 din bara de adrese → Site settings → Location → Allow</li>
+                <li>Safari iOS: Setări → Safari → Locație → Permite</li>
+                <li>Android app: Setări → Apps → Ventuza → Permisiuni → Locație</li>
+              </ul>
+            )}
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => {
+                clearCoordsCache();
+                setGeoError(null);
+                getCurrentCoords({ maxAgeMs: 0 })
+                  .then((c) => setCoords(c))
+                  .catch((e) => setGeoError(e));
+              }}
+            >
+              Încearcă din nou
+            </Button>
+            <Button variant="outline" onClick={() => navigate({ to: "/discover" })}>
+              Înapoi la Discover
+            </Button>
+          </div>
         </Card>
       </div>
     );
   }
+
 
   return (
     <div className="container max-w-5xl py-4 px-3 space-y-4">
