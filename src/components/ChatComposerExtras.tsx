@@ -45,23 +45,32 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
   }
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>, viewOnce: boolean) {
-    const f = e.target.files?.[0];
+    const files = Array.from(e.target.files ?? []);
     e.target.value = "";
-    if (!f) return;
-    if (f.size > 8 * 1024 * 1024) {
-      toast.error("Imagine prea mare (max 8MB)");
+    if (!files.length) return;
+    const MAX = 10;
+    if (files.length > MAX) {
+      toast.error(`Maxim ${MAX} imagini deodată`);
       return;
     }
     setBusy(true);
     try {
-      const m = await sendMediaMessage(conversationId, { kind: "image", file: f, viewOnce });
-      onSent(m);
+      for (const f of files) {
+        if (f.size > 8 * 1024 * 1024) {
+          toast.error(`"${f.name}" e prea mare (max 8MB)`);
+          continue;
+        }
+        const m = await sendMediaMessage(conversationId, { kind: "image", file: f, viewOnce });
+        onSent(m);
+      }
+      if (files.length > 1) toast.success(`${files.length} imagini trimise`);
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
       setBusy(false);
     }
   }
+
 
   async function shareLocation() {
     setOpen(false);
