@@ -57,7 +57,11 @@ function BadgesCatalog() {
                 <div className="flex-1">
                   <div className="font-semibold">{b.label.ro}</div>
                   <div className="text-sm text-muted-foreground">{b.criteria}</div>
+                  {b.expiry && (
+                    <div className="text-xs text-muted-foreground italic mt-1">Expirare: {b.expiry}</div>
+                  )}
                 </div>
+
               </Card>
             );
           })}
