@@ -98,7 +98,7 @@ const ROWS: Row[] = [
   {
     name: "Cloudflare, Inc.",
     purpose: "Edge runtime (Workers) pentru server functions + CDN asseturi",
-    data: "Toate request-urile HTTP/S în tranzit (headere, IP, payload), inclusiv date sensibile spre Supabase/Didit/Google. Procesare in-memory, fără persistență la noi.",
+    data: "Toate request-urile HTTP/S în tranzit (headere, IP, payload), inclusiv date sensibile spre Supabase/Google. Procesare in-memory, fără persistență la noi.",
     sensitive: true,
     region: "Extra-UE (edge global, inclusiv SUA)",
     extraEU: true,
