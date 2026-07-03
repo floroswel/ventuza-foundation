@@ -20,7 +20,8 @@ export type ConsentKind =
   | "ai_features"
   | "push_notifications"
   | "background_location"
-  | "marketing";
+  | "marketing"
+  | "partner_announcements";
 
 export interface ConsentMeta {
   kind: ConsentKind;
@@ -141,6 +142,16 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
     label: "Comunicări de marketing",
     description: "Newsletter și oferte (opțional). Te poți dezabona oricând.",
     gates: ["email_marketing"],
+  },
+  partner_announcements: {
+    kind: "partner_announcements",
+    currentVersion: "2026-07-03",
+    required: false,
+    art9: false,
+    label: "Anunțuri de la parteneri Premium",
+    description:
+      "Primești ocazional notificări de la parteneri Premium aprobați (evenimente, oferte, promoții) — filtrate după oraș, distanță sau participare la evenimentele lor. Opt-in explicit (implicit oprit). Se aplică plafoane săptămânale per partener și un cooldown de 24h per user. Poți retrage oricând.",
+    gates: ["partner_send_broadcast"],
   },
 };
 

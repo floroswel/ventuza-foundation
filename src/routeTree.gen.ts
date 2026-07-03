@@ -43,6 +43,7 @@ import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as VenuesIdRouteImport } from './routes/venues.$id'
 import { Route as USlugRouteImport } from './routes/u.$slug'
 import { Route as PartnerGuideRouteImport } from './routes/partner.guide'
+import { Route as PartnerBroadcastsRouteImport } from './routes/partner.broadcasts'
 import { Route as PartnerBillingRouteImport } from './routes/partner.billing'
 import { Route as OffersIdRouteImport } from './routes/offers.$id'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
@@ -242,6 +243,11 @@ const PartnerGuideRoute = PartnerGuideRouteImport.update({
   path: '/guide',
   getParentRoute: () => PartnerRoute,
 } as any)
+const PartnerBroadcastsRoute = PartnerBroadcastsRouteImport.update({
+  id: '/broadcasts',
+  path: '/broadcasts',
+  getParentRoute: () => PartnerRoute,
+} as any)
 const PartnerBillingRoute = PartnerBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -438,6 +444,7 @@ export interface FileRoutesByFullPath {
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
   '/partner/billing': typeof PartnerBillingRoute
+  '/partner/broadcasts': typeof PartnerBroadcastsRoute
   '/partner/guide': typeof PartnerGuideRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
@@ -502,6 +509,7 @@ export interface FileRoutesByTo {
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
   '/partner/billing': typeof PartnerBillingRoute
+  '/partner/broadcasts': typeof PartnerBroadcastsRoute
   '/partner/guide': typeof PartnerGuideRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
@@ -567,6 +575,7 @@ export interface FileRoutesById {
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
   '/partner/billing': typeof PartnerBillingRoute
+  '/partner/broadcasts': typeof PartnerBroadcastsRoute
   '/partner/guide': typeof PartnerGuideRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
@@ -633,6 +642,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/offers/$id'
     | '/partner/billing'
+    | '/partner/broadcasts'
     | '/partner/guide'
     | '/u/$slug'
     | '/venues/$id'
@@ -697,6 +707,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/offers/$id'
     | '/partner/billing'
+    | '/partner/broadcasts'
     | '/partner/guide'
     | '/u/$slug'
     | '/venues/$id'
@@ -761,6 +772,7 @@ export interface FileRouteTypes {
     | '/messages/$id'
     | '/offers/$id'
     | '/partner/billing'
+    | '/partner/broadcasts'
     | '/partner/guide'
     | '/u/$slug'
     | '/venues/$id'
@@ -1071,6 +1083,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PartnerGuideRouteImport
       parentRoute: typeof PartnerRoute
     }
+    '/partner/broadcasts': {
+      id: '/partner/broadcasts'
+      path: '/broadcasts'
+      fullPath: '/partner/broadcasts'
+      preLoaderRoute: typeof PartnerBroadcastsRouteImport
+      parentRoute: typeof PartnerRoute
+    }
     '/partner/billing': {
       id: '/partner/billing'
       path: '/billing'
@@ -1338,11 +1357,13 @@ const GroupsRouteWithChildren =
 
 interface PartnerRouteChildren {
   PartnerBillingRoute: typeof PartnerBillingRoute
+  PartnerBroadcastsRoute: typeof PartnerBroadcastsRoute
   PartnerGuideRoute: typeof PartnerGuideRoute
 }
 
 const PartnerRouteChildren: PartnerRouteChildren = {
   PartnerBillingRoute: PartnerBillingRoute,
+  PartnerBroadcastsRoute: PartnerBroadcastsRoute,
   PartnerGuideRoute: PartnerGuideRoute,
 }
 
@@ -1408,13 +1429,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

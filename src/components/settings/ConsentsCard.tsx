@@ -18,6 +18,7 @@ const OPTIONAL_KINDS: ConsentKind[] = [
   "ai_features",
   "push_notifications",
   "background_location",
+  "partner_announcements",
   "marketing",
 ];
 
