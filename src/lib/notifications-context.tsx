@@ -18,6 +18,10 @@ import {
   type NotificationRow,
 } from "@/lib/notifications";
 import { toast } from "sonner";
+import {
+  playNotificationSound,
+  primeNotificationSound,
+} from "@/lib/notification-sound";
 
 type Ctx = {
   notifications: NotificationRow[];
@@ -60,6 +64,11 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     refresh();
   }, [refresh]);
 
+  // Prime AudioContext on first user gesture (iOS/Safari requirement)
+  useEffect(() => {
+    primeNotificationSound();
+  }, []);
+
   // Realtime subscription
   useEffect(() => {
     if (!user) return;
@@ -77,10 +86,11 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           const n = payload.new as NotificationRow;
           setNotifications((prev) => [n, ...prev].slice(0, 100));
           setUnread((c) => c + 1);
-          // Toast preview, dedupe
+          // Toast preview + signature sound, dedupe
           if (!lastToastIdRef.current.has(n.id)) {
             lastToastIdRef.current.add(n.id);
             toast(n.title, { description: n.body ?? undefined });
+            playNotificationSound();
           }
         },
       )

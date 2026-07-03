@@ -28,6 +28,7 @@ import { ReferralCard } from "@/components/ReferralCard";
 import { ConsentsCard } from "@/components/settings/ConsentsCard";
 import { ConsentsHistoryCard } from "@/components/settings/ConsentsHistoryCard";
 import { ProximityNotificationsCard } from "@/components/settings/ProximityNotificationsCard";
+import { NotificationSoundCard } from "@/components/settings/NotificationSoundCard";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
@@ -490,6 +491,9 @@ function SettingsPage() {
 
         {/* Proximity notifications (Strat 1 + Strat 2 opt-in) */}
         <ProximityNotificationsCard />
+
+        {/* Ventuza signature notification sound */}
+        <NotificationSoundCard />
 
         {/* Unique features: pronouns, friends-only, language, PIN, discreet mode */}
         <UniquesCard />
