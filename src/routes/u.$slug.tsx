@@ -187,6 +187,30 @@ function PublicProfilePage() {
       </section>
 
       <div className="space-y-6 px-6 pt-6">
+        {(translating || translation) && canTranslate && (
+          <div className="flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1.5 text-[11px] text-muted-foreground">
+            <Languages className="size-3.5 text-primary" />
+            {translating ? (
+              <span>Se traduce…</span>
+            ) : (
+              <>
+                <span>
+                  Tradus automat în {translation!.lang.toUpperCase()}
+                  {authorLang ? ` din ${authorLang.toUpperCase()}` : ""}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowOriginal((v) => !v)}
+                  className="ml-auto rounded-full border border-border px-2 py-0.5 text-[10px] font-medium text-foreground hover:bg-background"
+                >
+                  {showOriginal ? "Vezi tradus" : "Vezi original"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+
         {signedVideo && (
           <div className="rounded-2xl border border-border bg-surface p-3">
             <div className="mb-2 flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
