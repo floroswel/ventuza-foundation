@@ -13,7 +13,7 @@ export const Route = createFileRoute("/legal/age-policy")({
           "Ventuza este o platformă exclusiv pentru adulți. Cum verificăm vârsta și ce facem dacă găsim un cont minor.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza-foundation.lovable.app/legal/age-policy" }],
+    links: [{ rel: "canonical", href: "https://ventuza.app/legal/age-policy" }],
   }),
   component: AgePolicyPage,
 });

@@ -12,7 +12,7 @@ export const Route = createFileRoute("/legal/cookies")({
         content: "Ce cookie-uri folosim, de ce și cum îți poți retrage consimțământul.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza-foundation.lovable.app/legal/cookies" }],
+    links: [{ rel: "canonical", href: "https://ventuza.app/legal/cookies" }],
   }),
   component: CookiesPage,
 });

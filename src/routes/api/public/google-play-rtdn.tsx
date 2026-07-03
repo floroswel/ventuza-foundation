@@ -3,7 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 /**
  * Google Play Real-Time Developer Notifications (RTDN) webhook.
  * Configure in Play Console → Monetize → Subscriptions → "Real-time developer notifications"
- * → endpoint: https://ventuza-foundation.lovable.app/api/public/google-play-rtdn
+ * → endpoint: https://ventuza.app/api/public/google-play-rtdn
  *
  * Payload is wrapped in a Pub/Sub message. We decode, then update local `subscriptions`
  * table with the latest state. Token verification against Google APIs is best-effort and

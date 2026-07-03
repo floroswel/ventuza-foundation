@@ -15,7 +15,7 @@ export const Route = createFileRoute("/legal/records-of-processing")({
     links: [
       {
         rel: "canonical",
-        href: "https://ventuza-foundation.lovable.app/legal/records-of-processing",
+        href: "https://ventuza.app/legal/records-of-processing",
       },
     ],
   }),

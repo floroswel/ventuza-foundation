@@ -8,7 +8,7 @@ export const Route = createFileRoute("/legal/subprocessors")({
       { name: "description", content: "Lista terților care procesează date în numele Ventuza." },
     ],
     links: [
-      { rel: "canonical", href: "https://ventuza-foundation.lovable.app/legal/subprocessors" },
+      { rel: "canonical", href: "https://ventuza.app/legal/subprocessors" },
     ],
   }),
   component: SubsPage,
