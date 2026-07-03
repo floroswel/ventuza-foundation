@@ -89,7 +89,7 @@ import { PartnersModerationPanel } from "@/components/admin/PartnersModerationPa
 import { BillingAdminPanel } from "@/components/admin/BillingAdminPanel";
 import { useIdleLogout } from "@/hooks/useIdleLogout";
 import { AnalyticsPanel } from "@/components/AnalyticsPanel";
-import { FeedbackInbox } from "@/components/admin/FeedbackInbox";
+
 import { ExperimentsPanel } from "@/components/admin/ExperimentsPanel";
 import {
   isProductionHost,
@@ -696,7 +696,7 @@ function OverviewPanel() {
           <GlassCard padding="p-4">
             <SectionTitle>Inbox & experimente</SectionTitle>
             <div className="space-y-4">
-              <FeedbackInbox />
+              
               <ExperimentsPanel />
             </div>
           </GlassCard>

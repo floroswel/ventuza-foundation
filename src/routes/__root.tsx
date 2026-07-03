@@ -25,7 +25,7 @@ import { useProximityForegroundWatcher } from "@/lib/proximity-watcher";
 // instanță înainte de prima randare (altfel NO_I18NEXT_INSTANCE).
 import "@/lib/i18n";
 
-import { FeedbackWidget } from "@/components/FeedbackWidget";
+
 import { ConsentPromptHost } from "@/components/ConsentPromptHost";
 
 function NotFoundComponent() {
@@ -217,7 +217,7 @@ function RootComponent() {
           <PinLockGate />
           <Toaster theme="dark" position="top-center" richColors />
 
-          <FeedbackWidget />
+          
           <ConsentPromptHost />
         </NotificationsProvider>
       </AuthProvider>
