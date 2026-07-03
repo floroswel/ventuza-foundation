@@ -19,14 +19,16 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 type Ctx = { supabase: any; userId: string };
 
-async function assertPartner({ supabase, userId }: Ctx) {
+export const PARTNER_ALLOWED_ROLES = ["business", "partner", "admin", "super_admin"] as const;
+
+export async function assertPartner({ supabase, userId }: Ctx) {
   const { data: roles, error } = await (supabase as any)
     .from("user_roles")
     .select("role")
     .eq("user_id", userId);
   if (error) throw new Error(error.message);
   const roleSet = new Set((roles ?? []).map((r: any) => r.role));
-  const allowed = roleSet.has("business") || roleSet.has("partner") || roleSet.has("admin") || roleSet.has("super_admin");
+  const allowed = PARTNER_ALLOWED_ROLES.some((r) => roleSet.has(r));
   if (!allowed) throw new Error("forbidden: not a partner");
   const { data: prof, error: pErr } = await supabase
     .from("profiles")
