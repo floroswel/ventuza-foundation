@@ -242,8 +242,13 @@ function AuthPage() {
         }
         // Persist birthdate on profile (trigger `enforce_min_age` enforces 18+ server-side).
         // Canonical column is `birthdate` — used by age gate, discover, /n onboarding.
+        // Capture browser language as fallback for transactional emails (ro/en only).
         if (data.user) {
-          await supabase.from("profiles").update({ birthdate: birthDate }).eq("id", data.user.id);
+          const browserLang = (navigator.language || "ro").toLowerCase().startsWith("ro") ? "ro" : "en";
+          await supabase
+            .from("profiles")
+            .update({ birthdate: birthDate, preferred_language: browserLang })
+            .eq("id", data.user.id);
         }
         if (data.session) {
           toast.success("Welcome to Ventuza.");
