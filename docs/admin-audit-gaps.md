@@ -218,7 +218,7 @@ Cu ✅ = există și e conectat. Cu ⚠️ = există parțial. Cu ❌ = lipseșt
 - ❌ **Device fingerprint clustering** (cross-account detection). Există date, nu există UI. 🔴 P0.
 - ❌ **Velocity rules configurabile din UI** (astăzi hardcodat). 🟠 P1.
 - ❌ **IP intelligence** (VPN/TOR/datacenter/geo mismatch) — integrare IPQS / MaxMind. 🔴 P0.
-- ❌ **Face-match verificare vs poze profil** (Didit face-only vs photo library) — anti-catfishing serios. 🟠 P1.
+- ❌ **Face-match verificare vs poze profil** (selfie liveness intern vs photo library) — anti-catfishing serios. 🟠 P1.
 - ❌ **Behavior scoring** (message-to-match ratio, time-to-first-message, block rate) → risk score compus. 🟠 P1.
 - ❌ **Honeypot profiles** pentru detectare scam-bots. 🟡 P2 dar foarte eficient.
 - ❌ **Payment fraud** (chargeback tracker) — la parteneri. 🟠 P1.
