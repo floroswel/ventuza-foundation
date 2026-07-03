@@ -112,8 +112,8 @@ function AccountPage() {
             className="flex min-w-0 flex-1 items-center gap-4 rounded-xl transition-transform active:scale-[0.98]"
           >
             <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-muted ring-2 ring-primary/30">
-              {profile?.photo_url ? (
-                <img src={profile.photo_url} alt="" className="h-full w-full object-cover" />
+              {profile?.photos?.[0] ? (
+                <img src={profile.photos[0]} alt="" className="h-full w-full object-cover" />
               ) : (
                 <div className="grid h-full w-full place-items-center text-2xl">
                   {(profile?.display_name ?? user.email ?? "?").slice(0, 1).toUpperCase()}
