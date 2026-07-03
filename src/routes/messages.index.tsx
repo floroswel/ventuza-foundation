@@ -55,6 +55,19 @@ function MessagesPage() {
     };
   }, [user]);
 
+  type Filter = "all" | "unread" | "online";
+  const [filter, setFilter] = useState<Filter>("all");
+  const filtered = items.filter((c) => {
+    if (filter === "unread") return c.unread_count > 0;
+    if (filter === "online") return c.other_online;
+    return true;
+  });
+  const counts = {
+    all: items.length,
+    unread: items.filter((c) => c.unread_count > 0).length,
+    online: items.filter((c) => c.other_online).length,
+  };
+
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background pb-24">
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 px-5 py-4 backdrop-blur">
@@ -64,42 +77,97 @@ function MessagesPage() {
         <StoriesStrip />
       </div>
 
+      <div className="sticky top-[57px] z-10 flex gap-2 overflow-x-auto border-b border-border/40 bg-background/85 px-3 py-2 backdrop-blur">
+        {([
+          { id: "all", label: "Toate" },
+          { id: "unread", label: "Necitite" },
+          { id: "online", label: "Online" },
+        ] as Array<{ id: Filter; label: string }>).map((f) => {
+          const active = filter === f.id;
+          const n = counts[f.id];
+          return (
+            <button
+              key={f.id}
+              onClick={() => setFilter(f.id)}
+              className={cn(
+                "shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                active
+                  ? "border-primary bg-primary text-primary-foreground"
+                  : "border-border/60 bg-background text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {f.label}
+              {n > 0 && (
+                <span
+                  className={cn(
+                    "ml-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none",
+                    active ? "bg-primary-foreground/20" : "bg-muted",
+                  )}
+                >
+                  {n}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
       <div className="flex-1 px-3 py-3">
         {loading ? (
           <div className="flex items-center justify-center py-24 text-muted-foreground">
             <Loader2 className="size-5 animate-spin" />
           </div>
-        ) : items.length === 0 ? (
+        ) : filtered.length === 0 ? (
           <EmptyState
             icon={MessageCircle}
-            title="Nicio conversație încă"
-            body="Deschide un profil în Discover și apasă Mesaj ca să începi."
+            title={
+              items.length === 0
+                ? "Nicio conversație încă"
+                : filter === "unread"
+                  ? "Nicio conversație necitită"
+                  : filter === "online"
+                    ? "Nimeni online acum"
+                    : "Nimic aici"
+            }
+            body={
+              items.length === 0
+                ? "Deschide un profil în Discover și apasă Mesaj ca să începi."
+                : "Încearcă alt filtru."
+            }
           />
         ) : (
           <ul className="space-y-1">
-            {items.map((c) => (
+            {filtered.map((c) => (
               <li key={c.id}>
                 <Link
                   to="/messages/$id"
                   params={{ id: c.id }}
                   className="flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-muted/40"
                 >
-                  <div
-                    className={cn(
-                      "size-12 shrink-0 overflow-hidden rounded-full bg-muted",
-                      c.unread_count > 0 && "snake-border",
-                    )}
-                  >
-                    {c.other_photo ? (
-                      <img
-                        src={c.other_photo}
-                        alt={c.other_name ?? ""}
-                        className="size-full object-cover"
+                  <div className="relative">
+                    <div
+                      className={cn(
+                        "size-12 shrink-0 overflow-hidden rounded-full bg-muted",
+                        c.unread_count > 0 && "snake-border",
+                      )}
+                    >
+                      {c.other_photo ? (
+                        <img
+                          src={c.other_photo}
+                          alt={c.other_name ?? ""}
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
+                          {(c.other_name ?? "?").slice(0, 1)}
+                        </div>
+                      )}
+                    </div>
+                    {c.other_online && (
+                      <span
+                        aria-label="Online"
+                        className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-background bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.7)]"
                       />
-                    ) : (
-                      <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
-                        {(c.other_name ?? "?").slice(0, 1)}
-                      </div>
                     )}
                   </div>
 
@@ -142,6 +210,7 @@ function MessagesPage() {
     </div>
   );
 }
+
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
