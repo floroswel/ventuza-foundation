@@ -615,7 +615,7 @@ REGULĂ — COLOANA `birthdate` E CANONICĂ
 Data nașterii se scrie EXCLUSIV în coloana `public.profiles.birthdate` (date).
 Coloana `birth_date` (cu underscore) a fost orfană și e ștearsă. Orice cod care
 introduce `birth_date` trebuie REFUZAT — age gate, discover, `enforce_min_age_trg`,
-Didit și onboarding (/n) folosesc `birthdate`. OAuth signup nu poate intra în
+verificarea internă și onboarding (/n) folosesc `birthdate`. OAuth signup nu poate intra în
 aplicație fără `birthdate` non-null: `SessionGuards` redirecționează către /n
 dacă lipsește, iar triggerul DB refuză orice valoare <18 ani.
 
