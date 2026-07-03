@@ -215,7 +215,12 @@ function DiscoverPage() {
       const message = e instanceof Error ? e.message : "Couldn't load discover";
       const code = (e as { code?: string } | null)?.code;
       setLoadError({ message, code });
-      toast.error(message);
+      // Terminal errors already shown inline (CenterMessage + CTA) — don't toast on repeat.
+      const inlineOnly =
+        code === "email_not_confirmed" ||
+        code === "age_verification_required" ||
+        code === "not_authenticated";
+      if (!inlineOnly) toast.error(message, { id: `discover-load-${code ?? "err"}` });
     } finally {
       setLoading(false);
     }
