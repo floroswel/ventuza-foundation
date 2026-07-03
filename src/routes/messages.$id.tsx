@@ -83,6 +83,8 @@ function ThreadPage() {
   const lastTypingSentRef = useRef(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
   const [reactionPickerFor, setReactionPickerFor] = useState<string | null>(null);
+  const [heartPulseFor, setHeartPulseFor] = useState<string | null>(null);
+  const lastTapRef = useRef<{ id: string; ts: number } | null>(null);
   const [unsendTarget, setUnsendTarget] = useState<MessageRow | null>(null);
   const [replyTo, setReplyTo] = useState<MessageRow | null>(null);
   const [meVerified, setMeVerified] = useState<boolean | null>(null);
@@ -160,6 +162,27 @@ function ThreadPage() {
       setMessages((prev) => prev.map((m) => (m.id === msgId ? { ...m, reactions: next } : m)));
     } catch (e) {
       toast.error((e as Error).message);
+    }
+  }
+
+  function quickLike(m: MessageRow) {
+    if (m.deleted_at) return;
+    setHeartPulseFor(m.id);
+    window.setTimeout(() => {
+      setHeartPulseFor((cur) => (cur === m.id ? null : cur));
+    }, 700);
+    void handleReact(m.id, "❤️");
+  }
+
+  function handleBubbleTap(m: MessageRow) {
+    // Double-tap detection pentru mobile (onDoubleClick nu se declanșează pe touch).
+    const now = Date.now();
+    const last = lastTapRef.current;
+    if (last && last.id === m.id && now - last.ts < 300) {
+      lastTapRef.current = null;
+      quickLike(m);
+    } else {
+      lastTapRef.current = { id: m.id, ts: now };
     }
   }
 
@@ -557,10 +580,13 @@ function ThreadPage() {
                       )}
                       <div
                         className={cn(
-                          "order-1 max-w-[82%]",
+                          "order-1 max-w-[82%] select-none",
                           m._status === "pending" && "opacity-70",
                           m._status === "failed" && "rounded-2xl ring-1 ring-destructive/60",
+                          heartPulseFor === m.id && "animate-in zoom-in-95 duration-300",
                         )}
+                        onDoubleClick={() => quickLike(m)}
+                        onClick={() => handleBubbleTap(m)}
                       >
                         {replied && !isDeleted && (
                           <div
