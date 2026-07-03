@@ -55,7 +55,17 @@ export function AgeGate() {
       .select("age_status")
       .eq("id", uid)
       .maybeSingle();
-    setStatus((data?.age_status as Status) ?? "unverified");
+    let next = (data?.age_status as Status) ?? "unverified";
+    // Auto-heal: dacă e blocat pe "pending" mai mult decât pragul din
+    // app_settings.age_verification_stale (default 30 min), RPC-ul îl resetează
+    // la "unverified" și userul poate reporni fluxul fără intervenție staff.
+    if (next === "pending") {
+      const { data: reset } = await supabase.rpc("reset_stale_age_verification", {
+        _user_id: uid,
+      });
+      if (reset === true) next = "unverified";
+    }
+    setStatus(next);
     setChecking(false);
   };
 
