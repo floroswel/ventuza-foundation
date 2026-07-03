@@ -213,7 +213,7 @@ const TODOS = [
   "DPIA formal (Art. 35) — combinație sănătate + orientare + locație + minori.",
   "TIA post-Schrems II pentru toți procesatorii US (P2/P3/P4/P5/P7/P8).",
   "Procesare HIV eliminată complet (coloane dropate, funcții șterse, kind consent scos).",
-  "Procesator KYC extern (Didit) eliminat — verificare 100% internă cu moderator uman.",
+  "Procesator KYC extern eliminat — verificare 100% internă cu moderator uman.",
   "Desemnare DPO oficial (Art. 37) + contact public.",
   "Confirmare DPA semnate pentru RevenueCat, Lovable (Supabase).",
 ];
