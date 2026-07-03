@@ -208,6 +208,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
         ref={fileRef}
         type="file"
         accept="image/*"
+        multiple
         className="hidden"
         onChange={(e) => handleFile(e, false)}
       />
@@ -215,10 +216,11 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
         ref={fileOnceRef}
         type="file"
         accept="image/*"
-        capture="environment"
+        multiple
         className="hidden"
         onChange={(e) => handleFile(e, true)}
       />
+
       <div className="relative">
         <button
           type="button"
