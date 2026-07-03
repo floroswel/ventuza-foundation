@@ -92,6 +92,7 @@ function DiscoverPage() {
   const [debouncedFilters, setDebouncedFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
+  const [badgesMap, setBadgesMap] = useState<Record<string, string[]>>({});
   const [loading, setLoading] = useState(true);
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
   const [match, setMatch] = useState<{ id: string; name: string; photo: string | null } | null>(
