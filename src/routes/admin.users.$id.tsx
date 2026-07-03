@@ -202,12 +202,46 @@ function User360Page() {
           <Card className="p-4">
             <div className="text-sm font-semibold mb-2">Profil (mascat)</div>
             <KV label="Display name" value={profile.display_name} />
-            <KV label="Vârstă publică" value={profile.age != null ? `${profile.age}` : "—"} />
+            <KV label="Slug public" value={profile.profile_slug ?? "—"} />
+            <KV label="Bio" value={profile.bio ?? "—"} />
+            <KV label="Vârstă (din birthdate)" value={profile.age != null ? `${profile.age}` : "—"} />
+            <KV label="Data nașterii" value={fmtDate(profile.birthdate)} />
+            <KV label="Ascunde vârsta" value={profile.hide_age ? "DA" : "NU"} />
             <KV label="Oraș (călătorie)" value={profile.travel_city ?? "—"} />
+            <KV label="Limbă preferată" value={profile.preferred_language ?? "—"} />
             <KV label="Verificat (Didit)" value={profile.verified ? "DA" : "NU"} />
-            <KV label="Premium" value={profile.is_premium ? "DA" : "NU"} />
+            <KV label="Age status" value={profile.age_status ?? "—"} />
+            <KV label="Premium (subscripție activă)" value={profile.is_premium ? "DA" : "NU"} />
+            {profile.active_subscription && (
+              <KV
+                label="Abonament activ"
+                value={`${profile.active_subscription.platform ?? "—"} · ${profile.active_subscription.product_id ?? "—"} · expiră ${fmtDate(profile.active_subscription.expires_at)}`}
+              />
+            )}
             <KV label="Level / XP" value={`${profile.level ?? 0} / ${profile.xp ?? 0}`} />
+            <KV label="Streak zile" value={`${profile.streak_days ?? 0}`} />
+            <KV
+              label="Boost / Super-taps"
+              value={`${profile.boosts_balance ?? 0} boost · ${profile.super_taps_balance ?? 0} super-taps`}
+            />
+            <KV label="Boost activ până" value={fmtDate(profile.boost_until)} />
+            <KV label="Onboarding complet" value={profile.onboarding_completed ? "DA" : "NU"} />
+            <KV label="Completare profil" value={`${profile.profile_completion ?? 0}%`} />
+            <KV label="Risk score" value={`${profile.risk_score ?? 0}`} />
+            <KV label="Ultimul risk update" value={fmtDate(profile.risk_updated_at)} />
+            <KV label="Ultima check-in" value={fmtDate(profile.last_check_in_at)} />
             <KV label="Banned reason" value={profile.banned_reason ?? "—"} />
+            <KV label="Suspended reason" value={profile.suspended_reason ?? "—"} />
+            <KV label="Warned" value={profile.warned_at ? `${fmtDate(profile.warned_at)} — ${profile.warned_reason ?? "—"}` : "—"} />
+            <KV
+              label="Partener suspendat"
+              value={
+                profile.partner_suspended_at
+                  ? `${fmtDate(profile.partner_suspended_at)} — ${profile.partner_suspension_reason ?? "—"}`
+                  : "—"
+              }
+            />
+            <KV label="Șters (soft-delete)" value={fmtDate(profile.deleted_at)} />
             <p className="mt-3 text-xs text-muted-foreground">
               Câmpurile Art. 9 (orientare, sănătate), locația precisă și conținutul mesajelor sunt
               accesibile EXCLUSIV prin <b>Break-glass</b> (Admin → Compliance).
