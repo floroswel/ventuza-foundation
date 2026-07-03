@@ -145,7 +145,7 @@ Legendă severitate: 🔴 blocker enterprise · 🟠 gap serios · 🟡 polish �
 1. Fără scheduler: SAR trebuie răspuns în 30 zile — countdown vizibil.
 2. Fără template DPA response.
 3. Fără "data map" per user (unde sunt datele lui: DB, storage, backups, analytics, procesatori terți).
-4. Fără trigger la procesatori (Didit, AI, push) pentru erasure downstream.
+4. Fără trigger la procesatori (AI, push) pentru erasure downstream.
 5. Fără verificare identitate cerută înainte de SAR (evită data leak).
 6. Fără istoric SAR + status (pending/completed/refused cu motiv).
 7. Fără log "cine a văzut datele exportate" (double-audit).
