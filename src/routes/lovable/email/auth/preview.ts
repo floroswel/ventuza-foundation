@@ -18,7 +18,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "ventuza-foundation"
+const SITE_NAME = "Ventuza"
 const ROOT_DOMAIN = "ventuza.app"
 
 // Sample data for preview mode ONLY (not used in actual email sending).

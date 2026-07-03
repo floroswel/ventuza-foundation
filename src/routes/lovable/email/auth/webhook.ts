@@ -31,7 +31,7 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "ventuza-foundation"
+const SITE_NAME = "Ventuza"
 const SENDER_DOMAIN = "notify.ventuza.app"
 const ROOT_DOMAIN = "ventuza.app"
 const FROM_DOMAIN = "ventuza.app"
