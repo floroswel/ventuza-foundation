@@ -68,6 +68,7 @@ import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/si
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
 import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
+import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as ApiPublicHooksBillingTickRouteImport } from './routes/api/public/hooks/billing-tick'
 
 const VisitorsRoute = VisitorsRouteImport.update({
@@ -366,6 +367,12 @@ const AdminUsersIdRoute = AdminUsersIdRouteImport.update({
   path: '/users/$id',
   getParentRoute: () => AdminRoute,
 } as any)
+const LovableEmailQueueProcessRoute =
+  LovableEmailQueueProcessRouteImport.update({
+    id: '/lovable/email/queue/process',
+    path: '/lovable/email/queue/process',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksBillingTickRoute =
   ApiPublicHooksBillingTickRouteImport.update({
     id: '/api/public/hooks/billing-tick',
@@ -434,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -496,6 +504,7 @@ export interface FileRoutesByTo {
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -559,6 +568,7 @@ export interface FileRoutesById {
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
+  '/lovable/email/queue/process': typeof LovableEmailQueueProcessRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -623,6 +633,7 @@ export interface FileRouteTypes {
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
     | '/api/public/hooks/billing-tick'
+    | '/lovable/email/queue/process'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -685,6 +696,7 @@ export interface FileRouteTypes {
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
     | '/api/public/hooks/billing-tick'
+    | '/lovable/email/queue/process'
   id:
     | '__root__'
     | '/'
@@ -747,6 +759,7 @@ export interface FileRouteTypes {
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
     | '/api/public/hooks/billing-tick'
+    | '/lovable/email/queue/process'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -802,6 +815,7 @@ export interface RootRouteChildren {
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
   ApiPublicSignupGuardRoute: typeof ApiPublicSignupGuardRoute
   ApiPublicHooksBillingTickRoute: typeof ApiPublicHooksBillingTickRoute
+  LovableEmailQueueProcessRoute: typeof LovableEmailQueueProcessRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1219,6 +1233,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminUsersIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/lovable/email/queue/process': {
+      id: '/lovable/email/queue/process'
+      path: '/lovable/email/queue/process'
+      fullPath: '/lovable/email/queue/process'
+      preLoaderRoute: typeof LovableEmailQueueProcessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/billing-tick': {
       id: '/api/public/hooks/billing-tick'
       path: '/api/public/hooks/billing-tick'
@@ -1361,6 +1382,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
   ApiPublicSignupGuardRoute: ApiPublicSignupGuardRoute,
   ApiPublicHooksBillingTickRoute: ApiPublicHooksBillingTickRoute,
+  LovableEmailQueueProcessRoute: LovableEmailQueueProcessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
