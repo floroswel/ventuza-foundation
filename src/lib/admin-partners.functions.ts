@@ -272,9 +272,9 @@ export const adminModerateItem = createServerFn({ method: "POST" })
       p_kind: data.kind,
       p_id: data.id,
       p_decision: data.decision,
-      p_reason: data.reason ?? null,
-      p_notification_radius_m: data.notification_radius_m ?? null,
-      p_is_official: data.is_official ?? null,
+      p_reason: data.reason ?? undefined,
+      p_notification_radius_m: data.notification_radius_m ?? undefined,
+      p_is_official: data.is_official ?? undefined,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
