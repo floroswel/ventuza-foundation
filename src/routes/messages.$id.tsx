@@ -580,10 +580,13 @@ function ThreadPage() {
                       )}
                       <div
                         className={cn(
-                          "order-1 max-w-[82%]",
+                          "order-1 max-w-[82%] select-none",
                           m._status === "pending" && "opacity-70",
                           m._status === "failed" && "rounded-2xl ring-1 ring-destructive/60",
+                          heartPulseFor === m.id && "animate-in zoom-in-95 duration-300",
                         )}
+                        onDoubleClick={() => quickLike(m)}
+                        onClick={() => handleBubbleTap(m)}
                       >
                         {replied && !isDeleted && (
                           <div
