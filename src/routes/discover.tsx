@@ -985,14 +985,18 @@ function PosterRow({
 
 function ProfileSheet({
   profile,
+  allProfiles,
   currentUserId,
   onClose,
+  onNavigate,
   onDecision,
   onMessage,
 }: {
   profile: DiscoverProfile | null;
+  allProfiles: DiscoverProfile[];
   currentUserId: string | null;
   onClose: () => void;
+  onNavigate: (p: DiscoverProfile) => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
   onMessage: (p: DiscoverProfile) => void;
 }) {
@@ -1005,6 +1009,45 @@ function ProfileSheet({
     }
     signPhotos(profile.photos).then(setUrls);
   }, [profile]);
+
+  const currentIndex = profile ? allProfiles.findIndex((p) => p.id === profile.id) : -1;
+  const prev = currentIndex > 0 ? allProfiles[currentIndex - 1] : null;
+  const next =
+    currentIndex >= 0 && currentIndex < allProfiles.length - 1
+      ? allProfiles[currentIndex + 1]
+      : null;
+
+  // Keyboard nav ←/→
+  useEffect(() => {
+    if (!profile) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "ArrowLeft" && prev) onNavigate(prev);
+      else if (e.key === "ArrowRight" && next) onNavigate(next);
+      else if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [profile, prev, next, onNavigate, onClose]);
+
+  // Touch swipe horizontal to change profile
+  const touchStart = useMemo(() => ({ x: 0, y: 0, active: false }), [profile?.id]);
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0];
+    touchStart.x = t.clientX;
+    touchStart.y = t.clientY;
+    touchStart.active = true;
+  }
+  function onTouchEnd(e: React.TouchEvent) {
+    if (!touchStart.active) return;
+    touchStart.active = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStart.x;
+    const dy = t.clientY - touchStart.y;
+    if (Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      if (dx < 0 && next) onNavigate(next);
+      else if (dx > 0 && prev) onNavigate(prev);
+    }
+  }
 
   if (!profile) return null;
   const age = ageFrom(profile.birthdate);
@@ -1022,9 +1065,32 @@ function ProfileSheet({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative h-full w-full overflow-y-auto border-border bg-surface sm:h-auto sm:max-h-[92dvh] sm:max-w-md sm:rounded-t-3xl sm:border"
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="relative flex h-full w-full flex-col border-border bg-surface sm:h-[92dvh] sm:max-w-md sm:rounded-t-3xl sm:border"
       >
-        <ProfilePhotoGallery
+        {/* Prev / Next desktop arrows */}
+        {prev && (
+          <button
+            onClick={() => onNavigate(prev)}
+            aria-label="Profil anterior"
+            className="absolute left-2 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full bg-black/50 p-2 text-white backdrop-blur hover:bg-black/70 sm:flex"
+          >
+            <ChevronLeft className="size-5" />
+          </button>
+        )}
+        {next && (
+          <button
+            onClick={() => onNavigate(next)}
+            aria-label="Profilul următor"
+            className="absolute right-2 top-1/2 z-20 hidden -translate-y-1/2 items-center justify-center rounded-full bg-black/50 p-2 text-white backdrop-blur hover:bg-black/70 sm:flex"
+          >
+            <ChevronRight className="size-5" />
+          </button>
+        )}
+
+        <div className="flex-1 overflow-y-auto overscroll-contain">
+          <ProfilePhotoGallery
           photos={signedPhotos}
           alt={profile.display_name ?? ""}
           topRight={
@@ -1139,8 +1205,12 @@ function ProfileSheet({
           )}
 
           <TapFavoriteRow targetId={profile.id} targetName={profile.display_name ?? "Anonim"} />
+        </div>
+        </div>
 
-          <div className="flex items-center gap-2 pt-2">
+        {/* Sticky action bar */}
+        <div className="sticky bottom-0 z-10 border-t border-border/60 bg-surface/95 px-4 py-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => onDecision(profile, "pass")}
               className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full border border-border bg-background text-sm text-muted-foreground hover:text-foreground"
@@ -1160,6 +1230,11 @@ function ProfileSheet({
               <Heart className="size-4" /> Like
             </button>
           </div>
+          {(prev || next) && (
+            <p className="mt-2 text-center text-[10px] text-muted-foreground">
+              Glisează ← / → pentru a naviga între profiluri
+            </p>
+          )}
         </div>
       </div>
     </div>
