@@ -86,10 +86,11 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           const n = payload.new as NotificationRow;
           setNotifications((prev) => [n, ...prev].slice(0, 100));
           setUnread((c) => c + 1);
-          // Toast preview, dedupe
+          // Toast preview + signature sound, dedupe
           if (!lastToastIdRef.current.has(n.id)) {
             lastToastIdRef.current.add(n.id);
             toast(n.title, { description: n.body ?? undefined });
+            playNotificationSound();
           }
         },
       )
