@@ -64,6 +64,8 @@ function NearbyPage() {
   const lastFetchAt = useRef<number>(0);
 
   const fetchNearby = useServerFn(getNearbyPoints);
+  const fetchVenueBadges = useServerFn(getVenueBadgesBatch);
+  const [venueBadges, setVenueBadges] = useState<Record<string, string[]>>({});
 
   // Initial coords + watch significant movement
   useEffect(() => {
