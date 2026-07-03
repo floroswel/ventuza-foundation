@@ -153,7 +153,7 @@ function VenturePanel({
   cities: ExploreCity[];
   loading: boolean;
   error: Error | null;
-  onOpen: () => void;
+  onOpen: (city?: string) => void;
 }) {
   if (loading) {
     return (
