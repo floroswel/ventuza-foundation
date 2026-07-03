@@ -150,29 +150,40 @@ function Onboarding() {
   }, [step, data, hydrated, user?.id]);
 
   // Guard: dacă userul a terminat deja onboarding-ul, redirect către /discover.
+  // În plus, prefill birthdate + display_name dacă există deja în profil
+  // (setate la signup) — să nu întrebăm a doua oară.
+  const [birthdateLocked, setBirthdateLocked] = useState(false);
   useEffect(() => {
-    if (!user) return;
+    if (!user || !hydrated) return;
     let alive = true;
     supabase
       .from("profiles")
-      .select("onboarding_completed")
+      .select("onboarding_completed, birthdate, display_name")
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data: row }) => {
-        if (!alive) return;
-        if (row?.onboarding_completed) {
+        if (!alive || !row) return;
+        if (row.onboarding_completed) {
           try {
             localStorage.removeItem(STORAGE_KEY);
           } catch {
             /* noop */
           }
           navigate({ to: "/discover", replace: true });
+          return;
         }
+        setData((prev) => ({
+          ...prev,
+          birthdate: prev.birthdate || (row.birthdate ?? ""),
+          display_name: prev.display_name || (row.display_name ?? ""),
+        }));
+        if (row.birthdate) setBirthdateLocked(true);
       });
     return () => {
       alive = false;
     };
-  }, [user?.id, navigate]);
+  }, [user?.id, hydrated, navigate]);
+
 
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", search: { mode: "login" } });
@@ -329,7 +340,7 @@ function Onboarding() {
       </header>
 
       <section className="flex flex-1 flex-col px-6 py-10">
-        <StepView data={data} setData={setData} step={current} user={user?.id} />
+        <StepView data={data} setData={setData} step={current} user={user?.id} birthdateLocked={birthdateLocked} />
       </section>
 
       <footer className="sticky bottom-0 border-t border-border/50 bg-background/80 px-6 py-4 backdrop-blur">
@@ -354,12 +365,15 @@ function StepView({
   data,
   setData,
   user,
+  birthdateLocked,
 }: {
   step: (typeof STEPS)[number];
   data: Data;
   setData: (d: Data) => void;
   user?: string;
+  birthdateLocked?: boolean;
 }) {
+
   switch (step) {
     case "basics":
       return (
@@ -389,12 +403,20 @@ function StepView({
               value={data.birthdate}
               onChange={(e) => setData({ ...data, birthdate: e.target.value })}
               max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split("T")[0]}
-              className="h-14 bg-surface border-border text-lg"
+              className="h-14 bg-surface border-border text-lg disabled:opacity-100"
+              disabled={birthdateLocked}
+              readOnly={birthdateLocked}
             />
+            {birthdateLocked && (
+              <p className="text-xs text-muted-foreground">
+                Am preluat data nașterii de la înscriere. Pentru schimbări, contactează suportul.
+              </p>
+            )}
             {data.birthdate && calcAge(data.birthdate) < 18 && (
               <p className="text-sm text-destructive">Trebuie să ai cel puțin 18 ani.</p>
             )}
           </div>
+
         </div>
       );
 
