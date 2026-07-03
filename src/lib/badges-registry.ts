@@ -22,16 +22,20 @@ export type BadgeCode =
 
 export type BadgeTarget = "user" | "venue" | "event";
 
+export type BadgeLang = "ro" | "en";
+export type LocalizedText = { ro: string; en: string };
+
 export type BadgeDef = {
   code: BadgeCode;
   target: BadgeTarget;
-  label: { ro: string; en: string };
+  label: LocalizedText;
   icon: LucideIcon;
   colorClass: string;
   priority: number;
-  criteria: string;
-  /** Când/în ce condiții expiră badge-ul. `null` = permanent. */
-  expiry: string | null;
+  /** Motivul pentru care se acordă badge-ul, bilingv. */
+  criteria: LocalizedText;
+  /** Când/în ce condiții expiră. `null` = permanent. */
+  expiry: LocalizedText | null;
 };
 
 
@@ -43,7 +47,10 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     icon: BadgeCheck,
     colorClass: "text-rose-500",
     priority: 100,
-    criteria: "Verificare identitate Didit completă (18+).",
+    criteria: {
+      ro: "Verificare identitate Didit completă (18+).",
+      en: "Completed Didit identity verification (18+).",
+    },
     expiry: null,
   },
   founder: {
@@ -53,7 +60,10 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     icon: Sparkles,
     colorClass: "text-amber-400",
     priority: 90,
-    criteria: "Cont creat înainte de 1 august 2026.",
+    criteria: {
+      ro: "Cont creat înainte de 1 august 2026.",
+      en: "Account created before August 1, 2026.",
+    },
     expiry: null,
   },
   streak_7: {
@@ -63,8 +73,14 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     icon: Flame,
     colorClass: "text-orange-500",
     priority: 60,
-    criteria: "Activitate în 7 zile consecutive.",
-    expiry: "Dispare după 48h fără activitate.",
+    criteria: {
+      ro: "Activitate în 7 zile consecutive.",
+      en: "Active for 7 consecutive days.",
+    },
+    expiry: {
+      ro: "Dispare după 48h fără activitate.",
+      en: "Disappears after 48h of inactivity.",
+    },
   },
   matcher: {
     code: "matcher",
@@ -73,7 +89,10 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     icon: Heart,
     colorClass: "text-fuchsia-500",
     priority: 50,
-    criteria: "Cel puțin 25 de match-uri reciproce.",
+    criteria: {
+      ro: "Cel puțin 25 de match-uri reciproce.",
+      en: "At least 25 mutual matches.",
+    },
     expiry: null,
   },
   explorer: {
@@ -83,7 +102,10 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     icon: Compass,
     colorClass: "text-teal-400",
     priority: 40,
-    criteria: "Activitate în cel puțin 5 orașe diferite.",
+    criteria: {
+      ro: "Activitate în cel puțin 5 orașe diferite.",
+      en: "Activity in at least 5 different cities.",
+    },
     expiry: null,
   },
   partner_premium: {
@@ -93,8 +115,14 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     icon: Crown,
     colorClass: "text-amber-500",
     priority: 100,
-    criteria: "Partener cu plan Premium/Pro activ.",
-    expiry: "Dispare la expirarea sau downgrade-ul planului.",
+    criteria: {
+      ro: "Partener cu plan Premium/Pro activ.",
+      en: "Partner with an active Premium/Pro plan.",
+    },
+    expiry: {
+      ro: "Dispare la expirarea sau downgrade-ul planului.",
+      en: "Disappears when the plan expires or is downgraded.",
+    },
   },
   partner_boost: {
     code: "partner_boost",
@@ -103,8 +131,14 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     icon: Rocket,
     colorClass: "text-rose-500",
     priority: 95,
-    criteria: "Boost activ pentru vizibilitate crescută.",
-    expiry: "Dispare la finalul ferestrei de boost plătite.",
+    criteria: {
+      ro: "Boost activ pentru vizibilitate crescută.",
+      en: "Active boost for increased visibility.",
+    },
+    expiry: {
+      ro: "Dispare la finalul ferestrei de boost plătite.",
+      en: "Disappears at the end of the paid boost window.",
+    },
   },
   official: {
     code: "official",
@@ -113,7 +147,10 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     icon: ShieldCheck,
     colorClass: "text-blue-500",
     priority: 90,
-    criteria: "Local oficial verificat de echipa Ventuza.",
+    criteria: {
+      ro: "Local oficial verificat de echipa Ventuza.",
+      en: "Official venue verified by the Ventuza team.",
+    },
     expiry: null,
   },
 };

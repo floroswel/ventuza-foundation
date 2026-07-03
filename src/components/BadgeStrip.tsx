@@ -78,7 +78,7 @@ export function BadgeStrip({
         <div className={`flex items-center gap-1 ${className}`}>
           {badges.map((b) => {
             const Icon = b.icon;
-            const a11y = `${b.label[lang]} — ${b.criteria}${b.expiry ? ` ${b.expiry}` : ""}`;
+            const a11y = `${b.label[lang]} — ${b.criteria[lang]}${b.expiry ? ` ${b.expiry[lang]}` : ""}`;
             return (
               <Tooltip key={b.code}>
                 <TooltipTrigger asChild>
@@ -152,7 +152,7 @@ function BadgeDetailDrawer({
               <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground mb-1">
                 {t("Cum se obține", "How to earn")}
               </h3>
-              <p className="text-foreground">{badge?.criteria}</p>
+              <p className="text-foreground">{badge?.criteria[lang]}</p>
             </section>
 
             <section>
@@ -160,7 +160,7 @@ function BadgeDetailDrawer({
                 {t("Condiție de expirare", "Expiry condition")}
               </h3>
               <p className="text-foreground">
-                {badge?.expiry ?? t("Permanent — nu expiră.", "Permanent — never expires.")}
+                {badge?.expiry ? badge.expiry[lang] : t("Permanent — nu expiră.", "Permanent — never expires.")}
               </p>
             </section>
 
