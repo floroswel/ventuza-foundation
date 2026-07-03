@@ -2939,6 +2939,7 @@ export type Database = {
       profiles: {
         Row: {
           accept_nsfw_photos: boolean | null
+          age_pending_at: string | null
           age_provider: string | null
           age_status: Database["public"]["Enums"]["age_status"]
           age_verified_at: string | null
@@ -3059,6 +3060,7 @@ export type Database = {
         }
         Insert: {
           accept_nsfw_photos?: boolean | null
+          age_pending_at?: string | null
           age_provider?: string | null
           age_status?: Database["public"]["Enums"]["age_status"]
           age_verified_at?: string | null
@@ -3179,6 +3181,7 @@ export type Database = {
         }
         Update: {
           accept_nsfw_photos?: boolean | null
+          age_pending_at?: string | null
           age_provider?: string | null
           age_status?: Database["public"]["Enums"]["age_status"]
           age_verified_at?: string | null
@@ -5308,6 +5311,11 @@ export type Database = {
         Args: { _item_id: string; _queue: string }
         Returns: boolean
       }
+      reset_stale_age_verification: {
+        Args: { _user_id: string }
+        Returns: boolean
+      }
+      reset_stale_age_verifications_batch: { Args: never; Returns: number }
       rl_enforce: {
         Args: { _action: string; _max: number; _window_seconds: number }
         Returns: undefined
