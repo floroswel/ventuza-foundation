@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNearbyPoints, type NearbyKind, type NearbyPoint } from "@/lib/nearby.functions";
+import { getVenueBadgesBatch } from "@/lib/badges.functions";
 import {
   computeBucketId,
   distanceMeters,
@@ -64,6 +65,8 @@ function NearbyPage() {
   const lastFetchAt = useRef<number>(0);
 
   const fetchNearby = useServerFn(getNearbyPoints);
+  const fetchVenueBadges = useServerFn(getVenueBadgesBatch);
+  const [venueBadges, setVenueBadges] = useState<Record<string, string[]>>({});
 
   // Initial coords + watch significant movement
   useEffect(() => {
@@ -107,6 +110,26 @@ function NearbyPage() {
     },
     staleTime: 30_000,
   });
+
+  // Fetch server-side venue badges for the loaded points.
+  useEffect(() => {
+    const venueIds = (data?.points ?? [])
+      .filter((p) => p.kind === "venue")
+      .map((p) => p.id);
+    if (venueIds.length === 0) {
+      setVenueBadges({});
+      return;
+    }
+    void fetchVenueBadges({ data: { venueIds } })
+      .then(({ rows }: { rows: Array<{ venue_id: string; badges: string[] }> }) => {
+        const next: Record<string, string[]> = {};
+        for (const r of rows) next[r.venue_id] = r.badges ?? [];
+        setVenueBadges(next);
+      })
+      .catch(() => {
+        /* non-fatal */
+      });
+  }, [data, fetchVenueBadges]);
 
   const errorKind = useMemo<"permission" | "network" | null>(() => {
     if (!error) return null;
@@ -312,7 +335,12 @@ function NearbyPage() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {filtered.map((p) => (
-                <NearbyCard key={`${p.kind}:${p.id}`} point={p} onSelect={handleSelectOnMap} />
+                <NearbyCard
+                  key={`${p.kind}:${p.id}`}
+                  point={p}
+                  onSelect={handleSelectOnMap}
+                  badges={p.kind === "venue" ? venueBadges[p.id] : undefined}
+                />
               ))}
             </div>
           )}

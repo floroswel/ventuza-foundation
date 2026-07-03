@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Calendar, Tag } from "lucide-react";
 import type { NearbyPoint } from "@/lib/nearby.functions";
 import { formatDistance } from "@/lib/geo-bucket";
+import { BadgeStrip } from "@/components/BadgeStrip";
 
 type Props = {
   point: NearbyPoint & { distanceM: number };
   onSelect?: (p: NearbyPoint) => void;
+  badges?: string[];
 };
 
-export function NearbyCard({ point, onSelect }: Props) {
+export function NearbyCard({ point, onSelect, badges }: Props) {
   const isEvent = point.kind === "event";
   const isOffer = point.kind === "offer";
   const isVenue = point.kind === "venue";
@@ -33,16 +35,23 @@ export function NearbyCard({ point, onSelect }: Props) {
 
   return (
     <Card className="overflow-hidden flex flex-col">
-      {point.cover_url ? (
-        <div
-          className="h-32 w-full bg-cover bg-center bg-muted"
-          style={{ backgroundImage: `url(${point.cover_url})` }}
-        />
-      ) : (
-        <div className="h-32 w-full bg-muted flex items-center justify-center text-muted-foreground">
-          <Icon className="h-8 w-8 opacity-50" />
-        </div>
-      )}
+      <div className="relative">
+        {point.cover_url ? (
+          <div
+            className="h-32 w-full bg-cover bg-center bg-muted"
+            style={{ backgroundImage: `url(${point.cover_url})` }}
+          />
+        ) : (
+          <div className="h-32 w-full bg-muted flex items-center justify-center text-muted-foreground">
+            <Icon className="h-8 w-8 opacity-50" />
+          </div>
+        )}
+        {badges && badges.length > 0 && (
+          <div className="absolute left-2 top-2">
+            <BadgeStrip codes={badges} max={3} size="sm" />
+          </div>
+        )}
+      </div>
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">

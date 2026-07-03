@@ -28,6 +28,8 @@ import {
 import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
+import { getUserBadgesBatch } from "@/lib/badges.functions";
+import { BadgeStrip } from "@/components/BadgeStrip";
 import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
 import { getOrCreateConversation } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
@@ -92,6 +94,8 @@ function DiscoverPage() {
   const [debouncedFilters, setDebouncedFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
+  const [badgesMap, setBadgesMap] = useState<Record<string, string[]>>({});
+  const getUserBadgesBatchFn = useServerFn(getUserBadgesBatch);
   const [loading, setLoading] = useState(true);
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
   const [match, setMatch] = useState<{ id: string; name: string; photo: string | null } | null>(
@@ -188,6 +192,20 @@ function DiscoverPage() {
         }
       }
       setProfiles(data);
+      // Fetch server-side badges for the loaded profiles (fire-and-forget).
+      if (data.length > 0) {
+        void getUserBadgesBatchFn({ data: { userIds: data.map((d) => d.id) } })
+          .then(({ rows }: { rows: Array<{ user_id: string; badges: string[] }> }) => {
+            const next: Record<string, string[]> = {};
+            for (const r of rows) next[r.user_id] = r.badges ?? [];
+            setBadgesMap(next);
+          })
+          .catch(() => {
+            /* non-fatal */
+          });
+      } else {
+        setBadgesMap({});
+      }
     } catch (e) {
       const message = e instanceof Error ? e.message : "Couldn't load discover";
       const code = (e as { code?: string } | null)?.code;
@@ -535,7 +553,7 @@ function DiscoverPage() {
               Toți din grid
             </p>
           </div>
-          <Cascade profiles={visible} onOpen={setSelected} />
+          <Cascade profiles={visible} onOpen={setSelected} badgesMap={badgesMap} />
         </>
       )}
 
@@ -714,9 +732,11 @@ function OnlineRow({
 function Cascade({
   profiles,
   onOpen,
+  badgesMap,
 }: {
   profiles: DiscoverProfile[];
   onOpen: (p: DiscoverProfile) => void;
+  badgesMap: Record<string, string[]>;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const { bySender } = useUnreadMessages();
@@ -775,13 +795,10 @@ function Cascade({
                 <Rocket className="size-2.5" /> BOOST
               </span>
             )}
-            {!(p.boost_until && new Date(p.boost_until) > new Date()) && p.verified && (
-              <span
-                aria-label="verified"
-                className="absolute left-1.5 top-1.5 rounded-full bg-black/60 p-0.5 backdrop-blur"
-              >
-                <BadgeCheck className="size-3.5 text-primary" />
-              </span>
+            {!(p.boost_until && new Date(p.boost_until) > new Date()) && (badgesMap[p.id]?.length ?? 0) > 0 && (
+              <div className="absolute left-1.5 top-1.5">
+                <BadgeStrip codes={badgesMap[p.id] ?? []} max={3} size="xs" />
+              </div>
             )}
             {p.looking_now_until && new Date(p.looking_now_until) > new Date() && (
               <span className="absolute right-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-rose-500/95 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-lg backdrop-blur">
