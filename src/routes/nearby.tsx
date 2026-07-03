@@ -70,7 +70,7 @@ function NearbyPage() {
     let unsubscribe: (() => void) | null = null;
     getCurrentCoords()
       .then((c) => setCoords(c))
-      .catch((e) => setGeoError(String(e?.message ?? e)));
+      .catch((e) => setGeoError(e instanceof Error ? e : new Error(String(e))));
     unsubscribe = watchSignificantMovement((c) => setCoords(c), 250);
     return () => {
       unsubscribe?.();
