@@ -211,7 +211,7 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 | **🟥 Categorii Art. 9** | Da — exportul include orientare + sănătate dacă au fost completate. |
 | **Temei Art. 6** | 6(1)(c) obligație legală (GDPR). |
 | **Temei Art. 9** | 9(2)(a) consimțământul inițial acoperă restituirea către persoana vizată. |
-| **Destinatari** | P1, P5 RevenueCat (anulare via `cancelRevenueCatForUser`), P8. Nu trimitem la P6 (Didit) cerere de ștergere automată — necesită follow-up manual conform DPA. |
+| **Destinatari** | P1, P5 RevenueCat (anulare via `cancelRevenueCatForUser`), P8. Fără procesator KYC extern de notificat. |
 | **Transfer extra-UE** | P5, P8 — SCC + DPF. |
 | **Retenție** | `deletion_requests`: 3 ani (dovadă conformitate). Restul: cascade DELETE imediat. |
 | **Măsuri tehnice** | `deleteMyAccount` în `src/lib/account.functions.ts` — log → cancel RevenueCat → `auth.admin.deleteUser` (cascade) → cleanup storage. Export: `exportMyData`. |
