@@ -5149,20 +5149,15 @@ export type Database = {
         }
         Returns: undefined
       }
-      record_consent:
-        | {
-            Args: { _accepted?: boolean; _kind: string; _version?: string }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              _accepted?: boolean
-              _kind: string
-              _user_agent?: string
-              _version?: string
-            }
-            Returns: undefined
-          }
+      record_consent: {
+        Args: {
+          _accepted?: boolean
+          _kind: string
+          _user_agent?: string
+          _version?: string
+        }
+        Returns: undefined
+      }
       record_photo_hash: {
         Args: { _path: string; _phash: string }
         Returns: undefined
