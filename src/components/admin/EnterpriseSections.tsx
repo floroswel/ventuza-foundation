@@ -1567,7 +1567,6 @@ export function SecurityPanel() {
 }
 
 function AgeResetCard() {
-  const { adminResetOwnAgeVerification } = require("@/lib/admin-age-reset.functions") as typeof import("@/lib/admin-age-reset.functions");
   const resetFn = useServerFn(adminResetOwnAgeVerification);
   const [busy, setBusy] = useState(false);
 
