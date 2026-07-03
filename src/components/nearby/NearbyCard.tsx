@@ -5,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Calendar, Tag } from "lucide-react";
 import type { NearbyPoint } from "@/lib/nearby.functions";
 import { formatDistance } from "@/lib/geo-bucket";
+import { BadgeStrip } from "@/components/BadgeStrip";
 
 type Props = {
   point: NearbyPoint & { distanceM: number };
   onSelect?: (p: NearbyPoint) => void;
+  badges?: string[];
 };
 
 export function NearbyCard({ point, onSelect }: Props) {
