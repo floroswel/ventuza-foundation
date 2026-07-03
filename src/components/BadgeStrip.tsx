@@ -78,7 +78,7 @@ export function BadgeStrip({
         <div className={`flex items-center gap-1 ${className}`}>
           {badges.map((b) => {
             const Icon = b.icon;
-            const a11y = `${b.label[lang]} — ${b.criteria}${b.expiry ? ` ${b.expiry}` : ""}`;
+            const a11y = `${b.label[lang]} — ${b.criteria[lang]}${b.expiry ? ` ${b.expiry[lang]}` : ""}`;
             return (
               <Tooltip key={b.code}>
                 <TooltipTrigger asChild>
