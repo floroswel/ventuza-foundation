@@ -48,7 +48,7 @@ Cu ✅ = există și e conectat. Cu ⚠️ = există parțial. Cu ❌ = lipseșt
 - ❌ **Cronologie unificată** (login-uri + rapoarte + ban-uri + break-glass + tickete) într-un singur timeline. User360 le arată pe cartonașe separate. 🟠 P1.
 - ❌ **Export dosar user** ca PDF/JSON semnat (pentru cereri Art. 15 tratate manual, sau DPA). 🟠 P1.
 - ❌ **Shadow ban / rate-limit interactivitate** (nu ban complet, ci "mesajele lui nu ajung la nimeni nou"). Toate app-urile mari au. 🔴 P0 anti-abuse.
-- ❌ **Verify override** (marcheaz-un user "verified" fără Didit, cu motiv). Utile la creator/celeb. 🟡 P2.
+- ❌ **Verify override** (marcheaz-un user "verified" fără liveness, cu motiv). Utile la creator/celeb. 🟡 P2.
 - ❌ **Reset PIN privat album** din admin (user și-a uitat PIN). 🟡 P2.
 
 ---
