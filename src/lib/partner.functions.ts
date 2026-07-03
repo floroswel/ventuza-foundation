@@ -20,12 +20,14 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 type Ctx = { supabase: any; userId: string };
 
 async function assertPartner({ supabase, userId }: Ctx) {
-  const { data: isBiz, error } = await (supabase as any).rpc("has_role", {
-    _user_id: userId,
-    _role: "business",
-  });
+  const { data: roles, error } = await (supabase as any)
+    .from("user_roles")
+    .select("role")
+    .eq("user_id", userId);
   if (error) throw new Error(error.message);
-  if (!isBiz) throw new Error("forbidden: not a partner");
+  const roleSet = new Set((roles ?? []).map((r: any) => r.role));
+  const allowed = roleSet.has("business") || roleSet.has("partner") || roleSet.has("admin") || roleSet.has("super_admin");
+  if (!allowed) throw new Error("forbidden: not a partner");
   const { data: prof, error: pErr } = await supabase
     .from("profiles")
     .select("partner_suspended_at, partner_suspension_reason")
@@ -36,6 +38,7 @@ async function assertPartner({ supabase, userId }: Ctx) {
     throw new Error(`suspended: ${prof.partner_suspension_reason ?? "see admin"}`);
   }
 }
+
 
 async function audit(
   userId: string,
