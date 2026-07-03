@@ -95,6 +95,8 @@ function DiscoverPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [badgesMap, setBadgesMap] = useState<Record<string, string[]>>({});
+  const [badgesLoading, setBadgesLoading] = useState(false);
+  const [badgesError, setBadgesError] = useState(false);
   const fetchUserBadges = useCachedUserBadges();
   const [loading, setLoading] = useState(true);
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
