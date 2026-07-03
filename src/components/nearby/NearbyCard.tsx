@@ -11,9 +11,17 @@ type Props = {
   point: NearbyPoint & { distanceM: number };
   onSelect?: (p: NearbyPoint) => void;
   badges?: string[];
+  badgesLoading?: boolean;
+  badgesError?: boolean;
 };
 
-export function NearbyCard({ point, onSelect, badges }: Props) {
+export function NearbyCard({
+  point,
+  onSelect,
+  badges,
+  badgesLoading = false,
+  badgesError = false,
+}: Props) {
   const isEvent = point.kind === "event";
   const isOffer = point.kind === "offer";
   const isVenue = point.kind === "venue";
@@ -33,6 +41,9 @@ export function NearbyCard({ point, onSelect, badges }: Props) {
 
   const detailTo = isEvent ? "/events/$id" : isOffer ? "/offers/$id" : "/venues/$id";
 
+  const showBadgesOverlay =
+    isVenue && !badgesError && (badgesLoading || (badges && badges.length > 0));
+
   return (
     <Card className="overflow-hidden flex flex-col">
       <div className="relative">
@@ -46,9 +57,15 @@ export function NearbyCard({ point, onSelect, badges }: Props) {
             <Icon className="h-8 w-8 opacity-50" />
           </div>
         )}
-        {badges && badges.length > 0 && (
+        {showBadgesOverlay && (
           <div className="absolute left-2 top-2">
-            <BadgeStrip codes={badges} max={3} size="sm" />
+            <BadgeStrip
+              codes={badges ?? []}
+              max={3}
+              size="sm"
+              loading={badgesLoading}
+              error={badgesError}
+            />
           </div>
         )}
       </div>
