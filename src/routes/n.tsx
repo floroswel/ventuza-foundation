@@ -400,12 +400,20 @@ function StepView({
               value={data.birthdate}
               onChange={(e) => setData({ ...data, birthdate: e.target.value })}
               max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split("T")[0]}
-              className="h-14 bg-surface border-border text-lg"
+              className="h-14 bg-surface border-border text-lg disabled:opacity-100"
+              disabled={birthdateLocked}
+              readOnly={birthdateLocked}
             />
+            {birthdateLocked && (
+              <p className="text-xs text-muted-foreground">
+                Am preluat data nașterii de la înscriere. Pentru schimbări, contactează suportul.
+              </p>
+            )}
             {data.birthdate && calcAge(data.birthdate) < 18 && (
               <p className="text-sm text-destructive">Trebuie să ai cel puțin 18 ani.</p>
             )}
           </div>
+
         </div>
       );
 
