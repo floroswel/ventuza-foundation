@@ -72,13 +72,28 @@ export function BadgeStrip({
 
   const activeBadge = openCode ? BADGES[openCode] : null;
 
+  const detailsHint = lang === "ro" ? "Apasă pentru detalii" : "Tap for details";
+
   return (
     <>
-      <TooltipProvider delayDuration={200}>
+      {/* disableHoverableContent = tooltip-ul nu prinde pointer, tap-ul rămâne al butonului. */}
+      <TooltipProvider delayDuration={200} disableHoverableContent>
         <div className={`flex items-center gap-1 ${className}`}>
           {badges.map((b) => {
             const Icon = b.icon;
-            const a11y = `${b.label[lang]} — ${b.criteria[lang]}${b.expiry ? ` ${b.expiry[lang]}` : ""}`;
+            const labelText = b.label[lang];
+            const criteriaText = b.criteria[lang];
+            const expiryText = b.expiry ? b.expiry[lang] : null;
+            // aria-label bogat: nume + motiv + expirare + hint de interacțiune,
+            // ca utilizatorii de screen reader / voice control să aibă contextul complet.
+            const a11y = [
+              labelText,
+              criteriaText,
+              expiryText,
+              detailsHint,
+            ]
+              .filter(Boolean)
+              .join(" — ");
             return (
               <Tooltip key={b.code}>
                 <TooltipTrigger asChild>
@@ -86,27 +101,28 @@ export function BadgeStrip({
                     type="button"
                     aria-label={a11y}
                     aria-haspopup="dialog"
+                    aria-expanded={openCode === b.code}
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
                       setOpenCode(b.code);
                     }}
-                    className={`inline-flex items-center justify-center rounded-full bg-black/60 backdrop-blur ${pad} transition-transform active:scale-90 hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400`}
+                    className={`inline-flex items-center justify-center rounded-full bg-black/60 backdrop-blur ${pad} transition-transform active:scale-90 hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-1 focus-visible:ring-offset-black touch-manipulation`}
                   >
-                    <Icon className={`${iconSize} ${b.colorClass}`} />
+                    <Icon className={`${iconSize} ${b.colorClass}`} aria-hidden="true" />
                   </button>
                 </TooltipTrigger>
+                {/* Tooltip vizual pentru hover + focus tastatură (Radix îl deschide și la Tab). */}
                 <TooltipContent side="top" className="max-w-[220px] text-xs">
-                  <div className="font-semibold">{b.label[lang]}</div>
-                  <div className="text-muted-foreground mt-0.5">
-                    {lang === "ro" ? "Apasă pentru detalii" : "Tap for details"}
-                  </div>
+                  <div className="font-semibold">{labelText}</div>
+                  <div className="text-muted-foreground mt-0.5">{detailsHint}</div>
                 </TooltipContent>
               </Tooltip>
             );
           })}
         </div>
       </TooltipProvider>
+
 
       <BadgeDetailDrawer
         badge={activeBadge}
