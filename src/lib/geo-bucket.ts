@@ -39,10 +39,21 @@ let cached: { at: number; coords: Coords } | null = null;
  * Get the user's current coordinates. Stays in memory only.
  * Never persist these to localStorage or send to a server.
  */
+export type GeoErrorCode = "unavailable" | "denied" | "position_unavailable" | "timeout";
+
+export class GeoError extends Error {
+  code: GeoErrorCode;
+  constructor(code: GeoErrorCode, message: string) {
+    super(message);
+    this.code = code;
+    this.name = "GeoError";
+  }
+}
+
 export function getCurrentCoords(opts?: { maxAgeMs?: number }): Promise<Coords> {
   return new Promise((resolve, reject) => {
     if (typeof navigator === "undefined" || !navigator.geolocation) {
-      reject(new Error("geolocation_unavailable"));
+      reject(new GeoError("unavailable", "Geolocation nu e disponibilă pe acest dispozitiv."));
       return;
     }
     const maxAge = opts?.maxAgeMs ?? COORDS_CACHE_MS;
@@ -56,11 +67,33 @@ export function getCurrentCoords(opts?: { maxAgeMs?: number }): Promise<Coords> 
         cached = { at: Date.now(), coords };
         resolve(coords);
       },
-      (err) => reject(err),
+      (err) => {
+        // 1 = PERMISSION_DENIED, 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT
+        if (err.code === 1) {
+          reject(
+            new GeoError(
+              "denied",
+              "Ai blocat locația pentru acest site. Deschide setările browserului → Locație → Permite.",
+            ),
+          );
+        } else if (err.code === 2) {
+          reject(
+            new GeoError(
+              "position_unavailable",
+              "Nu am putut obține locația (GPS/rețea indisponibile). Încearcă din nou peste câteva secunde.",
+            ),
+          );
+        } else if (err.code === 3) {
+          reject(new GeoError("timeout", "Locația a durat prea mult. Reîncearcă."));
+        } else {
+          reject(new GeoError("position_unavailable", err.message || "Eroare locație."));
+        }
+      },
       { enableHighAccuracy: false, timeout: 15_000, maximumAge: 30_000 },
     );
   });
 }
+
 
 export function clearCoordsCache() {
   cached = null;
