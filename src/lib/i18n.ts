@@ -101,9 +101,29 @@ if (!i18n.isInitialized) {
 
 export default i18n;
 
-export function setLanguage(lng: "ro" | "en") {
-  void i18n.changeLanguage(lng);
+export async function setLanguage(lng: "ro" | "en") {
+  await i18n.changeLanguage(lng);
   if (typeof document !== "undefined") {
     document.documentElement.lang = lng;
+    try {
+      window.localStorage.setItem("vz-lang", lng);
+    } catch {
+      /* storage blocked */
+    }
+  }
+  // Persist to the user's profile so viewers in other countries auto-translate
+  // this account's public text to their own language.
+  try {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: auth } = await supabase.auth.getUser();
+    if (auth?.user?.id) {
+      await supabase
+        .from("profiles")
+        .update({ preferred_language: lng })
+        .eq("id", auth.user.id);
+    }
+  } catch {
+    /* offline / not signed in — best effort */
   }
 }
+
