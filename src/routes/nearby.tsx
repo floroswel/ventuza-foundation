@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNearbyPoints, type NearbyKind, type NearbyPoint } from "@/lib/nearby.functions";
-import { getVenueBadgesBatch } from "@/lib/badges.functions";
+import { useCachedVenueBadges } from "@/lib/badges-cache";
 import {
   computeBucketId,
   distanceMeters,
@@ -65,7 +65,7 @@ function NearbyPage() {
   const lastFetchAt = useRef<number>(0);
 
   const fetchNearby = useServerFn(getNearbyPoints);
-  const fetchVenueBadges = useServerFn(getVenueBadgesBatch);
+  const fetchVenueBadges = useCachedVenueBadges();
   const [venueBadges, setVenueBadges] = useState<Record<string, string[]>>({});
 
   // Initial coords + watch significant movement
@@ -120,12 +120,8 @@ function NearbyPage() {
       setVenueBadges({});
       return;
     }
-    void fetchVenueBadges({ data: { venueIds } })
-      .then(({ rows }: { rows: Array<{ venue_id: string; badges: string[] }> }) => {
-        const next: Record<string, string[]> = {};
-        for (const r of rows) next[r.venue_id] = r.badges ?? [];
-        setVenueBadges(next);
-      })
+    void fetchVenueBadges(venueIds)
+      .then((map) => setVenueBadges(map))
       .catch(() => {
         /* non-fatal */
       });

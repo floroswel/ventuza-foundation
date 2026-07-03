@@ -28,7 +28,7 @@ import {
 import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
-import { getUserBadgesBatch } from "@/lib/badges.functions";
+import { useCachedUserBadges } from "@/lib/badges-cache";
 import { BadgeStrip } from "@/components/BadgeStrip";
 import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
 import { getOrCreateConversation } from "@/lib/chat";
@@ -95,7 +95,7 @@ function DiscoverPage() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [badgesMap, setBadgesMap] = useState<Record<string, string[]>>({});
-  const getUserBadgesBatchFn = useServerFn(getUserBadgesBatch);
+  const fetchUserBadges = useCachedUserBadges();
   const [loading, setLoading] = useState(true);
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
   const [match, setMatch] = useState<{ id: string; name: string; photo: string | null } | null>(
@@ -194,12 +194,8 @@ function DiscoverPage() {
       setProfiles(data);
       // Fetch server-side badges for the loaded profiles (fire-and-forget).
       if (data.length > 0) {
-        void getUserBadgesBatchFn({ data: { userIds: data.map((d) => d.id) } })
-          .then(({ rows }: { rows: Array<{ user_id: string; badges: string[] }> }) => {
-            const next: Record<string, string[]> = {};
-            for (const r of rows) next[r.user_id] = r.badges ?? [];
-            setBadgesMap(next);
-          })
+        void fetchUserBadges(data.map((d) => d.id))
+          .then((map) => setBadgesMap(map))
           .catch(() => {
             /* non-fatal */
           });
