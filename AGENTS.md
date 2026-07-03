@@ -279,14 +279,14 @@ sau tabele cu prefix `admin_*`.
    (`adminListRows`) NU proiectează: `profiles.hiv_status_enc`,
    `hiv_test_date_enc`, `health_data_consent_at`, `location`, `prev_location`,
    `travel_location`, `phone_e164`, `pin_hash`; `messages.body / media_url /
-   voice_url / caption`; `age_verifications.selfie_url / document_url /
-   raw_payload`; `push_subscriptions.endpoint / auth / p256dh`;
+   voice_url / caption`; `verification_images.storage_path`,
+   `verification_requests.ip_hash / ua_hash`; `push_subscriptions.endpoint / auth / p256dh`;
    `device_fingerprints.fingerprint / user_agent / ip`. Orice coloană nouă
    sensibilă se adaugă în `SENSITIVE_COLUMNS` și în `safeColumnsFor`.
 
 4. **Break-glass obligatoriu pentru dezvăluire.** Singura cale pentru a vedea
    datele sensibile listate mai sus este `adminBreakGlassReveal` cu:
-   `targetUserId`, `kind ∈ {health, location, selfie, messages}`,
+   `targetUserId`, `kind ∈ {health, location, messages}`,
    `justification ≥ 10 caractere`. Server-side se verifică
    `admin_can_access_sensitive(actor, kind)`:
    - `health`   → DOAR `super_admin`
