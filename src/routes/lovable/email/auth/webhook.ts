@@ -13,7 +13,7 @@ import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 const EMAIL_SUBJECTS: Record<string, string> = {
   signup: 'Confirmă adresa ta de email',
-  invite: "You've been invited",
+  invite: 'Ai primit o invitație',
   magiclink: 'Linkul tău de autentificare',
   recovery: 'Resetează-ți parola',
   email_change: 'Confirmă noua adresă de email',
