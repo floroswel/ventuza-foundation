@@ -15,6 +15,8 @@ export type ConsentKind =
   | "terms"
   | "privacy"
   | "age_verification"
+  | "internal_verification"
+  | "health_data"
   | "ai_features"
   | "push_notifications"
   | "background_location"
@@ -44,16 +46,17 @@ export interface ConsentMeta {
 export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
   terms: {
     kind: "terms",
-    currentVersion: "2026-06-22",
+    currentVersion: "2026-07-03",
     required: true,
     art9: false,
     label: "Termeni și condiții",
-    description: "Acord cu termenii de utilizare ai Ventuza.",
+    description:
+      "Acord cu termenii de utilizare Ventuza, inclusiv confirmarea că am cel puțin 18 ani.",
     gates: ["account_creation"],
   },
   privacy: {
     kind: "privacy",
-    currentVersion: "2026-06-22",
+    currentVersion: "2026-07-03",
     required: true,
     art9: false,
     label: "Politica de confidențialitate",
@@ -62,15 +65,35 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
   },
   age_verification: {
     kind: "age_verification",
+    currentVersion: "2026-07-03",
+    required: true,
+    art9: true,
+    label: "Verificare vârstă (proces intern)",
+    description:
+      "Pentru a confirma că ai 18+, prelucrăm intern selfie-uri liveness (fără terți) revizuite manual de moderator. Imaginile sunt șterse automat după 30 de zile. Fără acest consimțământ, nu putem porni verificarea.",
+    gates: ["verification_submit_request"],
+  },
+  internal_verification: {
+    kind: "internal_verification",
+    currentVersion: "2026-07-03",
+    required: true,
+    art9: true,
+    label: "Verificare identitate internă",
+    description:
+      "Prelucrăm intern selfie-urile tale (liveness cu instrucțiuni random) pentru a acorda badge-ul verificat. Imaginile nu părăsesc infrastructura noastră, nu sunt vândute, nu sunt folosite pentru antrenare AI, nu sunt folosite pentru publicitate. Sunt vizibile doar moderatorilor de verificare pentru maxim 30 de zile, apoi șterse automat. Poți retrage consimțământul oricând (badge-ul se retrage și cererile în curs se șterg).",
+    gates: ["verification_submit_request"],
+  },
+  health_data: {
+    kind: "health_data",
     currentVersion: "2026-06-26",
     required: false,
     art9: true,
-    label: "Verificare vârstă cu imagine biometrică",
+    label: "Date de sănătate (HIV status)",
     description:
-      "Pentru a confirma că ai 18+, trimitem un selfie către Didit (operator extern, UE). Imaginea este prelucrată pentru estimarea vârstei și apoi ștearsă conform politicii Didit (max 30 zile). Fără acest consimțământ, nu putem porni verificarea.",
-    gates: ["startAgeVerification (Didit)"],
-    processor: "P6 — Didit (verificare vârstă)",
+      "Alegi opțional să declari status HIV / dată test. Datele sunt cifrate la coloană și accesibile doar ție și partenerilor cu care alegi să le împărtășești. Poți retrage oricând (câmpurile se șterg automat).",
+    gates: ["set_user_health"],
   },
+
   ai_features: {
     kind: "ai_features",
     currentVersion: "2026-06-26",
