@@ -84,6 +84,9 @@ function AccountPage() {
   }
 
   const verified = profile?.age_status === "verified";
+  const pending = profile?.age_status === "pending" || profile?.age_status === "in_review";
+  const rejected = profile?.age_status === "rejected";
+
   const online = !profile?.hide_online;
   const stealth = !!profile?.discrete_mode;
   const boostActive = profile?.boost_until && new Date(profile.boost_until).getTime() > Date.now();
