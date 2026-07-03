@@ -12,12 +12,12 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 const EMAIL_SUBJECTS: Record<string, string> = {
-  signup: 'Confirm your email',
+  signup: 'Confirmă adresa ta de email',
   invite: "You've been invited",
-  magiclink: 'Your login link',
-  recovery: 'Reset your password',
-  email_change: 'Confirm your new email',
-  reauthentication: 'Your verification code',
+  magiclink: 'Linkul tău de autentificare',
+  recovery: 'Resetează-ți parola',
+  email_change: 'Confirmă noua adresă de email',
+  reauthentication: 'Codul tău de verificare',
 }
 
 // Template mapping
