@@ -370,8 +370,9 @@ câmpuri sub formă brută între useri (vezi RPC `discover_profiles`).
 
 ## REGULĂ — AGE GATE (permanentă)
 
-Verificarea de vârstă (Didit) este OBLIGATORIE în producție. Dating app cu
-risc legal: minori + conținut adult. Această regulă nu se negociază.
+Verificarea de vârstă (flux intern: liveness + moderator) este OBLIGATORIE în
+producție. Dating app cu risc legal: minori + conținut adult. Această regulă nu
+se negociază.
 
 1. **Sursa de adevăr UI**: `src/lib/age-gate-policy.ts → shouldEnforceAgeGate()`.
    - Producție (orice host care NU e `localhost`, `127.0.0.1`, `*.local`,
@@ -386,9 +387,11 @@ risc legal: minori + conținut adult. Această regulă nu se negociază.
    toggle `age_verification` pe ON. În producție acest pas este redundant
    (codul forțează ON), dar îl facem oricum pentru curățenie + paritate
    între medii.
-4. **Codul Didit (`startAgeVerification`, webhook, RPC-uri DB, triggere
-   consimțământ) rămâne intact** chiar și când flag-ul e OFF. Bypass-ul e
-   strict la nivel de UX (componenta `AgeGate` nu afișează modal). Triggerele
+4. **Fluxul de verificare** este 100% intern (liveness + moderator uman) și
+   trăiește în `verification_requests` / `verification_images` cu RLS strict
+   și retenție 30 zile. Nu există procesator KYC extern. Bypass-ul dev este
+   strict la nivel de UX (componenta `AgeGate` nu redirecționează la `/verify`
+   când flag-ul e OFF ȘI host-ul e non-prod). Triggerele
    `enforce_health_consent`, `cascade_health_consent_withdrawal` și restul
    protecțiilor de date NU sunt afectate.
 5. **Code review automat:** orice diff care
