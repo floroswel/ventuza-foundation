@@ -7,9 +7,12 @@ import {
   computeBucketId,
   distanceMeters,
   getCurrentCoords,
+  clearCoordsCache,
   watchSignificantMovement,
+  GeoError,
   type Coords,
 } from "@/lib/geo-bucket";
+
 import { NearbyCard } from "@/components/nearby/NearbyCard";
 import { NearbyMap } from "@/components/nearby/NearbyMap";
 import { Button } from "@/components/ui/button";
