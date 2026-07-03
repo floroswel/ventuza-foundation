@@ -194,12 +194,8 @@ function DiscoverPage() {
       setProfiles(data);
       // Fetch server-side badges for the loaded profiles (fire-and-forget).
       if (data.length > 0) {
-        void getUserBadgesBatchFn({ data: { userIds: data.map((d) => d.id) } })
-          .then(({ rows }: { rows: Array<{ user_id: string; badges: string[] }> }) => {
-            const next: Record<string, string[]> = {};
-            for (const r of rows) next[r.user_id] = r.badges ?? [];
-            setBadgesMap(next);
-          })
+        void fetchUserBadges(data.map((d) => d.id))
+          .then((map) => setBadgesMap(map))
           .catch(() => {
             /* non-fatal */
           });
