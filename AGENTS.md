@@ -183,14 +183,14 @@ push, marketing) trece printr-un singur registru de consimțăminte:
 Reguli obligatorii:
 
 1. Consimțământul se înregistrează în `consent_log` **ÎNAINTE** de prelucrare
-   (înainte de apelul către Didit, AI Gateway, înregistrare push etc.).
+   (înainte de capturarea selfie-urilor de verificare, AI Gateway, înregistrare push etc.).
 2. Toate consimțămintele opționale sunt **opt-in** explicit (nu opt-out, nu
    pre-bifate).
 3. **Retragerea oprește prelucrarea și șterge datele unde se aplică:**
    - `health_data` → triggerul `cascade_health_consent_withdrawal` setează
      coloanele HIV pe NULL.
-   - `age_verification` → blochează `startAgeVerification` (nu re-trimite selfie
-     la Didit).
+   - `internal_verification` → blochează submisia de noi cereri și marchează
+     imaginile pentru ștergere imediată (`verification_purge_expired`).
    - `ai_features` → blochează toate server-fn-urile din `src/lib/ai.functions.ts`.
    - `push_notifications` → UI-ul dezabonează `pushManager.subscription`.
 4. UI-ul afișează clar **cine procesează** (procesatorul din
