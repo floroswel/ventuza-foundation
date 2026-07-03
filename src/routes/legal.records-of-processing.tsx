@@ -207,14 +207,15 @@ const ACTIVITIES: Activity[] = [
 ];
 
 const TODOS = [
-  "A4 — consent_log dedicat kind='age_verification' înainte de redirect la Didit.",
+  "A4 — consent_log dedicat kind='internal_verification' înainte de captarea selfie-urilor.",
   "A17 — disclosure + consent explicit pentru AI features (kind='ai_features').",
   "A6 — log push activate/dezactivate în consent_log (kind='push_notifications').",
   "DPIA formal (Art. 35) — combinație sănătate + orientare + locație + minori.",
   "TIA post-Schrems II pentru toți procesatorii US (P2/P3/P4/P5/P7/P8).",
   "Procesare HIV eliminată complet (coloane dropate, funcții șterse, kind consent scos).",
+  "Procesator KYC extern (Didit) eliminat — verificare 100% internă cu moderator uman.",
   "Desemnare DPO oficial (Art. 37) + contact public.",
-  "Confirmare DPA semnate pentru Didit, RevenueCat, Lovable (Supabase).",
+  "Confirmare DPA semnate pentru RevenueCat, Lovable (Supabase).",
 ];
 
 function RoPAPage() {
