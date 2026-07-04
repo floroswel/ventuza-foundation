@@ -105,6 +105,21 @@ export const adminClaimVerification = createServerFn({ method: "POST" })
     return { request: row };
   });
 
+/* ---------------- TAKE (claim specific request) ---------------- */
+const TakeInput = z.object({ requestId: z.string().uuid() });
+
+export const adminTakeVerification = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => TakeInput.parse(d))
+  .handler(async ({ data, context }) => {
+    await assertVerificationStaff(context.supabase, context.userId);
+    const { data: row, error } = await context.supabase.rpc("verification_moderator_take", {
+      p_request_id: data.requestId,
+    });
+    if (error) throw new Error(error.message);
+    return { request: Array.isArray(row) ? row[0] : row };
+  });
+
 /* ---------------- SIGNED URLS pentru imagini (30s) ---------------- */
 const UrlsInput = z.object({ requestId: z.string().uuid() });
 

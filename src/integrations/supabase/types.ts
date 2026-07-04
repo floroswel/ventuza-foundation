@@ -6239,6 +6239,45 @@ export type Database = {
         }
         Returns: undefined
       }
+      verification_moderator_take: {
+        Args: { p_request_id: string }
+        Returns: {
+          appeal_of: string | null
+          challenges: Json
+          claimed_at: string | null
+          confidence: string | null
+          country: string | null
+          created_at: string
+          decided_at: string | null
+          decision: string | null
+          id: string
+          ip_hash: string | null
+          is_seed: boolean
+          method: string
+          moderator_id: string | null
+          needs_second: boolean
+          reason: string | null
+          reason_code: string | null
+          retention_until: string
+          review_duration_ms: number | null
+          score: number | null
+          second_decision: string | null
+          second_moderator_id: string | null
+          second_reason: string | null
+          status: string
+          submitted_at: string
+          ua_hash: string | null
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "verification_requests"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       verification_submit_request: {
         Args: {
           p_challenges: Json
