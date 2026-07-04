@@ -7,6 +7,7 @@ import {
   adminListVerificationRequests,
   adminVerificationStats,
   adminClaimVerification,
+  adminTakeVerification,
   adminVerificationSignedUrls,
   adminDecideVerification,
 } from "@/lib/admin-verification.functions";
