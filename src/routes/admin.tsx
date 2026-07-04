@@ -390,6 +390,13 @@ function AdminDashboard() {
     },
     { id: "csam", label: "CSAM", icon: ShieldAlert, group: "Trust & Safety", adminOnly: true },
     { id: "dsa", label: "DSA", icon: FileWarning, group: "Trust & Safety" },
+    {
+      id: "verifqueue",
+      label: "Verificare identitate",
+      icon: BadgeCheck,
+      group: "Trust & Safety",
+      hint: "Coadă selfie + gest · retenție 30 zile",
+    },
 
     // Compliance
     { id: "gdpr", label: "GDPR Ops", icon: Download, group: "Compliance", adminOnly: true },
