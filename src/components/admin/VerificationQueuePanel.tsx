@@ -90,10 +90,12 @@ export function VerificationQueuePanel() {
     setReasonCode("ok");
     setConfidence("medium");
     try {
+      // Auto-claim (owner sau second reviewer) — necesar ca decide-ul să nu dea `not_your_claim`.
+      await takeFn({ data: { requestId: id } });
       const r = await urlsFn({ data: { requestId: id } });
       setImgs((r as any).images ?? []);
     } catch (e: any) {
-      toast.error(e?.message ?? "Nu am putut încărca imaginile");
+      toast.error(e?.message ?? "Nu am putut încărca cererea");
     } finally {
       setLoadingImgs(false);
     }
