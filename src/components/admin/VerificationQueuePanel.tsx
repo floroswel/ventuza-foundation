@@ -87,7 +87,7 @@ export function VerificationQueuePanel() {
     setImgs([]);
     setLoadingImgs(true);
     setReason("");
-    setReasonCode("ok");
+    setReasonCode("other");
     setConfidence("medium");
     try {
       // Auto-claim (owner sau second reviewer) — necesar ca decide-ul să nu dea `not_your_claim`.
