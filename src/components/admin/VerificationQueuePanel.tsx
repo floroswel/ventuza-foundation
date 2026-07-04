@@ -252,7 +252,7 @@ export function VerificationQueuePanel() {
                     {new Date(r.submitted_at).toLocaleString("ro-RO")}
                   </td>
                   <td className="px-2 py-1.5">
-                    <StatusBadge status={r.status} />
+                    <StatusBadge>{r.status}</StatusBadge>
                   </td>
                   <td className="px-2 py-1.5">{r.decision ?? "—"}</td>
                   <td className="px-2 py-1.5 max-w-[220px] truncate" title={r.reason ?? ""}>
