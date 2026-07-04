@@ -144,7 +144,43 @@ export function VerificationQueuePanel() {
       setImgs([]);
       await load();
     } catch (e: any) {
-      toast.error(e?.message ?? "Eroare la salvare decizie");
+      const raw = String(e?.message ?? e ?? "Eroare la salvare decizie");
+      const ALLOWED_REASONS =
+        "low_quality, face_not_visible, multiple_people, suspected_fake, underage_suspicion, replay_attack, deepfake_suspicion, other";
+      const ALLOWED_CONFIDENCE = "low, medium, high";
+      let title = "Eroare la salvare decizie";
+      let description: string | undefined = raw;
+
+      if (/verification_requests_reason_code_check/i.test(raw) || /invalid_reason_code/i.test(raw)) {
+        title = "Motiv (reason_code) invalid";
+        description = `Valoarea "${reasonCode}" nu este acceptată. Alege una din: ${ALLOWED_REASONS}.`;
+      } else if (/reason_code_required/i.test(raw)) {
+        title = "Alege un motiv";
+        description = `Selectează un reason_code din: ${ALLOWED_REASONS}.`;
+      } else if (/invalid_confidence/i.test(raw)) {
+        title = "Confidence invalid";
+        description = `Valoarea "${confidence}" nu este acceptată. Alege una din: ${ALLOWED_CONFIDENCE}.`;
+      } else if (/reason_required/i.test(raw)) {
+        title = "Motiv text lipsă";
+        description = "Motivul trebuie să aibă cel puțin 3 caractere.";
+      } else if (/invalid_decision/i.test(raw)) {
+        title = "Decizie invalidă";
+        description = "Decizia trebuie să fie: approve, reject, needs_second sau appeal_required.";
+      } else if (/not_your_claim/i.test(raw)) {
+        title = "Cererea nu este alocată ție";
+        description = "Preia (claim) cererea înainte de a decide, sau cere reasignarea.";
+      } else if (/second_review_binary/i.test(raw)) {
+        title = "A doua părere = doar approve/reject";
+        description = "La a doua părere sunt permise doar aprobă sau respinge.";
+      } else if (/forbidden|42501/i.test(raw)) {
+        title = "Acces refuzat";
+        description = "Nu ai rolul necesar pentru această acțiune (moderator/admin).";
+      } else if (/not_found|42704/i.test(raw)) {
+        title = "Cerere inexistentă";
+        description = "Cererea a fost ștearsă sau nu mai există.";
+      }
+
+      toast.error(title, { description, duration: 8000 });
     } finally {
       setBusy(false);
     }
