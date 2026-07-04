@@ -55,7 +55,7 @@ export function VerificationQueuePanel() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [imgs, setImgs] = useState<any[]>([]);
   const [loadingImgs, setLoadingImgs] = useState(false);
-  const [reasonCode, setReasonCode] = useState("ok");
+  const [reasonCode, setReasonCode] = useState("other");
   const [reason, setReason] = useState("");
   const [confidence, setConfidence] = useState<"low" | "medium" | "high">("medium");
   const [busy, setBusy] = useState(false);
