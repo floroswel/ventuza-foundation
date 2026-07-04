@@ -119,6 +119,7 @@ import { OverviewPanelRich } from "@/components/admin/OverviewPanelRich";
 import { AlertRulesPanel } from "@/components/admin/AlertRulesPanel";
 import { SupportMacrosPanel } from "@/components/admin/SupportMacrosPanel";
 import { VerificationQueuePanel } from "@/components/admin/VerificationQueuePanel";
+import { adminVerificationStats } from "@/lib/admin-verification.functions";
 
 function AgeGateDevBanner() {
   const [enforce, setEnforce] = useState<boolean | null>(null);
@@ -223,6 +224,45 @@ function AdminDashboard() {
   const [isMod, setIsMod] = useState(false);
   const [isSuper, setIsSuper] = useState(false);
   const [section, setSection] = useState<Section>("overview");
+  const [pendingVerif, setPendingVerif] = useState<number>(0);
+  const verifStatsFn = useServerFn(adminVerificationStats);
+
+  // Polling notificări cereri verificare noi (moderator/admin/super)
+  useEffect(() => {
+    if (!isMod && !isAdmin) return;
+    let cancelled = false;
+    let prev: number | null = null;
+    const tick = async () => {
+      try {
+        const s: any = await verifStatsFn();
+        if (cancelled) return;
+        const pending = Number(s?.counts?.pending ?? 0);
+        setPendingVerif(pending);
+        if (prev !== null && pending > prev && section !== "verifqueue") {
+          const diff = pending - prev;
+          toast.info(
+            `${diff} cerere${diff === 1 ? "" : "i"} nouă de verificare identitate`,
+            {
+              action: {
+                label: "Deschide coada",
+                onClick: () => setSection("verifqueue"),
+              },
+              duration: 10000,
+            },
+          );
+        }
+        prev = pending;
+      } catch {
+        /* silent */
+      }
+    };
+    tick();
+    const iv = setInterval(tick, 30000);
+    return () => {
+      cancelled = true;
+      clearInterval(iv);
+    };
+  }, [isMod, isAdmin, section, verifStatsFn]);
 
   useEffect(() => {
     if (loading) return;
@@ -396,6 +436,7 @@ function AdminDashboard() {
       icon: BadgeCheck,
       group: "Trust & Safety",
       hint: "Coadă selfie + gest · retenție 30 zile",
+      badge: pendingVerif > 0 ? (pendingVerif > 99 ? "99+" : pendingVerif) : undefined,
     },
 
     // Compliance
