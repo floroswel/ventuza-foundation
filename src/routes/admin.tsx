@@ -184,7 +184,8 @@ type Section =
   | "policyengine"
   | "legaldocs"
   | "alertrules"
-  | "macros";
+  | "macros"
+  | "verifqueue";
 
 type Report = {
   id: string;
