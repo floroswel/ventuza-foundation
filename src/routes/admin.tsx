@@ -436,6 +436,7 @@ function AdminDashboard() {
       icon: BadgeCheck,
       group: "Trust & Safety",
       hint: "Coadă selfie + gest · retenție 30 zile",
+      badge: pendingVerif > 0 ? (pendingVerif > 99 ? "99+" : pendingVerif) : undefined,
     },
 
     // Compliance
