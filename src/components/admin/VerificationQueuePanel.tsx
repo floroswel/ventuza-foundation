@@ -43,6 +43,7 @@ export function VerificationQueuePanel() {
   const listFn = useServerFn(adminListVerificationRequests);
   const statsFn = useServerFn(adminVerificationStats);
   const claimFn = useServerFn(adminClaimVerification);
+  const takeFn = useServerFn(adminTakeVerification);
   const urlsFn = useServerFn(adminVerificationSignedUrls);
   const decideFn = useServerFn(adminDecideVerification);
 
