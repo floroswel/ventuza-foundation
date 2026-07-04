@@ -507,6 +507,7 @@ function AdminDashboard() {
       {section === "riskqueue" && <RiskReviewQueuePanel />}
       {section === "csam" && isAdmin && <CsamPanel />}
       {section === "dsa" && <DsaPanel />}
+      {section === "verifqueue" && <VerificationQueuePanel />}
       {section === "gdpr" && isAdmin && <GdprOpsPanel />}
       {section === "breakglass" && isAdmin && <BreakGlassLogPanel />}
       {section === "breach" && isAdmin && <BreachPanel />}
