@@ -331,12 +331,20 @@ export function VerificationQueuePanel() {
               <div className="grid grid-cols-2 gap-2">
                 <label className="text-[11px]">
                   <span className="mb-0.5 block text-muted-foreground">Reason code</span>
-                  <input
+                  <select
                     value={reasonCode}
                     onChange={(e) => setReasonCode(e.target.value)}
                     className="w-full rounded-md border border-border bg-surface-elevated px-2 py-1 text-xs"
-                    placeholder="ok / face_mismatch / low_quality / suspect_photo / underage"
-                  />
+                  >
+                    <option value="other">other (aprobare / general)</option>
+                    <option value="low_quality">low_quality</option>
+                    <option value="face_not_visible">face_not_visible</option>
+                    <option value="multiple_people">multiple_people</option>
+                    <option value="suspected_fake">suspected_fake</option>
+                    <option value="underage_suspicion">underage_suspicion</option>
+                    <option value="replay_attack">replay_attack</option>
+                    <option value="deepfake_suspicion">deepfake_suspicion</option>
+                  </select>
                 </label>
                 <label className="text-[11px]">
                   <span className="mb-0.5 block text-muted-foreground">Confidence</span>
