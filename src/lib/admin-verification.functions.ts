@@ -7,7 +7,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 async function assertVerificationStaff(sb: any, userId: string) {
-  const { data, error } = await sb.rpc("is_verification_staff", { _user_id: userId });
+  const { data, error } = await sb.rpc("is_verification_staff", { _uid: userId });
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Forbidden: rol verification_moderator/admin/super_admin necesar.");
 }
