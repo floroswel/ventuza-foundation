@@ -118,6 +118,7 @@ import { LegalDocsAdminPanel } from "@/components/admin/LegalDocsAdminPanel";
 import { OverviewPanelRich } from "@/components/admin/OverviewPanelRich";
 import { AlertRulesPanel } from "@/components/admin/AlertRulesPanel";
 import { SupportMacrosPanel } from "@/components/admin/SupportMacrosPanel";
+import { VerificationQueuePanel } from "@/components/admin/VerificationQueuePanel";
 
 function AgeGateDevBanner() {
   const [enforce, setEnforce] = useState<boolean | null>(null);
@@ -183,7 +184,8 @@ type Section =
   | "policyengine"
   | "legaldocs"
   | "alertrules"
-  | "macros";
+  | "macros"
+  | "verifqueue";
 
 type Report = {
   id: string;
@@ -388,6 +390,13 @@ function AdminDashboard() {
     },
     { id: "csam", label: "CSAM", icon: ShieldAlert, group: "Trust & Safety", adminOnly: true },
     { id: "dsa", label: "DSA", icon: FileWarning, group: "Trust & Safety" },
+    {
+      id: "verifqueue",
+      label: "Verificare identitate",
+      icon: BadgeCheck,
+      group: "Trust & Safety",
+      hint: "Coadă selfie + gest · retenție 30 zile",
+    },
 
     // Compliance
     { id: "gdpr", label: "GDPR Ops", icon: Download, group: "Compliance", adminOnly: true },
@@ -498,6 +507,7 @@ function AdminDashboard() {
       {section === "riskqueue" && <RiskReviewQueuePanel />}
       {section === "csam" && isAdmin && <CsamPanel />}
       {section === "dsa" && <DsaPanel />}
+      {section === "verifqueue" && <VerificationQueuePanel />}
       {section === "gdpr" && isAdmin && <GdprOpsPanel />}
       {section === "breakglass" && isAdmin && <BreakGlassLogPanel />}
       {section === "breach" && isAdmin && <BreachPanel />}
