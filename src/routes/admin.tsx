@@ -118,6 +118,7 @@ import { LegalDocsAdminPanel } from "@/components/admin/LegalDocsAdminPanel";
 import { OverviewPanelRich } from "@/components/admin/OverviewPanelRich";
 import { AlertRulesPanel } from "@/components/admin/AlertRulesPanel";
 import { SupportMacrosPanel } from "@/components/admin/SupportMacrosPanel";
+import { VerificationQueuePanel } from "@/components/admin/VerificationQueuePanel";
 
 function AgeGateDevBanner() {
   const [enforce, setEnforce] = useState<boolean | null>(null);
