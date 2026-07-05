@@ -3,19 +3,22 @@ import { useEffect, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, Lock } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { translateAuthError } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({ meta: [{ title: "Reset password — Ventuza" }] }),
   component: ResetPasswordPage,
 });
 
-const passwordSchema = z.string().min(8, "At least 8 characters").max(72);
+const passwordSchema = z.string().min(8, "password_min").max(72, "password_max");
 
 function ResetPasswordPage() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const [password, setPassword] = useState("");
@@ -37,13 +40,18 @@ function ResetPasswordPage() {
     e.preventDefault();
     if (submitting) return;
     const parsed = passwordSchema.safeParse(password);
-    if (!parsed.success) return toast.error(parsed.error.issues[0]!.message);
-    if (password !== confirm) return toast.error("Passwords don't match");
+    if (!parsed.success) {
+      const code = parsed.error.issues[0]?.message;
+      return toast.error(
+        t(code === "password_max" ? "auth.errors.passwordMax" : "auth.errors.passwordMin"),
+      );
+    }
+    if (password !== confirm) return toast.error(t("auth.errors.passwordsDontMatch"));
     setSubmitting(true);
     const { error } = await supabase.auth.updateUser({ password: parsed.data });
     setSubmitting(false);
-    if (error) return toast.error(error.message);
-    toast.success("Password updated.");
+    if (error) return toast.error(translateAuthError(t, error).message);
+    toast.success(t("auth.errors.passwordUpdated"));
     navigate({ to: "/discover", replace: true });
   }
 
@@ -51,9 +59,9 @@ function ResetPasswordPage() {
     <main className="relative min-h-dvh bg-background px-6 py-10">
       <div className="mx-auto max-w-md">
         <h1 className="wordmark text-4xl font-medium">Ventuza</h1>
-        <h2 className="mt-6 text-xl font-medium">Choose a new password</h2>
+        <h2 className="mt-6 text-xl font-medium">{t("auth.resetPassword.title")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          {ready ? "Enter a new password for your account." : "Validating your reset link…"}
+          {ready ? t("auth.resetPassword.subtitle") : t("auth.resetPassword.validating")}
         </p>
 
         {ready && (
@@ -63,7 +71,7 @@ function ResetPasswordPage() {
                 htmlFor="pw"
                 className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
               >
-                New password
+                {t("auth.resetPassword.newPassword")}
               </Label>
               <div className="relative">
                 <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -83,7 +91,7 @@ function ResetPasswordPage() {
                 htmlFor="pw2"
                 className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
               >
-                Confirm password
+                {t("auth.resetPassword.confirm")}
               </Label>
               <Input
                 id="pw2"
@@ -99,7 +107,11 @@ function ResetPasswordPage() {
               disabled={submitting}
               className="h-12 w-full rounded-full text-sm uppercase tracking-[0.18em]"
             >
-              {submitting ? <Loader2 className="size-4 animate-spin" /> : "Update password"}
+              {submitting ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                t("auth.resetPassword.submit")
+              )}
             </Button>
           </form>
         )}
