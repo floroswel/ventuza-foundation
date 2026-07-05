@@ -11,7 +11,7 @@
  *
  * Ambele căi ajung la același RPC `didit_apply_result`. Testele de aici
  * validează layerul care traduce răspunsul Didit în formatul așteptat de RPC
- * și că fetch-ul manual către `/v2/session/{id}/decision/` folosește
+ * și că fetch-ul manual către `/v3/session/{id}/decision/` folosește
  * headerele corecte.
  *
  * Nu lovim DB real — testul se concentrează pe logica pură (mapare status,
@@ -119,7 +119,7 @@ describe("diditFetchDecision — sync manual când webhook-ul nu ajunge", () => 
     process.env.DIDIT_API_KEY = ORIGINAL_ENV;
   });
 
-  it("apelează endpoint-ul corect cu X-Api-Key și întoarce decizia", async () => {
+  it("apelează endpoint-ul corect cu x-api-key și întoarce decizia", async () => {
     const payload = {
       session_id: "sess_123",
       status: "Approved",
