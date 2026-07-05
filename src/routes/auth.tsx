@@ -124,7 +124,7 @@ function AuthPage() {
   }, [retryCountdown]);
 
   function handleAuthError(err: unknown, override?: Partial<FriendlyAuthError>) {
-    const mapped = { ...mapAuthError(err), ...(override ?? {}) };
+    const mapped = { ...translateAuthError(t, err), ...(override ?? {}) };
     setAuthError(mapped);
     if (mapped.retryAfterSec) setRetryCountdown(mapped.retryAfterSec);
     if (mapped.resetCaptcha) {
