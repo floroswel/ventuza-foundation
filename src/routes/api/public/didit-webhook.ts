@@ -2,7 +2,7 @@
  * Webhook Didit — primește notificări de status pentru sesiunile de verificare.
  *
  * Securitate:
- *   - Verifică semnătura HMAC-SHA256 din header `X-Signature` cu
+ *   - Verifică semnătura HMAC-SHA256 din header `X-Signature-V2` / `X-Signature` cu
  *     `DIDIT_WEBHOOK_SECRET` înainte de orice acțiune.
  *   - Scrie DOAR prin RPC `didit_apply_result` (SECURITY DEFINER, GRANT service_role).
  *   - Nu returnează date sensibile.
@@ -11,6 +11,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import {
+  diditFetchDecision,
   mapDiditStatus,
   verifyDiditSignature,
 } from "@/lib/didit.server";
@@ -55,13 +56,16 @@ export const Route = createFileRoute("/api/public/didit-webhook")({
     handlers: {
       POST: async ({ request }) => {
         const raw = await request.text();
-        const signature =
-          request.headers.get("x-signature") ??
-          request.headers.get("X-Signature") ??
-          request.headers.get("x-didit-signature");
-
-        const ok = await verifyDiditSignature(raw, signature);
-        if (!ok) return new Response("invalid signature", { status: 401 });
+        const signature = await verifyDiditSignature({
+          rawBody: raw,
+          signatureV2: request.headers.get("x-signature-v2"),
+          signatureRaw:
+            request.headers.get("x-signature") ??
+            request.headers.get("x-didit-signature"),
+          signatureSimple: request.headers.get("x-signature-simple"),
+          timestamp: request.headers.get("x-timestamp"),
+        });
+        if (!signature.ok) return new Response("invalid signature", { status: 401 });
 
         let payload: DiditWebhookPayload;
         try {
@@ -73,8 +77,20 @@ export const Route = createFileRoute("/api/public/didit-webhook")({
         const sessionId = payload.session_id;
         if (!sessionId) return new Response("missing session_id", { status: 400 });
 
-        const mapped = mapDiditStatus(payload.status);
-        const estimatedAge = extractEstimatedAge(payload);
+        let authoritativePayload = payload;
+        if (!signature.trustedBody) {
+          const decision = await diditFetchDecision(sessionId);
+          if (!decision) return new Response("session not found", { status: 404 });
+          authoritativePayload = {
+            ...payload,
+            ...(decision.raw as DiditWebhookPayload),
+            session_id: sessionId,
+            status: decision.status ?? payload.status,
+          };
+        }
+
+        const mapped = mapDiditStatus(authoritativePayload.status);
+        const estimatedAge = extractEstimatedAge(authoritativePayload);
 
         const supabase = createClient<Database>(
           process.env.SUPABASE_URL!,
@@ -87,7 +103,7 @@ export const Route = createFileRoute("/api/public/didit-webhook")({
           _status: mapped.status,
           _result: mapped.result,
           _estimated_age: estimatedAge as number,
-          _status_raw: payload as never,
+          _status_raw: authoritativePayload as never,
         });
 
         if (error) {
