@@ -104,6 +104,7 @@ export function EnablePushButton({
   }
 
   if (subscribed === null) return null;
+  if (enableOnly && subscribed) return null;
 
   return (
     <Button
