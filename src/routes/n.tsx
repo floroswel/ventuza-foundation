@@ -318,13 +318,12 @@ function Onboarding() {
           <p className="text-sm text-muted-foreground">{t("onboarding.done.hint")}</p>
         </div>
         <div className="flex w-full max-w-xs flex-col gap-2">
-          <EnablePushButton className="w-full" />
+          <EnablePushButton className="w-full" enableOnly />
           <Button
-            variant="outline"
             size="lg"
             onClick={() => navigate({ to: "/discover", replace: true })}
           >
-            {t("onboarding.done.skip")}
+            {t("onboarding.continue")}
           </Button>
         </div>
       </main>
