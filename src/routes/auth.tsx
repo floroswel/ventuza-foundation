@@ -187,18 +187,19 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         if (!over18 || !acceptTerms) {
-          toast.error("Please confirm the two checkboxes to continue.");
+          toast.error(t("auth.errors.confirmChecks"));
           return;
         }
         const age = ageFromBirthDate(birthDate);
         if (age === null) {
-          toast.error("Te rog introdu data nașterii.");
+          toast.error(t("auth.errors.needBirthdate"));
           return;
         }
         if (age < 18) {
-          toast.error("Trebuie să ai cel puțin 18 ani pentru a folosi Ventuza.");
+          toast.error(t("auth.errors.tooYoung"));
           return;
         }
+
         // Server-side disposable email preflight (enforced again by DB trigger
         // public.enforce_disposable_email_on_profile).
         const { error: disposableErr } = await supabase.rpc("assert_email_allowed", {
