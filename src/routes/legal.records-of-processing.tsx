@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
+import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+
+
 export const Route = createFileRoute("/legal/records-of-processing")({
   head: () => ({
     meta: [
@@ -66,14 +69,16 @@ const ACTIVITIES: Activity[] = [
   },
   {
     id: "A4",
-    name: "Verificare vârstă (18+) — flux intern",
-    purpose: "Confirmare vârstă minimă prin liveness (3 selfie challenge) + review moderator uman.",
+    name: "Verificare vârstă (18+) — Didit age estimation + moderator uman",
+    purpose:
+      "Confirmare vârstă minimă prin: (1) selfie live cu challenge trimis la Didit pentru estimare automată a vârstei, imaginea ștearsă la Didit imediat, (2) review moderator uman pentru cazuri borderline / raportări.",
     art9: true,
     legalBasis: "6(1)(c) obligație legală (DSA) + 6(1)(f)",
     art9Basis: "9(2)(a) consimțământ explicit + 9(2)(g) interes public substanțial (biometric)",
-    processors: "P1, P8 (fără procesator KYC extern)",
-    retention: "≤30 zile pentru imagini; decizia rămâne pe cont",
+    processors: "P1 Supabase, P8 Cloudflare, P10 Didit (age estimation, UE — imagine tranzitorie)",
+    retention: "Didit: 0 (ștergere imediată). Bucket intern review: ≤30 zile. Decizia rămâne pe cont.",
   },
+
   {
     id: "A5",
     name: "Abonamente Premium",
@@ -210,13 +215,14 @@ const TODOS = [
   "A4 — consent_log dedicat kind='internal_verification' înainte de captarea selfie-urilor.",
   "A17 — disclosure + consent explicit pentru AI features (kind='ai_features').",
   "A6 — log push activate/dezactivate în consent_log (kind='push_notifications').",
-  "DPIA formal (Art. 35) — combinație sănătate + orientare + locație + minori.",
+  "DPIA formal (Art. 35) — combinație verificare vârstă biometrică (Didit) + orientare + locație + minori.",
   "TIA post-Schrems II pentru toți procesatorii US (P2/P3/P4/P5/P7/P8).",
   "Procesare HIV eliminată complet (coloane dropate, funcții șterse, kind consent scos).",
-  "Procesator KYC extern eliminat — verificare 100% internă cu moderator uman.",
+  "Age estimation este externalizată la Didit (UE, imagine tranzitorie, doar pass/fail returnat) — semnare DPA + verificare TIA pentru sub-procesatori.",
   "Desemnare DPO oficial (Art. 37) + contact public.",
-  "Confirmare DPA semnate pentru RevenueCat, Lovable (Supabase).",
+  "Confirmare DPA semnate pentru RevenueCat, Lovable (Supabase), Didit.",
 ];
+
 
 function RoPAPage() {
   return (
@@ -232,16 +238,24 @@ function RoPAPage() {
       </header>
       <article className="mx-auto max-w-4xl px-4 py-6 text-sm leading-relaxed">
         <p className="text-xs text-muted-foreground">
-          Versiune 2.0 · ultima actualizare: 26 iunie 2026
+          Versiune 2.1 · ultima actualizare: 5 iulie 2026
         </p>
+
+        <div className="mt-4">
+          <OperatorIdentificationBlock compact />
+        </div>
+
         <p className="mt-4">
-          Acesta este sumarul public al Registrului activităților de prelucrare ținut intern conform{" "}
-          <strong>Art. 30 GDPR</strong>. Documentul complet (cu tabele tehnice, schema DB, măsuri
-          organizatorice, mapare procesatori, retenție și temei juridic per activitate) este în repo
-          la{" "}
+          Acesta este sumarul public al Registrului activităților de prelucrare ținut intern
+          conform <strong>Art. 30 GDPR</strong> de către <strong>{OPERATOR.legalName}</strong>{" "}
+          (operatorul aplicației {OPERATOR.brand}). Documentul complet (cu tabele tehnice, schema
+          DB, măsuri organizatorice, mapare procesatori, retenție și temei juridic per
+          activitate) este în repo la{" "}
           <code className="rounded bg-muted px-1 py-0.5 text-xs">docs/gdpr-art-30-register.md</code>{" "}
-          și se prezintă ANSPDCP la cerere (nu se depune proactiv — obligația dispărut din 2018).
+          și se prezintă ANSPDCP la cerere (nu se depune proactiv — obligația a dispărut din
+          2018).
         </p>
+
 
         <div className="mt-6 overflow-x-auto rounded-xl border border-border">
           <table className="w-full text-xs">
@@ -288,15 +302,16 @@ function RoPAPage() {
 
         <p className="mt-6 text-xs text-muted-foreground">
           Contact responsabil cu protecția datelor:{" "}
-          <a className="text-primary" href="mailto:dpo@ventuza.app">
-            dpo@ventuza.app
+          <a className="text-primary" href={`mailto:${OPERATOR.emails.dpo}`}>
+            {OPERATOR.emails.dpo}
           </a>
-          . Pentru lista detaliată a procesatorilor vezi{" "}
+          . Pentru lista detaliată a procesatorilor (inclusiv Didit pentru age estimation) vezi{" "}
           <Link className="text-primary" to="/legal/subprocessors">
             /legal/subprocessors
           </Link>
           .
         </p>
+
       </article>
     </div>
   );

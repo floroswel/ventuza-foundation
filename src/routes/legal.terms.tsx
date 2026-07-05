@@ -2,6 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+import {
+  OPERATOR,
+  OPERATOR_INTRO,
+  OperatorIdentificationBlock,
+} from "@/components/legal/OperatorInfo";
+
 
 export const Route = createFileRoute("/legal/terms")({
   head: () => ({
@@ -37,18 +43,20 @@ function TermsPage() {
 
             <h2 className="mt-6 text-base font-semibold">1. Acceptarea termenilor</h2>
             <p className="mt-2 text-foreground/85">
-              Prin crearea unui cont Ventuza confirmi că ai cel puțin <strong>18 ani</strong>, ai
-              capacitatea legală de a încheia acest acord și ești de acord cu termenii de mai jos.
-              Dacă nu ești de acord, te rugăm să nu folosești aplicația.
+              Prin crearea unui cont {OPERATOR.brand} confirmi că ai cel puțin{" "}
+              <strong>18 ani</strong>, ai capacitatea legală de a încheia acest acord și ești de
+              acord cu termenii de mai jos. Aplicația este operată de {OPERATOR_INTRO}. Dacă nu
+              ești de acord, te rugăm să nu folosești aplicația.
             </p>
 
             <h2 className="mt-6 text-base font-semibold">2. Natura serviciului</h2>
             <p className="mt-2 text-foreground/85">
-              Ventuza este o platformă pentru întâlniri și socializare adresată comunității LGBTQ+.
-              Oferim instrumente pentru crearea unui profil, descoperirea altor utilizatori,
-              mesagerie privată și evenimente. Nu garantăm că vei găsi un partener, o relație sau
-              orice rezultat specific.
+              {OPERATOR.brand} este o platformă pentru întâlniri și socializare adresată
+              comunității LGBTQ+. Oferim instrumente pentru crearea unui profil, descoperirea
+              altor utilizatori, mesagerie privată și evenimente. Nu garantăm că vei găsi un
+              partener, o relație sau orice rezultat specific.
             </p>
+
 
             <h2 className="mt-6 text-base font-semibold">3. Conduita utilizatorilor</h2>
             <p className="mt-2 text-foreground/85">Este strict interzis să:</p>
@@ -145,15 +153,34 @@ function TermsPage() {
             <h2 className="mt-6 text-base font-semibold">10. Lege aplicabilă</h2>
             <p className="mt-2 text-foreground/85">
               Acest acord este guvernat de legea română și legislația UE aplicabilă. Litigiile se
-              soluționează în instanțele competente din România.
+              soluționează în instanțele competente de la sediul social al operatorului
+              ({OPERATOR.address}), sub rezerva drepturilor consumatorului conform legislației
+              române și UE.
             </p>
 
-            <h2 className="mt-6 text-base font-semibold">11. Contact</h2>
+            <h2 className="mt-6 text-base font-semibold">11. Operator și contact</h2>
+            <div className="mt-2">
+              <OperatorIdentificationBlock />
+            </div>
             <p className="mt-2 text-foreground/85">
-              Întrebări:{" "}
-              <a className="text-primary" href="mailto:support@ventuza.app">
-                support@ventuza.app
+              Întrebări generale:{" "}
+              <a className="text-primary" href={`mailto:${OPERATOR.emails.support}`}>
+                {OPERATOR.emails.support}
               </a>
+              . Pentru soluționarea alternativă a litigiilor consumatorilor: ANPC —{" "}
+              <a className="text-primary" href="https://anpc.ro" target="_blank" rel="noreferrer">
+                anpc.ro
+              </a>{" "}
+              și platforma UE de soluționare online a litigiilor —{" "}
+              <a
+                className="text-primary"
+                href="https://ec.europa.eu/consumers/odr"
+                target="_blank"
+                rel="noreferrer"
+              >
+                ec.europa.eu/consumers/odr
+              </a>
+              .
             </p>
           </article>
         }
@@ -161,3 +188,4 @@ function TermsPage() {
     </div>
   );
 }
+

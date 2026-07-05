@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+
 
 export const Route = createFileRoute("/legal/security-incidents")({
   head: () => ({
@@ -62,13 +64,29 @@ function Page() {
             <ol className="mt-2 list-decimal space-y-1 pl-5 text-foreground/85">
               <li>Izolare: blocarea vectorului (rotație chei, dezactivare cont compromis).</li>
               <li>Evaluare impact: ce date, câți utilizatori, sensibilitate.</li>
-              <li>Documentare în registrul intern de incidente.</li>
+              <li>
+                <strong>Documentare obligatorie în registrul intern de breșe</strong> — un
+                incident nu este considerat închis până când nu are o intrare completă în
+                registru: descriere, categorii de date afectate, număr persoane vizate,
+                consecințe probabile, măsuri luate, evaluare risc conform Art. 33(3) GDPR.
+                Registrul este ținut intern de {OPERATOR.legalName} și prezentat ANSPDCP la
+                cerere.
+              </li>
             </ol>
 
-            <h2 className="mt-6 text-base font-semibold">4. Notificare ANSPDCP (Art. 33)</h2>
+            <h2 className="mt-6 text-base font-semibold">
+              4. Notificare ANSPDCP — obligatoriu în ≤72 de ore (GDPR Art. 33)
+            </h2>
             <p className="mt-2 text-foreground/85">
-              Notificăm Autoritatea Națională de Supraveghere a Prelucrării Datelor (ANSPDCP) în
-              maximum <strong>72 de ore</strong> de la descoperire, prin formularul oficial de pe{" "}
+              Conform <strong>Art. 33(1) GDPR</strong>, notificăm Autoritatea Națională de
+              Supraveghere a Prelucrării Datelor cu Caracter Personal (ANSPDCP){" "}
+              <strong>fără întârzieri nejustificate și, dacă este posibil, în cel mult 72 de ore</strong>{" "}
+              de la data la care operatorul a luat cunoștință de breșă, cu excepția cazurilor în
+              care breșa este puțin probabil să genereze un risc pentru drepturile și libertățile
+              persoanelor. Dacă notificarea depășește 72 de ore, includem motivele întârzierii.
+            </p>
+            <p className="mt-2 text-foreground/85">
+              Canal oficial: formularul de pe{" "}
               <a
                 className="text-primary"
                 href="https://www.dataprotection.ro"
@@ -77,8 +95,11 @@ function Page() {
               >
                 dataprotection.ro
               </a>
-              .
+              . Notificarea include: natura breșei, categoriile și numărul aproximativ de
+              persoane vizate, datele de contact ale DPO, consecințele probabile, măsurile luate
+              sau propuse pentru remediere (Art. 33(3) GDPR).
             </p>
+
 
             <h2 className="mt-6 text-base font-semibold">5. Notificare utilizatori (Art. 34)</h2>
             <p className="mt-2 text-foreground/85">
@@ -90,12 +111,18 @@ function Page() {
             <h2 className="mt-6 text-base font-semibold">6. Raportează o vulnerabilitate</h2>
             <p className="mt-2 text-foreground/85">
               Cercetători de securitate: trimite raport responsabil la{" "}
-              <a className="text-primary" href="mailto:security@ventuza.app">
-                security@ventuza.app
+              <a className="text-primary" href={`mailto:${OPERATOR.emails.security}`}>
+                {OPERATOR.emails.security}
               </a>
               . Nu acționăm legal împotriva celor care respectă safe harbor (fără exfiltrare date,
               fără DoS, fără social engineering).
             </p>
+
+            <h2 className="mt-6 text-base font-semibold">7. Operator</h2>
+            <div className="mt-2">
+              <OperatorIdentificationBlock compact />
+            </div>
+
           </article>
         }
       />
