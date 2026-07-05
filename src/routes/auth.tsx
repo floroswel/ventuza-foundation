@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
@@ -12,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { mapAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
+
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).catch("login"),
