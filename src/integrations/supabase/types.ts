@@ -6204,6 +6204,7 @@ export type Database = {
         }
         Returns: string
       }
+      verification_decide_invariants_snapshot: { Args: never; Returns: Json }
       verification_generate_challenges: { Args: never; Returns: Json }
       verification_list_purgeable_paths: {
         Args: never
