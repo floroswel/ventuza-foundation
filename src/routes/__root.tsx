@@ -28,6 +28,7 @@ import "@/lib/i18n";
 
 import { ConsentPromptHost } from "@/components/ConsentPromptHost";
 import { VersionGate } from "@/components/VersionGate";
+import { LanguageToggle } from "@/components/LanguageToggle";
 
 function NotFoundComponent() {
   return (
