@@ -140,7 +140,7 @@ export const generateOpener = createServerFn({ method: "POST" })
 // ---------- Translate ----------
 const TranslateInput = z.object({
   text: z.string().min(1).max(2000),
-  targetLang: z.string().default("ro"),
+  targetLang: z.string().min(2).max(8).default("ro"),
 });
 
 export const translateText = createServerFn({ method: "POST" })
@@ -152,18 +152,28 @@ export const translateText = createServerFn({ method: "POST" })
       input_len: data.text.length,
       target_lang: data.targetLang,
     });
-    const text = await aiComplete({
+    const raw = await aiComplete({
       messages: [
         {
           role: "system",
-          content: `Traduci mesaje de chat în ${data.targetLang}. Răspunzi DOAR cu traducerea, păstrând tonul.`,
+          content: `You translate chat messages. Detect the source language (ISO 639-1 lowercase, e.g. "en", "ro", "es", "ar", "zh"). Translate the message into the target language "${data.targetLang}", preserving tone, emojis and punctuation. If the text is already in the target language, still return it unchanged as translation. Respond with STRICT JSON only, no prose, no code fences: {"detected":"xx","translation":"..."}`,
         },
         { role: "user", content: data.text },
       ],
-      temperature: 0.3,
-      maxTokens: 500,
+      temperature: 0.2,
+      maxTokens: 600,
     });
-    return { translation: text };
+    let detected = "auto";
+    let translation = raw.trim();
+    try {
+      const cleaned = translation.replace(/^```(?:json)?/i, "").replace(/```$/i, "").trim();
+      const parsed = JSON.parse(cleaned) as { detected?: string; translation?: string };
+      if (parsed.translation) translation = String(parsed.translation);
+      if (parsed.detected) detected = String(parsed.detected).slice(0, 8).toLowerCase();
+    } catch {
+      /* fallback: return raw as translation, detected stays "auto" */
+    }
+    return { translation, detected, target: data.targetLang };
   });
 
 // ---------- Photo Coach ----------
