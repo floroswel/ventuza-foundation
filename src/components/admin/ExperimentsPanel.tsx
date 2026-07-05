@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { FlaskConical, Plus, Play, Pause } from "lucide-react";
+import { FlaskConical, Plus, Play, Pause, BarChart2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+import { getExperimentResults } from "@/lib/admin-intelligence.functions";
 
 type Exp = {
   id: string;
