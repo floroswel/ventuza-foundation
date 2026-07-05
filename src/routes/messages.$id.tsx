@@ -432,17 +432,55 @@ function ThreadPage() {
     }
   }
 
-  async function handleTranslate(m: MessageRow) {
-    if (translations[m.id] || translatingId) return;
+  async function runTranslate(m: MessageRow, lang: string, force = false) {
+    if (!m.body) return;
+    if (!force && translations[m.id]?.target === lang) return;
+    if (translatingId) return;
     setTranslatingId(m.id);
     try {
-      const res = await tr({ data: { text: m.body, targetLang: "ro" } });
-      setTranslations((t) => ({ ...t, [m.id]: res.translation }));
+      const res = await tr({ data: { text: m.body, targetLang: lang } });
+      setTranslations((t) => ({
+        ...t,
+        [m.id]: {
+          translation: res.translation,
+          detected: res.detected ?? "auto",
+          target: res.target ?? lang,
+        },
+      }));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Traducere eșuată");
     } finally {
       setTranslatingId(null);
     }
+  }
+
+  function openTranslationFor(m: MessageRow) {
+    if (!m.body || m.deleted_at) return;
+    setTranslateOpenFor(m.id);
+    if (!translations[m.id]) void runTranslate(m, targetLang);
+  }
+
+  function handleBubblePressStart(m: MessageRow) {
+    if (!m.body || m.deleted_at || m.sender_id === user?.id) return;
+    longPressFiredRef.current = false;
+    if (longPressTimerRef.current) window.clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = window.setTimeout(() => {
+      longPressFiredRef.current = true;
+      openTranslationFor(m);
+    }, 450);
+  }
+
+  function handleBubblePressEnd() {
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }
+
+  function changeTargetLang(m: MessageRow, lang: string) {
+    setTargetLang(lang);
+    savePreferredTargetLang(lang);
+    void runTranslate(m, lang, true);
   }
 
   return (
