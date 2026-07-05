@@ -210,12 +210,41 @@ function VerifyPage() {
           <section className="mt-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
             <div className="flex items-start gap-3">
               <Loader2 className="mt-0.5 size-5 animate-spin text-amber-400" />
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="font-semibold text-amber-200">Verificare în curs</p>
                 <p className="mt-1 text-muted-foreground">
-                  Am înregistrat sesiunea ta Didit. Aștept rezultatul — pagina se actualizează
-                  automat.
+                  {REASON_COPY[status?.reasonCode ?? "unknown"]}
                 </p>
+                <dl className="mt-3 space-y-1 text-xs text-muted-foreground">
+                  <div className="flex justify-between gap-2">
+                    <dt>Motiv tehnic</dt>
+                    <dd className="font-mono text-amber-200">{status?.reasonCode ?? "—"}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt>Status Didit</dt>
+                    <dd className="font-mono">{lastSession?.status ?? "—"}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt>Webhook primit</dt>
+                    <dd className="font-mono">{lastSession?.webhook_received ? "da" : "nu"}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt>Sesiune creată</dt>
+                    <dd className="font-mono">{formatDateTime(lastSession?.created_at ?? null)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt>Ultima actualizare</dt>
+                    <dd className="font-mono">{formatDateTime(status?.lastUpdatedAt ?? null)}</dd>
+                  </div>
+                  {lastSession?.session_id && (
+                    <div className="flex justify-between gap-2">
+                      <dt>Sesiune</dt>
+                      <dd className="truncate font-mono" title={lastSession.session_id}>
+                        {lastSession.session_id.slice(0, 8)}…
+                      </dd>
+                    </div>
+                  )}
+                </dl>
                 {lastSession?.session_url && (
                   <a
                     href={lastSession.session_url}
