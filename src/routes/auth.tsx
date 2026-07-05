@@ -430,7 +430,7 @@ function AuthPage() {
                 />
               </svg>
             )}
-            Continue with Google
+            {t("auth.continueGoogle")}
           </button>
           <button
             type="button"
