@@ -303,11 +303,8 @@ function Onboarding() {
           <Bell className="size-7 text-primary" />
         </div>
         <div className="space-y-2 max-w-sm">
-          <h2 className="wordmark text-3xl font-medium">Aproape gata</h2>
-          <p className="text-sm text-muted-foreground">
-            Activează notificările ca să afli imediat când ai un match nou sau un mesaj. Mod discret
-            implicit — nimeni nu vede preview-ul.
-          </p>
+          <h2 className="wordmark text-3xl font-medium">{t("onboarding.done.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("onboarding.done.hint")}</p>
         </div>
         <div className="flex w-full max-w-xs flex-col gap-2">
           <EnablePushButton className="w-full" />
@@ -316,7 +313,7 @@ function Onboarding() {
             size="lg"
             onClick={() => navigate({ to: "/discover", replace: true })}
           >
-            Continuă fără notificări
+            {t("onboarding.done.skip")}
           </Button>
         </div>
       </main>
@@ -331,10 +328,10 @@ function Onboarding() {
             onClick={back}
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
           >
-            <ArrowLeft className="size-4" /> Înapoi
+            <ArrowLeft className="size-4" /> {t("onboarding.back")}
           </button>
           <span className="text-xs text-muted-foreground">
-            {STEP_LABELS[current]} · {step + 1}/{STEPS.length}
+            {t(STEP_KEYS[current])} · {step + 1}/{STEPS.length}
           </span>
         </div>
         <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-surface">
@@ -358,13 +355,14 @@ function Onboarding() {
           className="w-full"
         >
           {saving && <Loader2 className="size-4 animate-spin" />}
-          {step === STEPS.length - 1 ? "Finish" : "Continue"}
+          {step === STEPS.length - 1 ? t("onboarding.finish") : t("onboarding.continue")}
           {!saving && <ArrowRight className="size-4" />}
         </Button>
       </footer>
     </main>
   );
 }
+
 
 function StepView({
   step,
