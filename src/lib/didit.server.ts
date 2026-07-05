@@ -106,3 +106,29 @@ export function mapDiditStatus(status: string | null | undefined): {
       return { status: s || "pending", result: "pending" };
   }
 }
+
+/**
+ * Interoghează Didit pentru decizia unei sesiuni (folosit la refresh manual
+ * când webhook-ul nu a ajuns — util în preview / dev).
+ */
+export async function diditFetchDecision(sessionId: string): Promise<{
+  status: string | null;
+  raw: Record<string, unknown>;
+} | null> {
+  const apiKey = process.env.DIDIT_API_KEY;
+  if (!apiKey) throw new Error("DIDIT_API_KEY missing on server env");
+
+  const res = await fetch(`${DIDIT_API_BASE}/v2/session/${sessionId}/decision/`, {
+    method: "GET",
+    headers: { "X-Api-Key": apiKey },
+  });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    console.error("[didit] fetch_decision failed", res.status, body.slice(0, 500));
+    throw new Error("didit_fetch_decision_failed");
+  }
+  const json = (await res.json()) as Record<string, unknown>;
+  const status = (json.status as string | undefined) ?? null;
+  return { status, raw: json };
+}
