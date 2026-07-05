@@ -665,6 +665,7 @@ function EditDrawer({
 }) {
   const [form, setForm] = useState(profile);
   const [saving, setSaving] = useState(false);
+  const t = useOptionLabel();
 
   async function save() {
     setSaving(true);
