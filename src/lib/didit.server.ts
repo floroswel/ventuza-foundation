@@ -2,6 +2,7 @@
  * Server helpers pentru integrarea Didit (age estimation).
  * Rulează DOAR pe server. Nu importa din client / .functions.ts fără dynamic import.
  */
+import { createHmac, timingSafeEqual } from "crypto";
 
 const DIDIT_API_BASE = "https://verification.didit.me";
 const DIDIT_API_VERSION = "v3";
@@ -99,7 +100,6 @@ function safeTimingEqualHex(expectedHex: string, providedSignature: string | nul
   const b = Buffer.from(provided, "hex");
   if (a.length === 0 || a.length !== b.length) return false;
   try {
-    const { timingSafeEqual } = require("crypto") as typeof import("crypto");
     return timingSafeEqual(a, b);
   } catch {
     return false;
@@ -122,8 +122,6 @@ export async function verifyDiditSignature(input: DiditSignatureInput): Promise<
       return { ok: false, trustedBody: false, reason: "stale_timestamp" };
     }
   }
-
-  const { createHmac } = await import("crypto");
 
   if (input.signatureV2) {
     try {
@@ -179,7 +177,6 @@ export function mapDiditStatus(status: string | null | undefined): {
       return { status: "approved", result: "pass" };
     case "declined":
       return { status: "declined", result: "fail" };
-    case "kyc_expired":
     case "kyc_expired":
     case "expired":
       return { status: "expired", result: "fail" };
