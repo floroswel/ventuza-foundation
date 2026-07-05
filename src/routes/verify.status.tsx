@@ -99,7 +99,7 @@ function VerifyStatusPage() {
   // Polling agresiv la început, apoi mai rar; se oprește când iese din pending.
   useEffect(() => {
     if (!user || !isPending) return;
-    const tick = () => void refresh();
+    const tick = () => void refresh({ force: true });
     const elapsed = Date.now() - startedAt.current;
     const interval = elapsed < 60_000 ? 3000 : elapsed < 300_000 ? 8000 : 20_000;
     const id = setInterval(tick, interval);
