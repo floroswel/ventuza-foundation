@@ -727,7 +727,7 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
               onChange={(e) => setPrompt(i, { answer: e.target.value })}
               rows={2}
               maxLength={200}
-              placeholder="Răspunsul tău…"
+              placeholder={tr("onboarding.prompts.answer")}
               className="bg-background border-border"
               disabled={!cur?.question}
             />
