@@ -28,7 +28,12 @@ import {
   RELATIONSHIP_STATUS_OPTIONS,
   ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
-import { useOptionLabel } from "@/lib/i18n/option-labels";
+import {
+  useOptionLabel,
+  canonicalizeOptionValue,
+  canonicalizeOptionValues,
+} from "@/lib/i18n/option-labels";
+
 
 export const Route = createFileRoute("/n")({
   head: () => ({ meta: [{ title: "Build your profile — Ventuza" }] }),
@@ -249,23 +254,29 @@ function Onboarding() {
       .update({
         display_name: data.display_name.trim(),
         birthdate: data.birthdate,
-        gender: data.gender,
+        gender: canonicalizeOptionValues(data.gender),
         gender_custom: data.gender_custom.trim() || null,
-        pronouns: data.pronouns,
+        pronouns: canonicalizeOptionValues(data.pronouns),
         pronouns_custom: data.pronouns_custom.trim() || null,
-        orientation: data.orientation,
-        looking_for: data.looking_for,
-        tribes: data.tribes,
-        body_type: data.body_type || null,
+        orientation: canonicalizeOptionValues(data.orientation),
+        looking_for: canonicalizeOptionValues(data.looking_for),
+        tribes: canonicalizeOptionValues(data.tribes),
+        body_type: data.body_type ? canonicalizeOptionValue(data.body_type) : null,
         height_cm: data.height_cm,
         weight_kg: data.weight_kg,
-        ethnicity: data.ethnicity || null,
-        position: data.position || null,
-        relationship_status: data.relationship_status || null,
-        interests: data.interests,
+        ethnicity: data.ethnicity ? canonicalizeOptionValue(data.ethnicity) : null,
+        position: data.position ? canonicalizeOptionValue(data.position) : null,
+        relationship_status: data.relationship_status
+          ? canonicalizeOptionValue(data.relationship_status)
+          : null,
+        interests: canonicalizeOptionValues(data.interests),
         bio: data.bio.trim(),
-        prompts: data.prompts,
+        prompts: data.prompts.map((p) => ({
+          question: canonicalizeOptionValue(p.question),
+          answer: p.answer,
+        })),
         photos: data.photos,
+
         terms_accepted_version: "2026-06-22",
         terms_accepted_at: new Date().toISOString(),
         privacy_accepted_version: "2026-06-22",

@@ -59,7 +59,12 @@ import {
   PREP_STATUS_OPTIONS,
   VACCINATION_OPTIONS,
 } from "@/lib/profile-options";
-import { useOptionLabel } from "@/lib/i18n/option-labels";
+import {
+  useOptionLabel,
+  canonicalizeOptionValue,
+  canonicalizeOptionValues,
+} from "@/lib/i18n/option-labels";
+
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Your profile — Ventuza" }] }),
@@ -675,31 +680,37 @@ function EditDrawer({
       .update({
         display_name: form.display_name,
         bio: form.bio,
-        gender: form.gender ?? [],
+        gender: canonicalizeOptionValues(form.gender ?? []),
         gender_custom: form.gender_custom,
-        pronouns: form.pronouns ?? [],
+        pronouns: canonicalizeOptionValues(form.pronouns ?? []),
         pronouns_custom: form.pronouns_custom,
-        orientation: form.orientation ?? [],
-        looking_for: form.looking_for ?? [],
-        interests: form.interests ?? [],
-        prompts: form.prompts ?? [],
-        tribes: form.tribes ?? [],
-        body_type: form.body_type,
+        orientation: canonicalizeOptionValues(form.orientation ?? []),
+        looking_for: canonicalizeOptionValues(form.looking_for ?? []),
+        interests: canonicalizeOptionValues(form.interests ?? []),
+        prompts: (form.prompts ?? []).map((p) => ({
+          question: canonicalizeOptionValue(p.question ?? ""),
+          answer: p.answer ?? "",
+        })),
+        tribes: canonicalizeOptionValues(form.tribes ?? []),
+        body_type: form.body_type ? canonicalizeOptionValue(form.body_type) : form.body_type,
         height_cm: form.height_cm,
         weight_kg: form.weight_kg,
-        ethnicity: form.ethnicity,
-        position: form.position,
+        ethnicity: form.ethnicity ? canonicalizeOptionValue(form.ethnicity) : form.ethnicity,
+        position: form.position ? canonicalizeOptionValue(form.position) : form.position,
         // Datele HIV au fost eliminate din schemă (decizie GDPR).
-        relationship_status: form.relationship_status,
-        meet_at: form.meet_at ?? [],
-        expectations: form.expectations ?? [],
-        scenes: form.scenes ?? [],
-        safety_practices: form.safety_practices ?? [],
-        vaccinations: form.vaccinations ?? [],
-        prep_status: form.prep_status,
+        relationship_status: form.relationship_status
+          ? canonicalizeOptionValue(form.relationship_status)
+          : form.relationship_status,
+        meet_at: canonicalizeOptionValues(form.meet_at ?? []),
+        expectations: canonicalizeOptionValues(form.expectations ?? []),
+        scenes: canonicalizeOptionValues(form.scenes ?? []),
+        safety_practices: canonicalizeOptionValues(form.safety_practices ?? []),
+        vaccinations: canonicalizeOptionValues(form.vaccinations ?? []),
+        prep_status: form.prep_status ? canonicalizeOptionValue(form.prep_status) : form.prep_status,
         accept_nsfw_photos: form.accept_nsfw_photos ?? false,
         hide_age: f.hide_age ?? false,
       })
+
       .eq("id", profile.id)
       .select("*")
       .maybeSingle();
