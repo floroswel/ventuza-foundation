@@ -18,8 +18,10 @@ export function QuickFiltersStrip({
   value: DiscoverFilters;
   onChange: (f: DiscoverFilters) => void;
 }) {
+  const label = useOptionLabel();
   return (
     <div className="-mx-1 flex gap-1.5 overflow-x-auto px-3 pb-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
       <Pill
         active={value.lookingNowOnly}
         onClick={() => onChange({ ...value, lookingNowOnly: !value.lookingNowOnly })}
