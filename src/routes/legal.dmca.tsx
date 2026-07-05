@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+import { OPERATOR, OPERATOR_INTRO, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+
 
 export const Route = createFileRoute("/legal/dmca")({
   head: () => ({
@@ -39,11 +41,12 @@ function DmcaPage() {
 
             <h2 className="mt-6 text-base font-semibold">1. Cadru legal</h2>
             <p className="mt-2 text-foreground/85">
-              Ventuza respectă drepturile de autor conform Legii 8/1996 (România), Directivei (UE)
-              2019/790 privind drepturile de autor în piața unică digitală, DSA (Reg. UE 2022/2065
-              Art. 16) și, pentru raportori din SUA, principiilor procedurale ale Digital Millennium
-              Copyright Act (DMCA).
+              {OPERATOR_INTRO} respectă drepturile de autor conform Legii 8/1996 (România),
+              Directivei (UE) 2019/790 privind drepturile de autor în piața unică digitală, DSA
+              (Reg. UE 2022/2065 Art. 16) și, pentru raportori din SUA, principiilor procedurale
+              ale Digital Millennium Copyright Act (DMCA).
             </p>
+
 
             <h2 className="mt-6 text-base font-semibold">
               2. Cum trimiți o notificare de retragere
@@ -98,21 +101,25 @@ function DmcaPage() {
               permanent.
             </p>
 
-            <h2 className="mt-6 text-base font-semibold">7. Contact</h2>
-            <p className="mt-2 text-foreground/85">
+            <h2 className="mt-6 text-base font-semibold">7. Operator și contact</h2>
+            <div className="mt-2">
+              <OperatorIdentificationBlock compact />
+            </div>
+            <p className="mt-3 text-foreground/85">
               Copyright agent:{" "}
-              <a className="text-primary" href="mailto:copyright@ventuza.app">
-                copyright@ventuza.app
+              <a className="text-primary" href={`mailto:${OPERATOR.emails.copyright}`}>
+                {OPERATOR.emails.copyright}
               </a>{" "}
               · DPO:{" "}
-              <a className="text-primary" href="mailto:dpo@ventuza.app">
-                dpo@ventuza.app
+              <a className="text-primary" href={`mailto:${OPERATOR.emails.dpo}`}>
+                {OPERATOR.emails.dpo}
               </a>{" "}
               · DSA:{" "}
               <Link className="text-primary" to="/legal/dsa">
                 /legal/dsa
               </Link>
             </p>
+
           </article>
         }
       />
