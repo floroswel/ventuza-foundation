@@ -26,6 +26,7 @@ import {
   RELATIONSHIP_STATUS_OPTIONS,
   ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 
 export const Route = createFileRoute("/n")({
   head: () => ({ meta: [{ title: "Build your profile — Ventuza" }] }),
@@ -674,11 +675,12 @@ function ChipGrid({
   selected: string[];
   onToggle: (v: string) => void;
 }) {
+  const t = useOptionLabel();
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((o) => (
         <Chip key={o} active={selected.includes(o)} onClick={() => onToggle(o)}>
-          {o}
+          {t(o)}
         </Chip>
       ))}
     </div>
@@ -686,6 +688,7 @@ function ChipGrid({
 }
 
 function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => void }) {
+  const t = useOptionLabel();
   const slots = [0, 1, 2];
   function setPrompt(i: number, p: Partial<Prompt>) {
     const next = [...data.prompts];
@@ -709,7 +712,7 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
               <option value="">Alege un prompt…</option>
               {PROMPT_OPTIONS.map((q) => (
                 <option key={q} value={q} disabled={used.includes(q) && cur?.question !== q}>
-                  {q}
+                  {t(q)}
                 </option>
               ))}
             </select>

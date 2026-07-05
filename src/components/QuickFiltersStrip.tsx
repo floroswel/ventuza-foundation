@@ -1,6 +1,7 @@
 import { BadgeCheck, Camera, Flame, Image as ImageIcon, Plane, Rocket } from "lucide-react";
 import type { DiscoverFilters } from "@/lib/discover";
 import { TRIBE_OPTIONS, POSITION_OPTIONS } from "@/lib/profile-options";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 import { cn } from "@/lib/utils";
 
 function toggle<T>(arr: T[], v: T) {
@@ -17,8 +18,10 @@ export function QuickFiltersStrip({
   value: DiscoverFilters;
   onChange: (f: DiscoverFilters) => void;
 }) {
+  const label = useOptionLabel();
   return (
     <div className="-mx-1 flex gap-1.5 overflow-x-auto px-3 pb-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+
       <Pill
         active={value.lookingNowOnly}
         onClick={() => onChange({ ...value, lookingNowOnly: !value.lookingNowOnly })}
@@ -50,19 +53,19 @@ export function QuickFiltersStrip({
           active={value.positions.includes(p)}
           onClick={() => onChange({ ...value, positions: toggle(value.positions, p) })}
         >
-          {p}
+          {label(p)}
         </Pill>
       ))}
 
       <Divider />
 
-      {TRIBES_SHORT.map((t) => (
+      {TRIBES_SHORT.map((tr) => (
         <Pill
-          key={t}
-          active={value.tribes.includes(t)}
-          onClick={() => onChange({ ...value, tribes: toggle(value.tribes, t) })}
+          key={tr}
+          active={value.tribes.includes(tr)}
+          onClick={() => onChange({ ...value, tribes: toggle(value.tribes, tr) })}
         >
-          {t}
+          {label(tr)}
         </Pill>
       ))}
     </div>

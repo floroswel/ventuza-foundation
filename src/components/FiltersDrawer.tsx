@@ -12,6 +12,7 @@ import {
   POSITION_OPTIONS,
 } from "@/lib/profile-options";
 import { DEFAULT_FILTERS, type DiscoverFilters } from "@/lib/discover";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 
 function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
@@ -256,13 +257,14 @@ function ChipSection({
   value: string[];
   onChange: (v: string[]) => void;
 }) {
+  const t = useOptionLabel();
   return (
     <section className="space-y-3">
       <Label>{label}</Label>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <Chip key={o} active={value.includes(o)} onClick={() => onChange(toggle(value, o))}>
-            {o}
+            {t(o)}
           </Chip>
         ))}
       </div>

@@ -59,6 +59,7 @@ import {
   PREP_STATUS_OPTIONS,
   VACCINATION_OPTIONS,
 } from "@/lib/profile-options";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Your profile — Ventuza" }] }),
@@ -664,6 +665,7 @@ function EditDrawer({
 }) {
   const [form, setForm] = useState(profile);
   const [saving, setSaving] = useState(false);
+  const t = useOptionLabel();
 
   async function save() {
     setSaving(true);
@@ -726,7 +728,7 @@ function EditDrawer({
               active={current === o}
               onClick={() => setForm({ ...form, [k]: current === o ? null : o } as Profile)}
             >
-              {o}
+              {t(o)}
             </Chip>
           ))}
         </div>
@@ -995,13 +997,14 @@ function EditChips({
   value: string[];
   onChange: (v: string[]) => void;
 }) {
+  const t = useOptionLabel();
   return (
     <div className="space-y-3">
       <Label>{label}</Label>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <Chip key={o} active={value.includes(o)} onClick={() => onChange(toggle(value, o))}>
-            {o}
+            {t(o)}
           </Chip>
         ))}
       </div>
