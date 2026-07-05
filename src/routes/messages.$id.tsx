@@ -33,6 +33,13 @@ import {
   type MessageRow,
 } from "@/lib/chat";
 import { generateOpener, translateText } from "@/lib/ai.functions";
+import {
+  CHAT_TARGET_LANGS,
+  detectDeviceLang,
+  langLabel,
+  loadPreferredTargetLang,
+  savePreferredTargetLang,
+} from "@/lib/languages";
 import { verifySelfie } from "@/lib/verification.functions";
 import { REACTION_EMOJIS, toggleMessageReaction, type ReactionEmoji } from "@/lib/social";
 import { ChatComposerExtras } from "@/components/ChatComposerExtras";
