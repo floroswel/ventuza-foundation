@@ -362,7 +362,7 @@ function AuthPage() {
     if (error) {
       handleAuthError(error);
     } else {
-      toast.success("Email cu link de resetare trimis.");
+      toast.success(t("auth.errors.resetSent"));
     }
   }
 
