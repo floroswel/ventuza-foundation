@@ -168,12 +168,17 @@ function AuthPage() {
 
     const emailParsed = emailSchema.safeParse(email);
     if (!emailParsed.success) {
-      toast.error(emailParsed.error.issues[0]?.message ?? "Invalid email");
+      const key = emailParsed.error.issues[0]?.message === "invalid_email"
+        ? "auth.errors.invalidEmail"
+        : "auth.errors.invalidEmail";
+      toast.error(t(key));
       return;
     }
     const passParsed = passwordSchema.safeParse(password);
     if (!passParsed.success) {
-      toast.error(passParsed.error.issues[0]?.message ?? "Invalid password");
+      const code = passParsed.error.issues[0]?.message;
+      const key = code === "password_max" ? "auth.errors.passwordMax" : "auth.errors.passwordMin";
+      toast.error(t(key));
       return;
     }
 
