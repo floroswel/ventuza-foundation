@@ -271,8 +271,10 @@ if (!i18n.isInitialized) {
     .use(initReactI18next)
     .init({
       resources: { ro: { translation: ro }, en: { translation: en } },
-      fallbackLng: "ro",
+      fallbackLng: "en",
       supportedLngs: ["ro", "en"],
+      nonExplicitSupportedLngs: true,
+
       interpolation: { escapeValue: false },
       detection: {
         order: ["localStorage", "navigator", "htmlTag"],
