@@ -327,7 +327,7 @@ function AuthPage() {
         redirect_uri: window.location.origin + "/auth",
       });
       if (result.error) {
-        toast.error(result.error.message ?? `${provider} sign-in failed`);
+        toast.error(result.error.message ?? t("auth.errors.oauthFailed", { provider }));
         return;
       }
       if (result.redirected) return; // browser navigates
@@ -338,7 +338,7 @@ function AuthPage() {
         await routeAfterAuth(data.user.id, navigate, search.redirect);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : `${provider} sign-in failed`);
+      toast.error(err instanceof Error ? err.message : t("auth.errors.oauthFailed", { provider }));
     } finally {
       setOauthBusy(null);
     }
