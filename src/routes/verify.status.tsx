@@ -13,7 +13,7 @@ import {
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { getMyDiditStatus } from "@/lib/didit.functions";
+import { getMyDiditStatus, syncMyDiditStatus } from "@/lib/didit.functions";
 
 export const Route = createFileRoute("/verify/status")({
   ssr: false,
@@ -50,6 +50,7 @@ function VerifyStatusPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const fetchStatus = useServerFn(getMyDiditStatus);
+  const syncStatus = useServerFn(syncMyDiditStatus);
 
   const [status, setStatus] = useState<DiditStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,18 +63,28 @@ function VerifyStatusPage() {
     }
   }, [authLoading, user, navigate]);
 
-  const refresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      const res = (await fetchStatus()) as DiditStatus;
-      setStatus(res);
-    } catch {
-      // silențios — banner-ul de eroare rămâne; retry manual disponibil
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [fetchStatus]);
+  const refresh = useCallback(
+    async (opts?: { force?: boolean }) => {
+      setRefreshing(true);
+      try {
+        if (opts?.force) {
+          try {
+            await syncStatus();
+          } catch {
+            // ignoră — cădem pe read-ul de mai jos
+          }
+        }
+        const res = (await fetchStatus()) as DiditStatus;
+        setStatus(res);
+      } catch {
+        // silențios — banner-ul de eroare rămâne; retry manual disponibil
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [fetchStatus, syncStatus],
+  );
 
   useEffect(() => {
     if (!user) return;
@@ -221,7 +232,7 @@ function VerifyStatusPage() {
                 variant="outline"
                 size="sm"
                 className="mt-4 w-full"
-                onClick={() => void refresh()}
+                onClick={() => void refresh({ force: true })}
                 disabled={refreshing}
                 aria-label={
                   refreshing
