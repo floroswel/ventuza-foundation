@@ -806,8 +806,11 @@ function PhotosStep({
                 modBlocked = true;
                 await supabase.storage.from("profile-photos").remove([path]);
                 toast.error(
-                  `Poză respinsă: ${mod.reason || "conținut nepermis pe profilul public"}.`,
+                  t("onboarding.photos.rejected", {
+                    reason: mod.reason || t("onboarding.photos.rejectedDefault"),
+                  }),
                 );
+
               } catch (e) {
                 lastErr = (e as Error).message;
                 if (attempt < 2)
