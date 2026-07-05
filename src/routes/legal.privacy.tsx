@@ -2,6 +2,12 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+import {
+  OPERATOR,
+  OPERATOR_INTRO,
+  OperatorIdentificationBlock,
+} from "@/components/legal/OperatorInfo";
+
 
 export const Route = createFileRoute("/legal/privacy")({
   head: () => ({
@@ -36,9 +42,11 @@ function PrivacyPage() {
             <p className="text-xs text-muted-foreground">Ultima actualizare: 20 iunie 2026</p>
 
             <p className="mt-4 text-foreground/85">
-              Ventuza ("noi") respectă confidențialitatea ta. Acest document explică ce date
-              colectăm, de ce, cu cine le împărtășim și ce drepturi ai conform GDPR.
+              {OPERATOR_INTRO} ("noi") respectă confidențialitatea ta. Acest document explică ce
+              date colectăm, de ce, cu cine le împărtășim și ce drepturi ai conform GDPR.
             </p>
+
+
 
             <h2 className="mt-6 text-base font-semibold">1. Date pe care le colectăm</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
@@ -58,15 +66,19 @@ function PrivacyPage() {
                     tribes) — Art. 9(1) date privind viața sexuală.
                   </li>
                   <li>
-                    <strong>Selfie de verificare 18+</strong> — Art. 9(1) date biometrice,
-                    capturate în app-ul nostru, stocate în bucket privat și revizuite manual de
-                    moderatorii Ventuza. Se șterg automat în 30 de zile.
+                    <strong>Selfie de verificare 18+</strong> — Art. 9(1) date biometrice.
+                    Imaginea este transmisă tranzitoriu către procesatorul nostru{" "}
+                    <strong>Didit</strong> (UE) exclusiv pentru estimarea automată a vârstei;
+                    Didit șterge imaginea imediat după emiterea rezultatului și ne întoarce doar
+                    un verdict pass/fail. Nu stocăm document de identitate. Cazurile borderline
+                    sau contestate ajung într-un bucket privat Ventuza și sunt revizuite de un
+                    moderator uman, cu ștergere automată în ≤30 de zile de la decizie.
                   </li>
                 </ul>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  <strong>NU procesăm date despre statutul HIV.</strong> Ventuza a eliminat complet
-                  colectarea și stocarea datelor despre HIV. Pentru testare și informații vezi
-                  resursele publice ARAS din centrul de siguranță.
+                  <strong>NU procesăm date despre statutul HIV.</strong> {OPERATOR.brand} a
+                  eliminat complet colectarea și stocarea datelor despre HIV. Pentru testare și
+                  informații vezi resursele publice ARAS din centrul de siguranță.
                 </p>
               </li>
               <li>
@@ -74,6 +86,7 @@ function PrivacyPage() {
                 prin <em>bucket-uri geografice</em>, nu prin lat/lng. Alți utilizatori văd doar
                 distanță rotunjită ("~500m", "~2km"), niciodată coordonate precise.
               </li>
+
               <li>
                 <strong>Activitate:</strong> swipe-uri, match-uri, mesaje, RSVP la evenimente.
               </li>
@@ -109,18 +122,32 @@ function PrivacyPage() {
                 <strong>Alți utilizatori</strong> — profilul tău public (fotografii, bio, interese).
               </li>
               <li>
-                <strong>Subprocesatori:</strong>
+                <strong>Subprocesatori (listă completă:</strong>{" "}
+                <Link className="text-primary" to="/legal/subprocessors">
+                  /legal/subprocessors
+                </Link>
+                <strong>):</strong>
                 <ul className="mt-1 list-[circle] pl-5">
                   <li>
-                    Supabase (Lovable Cloud) — bază de date, autentificare, stocare fotografii (UE).
+                    Supabase (via Lovable Cloud) — bază de date, autentificare, stocare
+                    fotografii/media (UE, Frankfurt).
                   </li>
-                  <li>Google Cloud — moderare AI a fotografiilor.</li>
-                  <li>Google Play Billing — procesare plăți Premium.</li>
-                  <li>Furnizor email tranzacțional — confirmări cont și resetare parolă.</li>
+                  <li>
+                    <strong>Didit</strong> — estimare vârstă din selfie (age estimation),
+                    procesare tranzitorie în UE, imaginea ștearsă imediat, primim doar
+                    pass/fail.
+                  </li>
+                  <li>Lovable AI Gateway — moderare text, generare bio, embeddings (opt-in).</li>
+                  <li>Google Play Billing + RevenueCat — procesare plăți Premium.</li>
+                  <li>FCM / APNs / Mozilla autopush — livrare notificări push.</li>
+                  <li>Cloudflare — edge runtime și CDN.</li>
+                  <li>ANAF — lookup CUI pentru conturi business (autoritate publică).</li>
+                  <li>OpenStreetMap — tile-uri pentru hartă (fără coordonatele userului).</li>
                 </ul>
               </li>
               <li>NU vindem datele tale către terți pentru publicitate.</li>
             </ul>
+
 
             <h2 className="mt-6 text-base font-semibold">4. Perioade de retenție</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
@@ -233,12 +260,17 @@ function PrivacyPage() {
             </p>
 
             <h2 className="mt-6 text-base font-semibold">10. Operator de date</h2>
-            <p className="mt-2 text-foreground/85">
-              Operator: <strong>Ventuza</strong> · Email DPO:{" "}
-              <a className="text-primary" href="mailto:privacy@ventuza.app">
-                privacy@ventuza.app
-              </a>
+            <div className="mt-2">
+              <OperatorIdentificationBlock />
+            </div>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Contact suplimentar:{" "}
+              <a className="text-primary" href={`mailto:${OPERATOR.emails.privacy}`}>
+                {OPERATOR.emails.privacy}
+              </a>{" "}
+              (privacy).
             </p>
+
           </article>
         }
       />
