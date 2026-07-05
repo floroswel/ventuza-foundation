@@ -87,11 +87,34 @@ export function AgeGate() {
     void refresh(user.id);
   }, [user?.id, location.pathname]);
 
+  // Realtime — dacă webhook-ul Didit actualizează `profiles.age_status`, primim
+  // instant update-ul fără refresh sau navigare.
   useEffect(() => {
     if (!user) return;
-    const onFocus = () => void refresh(user.id);
-    window.addEventListener("focus", onFocus);
-    document.addEventListener("visibilitychange", onFocus);
+    const channel = supabase
+      .channel(`profile-age-${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${user.id}` },
+        (payload) => {
+          const next = (payload.new as { age_status?: Status })?.age_status;
+          if (next) setStatus(next);
+        },
+      )
+      .subscribe();
+    return () => {
+      void supabase.removeChannel(channel);
+    };
+  }, [user?.id]);
+
+  // Polling de siguranță — dacă statusul e pending/unverified, cerem sync
+  // periodic din Didit (prinde review manual chiar dacă webhook-ul eșuează).
+  useEffect(() => {
+    if (!user) return;
+    if (status !== "pending" && status !== "unverified") return;
+    const id = setInterval(() => void refresh(user.id), 15000);
+    return () => clearInterval(id);
+  }, [user?.id, status]);
     return () => {
       window.removeEventListener("focus", onFocus);
       document.removeEventListener("visibilitychange", onFocus);
