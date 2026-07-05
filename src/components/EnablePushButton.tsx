@@ -15,7 +15,14 @@ function supported(): boolean {
   );
 }
 
-export function EnablePushButton({ className }: { className?: string }) {
+export function EnablePushButton({
+  className,
+  enableOnly = false,
+}: {
+  className?: string;
+  /** Dacă true, ascunde butonul când userul e deja abonat (fără opțiune de dezactivare). */
+  enableOnly?: boolean;
+}) {
   const [busy, setBusy] = useState(false);
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
   const save = useServerFn(savePushSubscription);
@@ -97,6 +104,7 @@ export function EnablePushButton({ className }: { className?: string }) {
   }
 
   if (subscribed === null) return null;
+  if (enableOnly && subscribed) return null;
 
   return (
     <Button
