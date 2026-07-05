@@ -382,13 +382,13 @@ function AuthPage() {
           to="/"
           className="self-start text-xs uppercase tracking-[0.22em] text-muted-foreground hover:text-primary"
         >
-          ← Back
+          {t("auth.back")}
         </Link>
 
         <div className="mt-10 text-center">
           <h1 className="wordmark text-5xl font-medium leading-none">Ventuza</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            {mode === "signup" ? "Create your account" : "Welcome back"}
+            {mode === "signup" ? t("auth.createAccount") : t("auth.welcomeBack")}
           </p>
         </div>
 
@@ -406,8 +406,9 @@ function AuthPage() {
                   : "text-muted-foreground hover:text-foreground")
               }
             >
-              {m === "login" ? "Log in" : "Sign up"}
+              {m === "login" ? t("auth.tabLogin") : t("auth.tabSignup")}
             </button>
+
           ))}
         </div>
 
