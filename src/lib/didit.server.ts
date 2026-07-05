@@ -296,7 +296,7 @@ export function sanitizeDiditStatusRaw(payload: DiditStatusPayload): Record<stri
  */
 export async function diditFetchDecision(sessionId: string): Promise<{
   status: string | null;
-  raw: Record<string, unknown>;
+  raw: DiditStatusPayload;
 } | null> {
   const apiKey = process.env.DIDIT_API_KEY;
   if (!apiKey) throw new Error("DIDIT_API_KEY missing on server env");
