@@ -766,7 +766,7 @@ function PhotosStep({
 
   async function handleUpload(files: FileList | null) {
     if (!files || !user) return;
-    if (data.photos.length + files.length > 6) return toast.error("Maxim 6 poze.");
+    if (data.photos.length + files.length > 6) return toast.error(t("onboarding.photos.tooMany"));
     setUploading(true);
     const added: string[] = [];
     try {
