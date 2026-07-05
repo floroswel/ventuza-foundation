@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
@@ -12,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { mapAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
+
 
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).catch("login"),
@@ -94,7 +96,9 @@ async function routeAfterAuth(
 }
 
 function AuthPage() {
+  const { t } = useTranslation();
   const search = Route.useSearch();
+
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const countryGate = useCountryGate();
@@ -183,18 +187,19 @@ function AuthPage() {
     try {
       if (mode === "signup") {
         if (!over18 || !acceptTerms) {
-          toast.error("Please confirm the two checkboxes to continue.");
+          toast.error(t("auth.errors.confirmChecks"));
           return;
         }
         const age = ageFromBirthDate(birthDate);
         if (age === null) {
-          toast.error("Te rog introdu data nașterii.");
+          toast.error(t("auth.errors.needBirthdate"));
           return;
         }
         if (age < 18) {
-          toast.error("Trebuie să ai cel puțin 18 ani pentru a folosi Ventuza.");
+          toast.error(t("auth.errors.tooYoung"));
           return;
         }
+
         // Server-side disposable email preflight (enforced again by DB trigger
         // public.enforce_disposable_email_on_profile).
         const { error: disposableErr } = await supabase.rpc("assert_email_allowed", {
@@ -251,7 +256,7 @@ function AuthPage() {
             .eq("id", data.user.id);
         }
         if (data.session) {
-          toast.success("Welcome to Ventuza.");
+          toast.success(t("auth.errors.welcome"));
           await routeAfterAuth(data.user!.id, navigate);
         } else {
           // Email confirmation required → ghidăm userul către o pagină dedicată
@@ -283,20 +288,21 @@ function AuthPage() {
     }
     if (mode === "signup") {
       if (!over18 || !acceptTerms) {
-        toast.error("Confirmă cele două bife (18+ și Termeni) înainte de a continua.");
+        toast.error(t("auth.errors.confirmChecks"));
         return;
       }
       // Require a real birthdate before OAuth signup. The trigger
       // `enforce_min_age_trg` cannot reject NULL, so we enforce here too.
       const age = ageFromBirthDate(birthDate);
       if (age === null) {
-        toast.error("Introdu data nașterii înainte de a continua cu Google/Apple.");
+        toast.error(t("auth.errors.needBirthdateOAuth"));
         return;
       }
       if (age < 18) {
-        toast.error("Trebuie să ai cel puțin 18 ani.");
+        toast.error(t("auth.errors.tooYoung"));
         return;
       }
+
       // Persist în ambele storage-uri ca să supraviețuiască redirect-ului OAuth
       // (sessionStorage e pierdut pe Safari/WebView; localStorage rămâne).
       try {
@@ -376,13 +382,13 @@ function AuthPage() {
           to="/"
           className="self-start text-xs uppercase tracking-[0.22em] text-muted-foreground hover:text-primary"
         >
-          ← Back
+          {t("auth.back")}
         </Link>
 
         <div className="mt-10 text-center">
           <h1 className="wordmark text-5xl font-medium leading-none">Ventuza</h1>
           <p className="mt-3 text-sm text-muted-foreground">
-            {mode === "signup" ? "Create your account" : "Welcome back"}
+            {mode === "signup" ? t("auth.createAccount") : t("auth.welcomeBack")}
           </p>
         </div>
 
@@ -400,8 +406,9 @@ function AuthPage() {
                   : "text-muted-foreground hover:text-foreground")
               }
             >
-              {m === "login" ? "Log in" : "Sign up"}
+              {m === "login" ? t("auth.tabLogin") : t("auth.tabSignup")}
             </button>
+
           ))}
         </div>
 
@@ -423,7 +430,7 @@ function AuthPage() {
                 />
               </svg>
             )}
-            Continue with Google
+            {t("auth.continueGoogle")}
           </button>
           <button
             type="button"
@@ -438,15 +445,16 @@ function AuthPage() {
                 <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.9-1.4-.1-2.8.9-3.5.9-.7 0-1.9-.8-3.1-.8-1.6 0-3 .9-3.8 2.4-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2-.1 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-1.1 2.8-2.3.9-1.3 1.2-2.6 1.3-2.7-.1 0-2.4-.9-2.4-3.7zM14.4 5.6c.6-.8 1.1-1.9 1-3-1 .1-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.5 2.8-1.3z" />
               </svg>
             )}
-            Continue with Apple
+            {t("auth.continueApple")}
           </button>
         </div>
 
         <div className="my-6 flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
           <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-            or with email
+            {t("auth.orEmail")}
           </span>
+
           <div className="h-px flex-1 bg-border" />
         </div>
 
@@ -457,7 +465,7 @@ function AuthPage() {
               htmlFor="email"
               className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
             >
-              Email
+              {t("auth.email")}
             </Label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -469,7 +477,7 @@ function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10"
-                placeholder="you@domain.com"
+                placeholder={t("auth.emailPlaceholder")}
               />
             </div>
           </div>
@@ -479,7 +487,7 @@ function AuthPage() {
               htmlFor="password"
               className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
             >
-              Password
+              {t("auth.password")}
             </Label>
             <div className="relative">
               <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -492,13 +500,17 @@ function AuthPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 pr-10"
-                placeholder={mode === "signup" ? "At least 8 characters" : "Your password"}
+                placeholder={
+                  mode === "signup"
+                    ? t("auth.passwordPlaceholderSignup")
+                    : t("auth.passwordPlaceholderLogin")
+                }
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
               >
                 {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
@@ -509,7 +521,7 @@ function AuthPage() {
                 onClick={onForgotPassword}
                 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary"
               >
-                Forgot password?
+                {t("auth.forgot")}
               </button>
             )}
           </div>
@@ -521,7 +533,7 @@ function AuthPage() {
                   htmlFor="birthdate"
                   className="mb-1 block text-xs uppercase tracking-[0.18em] text-muted-foreground"
                 >
-                  Data nașterii
+                  {t("auth.birthdate")}
                 </Label>
                 <Input
                   id="birthdate"
@@ -533,7 +545,7 @@ function AuthPage() {
                   className="w-full"
                 />
                 {birthDate && (ageFromBirthDate(birthDate) ?? 0) < 18 && (
-                  <p className="mt-1 text-xs text-destructive">Trebuie să ai cel puțin 18 ani.</p>
+                  <p className="mt-1 text-xs text-destructive">{t("auth.minAge")}</p>
                 )}
               </div>
               <label className="flex cursor-pointer items-start gap-3 text-sm text-foreground">
@@ -544,7 +556,7 @@ function AuthPage() {
                   className="mt-0.5 size-4 accent-primary"
                 />
                 <span>
-                  I confirm I am <strong>18 years or older</strong>.
+                  <Trans i18nKey="auth.over18" components={{ 1: <strong /> }} />
                 </span>
               </label>
               <label className="flex cursor-pointer items-start gap-3 text-sm text-foreground">
@@ -555,30 +567,34 @@ function AuthPage() {
                   className="mt-0.5 size-4 accent-primary"
                 />
                 <span>
-                  I accept the{" "}
-                  <Link
-                    to="/legal/terms"
-                    className="text-primary underline-offset-2 hover:underline"
-                  >
-                    Terms
-                  </Link>{" "}
-                  &amp;{" "}
-                  <Link
-                    to="/legal/privacy"
-                    className="text-primary underline-offset-2 hover:underline"
-                  >
-                    Privacy Policy
-                  </Link>
-                  .
+                  <Trans
+                    i18nKey="auth.acceptTerms"
+                    components={{
+                      1: (
+                        <Link
+                          to="/legal/terms"
+                          className="text-primary underline-offset-2 hover:underline"
+                        />
+                      ),
+                      3: (
+                        <Link
+                          to="/legal/privacy"
+                          className="text-primary underline-offset-2 hover:underline"
+                        />
+                      ),
+                    }}
+                  />
                 </span>
               </label>
             </div>
           )}
 
+
+
           <TurnstileWidget
             key={captchaNonce}
-            onToken={(t) => {
-              setCaptchaToken(t);
+            onToken={(tok) => {
+              setCaptchaToken(tok);
               if (authError?.resetCaptcha) setAuthError(null);
             }}
             onExpire={() => setCaptchaToken(null)}
@@ -597,12 +613,14 @@ function AuthPage() {
                     search={{ email: email || undefined }}
                     className="shrink-0 text-xs font-medium underline"
                   >
-                    Retrimite emailul
+                    {t("auth.resend")}
                   </Link>
                 )}
               </div>
               {retryCountdown > 0 && (
-                <p className="mt-1 text-xs opacity-80">Mai poți încerca în {retryCountdown}s.</p>
+                <p className="mt-1 text-xs opacity-80">
+                  {t("auth.retryCountdown", { s: retryCountdown })}
+                </p>
               )}
             </div>
           )}
@@ -621,50 +639,49 @@ function AuthPage() {
             {submitting ? (
               <Loader2 className="size-4 animate-spin" />
             ) : retryCountdown > 0 ? (
-              `Așteaptă ${retryCountdown}s`
+              t("auth.retryIn", { s: retryCountdown })
             ) : mode === "signup" ? (
-              "Create account"
+              t("auth.submitSignup")
             ) : (
-              "Log in"
+              t("auth.submitLogin")
             )}
           </Button>
 
           {mode === "login" ? (
             <p className="text-center text-xs text-muted-foreground">
-              No account yet?{" "}
+              {t("auth.noAccount")}{" "}
               <button
                 type="button"
                 onClick={() => setMode("signup")}
                 className="text-primary hover:underline"
               >
-                Sign up
+                {t("auth.switchSignup")}
               </button>
             </p>
           ) : (
             <p className="text-center text-xs text-muted-foreground">
-              Already a member?{" "}
+              {t("auth.haveAccount")}{" "}
               <button
                 type="button"
                 onClick={() => setMode("login")}
                 className="text-primary hover:underline"
               >
-                Log in
+                {t("auth.switchLogin")}
               </button>
             </p>
           )}
         </form>
 
         <p className="mt-8 text-center text-[11px] leading-relaxed text-muted-foreground">
-          By continuing you agree to our{" "}
-          <Link to="/legal/terms" className="hover:text-primary">
-            Terms
-          </Link>{" "}
-          and{" "}
-          <Link to="/legal/privacy" className="hover:text-primary">
-            Privacy Policy
-          </Link>
-          .
+          <Trans
+            i18nKey="auth.footer"
+            components={{
+              1: <Link to="/legal/terms" className="hover:text-primary" />,
+              3: <Link to="/legal/privacy" className="hover:text-primary" />,
+            }}
+          />
         </p>
+
       </div>
     </main>
   );

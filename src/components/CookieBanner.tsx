@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 
 const KEY = "ventuza_cookie_consent_v2";
 
@@ -23,6 +24,7 @@ export function getCookieConsent(): Consent | null {
 }
 
 export function CookieBanner() {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [showCustom, setShowCustom] = useState(false);
   const [analytics, setAnalytics] = useState(false);
@@ -32,7 +34,9 @@ export function CookieBanner() {
     if (typeof window === "undefined") return;
     try {
       if (!localStorage.getItem(KEY)) setVisible(true);
-    } catch {}
+    } catch {
+      /* ignore */
+    }
   }, []);
 
   function save(c: Omit<Consent, "ts" | "v" | "essential">) {
@@ -40,7 +44,9 @@ export function CookieBanner() {
       const payload: Consent = { essential: true, ...c, ts: Date.now(), v: 2 };
       localStorage.setItem(KEY, JSON.stringify(payload));
       window.dispatchEvent(new CustomEvent("ventuza:consent", { detail: payload }));
-    } catch {}
+    } catch {
+      /* ignore */
+    }
     setVisible(false);
   }
 
@@ -49,16 +55,15 @@ export function CookieBanner() {
   return (
     <div
       role="dialog"
-      aria-label="Setări cookie-uri"
+      aria-label={t("cookies.ariaLabel")}
       className="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-md rounded-2xl border border-border bg-surface/95 p-4 shadow-2xl backdrop-blur"
     >
       {!showCustom ? (
         <>
           <p className="text-xs leading-relaxed text-foreground">
-            Folosim cookie-uri esențiale pentru autentificare și siguranță. Cu acordul tău, adăugăm
-            analytics anonime și măsurători de marketing pentru îmbunătățirea aplicației.{" "}
+            {t("cookies.intro")}{" "}
             <Link to="/legal/cookies" className="underline">
-              Detalii
+              {t("cookies.details")}
             </Link>
             .
           </p>
@@ -67,36 +72,36 @@ export function CookieBanner() {
               onClick={() => save({ analytics: false, marketing: false })}
               className="rounded-full border border-border bg-background px-2 py-2 text-[11px] font-medium"
             >
-              Refuz
+              {t("cookies.reject")}
             </button>
             <button
               onClick={() => setShowCustom(true)}
               className="rounded-full border border-border bg-background px-2 py-2 text-[11px] font-medium"
             >
-              Personalizează
+              {t("cookies.customize")}
             </button>
             <button
               onClick={() => save({ analytics: true, marketing: true })}
               className="rounded-full bg-primary px-2 py-2 text-[11px] font-medium text-primary-foreground"
             >
-              Accept tot
+              {t("cookies.acceptAll")}
             </button>
           </div>
         </>
       ) : (
         <>
-          <p className="text-sm font-medium">Alege ce permiți</p>
+          <p className="text-sm font-medium">{t("cookies.pickTitle")}</p>
           <div className="mt-3 space-y-2">
-            <Row label="Esențiale" desc="Login, sesiune, securitate. Necesare." checked disabled />
+            <Row label={t("cookies.essential")} desc={t("cookies.essentialDesc")} checked disabled />
             <Row
-              label="Analytics"
-              desc="Statistici anonime de utilizare."
+              label={t("cookies.analytics")}
+              desc={t("cookies.analyticsDesc")}
               checked={analytics}
               onChange={setAnalytics}
             />
             <Row
-              label="Marketing"
-              desc="Măsurători campanii și recomandări."
+              label={t("cookies.marketing")}
+              desc={t("cookies.marketingDesc")}
               checked={marketing}
               onChange={setMarketing}
             />
@@ -106,13 +111,13 @@ export function CookieBanner() {
               onClick={() => setShowCustom(false)}
               className="flex-1 rounded-full border border-border bg-background px-3 py-2 text-xs"
             >
-              Înapoi
+              {t("cookies.back")}
             </button>
             <button
               onClick={() => save({ analytics, marketing })}
               className="flex-1 rounded-full bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
             >
-              Salvează
+              {t("cookies.save")}
             </button>
           </div>
         </>

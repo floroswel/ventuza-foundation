@@ -40,6 +40,65 @@ const ro = {
     en: "English",
     auto: "Detectată automat",
   },
+  auth: {
+    back: "← Înapoi",
+    tagline: "Ventuza",
+    createAccount: "Creează-ți contul",
+    welcomeBack: "Bine ai revenit",
+    tabLogin: "Autentificare",
+    tabSignup: "Înregistrare",
+    continueGoogle: "Continuă cu Google",
+    continueApple: "Continuă cu Apple",
+    orEmail: "sau cu email",
+    email: "Email",
+    emailPlaceholder: "tu@domeniu.com",
+    password: "Parolă",
+    passwordPlaceholderSignup: "Minim 8 caractere",
+    passwordPlaceholderLogin: "Parola ta",
+    showPassword: "Arată parola",
+    hidePassword: "Ascunde parola",
+    forgot: "Ai uitat parola?",
+    birthdate: "Data nașterii",
+    minAge: "Trebuie să ai cel puțin 18 ani.",
+    over18: "Confirm că am <1>18 ani sau mai mult</1>.",
+    acceptTerms: "Sunt de acord cu <1>Termenii</1> și <3>Politica de confidențialitate</3>.",
+    submitSignup: "Creează cont",
+    submitLogin: "Autentifică-te",
+    retryIn: "Așteaptă {{s}}s",
+    haveAccount: "Ai deja cont?",
+    noAccount: "Nu ai cont încă?",
+    switchLogin: "Autentifică-te",
+    switchSignup: "Înregistrează-te",
+    footer: "Continuând, ești de acord cu <1>Termenii</1> și <3>Politica de confidențialitate</3>.",
+    resend: "Retrimite emailul",
+    retryCountdown: "Mai poți încerca în {{s}}s.",
+    errors: {
+      confirmChecks: "Confirmă cele două bife (18+ și Termeni) înainte de a continua.",
+      needBirthdate: "Introdu data nașterii înainte de a continua.",
+      needBirthdateOAuth: "Introdu data nașterii înainte de a continua cu Google/Apple.",
+      tooYoung: "Trebuie să ai cel puțin 18 ani pentru a folosi Ventuza.",
+      welcome: "Bun venit pe Ventuza.",
+    },
+  },
+  cookies: {
+    intro:
+      "Folosim cookie-uri esențiale pentru autentificare și siguranță. Cu acordul tău, adăugăm analytics anonime și măsurători de marketing pentru îmbunătățirea aplicației.",
+    details: "Detalii",
+    reject: "Refuz",
+    customize: "Personalizează",
+    acceptAll: "Accept tot",
+    pickTitle: "Alege ce permiți",
+    essential: "Esențiale",
+    essentialDesc: "Login, sesiune, securitate. Necesare.",
+    analytics: "Analytics",
+    analyticsDesc: "Statistici anonime de utilizare.",
+    marketing: "Marketing",
+    marketingDesc: "Măsurători campanii și recomandări.",
+    back: "Înapoi",
+    save: "Salvează",
+    ariaLabel: "Setări cookie-uri",
+  },
+
   onboarding: {
     back: "Înapoi",
     continue: "Continuă",
@@ -171,6 +230,65 @@ const en: typeof ro = {
     en: "English",
     auto: "Auto-detected",
   },
+  auth: {
+    back: "← Back",
+    tagline: "Ventuza",
+    createAccount: "Create your account",
+    welcomeBack: "Welcome back",
+    tabLogin: "Log in",
+    tabSignup: "Sign up",
+    continueGoogle: "Continue with Google",
+    continueApple: "Continue with Apple",
+    orEmail: "or with email",
+    email: "Email",
+    emailPlaceholder: "you@domain.com",
+    password: "Password",
+    passwordPlaceholderSignup: "At least 8 characters",
+    passwordPlaceholderLogin: "Your password",
+    showPassword: "Show password",
+    hidePassword: "Hide password",
+    forgot: "Forgot password?",
+    birthdate: "Birthdate",
+    minAge: "You must be at least 18.",
+    over18: "I confirm I am <1>18 years or older</1>.",
+    acceptTerms: "I accept the <1>Terms</1> & <3>Privacy Policy</3>.",
+    submitSignup: "Create account",
+    submitLogin: "Log in",
+    retryIn: "Wait {{s}}s",
+    haveAccount: "Already a member?",
+    noAccount: "No account yet?",
+    switchLogin: "Log in",
+    switchSignup: "Sign up",
+    footer: "By continuing you agree to our <1>Terms</1> and <3>Privacy Policy</3>.",
+    resend: "Resend email",
+    retryCountdown: "You can retry in {{s}}s.",
+    errors: {
+      confirmChecks: "Please confirm both checkboxes (18+ and Terms) before continuing.",
+      needBirthdate: "Enter your birthdate before continuing.",
+      needBirthdateOAuth: "Enter your birthdate before continuing with Google/Apple.",
+      tooYoung: "You must be at least 18 to use Ventuza.",
+      welcome: "Welcome to Ventuza.",
+    },
+  },
+  cookies: {
+    intro:
+      "We use essential cookies for authentication and safety. With your consent, we add anonymous analytics and marketing measurements to improve the app.",
+    details: "Details",
+    reject: "Reject",
+    customize: "Customize",
+    acceptAll: "Accept all",
+    pickTitle: "Choose what you allow",
+    essential: "Essential",
+    essentialDesc: "Login, session, security. Required.",
+    analytics: "Analytics",
+    analyticsDesc: "Anonymous usage statistics.",
+    marketing: "Marketing",
+    marketingDesc: "Campaign measurements and recommendations.",
+    back: "Back",
+    save: "Save",
+    ariaLabel: "Cookie settings",
+  },
+
   onboarding: {
     back: "Back",
     continue: "Continue",
@@ -296,13 +414,19 @@ if (!i18n.isInitialized) {
 
       interpolation: { escapeValue: false },
       detection: {
-        // First launch: read navigator.language (browser locale from OS) →
-        // cache the resolved value in localStorage under "vz-lang" so every
-        // subsequent screen (onboarding, profile, chips) sees the same code.
-        order: ["localStorage", "navigator", "htmlTag"],
+        // First launch: read navigator.language (browser locale from OS).
+        // We intentionally DROP `htmlTag` from the chain — SSR renders
+        // <html lang="ro"> as a sensible default, but if we include htmlTag
+        // here, any browser locale that isn't in supportedLngs (e.g. de-DE,
+        // fr-FR, ja-JP) short-circuits to "ro" instead of hitting the
+        // fallback chain, and non-Romanian users are stuck in Romanian.
+        // Without htmlTag, unsupported locales fall through to fallbackLng
+        // (→ "en"), which is what we want.
+        order: ["localStorage", "navigator"],
         lookupLocalStorage: "vz-lang",
         caches: ["localStorage"],
       },
+
     })
     .then(() => {
       if (typeof document !== "undefined") {
