@@ -265,15 +265,34 @@ const en: typeof ro = {
 };
 
 
+// Smart fallback map: when the device locale isn't a fully-translated shell
+// language, pick the closest sibling instead of dropping to English blindly.
+// Keeps the UI in a SINGLE language (no ro+en mixing on the same screen).
+//   - md (Moldovan) → ro (same language, different ISO code)
+//   - Romance/Germanic/Slavic without a translation → en
+//   - anything else → en
+// When we add a full translation later (e.g. de/fr), move the code into
+// `supportedLngs` and drop it from this map.
+const SMART_FALLBACKS: Record<string, string[]> = {
+  md: ["ro", "en"],
+  "ro-md": ["ro", "en"],
+  default: ["en"],
+};
+
 if (!i18n.isInitialized) {
   void i18n
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
       resources: { ro: { translation: ro }, en: { translation: en } },
-      fallbackLng: "en",
+      // Object form → per-language fallback chain. i18next walks the chain
+      // until it finds a resource, so we never render half-translated screens.
+      fallbackLng: SMART_FALLBACKS,
       supportedLngs: ["ro", "en"],
+      // Match "en-US"/"en-GB" → "en", "ro-RO" → "ro" so region variants of a
+      // supported language don't get pushed to the default fallback.
       nonExplicitSupportedLngs: true,
+      load: "languageOnly",
 
       interpolation: { escapeValue: false },
       detection: {
@@ -300,6 +319,7 @@ if (!i18n.isInitialized) {
 }
 
 export default i18n;
+
 
 
 export async function setLanguage(lng: "ro" | "en") {
