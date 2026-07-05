@@ -12,6 +12,7 @@ import {
   POSITION_OPTIONS,
 } from "@/lib/profile-options";
 import { DEFAULT_FILTERS, type DiscoverFilters } from "@/lib/discover";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 
 function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
