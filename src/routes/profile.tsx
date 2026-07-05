@@ -728,7 +728,7 @@ function EditDrawer({
               active={current === o}
               onClick={() => setForm({ ...form, [k]: current === o ? null : o } as Profile)}
             >
-              {o}
+              {t(o)}
             </Chip>
           ))}
         </div>
