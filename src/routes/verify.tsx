@@ -14,7 +14,7 @@ import {
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { getMyDiditStatus, startDiditVerification } from "@/lib/didit.functions";
+import { getMyDiditStatus, startDiditVerification, syncMyDiditStatus } from "@/lib/didit.functions";
 
 export const Route = createFileRoute("/verify")({
   ssr: false,
@@ -51,6 +51,7 @@ function VerifyPage() {
   const navigate = useNavigate();
   const fetchStatus = useServerFn(getMyDiditStatus);
   const startSession = useServerFn(startDiditVerification);
+  const syncStatus = useServerFn(syncMyDiditStatus);
 
   const [status, setStatus] = useState<DiditStatus | null>(null);
   const [loading, setLoading] = useState(true);
@@ -62,8 +63,15 @@ function VerifyPage() {
     }
   }, [authLoading, user, navigate]);
 
-  const refresh = useCallback(async () => {
+  const refresh = useCallback(async (opts?: { force?: boolean }) => {
     try {
+      if (opts?.force) {
+        try {
+          await syncStatus();
+        } catch {
+          // ignoră — statusul local rămâne disponibil și următorul poll mai încearcă
+        }
+      }
       const res = (await fetchStatus()) as DiditStatus;
       setStatus(res);
     } catch (err) {
@@ -71,7 +79,7 @@ function VerifyPage() {
     } finally {
       setLoading(false);
     }
-  }, [fetchStatus]);
+  }, [fetchStatus, syncStatus]);
 
   useEffect(() => {
     if (!user) return;
@@ -84,7 +92,7 @@ function VerifyPage() {
     if (!user) return;
     const pending = status?.profile?.age_status === "pending";
     if (!pending) return;
-    const id = setInterval(() => void refresh(), 5000);
+    const id = setInterval(() => void refresh({ force: true }), 5000);
     return () => clearInterval(id);
   }, [status?.profile?.age_status, user?.id, refresh]);
 
@@ -182,7 +190,7 @@ function VerifyPage() {
               variant="outline"
               size="sm"
               className="mt-4 w-full"
-              onClick={() => void refresh()}
+                onClick={() => void refresh({ force: true })}
             >
               <RefreshCw className="size-4" /> Reîmprospătează statusul
             </Button>
