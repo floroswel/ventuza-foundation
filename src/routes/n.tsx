@@ -675,11 +675,12 @@ function ChipGrid({
   selected: string[];
   onToggle: (v: string) => void;
 }) {
+  const t = useOptionLabel();
   return (
     <div className="flex flex-wrap gap-2">
       {options.map((o) => (
         <Chip key={o} active={selected.includes(o)} onClick={() => onToggle(o)}>
-          {o}
+          {t(o)}
         </Chip>
       ))}
     </div>
