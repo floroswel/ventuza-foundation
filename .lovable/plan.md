@@ -1,97 +1,116 @@
-# Redesign verificare — plan execuție
+# RAPORT — Inventar pagini legale Ventuza
 
-Decizii user:
-- Păstrez decizia (pass/fail) din Didit, șterg PII (session_id, raw_payload, selfie_url extern).
-  Userii verificați rămân verificați cu `verification_method='didit_legacy'`.
-- Age gate rămâne HARD ON în producție. User pending are ACCES LIMITAT: profil,
-  safety, legal. Blocat: swipe, chat, discover, evenimente, ofertă.
+**Zero modificări făcute.** Toate paginile sunt în `src/routes/`, în limba **română** (nicio pagină nu are versiune EN separată în afară de câteva string-uri bilingve în `legal.badges.tsx`).
 
-## Faze
+## Sumar operator menționat
 
-### F1 — Fundație DB (migrația 1) — ACEST TURN
-- Rol nou `verification_moderator` în `app_role` enum
-- Tabele:
-  - `verification_requests` (user_id, status, method, version, submitted_at, decided_at, decision, reason, score, moderator_id, second_moderator_id, needs_second, appeal_of, ip_hash, ua_hash, country, review_duration_ms, retention_until, is_seed)
-  - `verification_images` (request_id, storage_path, order_idx, challenge_code, captured_at, deleted_at)
-  - `verification_challenges` (canonical list of allowed liveness codes + label)
-  - `verification_audit` (append-only, RLS: super_admin + auditor)
-- Storage bucket privat `verification` (5MB/img, image/*)
-- RLS strict: user vede doar propriile requests (fără images), moderator vede
-  DOAR request claimed (cu semnătură scurtă), super_admin toate metadatele.
-- RPC-uri:
-  - `verification_generate_challenges()` → 3 random unice
-  - `verification_submit_request(challenges jsonb, image_paths text[])`
-  - `verification_moderator_claim()` → next pending, atomic
-  - `verification_moderator_decide(req_id, decision, reason, confidence)`
-  - `verification_appeal(req_id, note)`
-  - `verification_purge_expired()` (cron, șterge fișiere + soft nullify metadata)
-  - `verification_signed_url(image_id)` → 30s expiry, gated
-- Migrez `profiles.age_status` → `profiles.verification_status`
-  (approved→approved, pending→pending, unverified→unverified, rejected→rejected)
-  păstrez alias view până termin refactor client
-- Scot din `age_verifications`: `didit_session_id`, `raw_payload`, `selfie_url`.
-  Păstrez decizia ca `verification_method='didit_legacy'` mutată în noua tabelă
-- Update `assert_age_verified()` să citească din `profiles.verification_status`
-- Nou `assert_verification_or_limited()` pentru RPC-uri limitate (permite pending)
-- `SENSITIVE_COLUMNS` update (verification_images.storage_path, ip_hash etc.)
-- Adaug consimțământ nou `internal_verification` în `consent_kinds()` +
-  `CONSENT_REGISTRY`
-- Retention: cron zilnic `verification_purge_expired`
+- **VOMIX GENIUS S.R.L.** apare **într-un singur loc**: `legal.data-safety.tsx` linia 200 ("Această pagină este întreținută de VOMIX GENIUS S.R.L. pentru Ventuza").
+- **Restul paginilor** menționează operatorul doar ca **"Ventuza"** (marca), fără CUI, fără J40, fără adresă sediu, fără reprezentant legal.
+- `legal.business-terms.tsx` spune explicit: *"Date de identificare fiscală vor fi completate la înregistrarea SRL"* — placeholder recunoscut.
+- Emailuri folosite peste tot: `@ventuza.app` (privacy, dpo, dsa, abuse, csam, trust, appeals, copyright, security, support, business, parents).
 
-### F2 — Șterg cod Didit
-- `src/lib/age-verification.functions.ts` → înlocuit cu `src/lib/verification.functions.ts` nou
-- `src/routes/api/public/age-webhook.ts` → șters
-- Secrets: mesaj către user să șteargă DIDIT_API_KEY, DIDIT_WORKFLOW_ID, DIDIT_WEBHOOK_SECRET
-- `src/lib/admin-age-reset.functions.ts` → rescris ca `admin-verification-reset`
-- Referințe din: `discover.tsx`, `account.tsx`, `sale-pitch.tsx`, `safety.tsx`,
-  `admin.tsx`, `admin.users.$id.tsx`, `admin-break-glass.functions.ts`,
-  `admin-overview.functions.ts`, `admin-wave1.functions.ts`, `admin.functions.ts`,
-  `discover.ts`, `badges-registry.ts`, `consent-registry.ts`,
-  `ConsentsCard.tsx`, `EnterpriseSections.tsx`, `nearby-points.test.ts`
+## Inventar pagină cu pagină
 
-### F3 — User UI verificare
-- `src/components/AgeGate.tsx` rescris:
-  - Ecran 1: acceptare declarație 18+ + consimțământ `internal_verification`
-  - Ecran 2: primesc 3 challenges random, buton "Începe captura"
-  - Ecran 3: getUserMedia camera front, capture 3 selfie-uri (1 per challenge)
-    cu instrucțiune vizibilă, countdown 3s, preview + retake
-  - Ecran 4: submit → thank you + status pending (limitat până approve)
-- Guard rute: `SessionGuards` sau nou `LimitedAccessGuard` blochează pentru
-  pending: `/discover`, `/messages`, `/events`, `/nearby`, `/offers`, `/groups`.
-  Permis: `/`, `/n`, `/profile`, `/settings`, `/safety`, `/legal/*`, `/account`
+### 1. `/legal/terms` — `legal.terms.tsx` (163 linii)
+- **Stare:** parțial-spre-complet. Conținut real scris.
+- **Operator:** doar "Ventuza", fără date fiscale.
+- **HIV:** menționat explicit — *"Ventuza nu procesează date despre statutul HIV"*.
+- **Didit:** NU.
+- **Biometrice:** menționat indirect ("moderarea internă").
+- **Lipsă:** CUI/sediu/jurisdicție exactă, SAL/ANPC link, versiune + dată efectivă.
 
-### F4 — Admin moderator UI
-- `src/routes/admin.verification.tsx` nou:
-  - Statistici: pending/approved/rejected/appeals/avg review time
-  - Buton "Claim next" → deschide 1 request cu 3 imagini (signed URL 30s)
-  - Watermark peste imagini cu moderator_id + timestamp (contra screenshot)
-  - CSS: no-download, no-context-menu, pointer-events blocare drag,
-    user-select: none, disable right-click, disable image save shortcuts
-  - Decision: approve/reject/needs_second/appeal_required + reason mandatory
-  - Second reviewer NU vede decizia first-ului
-- Dashboard cu grafice: queue size, moderator throughput
+### 2. `/legal/privacy` — `legal.privacy.tsx` (247 linii)
+- **Stare:** complet ca structură, dar operator gol.
+- **Operator (secțiunea 10):** *"Operator: Ventuza · Email DPO: privacy@ventuza.app"* — fără CUI/J40/adresă/DPO nume.
+- **HIV:** menționat explicit ca **eliminat** ("NU procesăm date despre statutul HIV").
+- **Biometrice:** DA — *"Selfie de verificare 18+ — Art. 9(1) date biometrice"*, temei 9(2)(a) consimțământ explicit.
+- **Didit:** NU (flux intern declarat).
+- **Categorii date enumerate:** email, telefon opțional, poze profil, selfie biometric verificare, orientare, gen, pronume, locație aproximativă (bucket), mesaje, date facturare business (CUI).
+- **Lipsă:** identificare completă operator, DPO nominal, retenții exacte per categorie, drepturi ANSPDCP (URL).
 
-### F5 — Notificări
-- `notifications` insert la: submitted, approved, rejected, appeal, needs_photos
+### 3. `/legal/cookies` — `legal.cookies.tsx` (97 linii)
+- **Stare:** parțial. Buton reset consimțământ funcțional (`ventuza_cookie_consent_v2`).
+- **Operator:** "Ventuza", contact `privacy@` + `dpo@`.
+- **HIV/Didit/biometrice:** NU.
+- **Lipsă:** tabel exact cookie-uri per categorie (nume, durată, third-party), listă exactă cookie-uri strict-necesare.
 
-### F6 — Privacy / Terms / Subprocesatori / Registru Art.30
-- `legal.privacy.tsx`: rescriu secțiunea verificare (fără biometric extern,
-  proces intern, retenție 30 zile)
-- `legal.age-policy.tsx`: rescriu procedură
-- `legal.subprocessors.tsx`: SCOT Didit
-- `docs/gdpr-art-30-register.md`: scot Didit, adaug proces intern
-- `legal.data-safety.tsx`: update
-- `legal.records-of-processing.tsx`: update
-- Terms: adaug declarație "confirm 18+ real, sub sancțiunea ban permanent"
+### 4. `/legal/dmca` — `legal.dmca.tsx` (121 linii)
+- **Stare:** complet ca procedură (notificare + contra-notificare).
+- **Operator:** "Ventuza". Contact `copyright@ventuza.app`, `dpo@ventuza.app`.
+- **Bază legală:** Legea 8/1996 + Directiva UE citată.
+- **HIV/Didit/biometrice:** NU.
+- **Lipsă:** agent DMCA nominal.
 
-### F7 — Security audit final
-- OWASP Top 10 pe fluxul nou
-- Verific RLS pe toate tabelele noi
-- Verific RBAC pe RPC-uri
-- Verific signed URL expiry
-- Raport final
+### 5. `/legal/age-policy` — `legal.age-policy.tsx` (140 linii)
+- **Stare:** complet.
+- **Operator:** "Ventuza".
+- **Didit:** NU — declară explicit *"moderator Ventuza. Nu implicăm procesator KYC extern"*.
+- **Biometrice:** DA (liveness selfie, retenție ≤30 zile, bucket privat).
+- **HIV:** NU.
+- **Contact:** abuse@, csam@, parents@.
 
-## Reguli permanente actualizate în cod
-- REGULA — Age Gate: elimin referință Didit, înlocuiesc cu proces intern
-- REGULA — Consimțăminte: adaug `internal_verification`
-- Elimin REGULA — Cifrare date sănătate rămâne (nu se schimbă)
+### 6. `/legal/community` — `legal.community.tsx` (133 linii)
+- **Stare:** complet.
+- **Operator:** "Ventuza".
+- **Include:** interzicere outing, helpline-uri LGBTQ+ (implicit prin appeals@, trust@).
+- **HIV/Didit/biometrice:** NU.
+
+### 7. `/legal/business-terms` — `legal.business-terms.tsx` (120 linii)
+- **Stare:** **schelet-parțial**. Recunoaște deschis că datele fiscale lipsesc.
+- **Operator:** *"Ventuza — platformă de socializare LGBTQ+. Date de identificare fiscală vor fi completate la înregistrarea SRL."* Contact `business@ventuza.app`.
+- **HIV/Didit/biometrice:** NU.
+- **Lipsă critică:** CUI, J40, adresă sediu, IBAN emitent, SAL, drept retragere B2B.
+
+### 8. `/legal/records-of-processing` (Registru Art. 30) — `legal.records-of-processing.tsx` (303 linii)
+- **Stare:** **complet și detaliat**. Include: activități, temei Art. 6/Art. 9, categorii persoane vizate, categorii date, destinatari, retenție.
+- **Operator:** "Ventuza", DPO `dpo@ventuza.app`.
+- **HIV:** menționat explicit ca **eliminat** (în `TODOS`: *"Procesare HIV eliminată complet (coloane dropate, funcții șterse, kind consent scos)"*).
+- **Biometrice:** DA — Art. 9(2)(a) + Art. 9(2)(g) pentru selfie verificare.
+- **Didit:** NU.
+
+### 9. `/legal/subprocessors` — `legal.subprocessors.tsx` (255 linii)
+- **Stare:** **complet**. Sursă autoritativă conform REGULĂ PROCESATORI din project-knowledge.
+- **Operator:** "Ventuza", DPO `dpo@ventuza.app`.
+- **Include:** ANAF (lookup CUI, marcat operator independent, nu procesator).
+- **HIV/Didit/biometrice:** NU (verificarea 18+ e declarată internă, deci nu apare Didit).
+- **Lipsă:** dacă adaugi Didit ca procesator KYC, trebuie inclus aici + în Art. 30.
+
+### 10. `/legal/data-safety` — `legal.data-safety.tsx` (364 linii) — **cea mai bogată**
+- **Stare:** complet, categorii detaliate cu scop + control user.
+- **Operator:** **SINGURA pagină** care menționează *"VOMIX GENIUS S.R.L. pentru Ventuza"* (linia 200).
+- **Include:** poze profil, selfie verificare biometric, date business (Denumire firmă, CUI, Adresă sediu, Email facturare).
+- **HIV:** NU (eliminat).
+- **Didit:** NU.
+
+### 11. `/legal/dsa` — `legal.dsa.tsx` (108 linii)
+- **Stare:** complet (Art. 16 + Art. 20 DSA acoperite).
+- **Operator:** "Ventuza", stabilită în România/UE.
+- **Contact:** `dsa@ventuza.app`, `trust@ventuza.app`, `appeals@ventuza.app`.
+- **HIV/Didit/biometrice:** NU.
+
+### 12. `/legal/security-incidents` — `legal.security-incidents.tsx` (104 linii)
+- **Stare:** parțial. Procedură + contact `security@ventuza.app`.
+- **Operator:** "Ventuza".
+- **HIV/Didit/biometrice:** NU.
+- **Lipsă:** SLA-uri exacte notificare ANSPDCP (72h Art. 33), template registru breșe.
+
+### 13. `/legal/badges` — `legal.badges.tsx` (95 linii)
+- **Stare:** catalog badge-uri, **bilingv RO/EN** (folosește helper `t(ro, en)`).
+- Nu e pagină legală propriu-zisă (explicativă produs).
+
+### 14. `/safety` — `safety.tsx` (218 linii)
+- **Stare:** complet — centru de siguranță user-facing.
+- **HIV:** menționat contextual în resurse (testare HIV/ITS, PrEP, PEP, TasP) ca **resursă externă**, nu ca date procesate.
+- **Include:** 112, ACCEPT, ARAS (conform REGULĂ DOCUMENTE LEGALE P0).
+
+## Ce trebuie completat (rezumat pentru decizie)
+
+**Nimic de rescris de la zero.** Toate paginile au conținut real. Ce lipsește:
+
+1. **Identificare operator completă** — CUI, J40, adresă sediu, DPO nominal, IBAN emitent — trebuie **injectat consecvent în toate paginile** (acum apare doar "Ventuza" peste tot și "VOMIX GENIUS S.R.L." într-un singur loc).
+2. **Business terms (P0)** — recunoaște singur că îi lipsesc datele fiscale + IBAN + SAL/ANPC.
+3. **Cookies** — tabel exact cookie-uri.
+4. **Security incidents** — SLA 72h Art. 33 explicit.
+5. **Dacă introduci Didit** ca procesator KYC: trebuie adăugat în `subprocessors.tsx` + `records-of-processing.tsx` + `age-policy.tsx` + `privacy.tsx` (acum toate declară flux intern, fără procesator extern).
+
+Confirmă ce vrei să completez și în ce ordine (sau dă-mi datele firmei ca să fac update global consecvent într-un sprint).
