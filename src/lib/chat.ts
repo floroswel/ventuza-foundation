@@ -206,6 +206,24 @@ export async function sendMessage(
       e.code = "blocked_recipient";
       throw e;
     }
+    if (
+      msg.includes("confirmi vârsta") ||
+      msg.includes("age_verification_required") ||
+      msg.includes("age verification")
+    ) {
+      const e = new Error(
+        "Trebuie să îți confirmi vârsta (18+) înainte de a trimite mesaje.",
+      ) as Error & { code: string };
+      e.code = "age_verification_required";
+      throw e;
+    }
+    if (msg.includes("email_not_confirmed")) {
+      const e = new Error(
+        "Trebuie să îți confirmi emailul înainte de a trimite mesaje.",
+      ) as Error & { code: string };
+      e.code = "email_not_confirmed";
+      throw e;
+    }
     throw error;
   }
 
