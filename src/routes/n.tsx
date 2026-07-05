@@ -119,6 +119,7 @@ function toggle<T>(arr: T[], v: T) {
 const STORAGE_KEY = "vz_onboarding_v1";
 
 function Onboarding() {
+  const { t } = useTranslation();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -126,6 +127,7 @@ function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [donePush, setDonePush] = useState(false);
+
 
   // Hydrate step + data din localStorage la mount (refresh / kill-app safe).
   useEffect(() => {
