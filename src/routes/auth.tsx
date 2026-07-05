@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
-import { mapAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
+import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
 
 
 const searchSchema = z.object({
@@ -31,8 +31,8 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const emailSchema = z.string().trim().email("Enter a valid email").max(255);
-const passwordSchema = z.string().min(8, "At least 8 characters").max(72, "Max 72 characters");
+const emailSchema = z.string().trim().email("invalid_email").max(255);
+const passwordSchema = z.string().min(8, "password_min").max(72, "password_max");
 
 async function persistPendingBirthdate(userId: string) {
   if (typeof window === "undefined") return;
@@ -124,7 +124,7 @@ function AuthPage() {
   }, [retryCountdown]);
 
   function handleAuthError(err: unknown, override?: Partial<FriendlyAuthError>) {
-    const mapped = { ...mapAuthError(err), ...(override ?? {}) };
+    const mapped = { ...translateAuthError(t, err), ...(override ?? {}) };
     setAuthError(mapped);
     if (mapped.retryAfterSec) setRetryCountdown(mapped.retryAfterSec);
     if (mapped.resetCaptcha) {
@@ -168,12 +168,17 @@ function AuthPage() {
 
     const emailParsed = emailSchema.safeParse(email);
     if (!emailParsed.success) {
-      toast.error(emailParsed.error.issues[0]?.message ?? "Invalid email");
+      const key = emailParsed.error.issues[0]?.message === "invalid_email"
+        ? "auth.errors.invalidEmail"
+        : "auth.errors.invalidEmail";
+      toast.error(t(key));
       return;
     }
     const passParsed = passwordSchema.safeParse(password);
     if (!passParsed.success) {
-      toast.error(passParsed.error.issues[0]?.message ?? "Invalid password");
+      const code = passParsed.error.issues[0]?.message;
+      const key = code === "password_max" ? "auth.errors.passwordMax" : "auth.errors.passwordMin";
+      toast.error(t(key));
       return;
     }
 
@@ -322,7 +327,7 @@ function AuthPage() {
         redirect_uri: window.location.origin + "/auth",
       });
       if (result.error) {
-        toast.error(result.error.message ?? `${provider} sign-in failed`);
+        toast.error(result.error.message ?? t("auth.errors.oauthFailed", { provider }));
         return;
       }
       if (result.redirected) return; // browser navigates
@@ -333,7 +338,7 @@ function AuthPage() {
         await routeAfterAuth(data.user.id, navigate, search.redirect);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : `${provider} sign-in failed`);
+      toast.error(err instanceof Error ? err.message : t("auth.errors.oauthFailed", { provider }));
     } finally {
       setOauthBusy(null);
     }
@@ -342,7 +347,7 @@ function AuthPage() {
   async function onForgotPassword() {
     const emailParsed = emailSchema.safeParse(email);
     if (!emailParsed.success) {
-      toast.error("Enter your email above first.");
+      toast.error(t("auth.errors.enterEmailFirst"));
       return;
     }
     if (captchaRequired && !captchaToken) {
@@ -357,7 +362,7 @@ function AuthPage() {
     if (error) {
       handleAuthError(error);
     } else {
-      toast.success("Email cu link de resetare trimis.");
+      toast.success(t("auth.errors.resetSent"));
     }
   }
 
