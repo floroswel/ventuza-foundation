@@ -53,19 +53,19 @@ export function QuickFiltersStrip({
           active={value.positions.includes(p)}
           onClick={() => onChange({ ...value, positions: toggle(value.positions, p) })}
         >
-          {p}
+          {label(p)}
         </Pill>
       ))}
 
       <Divider />
 
-      {TRIBES_SHORT.map((t) => (
+      {TRIBES_SHORT.map((tr) => (
         <Pill
-          key={t}
-          active={value.tribes.includes(t)}
-          onClick={() => onChange({ ...value, tribes: toggle(value.tribes, t) })}
+          key={tr}
+          active={value.tribes.includes(tr)}
+          onClick={() => onChange({ ...value, tribes: toggle(value.tribes, tr) })}
         >
-          {t}
+          {label(tr)}
         </Pill>
       ))}
     </div>
