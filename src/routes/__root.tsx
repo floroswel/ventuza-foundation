@@ -220,6 +220,7 @@ function RootComponent() {
 
           
           <ConsentPromptHost />
+          <VersionGate />
         </NotificationsProvider>
       </AuthProvider>
     </QueryClientProvider>
