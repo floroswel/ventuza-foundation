@@ -1,6 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
+import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+
+
 export const Route = createFileRoute("/legal/subprocessors")({
   head: () => ({
     meta: [
@@ -82,8 +85,19 @@ const ROWS: Row[] = [
     dpa: "https://www.revenuecat.com/dpa/",
     codeRef: "src/lib/revenuecat.server.ts",
   },
-  // Verificarea de identitate se face 100% intern (liveness + moderator uman),
-  // fără procesator extern KYC.
+  {
+    name: "Didit ID Verification",
+    purpose:
+      "Age estimation (estimare automată a vârstei din selfie) pentru gate-ul 18+. Rulează un model biometric pe imagine și întoarce doar un verdict pass/fail. Nu solicităm document de identitate.",
+    data: "Un selfie live cu challenge de gest (liveness). Imaginea este trimisă tranzitoriu; Didit o șterge imediat după emiterea rezultatului. Ne întoarce doar {ageEstimate, pass/fail, sessionId}. Fără nume, fără email, fără alte date de profil.",
+    sensitive: true,
+    region: "UE",
+    extraEU: false,
+    transfer: "Intra-UE (Didit operează în SEE). Fără sub-procesatori în afara SEE pentru acest flux.",
+    dpa: "https://didit.me/legal/dpa",
+    codeRef: "src/lib/verification.functions.ts",
+  },
+
   {
     name: "Lovable AI Gateway",
     purpose: "Moderare conținut, generare text (bio assist), embeddings",
@@ -144,20 +158,28 @@ function SubsPage() {
         <h1 className="text-base font-semibold">Subprocesatori</h1>
       </header>
       <article className="mx-auto max-w-3xl px-4 py-6 text-sm leading-relaxed">
-        <p className="text-xs text-muted-foreground">Ultima actualizare: 26 iunie 2026</p>
+        <p className="text-xs text-muted-foreground">Ultima actualizare: 5 iulie 2026</p>
+
+        <div className="mt-4">
+          <OperatorIdentificationBlock compact />
+        </div>
+
         <p className="mt-4">
-          Conform GDPR Art. 28, mai jos sunt toți împuterniciții reali către care aplicația trimite
-          date personale. Lista reflectă codul efectiv (fișierul sursă e indicat la fiecare rând).
-          Toți au DPA semnat / sunt acoperiți de un DPA platformă; pentru transferurile în afara SEE
-          folosim Clauzele Contractuale Standard ale Comisiei Europene (Decizia 2021/914) și, unde
-          există, EU-US Data Privacy Framework.
+          Conform GDPR Art. 28, mai jos sunt toți împuterniciții reali către care aplicația{" "}
+          <strong>{OPERATOR.brand}</strong> (operată de {OPERATOR.legalName}) trimite date
+          personale. Lista reflectă codul efectiv (fișierul sursă e indicat la fiecare rând).
+          Toți au DPA semnat / sunt acoperiți de un DPA platformă; pentru transferurile în afara
+          SEE folosim Clauzele Contractuale Standard ale Comisiei Europene (Decizia 2021/914) și,
+          unde există, EU-US Data Privacy Framework.
         </p>
 
         <p className="mt-3 text-xs text-muted-foreground">
           Bază de date principală găzduită în UE (Frankfurt). Coordonatele precise de locație nu
           părăsesc niciodată baza noastră — către alți useri sau procesatori se trimite doar
-          distanță bucketizată.
+          distanță bucketizată. Selfie-ul de verificare 18+ trece tranzitoriu prin Didit (UE) și
+          este șters imediat după emiterea rezultatului.
         </p>
+
 
         <div className="mt-6 overflow-x-auto rounded-xl border border-border">
           <table className="w-full text-xs">
