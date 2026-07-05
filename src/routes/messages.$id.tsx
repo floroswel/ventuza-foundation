@@ -804,18 +804,55 @@ function ThreadPage() {
                       </div>
                     )}
                     {!mine &&
+                      m.body &&
                       m.media_type !== "audio" &&
                       m.media_type !== "image" &&
                       m.media_type !== "location" &&
-                      (translated ? (
-                        <div className="max-w-[78%] rounded-2xl bg-primary/10 px-3 py-2 text-xs text-primary">
-                          <span className="mr-1 opacity-70">RO:</span>
-                          {translated}
+                      (translateOpenFor === m.id || translated ? (
+                        <div className="w-full max-w-[82%] rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
+                          <div className="mb-1.5 flex items-center justify-between gap-2">
+                            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                              <Languages className="size-3" />
+                              {translated
+                                ? `${langLabel(translated.detected)} → ${langLabel(translated.target)}`
+                                : "Traducere…"}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <select
+                                value={translated?.target ?? targetLang}
+                                onChange={(e) => changeTargetLang(m, e.target.value)}
+                                disabled={translatingId === m.id}
+                                className="rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary"
+                                aria-label="Limbă țintă"
+                              >
+                                {CHAT_TARGET_LANGS.map((l) => (
+                                  <option key={l.code} value={l.code}>
+                                    {l.native}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => setTranslateOpenFor(null)}
+                                className="rounded-full p-0.5 text-muted-foreground hover:text-foreground"
+                                aria-label="Închide"
+                              >
+                                <XIcon className="size-3" />
+                              </button>
+                            </div>
+                          </div>
+                          {translatingId === m.id && !translated ? (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Loader2 className="size-3 animate-spin" /> Se traduce…
+                            </div>
+                          ) : translated ? (
+                            <p className="whitespace-pre-wrap text-foreground">{translated.translation}</p>
+                          ) : null}
                         </div>
                       ) : (
                         <button
                           type="button"
-                          onClick={() => handleTranslate(m)}
+                          onClick={() => openTranslationFor(m)}
                           disabled={translatingId === m.id}
                           className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
                         >
@@ -824,7 +861,7 @@ function ThreadPage() {
                           ) : (
                             <Languages className="size-3" />
                           )}
-                          Traduce
+                          Traduce · ține apăsat
                         </button>
                       ))}
                   </li>
