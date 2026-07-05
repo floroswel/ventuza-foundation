@@ -33,6 +33,12 @@ import {
   type MessageRow,
 } from "@/lib/chat";
 import { generateOpener, translateText } from "@/lib/ai.functions";
+import {
+  CHAT_TARGET_LANGS,
+  langLabel,
+  loadPreferredTargetLang,
+  savePreferredTargetLang,
+} from "@/lib/languages";
 import { verifySelfie } from "@/lib/verification.functions";
 import { REACTION_EMOJIS, toggleMessageReaction, type ReactionEmoji } from "@/lib/social";
 import { ChatComposerExtras } from "@/components/ChatComposerExtras";
@@ -72,8 +78,14 @@ function ThreadPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [text, setText] = useState("");
-  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [translations, setTranslations] = useState<
+    Record<string, { translation: string; detected: string; target: string }>
+  >({});
   const [translatingId, setTranslatingId] = useState<string | null>(null);
+  const [translateOpenFor, setTranslateOpenFor] = useState<string | null>(null);
+  const [targetLang, setTargetLang] = useState<string>(() => loadPreferredTargetLang());
+  const longPressTimerRef = useRef<number | null>(null);
+  const longPressFiredRef = useRef(false);
   const [openers, setOpeners] = useState<string[] | null>(null);
   const [wingmanLoading, setWingmanLoading] = useState(false);
   const [otherTyping, setOtherTyping] = useState(false);
@@ -419,17 +431,55 @@ function ThreadPage() {
     }
   }
 
-  async function handleTranslate(m: MessageRow) {
-    if (translations[m.id] || translatingId) return;
+  async function runTranslate(m: MessageRow, lang: string, force = false) {
+    if (!m.body) return;
+    if (!force && translations[m.id]?.target === lang) return;
+    if (translatingId) return;
     setTranslatingId(m.id);
     try {
-      const res = await tr({ data: { text: m.body, targetLang: "ro" } });
-      setTranslations((t) => ({ ...t, [m.id]: res.translation }));
+      const res = await tr({ data: { text: m.body, targetLang: lang } });
+      setTranslations((t) => ({
+        ...t,
+        [m.id]: {
+          translation: res.translation,
+          detected: res.detected ?? "auto",
+          target: res.target ?? lang,
+        },
+      }));
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Traducere eșuată");
     } finally {
       setTranslatingId(null);
     }
+  }
+
+  function openTranslationFor(m: MessageRow) {
+    if (!m.body || m.deleted_at) return;
+    setTranslateOpenFor(m.id);
+    if (!translations[m.id]) void runTranslate(m, targetLang);
+  }
+
+  function handleBubblePressStart(m: MessageRow) {
+    if (!m.body || m.deleted_at || m.sender_id === user?.id) return;
+    longPressFiredRef.current = false;
+    if (longPressTimerRef.current) window.clearTimeout(longPressTimerRef.current);
+    longPressTimerRef.current = window.setTimeout(() => {
+      longPressFiredRef.current = true;
+      openTranslationFor(m);
+    }, 450);
+  }
+
+  function handleBubblePressEnd() {
+    if (longPressTimerRef.current) {
+      window.clearTimeout(longPressTimerRef.current);
+      longPressTimerRef.current = null;
+    }
+  }
+
+  function changeTargetLang(m: MessageRow, lang: string) {
+    setTargetLang(lang);
+    savePreferredTargetLang(lang);
+    void runTranslate(m, lang, true);
   }
 
   return (
@@ -583,7 +633,25 @@ function ThreadPage() {
                           heartPulseFor === m.id && "animate-in zoom-in-95 duration-300",
                         )}
                         onDoubleClick={() => quickLike(m)}
-                        onClick={() => handleBubbleTap(m)}
+                        onClick={() => {
+                          if (longPressFiredRef.current) {
+                            longPressFiredRef.current = false;
+                            return;
+                          }
+                          handleBubbleTap(m);
+                        }}
+                        onTouchStart={() => handleBubblePressStart(m)}
+                        onTouchEnd={handleBubblePressEnd}
+                        onTouchCancel={handleBubblePressEnd}
+                        onMouseDown={() => handleBubblePressStart(m)}
+                        onMouseUp={handleBubblePressEnd}
+                        onMouseLeave={handleBubblePressEnd}
+                        onContextMenu={(e) => {
+                          if (m.body && !m.deleted_at && m.sender_id !== user?.id) {
+                            e.preventDefault();
+                            openTranslationFor(m);
+                          }
+                        }}
                       >
                         {replied && !isDeleted && (
                           <div
@@ -735,18 +803,55 @@ function ThreadPage() {
                       </div>
                     )}
                     {!mine &&
+                      m.body &&
                       m.media_type !== "audio" &&
                       m.media_type !== "image" &&
                       m.media_type !== "location" &&
-                      (translated ? (
-                        <div className="max-w-[78%] rounded-2xl bg-primary/10 px-3 py-2 text-xs text-primary">
-                          <span className="mr-1 opacity-70">RO:</span>
-                          {translated}
+                      (translateOpenFor === m.id || translated ? (
+                        <div className="w-full max-w-[82%] rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
+                          <div className="mb-1.5 flex items-center justify-between gap-2">
+                            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                              <Languages className="size-3" />
+                              {translated
+                                ? `${langLabel(translated.detected)} → ${langLabel(translated.target)}`
+                                : "Traducere…"}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <select
+                                value={translated?.target ?? targetLang}
+                                onChange={(e) => changeTargetLang(m, e.target.value)}
+                                disabled={translatingId === m.id}
+                                className="rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary"
+                                aria-label="Limbă țintă"
+                              >
+                                {CHAT_TARGET_LANGS.map((l) => (
+                                  <option key={l.code} value={l.code}>
+                                    {l.native}
+                                  </option>
+                                ))}
+                              </select>
+                              <button
+                                type="button"
+                                onClick={() => setTranslateOpenFor(null)}
+                                className="rounded-full p-0.5 text-muted-foreground hover:text-foreground"
+                                aria-label="Închide"
+                              >
+                                <XIcon className="size-3" />
+                              </button>
+                            </div>
+                          </div>
+                          {translatingId === m.id && !translated ? (
+                            <div className="flex items-center gap-1.5 text-muted-foreground">
+                              <Loader2 className="size-3 animate-spin" /> Se traduce…
+                            </div>
+                          ) : translated ? (
+                            <p className="whitespace-pre-wrap text-foreground">{translated.translation}</p>
+                          ) : null}
                         </div>
                       ) : (
                         <button
                           type="button"
-                          onClick={() => handleTranslate(m)}
+                          onClick={() => openTranslationFor(m)}
                           disabled={translatingId === m.id}
                           className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
                         >
@@ -755,7 +860,7 @@ function ThreadPage() {
                           ) : (
                             <Languages className="size-3" />
                           )}
-                          Traduce
+                          Traduce · ține apăsat
                         </button>
                       ))}
                   </li>
