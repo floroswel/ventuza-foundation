@@ -308,13 +308,13 @@ export const getPushHealth = createServerFn({ method: "GET" })
     // Notificări trimise vs. citite ultimele 7 zile
     const { data: notif, error: nErr } = await context.supabase
       .from("notifications")
-      .select("kind,read_at,created_at")
+      .select("type,read_at,created_at")
       .gte("created_at", active7)
       .limit(50_000);
     if (nErr) throw new Error(nErr.message);
     const notifStats = new Map<string, { sent: number; read: number }>();
     for (const n of notif ?? []) {
-      const k = String(n.kind ?? "other");
+      const k = String(n.type ?? "other");
       if (!notifStats.has(k)) notifStats.set(k, { sent: 0, read: 0 });
       const b = notifStats.get(k)!;
       b.sent++;
