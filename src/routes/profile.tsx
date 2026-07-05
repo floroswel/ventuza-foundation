@@ -59,6 +59,7 @@ import {
   PREP_STATUS_OPTIONS,
   VACCINATION_OPTIONS,
 } from "@/lib/profile-options";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Your profile — Ventuza" }] }),
