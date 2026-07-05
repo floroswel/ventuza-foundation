@@ -68,6 +68,7 @@ import { Route as AuthCheckEmailRouteImport } from './routes/auth.check-email'
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
+import { Route as ApiPublicDiditWebhookRouteImport } from './routes/api/public/didit-webhook'
 import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -370,6 +371,11 @@ const ApiPublicGooglePlayRtdnRoute = ApiPublicGooglePlayRtdnRouteImport.update({
   path: '/api/public/google-play-rtdn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDiditWebhookRoute = ApiPublicDiditWebhookRouteImport.update({
+  id: '/api/public/didit-webhook',
+  path: '/api/public/didit-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminUsersIdRoute = AdminUsersIdRouteImport.update({
   id: '/users/$id',
   path: '/users/$id',
@@ -457,6 +463,7 @@ export interface FileRoutesByFullPath {
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
+  '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
@@ -523,6 +530,7 @@ export interface FileRoutesByTo {
   '/venues/$id': typeof VenuesIdRoute
   '/messages': typeof MessagesIndexRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
+  '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
@@ -590,6 +598,7 @@ export interface FileRoutesById {
   '/venues/$id': typeof VenuesIdRoute
   '/messages/': typeof MessagesIndexRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
+  '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
@@ -658,6 +667,7 @@ export interface FileRouteTypes {
     | '/venues/$id'
     | '/messages/'
     | '/admin/users/$id'
+    | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
     | '/api/public/hooks/billing-tick'
@@ -724,6 +734,7 @@ export interface FileRouteTypes {
     | '/venues/$id'
     | '/messages'
     | '/admin/users/$id'
+    | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
     | '/api/public/hooks/billing-tick'
@@ -790,6 +801,7 @@ export interface FileRouteTypes {
     | '/venues/$id'
     | '/messages/'
     | '/admin/users/$id'
+    | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
     | '/api/public/hooks/billing-tick'
@@ -848,6 +860,7 @@ export interface RootRouteChildren {
   USlugRoute: typeof USlugRoute
   VenuesIdRoute: typeof VenuesIdRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
+  ApiPublicDiditWebhookRoute: typeof ApiPublicDiditWebhookRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
   ApiPublicSignupGuardRoute: typeof ApiPublicSignupGuardRoute
   ApiPublicHooksBillingTickRoute: typeof ApiPublicHooksBillingTickRoute
@@ -1271,6 +1284,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicGooglePlayRtdnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/didit-webhook': {
+      id: '/api/public/didit-webhook'
+      path: '/api/public/didit-webhook'
+      fullPath: '/api/public/didit-webhook'
+      preLoaderRoute: typeof ApiPublicDiditWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/users/$id': {
       id: '/admin/users/$id'
       path: '/users/$id'
@@ -1440,6 +1460,7 @@ const rootRouteChildren: RootRouteChildren = {
   USlugRoute: USlugRoute,
   VenuesIdRoute: VenuesIdRoute,
   MessagesIndexRoute: MessagesIndexRoute,
+  ApiPublicDiditWebhookRoute: ApiPublicDiditWebhookRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
   ApiPublicSignupGuardRoute: ApiPublicSignupGuardRoute,
   ApiPublicHooksBillingTickRoute: ApiPublicHooksBillingTickRoute,

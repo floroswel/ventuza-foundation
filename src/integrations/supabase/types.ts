@@ -1359,6 +1359,45 @@ export type Database = {
         }
         Relationships: []
       }
+      didit_sessions: {
+        Row: {
+          created_at: string
+          estimated_age: number | null
+          resolved_at: string | null
+          result: string | null
+          session_id: string
+          session_url: string | null
+          status: string
+          status_raw: Json | null
+          user_id: string
+          workflow_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          estimated_age?: number | null
+          resolved_at?: string | null
+          result?: string | null
+          session_id: string
+          session_url?: string | null
+          status?: string
+          status_raw?: Json | null
+          user_id: string
+          workflow_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          estimated_age?: number | null
+          resolved_at?: string | null
+          result?: string | null
+          session_id?: string
+          session_url?: string | null
+          status?: string
+          status_raw?: Json | null
+          user_id?: string
+          workflow_id?: string | null
+        }
+        Relationships: []
+      }
       dsa_sor: {
         Row: {
           action_type: string
@@ -5006,6 +5045,24 @@ export type Database = {
         Returns: boolean
       }
       detect_admin_anomalies: { Args: never; Returns: number }
+      didit_apply_result: {
+        Args: {
+          _estimated_age: number
+          _result: string
+          _session_id: string
+          _status: string
+          _status_raw: Json
+        }
+        Returns: undefined
+      }
+      didit_link_session: {
+        Args: {
+          _session_id: string
+          _session_url: string
+          _workflow_id: string
+        }
+        Returns: undefined
+      }
       disablelongtransactions: { Args: never; Returns: string }
       discover_profiles: {
         Args: {
