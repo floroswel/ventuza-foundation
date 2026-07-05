@@ -115,11 +115,7 @@ export function AgeGate() {
     const id = setInterval(() => void refresh(user.id), 15000);
     return () => clearInterval(id);
   }, [user?.id, status]);
-    return () => {
-      window.removeEventListener("focus", onFocus);
-      document.removeEventListener("visibilitychange", onFocus);
-    };
-  }, [user?.id]);
+
 
   if (authLoading || !user || !isGated) return null;
 
