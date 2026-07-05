@@ -3022,6 +3022,7 @@ export type Database = {
         Row: {
           accept_nsfw_photos: boolean | null
           age_pending_at: string | null
+          age_provider: string | null
           age_status: Database["public"]["Enums"]["age_status"]
           age_verified_at: string | null
           anthem: Json | null
@@ -3146,6 +3147,7 @@ export type Database = {
         Insert: {
           accept_nsfw_photos?: boolean | null
           age_pending_at?: string | null
+          age_provider?: string | null
           age_status?: Database["public"]["Enums"]["age_status"]
           age_verified_at?: string | null
           anthem?: Json | null
@@ -3270,6 +3272,7 @@ export type Database = {
         Update: {
           accept_nsfw_photos?: boolean | null
           age_pending_at?: string | null
+          age_provider?: string | null
           age_status?: Database["public"]["Enums"]["age_status"]
           age_verified_at?: string | null
           anthem?: Json | null
