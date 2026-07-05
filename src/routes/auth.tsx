@@ -593,8 +593,8 @@ function AuthPage() {
 
           <TurnstileWidget
             key={captchaNonce}
-            onToken={(t) => {
-              setCaptchaToken(t);
+            onToken={(tok) => {
+              setCaptchaToken(tok);
               if (authError?.resetCaptcha) setAuthError(null);
             }}
             onExpire={() => setCaptchaToken(null)}
@@ -613,12 +613,14 @@ function AuthPage() {
                     search={{ email: email || undefined }}
                     className="shrink-0 text-xs font-medium underline"
                   >
-                    Retrimite emailul
+                    {t("auth.resend")}
                   </Link>
                 )}
               </div>
               {retryCountdown > 0 && (
-                <p className="mt-1 text-xs opacity-80">Mai poți încerca în {retryCountdown}s.</p>
+                <p className="mt-1 text-xs opacity-80">
+                  {t("auth.retryCountdown", { s: retryCountdown })}
+                </p>
               )}
             </div>
           )}
@@ -637,50 +639,49 @@ function AuthPage() {
             {submitting ? (
               <Loader2 className="size-4 animate-spin" />
             ) : retryCountdown > 0 ? (
-              `Așteaptă ${retryCountdown}s`
+              t("auth.retryIn", { s: retryCountdown })
             ) : mode === "signup" ? (
-              "Create account"
+              t("auth.submitSignup")
             ) : (
-              "Log in"
+              t("auth.submitLogin")
             )}
           </Button>
 
           {mode === "login" ? (
             <p className="text-center text-xs text-muted-foreground">
-              No account yet?{" "}
+              {t("auth.noAccount")}{" "}
               <button
                 type="button"
                 onClick={() => setMode("signup")}
                 className="text-primary hover:underline"
               >
-                Sign up
+                {t("auth.switchSignup")}
               </button>
             </p>
           ) : (
             <p className="text-center text-xs text-muted-foreground">
-              Already a member?{" "}
+              {t("auth.haveAccount")}{" "}
               <button
                 type="button"
                 onClick={() => setMode("login")}
                 className="text-primary hover:underline"
               >
-                Log in
+                {t("auth.switchLogin")}
               </button>
             </p>
           )}
         </form>
 
         <p className="mt-8 text-center text-[11px] leading-relaxed text-muted-foreground">
-          By continuing you agree to our{" "}
-          <Link to="/legal/terms" className="hover:text-primary">
-            Terms
-          </Link>{" "}
-          and{" "}
-          <Link to="/legal/privacy" className="hover:text-primary">
-            Privacy Policy
-          </Link>
-          .
+          <Trans
+            i18nKey="auth.footer"
+            components={{
+              1: <Link to="/legal/terms" className="hover:text-primary" />,
+              3: <Link to="/legal/privacy" className="hover:text-primary" />,
+            }}
+          />
         </p>
+
       </div>
     </main>
   );
