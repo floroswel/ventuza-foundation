@@ -131,7 +131,7 @@ const ro = {
       ready: "Profilul tău e gata.",
     },
   },
-
+};
 
 const en: typeof ro = {
   common: {
@@ -171,7 +171,99 @@ const en: typeof ro = {
     en: "English",
     auto: "Auto-detected",
   },
+  onboarding: {
+    back: "Back",
+    continue: "Continue",
+    finish: "Finish",
+    stepLabel: "{{name}} · {{n}}/{{total}}",
+    step: {
+      basics: "About you",
+      identity: "Identity",
+      intent: "What you're looking for",
+      stats: "Physical",
+      personality: "Personality",
+      photos: "Photos",
+    },
+    basics: {
+      title: "Let's get to know you",
+      hint: "Your name and birthdate. You must be 18+.",
+      nameLabel: "What's your name?",
+      namePlaceholder: "Your name",
+      birthLabel: "Birthdate",
+      birthLocked: "We took your birthdate from sign-up. Contact support to change it.",
+      minAge: "You must be at least 18.",
+    },
+    identity: {
+      title: "Your identity",
+      hint: "Gender, pronouns and orientation. Pick anything that fits.",
+      gender: "Gender",
+      genderCustom: "Custom (optional)",
+      pronouns: "Pronouns",
+      pronounsCustom: "e.g. ze/zir (optional)",
+      orientation: "Orientation",
+    },
+    intent: {
+      title: "What are you looking for?",
+      hint: "Pick anything that fits. Tribes are optional.",
+      looking: "Looking for",
+      tribes: "Tribes",
+      optional: "(optional)",
+    },
+    stats: {
+      title: "Your physical profile",
+      hint: "Everything is optional. Show only what you want.",
+      body: "Body type",
+      position: "Position",
+      height: "Height (cm)",
+      weight: "Weight (kg)",
+      ethnicity: "Ethnicity",
+      relationship: "Relationship status",
+    },
+    personality: {
+      title: "Who you are",
+      hint: "Interests and a short bio.",
+      interests: "Interests",
+      min3: "(min. 3)",
+      bio: "Short bio",
+      bioPlaceholder: "A few lines about you…",
+      optional: "(optional)",
+    },
+    photos: {
+      title: "Add your photos",
+      hint: "Up to 6 photos. First one is primary.",
+      add: "Add photo",
+      main: "Main",
+      remove: "Remove photo",
+      terms: "I've read and accept the",
+      termsLink: "Terms",
+      privacyLink: "Privacy",
+      communityLink: "Community Rules",
+      termsAnd: "and",
+      termsConfirm: ". I confirm I'm at least 18.",
+      tooMany: "Max 6 photos.",
+      tooBig: "{{name}} exceeds 8MB.",
+      rejected: "Photo rejected: {{reason}}.",
+      rejectedDefault: "content not allowed on a public profile",
+      pending: "Photo added — manual review in progress",
+      pendingDesc: "It will be publicly visible after a moderator approves it.",
+      uploadFailed: "Upload failed",
+    },
+    prompts: {
+      title: "3 prompts in your own words",
+      choose: "Pick a prompt…",
+      answer: "Your answer…",
+    },
+    done: {
+      title: "Almost there",
+      hint: "Turn on notifications so you know instantly when you have a new match or message. Discreet mode by default — no preview.",
+      skip: "Continue without notifications",
+    },
+    toast: {
+      ready: "Your profile is ready.",
+    },
+  },
 };
+
 
 if (!i18n.isInitialized) {
   void i18n
