@@ -96,4 +96,98 @@ describe("verification_moderator_decide — comportament live anonim", () => {
     expect(error).not.toBeNull();
     expect(data ?? null).toBeNull();
   });
+
+  // Gate-ul `is_verification_staff` trebuie să respingă apelantul anonim
+  // ÎNAINTE de orice validare de business, indiferent cât de „stricat" e
+  // payload-ul. Adică mesajul de eroare și codul trebuie să fie identice
+  // (forbidden / 42501) pentru toate variantele de mai jos — altfel un
+  // atacator neautentificat poate distinge între payload-uri valide și
+  // invalide prin oracle timing / mesaj.
+  const anonVariants: Array<{ name: string; payload: Record<string, unknown> }> = [
+    {
+      name: "decision invalid",
+      payload: {
+        p_request_id: "00000000-0000-0000-0000-000000000000",
+        p_decision: "nu_exista",
+        p_reason_code: "other",
+        p_reason: "x".repeat(20),
+        p_confidence: "medium",
+      },
+    },
+    {
+      name: "confidence invalid",
+      payload: {
+        p_request_id: "00000000-0000-0000-0000-000000000000",
+        p_decision: "approve",
+        p_reason_code: "other",
+        p_reason: "x".repeat(20),
+        p_confidence: "cosmic",
+      },
+    },
+    {
+      name: "reason gol la reject",
+      payload: {
+        p_request_id: "00000000-0000-0000-0000-000000000000",
+        p_decision: "reject",
+        p_reason_code: "other",
+        p_reason: "",
+        p_confidence: "high",
+      },
+    },
+    {
+      name: "reason_code lipsă la reject",
+      payload: {
+        p_request_id: "00000000-0000-0000-0000-000000000000",
+        p_decision: "reject",
+        p_reason_code: null,
+        p_reason: "motiv suficient de lung pentru validare",
+        p_confidence: "high",
+      },
+    },
+    {
+      name: "request_id inexistent + payload valid",
+      payload: {
+        p_request_id: "00000000-0000-0000-0000-000000000000",
+        p_decision: "approve",
+        p_reason_code: "other",
+        p_reason: "motiv suficient de lung pentru validare",
+        p_confidence: "medium",
+      },
+    },
+    {
+      name: "needs_second cu confidence high (second_review_binary)",
+      payload: {
+        p_request_id: "00000000-0000-0000-0000-000000000000",
+        p_decision: "needs_second",
+        p_reason_code: "other",
+        p_reason: "motiv suficient de lung pentru validare",
+        p_confidence: "high",
+      },
+    },
+  ];
+
+  for (const variant of anonVariants) {
+    it(`refuză consistent apelantul anonim — variant: ${variant.name}`, async () => {
+      const supabase = client();
+      const { data, error } = await supabase.rpc(
+        "verification_moderator_decide",
+        variant.payload as never,
+      );
+      expect(error).not.toBeNull();
+      expect(data ?? null).toBeNull();
+      // Toate variantele trebuie să lovească același gate (forbidden /
+      // 42501), nu o eroare de validare — asta confirmă că `is_verification_staff`
+      // rulează înainte de orice logică de business.
+      expect(error?.message ?? "").toMatch(
+        /forbidden|permission|denied|not_authenticated|JWT|42501/i,
+      );
+      // Nu trebuie să scape mesaje care descriu validările interne
+      // (ex: `invalid_reason_code`, `invalid_confidence`, `not_found`)
+      // către un apelant anonim — ar fi un oracle.
+      expect(error?.message ?? "").not.toMatch(
+        /invalid_reason_code|invalid_confidence|reason_required|reason_code_required|invalid_decision|not_found|second_review_binary/i,
+      );
+    });
+  }
 });
+
