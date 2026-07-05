@@ -21,6 +21,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   diditFetchDecision,
+  extractDiditEstimatedAge,
   mapDiditStatus,
 } from "@/lib/didit.server";
 
@@ -31,26 +32,10 @@ type DiditPayload = {
     age_estimation?: { estimated_age?: number; age?: number; min_age?: number };
   };
   age_estimation?: { estimated_age?: number; age?: number; min_age?: number };
+  liveness_checks?: Array<{
+    age_estimation?: number | { estimated_age?: number; age?: number; min_age?: number };
+  }>;
 };
-
-/**
- * Reproduce logica de extragere vârstă din webhook + syncMyDiditStatus, ca să
- * putem valida ambele căi cu același helper de test.
- */
-function extractEstimatedAge(payload: DiditPayload): number | null {
-  const candidates = [
-    payload.decision?.age_estimation?.estimated_age,
-    payload.decision?.age_estimation?.age,
-    payload.decision?.age_estimation?.min_age,
-    payload.age_estimation?.estimated_age,
-    payload.age_estimation?.age,
-    payload.age_estimation?.min_age,
-  ];
-  for (const c of candidates) {
-    if (typeof c === "number" && Number.isFinite(c)) return Math.round(c);
-  }
-  return null;
-}
 
 describe("Didit manual approval flow — status mapping", () => {
   it("`approved` din Didit → RPC primește pass și profilul devine verified", () => {
@@ -90,7 +75,7 @@ describe("Didit manual approval flow — status mapping", () => {
 
 describe("Didit manual approval flow — extragere vârstă estimată", () => {
   it("preferă decision.age_estimation.estimated_age", () => {
-    const age = extractEstimatedAge({
+    const age = extractDiditEstimatedAge({
       session_id: "s1",
       status: "approved",
       decision: { age_estimation: { estimated_age: 27.4, min_age: 18 } },
@@ -99,7 +84,7 @@ describe("Didit manual approval flow — extragere vârstă estimată", () => {
   });
 
   it("cade pe age_estimation top-level dacă decision lipsește", () => {
-    const age = extractEstimatedAge({
+    const age = extractDiditEstimatedAge({
       session_id: "s1",
       status: "approved",
       age_estimation: { age: 22 },
@@ -108,8 +93,17 @@ describe("Didit manual approval flow — extragere vârstă estimată", () => {
   });
 
   it("întoarce null când nu are estimare (ex. verificare manuală fără liveness)", () => {
-    const age = extractEstimatedAge({ session_id: "s1", status: "approved" });
+    const age = extractDiditEstimatedAge({ session_id: "s1", status: "approved" });
     expect(age).toBeNull();
+  });
+
+  it("citește structura V3 liveness_checks[].age_estimation numeric", () => {
+    const age = extractDiditEstimatedAge({
+      session_id: "s1",
+      status: "Approved",
+      liveness_checks: [{ age_estimation: 32.62 }],
+    });
+    expect(age).toBe(33);
   });
 });
 
@@ -143,12 +137,12 @@ describe("diditFetchDecision — sync manual când webhook-ul nu ajunge", () => 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     const [url, init] = fetchSpy.mock.calls[0]!;
     expect(String(url)).toBe(
-      "https://verification.didit.me/v2/session/sess_123/decision/",
+      "https://verification.didit.me/v3/session/sess_123/decision/",
     );
     expect((init as RequestInit).method).toBe("GET");
     expect(
       (init as RequestInit).headers as Record<string, string>,
-    ).toMatchObject({ "X-Api-Key": "test_api_key" });
+    ).toMatchObject({ "x-api-key": "test_api_key" });
 
     expect(decision).not.toBeNull();
     expect(decision!.status).toBe("Approved");
@@ -195,7 +189,7 @@ describe("Scenariu complet — aprobare manuală în dashboard Didit", () => {
 
     const decision = await diditFetchDecision("sess_manual_1");
     const mapped = mapDiditStatus(decision!.status);
-    const estimatedAge = extractEstimatedAge(raw);
+    const estimatedAge = extractDiditEstimatedAge(raw);
 
     // Aceste 4 câmpuri sunt exact ce trimite syncMyDiditStatus la RPC.
     // RPC-ul aplică `age_status='verified'` când result='pass' + age >=18.
