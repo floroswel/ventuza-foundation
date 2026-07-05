@@ -111,12 +111,18 @@ function Page() {
             <h2 className="mt-6 text-base font-semibold">6. Raportează o vulnerabilitate</h2>
             <p className="mt-2 text-foreground/85">
               Cercetători de securitate: trimite raport responsabil la{" "}
-              <a className="text-primary" href="mailto:security@ventuza.app">
-                security@ventuza.app
+              <a className="text-primary" href={`mailto:${OPERATOR.emails.security}`}>
+                {OPERATOR.emails.security}
               </a>
               . Nu acționăm legal împotriva celor care respectă safe harbor (fără exfiltrare date,
               fără DoS, fără social engineering).
             </p>
+
+            <h2 className="mt-6 text-base font-semibold">7. Operator</h2>
+            <div className="mt-2">
+              <OperatorIdentificationBlock compact />
+            </div>
+
           </article>
         }
       />
