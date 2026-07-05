@@ -98,6 +98,18 @@ const ro = {
     save: "Salvează",
     ariaLabel: "Setări cookie-uri",
   },
+  landing: {
+    badge: "18+ · Dating premium",
+    tagline: "Dating, la alt nivel. Cunoaște oameni pe măsura ta — nu doar a swipe-ului tău.",
+    createAccount: "Creează cont",
+    login: "Autentificare",
+    terms: "Termeni",
+    privacy: "Politica de confidențialitate",
+    footer: "Continuând, ești de acord cu <1>Termenii</1> și <3>Politica de confidențialitate</3>.",
+    b2bTitle: "Pentru parteneri B2B",
+    b2bSubtitle: "Locuri · evenimente · oferte",
+    safety: "Siguranță & resurse",
+  },
 
   onboarding: {
     back: "Înapoi",
