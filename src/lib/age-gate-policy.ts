@@ -55,16 +55,16 @@ export async function shouldEnforceAgeGate(): Promise<boolean> {
   try {
     const { data, error } = await supabase
       .from("feature_flags")
-      .select("enabled, payload")
+      .select("enabled, segment")
       .eq("key", "age_verification")
       .maybeSingle();
 
     // Kill-switch explicit (temporar) pentru producție: DOAR când admin
-    // setează `payload.production_kill_switch = true` ȘI `enabled = false`.
+    // setează `segment.production_kill_switch = true` ȘI `enabled = false`.
     // Folosit când providerul extern (Didit) e indisponibil. Trebuie
     // reactivat imediat ce Didit revine online.
-    const payload = (data?.payload ?? null) as { production_kill_switch?: boolean } | null;
-    const killSwitch = payload?.production_kill_switch === true && data?.enabled === false;
+    const segment = (data?.segment ?? null) as { production_kill_switch?: boolean } | null;
+    const killSwitch = segment?.production_kill_switch === true && data?.enabled === false;
 
     if (isProductionHost() && !killSwitch) {
       _cache = { value: true, at: now };
