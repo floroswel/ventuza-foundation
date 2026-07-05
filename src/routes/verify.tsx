@@ -97,7 +97,7 @@ function VerifyPage() {
     if (!user || starting) return;
     setStarting(true);
     try {
-      const returnUrl = `${window.location.origin}/verify?didit=return`;
+      const returnUrl = `${window.location.origin}/verify/status`;
       const res = (await startSession({ data: { returnUrl } })) as {
         sessionId: string;
         url: string;
