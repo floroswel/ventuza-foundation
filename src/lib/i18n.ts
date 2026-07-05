@@ -414,13 +414,19 @@ if (!i18n.isInitialized) {
 
       interpolation: { escapeValue: false },
       detection: {
-        // First launch: read navigator.language (browser locale from OS) →
-        // cache the resolved value in localStorage under "vz-lang" so every
-        // subsequent screen (onboarding, profile, chips) sees the same code.
-        order: ["localStorage", "navigator", "htmlTag"],
+        // First launch: read navigator.language (browser locale from OS).
+        // We intentionally DROP `htmlTag` from the chain — SSR renders
+        // <html lang="ro"> as a sensible default, but if we include htmlTag
+        // here, any browser locale that isn't in supportedLngs (e.g. de-DE,
+        // fr-FR, ja-JP) short-circuits to "ro" instead of hitting the
+        // fallback chain, and non-Romanian users are stuck in Romanian.
+        // Without htmlTag, unsupported locales fall through to fallbackLng
+        // (→ "en"), which is what we want.
+        order: ["localStorage", "navigator"],
         lookupLocalStorage: "vz-lang",
         caches: ["localStorage"],
       },
+
     })
     .then(() => {
       if (typeof document !== "undefined") {
