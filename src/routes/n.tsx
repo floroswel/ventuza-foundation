@@ -747,6 +747,8 @@ function PhotosStep({
   setData: (d: Data) => void;
   user?: string;
 }) {
+  const { t } = useTranslation();
+
   const [uploading, setUploading] = useState(false);
   const [signed, setSigned] = useState<Record<string, string>>({});
   const moderate = useServerFn(moderatePhoto);
