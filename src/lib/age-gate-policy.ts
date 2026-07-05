@@ -49,19 +49,29 @@ const TTL_MS = 60_000;
  * Fail-safe: dacă flag-ul lipsește sau citirea eșuează → enforcement ON.
  */
 export async function shouldEnforceAgeGate(): Promise<boolean> {
-  // Hard override PROD — niciun flag nu poate dezactiva age gate-ul în producție.
-  if (isProductionHost()) return true;
-
   const now = Date.now();
   if (_cache && now - _cache.at < TTL_MS) return _cache.value;
 
   try {
     const { data, error } = await supabase
       .from("feature_flags")
-      .select("enabled")
+      .select("enabled, segment")
       .eq("key", "age_verification")
       .maybeSingle();
-    // Lipsește flag-ul / eroare → fail-safe ON
+
+    // Kill-switch explicit (temporar) pentru producție: DOAR când admin
+    // setează `segment.production_kill_switch = true` ȘI `enabled = false`.
+    // Folosit când providerul extern (Didit) e indisponibil. Trebuie
+    // reactivat imediat ce Didit revine online.
+    const segment = (data?.segment ?? null) as { production_kill_switch?: boolean } | null;
+    const killSwitch = segment?.production_kill_switch === true && data?.enabled === false;
+
+    if (isProductionHost() && !killSwitch) {
+      _cache = { value: true, at: now };
+      return true;
+    }
+
+    // În dev/preview SAU cu kill-switch activ → respectă flag-ul.
     const enforce = error || !data ? true : data.enabled !== false;
     _cache = { value: enforce, at: now };
     return enforce;
