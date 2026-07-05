@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { FlaskConical, Plus, Play, Pause } from "lucide-react";
+import { FlaskConical, Plus, Play, Pause, BarChart2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { useAdminPanelLoad, PanelStatus } from "@/components/admin/PanelStatus";
+import { getExperimentResults } from "@/lib/admin-intelligence.functions";
 
 type Exp = {
   id: string;
@@ -114,29 +116,125 @@ export function ExperimentsPanel() {
       >
         <ul className="divide-y divide-border/60">
           {items.map((e) => (
-            <li key={e.id} className="flex items-center gap-2 py-2">
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-mono">{e.key}</p>
-                <p className="text-xs text-muted-foreground">
-                  {e.variants.join(" · ")} ({e.weights.join("/")})
-                </p>
-              </div>
-              <span
-                className={`rounded-full px-2 py-0.5 text-[10px] ${e.status === "running" ? "bg-emerald-500/15 text-emerald-500" : "bg-muted text-muted-foreground"}`}
-              >
-                {e.status}
-              </span>
-              <button onClick={() => toggleStatus(e)} className="rounded-full p-1 hover:bg-muted">
-                {e.status === "running" ? (
-                  <Pause className="h-4 w-4" />
-                ) : (
-                  <Play className="h-4 w-4" />
-                )}
-              </button>
-            </li>
+            <ExperimentRow key={e.id} exp={e} onToggle={() => toggleStatus(e)} />
           ))}
         </ul>
       </PanelStatus>
     </section>
+  );
+}
+
+function ExperimentRow({ exp, onToggle }: { exp: Exp; onToggle: () => void }) {
+  const [open, setOpen] = useState(false);
+  const runResults = useServerFn(getExperimentResults);
+  const [state, reload] = useAdminPanelLoad<Awaited<ReturnType<typeof getExperimentResults>> | null>(
+    async () => (open ? runResults({ data: { key: exp.key, days: 60 } }) : null),
+    [open, exp.key],
+  );
+  const res = state.status === "ready" ? state.data : null;
+
+  return (
+    <li className="py-2">
+      <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-mono">{exp.key}</p>
+          <p className="text-xs text-muted-foreground">
+            {exp.variants.join(" · ")} ({exp.weights.join("/")})
+          </p>
+        </div>
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] ${exp.status === "running" ? "bg-emerald-500/15 text-emerald-500" : "bg-muted text-muted-foreground"}`}
+        >
+          {exp.status}
+        </span>
+        <button
+          onClick={() => setOpen((v) => !v)}
+          className="rounded-full p-1 hover:bg-muted"
+          title="Rezultate + p-value"
+        >
+          <BarChart2 className="h-4 w-4" />
+        </button>
+        <button onClick={onToggle} className="rounded-full p-1 hover:bg-muted">
+          {exp.status === "running" ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+        </button>
+      </div>
+      {open && (
+        <div className="mt-2 rounded-lg border border-border/50 bg-muted/20 p-3 text-xs">
+          {state.status === "loading" && (
+            <p className="flex items-center gap-1 text-muted-foreground">
+              <Loader2 className="h-3 w-3 animate-spin" /> Se agregă…
+            </p>
+          )}
+          {state.status === "error" && (
+            <p className="text-red-300">
+              {state.error}{" "}
+              <button onClick={reload} className="underline">
+                reîncearcă
+              </button>
+            </p>
+          )}
+          {res && (
+            <div className="space-y-2">
+              {res.exposure_fallback && (
+                <p className="text-[11px] text-amber-300/80">
+                  Fără evenimente „exposure"/„conversion" înregistrate — folosim orice event ca observație.
+                </p>
+              )}
+              <table className="w-full">
+                <thead className="text-left text-muted-foreground">
+                  <tr>
+                    <th>Variant</th>
+                    <th>Exposures</th>
+                    <th>Conversions</th>
+                    <th>Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {res.per_variant.map((v) => (
+                    <tr key={v.variant} className="border-t border-border/40">
+                      <td className="py-1 font-mono">{v.variant}</td>
+                      <td>{v.exposures}</td>
+                      <td>{v.conversions}</td>
+                      <td>{(v.rate * 100).toFixed(2)}%</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {res.comparisons.length > 0 && (
+                <div>
+                  <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    z-test bilateral vs. control
+                  </p>
+                  <ul className="space-y-0.5">
+                    {res.comparisons.map((c) => {
+                      const sig = c.p_value != null && c.p_value < 0.05;
+                      const strong = c.p_value != null && c.p_value < 0.01;
+                      return (
+                        <li key={c.variant} className="flex items-center gap-2">
+                          <span className="font-mono">
+                            {c.variant} vs {c.vs}
+                          </span>
+                          <span className={c.lift != null && c.lift > 0 ? "text-emerald-400" : "text-red-300"}>
+                            lift {c.lift != null ? `${(c.lift * 100).toFixed(1)}%` : "—"}
+                          </span>
+                          <span
+                            className={`rounded px-1.5 py-0.5 text-[10px] ${strong ? "bg-emerald-500/20 text-emerald-300" : sig ? "bg-amber-500/15 text-amber-300" : "bg-muted text-muted-foreground"}`}
+                          >
+                            p = {c.p_value != null ? c.p_value.toFixed(4) : "—"}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="mt-1 text-[10px] text-muted-foreground">
+                    Nu opri experimentul devreme pe baza p-value (peeking). Fixează MDE + putere înainte.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </li>
   );
 }

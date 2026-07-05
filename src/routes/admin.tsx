@@ -111,6 +111,9 @@ import { OperationsUserOpsPanel } from "@/components/admin/OperationsUserOpsPane
 import { BroadcastV2Panel } from "@/components/admin/BroadcastV2Panel";
 import { IntelligenceDashboardPanel } from "@/components/admin/IntelligenceDashboardPanel";
 import { KillSwitchesPanel } from "@/components/admin/KillSwitchesPanel";
+import { PushHealthPanel } from "@/components/admin/PushHealthPanel";
+import { PartnerBoostCalendarPanel } from "@/components/admin/PartnerBoostCalendarPanel";
+import { FraudClusterPanel } from "@/components/admin/FraudClusterPanel";
 import { LegalP0Panel } from "@/components/admin/LegalP0Panel";
 import { PolicyEnginePanel } from "@/components/admin/PolicyEnginePanel";
 import { EnterpriseUsersPanel } from "@/components/admin/EnterpriseUsersPanel";
@@ -573,7 +576,14 @@ function AdminDashboard() {
       {section === "appeals" && <AppealsPanel />}
       {section === "userops" && isAdmin && <OperationsUserOpsPanel />}
       {section === "broadcast2" && isAdmin && <BroadcastV2Panel />}
-      {section === "intel" && <IntelligenceDashboardPanel />}
+      {section === "intel" && (
+        <div className="space-y-4">
+          <IntelligenceDashboardPanel />
+          <PushHealthPanel />
+          <PartnerBoostCalendarPanel />
+          {isAdmin && <FraudClusterPanel />}
+        </div>
+      )}
       {section === "killswitch" && isAdmin && <KillSwitchesPanel />}
       {section === "legalp0" && isAdmin && <LegalP0Panel />}
       {section === "policyengine" && isAdmin && <PolicyEnginePanel />}
