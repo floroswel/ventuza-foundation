@@ -634,7 +634,25 @@ function ThreadPage() {
                           heartPulseFor === m.id && "animate-in zoom-in-95 duration-300",
                         )}
                         onDoubleClick={() => quickLike(m)}
-                        onClick={() => handleBubbleTap(m)}
+                        onClick={() => {
+                          if (longPressFiredRef.current) {
+                            longPressFiredRef.current = false;
+                            return;
+                          }
+                          handleBubbleTap(m);
+                        }}
+                        onTouchStart={() => handleBubblePressStart(m)}
+                        onTouchEnd={handleBubblePressEnd}
+                        onTouchCancel={handleBubblePressEnd}
+                        onMouseDown={() => handleBubblePressStart(m)}
+                        onMouseUp={handleBubblePressEnd}
+                        onMouseLeave={handleBubblePressEnd}
+                        onContextMenu={(e) => {
+                          if (m.body && !m.deleted_at && m.sender_id !== user?.id) {
+                            e.preventDefault();
+                            openTranslationFor(m);
+                          }
+                        }}
                       >
                         {replied && !isDeleted && (
                           <div
