@@ -256,7 +256,7 @@ function AuthPage() {
             .eq("id", data.user.id);
         }
         if (data.session) {
-          toast.success("Welcome to Ventuza.");
+          toast.success(t("auth.errors.welcome"));
           await routeAfterAuth(data.user!.id, navigate);
         } else {
           // Email confirmation required → ghidăm userul către o pagină dedicată
