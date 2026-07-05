@@ -285,7 +285,7 @@ function Onboarding() {
     } catch {
       /* noop */
     }
-    toast.success("Your profile is ready.");
+    toast.success(t("onboarding.toast.ready"));
     // Înainte de a duce userul în /discover, oferim activarea push (consimțământ
     // recorded prin EnablePushButton → savePushSubscription → record_consent).
     setDonePush(true);
