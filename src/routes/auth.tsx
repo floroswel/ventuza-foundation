@@ -96,7 +96,9 @@ async function routeAfterAuth(
 }
 
 function AuthPage() {
+  const { t } = useTranslation();
   const search = Route.useSearch();
+
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
   const countryGate = useCountryGate();
