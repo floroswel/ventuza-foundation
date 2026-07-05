@@ -243,8 +243,11 @@ function SubsPage() {
         <h2 className="mt-8 text-base font-semibold">Minimizarea datelor</h2>
         <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
           <li>
-            <strong>Verificare identitate</strong> se face 100% intern (liveness + moderator uman)
-            fără procesator extern KYC — nu partajăm selfie-uri sau documente cu terți.
+            <strong>Verificare vârstă (18+)</strong> — folosim <strong>Didit</strong> (UE) pentru
+            estimarea vârstei din selfie. Trimitem un singur selfie live, Didit ne întoarce doar
+            un verdict pass/fail și șterge imaginea imediat. NU trimitem document de identitate,
+            NU stocăm o copie a imaginii la noi. Cazurile borderline / raportate ajung într-un
+            bucket privat Ventuza pentru review uman, cu ștergere automată în ≤30 zile.
           </li>
           <li>
             <strong>RevenueCat</strong> și <strong>Google Play Billing</strong> primesc doar
@@ -266,11 +269,12 @@ function SubsPage() {
 
         <p className="mt-6 text-xs text-muted-foreground">
           Modificările listei sunt anunțate cu minim 30 de zile înainte. Poți obiecta la{" "}
-          <a className="text-primary" href="mailto:dpo@ventuza.app">
-            dpo@ventuza.app
+          <a className="text-primary" href={`mailto:${OPERATOR.emails.dpo}`}>
+            {OPERATOR.emails.dpo}
           </a>
           .
         </p>
+
       </article>
     </div>
   );
