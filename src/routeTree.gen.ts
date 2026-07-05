@@ -41,6 +41,7 @@ import { Route as AccountDeletionRouteImport } from './routes/account-deletion'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
+import { Route as VerifyStatusRouteImport } from './routes/verify.status'
 import { Route as VenuesIdRouteImport } from './routes/venues.$id'
 import { Route as USlugRouteImport } from './routes/u.$slug'
 import { Route as PartnerGuideRouteImport } from './routes/partner.guide'
@@ -234,6 +235,11 @@ const MessagesIndexRoute = MessagesIndexRouteImport.update({
   id: '/messages/',
   path: '/messages/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyStatusRoute = VerifyStatusRouteImport.update({
+  id: '/status',
+  path: '/status',
+  getParentRoute: () => VerifyRoute,
 } as any)
 const VenuesIdRoute = VenuesIdRouteImport.update({
   id: '/venues/$id',
@@ -434,7 +440,7 @@ export interface FileRoutesByFullPath {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
-  '/verify': typeof VerifyRoute
+  '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
@@ -461,6 +467,7 @@ export interface FileRoutesByFullPath {
   '/partner/guide': typeof PartnerGuideRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
+  '/verify/status': typeof VerifyStatusRoute
   '/messages/': typeof MessagesIndexRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
@@ -501,7 +508,7 @@ export interface FileRoutesByTo {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
-  '/verify': typeof VerifyRoute
+  '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
@@ -528,6 +535,7 @@ export interface FileRoutesByTo {
   '/partner/guide': typeof PartnerGuideRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
+  '/verify/status': typeof VerifyStatusRoute
   '/messages': typeof MessagesIndexRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
@@ -569,7 +577,7 @@ export interface FileRoutesById {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
-  '/verify': typeof VerifyRoute
+  '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
@@ -596,6 +604,7 @@ export interface FileRoutesById {
   '/partner/guide': typeof PartnerGuideRoute
   '/u/$slug': typeof USlugRoute
   '/venues/$id': typeof VenuesIdRoute
+  '/verify/status': typeof VerifyStatusRoute
   '/messages/': typeof MessagesIndexRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
@@ -665,6 +674,7 @@ export interface FileRouteTypes {
     | '/partner/guide'
     | '/u/$slug'
     | '/venues/$id'
+    | '/verify/status'
     | '/messages/'
     | '/admin/users/$id'
     | '/api/public/didit-webhook'
@@ -732,6 +742,7 @@ export interface FileRouteTypes {
     | '/partner/guide'
     | '/u/$slug'
     | '/venues/$id'
+    | '/verify/status'
     | '/messages'
     | '/admin/users/$id'
     | '/api/public/didit-webhook'
@@ -799,6 +810,7 @@ export interface FileRouteTypes {
     | '/partner/guide'
     | '/u/$slug'
     | '/venues/$id'
+    | '/verify/status'
     | '/messages/'
     | '/admin/users/$id'
     | '/api/public/didit-webhook'
@@ -840,7 +852,7 @@ export interface RootRouteChildren {
   SalePitchRoute: typeof SalePitchRoute
   SettingsRoute: typeof SettingsRoute
   StatusRoute: typeof StatusRoute
-  VerifyRoute: typeof VerifyRoute
+  VerifyRoute: typeof VerifyRouteWithChildren
   VisitorsRoute: typeof VisitorsRoute
   LegalAgePolicyRoute: typeof LegalAgePolicyRoute
   LegalBadgesRoute: typeof LegalBadgesRoute
@@ -1094,6 +1106,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/messages/'
       preLoaderRoute: typeof MessagesIndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/verify/status': {
+      id: '/verify/status'
+      path: '/status'
+      fullPath: '/verify/status'
+      preLoaderRoute: typeof VerifyStatusRouteImport
+      parentRoute: typeof VerifyRoute
     }
     '/venues/$id': {
       id: '/venues/$id'
@@ -1410,6 +1429,17 @@ const PartnerRouteChildren: PartnerRouteChildren = {
 const PartnerRouteWithChildren =
   PartnerRoute._addFileChildren(PartnerRouteChildren)
 
+interface VerifyRouteChildren {
+  VerifyStatusRoute: typeof VerifyStatusRoute
+}
+
+const VerifyRouteChildren: VerifyRouteChildren = {
+  VerifyStatusRoute: VerifyStatusRoute,
+}
+
+const VerifyRouteWithChildren =
+  VerifyRoute._addFileChildren(VerifyRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AccountRoute: AccountRoute,
@@ -1440,7 +1470,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalePitchRoute: SalePitchRoute,
   SettingsRoute: SettingsRoute,
   StatusRoute: StatusRoute,
-  VerifyRoute: VerifyRoute,
+  VerifyRoute: VerifyRouteWithChildren,
   VisitorsRoute: VisitorsRoute,
   LegalAgePolicyRoute: LegalAgePolicyRoute,
   LegalBadgesRoute: LegalBadgesRoute,
