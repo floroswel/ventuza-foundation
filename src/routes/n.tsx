@@ -855,7 +855,7 @@ function PhotosStep({
   }
 
   return (
-    <Field title="Add your photos" hint="Maxim 6 poze. Prima este principală.">
+    <Field title={t("onboarding.photos.title")} hint={t("onboarding.photos.hint")}>
       <div className="grid grid-cols-3 gap-3">
         {data.photos.map((p, i) => (
           <div
@@ -865,12 +865,12 @@ function PhotosStep({
             {signed[p] && <img src={signed[p]} alt="" className="size-full object-cover" />}
             {i === 0 && (
               <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
-                Main
+                {t("onboarding.photos.main")}
               </span>
             )}
             <button
               onClick={() => remove(p)}
-              aria-label="Remove photo"
+              aria-label={t("onboarding.photos.remove")}
               className="absolute right-2 top-2 rounded-full bg-background/80 p-1 text-foreground backdrop-blur hover:bg-destructive hover:text-destructive-foreground"
             >
               <X className="size-3.5" />
@@ -884,8 +884,9 @@ function PhotosStep({
             ) : (
               <Upload className="size-5" />
             )}
-            <span className="text-xs">Add photo</span>
+            <span className="text-xs">{t("onboarding.photos.add")}</span>
             <input
+
               type="file"
               accept="image/*"
               multiple
