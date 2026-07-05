@@ -11,8 +11,16 @@ export function LanguageToggle() {
   const { i18n } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  // Landing has its own switcher; avoid duplicating.
-  if (pathname === "/" || pathname === "") return null;
+  // Landing has its own switcher; profile/account hide it to keep the corner clean.
+  if (
+    pathname === "/" ||
+    pathname === "" ||
+    pathname === "/profile" ||
+    pathname.startsWith("/profile/") ||
+    pathname === "/account" ||
+    pathname.startsWith("/account/")
+  )
+    return null;
 
   const current = (i18n.resolvedLanguage || i18n.language || "en").startsWith("ro") ? "ro" : "en";
 
