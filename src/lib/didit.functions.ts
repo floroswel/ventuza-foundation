@@ -79,31 +79,18 @@ export const syncMyDiditStatus = createServerFn({ method: "POST" })
     if (sErr) throw new Error(sErr.message);
     if (!session?.session_id) return { ok: false, reason: "no_session" as const };
 
-    const { diditFetchDecision, mapDiditStatus } = await import("./didit.server");
+    const {
+      diditFetchDecision,
+      extractDiditEstimatedAge,
+      mapDiditStatus,
+      sanitizeDiditStatusRaw,
+    } = await import("./didit.server");
     const decision = await diditFetchDecision(session.session_id);
     if (!decision) return { ok: false, reason: "not_found" as const };
 
     const mapped = mapDiditStatus(decision.status);
-
-    const raw = decision.raw as {
-      decision?: { age_estimation?: { age?: number; estimated_age?: number; min_age?: number } };
-      age_estimation?: { age?: number; estimated_age?: number; min_age?: number };
-    };
-    const candidates = [
-      raw?.decision?.age_estimation?.estimated_age,
-      raw?.decision?.age_estimation?.age,
-      raw?.decision?.age_estimation?.min_age,
-      raw?.age_estimation?.estimated_age,
-      raw?.age_estimation?.age,
-      raw?.age_estimation?.min_age,
-    ];
-    let estimatedAge: number | null = null;
-    for (const c of candidates) {
-      if (typeof c === "number" && Number.isFinite(c)) {
-        estimatedAge = Math.round(c);
-        break;
-      }
-    }
+    const estimatedAge = extractDiditEstimatedAge(decision.raw);
+    const statusRaw = sanitizeDiditStatusRaw(decision.raw);
 
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin.rpc("didit_apply_result", {
@@ -111,7 +98,7 @@ export const syncMyDiditStatus = createServerFn({ method: "POST" })
       _status: mapped.status,
       _result: mapped.result,
       _estimated_age: estimatedAge as number,
-      _status_raw: decision.raw as never,
+      _status_raw: statusRaw as never,
     });
     if (error) throw new Error(error.message);
 
