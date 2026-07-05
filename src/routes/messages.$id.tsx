@@ -35,7 +35,6 @@ import {
 import { generateOpener, translateText } from "@/lib/ai.functions";
 import {
   CHAT_TARGET_LANGS,
-  detectDeviceLang,
   langLabel,
   loadPreferredTargetLang,
   savePreferredTargetLang,
