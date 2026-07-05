@@ -4,6 +4,7 @@
  */
 
 const DIDIT_API_BASE = "https://verification.didit.me";
+const DIDIT_API_VERSION = "v3";
 
 export type DiditCreateSessionResponse = {
   session_id: string;
@@ -25,16 +26,17 @@ export async function diditCreateSession(params: {
   if (!apiKey) throw new Error("DIDIT_API_KEY missing on server env");
   if (!workflowId) throw new Error("DIDIT_WORKFLOW_ID missing on server env");
 
-  const res = await fetch(`${DIDIT_API_BASE}/v2/session/`, {
+  const res = await fetch(`${DIDIT_API_BASE}/${DIDIT_API_VERSION}/session/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Api-Key": apiKey,
+      "x-api-key": apiKey,
     },
     body: JSON.stringify({
       workflow_id: workflowId,
       vendor_data: params.vendorData,
       callback: params.callbackUrl,
+      callback_method: "both",
     }),
   });
 
@@ -54,27 +56,113 @@ export async function diditCreateSession(params: {
   return json;
 }
 
-/**
- * Verifică semnătura HMAC-SHA256 a payload-ului webhook Didit.
- * Semnătura sosește pe headerul `X-Signature` (hex, fără prefix).
- */
-export async function verifyDiditSignature(rawBody: string, signatureHeader: string | null) {
-  const secret = process.env.DIDIT_WEBHOOK_SECRET;
-  if (!secret) throw new Error("DIDIT_WEBHOOK_SECRET missing on server env");
-  if (!signatureHeader) return false;
+type DiditSignatureInput = {
+  rawBody: string;
+  signatureV2: string | null;
+  signatureRaw: string | null;
+  signatureSimple: string | null;
+  timestamp: string | null;
+};
 
-  const { createHmac, timingSafeEqual } = await import("crypto");
-  const expected = createHmac("sha256", secret).update(rawBody).digest("hex");
-  const provided = signatureHeader.replace(/^sha256=/i, "").trim().toLowerCase();
+type DiditSignatureResult = {
+  ok: boolean;
+  trustedBody: boolean;
+  reason?: string;
+};
 
-  const a = Buffer.from(expected, "hex");
+function normalizeSignature(signature: string | null) {
+  return signature?.replace(/^sha256=/i, "").trim().toLowerCase() ?? "";
+}
+
+function sortForDiditSignature(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(sortForDiditSignature);
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([key, val]) => [key, sortForDiditSignature(val)]),
+    );
+  }
+  return value;
+}
+
+function diditCanonicalJson(value: unknown) {
+  // JSON.stringify păstrează Unicode în mod implicit și folosește separatori compacti,
+  // ceea ce corespunde variantei recomandate X-Signature-V2 după sortarea cheilor.
+  return JSON.stringify(sortForDiditSignature(value));
+}
+
+function safeTimingEqualHex(expectedHex: string, providedSignature: string | null) {
+  const provided = normalizeSignature(providedSignature);
+  if (!provided) return false;
+  const a = Buffer.from(expectedHex, "hex");
   const b = Buffer.from(provided, "hex");
   if (a.length === 0 || a.length !== b.length) return false;
   try {
+    const { timingSafeEqual } = require("crypto") as typeof import("crypto");
     return timingSafeEqual(a, b);
   } catch {
     return false;
   }
+}
+
+/**
+ * Verifică semnătura HMAC-SHA256 a payload-ului webhook Didit.
+ * Preferă `X-Signature-V2`, acceptă `X-Signature`, iar `X-Signature-Simple`
+ * este fallback doar pentru envelope — decizia se re-citește din Didit.
+ */
+export async function verifyDiditSignature(input: DiditSignatureInput): Promise<DiditSignatureResult> {
+  const secret = process.env.DIDIT_WEBHOOK_SECRET;
+  if (!secret) throw new Error("DIDIT_WEBHOOK_SECRET missing on server env");
+
+  if (input.timestamp) {
+    const ts = Number(input.timestamp);
+    if (!Number.isFinite(ts)) return { ok: false, trustedBody: false, reason: "bad_timestamp" };
+    if (Math.abs(Date.now() / 1000 - ts) > 300) {
+      return { ok: false, trustedBody: false, reason: "stale_timestamp" };
+    }
+  }
+
+  const { createHmac } = await import("crypto");
+
+  if (input.signatureV2) {
+    try {
+      const parsed = JSON.parse(input.rawBody) as unknown;
+      const canonical = diditCanonicalJson(parsed);
+      const expected = createHmac("sha256", secret).update(canonical).digest("hex");
+      if (safeTimingEqualHex(expected, input.signatureV2)) {
+        return { ok: true, trustedBody: true };
+      }
+    } catch {
+      // cădem pe semnătura raw de mai jos
+    }
+  }
+
+  if (input.signatureRaw) {
+    const expected = createHmac("sha256", secret).update(input.rawBody).digest("hex");
+    if (safeTimingEqualHex(expected, input.signatureRaw)) {
+      return { ok: true, trustedBody: true };
+    }
+  }
+
+  if (input.signatureSimple && input.timestamp) {
+    try {
+      const parsed = JSON.parse(input.rawBody) as {
+        session_id?: string;
+        status?: string;
+        webhook_type?: string;
+      };
+      const simple = `${input.timestamp}:${parsed.session_id ?? ""}:${parsed.status ?? ""}:${parsed.webhook_type ?? ""}`;
+      const expected = createHmac("sha256", secret).update(simple).digest("hex");
+      if (safeTimingEqualHex(expected, input.signatureSimple)) {
+        return { ok: true, trustedBody: false };
+      }
+    } catch {
+      return { ok: false, trustedBody: false, reason: "invalid_body" };
+    }
+  }
+
+  return { ok: false, trustedBody: false, reason: "signature_mismatch" };
 }
 
 /**
@@ -92,6 +180,7 @@ export function mapDiditStatus(status: string | null | undefined): {
     case "declined":
       return { status: "declined", result: "fail" };
     case "kyc_expired":
+    case "kyc_expired":
     case "expired":
       return { status: "expired", result: "fail" };
     case "abandoned":
@@ -102,6 +191,9 @@ export function mapDiditStatus(status: string | null | undefined): {
       return { status: "in_progress", result: "pending" };
     case "not_started":
       return { status: "created", result: "pending" };
+    case "awaiting_user":
+    case "resubmitted":
+      return { status: s, result: "pending" };
     default:
       return { status: s || "pending", result: "pending" };
   }
@@ -118,9 +210,9 @@ export async function diditFetchDecision(sessionId: string): Promise<{
   const apiKey = process.env.DIDIT_API_KEY;
   if (!apiKey) throw new Error("DIDIT_API_KEY missing on server env");
 
-  const res = await fetch(`${DIDIT_API_BASE}/v2/session/${sessionId}/decision/`, {
+  const res = await fetch(`${DIDIT_API_BASE}/${DIDIT_API_VERSION}/session/${sessionId}/decision/`, {
     method: "GET",
-    headers: { "X-Api-Key": apiKey },
+    headers: { "x-api-key": apiKey, Accept: "application/json" },
   });
   if (res.status === 404) return null;
   if (!res.ok) {
