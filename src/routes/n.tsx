@@ -693,6 +693,7 @@ function ChipGrid({
 
 function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => void }) {
   const t = useOptionLabel();
+  const { t: tr } = useTranslation();
   const slots = [0, 1, 2];
   function setPrompt(i: number, p: Partial<Prompt>) {
     const next = [...data.prompts];
@@ -703,7 +704,7 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
 
   return (
     <div className="space-y-3">
-      <Label>3 prompts în cuvintele tale</Label>
+      <Label>{tr("onboarding.prompts.title")}</Label>
       {slots.map((i) => {
         const cur = data.prompts[i];
         return (
@@ -713,11 +714,12 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
               onChange={(e) => setPrompt(i, { question: e.target.value })}
               className="h-11 w-full rounded-md bg-surface-elevated px-3 text-sm text-foreground border border-border"
             >
-              <option value="">Alege un prompt…</option>
+              <option value="">{tr("onboarding.prompts.choose")}</option>
               {PROMPT_OPTIONS.map((q) => (
                 <option key={q} value={q} disabled={used.includes(q) && cur?.question !== q}>
                   {t(q)}
                 </option>
+
               ))}
             </select>
             <Textarea
