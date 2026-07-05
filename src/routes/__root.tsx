@@ -27,6 +27,7 @@ import "@/lib/i18n";
 
 
 import { ConsentPromptHost } from "@/components/ConsentPromptHost";
+import { VersionGate } from "@/components/VersionGate";
 
 function NotFoundComponent() {
   return (
