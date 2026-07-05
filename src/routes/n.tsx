@@ -3,10 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Bell, Loader2, Upload, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { moderatePhoto } from "@/lib/verification.functions";
 import { useAuth } from "@/lib/auth-context";
 import { EnablePushButton } from "@/components/EnablePushButton";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -90,14 +92,15 @@ const STEPS = [
   "photos", // photos + terms
 ] as const;
 
-const STEP_LABELS: Record<(typeof STEPS)[number], string> = {
-  basics: "Despre tine",
-  identity: "Identitate",
-  intent: "Ce cauți",
-  stats: "Profil fizic",
-  personality: "Personalitate",
-  photos: "Poze",
+const STEP_KEYS: Record<(typeof STEPS)[number], string> = {
+  basics: "onboarding.step.basics",
+  identity: "onboarding.step.identity",
+  intent: "onboarding.step.intent",
+  stats: "onboarding.step.stats",
+  personality: "onboarding.step.personality",
+  photos: "onboarding.step.photos",
 };
+
 
 function calcAge(iso: string) {
   if (!iso) return 0;
@@ -116,6 +119,7 @@ function toggle<T>(arr: T[], v: T) {
 const STORAGE_KEY = "vz_onboarding_v1";
 
 function Onboarding() {
+  const { t } = useTranslation();
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
@@ -123,6 +127,7 @@ function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [donePush, setDonePush] = useState(false);
+
 
   // Hydrate step + data din localStorage la mount (refresh / kill-app safe).
   useEffect(() => {
@@ -280,7 +285,7 @@ function Onboarding() {
     } catch {
       /* noop */
     }
-    toast.success("Your profile is ready.");
+    toast.success(t("onboarding.toast.ready"));
     // Înainte de a duce userul în /discover, oferim activarea push (consimțământ
     // recorded prin EnablePushButton → savePushSubscription → record_consent).
     setDonePush(true);
@@ -298,11 +303,8 @@ function Onboarding() {
           <Bell className="size-7 text-primary" />
         </div>
         <div className="space-y-2 max-w-sm">
-          <h2 className="wordmark text-3xl font-medium">Aproape gata</h2>
-          <p className="text-sm text-muted-foreground">
-            Activează notificările ca să afli imediat când ai un match nou sau un mesaj. Mod discret
-            implicit — nimeni nu vede preview-ul.
-          </p>
+          <h2 className="wordmark text-3xl font-medium">{t("onboarding.done.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("onboarding.done.hint")}</p>
         </div>
         <div className="flex w-full max-w-xs flex-col gap-2">
           <EnablePushButton className="w-full" />
@@ -311,7 +313,7 @@ function Onboarding() {
             size="lg"
             onClick={() => navigate({ to: "/discover", replace: true })}
           >
-            Continuă fără notificări
+            {t("onboarding.done.skip")}
           </Button>
         </div>
       </main>
@@ -326,10 +328,10 @@ function Onboarding() {
             onClick={back}
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
           >
-            <ArrowLeft className="size-4" /> Înapoi
+            <ArrowLeft className="size-4" /> {t("onboarding.back")}
           </button>
           <span className="text-xs text-muted-foreground">
-            {STEP_LABELS[current]} · {step + 1}/{STEPS.length}
+            {t(STEP_KEYS[current])} · {step + 1}/{STEPS.length}
           </span>
         </div>
         <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-surface">
@@ -353,13 +355,14 @@ function Onboarding() {
           className="w-full"
         >
           {saving && <Loader2 className="size-4 animate-spin" />}
-          {step === STEPS.length - 1 ? "Finish" : "Continue"}
+          {step === STEPS.length - 1 ? t("onboarding.finish") : t("onboarding.continue")}
           {!saving && <ArrowRight className="size-4" />}
         </Button>
       </footer>
     </main>
   );
 }
+
 
 function StepView({
   step,
@@ -374,6 +377,7 @@ function StepView({
   user?: string;
   birthdateLocked?: boolean;
 }) {
+  const { t } = useTranslation();
 
   switch (step) {
     case "basics":
@@ -381,24 +385,22 @@ function StepView({
         <div className="mx-auto w-full max-w-lg space-y-6">
           <div>
             <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
-              Să te cunoaștem
+              {t("onboarding.basics.title")}
             </h2>
-            <p className="mt-2 text-muted-foreground">
-              Numele și data nașterii. Trebuie să ai 18+.
-            </p>
+            <p className="mt-2 text-muted-foreground">{t("onboarding.basics.hint")}</p>
           </div>
           <div className="space-y-2">
-            <Label>Cum te numești?</Label>
+            <Label>{t("onboarding.basics.nameLabel")}</Label>
             <Input
               autoFocus
               value={data.display_name}
               onChange={(e) => setData({ ...data, display_name: e.target.value })}
-              placeholder="Numele tău"
+              placeholder={t("onboarding.basics.namePlaceholder")}
               className="h-14 bg-surface border-border text-lg"
             />
           </div>
           <div className="space-y-2">
-            <Label>Data nașterii</Label>
+            <Label>{t("onboarding.basics.birthLabel")}</Label>
             <Input
               type="date"
               value={data.birthdate}
@@ -409,15 +411,12 @@ function StepView({
               readOnly={birthdateLocked}
             />
             {birthdateLocked && (
-              <p className="text-xs text-muted-foreground">
-                Am preluat data nașterii de la înscriere. Pentru schimbări, contactează suportul.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("onboarding.basics.birthLocked")}</p>
             )}
             {data.birthdate && calcAge(data.birthdate) < 18 && (
-              <p className="text-sm text-destructive">Trebuie să ai cel puțin 18 ani.</p>
+              <p className="text-sm text-destructive">{t("onboarding.basics.minAge")}</p>
             )}
           </div>
-
         </div>
       );
 
@@ -426,14 +425,12 @@ function StepView({
         <div className="mx-auto w-full max-w-lg space-y-8">
           <div>
             <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
-              Identitatea ta
+              {t("onboarding.identity.title")}
             </h2>
-            <p className="mt-2 text-muted-foreground">
-              Gen, pronume și orientare. Alege orice ți se potrivește.
-            </p>
+            <p className="mt-2 text-muted-foreground">{t("onboarding.identity.hint")}</p>
           </div>
           <div className="space-y-3">
-            <Label>Gen</Label>
+            <Label>{t("onboarding.identity.gender")}</Label>
             <ChipGrid
               options={GENDER_OPTIONS}
               selected={data.gender}
@@ -442,12 +439,12 @@ function StepView({
             <Input
               value={data.gender_custom}
               onChange={(e) => setData({ ...data, gender_custom: e.target.value })}
-              placeholder="Personalizat (opțional)"
+              placeholder={t("onboarding.identity.genderCustom")}
               className="h-11 bg-surface border-border"
             />
           </div>
           <div className="space-y-3">
-            <Label>Pronume</Label>
+            <Label>{t("onboarding.identity.pronouns")}</Label>
             <ChipGrid
               options={PRONOUN_OPTIONS}
               selected={data.pronouns}
@@ -456,12 +453,12 @@ function StepView({
             <Input
               value={data.pronouns_custom}
               onChange={(e) => setData({ ...data, pronouns_custom: e.target.value })}
-              placeholder="ex: ze/zir (opțional)"
+              placeholder={t("onboarding.identity.pronounsCustom")}
               className="h-11 bg-surface border-border"
             />
           </div>
           <div className="space-y-3">
-            <Label>Orientare</Label>
+            <Label>{t("onboarding.identity.orientation")}</Label>
             <ChipGrid
               options={ORIENTATION_OPTIONS}
               selected={data.orientation}
@@ -475,13 +472,13 @@ function StepView({
       return (
         <div className="mx-auto w-full max-w-lg space-y-8">
           <div>
-            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Ce cauți?</h2>
-            <p className="mt-2 text-muted-foreground">
-              Alege orice se potrivește. Triburile sunt opționale.
-            </p>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
+              {t("onboarding.intent.title")}
+            </h2>
+            <p className="mt-2 text-muted-foreground">{t("onboarding.intent.hint")}</p>
           </div>
           <div className="space-y-3">
-            <Label>Caut</Label>
+            <Label>{t("onboarding.intent.looking")}</Label>
             <ChipGrid
               options={LOOKING_FOR_OPTIONS}
               selected={data.looking_for}
@@ -490,7 +487,10 @@ function StepView({
           </div>
           <div className="space-y-3">
             <Label>
-              Triburi <span className="text-muted-foreground font-normal">(opțional)</span>
+              {t("onboarding.intent.tribes")}{" "}
+              <span className="text-muted-foreground font-normal">
+                {t("onboarding.intent.optional")}
+              </span>
             </Label>
             <ChipGrid
               options={TRIBE_OPTIONS}
@@ -506,14 +506,12 @@ function StepView({
         <div className="mx-auto w-full max-w-lg space-y-6">
           <div>
             <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
-              Profilul tău fizic
+              {t("onboarding.stats.title")}
             </h2>
-            <p className="mt-2 text-muted-foreground">
-              Totul este opțional. Arată doar ce vrei tu.
-            </p>
+            <p className="mt-2 text-muted-foreground">{t("onboarding.stats.hint")}</p>
           </div>
           <div className="space-y-2">
-            <Label>Tip corp</Label>
+            <Label>{t("onboarding.stats.body")}</Label>
             <ChipGrid
               options={BODY_TYPE_OPTIONS}
               selected={data.body_type ? [data.body_type] : []}
@@ -521,7 +519,7 @@ function StepView({
             />
           </div>
           <div className="space-y-2">
-            <Label>Poziție</Label>
+            <Label>{t("onboarding.stats.position")}</Label>
             <ChipGrid
               options={POSITION_OPTIONS}
               selected={data.position ? [data.position] : []}
@@ -530,7 +528,7 @@ function StepView({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Înălțime (cm)</Label>
+              <Label>{t("onboarding.stats.height")}</Label>
               <Input
                 type="number"
                 min={140}
@@ -543,7 +541,7 @@ function StepView({
               />
             </div>
             <div className="space-y-2">
-              <Label>Greutate (kg)</Label>
+              <Label>{t("onboarding.stats.weight")}</Label>
               <Input
                 type="number"
                 min={40}
@@ -557,7 +555,7 @@ function StepView({
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Etnie</Label>
+            <Label>{t("onboarding.stats.ethnicity")}</Label>
             <ChipGrid
               options={ETHNICITY_OPTIONS}
               selected={data.ethnicity ? [data.ethnicity] : []}
@@ -565,7 +563,7 @@ function StepView({
             />
           </div>
           <div className="space-y-2">
-            <Label>Status relație</Label>
+            <Label>{t("onboarding.stats.relationship")}</Label>
             <ChipGrid
               options={RELATIONSHIP_STATUS_OPTIONS}
               selected={data.relationship_status ? [data.relationship_status] : []}
@@ -574,9 +572,6 @@ function StepView({
               }
             />
           </div>
-          {/* Câmpul de status HIV a fost eliminat — Ventuza nu mai procesează
-              date de sănătate (decizie GDPR: reducere risc Art. 9). Pentru
-              informare vezi /safety (resurse ARAS, testare). */}
         </div>
       );
 
@@ -584,12 +579,17 @@ function StepView({
       return (
         <div className="mx-auto w-full max-w-lg space-y-8">
           <div>
-            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Cine ești</h2>
-            <p className="mt-2 text-muted-foreground">Interese și o scurtă bio.</p>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
+              {t("onboarding.personality.title")}
+            </h2>
+            <p className="mt-2 text-muted-foreground">{t("onboarding.personality.hint")}</p>
           </div>
           <div className="space-y-3">
             <Label>
-              Interese <span className="text-muted-foreground font-normal">(min. 3)</span>
+              {t("onboarding.personality.interests")}{" "}
+              <span className="text-muted-foreground font-normal">
+                {t("onboarding.personality.min3")}
+              </span>
             </Label>
             <ChipGrid
               options={INTEREST_OPTIONS}
@@ -599,14 +599,17 @@ function StepView({
           </div>
           <div className="space-y-2">
             <Label>
-              Bio scurt <span className="text-muted-foreground font-normal">(opțional)</span>
+              {t("onboarding.personality.bio")}{" "}
+              <span className="text-muted-foreground font-normal">
+                {t("onboarding.personality.optional")}
+              </span>
             </Label>
             <Textarea
               value={data.bio}
               onChange={(e) => setData({ ...data, bio: e.target.value })}
               rows={5}
               maxLength={500}
-              placeholder="Câteva rânduri despre tine…"
+              placeholder={t("onboarding.personality.bioPlaceholder")}
               className="bg-surface border-border"
             />
             <p className="text-right text-xs text-muted-foreground">{data.bio.length}/500</p>
@@ -626,25 +629,26 @@ function StepView({
               onChange={(e) => setData({ ...data, terms_accepted: e.target.checked })}
             />
             <span className="text-xs leading-relaxed text-foreground/85">
-              Am citit și accept{" "}
+              {t("onboarding.photos.terms")}{" "}
               <a href="/legal/terms" target="_blank" className="text-primary underline">
-                Termenii
+                {t("onboarding.photos.termsLink")}
               </a>
               ,{" "}
               <a href="/legal/privacy" target="_blank" className="text-primary underline">
-                Confidențialitatea
+                {t("onboarding.photos.privacyLink")}
               </a>{" "}
-              și{" "}
+              {t("onboarding.photos.termsAnd")}{" "}
               <a href="/legal/community" target="_blank" className="text-primary underline">
-                Regulile Comunității
+                {t("onboarding.photos.communityLink")}
               </a>
-              . Confirm că am cel puțin 18 ani.
+              {t("onboarding.photos.termsConfirm")}
             </span>
           </label>
         </div>
       );
   }
 }
+
 
 function Field({
   title,
@@ -689,6 +693,7 @@ function ChipGrid({
 
 function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => void }) {
   const t = useOptionLabel();
+  const { t: tr } = useTranslation();
   const slots = [0, 1, 2];
   function setPrompt(i: number, p: Partial<Prompt>) {
     const next = [...data.prompts];
@@ -699,7 +704,7 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
 
   return (
     <div className="space-y-3">
-      <Label>3 prompts în cuvintele tale</Label>
+      <Label>{tr("onboarding.prompts.title")}</Label>
       {slots.map((i) => {
         const cur = data.prompts[i];
         return (
@@ -709,11 +714,12 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
               onChange={(e) => setPrompt(i, { question: e.target.value })}
               className="h-11 w-full rounded-md bg-surface-elevated px-3 text-sm text-foreground border border-border"
             >
-              <option value="">Alege un prompt…</option>
+              <option value="">{tr("onboarding.prompts.choose")}</option>
               {PROMPT_OPTIONS.map((q) => (
                 <option key={q} value={q} disabled={used.includes(q) && cur?.question !== q}>
                   {t(q)}
                 </option>
+
               ))}
             </select>
             <Textarea
@@ -721,7 +727,7 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
               onChange={(e) => setPrompt(i, { answer: e.target.value })}
               rows={2}
               maxLength={200}
-              placeholder="Răspunsul tău…"
+              placeholder={tr("onboarding.prompts.answer")}
               className="bg-background border-border"
               disabled={!cur?.question}
             />
@@ -741,6 +747,8 @@ function PhotosStep({
   setData: (d: Data) => void;
   user?: string;
 }) {
+  const { t } = useTranslation();
+
   const [uploading, setUploading] = useState(false);
   const [signed, setSigned] = useState<Record<string, string>>({});
   const moderate = useServerFn(moderatePhoto);
@@ -758,13 +766,13 @@ function PhotosStep({
 
   async function handleUpload(files: FileList | null) {
     if (!files || !user) return;
-    if (data.photos.length + files.length > 6) return toast.error("Maxim 6 poze.");
+    if (data.photos.length + files.length > 6) return toast.error(t("onboarding.photos.tooMany"));
     setUploading(true);
     const added: string[] = [];
     try {
       for (const file of Array.from(files)) {
         if (file.size > 8 * 1024 * 1024) {
-          toast.error(`${file.name} depășește 8MB.`);
+          toast.error(t("onboarding.photos.tooBig", { name: file.name }));
           continue;
         }
         const ext = file.name.split(".").pop() || "jpg";
@@ -798,8 +806,11 @@ function PhotosStep({
                 modBlocked = true;
                 await supabase.storage.from("profile-photos").remove([path]);
                 toast.error(
-                  `Poză respinsă: ${mod.reason || "conținut nepermis pe profilul public"}.`,
+                  t("onboarding.photos.rejected", {
+                    reason: mod.reason || t("onboarding.photos.rejectedDefault"),
+                  }),
                 );
+
               } catch (e) {
                 lastErr = (e as Error).message;
                 if (attempt < 2)
@@ -823,15 +834,16 @@ function PhotosStep({
           } catch {
             /* tabel poate avea schema diferită; nu blocăm */
           }
-          toast.message("Poză adăugată — verificare manuală în curs", {
-            description: "Va fi vizibilă public după ce un moderator o aprobă.",
+          toast.message(t("onboarding.photos.pending"), {
+            description: t("onboarding.photos.pendingDesc"),
           });
+
         }
         added.push(path);
       }
       if (added.length) setData({ ...data, photos: [...data.photos, ...added] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Upload failed");
+      toast.error(e instanceof Error ? e.message : t("onboarding.photos.uploadFailed"));
     } finally {
       setUploading(false);
     }
@@ -843,7 +855,7 @@ function PhotosStep({
   }
 
   return (
-    <Field title="Add your photos" hint="Maxim 6 poze. Prima este principală.">
+    <Field title={t("onboarding.photos.title")} hint={t("onboarding.photos.hint")}>
       <div className="grid grid-cols-3 gap-3">
         {data.photos.map((p, i) => (
           <div
@@ -853,12 +865,12 @@ function PhotosStep({
             {signed[p] && <img src={signed[p]} alt="" className="size-full object-cover" />}
             {i === 0 && (
               <span className="absolute left-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-primary-foreground">
-                Main
+                {t("onboarding.photos.main")}
               </span>
             )}
             <button
               onClick={() => remove(p)}
-              aria-label="Remove photo"
+              aria-label={t("onboarding.photos.remove")}
               className="absolute right-2 top-2 rounded-full bg-background/80 p-1 text-foreground backdrop-blur hover:bg-destructive hover:text-destructive-foreground"
             >
               <X className="size-3.5" />
@@ -872,8 +884,9 @@ function PhotosStep({
             ) : (
               <Upload className="size-5" />
             )}
-            <span className="text-xs">Add photo</span>
+            <span className="text-xs">{t("onboarding.photos.add")}</span>
             <input
+
               type="file"
               accept="image/*"
               multiple
