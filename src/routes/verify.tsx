@@ -33,6 +33,18 @@ export const Route = createFileRoute("/verify")({
 
 type AgeStatus = "unverified" | "pending" | "verified" | "failed" | "expired" | null;
 
+type DiditReason =
+  | "verified"
+  | "no_session"
+  | "awaiting_user"
+  | "no_webhook_event"
+  | "in_review"
+  | "pending_provider"
+  | "failed"
+  | "expired"
+  | "declined"
+  | "unknown";
+
 type DiditStatus = {
   profile: { age_status: string | null; age_verified_at: string | null; age_provider: string | null } | null;
   lastSession: {
@@ -43,8 +55,39 @@ type DiditStatus = {
     session_url: string | null;
     created_at: string;
     resolved_at: string | null;
+    webhook_received: boolean;
   } | null;
+  reasonCode: DiditReason;
+  lastUpdatedAt: string | null;
 };
+
+const REASON_COPY: Record<DiditReason, string> = {
+  verified: "Cont verificat.",
+  no_session: "Nu ai pornit încă o sesiune de verificare.",
+  awaiting_user: "Sesiune deschisă la Didit — nu ai finalizat încă selfie-ul.",
+  no_webhook_event: "Sesiune creată, dar nu am primit încă niciun eveniment de la Didit (webhook).",
+  in_review: "Verificarea ta este în review manual la Didit.",
+  pending_provider: "Didit procesează încă rezultatul.",
+  failed: "Sesiunea anterioară a fost abandonată. Poți relua verificarea.",
+  expired: "Sesiunea a expirat. Pornește o nouă verificare.",
+  declined: "Verificarea a fost respinsă. Poți încerca din nou.",
+  unknown: "Status necunoscut — reîmprospătează.",
+};
+
+function formatDateTime(iso: string | null): string {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("ro-RO", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+}
 
 function VerifyPage() {
   const { user, loading: authLoading } = useAuth();
