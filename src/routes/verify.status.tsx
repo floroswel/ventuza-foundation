@@ -232,7 +232,7 @@ function VerifyStatusPage() {
                 variant="outline"
                 size="sm"
                 className="mt-4 w-full"
-                onClick={() => void refresh()}
+                onClick={() => void refresh({ force: true })}
                 disabled={refreshing}
                 aria-label={
                   refreshing
