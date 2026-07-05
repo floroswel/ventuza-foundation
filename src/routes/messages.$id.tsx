@@ -342,6 +342,51 @@ function ThreadPage() {
     });
   }
 
+  async function reportSendError(e: unknown) {
+    const err = e as (Error & { code?: string }) | undefined;
+    const code = err?.code;
+    if (code === "age_verification_required") {
+      let status: string | null = null;
+      try {
+        if (user) {
+          const { data } = await supabase
+            .from("profiles")
+            .select("age_status")
+            .eq("id", user.id)
+            .maybeSingle();
+          status = (data?.age_status as string | null) ?? null;
+        }
+      } catch {
+        /* ignore */
+      }
+      const statusLabel: Record<string, string> = {
+        verified: "verified",
+        pending: "pending (verificarea încă se procesează)",
+        unverified: "unverified (nu ai început verificarea)",
+        failed: "failed (verificarea a eșuat)",
+        expired: "expired (sesiunea a expirat)",
+      };
+      const shown = status ? (statusLabel[status] ?? status) : "necunoscut";
+      toast.error("Mesajul nu a fost trimis — verificare 18+ obligatorie", {
+        description: `Statusul tău actual: ${shown}. Termină verificarea pentru a trimite mesaje.`,
+        duration: 8000,
+        action: {
+          label: "Verifică acum",
+          onClick: () => navigate({ to: "/verify" as never }),
+        },
+      });
+      return;
+    }
+    if (code === "email_not_confirmed") {
+      toast.error("Confirmă emailul", {
+        description: "Trebuie să îți confirmi emailul înainte de a trimite mesaje.",
+        duration: 6000,
+      });
+      return;
+    }
+    toast.error(err?.message ?? "Nu am putut trimite mesajul");
+  }
+
   async function handleSend(e: FormEvent) {
     e.preventDefault();
     const body = text.trim();
@@ -368,10 +413,11 @@ function ThreadPage() {
         return [...without, real];
       });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't send");
+      await reportSendError(e);
       setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, _status: "failed" } : m)));
     }
   }
+
 
   async function confirmUnsend() {
     const m = unsendTarget;
@@ -406,7 +452,7 @@ function ThreadPage() {
         return [...without, real];
       });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't send");
+      await reportSendError(e);
       setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, _status: "failed" } : x)));
     }
   }
