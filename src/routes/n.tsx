@@ -688,6 +688,7 @@ function ChipGrid({
 }
 
 function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => void }) {
+  const t = useOptionLabel();
   const slots = [0, 1, 2];
   function setPrompt(i: number, p: Partial<Prompt>) {
     const next = [...data.prompts];
@@ -711,7 +712,7 @@ function PromptsInline({ data, setData }: { data: Data; setData: (d: Data) => vo
               <option value="">Alege un prompt…</option>
               {PROMPT_OPTIONS.map((q) => (
                 <option key={q} value={q} disabled={used.includes(q) && cur?.question !== q}>
-                  {q}
+                  {t(q)}
                 </option>
               ))}
             </select>
