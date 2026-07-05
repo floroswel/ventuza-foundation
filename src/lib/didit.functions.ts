@@ -69,15 +69,23 @@ export const getMyDiditStatus = createServerFn({ method: "GET" })
 export const syncMyDiditStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { data: session, error: sErr } = await context.supabase
+    // Luăm TOATE sesiunile nerezolvate ale userului (nu doar ultima), plus ultima
+    // rezolvată — Didit poate aproba/decline o sesiune mai veche (ex. review manual).
+    const { data: sessions, error: sErr } = await context.supabase
       .from("didit_sessions")
-      .select("session_id")
+      .select("session_id, resolved_at")
       .eq("user_id", context.userId)
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+      .limit(10);
     if (sErr) throw new Error(sErr.message);
-    if (!session?.session_id) return { ok: false, reason: "no_session" as const };
+    if (!sessions || sessions.length === 0) {
+      return { ok: false, reason: "no_session" as const };
+    }
+
+    const toCheck = sessions.filter((s) => !s.resolved_at).map((s) => s.session_id);
+    // Fallback: dacă toate sunt rezolvate, verificăm oricum ultima ca să prindem
+    // corecții post-review manual.
+    if (toCheck.length === 0) toCheck.push(sessions[0]!.session_id);
 
     const {
       diditFetchDecision,
@@ -85,22 +93,43 @@ export const syncMyDiditStatus = createServerFn({ method: "POST" })
       mapDiditStatus,
       sanitizeDiditStatusRaw,
     } = await import("./didit.server");
-    const decision = await diditFetchDecision(session.session_id);
-    if (!decision) return { ok: false, reason: "not_found" as const };
-
-    const mapped = mapDiditStatus(decision.status);
-    const estimatedAge = extractDiditEstimatedAge(decision.raw);
-    const statusRaw = sanitizeDiditStatusRaw(decision.raw);
-
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { error } = await supabaseAdmin.rpc("didit_apply_result", {
-      _session_id: session.session_id,
-      _status: mapped.status,
-      _result: mapped.result,
-      _estimated_age: estimatedAge as number,
-      _status_raw: statusRaw as never,
-    });
-    if (error) throw new Error(error.message);
 
-    return { ok: true as const, status: mapped.status, result: mapped.result };
+    let applied: { session_id: string; status: string; result: string } | null = null;
+    let lastError: string | null = null;
+
+    for (const sessionId of toCheck) {
+      try {
+        const decision = await diditFetchDecision(sessionId);
+        if (!decision) continue;
+        const mapped = mapDiditStatus(decision.status);
+        const estimatedAge = extractDiditEstimatedAge(decision.raw);
+        const statusRaw = sanitizeDiditStatusRaw(decision.raw);
+
+        const { error } = await supabaseAdmin.rpc("didit_apply_result", {
+          _session_id: sessionId,
+          _status: mapped.status,
+          _result: mapped.result,
+          _estimated_age: estimatedAge as number,
+          _status_raw: statusRaw as never,
+        });
+        if (error) {
+          lastError = error.message;
+          continue;
+        }
+        // Preferăm o rezoluție "pass"/"fail" — dacă am aplicat una, ne oprim.
+        if (mapped.result === "pass" || mapped.result === "fail") {
+          applied = { session_id: sessionId, status: mapped.status, result: mapped.result };
+          break;
+        }
+        if (!applied) {
+          applied = { session_id: sessionId, status: mapped.status, result: mapped.result };
+        }
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : String(err);
+      }
+    }
+
+    if (!applied) return { ok: false as const, reason: "no_decision" as const, error: lastError };
+    return { ok: true as const, ...applied };
   });
