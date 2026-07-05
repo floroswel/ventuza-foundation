@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
-import { OPERATOR, OPERATOR_INTRO, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
 
 
 export const Route = createFileRoute("/legal/community")({
