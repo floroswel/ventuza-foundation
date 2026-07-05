@@ -165,23 +165,27 @@ export async function verifyDiditSignature(input: DiditSignatureInput): Promise<
     }
   }
 
+  // Didit trimite HMAC-SHA256 peste corpul RAW al request-ului (nu canonicalizat).
+  // Verificăm întâi asta pentru orice header disponibil — este cea mai stabilă cale.
+  const rawExpected = createHmac("sha256", secret).update(input.rawBody).digest("hex");
+  const rawCandidates = [input.signatureV2, input.signatureRaw].filter(Boolean) as string[];
+  for (const cand of rawCandidates) {
+    if (safeTimingEqualHex(rawExpected, cand)) {
+      return { ok: true, trustedBody: true };
+    }
+  }
+
+  // Fallback: unele workflow-uri Didit V2 sortează cheile JSON înainte de HMAC.
   if (input.signatureV2) {
     try {
       const parsed = JSON.parse(input.rawBody) as unknown;
       const canonical = diditCanonicalJson(parsed);
-      const expected = createHmac("sha256", secret).update(canonical).digest("hex");
-      if (safeTimingEqualHex(expected, input.signatureV2)) {
+      const canonicalExpected = createHmac("sha256", secret).update(canonical).digest("hex");
+      if (safeTimingEqualHex(canonicalExpected, input.signatureV2)) {
         return { ok: true, trustedBody: true };
       }
     } catch {
-      // cădem pe semnătura raw de mai jos
-    }
-  }
-
-  if (input.signatureRaw) {
-    const expected = createHmac("sha256", secret).update(input.rawBody).digest("hex");
-    if (safeTimingEqualHex(expected, input.signatureRaw)) {
-      return { ok: true, trustedBody: true };
+      // continuăm cu simple mai jos
     }
   }
 
@@ -202,7 +206,12 @@ export async function verifyDiditSignature(input: DiditSignatureInput): Promise<
     }
   }
 
-  return { ok: false, trustedBody: false, reason: "signature_mismatch" };
+  const hasAny = input.signatureV2 || input.signatureRaw || input.signatureSimple;
+  return {
+    ok: false,
+    trustedBody: false,
+    reason: hasAny ? "signature_mismatch" : "no_signature_header",
+  };
 }
 
 /**
