@@ -202,6 +202,27 @@ export function AgeGate() {
           </p>
         </div>
 
+        {isPending && (
+          <dl className="rounded-lg border border-border/60 bg-background/40 p-3 text-left text-xs space-y-1">
+            <div className="flex justify-between gap-2">
+              <dt className="text-muted-foreground">Motiv</dt>
+              <dd className="font-medium">{REASON_SHORT[reason]}</dd>
+            </div>
+            <div className="flex justify-between gap-2">
+              <dt className="text-muted-foreground">Cod</dt>
+              <dd className="font-mono text-[10px]">{reason}</dd>
+            </div>
+            <div className="flex justify-between gap-2">
+              <dt className="text-muted-foreground">Webhook</dt>
+              <dd className="font-mono">{webhookReceived == null ? "—" : webhookReceived ? "primit" : "neprimit"}</dd>
+            </div>
+            <div className="flex justify-between gap-2">
+              <dt className="text-muted-foreground">Actualizat</dt>
+              <dd className="font-mono">{fmtTime(lastUpdatedAt)}</dd>
+            </div>
+          </dl>
+        )}
+
         <button
           onClick={() => navigate({ to: "/verify" as never })}
           className="w-full inline-flex items-center justify-center rounded-md bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
