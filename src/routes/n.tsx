@@ -92,14 +92,15 @@ const STEPS = [
   "photos", // photos + terms
 ] as const;
 
-const STEP_LABELS: Record<(typeof STEPS)[number], string> = {
-  basics: "Despre tine",
-  identity: "Identitate",
-  intent: "Ce cauți",
-  stats: "Profil fizic",
-  personality: "Personalitate",
-  photos: "Poze",
+const STEP_KEYS: Record<(typeof STEPS)[number], string> = {
+  basics: "onboarding.step.basics",
+  identity: "onboarding.step.identity",
+  intent: "onboarding.step.intent",
+  stats: "onboarding.step.stats",
+  personality: "onboarding.step.personality",
+  photos: "onboarding.step.photos",
 };
+
 
 function calcAge(iso: string) {
   if (!iso) return 0;
