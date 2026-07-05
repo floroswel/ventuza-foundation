@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+import { OPERATOR, OPERATOR_INTRO, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+
 
 export const Route = createFileRoute("/legal/community")({
   head: () => ({
@@ -34,10 +36,12 @@ function CommunityPage() {
 
             <h2 className="mt-6 text-base font-semibold">Valorile noastre</h2>
             <p>
-              Ventuza este un spațiu pentru comunitatea LGBTQ+ din România. Aici cauți conexiuni,
-              prietenii, întâlniri sau iubire. Tratează-i pe ceilalți așa cum ai vrea să fii tratat:
-              cu respect, onestitate și grijă.
+              {OPERATOR.brand} (aplicație operată de {OPERATOR.legalName}) este un spațiu pentru
+              comunitatea LGBTQ+ din România. Aici cauți conexiuni, prietenii, întâlniri sau
+              iubire. Tratează-i pe ceilalți așa cum ai vrea să fii tratat: cu respect, onestitate
+              și grijă.
             </p>
+
 
             <h2 className="mt-6 text-base font-semibold">Ce este interzis</h2>
             <ul className="list-disc pl-5">
@@ -125,7 +129,13 @@ function CommunityPage() {
               </a>
               .
             </p>
+
+            <h2 className="mt-6 text-base font-semibold">Operator</h2>
+            <div className="mt-2">
+              <OperatorIdentificationBlock compact />
+            </div>
           </article>
+
         }
       />
     </div>
