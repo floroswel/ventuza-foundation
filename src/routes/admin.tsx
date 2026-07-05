@@ -576,7 +576,14 @@ function AdminDashboard() {
       {section === "appeals" && <AppealsPanel />}
       {section === "userops" && isAdmin && <OperationsUserOpsPanel />}
       {section === "broadcast2" && isAdmin && <BroadcastV2Panel />}
-      {section === "intel" && <IntelligenceDashboardPanel />}
+      {section === "intel" && (
+        <div className="space-y-4">
+          <IntelligenceDashboardPanel />
+          <PushHealthPanel />
+          <PartnerBoostCalendarPanel />
+          {isAdmin && <FraudClusterPanel />}
+        </div>
+      )}
       {section === "killswitch" && isAdmin && <KillSwitchesPanel />}
       {section === "legalp0" && isAdmin && <LegalP0Panel />}
       {section === "policyengine" && isAdmin && <PolicyEnginePanel />}
