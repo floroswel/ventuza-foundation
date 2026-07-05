@@ -110,8 +110,8 @@ export function AgeGate() {
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
             {isPending
-              ? "Am primit selfie-urile tale. Un moderator le verifică în cel mai scurt timp. Îți trimitem notificare imediat ce decidem."
-              : "Contul tău trebuie verificat pentru a accesa această secțiune. Verificarea durează 30–60 secunde și se face printr-un scurt liveness cu selfie."}
+              ? "Am înregistrat sesiunea ta Didit. Îți trimitem notificare imediat ce primim rezultatul (de obicei sub 1 minut)."
+              : "Contul tău trebuie verificat pentru a accesa această secțiune. Verificarea durează ~30 secunde și se face prin Didit (procesator UE)."}
           </p>
         </div>
 
