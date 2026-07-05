@@ -31,8 +31,8 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-const emailSchema = z.string().trim().email("Enter a valid email").max(255);
-const passwordSchema = z.string().min(8, "At least 8 characters").max(72, "Max 72 characters");
+const emailSchema = z.string().trim().email("invalid_email").max(255);
+const passwordSchema = z.string().min(8, "password_min").max(72, "password_max");
 
 async function persistPendingBirthdate(userId: string) {
   if (typeof window === "undefined") return;
