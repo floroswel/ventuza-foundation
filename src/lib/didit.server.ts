@@ -40,7 +40,12 @@ export async function diditCreateSession(params: {
 
   if (!res.ok) {
     const body = await res.text().catch(() => "");
-    throw new Error(`didit_create_session_failed ${res.status}: ${body.slice(0, 300)}`);
+    // Log detaliat DOAR pe server, nu se scurge la client.
+    console.error("[didit] create_session failed", res.status, body.slice(0, 500));
+    // Mesaj generic pentru client — nu expunem status code, body sau motive de billing.
+    throw new Error(
+      "Serviciul de verificare este temporar indisponibil. Te rugăm să încerci din nou în câteva minute.",
+    );
   }
   const json = (await res.json()) as DiditCreateSessionResponse;
   if (!json?.session_id || !json?.url) {
