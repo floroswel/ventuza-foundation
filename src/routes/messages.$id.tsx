@@ -452,7 +452,7 @@ function ThreadPage() {
         return [...without, real];
       });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Couldn't send");
+      await reportSendError(e);
       setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, _status: "failed" } : x)));
     }
   }
