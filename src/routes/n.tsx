@@ -3,10 +3,12 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Bell, Loader2, Upload, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { moderatePhoto } from "@/lib/verification.functions";
 import { useAuth } from "@/lib/auth-context";
 import { EnablePushButton } from "@/components/EnablePushButton";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
