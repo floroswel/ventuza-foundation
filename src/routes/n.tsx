@@ -834,9 +834,10 @@ function PhotosStep({
           } catch {
             /* tabel poate avea schema diferită; nu blocăm */
           }
-          toast.message("Poză adăugată — verificare manuală în curs", {
-            description: "Va fi vizibilă public după ce un moderator o aprobă.",
+          toast.message(t("onboarding.photos.pending"), {
+            description: t("onboarding.photos.pendingDesc"),
           });
+
         }
         added.push(path);
       }
