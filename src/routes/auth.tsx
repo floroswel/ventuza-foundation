@@ -347,7 +347,7 @@ function AuthPage() {
   async function onForgotPassword() {
     const emailParsed = emailSchema.safeParse(email);
     if (!emailParsed.success) {
-      toast.error("Enter your email above first.");
+      toast.error(t("auth.errors.enterEmailFirst"));
       return;
     }
     if (captchaRequired && !captchaToken) {
