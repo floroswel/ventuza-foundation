@@ -377,6 +377,7 @@ function StepView({
   user?: string;
   birthdateLocked?: boolean;
 }) {
+  const { t } = useTranslation();
 
   switch (step) {
     case "basics":
@@ -384,24 +385,22 @@ function StepView({
         <div className="mx-auto w-full max-w-lg space-y-6">
           <div>
             <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
-              Să te cunoaștem
+              {t("onboarding.basics.title")}
             </h2>
-            <p className="mt-2 text-muted-foreground">
-              Numele și data nașterii. Trebuie să ai 18+.
-            </p>
+            <p className="mt-2 text-muted-foreground">{t("onboarding.basics.hint")}</p>
           </div>
           <div className="space-y-2">
-            <Label>Cum te numești?</Label>
+            <Label>{t("onboarding.basics.nameLabel")}</Label>
             <Input
               autoFocus
               value={data.display_name}
               onChange={(e) => setData({ ...data, display_name: e.target.value })}
-              placeholder="Numele tău"
+              placeholder={t("onboarding.basics.namePlaceholder")}
               className="h-14 bg-surface border-border text-lg"
             />
           </div>
           <div className="space-y-2">
-            <Label>Data nașterii</Label>
+            <Label>{t("onboarding.basics.birthLabel")}</Label>
             <Input
               type="date"
               value={data.birthdate}
@@ -412,15 +411,12 @@ function StepView({
               readOnly={birthdateLocked}
             />
             {birthdateLocked && (
-              <p className="text-xs text-muted-foreground">
-                Am preluat data nașterii de la înscriere. Pentru schimbări, contactează suportul.
-              </p>
+              <p className="text-xs text-muted-foreground">{t("onboarding.basics.birthLocked")}</p>
             )}
             {data.birthdate && calcAge(data.birthdate) < 18 && (
-              <p className="text-sm text-destructive">Trebuie să ai cel puțin 18 ani.</p>
+              <p className="text-sm text-destructive">{t("onboarding.basics.minAge")}</p>
             )}
           </div>
-
         </div>
       );
 
@@ -429,14 +425,12 @@ function StepView({
         <div className="mx-auto w-full max-w-lg space-y-8">
           <div>
             <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
-              Identitatea ta
+              {t("onboarding.identity.title")}
             </h2>
-            <p className="mt-2 text-muted-foreground">
-              Gen, pronume și orientare. Alege orice ți se potrivește.
-            </p>
+            <p className="mt-2 text-muted-foreground">{t("onboarding.identity.hint")}</p>
           </div>
           <div className="space-y-3">
-            <Label>Gen</Label>
+            <Label>{t("onboarding.identity.gender")}</Label>
             <ChipGrid
               options={GENDER_OPTIONS}
               selected={data.gender}
@@ -445,12 +439,12 @@ function StepView({
             <Input
               value={data.gender_custom}
               onChange={(e) => setData({ ...data, gender_custom: e.target.value })}
-              placeholder="Personalizat (opțional)"
+              placeholder={t("onboarding.identity.genderCustom")}
               className="h-11 bg-surface border-border"
             />
           </div>
           <div className="space-y-3">
-            <Label>Pronume</Label>
+            <Label>{t("onboarding.identity.pronouns")}</Label>
             <ChipGrid
               options={PRONOUN_OPTIONS}
               selected={data.pronouns}
@@ -459,12 +453,12 @@ function StepView({
             <Input
               value={data.pronouns_custom}
               onChange={(e) => setData({ ...data, pronouns_custom: e.target.value })}
-              placeholder="ex: ze/zir (opțional)"
+              placeholder={t("onboarding.identity.pronounsCustom")}
               className="h-11 bg-surface border-border"
             />
           </div>
           <div className="space-y-3">
-            <Label>Orientare</Label>
+            <Label>{t("onboarding.identity.orientation")}</Label>
             <ChipGrid
               options={ORIENTATION_OPTIONS}
               selected={data.orientation}
@@ -478,13 +472,13 @@ function StepView({
       return (
         <div className="mx-auto w-full max-w-lg space-y-8">
           <div>
-            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Ce cauți?</h2>
-            <p className="mt-2 text-muted-foreground">
-              Alege orice se potrivește. Triburile sunt opționale.
-            </p>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
+              {t("onboarding.intent.title")}
+            </h2>
+            <p className="mt-2 text-muted-foreground">{t("onboarding.intent.hint")}</p>
           </div>
           <div className="space-y-3">
-            <Label>Caut</Label>
+            <Label>{t("onboarding.intent.looking")}</Label>
             <ChipGrid
               options={LOOKING_FOR_OPTIONS}
               selected={data.looking_for}
@@ -493,7 +487,10 @@ function StepView({
           </div>
           <div className="space-y-3">
             <Label>
-              Triburi <span className="text-muted-foreground font-normal">(opțional)</span>
+              {t("onboarding.intent.tribes")}{" "}
+              <span className="text-muted-foreground font-normal">
+                {t("onboarding.intent.optional")}
+              </span>
             </Label>
             <ChipGrid
               options={TRIBE_OPTIONS}
@@ -509,14 +506,12 @@ function StepView({
         <div className="mx-auto w-full max-w-lg space-y-6">
           <div>
             <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
-              Profilul tău fizic
+              {t("onboarding.stats.title")}
             </h2>
-            <p className="mt-2 text-muted-foreground">
-              Totul este opțional. Arată doar ce vrei tu.
-            </p>
+            <p className="mt-2 text-muted-foreground">{t("onboarding.stats.hint")}</p>
           </div>
           <div className="space-y-2">
-            <Label>Tip corp</Label>
+            <Label>{t("onboarding.stats.body")}</Label>
             <ChipGrid
               options={BODY_TYPE_OPTIONS}
               selected={data.body_type ? [data.body_type] : []}
@@ -524,7 +519,7 @@ function StepView({
             />
           </div>
           <div className="space-y-2">
-            <Label>Poziție</Label>
+            <Label>{t("onboarding.stats.position")}</Label>
             <ChipGrid
               options={POSITION_OPTIONS}
               selected={data.position ? [data.position] : []}
@@ -533,7 +528,7 @@ function StepView({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Înălțime (cm)</Label>
+              <Label>{t("onboarding.stats.height")}</Label>
               <Input
                 type="number"
                 min={140}
@@ -546,7 +541,7 @@ function StepView({
               />
             </div>
             <div className="space-y-2">
-              <Label>Greutate (kg)</Label>
+              <Label>{t("onboarding.stats.weight")}</Label>
               <Input
                 type="number"
                 min={40}
@@ -560,7 +555,7 @@ function StepView({
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Etnie</Label>
+            <Label>{t("onboarding.stats.ethnicity")}</Label>
             <ChipGrid
               options={ETHNICITY_OPTIONS}
               selected={data.ethnicity ? [data.ethnicity] : []}
@@ -568,7 +563,7 @@ function StepView({
             />
           </div>
           <div className="space-y-2">
-            <Label>Status relație</Label>
+            <Label>{t("onboarding.stats.relationship")}</Label>
             <ChipGrid
               options={RELATIONSHIP_STATUS_OPTIONS}
               selected={data.relationship_status ? [data.relationship_status] : []}
@@ -577,9 +572,6 @@ function StepView({
               }
             />
           </div>
-          {/* Câmpul de status HIV a fost eliminat — Ventuza nu mai procesează
-              date de sănătate (decizie GDPR: reducere risc Art. 9). Pentru
-              informare vezi /safety (resurse ARAS, testare). */}
         </div>
       );
 
@@ -587,12 +579,17 @@ function StepView({
       return (
         <div className="mx-auto w-full max-w-lg space-y-8">
           <div>
-            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">Cine ești</h2>
-            <p className="mt-2 text-muted-foreground">Interese și o scurtă bio.</p>
+            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
+              {t("onboarding.personality.title")}
+            </h2>
+            <p className="mt-2 text-muted-foreground">{t("onboarding.personality.hint")}</p>
           </div>
           <div className="space-y-3">
             <Label>
-              Interese <span className="text-muted-foreground font-normal">(min. 3)</span>
+              {t("onboarding.personality.interests")}{" "}
+              <span className="text-muted-foreground font-normal">
+                {t("onboarding.personality.min3")}
+              </span>
             </Label>
             <ChipGrid
               options={INTEREST_OPTIONS}
@@ -602,14 +599,17 @@ function StepView({
           </div>
           <div className="space-y-2">
             <Label>
-              Bio scurt <span className="text-muted-foreground font-normal">(opțional)</span>
+              {t("onboarding.personality.bio")}{" "}
+              <span className="text-muted-foreground font-normal">
+                {t("onboarding.personality.optional")}
+              </span>
             </Label>
             <Textarea
               value={data.bio}
               onChange={(e) => setData({ ...data, bio: e.target.value })}
               rows={5}
               maxLength={500}
-              placeholder="Câteva rânduri despre tine…"
+              placeholder={t("onboarding.personality.bioPlaceholder")}
               className="bg-surface border-border"
             />
             <p className="text-right text-xs text-muted-foreground">{data.bio.length}/500</p>
@@ -629,25 +629,26 @@ function StepView({
               onChange={(e) => setData({ ...data, terms_accepted: e.target.checked })}
             />
             <span className="text-xs leading-relaxed text-foreground/85">
-              Am citit și accept{" "}
+              {t("onboarding.photos.terms")}{" "}
               <a href="/legal/terms" target="_blank" className="text-primary underline">
-                Termenii
+                {t("onboarding.photos.termsLink")}
               </a>
               ,{" "}
               <a href="/legal/privacy" target="_blank" className="text-primary underline">
-                Confidențialitatea
+                {t("onboarding.photos.privacyLink")}
               </a>{" "}
-              și{" "}
+              {t("onboarding.photos.termsAnd")}{" "}
               <a href="/legal/community" target="_blank" className="text-primary underline">
-                Regulile Comunității
+                {t("onboarding.photos.communityLink")}
               </a>
-              . Confirm că am cel puțin 18 ani.
+              {t("onboarding.photos.termsConfirm")}
             </span>
           </label>
         </div>
       );
   }
 }
+
 
 function Field({
   title,
