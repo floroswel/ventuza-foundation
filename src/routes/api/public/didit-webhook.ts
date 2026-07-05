@@ -11,45 +11,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/integrations/supabase/types";
 import {
+  type DiditStatusPayload,
   diditFetchDecision,
+  extractDiditEstimatedAge,
   mapDiditStatus,
+  sanitizeDiditStatusRaw,
   verifyDiditSignature,
 } from "@/lib/didit.server";
-
-type DiditWebhookPayload = {
-  session_id?: string;
-  status?: string;
-  workflow_id?: string;
-  vendor_data?: string;
-  decision?: {
-    age_estimation?: {
-      age?: number;
-      estimated_age?: number;
-      min_age?: number;
-    };
-  };
-  age_estimation?: {
-    age?: number;
-    estimated_age?: number;
-    min_age?: number;
-  };
-  [k: string]: unknown;
-};
-
-function extractEstimatedAge(payload: DiditWebhookPayload): number | null {
-  const candidates = [
-    payload.decision?.age_estimation?.estimated_age,
-    payload.decision?.age_estimation?.age,
-    payload.decision?.age_estimation?.min_age,
-    payload.age_estimation?.estimated_age,
-    payload.age_estimation?.age,
-    payload.age_estimation?.min_age,
-  ];
-  for (const c of candidates) {
-    if (typeof c === "number" && Number.isFinite(c)) return Math.round(c);
-  }
-  return null;
-}
 
 export const Route = createFileRoute("/api/public/didit-webhook")({
   server: {
@@ -67,9 +35,9 @@ export const Route = createFileRoute("/api/public/didit-webhook")({
         });
         if (!signature.ok) return new Response("invalid signature", { status: 401 });
 
-        let payload: DiditWebhookPayload;
+        let payload: DiditStatusPayload;
         try {
-          payload = JSON.parse(raw) as DiditWebhookPayload;
+          payload = JSON.parse(raw) as DiditStatusPayload;
         } catch {
           return new Response("invalid body", { status: 400 });
         }
@@ -83,14 +51,15 @@ export const Route = createFileRoute("/api/public/didit-webhook")({
           if (!decision) return new Response("session not found", { status: 404 });
           authoritativePayload = {
             ...payload,
-            ...(decision.raw as DiditWebhookPayload),
+            ...(decision.raw as DiditStatusPayload),
             session_id: sessionId,
             status: decision.status ?? payload.status,
           };
         }
 
         const mapped = mapDiditStatus(authoritativePayload.status);
-        const estimatedAge = extractEstimatedAge(authoritativePayload);
+        const estimatedAge = extractDiditEstimatedAge(authoritativePayload);
+        const statusRaw = sanitizeDiditStatusRaw(authoritativePayload);
 
         const supabase = createClient<Database>(
           process.env.SUPABASE_URL!,
@@ -103,7 +72,7 @@ export const Route = createFileRoute("/api/public/didit-webhook")({
           _status: mapped.status,
           _result: mapped.result,
           _estimated_age: estimatedAge as number,
-          _status_raw: authoritativePayload as never,
+          _status_raw: statusRaw as never,
         });
 
         if (error) {
