@@ -82,6 +82,7 @@ export function AgeGate() {
   const [reason, setReason] = useState<Reason>("unknown");
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
   const [webhookReceived, setWebhookReceived] = useState<boolean | null>(null);
+  const [staffBypass, setStaffBypass] = useState<boolean | null>(null);
 
   const isGated = GATED_PREFIXES.some((p) => location.pathname.startsWith(p));
 
@@ -129,12 +130,40 @@ export function AgeGate() {
 
   useEffect(() => {
     if (!user) {
+      setStaffBypass(null);
+      return;
+    }
+    let alive = true;
+    setStaffBypass(null);
+    void supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .then(({ data }) => {
+        if (!alive) return;
+        const roles = (data ?? []) as Array<{ role: string }>;
+        setStaffBypass(
+          roles.some((r) => ["super_admin", "admin", "moderator"].includes(String(r.role))),
+        );
+      });
+    return () => {
+      alive = false;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) {
       setStatus(null);
       setChecking(false);
       return;
     }
+    if (staffBypass === null) return;
+    if (staffBypass) {
+      setChecking(false);
+      return;
+    }
     void refresh(user.id);
-  }, [user?.id, location.pathname]);
+  }, [user?.id, location.pathname, staffBypass]);
 
   // Realtime — dacă webhook-ul Didit actualizează `profiles.age_status`, primim
   // instant update-ul fără refresh sau navigare.
@@ -168,12 +197,14 @@ export function AgeGate() {
 
   if (authLoading || !user || !isGated) return null;
 
+  if (staffBypass) return null;
+
   const userForced =
     typeof window !== "undefined" && sessionStorage.getItem("force_age_gate") === "1";
 
   if (!enforce && !userForced) return null;
 
-  if (checking || status === null) {
+  if (staffBypass === null || checking || status === null) {
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-xl">
         <Loader2 className="size-6 animate-spin text-primary" />
