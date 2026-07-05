@@ -1,7 +1,13 @@
 // Locale detection + persistence for UI labels (options, chips).
-// Uses i18next as the single source of truth so it stays in sync with the
-// existing LanguageSwitcher in Settings. DB values remain canonical English
-// keys — this only affects display.
+// Uses i18next as the single source of truth so onboarding shell, profile
+// chips, and any other option label all agree on the same locale. DB values
+// stay canonical English keys — this only affects display.
+//
+// First launch: i18next-browser-languagedetector reads navigator.language,
+// caches the resolved value in localStorage ("vz-lang") and honours the
+// supportedLngs list from `src/lib/i18n.ts`. `resolvedLanguage` gives us the
+// locale i18n will actually serve (e.g. "ro"/"en" today), so the option
+// dictionary can't drift ahead of the shell.
 
 import { useEffect, useState } from "react";
 import i18n from "@/lib/i18n";
@@ -24,21 +30,31 @@ function normalize(code: string | undefined | null): UiLocale {
   return (SUPPORTED_UI_LOCALES as readonly string[]).includes(short) ? (short as UiLocale) : "en";
 }
 
+/** Prefer what i18n will actually render (respects supportedLngs + fallback). */
+function currentI18nLocale(): UiLocale {
+  return normalize(i18n.resolvedLanguage ?? i18n.language);
+}
+
 export function loadUiLocale(): UiLocale {
-  return normalize(i18n.language);
+  return currentI18nLocale();
 }
 
 /** React hook — re-renders when i18next language changes. */
 export function useUiLocale(): UiLocale {
   const [locale, setLocale] = useState<UiLocale>(() => loadUiLocale());
   useEffect(() => {
-    function onChange(lng: string) {
-      setLocale(normalize(lng));
+    function onChange() {
+      setLocale(currentI18nLocale());
     }
     i18n.on("languageChanged", onChange);
+    // If i18n finishes initializing after mount (SSR hydrate), sync once.
+    if (i18n.isInitialized) onChange();
+    else i18n.on("initialized", onChange);
     return () => {
       i18n.off("languageChanged", onChange);
+      i18n.off("initialized", onChange);
     };
   }, []);
   return locale;
 }
+
