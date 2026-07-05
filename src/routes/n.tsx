@@ -772,7 +772,7 @@ function PhotosStep({
     try {
       for (const file of Array.from(files)) {
         if (file.size > 8 * 1024 * 1024) {
-          toast.error(`${file.name} depășește 8MB.`);
+          toast.error(t("onboarding.photos.tooBig", { name: file.name }));
           continue;
         }
         const ext = file.name.split(".").pop() || "jpg";
