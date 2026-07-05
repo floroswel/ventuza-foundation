@@ -33,6 +33,18 @@ export const Route = createFileRoute("/verify")({
 
 type AgeStatus = "unverified" | "pending" | "verified" | "failed" | "expired" | null;
 
+type DiditReason =
+  | "verified"
+  | "no_session"
+  | "awaiting_user"
+  | "no_webhook_event"
+  | "in_review"
+  | "pending_provider"
+  | "failed"
+  | "expired"
+  | "declined"
+  | "unknown";
+
 type DiditStatus = {
   profile: { age_status: string | null; age_verified_at: string | null; age_provider: string | null } | null;
   lastSession: {
@@ -43,8 +55,39 @@ type DiditStatus = {
     session_url: string | null;
     created_at: string;
     resolved_at: string | null;
+    webhook_received: boolean;
   } | null;
+  reasonCode: DiditReason;
+  lastUpdatedAt: string | null;
 };
+
+const REASON_COPY: Record<DiditReason, string> = {
+  verified: "Cont verificat.",
+  no_session: "Nu ai pornit încă o sesiune de verificare.",
+  awaiting_user: "Sesiune deschisă la Didit — nu ai finalizat încă selfie-ul.",
+  no_webhook_event: "Sesiune creată, dar nu am primit încă niciun eveniment de la Didit (webhook).",
+  in_review: "Verificarea ta este în review manual la Didit.",
+  pending_provider: "Didit procesează încă rezultatul.",
+  failed: "Sesiunea anterioară a fost abandonată. Poți relua verificarea.",
+  expired: "Sesiunea a expirat. Pornește o nouă verificare.",
+  declined: "Verificarea a fost respinsă. Poți încerca din nou.",
+  unknown: "Status necunoscut — reîmprospătează.",
+};
+
+function formatDateTime(iso: string | null): string {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("ro-RO", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+}
 
 function VerifyPage() {
   const { user, loading: authLoading } = useAuth();
@@ -167,12 +210,41 @@ function VerifyPage() {
           <section className="mt-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">
             <div className="flex items-start gap-3">
               <Loader2 className="mt-0.5 size-5 animate-spin text-amber-400" />
-              <div>
+              <div className="min-w-0 flex-1">
                 <p className="font-semibold text-amber-200">Verificare în curs</p>
                 <p className="mt-1 text-muted-foreground">
-                  Am înregistrat sesiunea ta Didit. Aștept rezultatul — pagina se actualizează
-                  automat.
+                  {REASON_COPY[status?.reasonCode ?? "unknown"]}
                 </p>
+                <dl className="mt-3 space-y-1 text-xs text-muted-foreground">
+                  <div className="flex justify-between gap-2">
+                    <dt>Motiv tehnic</dt>
+                    <dd className="font-mono text-amber-200">{status?.reasonCode ?? "—"}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt>Status Didit</dt>
+                    <dd className="font-mono">{lastSession?.status ?? "—"}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt>Webhook primit</dt>
+                    <dd className="font-mono">{lastSession?.webhook_received ? "da" : "nu"}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt>Sesiune creată</dt>
+                    <dd className="font-mono">{formatDateTime(lastSession?.created_at ?? null)}</dd>
+                  </div>
+                  <div className="flex justify-between gap-2">
+                    <dt>Ultima actualizare</dt>
+                    <dd className="font-mono">{formatDateTime(status?.lastUpdatedAt ?? null)}</dd>
+                  </div>
+                  {lastSession?.session_id && (
+                    <div className="flex justify-between gap-2">
+                      <dt>Sesiune</dt>
+                      <dd className="truncate font-mono" title={lastSession.session_id}>
+                        {lastSession.session_id.slice(0, 8)}…
+                      </dd>
+                    </div>
+                  )}
+                </dl>
                 {lastSession?.session_url && (
                   <a
                     href={lastSession.session_url}

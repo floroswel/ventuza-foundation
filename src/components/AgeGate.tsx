@@ -32,6 +32,44 @@ const GATED_PREFIXES = [
 ];
 
 type Status = "unverified" | "pending" | "verified" | "failed" | "expired" | null;
+type Reason =
+  | "verified"
+  | "no_session"
+  | "awaiting_user"
+  | "no_webhook_event"
+  | "in_review"
+  | "pending_provider"
+  | "failed"
+  | "expired"
+  | "declined"
+  | "unknown";
+
+const REASON_SHORT: Record<Reason, string> = {
+  verified: "Verificat",
+  no_session: "Nicio sesiune pornită",
+  awaiting_user: "Selfie neterminat",
+  no_webhook_event: "Fără eveniment de la Didit",
+  in_review: "Review manual Didit",
+  pending_provider: "Se procesează la Didit",
+  failed: "Sesiune abandonată",
+  expired: "Sesiune expirată",
+  declined: "Respins",
+  unknown: "Necunoscut",
+};
+
+function fmtTime(iso: string | null): string {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("ro-RO", {
+      day: "2-digit",
+      month: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return iso;
+  }
+}
 
 export function AgeGate() {
   const { user, loading: authLoading } = useAuth();
@@ -41,36 +79,47 @@ export function AgeGate() {
   const [status, setStatus] = useState<Status>(null);
   const [checking, setChecking] = useState(true);
   const [enforce, setEnforce] = useState<boolean>(true);
+  const [reason, setReason] = useState<Reason>("unknown");
+  const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null);
+  const [webhookReceived, setWebhookReceived] = useState<boolean | null>(null);
 
   const isGated = GATED_PREFIXES.some((p) => location.pathname.startsWith(p));
 
   const refresh = async (uid: string) => {
     setChecking(true);
-    const { data } = await supabase
-      .from("profiles")
-      .select("age_status")
-      .eq("id", uid)
-      .maybeSingle();
-    const s = (data?.age_status as Status) ?? "unverified";
-    setStatus(s);
-    setChecking(false);
-    // Dacă e în pending, cere sincronizare cu Didit în background —
-    // așa prindem aprobările manuale din dashboard-ul Didit fără webhook.
-    if (s === "pending" || s === "unverified") {
-      try {
-        const { syncMyDiditStatus } = await import("@/lib/didit.functions");
-        const res = await syncMyDiditStatus();
-        if (res && "ok" in res && res.ok) {
-          const { data: fresh } = await supabase
-            .from("profiles")
-            .select("age_status")
-            .eq("id", uid)
-            .maybeSingle();
-          if (fresh?.age_status) setStatus(fresh.age_status as Status);
+    try {
+      const { getMyDiditStatus, syncMyDiditStatus } = await import("@/lib/didit.functions");
+      const res = await getMyDiditStatus();
+      const s = (res.profile?.age_status as Status) ?? "unverified";
+      setStatus(s);
+      setReason(res.reasonCode as Reason);
+      setLastUpdatedAt(res.lastUpdatedAt);
+      setWebhookReceived(res.lastSession?.webhook_received ?? null);
+      setChecking(false);
+
+      if (s === "pending" || s === "unverified") {
+        try {
+          const sync = await syncMyDiditStatus();
+          if (sync && "ok" in sync && sync.ok) {
+            const fresh = await getMyDiditStatus();
+            setStatus((fresh.profile?.age_status as Status) ?? "unverified");
+            setReason(fresh.reasonCode as Reason);
+            setLastUpdatedAt(fresh.lastUpdatedAt);
+            setWebhookReceived(fresh.lastSession?.webhook_received ?? null);
+          }
+        } catch {
+          // silențios
         }
-      } catch {
-        // silențios — nu e sesiune, sau nu are decizie încă
       }
+    } catch {
+      // fallback minim la citirea profilului dacă server fn pică
+      const { data } = await supabase
+        .from("profiles")
+        .select("age_status")
+        .eq("id", uid)
+        .maybeSingle();
+      setStatus((data?.age_status as Status) ?? "unverified");
+      setChecking(false);
     }
   };
 
@@ -152,6 +201,27 @@ export function AgeGate() {
               : "Contul tău trebuie verificat pentru a accesa această secțiune. Verificarea durează ~30 secunde și se face prin Didit (procesator UE)."}
           </p>
         </div>
+
+        {isPending && (
+          <dl className="rounded-lg border border-border/60 bg-background/40 p-3 text-left text-xs space-y-1">
+            <div className="flex justify-between gap-2">
+              <dt className="text-muted-foreground">Motiv</dt>
+              <dd className="font-medium">{REASON_SHORT[reason]}</dd>
+            </div>
+            <div className="flex justify-between gap-2">
+              <dt className="text-muted-foreground">Cod</dt>
+              <dd className="font-mono text-[10px]">{reason}</dd>
+            </div>
+            <div className="flex justify-between gap-2">
+              <dt className="text-muted-foreground">Webhook</dt>
+              <dd className="font-mono">{webhookReceived == null ? "—" : webhookReceived ? "primit" : "neprimit"}</dd>
+            </div>
+            <div className="flex justify-between gap-2">
+              <dt className="text-muted-foreground">Actualizat</dt>
+              <dd className="font-mono">{fmtTime(lastUpdatedAt)}</dd>
+            </div>
+          </dl>
+        )}
 
         <button
           onClick={() => navigate({ to: "/verify" as never })}

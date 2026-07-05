@@ -48,16 +48,63 @@ export const getMyDiditStatus = createServerFn({ method: "GET" })
         .maybeSingle(),
       context.supabase
         .from("didit_sessions")
-        .select("session_id, status, result, estimated_age, session_url, created_at, resolved_at")
+        .select(
+          "session_id, status, result, estimated_age, session_url, created_at, resolved_at, status_raw",
+        )
         .eq("user_id", context.userId)
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle(),
     ]);
 
+    const session = sessionRes.data ?? null;
+    // Derivăm un cod de motiv pentru UI. `status_raw` e non-null doar dacă
+    // webhook-ul sau syncul a aplicat vreodată o decizie pe sesiune.
+    let reasonCode:
+      | "verified"
+      | "no_session"
+      | "awaiting_user"
+      | "no_webhook_event"
+      | "in_review"
+      | "pending_provider"
+      | "failed"
+      | "expired"
+      | "declined"
+      | "unknown" = "unknown";
+    if (profileRes.data?.age_status === "verified") reasonCode = "verified";
+    else if (!session) reasonCode = "no_session";
+    else {
+      const s = String(session.status ?? "").toLowerCase();
+      const hasEvent = session.status_raw != null;
+      if (s === "declined") reasonCode = "declined";
+      else if (s === "expired" || s === "kyc_expired") reasonCode = "expired";
+      else if (s === "abandoned") reasonCode = "failed";
+      else if (s === "in_review") reasonCode = "in_review";
+      else if (s === "created" && !hasEvent) reasonCode = "no_webhook_event";
+      else if (s === "created" && hasEvent) reasonCode = "awaiting_user";
+      else reasonCode = "pending_provider";
+    }
+
     return {
       profile: profileRes.data ?? null,
-      lastSession: sessionRes.data ?? null,
+      lastSession: session
+        ? {
+            session_id: session.session_id,
+            status: session.status,
+            result: session.result,
+            estimated_age: session.estimated_age,
+            session_url: session.session_url,
+            created_at: session.created_at,
+            resolved_at: session.resolved_at,
+            webhook_received: session.status_raw != null,
+          }
+        : null,
+      reasonCode,
+      lastUpdatedAt:
+        session?.resolved_at ??
+        profileRes.data?.age_verified_at ??
+        session?.created_at ??
+        null,
     };
   });
 
