@@ -445,15 +445,16 @@ function AuthPage() {
                 <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.9-1.4-.1-2.8.9-3.5.9-.7 0-1.9-.8-3.1-.8-1.6 0-3 .9-3.8 2.4-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2-.1 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-1.1 2.8-2.3.9-1.3 1.2-2.6 1.3-2.7-.1 0-2.4-.9-2.4-3.7zM14.4 5.6c.6-.8 1.1-1.9 1-3-1 .1-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.5 2.8-1.3z" />
               </svg>
             )}
-            Continue with Apple
+            {t("auth.continueApple")}
           </button>
         </div>
 
         <div className="my-6 flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
           <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-            or with email
+            {t("auth.orEmail")}
           </span>
+
           <div className="h-px flex-1 bg-border" />
         </div>
 
