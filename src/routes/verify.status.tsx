@@ -13,7 +13,7 @@ import {
 
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
-import { getMyDiditStatus } from "@/lib/didit.functions";
+import { getMyDiditStatus, syncMyDiditStatus } from "@/lib/didit.functions";
 
 export const Route = createFileRoute("/verify/status")({
   ssr: false,
