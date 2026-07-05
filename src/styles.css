@@ -244,3 +244,9 @@ html {
   animation: admin-shimmer 1.4s linear infinite;
 }
 
+
+@keyframes progress-indeterminate {
+  0% { transform: translateX(-100%); }
+  50% { transform: translateX(120%); }
+  100% { transform: translateX(300%); }
+}
