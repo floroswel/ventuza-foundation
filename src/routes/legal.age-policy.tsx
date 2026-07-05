@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+
 
 export const Route = createFileRoute("/legal/age-policy")({
   head: () => ({
@@ -39,9 +41,10 @@ function AgePolicyPage() {
 
             <h2 className="mt-6 text-base font-semibold">1. Serviciu exclusiv pentru adulți</h2>
             <p className="mt-2 text-foreground/85">
-              Ventuza este o aplicație de dating și socializare destinată EXCLUSIV persoanelor de{" "}
-              <strong>18 ani și peste</strong>. Crearea unui cont sau utilizarea aplicației de către
-              minori este interzisă și constituie încălcare a Termenilor.
+              {OPERATOR.brand} este o aplicație de dating și socializare destinată EXCLUSIV
+              persoanelor de <strong>18 ani și peste</strong>. Aplicația este operată de{" "}
+              {OPERATOR.legalName}. Crearea unui cont sau utilizarea aplicației de către minori
+              este interzisă și constituie încălcare a Termenilor.
             </p>
 
             <h2 className="mt-6 text-base font-semibold">2. Mecanisme de verificare a vârstei</h2>
@@ -57,17 +60,33 @@ function AgePolicyPage() {
                 forțată ON indiferent de feature flags.
               </li>
               <li>
-                <strong>Verificare internă (liveness + moderator)</strong> — 3 selfie-uri live cu
-                gesturi random (challenge), stocate în bucket privat și revizuite manual de un
-                moderator Ventuza. Nu implicăm procesator KYC extern. Imaginile se șterg automat
-                în 30 de zile de la decizie.
+                <strong>Estimare vârstă via Didit (procesator extern, UE)</strong> — capturăm un
+                selfie live cu challenge de gest (liveness) și îl trimitem tranzitoriu la{" "}
+                <strong>Didit</strong>, procesatorul nostru pentru <em>age estimation</em>.
+                Didit rulează un model de estimare a vârstei pe imagine, ne întoarce doar un
+                verdict pass/fail (18+ sau nu) și șterge imaginea imediat după emiterea
+                rezultatului. <strong>Nu solicităm și nu stocăm document de identitate</strong>.
+                Procesarea are loc în UE, cu temei GDPR Art. 9(2)(a) — consimțământ explicit
+                pentru date biometrice, înregistrat în <code>consent_log</code> înainte de
+                captură. Vezi{" "}
+                <Link className="text-primary" to="/legal/subprocessors">
+                  /legal/subprocessors
+                </Link>{" "}
+                pentru datele complete despre Didit.
               </li>
               <li>
-                <strong>Detecție comportamentală</strong> — semnale (limbaj, fotografii, raportări)
-                escaladate automat către moderare. Conturile suspecte sunt suspendate până la
-                re-verificare.
+                <strong>Moderator uman Ventuza (cazuri borderline / raportări)</strong> — dacă
+                estimarea Didit e la limită sau dacă un cont este raportat pentru suspiciune de
+                minor, un moderator uman revizuiește manual câteva selfie-uri live într-un
+                bucket privat Ventuza. Imaginile se șterg automat în ≤30 de zile de la decizie.
+              </li>
+              <li>
+                <strong>Detecție comportamentală</strong> — semnale (limbaj, fotografii,
+                raportări) escaladate automat către moderare. Conturile suspecte sunt suspendate
+                până la re-verificare.
               </li>
             </ul>
+
 
             <h2 className="mt-6 text-base font-semibold">
               3. Ce se întâmplă dacă găsim un cont minor
@@ -132,9 +151,14 @@ function AgePolicyPage() {
               2022/2065 (DSA — Art. 28 privind protecția minorilor pe platforme online), Google Play
               Families Policy.
             </p>
+            <h2 className="mt-6 text-base font-semibold">7. Operator</h2>
+            <div className="mt-2">
+              <OperatorIdentificationBlock compact />
+            </div>
           </article>
         }
       />
     </div>
   );
 }
+
