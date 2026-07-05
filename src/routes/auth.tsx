@@ -465,7 +465,7 @@ function AuthPage() {
               htmlFor="email"
               className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
             >
-              Email
+              {t("auth.email")}
             </Label>
             <div className="relative">
               <Mail className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -477,7 +477,7 @@ function AuthPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="pl-10"
-                placeholder="you@domain.com"
+                placeholder={t("auth.emailPlaceholder")}
               />
             </div>
           </div>
@@ -487,7 +487,7 @@ function AuthPage() {
               htmlFor="password"
               className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
             >
-              Password
+              {t("auth.password")}
             </Label>
             <div className="relative">
               <Lock className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -500,13 +500,17 @@ function AuthPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-10 pr-10"
-                placeholder={mode === "signup" ? "At least 8 characters" : "Your password"}
+                placeholder={
+                  mode === "signup"
+                    ? t("auth.passwordPlaceholderSignup")
+                    : t("auth.passwordPlaceholderLogin")
+                }
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
               >
                 {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
               </button>
@@ -517,7 +521,7 @@ function AuthPage() {
                 onClick={onForgotPassword}
                 className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary"
               >
-                Forgot password?
+                {t("auth.forgot")}
               </button>
             )}
           </div>
@@ -529,7 +533,7 @@ function AuthPage() {
                   htmlFor="birthdate"
                   className="mb-1 block text-xs uppercase tracking-[0.18em] text-muted-foreground"
                 >
-                  Data nașterii
+                  {t("auth.birthdate")}
                 </Label>
                 <Input
                   id="birthdate"
@@ -541,7 +545,7 @@ function AuthPage() {
                   className="w-full"
                 />
                 {birthDate && (ageFromBirthDate(birthDate) ?? 0) < 18 && (
-                  <p className="mt-1 text-xs text-destructive">Trebuie să ai cel puțin 18 ani.</p>
+                  <p className="mt-1 text-xs text-destructive">{t("auth.minAge")}</p>
                 )}
               </div>
               <label className="flex cursor-pointer items-start gap-3 text-sm text-foreground">
@@ -552,7 +556,7 @@ function AuthPage() {
                   className="mt-0.5 size-4 accent-primary"
                 />
                 <span>
-                  I confirm I am <strong>18 years or older</strong>.
+                  <Trans i18nKey="auth.over18" components={{ 1: <strong /> }} />
                 </span>
               </label>
               <label className="flex cursor-pointer items-start gap-3 text-sm text-foreground">
@@ -563,25 +567,29 @@ function AuthPage() {
                   className="mt-0.5 size-4 accent-primary"
                 />
                 <span>
-                  I accept the{" "}
-                  <Link
-                    to="/legal/terms"
-                    className="text-primary underline-offset-2 hover:underline"
-                  >
-                    Terms
-                  </Link>{" "}
-                  &amp;{" "}
-                  <Link
-                    to="/legal/privacy"
-                    className="text-primary underline-offset-2 hover:underline"
-                  >
-                    Privacy Policy
-                  </Link>
-                  .
+                  <Trans
+                    i18nKey="auth.acceptTerms"
+                    components={{
+                      1: (
+                        <Link
+                          to="/legal/terms"
+                          className="text-primary underline-offset-2 hover:underline"
+                        />
+                      ),
+                      3: (
+                        <Link
+                          to="/legal/privacy"
+                          className="text-primary underline-offset-2 hover:underline"
+                        />
+                      ),
+                    }}
+                  />
                 </span>
               </label>
             </div>
           )}
+
+
 
           <TurnstileWidget
             key={captchaNonce}
