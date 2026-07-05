@@ -18,6 +18,48 @@ export type DiditCreateSessionResponse = {
   created_at?: string;
 };
 
+export type DiditStatusPayload = {
+  session_id?: string;
+  status?: string;
+  webhook_type?: string;
+  timestamp?: number;
+  created_at?: number;
+  workflow_id?: string;
+  workflow_version?: number;
+  vendor_data?: string;
+  trigger?: string;
+  decision?: {
+    age_estimation?: {
+      age?: number;
+      estimated_age?: number;
+      min_age?: number;
+    };
+  };
+  age_estimation?: number | {
+    age?: number;
+    estimated_age?: number;
+    min_age?: number;
+  };
+  liveness_checks?: Array<{
+    status?: string;
+    node_id?: string;
+    age_estimation?: number | {
+      age?: number;
+      estimated_age?: number;
+      min_age?: number;
+    };
+    warnings?: unknown;
+  }>;
+  reviews?: Array<{
+    new_status?: string;
+    created_at?: string;
+    comment?: string;
+  }>;
+  warnings?: unknown;
+  resubmit_info?: unknown;
+  [k: string]: unknown;
+};
+
 export async function diditCreateSession(params: {
   vendorData: string;
   callbackUrl: string;
@@ -196,6 +238,58 @@ export function mapDiditStatus(status: string | null | undefined): {
   }
 }
 
+function ageCandidate(value: unknown): number | null {
+  if (typeof value === "number" && Number.isFinite(value)) return Math.round(value);
+  if (value && typeof value === "object") {
+    const obj = value as { estimated_age?: unknown; age?: unknown; min_age?: unknown };
+    for (const c of [obj.estimated_age, obj.age, obj.min_age]) {
+      if (typeof c === "number" && Number.isFinite(c)) return Math.round(c);
+    }
+  }
+  return null;
+}
+
+export function extractDiditEstimatedAge(payload: DiditStatusPayload): number | null {
+  const directCandidates = [
+    payload.decision?.age_estimation,
+    payload.age_estimation,
+    ...(payload.liveness_checks ?? []).map((check) => check.age_estimation),
+  ];
+  for (const candidate of directCandidates) {
+    const age = ageCandidate(candidate);
+    if (age != null) return age;
+  }
+  return null;
+}
+
+export function sanitizeDiditStatusRaw(payload: DiditStatusPayload): Record<string, unknown> {
+  return {
+    session_id: payload.session_id ?? null,
+    status: payload.status ?? null,
+    webhook_type: payload.webhook_type ?? null,
+    timestamp: payload.timestamp ?? null,
+    created_at: payload.created_at ?? null,
+    workflow_id: payload.workflow_id ?? null,
+    workflow_version: payload.workflow_version ?? null,
+    vendor_data: payload.vendor_data ?? null,
+    trigger: payload.trigger ?? null,
+    age_estimation: extractDiditEstimatedAge(payload),
+    liveness_checks: (payload.liveness_checks ?? []).map((check) => ({
+      status: check.status ?? null,
+      node_id: check.node_id ?? null,
+      age_estimation: ageCandidate(check.age_estimation),
+      warnings: check.warnings ?? null,
+    })),
+    reviews: (payload.reviews ?? []).map((review) => ({
+      new_status: review.new_status ?? null,
+      created_at: review.created_at ?? null,
+      comment: review.comment ?? null,
+    })),
+    warnings: payload.warnings ?? null,
+    resubmit_info: payload.resubmit_info ?? null,
+  };
+}
+
 /**
  * Interoghează Didit pentru decizia unei sesiuni (folosit la refresh manual
  * când webhook-ul nu a ajuns — util în preview / dev).
@@ -217,7 +311,7 @@ export async function diditFetchDecision(sessionId: string): Promise<{
     console.error("[didit] fetch_decision failed", res.status, body.slice(0, 500));
     throw new Error("didit_fetch_decision_failed");
   }
-  const json = (await res.json()) as Record<string, unknown>;
+  const json = (await res.json()) as DiditStatusPayload;
   const status = (json.status as string | undefined) ?? null;
   return { status, raw: json };
 }
