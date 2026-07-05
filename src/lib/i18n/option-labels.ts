@@ -216,3 +216,85 @@ export function useOptionLabel(): (value: string) => string {
   const locale = useUiLocale();
   return useCallback((value: string) => optionLabel(value, locale), [locale]);
 }
+
+// ---------------------------------------------------------------------------
+// Reverse index: translated label → canonical English key.
+//
+// Everything the app stores in DB (profiles.gender, orientation, interests,
+// looking_for, tribes, prompts.question, …) MUST be a canonical key so
+// discover filters, RPCs and matching keep working across locales. Chips in
+// the UI already emit the canonical value on toggle, but this reverse index
+// is defense-in-depth for any code path that ever receives a translated
+// label (paste, imported data, legacy row).
+// ---------------------------------------------------------------------------
+
+const REVERSE_INDEX: Map<string, string> = (() => {
+  const m = new Map<string, string>();
+  for (const [canonical, entry] of Object.entries(DICT)) {
+    // Canonical itself always maps to itself (case-sensitive) and case-insensitive.
+    m.set(canonical.toLowerCase(), canonical);
+    for (const label of Object.values(entry)) {
+      if (!label) continue;
+      const k = label.toLowerCase();
+      // Never let a translation win over its own canonical key.
+      if (!m.has(k)) m.set(k, canonical);
+    }
+  }
+  return m;
+})();
+
+/**
+ * Best-effort inverse of `optionLabel`. Returns the canonical English value
+ * for any known translation (case-insensitive); returns the input untouched
+ * if we don't recognise it (custom free-text stays as-is).
+ */
+export function canonicalizeOptionValue(input: string): string {
+  if (!input) return input;
+  return REVERSE_INDEX.get(input.trim().toLowerCase()) ?? input;
+}
+
+/** Normalises an array of option values; drops empties, dedupes canonicals. */
+export function canonicalizeOptionValues(values: readonly string[]): string[] {
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const v of values) {
+    const c = canonicalizeOptionValue(v);
+    if (!c || seen.has(c)) continue;
+    seen.add(c);
+    out.push(c);
+  }
+  return out;
+}
+
+/** True if the value is a known canonical option (case-sensitive). */
+export function isCanonicalOptionValue(value: string): boolean {
+  return Object.prototype.hasOwnProperty.call(DICT, value);
+}
+
+// Dev-only guard: makes it impossible to ship a new option (in
+// profile-options.ts) without a translation entry. Runs once at import time
+// in dev builds, no-op in prod.
+if (import.meta.env?.DEV) {
+  // Lazy import to avoid a circular dep at module init.
+  void import("@/lib/profile-options").then((po) => {
+    const groups: Record<string, string[]> = po as unknown as Record<string, string[]>;
+    const missing: string[] = [];
+    for (const [name, arr] of Object.entries(groups)) {
+      if (!Array.isArray(arr) || !name.endsWith("_OPTIONS")) continue;
+      for (const v of arr) {
+        if (typeof v === "string" && !isCanonicalOptionValue(v)) {
+          missing.push(`${name} → "${v}"`);
+        }
+      }
+    }
+    if (missing.length) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        "[i18n/option-labels] Missing translations for canonical options:\n" +
+          missing.join("\n") +
+          "\nAdd them to DICT in src/lib/i18n/option-labels.ts.",
+      );
+    }
+  });
+}
+
