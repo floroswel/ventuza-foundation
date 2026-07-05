@@ -26,6 +26,7 @@ import {
   RELATIONSHIP_STATUS_OPTIONS,
   ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 
 export const Route = createFileRoute("/n")({
   head: () => ({ meta: [{ title: "Build your profile — Ventuza" }] }),
