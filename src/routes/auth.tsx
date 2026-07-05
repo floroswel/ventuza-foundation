@@ -288,20 +288,21 @@ function AuthPage() {
     }
     if (mode === "signup") {
       if (!over18 || !acceptTerms) {
-        toast.error("Confirmă cele două bife (18+ și Termeni) înainte de a continua.");
+        toast.error(t("auth.errors.confirmChecks"));
         return;
       }
       // Require a real birthdate before OAuth signup. The trigger
       // `enforce_min_age_trg` cannot reject NULL, so we enforce here too.
       const age = ageFromBirthDate(birthDate);
       if (age === null) {
-        toast.error("Introdu data nașterii înainte de a continua cu Google/Apple.");
+        toast.error(t("auth.errors.needBirthdateOAuth"));
         return;
       }
       if (age < 18) {
-        toast.error("Trebuie să ai cel puțin 18 ani.");
+        toast.error(t("auth.errors.tooYoung"));
         return;
       }
+
       // Persist în ambele storage-uri ca să supraviețuiască redirect-ului OAuth
       // (sessionStorage e pierdut pe Safari/WebView; localStorage rămâne).
       try {
