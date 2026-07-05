@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { LegalDocOverride } from "@/components/legal/LegalDocOverride";
+import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+
 
 export const Route = createFileRoute("/legal/dsa")({
   head: () => ({
@@ -35,22 +37,28 @@ function DsaPage() {
           <article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
             <p className="text-xs text-muted-foreground">Ultima actualizare: 22 iunie 2026</p>
 
+            <h2 className="mt-6 text-base font-semibold">Identificare furnizor de serviciu</h2>
+            <div className="mt-2">
+              <OperatorIdentificationBlock compact />
+            </div>
+
             <h2 className="mt-6 text-base font-semibold">Punct unic de contact (DSA Art. 11–12)</h2>
             <ul className="list-disc pl-5">
               <li>
                 Pentru autorități:{" "}
-                <a className="text-primary" href="mailto:dsa@ventuza.app">
-                  dsa@ventuza.app
+                <a className="text-primary" href={`mailto:${OPERATOR.emails.dsa}`}>
+                  {OPERATOR.emails.dsa}
                 </a>
               </li>
               <li>
                 Pentru utilizatori:{" "}
-                <a className="text-primary" href="mailto:trust@ventuza.app">
-                  trust@ventuza.app
+                <a className="text-primary" href={`mailto:${OPERATOR.emails.trust}`}>
+                  {OPERATOR.emails.trust}
                 </a>
               </li>
               <li>Limbi: română, engleză</li>
             </ul>
+
 
             <h2 className="mt-6 text-base font-semibold">
               Mecanism notificare conținut ilegal (Art. 16)
@@ -97,9 +105,10 @@ function DsaPage() {
 
             <h2 className="mt-6 text-base font-semibold">Reprezentant legal în UE</h2>
             <p>
-              Ventuza este stabilită în România (UE), deci nu este necesar un reprezentant separat
-              conform DSA Art. 13.
+              {OPERATOR.legalName} este stabilită în România (UE), deci nu este necesar un
+              reprezentant separat conform DSA Art. 13.
             </p>
+
           </article>
         }
       />
