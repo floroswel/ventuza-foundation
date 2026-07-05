@@ -227,11 +227,15 @@ function ThreadPage() {
           null;
         setOther({ ...prof, bio: extra?.bio ?? null, interests: extra?.interests ?? null });
         // Bilateral block check (either direction) — server-side via SECURITY DEFINER RPC.
-        const { data: blockedRes } = await supabase.rpc(
+        // Default to NOT blocked on any error, so a transient RPC failure never disables the composer.
+        const { data: blockedRes, error: blockErr } = await supabase.rpc(
           "is_blocked_between" as never,
           { a: user!.id, b: oid } as never,
         );
-        if (alive) setIsBlocked(Boolean(blockedRes));
+        if (blockErr) {
+          console.warn("[messages] is_blocked_between failed, defaulting to not blocked:", blockErr);
+        }
+        if (alive) setIsBlocked(!blockErr && Boolean(blockedRes));
         await markRead(id, user!.id);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't open chat");
