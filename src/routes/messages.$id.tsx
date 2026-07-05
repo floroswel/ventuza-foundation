@@ -72,8 +72,14 @@ function ThreadPage() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [text, setText] = useState("");
-  const [translations, setTranslations] = useState<Record<string, string>>({});
+  const [translations, setTranslations] = useState<
+    Record<string, { translation: string; detected: string; target: string }>
+  >({});
   const [translatingId, setTranslatingId] = useState<string | null>(null);
+  const [translateOpenFor, setTranslateOpenFor] = useState<string | null>(null);
+  const [targetLang, setTargetLang] = useState<string>(() => loadPreferredTargetLang());
+  const longPressTimerRef = useRef<number | null>(null);
+  const longPressFiredRef = useRef(false);
   const [openers, setOpeners] = useState<string[] | null>(null);
   const [wingmanLoading, setWingmanLoading] = useState(false);
   const [otherTyping, setOtherTyping] = useState(false);
