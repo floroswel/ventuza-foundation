@@ -24,6 +24,13 @@ export const Route = createFileRoute("/api/public/didit-webhook")({
     handlers: {
       POST: async ({ request }) => {
         const raw = await request.text();
+        console.log("[didit-webhook] hit", {
+          bodyLen: raw.length,
+          hasV2: !!request.headers.get("x-signature-v2"),
+          hasSig: !!request.headers.get("x-signature"),
+          hasSimple: !!request.headers.get("x-signature-simple"),
+          hasTs: !!request.headers.get("x-timestamp"),
+        });
         const signature = await verifyDiditSignature({
           rawBody: raw,
           signatureV2: request.headers.get("x-signature-v2"),
@@ -33,7 +40,10 @@ export const Route = createFileRoute("/api/public/didit-webhook")({
           signatureSimple: request.headers.get("x-signature-simple"),
           timestamp: request.headers.get("x-timestamp"),
         });
-        if (!signature.ok) return new Response("invalid signature", { status: 401 });
+        if (!signature.ok) {
+          console.warn("[didit-webhook] signature rejected", { reason: signature.reason });
+          return new Response(`invalid signature: ${signature.reason ?? "unknown"}`, { status: 401 });
+        }
 
         let payload: DiditStatusPayload;
         try {
