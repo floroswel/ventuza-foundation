@@ -300,6 +300,18 @@ const en: typeof ro = {
     save: "Save",
     ariaLabel: "Cookie settings",
   },
+  landing: {
+    badge: "18+ · Premium dating",
+    tagline: "Dating, elevated. Meet people who match your depth — not just your swipe.",
+    createAccount: "Create account",
+    login: "Log in",
+    terms: "Terms",
+    privacy: "Privacy Policy",
+    footer: "By continuing you agree to our <1>Terms</1> and <3>Privacy Policy</3>.",
+    b2bTitle: "For B2B partners",
+    b2bSubtitle: "Venues · events · offers",
+    safety: "Safety & resources",
+  },
 
   onboarding: {
     back: "Back",
