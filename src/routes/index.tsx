@@ -1,8 +1,10 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
+import { Trans, useTranslation } from "react-i18next";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
+import { setLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -32,6 +34,8 @@ export const Route = createFileRoute("/")({
 function Welcome() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation();
+  const current = (i18n.resolvedLanguage || i18n.language || "en").startsWith("ro") ? "ro" : "en";
 
   useEffect(() => {
     if (loading || !user) return;
@@ -64,14 +68,29 @@ function Welcome() {
         style={{ background: "radial-gradient(circle, var(--primary), transparent 65%)" }}
       />
 
+      <div className="absolute right-4 top-4 z-20 inline-flex rounded-full border border-border bg-surface/80 p-0.5 text-[11px] backdrop-blur">
+        {(["ro", "en"] as const).map((lng) => (
+          <button
+            key={lng}
+            type="button"
+            onClick={() => void setLanguage(lng)}
+            className={`rounded-full px-3 py-1 uppercase tracking-wider transition-colors ${
+              current === lng ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            {lng}
+          </button>
+        ))}
+      </div>
+
       <section className="relative z-10 flex flex-col items-center">
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-surface px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-primary">
           <span className="inline-block size-1.5 rounded-full bg-primary" />
-          18+ · Premium dating
+          {t("landing.badge")}
         </div>
         <h1 className="wordmark text-6xl font-medium leading-[0.95] sm:text-7xl">Ventuza</h1>
         <p className="mt-5 max-w-sm text-base leading-relaxed text-muted-foreground">
-          Dating, elevated. Meet people who match your depth — not just your swipe.
+          {t("landing.tagline")}
         </p>
 
         <div className="mt-10 flex w-full max-w-xs flex-col gap-3">
@@ -80,27 +99,25 @@ function Welcome() {
             search={{ mode: "signup" }}
             className="inline-flex h-12 items-center justify-center rounded-full bg-primary text-sm uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Create account
+            {t("landing.createAccount")}
           </Link>
           <Link
             to="/auth"
             search={{ mode: "login" }}
             className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 bg-surface text-sm uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary/10"
           >
-            Log in
+            {t("landing.login")}
           </Link>
         </div>
 
         <p className="mt-8 max-w-xs text-[11px] leading-relaxed text-muted-foreground">
-          By continuing you agree to our{" "}
-          <Link to="/legal/terms" className="text-primary hover:underline">
-            Terms
-          </Link>{" "}
-          and{" "}
-          <Link to="/legal/privacy" className="text-primary hover:underline">
-            Privacy Policy
-          </Link>
-          .
+          <Trans
+            i18nKey="landing.footer"
+            components={{
+              1: <Link to="/legal/terms" className="text-primary hover:underline" />,
+              3: <Link to="/legal/privacy" className="text-primary hover:underline" />,
+            }}
+          />
         </p>
 
         <div className="mt-12 flex w-full max-w-xs flex-col items-stretch gap-3">
@@ -109,9 +126,9 @@ function Welcome() {
             className="group inline-flex items-center justify-between rounded-2xl border border-primary/30 bg-surface/60 px-4 py-3 text-left text-xs text-foreground transition-colors hover:border-primary/60 hover:bg-primary/5"
           >
             <span>
-              <span className="block text-sm font-medium">Pentru parteneri B2B</span>
+              <span className="block text-sm font-medium">{t("landing.b2bTitle")}</span>
               <span className="block text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                Locuri · evenimente · oferte
+                {t("landing.b2bSubtitle")}
               </span>
             </span>
             <span className="text-primary transition-transform group-hover:translate-x-0.5">→</span>
@@ -120,7 +137,7 @@ function Welcome() {
             to="/safety"
             className="text-center text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary"
           >
-            Siguranță & resurse
+            {t("landing.safety")}
           </Link>
         </div>
       </section>

@@ -98,6 +98,18 @@ const ro = {
     save: "Salvează",
     ariaLabel: "Setări cookie-uri",
   },
+  landing: {
+    badge: "18+ · Dating premium",
+    tagline: "Dating, la alt nivel. Cunoaște oameni pe măsura ta — nu doar a swipe-ului tău.",
+    createAccount: "Creează cont",
+    login: "Autentificare",
+    terms: "Termeni",
+    privacy: "Politica de confidențialitate",
+    footer: "Continuând, ești de acord cu <1>Termenii</1> și <3>Politica de confidențialitate</3>.",
+    b2bTitle: "Pentru parteneri B2B",
+    b2bSubtitle: "Locuri · evenimente · oferte",
+    safety: "Siguranță & resurse",
+  },
 
   onboarding: {
     back: "Înapoi",
@@ -287,6 +299,18 @@ const en: typeof ro = {
     back: "Back",
     save: "Save",
     ariaLabel: "Cookie settings",
+  },
+  landing: {
+    badge: "18+ · Premium dating",
+    tagline: "Dating, elevated. Meet people who match your depth — not just your swipe.",
+    createAccount: "Create account",
+    login: "Log in",
+    terms: "Terms",
+    privacy: "Privacy Policy",
+    footer: "By continuing you agree to our <1>Terms</1> and <3>Privacy Policy</3>.",
+    b2bTitle: "For B2B partners",
+    b2bSubtitle: "Venues · events · offers",
+    safety: "Safety & resources",
   },
 
   onboarding: {
