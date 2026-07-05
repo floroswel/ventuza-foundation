@@ -256,13 +256,14 @@ function ChipSection({
   value: string[];
   onChange: (v: string[]) => void;
 }) {
+  const t = useOptionLabel();
   return (
     <section className="space-y-3">
       <Label>{label}</Label>
       <div className="flex flex-wrap gap-2">
         {options.map((o) => (
           <Chip key={o} active={value.includes(o)} onClick={() => onChange(toggle(value, o))}>
-            {o}
+            {t(o)}
           </Chip>
         ))}
       </div>
