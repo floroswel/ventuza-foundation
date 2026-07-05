@@ -3,10 +3,11 @@ import { useEffect, useState } from "react";
 import { z } from "zod";
 import { Mail, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
-import { mapAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
+import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
 
 const searchSchema = z.object({ email: z.string().email().optional() });
 
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/auth/check-email")({
 });
 
 function CheckEmailPage() {
+  const { t } = useTranslation();
   const search = Route.useSearch();
   const [email, setEmail] = useState<string | undefined>(search.email);
   const [cooldown, setCooldown] = useState(60);
@@ -37,12 +39,12 @@ function CheckEmailPage() {
 
   useEffect(() => {
     if (cooldown <= 0) return;
-    const t = setTimeout(() => setCooldown((c) => c - 1), 1000);
-    return () => clearTimeout(t);
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
   }, [cooldown]);
 
   function handleError(err: unknown) {
-    const mapped = mapAuthError(err);
+    const mapped = translateAuthError(t, err);
     setResendError(mapped);
     if (mapped.retryAfterSec) setCooldown(mapped.retryAfterSec);
     if (mapped.resetCaptcha) {
@@ -54,7 +56,7 @@ function CheckEmailPage() {
 
   async function resend() {
     if (!email) {
-      toast.error("Lipsește adresa de email — întoarce-te la pasul de înregistrare.");
+      toast.error(t("auth.errors.missingEmailBack"));
       return;
     }
     if (captchaRequired && !captchaToken) {
@@ -73,7 +75,7 @@ function CheckEmailPage() {
         },
       });
       if (error) throw error;
-      toast.success("Trimis. Verifică inbox + spam.");
+      toast.success(t("auth.errors.resendSent"));
       setCaptchaToken(null);
       setCaptchaNonce((n) => n + 1);
       setCooldown(60);
@@ -92,25 +94,24 @@ function CheckEmailPage() {
         <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10">
           <Mail className="size-6 text-primary" />
         </div>
-        <h1 className="text-2xl font-semibold">Verifică-ți emailul</h1>
+        <h1 className="text-2xl font-semibold">{t("auth.checkEmail.pageTitle")}</h1>
         <p className="text-sm text-muted-foreground">
-          Ți-am trimis un link de confirmare{" "}
+          {t("auth.checkEmail.sentLink")}{" "}
           {email ? (
             <>
-              la <span className="font-medium text-foreground">{email}</span>.
+              {t("auth.checkEmail.sentLinkTo")}{" "}
+              <span className="font-medium text-foreground">{email}</span>.
             </>
           ) : (
             "."
           )}{" "}
-          Deschide-l pentru a-ți activa contul.
+          {t("auth.checkEmail.openToActivate")}
         </p>
-        <p className="text-xs text-muted-foreground">
-          Nu vezi emailul? Verifică folderul Spam / Promoții.
-        </p>
+        <p className="text-xs text-muted-foreground">{t("auth.checkEmail.spamHint")}</p>
         <TurnstileWidget
           key={captchaNonce}
-          onToken={(t) => {
-            setCaptchaToken(t);
+          onToken={(tok) => {
+            setCaptchaToken(tok);
             if (resendError?.resetCaptcha) setResendError(null);
           }}
           onExpire={() => setCaptchaToken(null)}
@@ -126,11 +127,13 @@ function CheckEmailPage() {
         <div className="flex flex-col gap-2 pt-2">
           <Button onClick={resend} disabled={disabled}>
             {resending && <Loader2 className="size-4 animate-spin mr-2" />}
-            {cooldown > 0 ? `Retrimite în ${cooldown}s` : "Retrimite emailul"}
+            {cooldown > 0
+              ? t("auth.checkEmail.resendIn", { s: cooldown })
+              : t("auth.checkEmail.resend")}
           </Button>
           <Button asChild variant="ghost" size="sm">
             <Link to="/auth" search={{ mode: "login" }}>
-              Înapoi la autentificare
+              {t("auth.checkEmail.backToLogin")}
             </Link>
           </Button>
         </div>
