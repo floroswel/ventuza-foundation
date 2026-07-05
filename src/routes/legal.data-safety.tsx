@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ShieldCheck, Lock, Trash2, Eye, EyeOff } from "lucide-react";
 import { BackButton } from "@/components/BackButton";
+import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+
 
 export const Route = createFileRoute("/legal/data-safety")({
   head: () => ({
@@ -120,20 +122,21 @@ const ITEMS: DataItem[] = [
   },
   {
     category: "Selfie verificare vârstă",
-    types: ["3 selfie-uri live cu challenge-uri de gest (liveness)"],
+    types: ["Selfie live cu challenge de gest (liveness)"],
     purpose:
-      "Confirmare 18+ prin flux intern (liveness + moderator uman). Imaginile trăiesc în bucket privat Ventuza și se șterg automat în ≤30 zile de la decizie.",
+      "Confirmare 18+. Imaginea este trimisă tranzitoriu către Didit (procesator UE) pentru estimare automată a vârstei; Didit șterge imaginea imediat și ne întoarce doar pass/fail. Pentru cazuri borderline / raportări, un moderator uman revizuiește într-un bucket privat Ventuza; imaginile se șterg automat în ≤30 zile de la decizie.",
     optional: true,
-    shared: false,
+    shared: true,
     encryptedInTransit: true,
     encryptedAtRest: true,
     userDeletable: true,
     art9: true,
     howToControl:
-      'Consimțământ „Verificare identitate internă" în Setări. Retragerea blochează re-verificarea și marchează imaginile pentru ștergere imediată.',
+      'Consimțământ „Verificare identitate" în Setări (Art. 9(2)(a)). Retragerea blochează re-verificarea și marchează orice imagine reținută pentru ștergere imediată.',
     controlHref: "/settings",
-    processors: [],
+    processors: ["P10 — Didit (age estimation, UE)"],
   },
+
   {
     category: "Input pentru funcții AI",
     types: ["Text bio", "Text openere", "Poze pentru photo coach"],
@@ -197,10 +200,11 @@ function DataSafetyPage() {
         </div>
         <h1 className="text-2xl font-semibold">Siguranța datelor tale</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Această pagină este întreținută de VOMIX GENIUS S.R.L. pentru Ventuza și oglindește exact
-          declarația din formularul <em>Data Safety</em> din Google Play Console. Fără marketing,
-          fără termeni ambigui — categorii, scop, control.
+          Această pagină este întreținută de {OPERATOR.legalName} (operatorul aplicației{" "}
+          {OPERATOR.brand}) și oglindește exact declarația din formularul <em>Data Safety</em> din
+          Google Play Console. Fără marketing, fără termeni ambigui — categorii, scop, control.
         </p>
+
       </header>
 
       <div className="mb-6 grid gap-2 rounded-2xl border border-border bg-surface p-4 text-xs">
@@ -305,11 +309,13 @@ function DataSafetyPage() {
         ))}
       </div>
 
-      <footer className="mt-8 space-y-2 text-xs text-muted-foreground">
+      <footer className="mt-8 space-y-3 text-xs text-muted-foreground">
         <p>
-          <strong className="text-foreground">Nu partajăm datele cu terțe părți pentru publicitate.</strong>{" "}
-          Advertising-ul intern (parteneri Ventuza) folosește doar oraș + interese generice, fără
-          identificatori personali.
+          <strong className="text-foreground">
+            Nu partajăm datele cu terțe părți pentru publicitate.
+          </strong>{" "}
+          Advertising-ul intern (parteneri {OPERATOR.brand}) folosește doar oraș + interese
+          generice, fără identificatori personali.
         </p>
         <p>
           Detalii complete despre baze legale și retenție:{" "}
@@ -337,7 +343,11 @@ function DataSafetyPage() {
           </Link>
           .
         </p>
+        <div className="pt-2">
+          <OperatorIdentificationBlock compact />
+        </div>
       </footer>
+
     </div>
   );
 }
