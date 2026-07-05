@@ -1,6 +1,7 @@
 import { BadgeCheck, Camera, Flame, Image as ImageIcon, Plane, Rocket } from "lucide-react";
 import type { DiscoverFilters } from "@/lib/discover";
 import { TRIBE_OPTIONS, POSITION_OPTIONS } from "@/lib/profile-options";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 import { cn } from "@/lib/utils";
 
 function toggle<T>(arr: T[], v: T) {
