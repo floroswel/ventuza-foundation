@@ -219,7 +219,7 @@ function RootComponent() {
           <PinLockGate />
           <Toaster theme="dark" position="top-center" richColors />
 
-          
+          <LanguageToggle />
           <ConsentPromptHost />
           <VersionGate />
         </NotificationsProvider>
