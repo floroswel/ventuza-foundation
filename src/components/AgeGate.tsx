@@ -51,8 +51,27 @@ export function AgeGate() {
       .select("age_status")
       .eq("id", uid)
       .maybeSingle();
-    setStatus((data?.age_status as Status) ?? "unverified");
+    const s = (data?.age_status as Status) ?? "unverified";
+    setStatus(s);
     setChecking(false);
+    // Dacă e în pending, cere sincronizare cu Didit în background —
+    // așa prindem aprobările manuale din dashboard-ul Didit fără webhook.
+    if (s === "pending" || s === "unverified") {
+      try {
+        const { syncMyDiditStatus } = await import("@/lib/didit.functions");
+        const res = await syncMyDiditStatus();
+        if (res && "ok" in res && res.ok) {
+          const { data: fresh } = await supabase
+            .from("profiles")
+            .select("age_status")
+            .eq("id", uid)
+            .maybeSingle();
+          if (fresh?.age_status) setStatus(fresh.age_status as Status);
+        }
+      } catch {
+        // silențios — nu e sesiune, sau nu are decizie încă
+      }
+    }
   };
 
   useEffect(() => {
