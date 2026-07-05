@@ -277,14 +277,30 @@ if (!i18n.isInitialized) {
 
       interpolation: { escapeValue: false },
       detection: {
+        // First launch: read navigator.language (browser locale from OS) →
+        // cache the resolved value in localStorage under "vz-lang" so every
+        // subsequent screen (onboarding, profile, chips) sees the same code.
         order: ["localStorage", "navigator", "htmlTag"],
         lookupLocalStorage: "vz-lang",
         caches: ["localStorage"],
       },
+    })
+    .then(() => {
+      if (typeof document !== "undefined") {
+        document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language ?? "en";
+      }
     });
+
+  // Keep <html lang> in sync when the user switches language later.
+  i18n.on("languageChanged", (lng) => {
+    if (typeof document !== "undefined") {
+      document.documentElement.lang = lng;
+    }
+  });
 }
 
 export default i18n;
+
 
 export async function setLanguage(lng: "ro" | "en") {
   await i18n.changeLanguage(lng);
