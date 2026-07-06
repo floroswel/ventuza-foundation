@@ -923,9 +923,6 @@ function ThreadPage() {
         }}
       />
 
-          </>
-        )}
-      </div>
 
       {openers && openers.length > 0 && (
         <div className="border-t border-border/60 bg-surface/60 px-3 py-2">
