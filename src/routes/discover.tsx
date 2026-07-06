@@ -57,6 +57,11 @@ import {
   type DiscoverProfile,
 } from "@/lib/discover";
 import {
+  loadDiscoverFilters,
+  saveDiscoverFilters,
+  resetDiscoverFilters,
+} from "@/lib/discover-filters-storage";
+import {
   addFavorite,
   isFavorite,
   removeFavorite,
