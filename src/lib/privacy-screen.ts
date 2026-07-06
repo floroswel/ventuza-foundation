@@ -460,12 +460,14 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     };
     window.addEventListener("keydown", onKey, { capture: true });
     window.addEventListener("keyup", (e) => {
+      if (isAdminSurface()) return;
       if (e.key === "PrintScreen") {
         e.preventDefault();
         panicMask("capture-key");
         void navigator.clipboard?.writeText("").catch(() => undefined);
       }
     }, { capture: true });
+
 
     console.info("[privacy-screen] fallback web întărit: blur/overlay la blur, print, capture keys, pointer leave, copy/cut/drag/select pe media");
   } catch (err) {
