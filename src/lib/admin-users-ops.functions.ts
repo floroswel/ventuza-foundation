@@ -222,12 +222,35 @@ export const adminSearchUsersV2 = createServerFn({ method: "POST" })
       });
     }
 
-    let out = (rows ?? []).map((r: any) => ({
-      ...r,
-      thumb: Array.isArray(r.photos) && r.photos.length ? r.photos[0] : null,
-      photos: undefined,
-      roles: rolesByUser[r.id] ?? [],
-    }));
+    // Signed URLs pentru primul photo (bucket privat `profile-photos`).
+    // Fără asta, thumb-ul din UI ajunge <img src="<user-id>/<file>.jpg">
+    // și browserul dă 404 relativ. Batch — un singur await, TTL scurt (10 min).
+    const thumbKeys = (rows ?? [])
+      .map((r: any) => (Array.isArray(r.photos) && r.photos.length ? String(r.photos[0]) : null))
+      .filter((v: string | null): v is string => !!v);
+    const thumbUrlByKey: Record<string, string> = {};
+    if (thumbKeys.length) {
+      const uniq = Array.from(new Set(thumbKeys));
+      const { data: signed } = await sa.storage
+        .from("profile-photos")
+        .createSignedUrls(uniq, 600);
+      (signed ?? []).forEach((s: any, i: number) => {
+        const key = uniq[i];
+        if (typeof key === "string" && s?.signedUrl) thumbUrlByKey[key] = s.signedUrl;
+      });
+
+    }
+
+    let out = (rows ?? []).map((r: any) => {
+      const key = Array.isArray(r.photos) && r.photos.length ? String(r.photos[0]) : null;
+      return {
+        ...r,
+        thumb: key ? thumbUrlByKey[key] ?? null : null,
+        photos: undefined,
+        roles: rolesByUser[r.id] ?? [],
+      };
+    });
+
 
     // Role filter (post-fetch pentru simplitate — nu impact la limit=200)
     if (data.role && data.role !== "any") {

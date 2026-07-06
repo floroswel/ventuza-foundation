@@ -49,6 +49,8 @@ import {
   adminBulkUserAction,
 } from "@/lib/admin-users-ops.functions";
 import { adminGrantRole, adminRevokeRole, adminDeleteUser } from "@/lib/admin.functions";
+import { isOffensiveName, maskName } from "@/lib/admin-profanity";
+
 
 type UserRow = {
   id: string;
@@ -611,14 +613,24 @@ export function EnterpriseUsersPanel({ meId }: { meId: string }) {
                           </div>
                           <div className="min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className="truncate font-medium text-[var(--admin-text)]">
-                                {u.display_name ?? "(fără nume)"}
-                              </span>
+                              {isOffensiveName(u.display_name) ? (
+                                <span
+                                  className="truncate font-medium text-[var(--admin-warn)]"
+                                  title={`Nume flag-uit (vulgar): ${u.display_name}`}
+                                >
+                                  {maskName(u.display_name)}
+                                </span>
+                              ) : (
+                                <span className="truncate font-medium text-[var(--admin-text)]">
+                                  {u.display_name ?? "(fără nume)"}
+                                </span>
+                              )}
                               {u.verified && <StatusBadge tone="approved">verif</StatusBadge>}
                               {u.partner_suspended_at && (
                                 <StatusBadge tone="rejected">partner off</StatusBadge>
                               )}
                             </div>
+
                             <span
                               className="admin-mono block truncate text-[10px] text-[var(--admin-text-faint)]"
                               title={u.id}
