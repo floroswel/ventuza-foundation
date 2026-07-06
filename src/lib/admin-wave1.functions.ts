@@ -298,6 +298,7 @@ export const adminGetUserView = createServerFn({ method: "POST" })
       }
     }
     const activeSub = (activeSubs.data ?? [])[0] ?? null;
+    const authUser = (authRes as any)?.data?.user ?? null;
     const enrichedProfile: any = p
       ? {
           ...(p as any),
@@ -305,6 +306,9 @@ export const adminGetUserView = createServerFn({ method: "POST" })
           is_premium: !!activeSub,
           last_active_at: (p as any).last_seen ?? null,
           active_subscription: activeSub,
+          auth_email: authUser?.email ?? null,
+          auth_email_confirmed_at: authUser?.email_confirmed_at ?? null,
+          auth_providers: authUser?.app_metadata?.providers ?? [],
         }
       : null;
     return {
