@@ -501,6 +501,10 @@ function SettingsPage() {
         {/* SOS contacts + emergency button */}
         <SosCard />
 
+        {/* Loguri detaliate pentru diagnostic */}
+        <DebugModeCard />
+
+
         {/* Listele mele */}
         <section className="rounded-2xl border border-border bg-surface p-4">
           <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
