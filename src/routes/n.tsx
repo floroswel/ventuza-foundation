@@ -437,10 +437,6 @@ function StepView({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="ob-name">{t("onboarding.basics.nameLabel")}</Label>
-            {/* re-uses parent Input above via id would require restructure; keep as-is */}
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="ob-birth">{t("onboarding.basics.birthLabel")}</Label>
             {(() => {
               const err = validateBirthdate(data.birthdate, t);
