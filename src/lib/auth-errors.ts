@@ -163,7 +163,7 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
       i18nKey: "authErrors.invalidCredentials",
       actionKey: "authErrors.actions.invalidCredentials",
       message: "Email sau parolă incorectă.",
-      action: "Verifică majuscule și caractere speciale. Dacă ai uitat parola, folosește „Am uitat parola".",
+      action: 'Verifică majuscule și caractere speciale. Dacă ai uitat parola, folosește „Am uitat parola”.',
       resetCaptcha: true,
     };
   }
