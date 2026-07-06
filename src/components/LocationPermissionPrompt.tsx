@@ -20,6 +20,16 @@ import { toast } from "sonner";
  */
 const STORAGE_PREFIX = "ventuza_loc_prompt_seen_v1:";
 
+function routeNeedsLocationPrimer(pathname: string) {
+  return (
+    pathname === "/" ||
+    pathname.startsWith("/discover") ||
+    pathname.startsWith("/nearby") ||
+    pathname.startsWith("/cruise") ||
+    pathname.startsWith("/visitors")
+  );
+}
+
 export function LocationPermissionPrompt() {
   const { user } = useAuth();
   const location = useLocation();
@@ -28,15 +38,13 @@ export function LocationPermissionPrompt() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (!routeNeedsLocationPrimer(location.pathname || "/")) setOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
     if (!user) return;
     const path = location.pathname || "/";
-    const needsLocationPrimer =
-      path === "/" ||
-      path.startsWith("/discover") ||
-      path.startsWith("/nearby") ||
-      path.startsWith("/cruise") ||
-      path.startsWith("/visitors");
-    if (!needsLocationPrimer) return;
+    if (!routeNeedsLocationPrimer(path)) return;
     if (forceStealth || hidePreciseLocation || isBlocked) return;
     if (typeof window === "undefined" || !("geolocation" in navigator)) return;
 
