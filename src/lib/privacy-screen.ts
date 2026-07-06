@@ -274,8 +274,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Context menu pe media (permite input-uri și zone marcate explicit).
     const onCtx = (e: MouseEvent) => {
+      if (isAdminSurface()) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
+
       if (t.closest("input, textarea, [contenteditable='true']")) return;
       if (t.closest("[data-allow-context]")) return;
       const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
