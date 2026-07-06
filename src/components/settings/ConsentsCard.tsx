@@ -62,7 +62,7 @@ export function ConsentsCard() {
       if (error) throw error;
       setState((s) => ({ ...s, [kind]: accepted }));
 
-      // Acțiuni cascade pentru retragere (DB-ul are deja triggerul pentru health_data).
+      // Acțiuni cascade pentru retragere (ex: dezabonare push).
       if (!accepted) {
         if (kind === "push_notifications") {
           try {
