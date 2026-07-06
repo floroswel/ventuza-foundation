@@ -210,12 +210,9 @@ function Onboarding() {
         return (
           (data.gender.length > 0 || data.gender_custom.trim().length > 0) &&
           (data.pronouns.length > 0 || data.pronouns_custom.trim().length > 0) &&
-          data.orientation.length > 0
+          data.orientation.length > 0 &&
+          data.looking_for.length > 0
         );
-      case "intent":
-        return data.looking_for.length > 0;
-      case "stats":
-        return true;
       case "personality":
         return data.interests.length >= 3;
       case "photos":
