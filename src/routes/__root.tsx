@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -168,11 +169,8 @@ function ProximityWatcherMount() {
 }
 
 function LocationPermissionPromptMount() {
-  const [show, setShow] = useState(false);
-  useEffect(() => {
-    setShow(!window.location.pathname.startsWith("/admin"));
-  }, []);
-  if (!show) return null;
+  const location = useLocation();
+  if (location.pathname.startsWith("/admin")) return null;
   return <LocationPermissionPrompt />;
 }
 
