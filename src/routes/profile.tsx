@@ -32,12 +32,9 @@ import { RightNowCard } from "@/components/RightNowCard";
 import { PrivateAlbumManager } from "@/components/PrivateAlbum";
 import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { ProfileStatsRow } from "@/components/ProfileStatsRow";
-import { VoicePromptCard } from "@/components/VoicePromptCard";
-import { MusicAnthemCard } from "@/components/MusicAnthemCard";
-import { LifestyleFactsCard } from "@/components/LifestyleFactsCard";
+// VoicePromptCard, MusicAnthemCard, VideoClipCard, DateVibesCard, LifestyleFactsCard —
+// demontate din editor (câmpuri orfane la target). Reactivabile prin re-import + remontare.
 import { ShareProfileCard } from "@/components/ShareProfileCard";
-import { VideoClipCard } from "@/components/VideoClipCard";
-import { DateVibesCard } from "@/components/DateVibesCard";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { BackButton } from "@/components/BackButton";
 import { formatHeight } from "@/lib/discover";
@@ -52,12 +49,6 @@ import {
   POSITION_OPTIONS,
   RELATIONSHIP_STATUS_OPTIONS,
   ETHNICITY_OPTIONS,
-  MEET_AT_OPTIONS,
-  EXPECTATIONS_OPTIONS,
-  SCENES_OPTIONS,
-  SAFETY_OPTIONS,
-  PREP_STATUS_OPTIONS,
-  VACCINATION_OPTIONS,
 } from "@/lib/profile-options";
 import {
   useOptionLabel,
