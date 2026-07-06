@@ -65,6 +65,7 @@ import {
   adminCancelDeletion,
 } from "@/lib/admin-wave1.functions";
 import { adminBanUser, adminUnbanUser, adminSuspendUser } from "@/lib/admin-enterprise.functions";
+import { EnterpriseUser360Panel } from "@/components/admin/EnterpriseUser360Panel";
 
 export const Route = createFileRoute("/admin/users/$id")({
   head: () => ({
@@ -190,6 +191,7 @@ function User360Page() {
       <Tabs defaultValue="overview">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="enterprise">Enterprise</TabsTrigger>
           <TabsTrigger value="auth">Auth & device-uri</TabsTrigger>
           <TabsTrigger value="consents">Consimțăminte</TabsTrigger>
           <TabsTrigger value="reports">Rapoarte</TabsTrigger>
@@ -197,6 +199,10 @@ function User360Page() {
           <TabsTrigger value="risk">Risc</TabsTrigger>
           <TabsTrigger value="gdpr">GDPR</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="enterprise" className="space-y-3 mt-4">
+          <EnterpriseUser360Panel userId={id} />
+        </TabsContent>
 
         <TabsContent value="overview" className="space-y-3 mt-4">
           <Card className="p-4">
