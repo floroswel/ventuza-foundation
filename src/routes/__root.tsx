@@ -230,6 +230,7 @@ function RootComponent() {
           <LanguageToggle />
           <ConsentPromptHost />
           <VersionGate />
+          <DebugPanel />
         </NotificationsProvider>
       </AuthProvider>
     </QueryClientProvider>
