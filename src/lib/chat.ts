@@ -42,6 +42,27 @@ export type ConversationListItem = {
   other_online: boolean;
 };
 
+const MESSAGE_SELECT = [
+  "id",
+  "conversation_id",
+  "sender_id",
+  "body",
+  "read_at",
+  "created_at",
+  "reactions",
+  "media_type",
+  "media_url",
+  "audio_duration_ms",
+  "expires_at",
+  "view_once",
+  "viewed_at",
+  "reply_to_id",
+  "deleted_at",
+  "voice_url",
+  "voice_duration_sec",
+  "translated_text",
+].join(",");
+
 
 async function signPhoto(path: string | null): Promise<string | null> {
   if (!path) return null;
@@ -207,14 +228,14 @@ export async function fetchMessages(
   const limit = opts.limit ?? MESSAGES_PAGE;
   let q = supabase
     .from("messages")
-    .select("*")
+    .select(MESSAGE_SELECT)
     .eq("conversation_id", conversationId)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (opts.before) q = q.lt("created_at", opts.before);
   const { data, error } = await q;
   if (error) throw error;
-  return ((data ?? []) as MessageRow[]).slice().reverse();
+  return ((data ?? []) as unknown as MessageRow[]).slice().reverse();
 }
 
 export async function sendMessage(
@@ -236,7 +257,7 @@ export async function sendMessage(
   const { data, error } = await supabase
     .from("messages")
     .insert(insert as never)
-    .select("*")
+    .select(MESSAGE_SELECT)
     .single();
   if (error) {
     const msg = (error.message ?? "").toLowerCase();
@@ -268,7 +289,7 @@ export async function sendMessage(
 
   void pushNewMessageNotification(conversationId, u.user.id, trimmed);
 
-  return data as MessageRow;
+  return data as unknown as MessageRow;
 }
 
 export async function unsendMessage(messageId: string): Promise<void> {
@@ -313,13 +334,17 @@ export async function sendMediaMessage(
   };
 
   if (payload.kind === "location") {
-    insert = {
-      ...insert,
-      media_type: "location",
-      location_lat: payload.lat,
-      location_lng: payload.lng,
-      body: payload.label ?? "📍 Location",
-    };
+    const { data, error } = await supabase.rpc("send_location_message" as never, {
+      _conversation_id: conversationId,
+      _lat: payload.lat,
+      _lng: payload.lng,
+      _label: payload.label ?? "📍 Locație partajată",
+    } as never);
+    if (error) throw error;
+    const row = Array.isArray(data) ? data[0] : data;
+    if (!row) throw new Error("Nu am putut trimite locația.");
+    void pushNewMessageNotification(conversationId, uid, "📍 Locație partajată");
+    return row as unknown as MessageRow;
   } else {
     const ext = payload.kind === "image" ? "jpg" : "webm";
     const path = `${uid}/${conversationId}/${crypto.randomUUID()}.${ext}`;
@@ -341,11 +366,11 @@ export async function sendMediaMessage(
   const { data, error } = await supabase
     .from("messages")
     .insert(insert as never)
-    .select("*")
+    .select(MESSAGE_SELECT)
     .single();
   if (error) throw error;
   void pushNewMessageNotification(conversationId, uid, String(insert.body ?? "Mesaj nou"));
-  return data as MessageRow;
+  return data as unknown as MessageRow;
 }
 
 export async function updateLiveLocationMessage(
@@ -353,14 +378,30 @@ export async function updateLiveLocationMessage(
   lat: number,
   lng: number,
 ): Promise<MessageRow> {
-  const { data, error } = await supabase
-    .from("messages")
-    .update({ location_lat: lat, location_lng: lng })
-    .eq("id", messageId)
-    .select("*")
-    .single();
+  const { data, error } = await supabase.rpc("update_live_location_message" as never, {
+    _message_id: messageId,
+    _lat: lat,
+    _lng: lng,
+  } as never);
   if (error) throw error;
-  return data as MessageRow;
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) throw new Error("Nu am putut actualiza locația live.");
+  return row as unknown as MessageRow;
+}
+
+export type LocationBucket = {
+  message_id: string;
+  label: string | null;
+  bucket_m: number | null;
+  can_open_map: boolean;
+};
+
+export async function getMessageLocationBucket(messageId: string): Promise<LocationBucket | null> {
+  const { data, error } = await supabase.rpc("get_message_location_bucket" as never, {
+    _message_id: messageId,
+  } as never);
+  if (error) throw error;
+  return (Array.isArray(data) ? data[0] : data) as LocationBucket | null;
 }
 
 export async function signChatMedia(path: string | null | undefined): Promise<string | null> {

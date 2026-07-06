@@ -445,7 +445,7 @@ function ActionsBar({
       <PasswordResetDialog userId={userId} onDone={onSuccess} />
       <ResendConfirmationDialog userId={userId} onDone={onSuccess} />
       <a
-        href="/admin/verification"
+        href="/admin#verifqueue"
         className="inline-flex items-center rounded-md border border-input bg-background px-3 h-9 text-sm font-medium hover:bg-accent"
       >
         <CheckCircle2 className="h-4 w-4 mr-1" />

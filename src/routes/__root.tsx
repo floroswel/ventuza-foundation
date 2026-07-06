@@ -169,6 +169,7 @@ function ProximityWatcherMount() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const isAdminSurface = typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
 
   useEffect(() => {
     // i18n e deja inițializat de import eager; aici doar setăm <html lang>.
@@ -231,7 +232,7 @@ function RootComponent() {
           <ProximityWatcherMount />
           <Outlet />
           <OfflineBanner />
-          <LocationPermissionPrompt />
+          {!isAdminSurface && <LocationPermissionPrompt />}
           <AgeGate />
           <CookieBanner />
           <TravelWarning />

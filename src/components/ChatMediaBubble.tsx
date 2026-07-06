@@ -1,32 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Eye, EyeOff, MapPin, Pause, Play, Timer, X } from "lucide-react";
-import { markMediaViewed, signChatMedia, type MessageRow } from "@/lib/chat";
+import {
+  getMessageLocationBucket,
+  markMediaViewed,
+  signChatMedia,
+  type MessageRow,
+} from "@/lib/chat";
 import { cn } from "@/lib/utils";
 
 
 type Props = { m: MessageRow; mine: boolean };
 
 export function ChatMediaBubble({ m, mine }: Props) {
-  if (m.media_type === "location" && m.location_lat != null && m.location_lng != null) {
-    const url = `https://www.google.com/maps?q=${m.location_lat},${m.location_lng}`;
-    return (
-      <a
-        href={url}
-        target="_blank"
-        rel="noreferrer"
-        className={cn(
-          "flex max-w-[78%] items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
-          mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
-        )}
-      >
-        <MapPin className="size-5 shrink-0" />
-        <div className="min-w-0">
-          <p className="font-medium leading-tight">Locație partajată</p>
-          <p className="truncate text-[11px] opacity-80">Deschide în Maps</p>
-        </div>
-      </a>
-    );
-  }
+  if (m.media_type === "location") return <LocationBubble m={m} mine={mine} />;
 
   if (m.media_type === "audio") return <AudioBubble m={m} mine={mine} />;
   if (m.media_type === "image") return <ImageBubble m={m} mine={mine} />;
@@ -41,6 +27,42 @@ export function ChatMediaBubble({ m, mine }: Props) {
       )}
     >
       {m.body}
+    </div>
+  );
+}
+
+function LocationBubble({ m, mine }: Props) {
+  const [label, setLabel] = useState<string>(mine ? "Locația trimisă" : "Se calculează…");
+
+  useEffect(() => {
+    let cancelled = false;
+    getMessageLocationBucket(m.id)
+      .then((bucket) => {
+        if (cancelled) return;
+        setLabel(bucket?.label ?? "Distanță indisponibilă");
+      })
+      .catch(() => {
+        if (!cancelled) setLabel("Distanță indisponibilă");
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [m.id]);
+
+  return (
+    <div
+      className={cn(
+        "flex max-w-[78%] items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
+        mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+      )}
+    >
+      <MapPin className="size-5 shrink-0" />
+      <div className="min-w-0">
+        <p className="font-medium leading-tight">Locație partajată</p>
+        <p className="truncate text-[11px] opacity-80">
+          {mine ? "Trimisă sigur" : `Distanță aproximativă: ${label}`}
+        </p>
+      </div>
     </div>
   );
 }

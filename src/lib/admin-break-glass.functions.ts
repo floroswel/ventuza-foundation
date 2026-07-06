@@ -68,12 +68,11 @@ export const adminBreakGlassReveal = createServerFn({ method: "POST" })
       payload = { profile: p ?? null };
       fields = ["orientation", "gender", "gender_custom", "pronouns", "pronouns_custom", "tribes"];
     } else if (data.kind === "location") {
-      const { data: p } = await sa
-        .from("profiles")
-        .select("id, travel_city, last_active_at, location")
-        .eq("id", data.targetUserId)
-        .maybeSingle();
-      payload = { profile: p ?? null };
+      const { data: p, error } = await sa.rpc("admin_reveal_profile_location", {
+        _target_user_id: data.targetUserId,
+      });
+      if (error) throw new Error(error.message);
+      payload = { location: p ?? { profile_exists: false, reason: "profile_not_found" } };
       fields = ["location", "travel_city"];
     // 'selfie' eliminat — imaginile de verificare trăiesc în bucket privat
     // și se accesează exclusiv prin `verification_signed_url` (30s) din panoul

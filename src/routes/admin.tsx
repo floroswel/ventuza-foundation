@@ -232,6 +232,60 @@ function AdminDashboard() {
   const [pendingVerif, setPendingVerif] = useState<number>(0);
   const verifStatsFn = useServerFn(adminVerificationStats);
 
+  useEffect(() => {
+    const allowed: Section[] = [
+      "overview",
+      "users",
+      "reports",
+      "risk",
+      "riskdash",
+      "riskqueue",
+      "ads",
+      "biz",
+      "data",
+      "broadcast",
+      "audit",
+      "alerts",
+      "dsa",
+      "csam",
+      "gdpr",
+      "breakglass",
+      "breach",
+      "policies",
+      "security",
+      "partners",
+      "demoseed",
+      "health",
+      "copilot",
+      "billing",
+      "ratelimit",
+      "signals",
+      "signupthrottle",
+      "settings",
+      "staff",
+      "tools",
+      "support",
+      "appeals",
+      "userops",
+      "broadcast2",
+      "intel",
+      "killswitch",
+      "legalp0",
+      "policyengine",
+      "legaldocs",
+      "alertrules",
+      "macros",
+      "verifqueue",
+    ];
+    const applyHash = () => {
+      const next = window.location.hash.replace("#", "") as Section;
+      if (allowed.includes(next)) setSection(next);
+    };
+    applyHash();
+    window.addEventListener("hashchange", applyHash);
+    return () => window.removeEventListener("hashchange", applyHash);
+  }, []);
+
   // Polling notificări cereri verificare noi (moderator/admin/super)
   useEffect(() => {
     if (!isMod && !isAdmin) return;

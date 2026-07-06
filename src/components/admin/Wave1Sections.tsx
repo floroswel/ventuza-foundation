@@ -8,6 +8,7 @@
  *    proiecția server-side din `adminGetCsamReports` care exclude `photo_url`.
  */
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import {
@@ -41,7 +42,7 @@ import { adminGetDeletionRequests } from "@/lib/admin-enterprise.functions";
 /* =================================================================
    M1 — USER DETAIL DRAWER (mascat by default + break-glass)
 ================================================================= */
-type Kind = "health" | "orientation" | "location" | "messages";
+type Kind = "orientation" | "location" | "messages";
 
 export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose: () => void }) {
   const getView = useServerFn(adminGetUserView);
@@ -174,10 +175,10 @@ export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose:
               </div>
               <p className="mt-1 text-[10px] text-red-300/80">
                 Necesită rol corespunzător + justificare. Logat în admin_sensitive_access_log
-                (high). Health/Location/Orientation = super_admin. Messages = admin+.
+                (high). Location/Orientation = super_admin. Messages = admin+.
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {(["health", "orientation", "location", "messages"] as Kind[]).map(
+                {(["orientation", "location", "messages"] as Kind[]).map(
                   (k) => (
                     <button
                       key={k}
@@ -231,8 +232,15 @@ export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose:
                 >
                   <KeyRound className="mr-1 inline size-3" /> Reset parolă
                 </button>
+                <Link
+                  to="/admin/users/$id"
+                  params={{ id: userId }}
+                  className="rounded-full bg-primary/15 px-3 py-1.5 text-xs text-primary"
+                >
+                  <BadgeCheck className="mr-1 inline size-3" /> User 360
+                </Link>
                 <a
-                  href="/admin/verification"
+                  href="/admin#verifqueue"
                   className="rounded-full bg-green-500/15 px-3 py-1.5 text-xs text-green-400"
                 >
                   <BadgeCheck className="mr-1 inline size-3" /> Coadă verificare
