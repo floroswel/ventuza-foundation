@@ -794,7 +794,7 @@ function PhotosStep({
           .from("profile-photos")
           .upload(path, file, { upsert: false, contentType: file.type });
         if (error) {
-          toast.error(error.message);
+          showAuthErrorToast(t, error);
           continue;
         }
 
