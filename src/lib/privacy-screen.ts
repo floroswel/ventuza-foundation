@@ -418,8 +418,22 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
         }
       }, 2200);
     };
+    // Skip panic pe blur/pointerleave când suntem în iframe (preview Lovable,
+    // embed etc.) — orice interacțiune cu chrome-ul containerului declanșează
+    // blur și făcea ecranul negru la fiecare click.
+    const inIframe = (() => {
+      try {
+        return window.self !== window.top;
+      } catch {
+        return true;
+      }
+    })();
+
     const onVis = () => applyDefocus(document.visibilityState === "hidden");
-    const onBlur = () => applyDefocus(true);
+    const onBlur = () => {
+      if (inIframe) return;
+      applyDefocus(true);
+    };
     const onFocus = () => applyDefocus(printOverride ? true : false);
     document.addEventListener("visibilitychange", onVis);
     window.addEventListener("blur", onBlur);
@@ -429,10 +443,19 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     window.addEventListener("freeze", onBlur);
     window.addEventListener("resume", onFocus);
 
-    // Când cursorul părăsește fereastra, multe unelte de snipping încep selecția
-    // din afara browserului. Mascăm rapid până revine focusul/pointerul.
+    // Când cursorul părăsește fereastra, unele snipping tools încep selecția
+    // din afara browserului. Mascăm rapid — DAR numai pentru mouse real (nu
+    // touch, care emite pointerleave la fiecare tap) și doar când pointerul
+    // chiar a ieșit din viewport (nu la click intern).
     document.addEventListener("pointerleave", (e) => {
-      if (!e.relatedTarget) panicMask("window-leave");
+      if (inIframe) return;
+      if (e.pointerType && e.pointerType !== "mouse") return;
+      if (e.relatedTarget) return;
+      // clientX/Y = 0 la ieșiri reale, sau în afara viewport-ului
+      const outX = e.clientX <= 0 || e.clientX >= window.innerWidth;
+      const outY = e.clientY <= 0 || e.clientY >= window.innerHeight;
+      if (!outX && !outY) return;
+      panicMask("window-leave");
     });
     document.addEventListener("pointerenter", () => {
       if (!printOverride && document.visibilityState === "visible" && document.hasFocus()) {
