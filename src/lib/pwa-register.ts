@@ -9,8 +9,6 @@ const APP_SW_URL = "/sw.js";
 
 function isPreviewOrDev(): boolean {
   if (typeof window === "undefined") return true;
-  // Vite: dev bundle
-  // @ts-expect-error import.meta.env typing
   if (!import.meta.env.PROD) return true;
   try {
     if (window.self !== window.top) return true;
