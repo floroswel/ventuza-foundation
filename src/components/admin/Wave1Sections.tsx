@@ -153,17 +153,125 @@ export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose:
               <h3 className="text-xs uppercase tracking-wide text-muted-foreground">
                 Profil (mascat)
               </h3>
-              <p className="mt-1 text-sm font-medium">{view.profile?.display_name ?? "—"}</p>
-              <p className="text-[10px] text-muted-foreground">
-                {view.profile?.travel_city ?? "—"} · age {view.profile?.age ?? "?"} · Lv
-                {view.profile?.level} · {view.profile?.report_count ?? 0} rap. ·
-                {view.profile?.verified ? " verificat" : " neverificat"}
-                {view.profile?.banned_at && " · BANAT"}
+              <div className="mt-2 flex items-center justify-between">
+                <p className="text-sm font-medium">
+                  {view.profile?.display_name ?? "—"}
+                  {view.profile?.is_premium && (
+                    <span className="ml-2 rounded bg-amber-500/20 px-1.5 py-0.5 text-[9px] uppercase text-amber-300">
+                      premium
+                    </span>
+                  )}
+                  {view.profile?.banned_at && (
+                    <span className="ml-2 rounded bg-red-500/20 px-1.5 py-0.5 text-[9px] uppercase text-red-300">
+                      BANAT
+                    </span>
+                  )}
+                </p>
+                <Link
+                  to="/admin/users/$id"
+                  params={{ id: userId }}
+                  className="rounded-full bg-primary/15 px-2.5 py-1 text-[10px] text-primary"
+                >
+                  User 360 →
+                </Link>
+              </div>
+              <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+                <Row k="Slug" v={view.profile?.profile_slug ?? "—"} />
+                <Row k="Oraș" v={view.profile?.travel_city ?? "—"} />
+                <Row k="Vârstă" v={view.profile?.age != null ? String(view.profile.age) : "—"} />
+                <Row k="Ascunde vârsta" v={view.profile?.hide_age ? "DA" : "NU"} />
+                <Row k="Level / XP" v={`${view.profile?.level ?? 0} · ${view.profile?.xp ?? 0} XP`} />
+                <Row k="Streak" v={`${view.profile?.streak_days ?? 0} zile`} />
+                <Row k="Completare" v={`${view.profile?.profile_completion ?? 0}%`} />
+                <Row k="Risk score" v={String(view.profile?.risk_score ?? 0)} />
+                <Row k="Rapoarte primite" v={String(view.profile?.report_count ?? 0)} />
+                <Row k="Verificat" v={view.profile?.verified ? "DA" : "NU"} />
+                <Row
+                  k="Status verif."
+                  v={view.profile?.verification_status ?? view.profile?.age_status ?? "—"}
+                />
+                <Row k="Limbă" v={view.profile?.preferred_language ?? "—"} />
+                <Row k="Onboarding" v={view.profile?.onboarding_completed ? "DA" : "NU"} />
+                <Row
+                  k="Cont creat"
+                  v={
+                    view.profile?.created_at
+                      ? new Date(view.profile.created_at).toLocaleDateString("ro-RO")
+                      : "—"
+                  }
+                />
+                <Row
+                  k="Ultim activ"
+                  v={
+                    view.profile?.last_active_at
+                      ? new Date(view.profile.last_active_at).toLocaleString("ro-RO")
+                      : "—"
+                  }
+                />
+                <Row
+                  k="Boost activ"
+                  v={
+                    view.profile?.boost_until && new Date(view.profile.boost_until) > new Date()
+                      ? `până ${new Date(view.profile.boost_until).toLocaleString("ro-RO")}`
+                      : "nu"
+                  }
+                />
+                <Row
+                  k="Balanță"
+                  v={`${view.profile?.boosts_balance ?? 0} boost · ${view.profile?.super_taps_balance ?? 0} taps`}
+                />
+                <Row
+                  k="Suspendat"
+                  v={
+                    view.profile?.suspended_until &&
+                    new Date(view.profile.suspended_until) > new Date()
+                      ? `până ${new Date(view.profile.suspended_until).toLocaleDateString("ro-RO")}`
+                      : "nu"
+                  }
+                />
+                <Row
+                  k="Partener suspend."
+                  v={
+                    view.profile?.partner_suspended_at
+                      ? new Date(view.profile.partner_suspended_at).toLocaleDateString("ro-RO")
+                      : "nu"
+                  }
+                />
+                <Row
+                  k="Soft-deleted"
+                  v={
+                    view.profile?.deleted_at
+                      ? new Date(view.profile.deleted_at).toLocaleDateString("ro-RO")
+                      : "nu"
+                  }
+                />
+              </dl>
+              {view.profile?.bio && (
+                <p className="mt-2 rounded border border-border bg-background/50 p-2 text-[11px] italic text-muted-foreground">
+                  „{view.profile.bio}"
+                </p>
+              )}
+              {view.profile?.banned_reason && (
+                <p className="mt-1 text-[10px] text-red-300">
+                  Motiv ban: {view.profile.banned_reason}
+                </p>
+              )}
+              {view.profile?.suspended_reason && (
+                <p className="mt-1 text-[10px] text-amber-300">
+                  Motiv suspendare: {view.profile.suspended_reason}
+                </p>
+              )}
+              <p className="mt-2 text-[10px] text-muted-foreground">
+                Roluri: <b>{view.roles.join(", ") || "user"}</b>
+                {" · "}Rapoarte făcute: {view.reports?.length ?? 0}
+                {" · "}Cereri verificare: {view.verifications?.length ?? 0}
               </p>
               <p className="mt-1 text-[10px] text-muted-foreground">
-                Roluri: {view.roles.join(", ") || "user"}
+                Câmpurile Art. 9 (orientare, HIV), locația precisă și mesajele brute rămân mascate
+                — folosește <b>break-glass</b> pentru dezvăluire cu audit.
               </p>
             </section>
+
 
             {/* BREAK-GLASS BUTTONS — fiecare categorie loghează separat */}
             <section className="mt-3 rounded-2xl border border-red-500/30 bg-red-500/5 p-3">
@@ -615,3 +723,16 @@ export function BreakGlassLogPanel() {
     </div>
   );
 }
+
+/** Rând compact key/value pentru drawer-ul de user. */
+function Row({ k, v }: { k: string; v: string }) {
+  return (
+    <>
+      <dt className="text-muted-foreground">{k}</dt>
+      <dd className="truncate font-medium text-foreground" title={v}>
+        {v}
+      </dd>
+    </>
+  );
+}
+
