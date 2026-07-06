@@ -64,24 +64,18 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
   },
   age_verification: {
     kind: "age_verification",
-    currentVersion: "2026-07-03",
+    currentVersion: "2026-07-06",
     required: true,
     art9: true,
-    label: "Verificare vârstă (proces intern)",
+    label: "Verificare vârstă (18+) prin Didit",
     description:
-      "Pentru a confirma că ai 18+, prelucrăm intern selfie-uri liveness (fără terți) revizuite manual de moderator. Imaginile sunt șterse automat după 30 de zile. Fără acest consimțământ, nu putem porni verificarea.",
-    gates: ["verification_submit_request"],
+      "Pentru a confirma că ai 18+, capturăm un selfie live și îl trimitem tranzitoriu către Didit — procesator extern UE specializat în estimarea vârstei. Didit rulează modelul pe imagine, ne întoarce doar rezultatul (trecut/respins) și șterge imaginea imediat. Nu solicităm și nu stocăm document de identitate. Temei: Art. 9(2)(a) GDPR — consimțământ explicit pentru date biometrice.",
+    gates: ["didit_start_session"],
+    processor: "Didit (age estimation, UE) — vezi /legal/subprocessors",
   },
-  internal_verification: {
-    kind: "internal_verification",
-    currentVersion: "2026-07-03",
-    required: true,
-    art9: true,
-    label: "Verificare identitate internă",
-    description:
-      "Prelucrăm intern selfie-urile tale (liveness cu instrucțiuni random) pentru a acorda badge-ul verificat. Imaginile nu părăsesc infrastructura noastră, nu sunt vândute, nu sunt folosite pentru antrenare AI, nu sunt folosite pentru publicitate. Sunt vizibile doar moderatorilor de verificare pentru maxim 30 de zile, apoi șterse automat. Poți retrage consimțământul oricând (badge-ul se retrage și cererile în curs se șterg).",
-    gates: ["verification_submit_request"],
-  },
+  // internal_verification: retras în iulie 2026. Verificarea vârstei se face
+  // exclusiv prin Didit (vezi age_verification). Fluxul intern rămâne ca
+  // schelet dormant în DB (verification_requests) dar NU e sursa de adevăr.
   // health_data: eliminat complet (decizie GDPR — Ventuza nu procesează date HIV).
 
 
