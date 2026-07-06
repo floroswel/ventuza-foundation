@@ -214,6 +214,11 @@ function RootComponent() {
     return () => window.removeEventListener("ventuza:consent", onConsent);
   }, []);
 
+  useEffect(() => {
+    // Guarded PWA registration (dev/preview/iframe/?sw=off all refuse).
+    void import("@/lib/pwa-register").then(({ registerPwa }) => registerPwa());
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
