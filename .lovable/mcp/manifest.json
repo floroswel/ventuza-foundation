@@ -71,6 +71,96 @@
           "$schema": "http://json-schema.org/draft-07/schema#"
         },
         "outputSchema": null
+      },
+      {
+        "name": "mark_notifications_read",
+        "title": "Marchează notificări citite",
+        "description": "Marchează notificările utilizatorului ca fiind citite. Dacă `ids` este furnizat, doar acele notificări; altfel toate cele necitite.",
+        "annotations": {
+          "readOnlyHint": false,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "ids": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "maxItems": 200,
+              "description": "Listă de UUID-uri de notificări. Omite pentru a marca toate necitite."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "send_tap",
+        "title": "Trimite tap",
+        "description": "Trimite un tap (emoji reaction) către un alt utilizator Ventuza. Respectă blocările și preferințele destinatarului la nivel de DB.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "receiver_id": {
+              "type": "string",
+              "format": "uuid",
+              "description": "UUID-ul userului destinatar."
+            },
+            "emoji": {
+              "type": "string",
+              "enum": [
+                "👋",
+                "🔥",
+                "😈",
+                "👀",
+                "💋",
+                "🍆"
+              ],
+              "description": "Emoji tap: 👋 🔥 😈 👀 💋 🍆"
+            }
+          },
+          "required": [
+            "receiver_id",
+            "emoji"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_conversations",
+        "title": "Conversații recente",
+        "description": "Listă cu conversațiile utilizatorului (id, celălalt participant, ultimul mesaj, timp, câte necitite). Nu returnează conținutul brut al mesajelor — doar metadata.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Câte conversații (1-50). Default 20."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
       }
     ]
   }
