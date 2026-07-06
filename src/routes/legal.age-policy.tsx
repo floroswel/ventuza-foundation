@@ -75,10 +75,10 @@ function AgePolicyPage() {
                 pentru datele complete despre Didit.
               </li>
               <li>
-                <strong>Moderator uman Ventuza (cazuri borderline / raportări)</strong> — dacă
-                estimarea Didit e la limită sau dacă un cont este raportat pentru suspiciune de
-                minor, un moderator uman revizuiește manual câteva selfie-uri live într-un
-                bucket privat Ventuza. Imaginile se șterg automat în ≤30 de zile de la decizie.
+                <strong>Escaladare pentru raportări</strong> — dacă un cont este raportat
+                pentru suspiciune de minor, echipa Trust &amp; Safety re-cere verificarea
+                Didit și, dacă e necesar, suspendă preventiv contul până la o nouă
+                estimare pass.
               </li>
               <li>
                 <strong>Detecție comportamentală</strong> — semnale (limbaj, fotografii,
