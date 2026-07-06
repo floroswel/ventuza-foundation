@@ -233,6 +233,14 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
         className="hidden"
         onChange={(e) => handleFile(e, true)}
       />
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => handleFile(e, false)}
+      />
 
       <div className="relative">
         <button
@@ -248,16 +256,21 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
           <Plus className="size-5" />
         </button>
         {open && (
-          <div className="absolute bottom-14 left-0 z-30 w-52 rounded-2xl border border-border bg-popover p-1 shadow-xl">
+          <div className="absolute bottom-14 left-0 z-30 w-56 rounded-2xl border border-border bg-popover p-1 shadow-xl">
             <MenuItem
               icon={<Camera className="size-4" />}
-              label="Foto (una sau mai multe)"
-              onClick={() => pickPhoto(false)}
+              label="Cameră (foto instant)"
+              onClick={() => pickPhoto("camera")}
+            />
+            <MenuItem
+              icon={<ImageIcon className="size-4" />}
+              label="Galerie"
+              onClick={() => pickPhoto("gallery")}
             />
             <MenuItem
               icon={<Timer className="size-4" />}
               label="Foto o singură vizualizare"
-              onClick={() => pickPhoto(true)}
+              onClick={() => pickPhoto("gallery-once")}
             />
 
             <MenuItem
@@ -273,6 +286,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
           </div>
         )}
       </div>
+
     </>
   );
 }
