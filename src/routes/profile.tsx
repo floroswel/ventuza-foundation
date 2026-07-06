@@ -97,6 +97,7 @@ type Profile = {
   verified_at: string | null;
   incognito: boolean;
   location_sharing_enabled: boolean | null;
+  last_seen: string | null;
   verification_status: string;
   verification_selfie_path: string | null;
   travel_city: string | null;
@@ -619,18 +620,46 @@ function ProfilePage() {
             }}
             className="mt-2 flex w-full items-center justify-between rounded-2xl border border-border bg-surface p-4 text-left hover:border-primary/50"
           >
-            <div>
+            <div className="min-w-0 flex-1 pr-3">
               <p className="text-sm font-medium">Partajare locație</p>
               <p className="text-xs text-muted-foreground">
                 Trimite poziția ta pentru distanță și hartă. Poți opri oricând — vei rămâne vizibil
                 fără distanță calculată.
               </p>
+              <p className="mt-1.5 text-[11px] text-muted-foreground">
+                Status:{" "}
+                <span
+                  className={
+                    profile.location_sharing_enabled !== false
+                      ? "font-medium text-primary"
+                      : "font-medium text-muted-foreground"
+                  }
+                >
+                  {profile.location_sharing_enabled !== false ? "Activă" : "Oprită"}
+                </span>
+                {profile.location_sharing_enabled !== false && (
+                  <>
+                    {" · "}
+                    Ultima actualizare:{" "}
+                    <span className="text-foreground/80">
+                      {profile.last_seen
+                        ? new Date(profile.last_seen).toLocaleString("ro-RO", {
+                            day: "2-digit",
+                            month: "short",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })
+                        : "niciodată"}
+                    </span>
+                  </>
+                )}
+              </p>
             </div>
             <span
               className={
                 profile.location_sharing_enabled !== false
-                  ? "rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
-                  : "rounded-full bg-surface-elevated px-3 py-1 text-xs text-muted-foreground"
+                  ? "shrink-0 rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                  : "shrink-0 rounded-full bg-surface-elevated px-3 py-1 text-xs text-muted-foreground"
               }
             >
               {profile.location_sharing_enabled !== false ? "On" : "Off"}
