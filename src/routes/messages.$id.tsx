@@ -54,6 +54,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { SwipeToReply } from "@/components/SwipeToReply";
+import {
+  VirtualizedMessages,
+  type VirtualizedMessagesHandle,
+} from "@/components/VirtualizedMessages";
 
 export const Route = createFileRoute("/messages/$id")({
   head: () => ({ meta: [{ title: "Chat — Ventuza" }] }),
@@ -616,321 +621,308 @@ function ThreadPage() {
         )}
       </header>
 
-      <div ref={scrollerRef} onScroll={onScroll} className="flex-1 overflow-y-auto px-4 py-4">
-        {loading ? (
-          <div className="flex items-center justify-center py-16 text-muted-foreground">
-            <Loader2 className="size-5 animate-spin" />
-          </div>
-        ) : messages.length === 0 ? (
-          <p className="py-16 text-center text-sm text-muted-foreground">
-            Say something nice to {other?.name ?? "them"}.
-          </p>
-        ) : (
-          <>
-            {loadingMore && (
-              <div className="flex justify-center py-2 text-muted-foreground">
-                <Loader2 className="size-4 animate-spin" />
-              </div>
-            )}
-            <ul className="space-y-2">
-              {messages.map((m) => {
-                const mine = m.sender_id === user?.id;
-                const translated = translations[m.id];
-                const replied = m.reply_to_id ? messages.find((x) => x.id === m.reply_to_id) : null;
-                const canUnsend =
-                  mine &&
-                  !m.deleted_at &&
-                  Date.now() - new Date(m.created_at).getTime() < 5 * 60_000;
-                const isDeleted = !!m.deleted_at;
-                return (
-                  <li
-                    key={m.id}
-                    className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}
-                  >
+      <MessagesScroller
+        loading={loading}
+        loadingMore={loadingMore}
+        messages={messages}
+        otherName={other?.name ?? null}
+        otherTyping={otherTyping}
+        scrollerRef={scrollerRef}
+        onScroll={onScroll}
+        onReachTop={() => {
+          if (hasMore && !loadingMore) void loadMore();
+        }}
+        renderRow={(m) => {
+          const mine = m.sender_id === user?.id;
+          const translated = translations[m.id];
+          const replied = m.reply_to_id ? messages.find((x) => x.id === m.reply_to_id) : null;
+          const canUnsend =
+            mine &&
+            !m.deleted_at &&
+            Date.now() - new Date(m.created_at).getTime() < 5 * 60_000;
+          const isDeleted = !!m.deleted_at;
+          return (
+            <li
+              key={m.id}
+              className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}
+            >
+              <SwipeToReply
+                onReply={() => setReplyTo(m)}
+                disabled={isDeleted}
+                align={mine ? "right" : "left"}
+              >
+              <div
+                className={cn(
+                  "group relative flex w-full items-end gap-1",
+                  mine ? "justify-end" : "justify-start",
+                )}
+              >
+                {!mine && !isDeleted && (
+                  <div className="order-2 mb-1 hidden gap-1 group-hover:flex">
+                    <button
+                      type="button"
+                      onClick={() => setReplyTo(m)}
+                      aria-label="Reply"
+                      className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <CornerUpLeft className="size-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)
+                      }
+                      aria-label="React"
+                      className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <Smile className="size-3.5" />
+                    </button>
+                  </div>
+                )}
+                <div
+                  className={cn(
+                    "order-1 max-w-[82%] select-none",
+                    m._status === "pending" && "opacity-70",
+                    m._status === "failed" && "rounded-2xl ring-1 ring-destructive/60",
+                    heartPulseFor === m.id && "animate-in zoom-in-95 duration-300",
+                  )}
+                  onDoubleClick={() => quickLike(m)}
+                  onClick={() => {
+                    if (longPressFiredRef.current) {
+                      longPressFiredRef.current = false;
+                      return;
+                    }
+                    handleBubbleTap(m);
+                  }}
+                  onTouchStart={() => handleBubblePressStart(m)}
+                  onTouchEnd={handleBubblePressEnd}
+                  onTouchCancel={handleBubblePressEnd}
+                  onMouseDown={() => handleBubblePressStart(m)}
+                  onMouseUp={handleBubblePressEnd}
+                  onMouseLeave={handleBubblePressEnd}
+                  onContextMenu={(e) => {
+                    if (m.body && !m.deleted_at && m.sender_id !== user?.id) {
+                      e.preventDefault();
+                      openTranslationFor(m);
+                    }
+                  }}
+                >
+                  {replied && !isDeleted && (
                     <div
                       className={cn(
-                        "group relative flex w-full items-end gap-1",
-                        mine ? "justify-end" : "justify-start",
+                        "mb-1 rounded-xl border-l-2 px-2 py-1 text-[11px]",
+                        mine
+                          ? "border-primary-foreground/40 bg-primary/20 text-primary-foreground/80"
+                          : "border-primary/40 bg-muted text-muted-foreground",
                       )}
                     >
-                      {!mine && !isDeleted && (
-                        <div className="order-2 mb-1 hidden gap-1 group-hover:flex">
-                          <button
-                            type="button"
-                            onClick={() => setReplyTo(m)}
-                            aria-label="Reply"
-                            className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-                          >
-                            <CornerUpLeft className="size-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)
-                            }
-                            aria-label="React"
-                            className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-                          >
-                            <Smile className="size-3.5" />
-                          </button>
-                        </div>
-                      )}
-                      <div
-                        className={cn(
-                          "order-1 max-w-[82%] select-none",
-                          m._status === "pending" && "opacity-70",
-                          m._status === "failed" && "rounded-2xl ring-1 ring-destructive/60",
-                          heartPulseFor === m.id && "animate-in zoom-in-95 duration-300",
-                        )}
-                        onDoubleClick={() => quickLike(m)}
-                        onClick={() => {
-                          if (longPressFiredRef.current) {
-                            longPressFiredRef.current = false;
-                            return;
-                          }
-                          handleBubbleTap(m);
-                        }}
-                        onTouchStart={() => handleBubblePressStart(m)}
-                        onTouchEnd={handleBubblePressEnd}
-                        onTouchCancel={handleBubblePressEnd}
-                        onMouseDown={() => handleBubblePressStart(m)}
-                        onMouseUp={handleBubblePressEnd}
-                        onMouseLeave={handleBubblePressEnd}
-                        onContextMenu={(e) => {
-                          if (m.body && !m.deleted_at && m.sender_id !== user?.id) {
-                            e.preventDefault();
-                            openTranslationFor(m);
-                          }
-                        }}
-                      >
-                        {replied && !isDeleted && (
-                          <div
-                            className={cn(
-                              "mb-1 rounded-xl border-l-2 px-2 py-1 text-[11px]",
-                              mine
-                                ? "border-primary-foreground/40 bg-primary/20 text-primary-foreground/80"
-                                : "border-primary/40 bg-muted text-muted-foreground",
-                            )}
-                          >
-                            <p className="truncate font-medium opacity-80">
-                              ↩ {replied.sender_id === user?.id ? "Tu" : (other?.name ?? "…")}
-                            </p>
-                            <p className="line-clamp-2 opacity-90">
-                              {replied.deleted_at
-                                ? "Mesaj șters"
-                                : replied.body ||
-                                  (replied.media_type === "image"
-                                    ? "📷 Photo"
-                                    : replied.media_type === "audio"
-                                      ? "🎤 Voice"
-                                      : replied.media_type === "location"
-                                        ? "📍 Location"
-                                        : "")}
-                            </p>
-                          </div>
-                        )}
-                        {isDeleted ? (
-                          <div
-                            className={cn(
-                              "inline-flex items-center gap-1.5 rounded-2xl border border-dashed px-3 py-2 text-xs italic",
-                              mine
-                                ? "border-primary-foreground/30 bg-primary/30 text-primary-foreground/80"
-                                : "border-border bg-muted text-muted-foreground",
-                            )}
-                          >
-                            <Trash2 className="size-3" /> Mesaj șters
-                          </div>
-                        ) : (
-                          <ChatMediaBubble m={m} mine={mine} />
-                        )}
-                      </div>
-                      {mine && !isDeleted && (
-                        <div className="order-0 mb-1 hidden gap-1 group-hover:flex">
-                          {canUnsend && (
-                            <button
-                              type="button"
-                              onClick={() => setUnsendTarget(m)}
-                              aria-label="Unsend"
-                              className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
-                            >
-                              <Trash2 className="size-3.5" />
-                            </button>
-                          )}
-                          <button
-                            type="button"
-                            onClick={() => setReplyTo(m)}
-                            aria-label="Reply"
-                            className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-                          >
-                            <CornerUpLeft className="size-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)
-                            }
-                            aria-label="React"
-                            className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-                          >
-                            <Smile className="size-3.5" />
-                          </button>
-                        </div>
-                      )}
+                      <p className="truncate font-medium opacity-80">
+                        ↩ {replied.sender_id === user?.id ? "Tu" : (other?.name ?? "…")}
+                      </p>
+                      <p className="line-clamp-2 opacity-90">
+                        {replied.deleted_at
+                          ? "Mesaj șters"
+                          : replied.body ||
+                            (replied.media_type === "image"
+                              ? "📷 Photo"
+                              : replied.media_type === "audio"
+                                ? "🎤 Voice"
+                                : replied.media_type === "location"
+                                  ? "📍 Location"
+                                  : "")}
+                      </p>
                     </div>
-                    {reactionPickerFor === m.id && (
-                      <div
+                  )}
+                  {isDeleted ? (
+                    <div
+                      className={cn(
+                        "inline-flex items-center gap-1.5 rounded-2xl border border-dashed px-3 py-2 text-xs italic",
+                        mine
+                          ? "border-primary-foreground/30 bg-primary/30 text-primary-foreground/80"
+                          : "border-border bg-muted text-muted-foreground",
+                      )}
+                    >
+                      <Trash2 className="size-3" /> Mesaj șters
+                    </div>
+                  ) : (
+                    <ChatMediaBubble m={m} mine={mine} />
+                  )}
+                </div>
+                {mine && !isDeleted && (
+                  <div className="order-0 mb-1 hidden gap-1 group-hover:flex">
+                    {canUnsend && (
+                      <button
+                        type="button"
+                        onClick={() => setUnsendTarget(m)}
+                        aria-label="Unsend"
+                        className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-destructive/15 hover:text-destructive"
+                      >
+                        <Trash2 className="size-3.5" />
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setReplyTo(m)}
+                      aria-label="Reply"
+                      className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <CornerUpLeft className="size-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setReactionPickerFor(reactionPickerFor === m.id ? null : m.id)
+                      }
+                      aria-label="React"
+                      className="flex size-6 items-center justify-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      <Smile className="size-3.5" />
+                    </button>
+                  </div>
+                )}
+              </div>
+              </SwipeToReply>
+              {reactionPickerFor === m.id && (
+                <div
+                  className={cn(
+                    "flex gap-1 rounded-full border border-border bg-background px-2 py-1.5 shadow-lg",
+                    mine ? "self-end" : "self-start",
+                  )}
+                >
+                  {REACTION_EMOJIS.map((e) => {
+                    const active = user && (m.reactions?.[e] ?? []).includes(user.id);
+                    return (
+                      <button
+                        key={e}
+                        onClick={() => handleReact(m.id, e)}
                         className={cn(
-                          "flex gap-1 rounded-full border border-border bg-background px-2 py-1.5 shadow-lg",
-                          mine ? "self-end" : "self-start",
+                          "text-base transition-transform hover:scale-125",
+                          active && "scale-110",
                         )}
                       >
-                        {REACTION_EMOJIS.map((e) => {
-                          const active = user && (m.reactions?.[e] ?? []).includes(user.id);
-                          return (
-                            <button
-                              key={e}
-                              onClick={() => handleReact(m.id, e)}
-                              className={cn(
-                                "text-base transition-transform hover:scale-125",
-                                active && "scale-110",
-                              )}
-                            >
-                              {e}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                    {m.reactions && Object.keys(m.reactions).length > 0 && (
-                      <div
+                        {e}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {m.reactions && Object.keys(m.reactions).length > 0 && (
+                <div
+                  className={cn(
+                    "-mt-1 flex flex-wrap gap-1",
+                    mine ? "self-end" : "self-start",
+                  )}
+                >
+                  {Object.entries(m.reactions).map(([emoji, users]) => {
+                    if (!users || users.length === 0) return null;
+                    const mineReact = user ? users.includes(user.id) : false;
+                    return (
+                      <button
+                        key={emoji}
+                        onClick={() => handleReact(m.id, emoji as ReactionEmoji)}
                         className={cn(
-                          "-mt-1 flex flex-wrap gap-1",
-                          mine ? "self-end" : "self-start",
+                          "rounded-full border px-2 py-0.5 text-[10px] transition-colors",
+                          mineReact
+                            ? "border-primary bg-primary/15 text-primary"
+                            : "border-border bg-background/60 text-muted-foreground hover:border-primary/40",
                         )}
                       >
-                        {Object.entries(m.reactions).map(([emoji, users]) => {
-                          if (!users || users.length === 0) return null;
-                          const mineReact = user ? users.includes(user.id) : false;
-                          return (
-                            <button
-                              key={emoji}
-                              onClick={() => handleReact(m.id, emoji as ReactionEmoji)}
-                              className={cn(
-                                "rounded-full border px-2 py-0.5 text-[10px] transition-colors",
-                                mineReact
-                                  ? "border-primary bg-primary/15 text-primary"
-                                  : "border-border bg-background/60 text-muted-foreground hover:border-primary/40",
-                              )}
-                            >
-                              {emoji} {users.length}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    )}
-                    {mine && (
-                      <div className="flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
-                        {m._status === "pending" ? (
-                          <>
-                            <Clock className="size-3" /> sending
-                          </>
-                        ) : m._status === "failed" ? (
-                          <button
-                            onClick={() => retryFailed(m)}
-                            className="inline-flex items-center gap-1 text-destructive"
-                          >
-                            <AlertCircle className="size-3" /> failed · tap to retry
-                          </button>
-                        ) : m.read_at ? (
-                          <>
-                            <CheckCheck className="size-3 text-primary" /> read
-                          </>
-                        ) : (
-                          <>
-                            <Check className="size-3" /> sent
-                          </>
-                        )}
-                      </div>
-                    )}
-                    {!mine &&
-                      m.body &&
-                      m.media_type !== "audio" &&
-                      m.media_type !== "image" &&
-                      m.media_type !== "location" &&
-                      (translateOpenFor === m.id || translated ? (
-                        <div className="w-full max-w-[82%] rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
-                          <div className="mb-1.5 flex items-center justify-between gap-2">
-                            <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-                              <Languages className="size-3" />
-                              {translated
-                                ? `${langLabel(translated.detected)} → ${langLabel(translated.target)}`
-                                : "Traducere…"}
-                            </span>
-                            <div className="flex items-center gap-1">
-                              <select
-                                value={translated?.target ?? targetLang}
-                                onChange={(e) => changeTargetLang(m, e.target.value)}
-                                disabled={translatingId === m.id}
-                                className="rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary"
-                                aria-label="Limbă țintă"
-                              >
-                                {CHAT_TARGET_LANGS.map((l) => (
-                                  <option key={l.code} value={l.code}>
-                                    {l.native}
-                                  </option>
-                                ))}
-                              </select>
-                              <button
-                                type="button"
-                                onClick={() => setTranslateOpenFor(null)}
-                                className="rounded-full p-0.5 text-muted-foreground hover:text-foreground"
-                                aria-label="Închide"
-                              >
-                                <XIcon className="size-3" />
-                              </button>
-                            </div>
-                          </div>
-                          {translatingId === m.id && !translated ? (
-                            <div className="flex items-center gap-1.5 text-muted-foreground">
-                              <Loader2 className="size-3 animate-spin" /> Se traduce…
-                            </div>
-                          ) : translated ? (
-                            <p className="whitespace-pre-wrap text-foreground">{translated.translation}</p>
-                          ) : null}
-                        </div>
-                      ) : (
+                        {emoji} {users.length}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+              {mine && (
+                <div className="flex items-center gap-1 px-1 text-[10px] text-muted-foreground">
+                  {m._status === "pending" ? (
+                    <>
+                      <Clock className="size-3" /> sending
+                    </>
+                  ) : m._status === "failed" ? (
+                    <button
+                      onClick={() => retryFailed(m)}
+                      className="inline-flex items-center gap-1 text-destructive"
+                    >
+                      <AlertCircle className="size-3" /> failed · tap to retry
+                    </button>
+                  ) : m.read_at ? (
+                    <>
+                      <CheckCheck className="size-3 text-primary" /> read
+                    </>
+                  ) : (
+                    <>
+                      <Check className="size-3" /> sent
+                    </>
+                  )}
+                </div>
+              )}
+              {!mine &&
+                m.body &&
+                m.media_type !== "audio" &&
+                m.media_type !== "image" &&
+                m.media_type !== "location" &&
+                (translateOpenFor === m.id || translated ? (
+                  <div className="w-full max-w-[82%] rounded-2xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
+                    <div className="mb-1.5 flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+                        <Languages className="size-3" />
+                        {translated
+                          ? `${langLabel(translated.detected)} → ${langLabel(translated.target)}`
+                          : "Traducere…"}
+                      </span>
+                      <div className="flex items-center gap-1">
+                        <select
+                          value={translated?.target ?? targetLang}
+                          onChange={(e) => changeTargetLang(m, e.target.value)}
+                          disabled={translatingId === m.id}
+                          className="rounded-md border border-border bg-background px-1.5 py-0.5 text-[10px] focus:outline-none focus:ring-1 focus:ring-primary"
+                          aria-label="Limbă țintă"
+                        >
+                          {CHAT_TARGET_LANGS.map((l) => (
+                            <option key={l.code} value={l.code}>
+                              {l.native}
+                            </option>
+                          ))}
+                        </select>
                         <button
                           type="button"
-                          onClick={() => openTranslationFor(m)}
-                          disabled={translatingId === m.id}
-                          className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
+                          onClick={() => setTranslateOpenFor(null)}
+                          className="rounded-full p-0.5 text-muted-foreground hover:text-foreground"
+                          aria-label="Închide"
                         >
-                          {translatingId === m.id ? (
-                            <Loader2 className="size-3 animate-spin" />
-                          ) : (
-                            <Languages className="size-3" />
-                          )}
-                          Traduce · ține apăsat
+                          <XIcon className="size-3" />
                         </button>
-                      ))}
-                  </li>
-                );
-              })}
-              {otherTyping && (
-                <li className="flex items-start">
-                  <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2">
-                    <span className="inline-flex gap-1">
-                      <span className="size-1.5 animate-bounce rounded-full bg-foreground/60 [animation-delay:-0.3s]" />
-                      <span className="size-1.5 animate-bounce rounded-full bg-foreground/60 [animation-delay:-0.15s]" />
-                      <span className="size-1.5 animate-bounce rounded-full bg-foreground/60" />
-                    </span>
+                      </div>
+                    </div>
+                    {translatingId === m.id && !translated ? (
+                      <div className="flex items-center gap-1.5 text-muted-foreground">
+                        <Loader2 className="size-3 animate-spin" /> Se traduce…
+                      </div>
+                    ) : translated ? (
+                      <p className="whitespace-pre-wrap text-foreground">{translated.translation}</p>
+                    ) : null}
                   </div>
-                </li>
-              )}
-            </ul>
-          </>
-        )}
-      </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => openTranslationFor(m)}
+                    disabled={translatingId === m.id}
+                    className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-primary"
+                  >
+                    {translatingId === m.id ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <Languages className="size-3" />
+                    )}
+                    Traduce · ține apăsat
+                  </button>
+                ))}
+            </li>
+          );
+        }}
+      />
+
 
       {openers && openers.length > 0 && (
         <div className="border-t border-border/60 bg-surface/60 px-3 py-2">
@@ -1056,3 +1048,134 @@ function ThreadPage() {
     </div>
   );
 }
+
+const VIRTUALIZATION_THRESHOLD = 100;
+
+function MessagesScroller({
+  loading,
+  loadingMore,
+  messages,
+  otherName,
+  otherTyping,
+  scrollerRef,
+  onScroll,
+  onReachTop,
+  renderRow,
+}: {
+  loading: boolean;
+  loadingMore: boolean;
+  messages: UiMessage[];
+  otherName: string | null;
+  otherTyping: boolean;
+  scrollerRef: React.RefObject<HTMLDivElement | null>;
+  onScroll: () => void;
+  onReachTop: () => void;
+  renderRow: (m: UiMessage) => React.ReactNode;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const virtualHandle = useRef<VirtualizedMessagesHandle>(null);
+  const prevLenRef = useRef(messages.length);
+  const prevFirstIdRef = useRef<string | null>(messages[0]?.id ?? null);
+  const virtualize = messages.length >= VIRTUALIZATION_THRESHOLD;
+
+  useEffect(() => {
+    if (!virtualize) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const measure = () => setContainerHeight(el.clientHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [virtualize]);
+
+  // Preserve top anchor when older messages are prepended in virtualized mode.
+  useEffect(() => {
+    if (!virtualize) return;
+    const currFirstId = messages[0]?.id ?? null;
+    const prevFirstId = prevFirstIdRef.current;
+    if (currFirstId && prevFirstId && currFirstId !== prevFirstId) {
+      // A prepend happened → keep visible position roughly stable.
+      virtualHandle.current?.remeasure(0);
+    }
+    prevFirstIdRef.current = currFirstId;
+    prevLenRef.current = messages.length;
+  }, [messages, virtualize]);
+
+  if (virtualize) {
+    return (
+      <div ref={containerRef} className="relative flex-1 overflow-hidden px-4 py-4">
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-muted-foreground">
+            <Loader2 className="size-5 animate-spin" />
+          </div>
+        ) : messages.length === 0 ? (
+          <p className="py-16 text-center text-sm text-muted-foreground">
+            Say something nice to {otherName ?? "them"}.
+          </p>
+        ) : containerHeight > 0 ? (
+          <>
+            {loadingMore && (
+              <div className="pointer-events-none absolute left-0 right-0 top-2 z-10 flex justify-center text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+              </div>
+            )}
+            <VirtualizedMessages<UiMessage>
+              ref={virtualHandle}
+              items={messages}
+              keyFor={(m) => m.id}
+              height={containerHeight}
+              estimatedItemHeight={72}
+              renderItem={(m) => renderRow(m)}
+              onReachTop={onReachTop}
+              stickToBottom
+              prevLength={prevLenRef.current}
+            />
+          </>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={scrollerRef as React.RefObject<HTMLDivElement>}
+      onScroll={onScroll}
+      className="flex-1 overflow-y-auto px-4 py-4"
+    >
+      {loading ? (
+        <div className="flex items-center justify-center py-16 text-muted-foreground">
+          <Loader2 className="size-5 animate-spin" />
+        </div>
+      ) : messages.length === 0 ? (
+        <p className="py-16 text-center text-sm text-muted-foreground">
+          Say something nice to {otherName ?? "them"}.
+        </p>
+      ) : (
+        <>
+          {loadingMore && (
+            <div className="flex justify-center py-2 text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+            </div>
+          )}
+          <ul className="space-y-2">
+            {messages.map((m) => renderRow(m))}
+            {otherTyping && (
+              <li className="flex items-start">
+                <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2">
+                  <span className="inline-flex gap-1">
+                    <span className="size-1.5 animate-bounce rounded-full bg-foreground/60 [animation-delay:-0.3s]" />
+                    <span className="size-1.5 animate-bounce rounded-full bg-foreground/60 [animation-delay:-0.15s]" />
+                    <span className="size-1.5 animate-bounce rounded-full bg-foreground/60" />
+                  </span>
+                </div>
+              </li>
+            )}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
+

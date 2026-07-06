@@ -30,6 +30,7 @@ import { ConsentPromptHost } from "@/components/ConsentPromptHost";
 import { VersionGate } from "@/components/VersionGate";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { DebugPanel } from "@/components/DebugPanel";
+import { OfflineBanner } from "@/components/OfflineBanner";
 
 function NotFoundComponent() {
   return (
@@ -213,6 +214,11 @@ function RootComponent() {
     return () => window.removeEventListener("ventuza:consent", onConsent);
   }, []);
 
+  useEffect(() => {
+    // Guarded PWA registration (dev/preview/iframe/?sw=off all refuse).
+    void import("@/lib/pwa-register").then(({ registerPwa }) => registerPwa());
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
@@ -221,6 +227,7 @@ function RootComponent() {
           <CountryRiskGuard />
           <ProximityWatcherMount />
           <Outlet />
+          <OfflineBanner />
           <AgeGate />
           <CookieBanner />
           <TravelWarning />

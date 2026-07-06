@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   BadgeCheck,
@@ -57,6 +57,11 @@ import {
   type DiscoverProfile,
 } from "@/lib/discover";
 import {
+  loadDiscoverFilters,
+  saveDiscoverFilters,
+  resetDiscoverFilters,
+} from "@/lib/discover-filters-storage";
+import {
   addFavorite,
   isFavorite,
   removeFavorite,
@@ -93,6 +98,7 @@ function DiscoverPage() {
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [debouncedFilters, setDebouncedFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersHydratedRef = useRef(false);
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [badgesMap, setBadgesMap] = useState<Record<string, string[]>>({});
   const [badgesLoading, setBadgesLoading] = useState(false);
@@ -176,6 +182,21 @@ function DiscoverPage() {
       }
     });
   }, [user, locStatus]);
+
+  // Load persisted filters once, when user becomes available.
+  useEffect(() => {
+    if (!user || filtersHydratedRef.current) return;
+    const saved = loadDiscoverFilters(user.id);
+    filtersHydratedRef.current = true;
+    setFilters(saved);
+    setDebouncedFilters(saved);
+  }, [user]);
+
+  // Persist filters (safe subset only — see discover-filters-storage.ts).
+  useEffect(() => {
+    if (!user || !filtersHydratedRef.current) return;
+    saveDiscoverFilters(user.id, filters);
+  }, [user, filters]);
 
   // Debounce filter changes to avoid hammering the DB
   useEffect(() => {
@@ -625,7 +646,14 @@ function DiscoverPage() {
         onClose={() => setFiltersOpen(false)}
         value={filters}
         onApply={setFilters}
+        onReset={() => {
+          const cleared = resetDiscoverFilters(user?.id);
+          setFilters(cleared);
+          setDebouncedFilters(cleared);
+          toast.success("Filtre resetate");
+        }}
       />
+
       <MatchModal
         open={!!match}
         onClose={() => setMatch(null)}
