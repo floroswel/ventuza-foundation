@@ -54,6 +54,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { SwipeToReply } from "@/components/SwipeToReply";
+import {
+  VirtualizedMessages,
+  type VirtualizedMessagesHandle,
+} from "@/components/VirtualizedMessages";
 
 export const Route = createFileRoute("/messages/$id")({
   head: () => ({ meta: [{ title: "Chat — Ventuza" }] }),
