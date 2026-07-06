@@ -290,8 +290,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Drag pe imagini/video.
     const onDrag = (e: DragEvent) => {
+      if (isAdminSurface()) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
+
       const hit =
         t.tagName === "IMG" || t.tagName === "VIDEO"
           ? t
