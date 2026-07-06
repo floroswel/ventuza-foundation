@@ -120,6 +120,8 @@ function validateBirthdate(iso: string, t: (k: string) => string): string | null
   if (age > 120) return t("onboarding.basics.birthTooOld");
   if (age < 18) return t("onboarding.basics.minAge");
   return null;
+}
+
 
 function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
