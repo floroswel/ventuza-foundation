@@ -1048,3 +1048,134 @@ function ThreadPage() {
     </div>
   );
 }
+
+const VIRTUALIZATION_THRESHOLD = 100;
+
+function MessagesScroller({
+  loading,
+  loadingMore,
+  messages,
+  otherName,
+  otherTyping,
+  scrollerRef,
+  onScroll,
+  onReachTop,
+  renderRow,
+}: {
+  loading: boolean;
+  loadingMore: boolean;
+  messages: UiMessage[];
+  otherName: string | null;
+  otherTyping: boolean;
+  scrollerRef: React.RefObject<HTMLDivElement | null>;
+  onScroll: () => void;
+  onReachTop: () => void;
+  renderRow: (m: UiMessage) => React.ReactNode;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const virtualHandle = useRef<VirtualizedMessagesHandle>(null);
+  const prevLenRef = useRef(messages.length);
+  const prevFirstIdRef = useRef<string | null>(messages[0]?.id ?? null);
+  const virtualize = messages.length >= VIRTUALIZATION_THRESHOLD;
+
+  useEffect(() => {
+    if (!virtualize) return;
+    const el = containerRef.current;
+    if (!el) return;
+    const measure = () => setContainerHeight(el.clientHeight);
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [virtualize]);
+
+  // Preserve top anchor when older messages are prepended in virtualized mode.
+  useEffect(() => {
+    if (!virtualize) return;
+    const currFirstId = messages[0]?.id ?? null;
+    const prevFirstId = prevFirstIdRef.current;
+    if (currFirstId && prevFirstId && currFirstId !== prevFirstId) {
+      // A prepend happened → keep visible position roughly stable.
+      virtualHandle.current?.remeasure(0);
+    }
+    prevFirstIdRef.current = currFirstId;
+    prevLenRef.current = messages.length;
+  }, [messages, virtualize]);
+
+  if (virtualize) {
+    return (
+      <div ref={containerRef} className="relative flex-1 overflow-hidden px-4 py-4">
+        {loading ? (
+          <div className="flex items-center justify-center py-16 text-muted-foreground">
+            <Loader2 className="size-5 animate-spin" />
+          </div>
+        ) : messages.length === 0 ? (
+          <p className="py-16 text-center text-sm text-muted-foreground">
+            Say something nice to {otherName ?? "them"}.
+          </p>
+        ) : containerHeight > 0 ? (
+          <>
+            {loadingMore && (
+              <div className="pointer-events-none absolute left-0 right-0 top-2 z-10 flex justify-center text-muted-foreground">
+                <Loader2 className="size-4 animate-spin" />
+              </div>
+            )}
+            <VirtualizedMessages<UiMessage>
+              ref={virtualHandle}
+              items={messages}
+              keyFor={(m) => m.id}
+              height={containerHeight}
+              estimatedItemHeight={72}
+              renderItem={(m) => renderRow(m)}
+              onReachTop={onReachTop}
+              stickToBottom
+              prevLength={prevLenRef.current}
+            />
+          </>
+        ) : null}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={scrollerRef as React.RefObject<HTMLDivElement>}
+      onScroll={onScroll}
+      className="flex-1 overflow-y-auto px-4 py-4"
+    >
+      {loading ? (
+        <div className="flex items-center justify-center py-16 text-muted-foreground">
+          <Loader2 className="size-5 animate-spin" />
+        </div>
+      ) : messages.length === 0 ? (
+        <p className="py-16 text-center text-sm text-muted-foreground">
+          Say something nice to {otherName ?? "them"}.
+        </p>
+      ) : (
+        <>
+          {loadingMore && (
+            <div className="flex justify-center py-2 text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+            </div>
+          )}
+          <ul className="space-y-2">
+            {messages.map((m) => renderRow(m))}
+            {otherTyping && (
+              <li className="flex items-start">
+                <div className="rounded-2xl rounded-bl-md bg-muted px-3 py-2">
+                  <span className="inline-flex gap-1">
+                    <span className="size-1.5 animate-bounce rounded-full bg-foreground/60 [animation-delay:-0.3s]" />
+                    <span className="size-1.5 animate-bounce rounded-full bg-foreground/60 [animation-delay:-0.15s]" />
+                    <span className="size-1.5 animate-bounce rounded-full bg-foreground/60" />
+                  </span>
+                </div>
+              </li>
+            )}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
+
