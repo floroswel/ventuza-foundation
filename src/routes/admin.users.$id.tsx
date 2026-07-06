@@ -428,6 +428,9 @@ function User360Page() {
             />
           </Card>
         </TabsContent>
+        <TabsContent value="breakglass" className="space-y-3 mt-4">
+          <BreakGlassPanel userId={id} />
+        </TabsContent>
       </Tabs>
     </div>
   );
