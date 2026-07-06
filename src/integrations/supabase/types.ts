@@ -745,8 +745,11 @@ export type Database = {
           color_class: string
           created_at: string
           criteria_summary: string
+          default_permanent: boolean
+          effect: string | null
           icon: string
           is_active: boolean
+          is_manual: boolean
           label_i18n: Json
           priority: number
           target: string
@@ -756,8 +759,11 @@ export type Database = {
           color_class: string
           created_at?: string
           criteria_summary: string
+          default_permanent?: boolean
+          effect?: string | null
           icon: string
           is_active?: boolean
+          is_manual?: boolean
           label_i18n: Json
           priority?: number
           target: string
@@ -767,8 +773,11 @@ export type Database = {
           color_class?: string
           created_at?: string
           criteria_summary?: string
+          default_permanent?: boolean
+          effect?: string | null
           icon?: string
           is_active?: boolean
+          is_manual?: boolean
           label_i18n?: Json
           priority?: number
           target?: string
@@ -2122,6 +2131,7 @@ export type Database = {
           deleted_at: string | null
           expires_at: string | null
           id: string
+          is_official: boolean
           location_lat: number | null
           location_lng: number | null
           media_type: string
@@ -2144,6 +2154,7 @@ export type Database = {
           deleted_at?: string | null
           expires_at?: string | null
           id?: string
+          is_official?: boolean
           location_lat?: number | null
           location_lng?: number | null
           media_type?: string
@@ -2166,6 +2177,7 @@ export type Database = {
           deleted_at?: string | null
           expires_at?: string | null
           id?: string
+          is_official?: boolean
           location_lat?: number | null
           location_lng?: number | null
           media_type?: string
@@ -3062,6 +3074,7 @@ export type Database = {
           auto_share_album_on_match: boolean
           banned_at: string | null
           banned_reason: string | null
+          banned_until: string | null
           bio: string | null
           birthdate: string | null
           body_type: string | null
@@ -3099,6 +3112,10 @@ export type Database = {
           last_check_in_at: string | null
           last_seen: string
           leaderboard_opt_in: boolean
+          legal_hold: boolean
+          legal_hold_at: string | null
+          legal_hold_by: string | null
+          legal_hold_reason: string | null
           level: number
           location: unknown
           location_sharing_enabled: boolean
@@ -3188,6 +3205,7 @@ export type Database = {
           auto_share_album_on_match?: boolean
           banned_at?: string | null
           banned_reason?: string | null
+          banned_until?: string | null
           bio?: string | null
           birthdate?: string | null
           body_type?: string | null
@@ -3225,6 +3243,10 @@ export type Database = {
           last_check_in_at?: string | null
           last_seen?: string
           leaderboard_opt_in?: boolean
+          legal_hold?: boolean
+          legal_hold_at?: string | null
+          legal_hold_by?: string | null
+          legal_hold_reason?: string | null
           level?: number
           location?: unknown
           location_sharing_enabled?: boolean
@@ -3314,6 +3336,7 @@ export type Database = {
           auto_share_album_on_match?: boolean
           banned_at?: string | null
           banned_reason?: string | null
+          banned_until?: string | null
           bio?: string | null
           birthdate?: string | null
           body_type?: string | null
@@ -3351,6 +3374,10 @@ export type Database = {
           last_check_in_at?: string | null
           last_seen?: string
           leaderboard_opt_in?: boolean
+          legal_hold?: boolean
+          legal_hold_at?: string | null
+          legal_hold_by?: string | null
+          legal_hold_reason?: string | null
           level?: number
           location?: unknown
           location_sharing_enabled?: boolean
@@ -3640,6 +3667,8 @@ export type Database = {
       }
       reports: {
         Row: {
+          assigned_at: string | null
+          assigned_moderator_id: string | null
           created_at: string
           details: string | null
           id: string
@@ -3653,6 +3682,8 @@ export type Database = {
           status: string
         }
         Insert: {
+          assigned_at?: string | null
+          assigned_moderator_id?: string | null
           created_at?: string
           details?: string | null
           id?: string
@@ -3666,6 +3697,8 @@ export type Database = {
           status?: string
         }
         Update: {
+          assigned_at?: string | null
+          assigned_moderator_id?: string | null
           created_at?: string
           details?: string | null
           id?: string
@@ -4167,6 +4200,53 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badge_grants: {
+        Row: {
+          badge_code: string
+          expires_at: string | null
+          granted_at: string
+          granted_by: string
+          id: string
+          reason: string
+          revoke_reason: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_code: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by: string
+          id?: string
+          reason: string
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_code?: string
+          expires_at?: string | null
+          granted_at?: string
+          granted_by?: string
+          id?: string
+          reason?: string
+          revoke_reason?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badge_grants_badge_code_fkey"
+            columns: ["badge_code"]
+            isOneToOne: false
+            referencedRelation: "badge_registry"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       user_quests: {
         Row: {
           claimed_at: string | null
@@ -4225,6 +4305,45 @@ export type Database = {
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_strikes: {
+        Row: {
+          created_at: string
+          decay_at: string
+          id: string
+          issued_by: string | null
+          reason: string
+          reason_code: string | null
+          revoked_at: string | null
+          revoked_by: string | null
+          severity: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          decay_at?: string
+          id?: string
+          issued_by?: string | null
+          reason: string
+          reason_code?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          severity: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          decay_at?: string
+          id?: string
+          issued_by?: string | null
+          reason?: string
+          reason_code?: string | null
+          revoked_at?: string | null
+          revoked_by?: string | null
+          severity?: number
           user_id?: string
         }
         Relationships: []
@@ -4410,6 +4529,8 @@ export type Database = {
       verification_requests: {
         Row: {
           appeal_of: string | null
+          assigned_at: string | null
+          assigned_moderator_id: string | null
           challenges: Json
           claimed_at: string | null
           confidence: string | null
@@ -4440,6 +4561,8 @@ export type Database = {
         }
         Insert: {
           appeal_of?: string | null
+          assigned_at?: string | null
+          assigned_moderator_id?: string | null
           challenges: Json
           claimed_at?: string | null
           confidence?: string | null
@@ -4470,6 +4593,8 @@ export type Database = {
         }
         Update: {
           appeal_of?: string | null
+          assigned_at?: string | null
+          assigned_moderator_id?: string | null
           challenges?: Json
           claimed_at?: string | null
           confidence?: string | null
@@ -4786,8 +4911,21 @@ export type Database = {
         Returns: undefined
       }
       admin_analytics_summary: { Args: never; Returns: Json }
+      admin_apply_strike: {
+        Args: {
+          _reason: string
+          _reason_code?: string
+          _severity?: number
+          _target: string
+        }
+        Returns: Json
+      }
       admin_assign_alert: {
         Args: { _alert_id: number; _assignee: string; _due?: string }
+        Returns: undefined
+      }
+      admin_assign_moderator: {
+        Args: { _item_id: string; _kind: string; _moderator: string }
         Returns: undefined
       }
       admin_can_access_sensitive: {
@@ -4817,6 +4955,15 @@ export type Database = {
       }
       admin_funnel_stats: { Args: { _days?: number }; Returns: Json }
       admin_get_my_role: { Args: never; Returns: string }
+      admin_grant_badge: {
+        Args: {
+          _code: string
+          _expires_at: string
+          _reason: string
+          _target: string
+        }
+        Returns: undefined
+      }
       admin_legal_document_history: {
         Args: { _slug: string }
         Returns: {
@@ -4928,6 +5075,10 @@ export type Database = {
         Returns: Json
       }
       admin_revenue_stats: { Args: never; Returns: Json }
+      admin_revoke_badge: {
+        Args: { _code: string; _reason: string; _target: string }
+        Returns: undefined
+      }
       admin_risk_dashboard: { Args: { _window_hours?: number }; Returns: Json }
       admin_risk_queue: {
         Args: { _limit?: number }
@@ -4950,8 +5101,20 @@ export type Database = {
         Args: { _window_hours?: number }
         Returns: Json
       }
+      admin_send_official_message: {
+        Args: { _body: string; _subject?: string; _target: string }
+        Returns: string
+      }
+      admin_set_legal_hold: {
+        Args: { _enable: boolean; _reason: string; _target: string }
+        Returns: undefined
+      }
       admin_set_risk_flag_status: {
         Args: { _flag_id: string; _note?: string; _status: string }
+        Returns: undefined
+      }
+      admin_set_temporary_ban: {
+        Args: { _reason: string; _target: string; _until: string }
         Returns: undefined
       }
       admin_signup_throttle_stats: {
@@ -5312,6 +5475,18 @@ export type Database = {
         Returns: boolean
       }
       geomfromewkt: { Args: { "": string }; Returns: unknown }
+      get_active_strikes: {
+        Args: { _user_id: string }
+        Returns: {
+          created_at: string
+          decay_at: string
+          id: string
+          issued_by: string
+          reason: string
+          reason_code: string
+          severity: number
+        }[]
+      }
       get_country_risk: {
         Args: { _country_code: string }
         Returns: {
@@ -6426,6 +6601,8 @@ export type Database = {
         Args: { p_request_id: string }
         Returns: {
           appeal_of: string | null
+          assigned_at: string | null
+          assigned_moderator_id: string | null
           challenges: Json
           claimed_at: string | null
           confidence: string | null

@@ -107,9 +107,12 @@ export function BadgeStrip({
                       e.stopPropagation();
                       setOpenCode(b.code);
                     }}
-                    className={`inline-flex items-center justify-center rounded-full bg-black/60 backdrop-blur ${pad} transition-transform active:scale-90 hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-1 focus-visible:ring-offset-black touch-manipulation`}
+                    className={`relative inline-flex items-center justify-center rounded-full bg-black/60 backdrop-blur ${pad} transition-transform active:scale-90 hover:bg-black/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400 focus-visible:ring-offset-1 focus-visible:ring-offset-black touch-manipulation overflow-hidden ${b.effect === "glow" ? `badge-effect-glow ${b.colorClass}` : ""} ${b.effect === "pulse" ? "badge-effect-pulse" : ""}`}
                   >
-                    <Icon className={`${iconSize} ${b.colorClass}`} aria-hidden="true" />
+                    <Icon className={`${iconSize} ${b.colorClass} relative z-10`} aria-hidden="true" />
+                    {b.effect === "shimmer" && (
+                      <span aria-hidden="true" className="pointer-events-none absolute inset-0 badge-effect-shimmer" />
+                    )}
                   </button>
                 </TooltipTrigger>
                 {/* Tooltip vizual pentru hover + focus tastatură (Radix îl deschide și la Tab). */}

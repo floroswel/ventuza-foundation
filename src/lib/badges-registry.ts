@@ -7,6 +7,12 @@ import {
   Crown,
   Rocket,
   ShieldCheck,
+  Wine,
+  Calendar,
+  Rainbow,
+  Mic,
+  Shield,
+  Bug,
   type LucideIcon,
 } from "lucide-react";
 
@@ -18,12 +24,23 @@ export type BadgeCode =
   | "explorer"
   | "partner_premium"
   | "partner_boost"
-  | "official";
+  | "official"
+  // Manual admin-granted:
+  | "founder_ventuza"
+  | "ngo_partner"
+  | "bar_verified"
+  | "event_organizer"
+  | "ally"
+  | "press"
+  | "moderator_public"
+  | "beta_tester";
 
 export type BadgeTarget = "user" | "venue" | "event";
 
 export type BadgeLang = "ro" | "en";
 export type LocalizedText = { ro: string; en: string };
+
+export type BadgeEffect = "shimmer" | "glow" | "pulse" | null;
 
 export type BadgeDef = {
   code: BadgeCode;
@@ -32,11 +49,12 @@ export type BadgeDef = {
   icon: LucideIcon;
   colorClass: string;
   priority: number;
-  /** Motivul pentru care se acordă badge-ul, bilingv. */
   criteria: LocalizedText;
-  /** Când/în ce condiții expiră. `null` = permanent. */
   expiry: LocalizedText | null;
+  effect?: BadgeEffect;
+  isManual?: boolean;
 };
+
 
 
 export const BADGES: Record<BadgeCode, BadgeDef> = {
@@ -151,6 +169,70 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
       ro: "Local oficial verificat de echipa Ventuza.",
       en: "Official venue verified by the Ventuza team.",
     },
+    expiry: null,
+  },
+  founder_ventuza: {
+    code: "founder_ventuza", target: "user", isManual: true, effect: "shimmer",
+    label: { ro: "Fondator Ventuza", en: "Ventuza Founder" },
+    icon: Crown, colorClass: "text-amber-400", priority: 200,
+    criteria: { ro: "Badge onorific acordat manual fondatorilor și primilor contributori.",
+                en: "Honorary badge granted manually to founders and early contributors." },
+    expiry: null,
+  },
+  ngo_partner: {
+    code: "ngo_partner", target: "user", isManual: true, effect: "glow",
+    label: { ro: "Partener ONG", en: "NGO Partner" },
+    icon: Heart, colorClass: "text-emerald-500", priority: 150,
+    criteria: { ro: "Reprezentant verificat al unui ONG partener (ACCEPT, ARAS etc.).",
+                en: "Verified representative of a partner NGO." },
+    expiry: null,
+  },
+  bar_verified: {
+    code: "bar_verified", target: "user", isManual: true, effect: "shimmer",
+    label: { ro: "Local verificat", en: "Verified Venue" },
+    icon: Wine, colorClass: "text-blue-500", priority: 140,
+    criteria: { ro: "Reprezentant verificat al unui local partener Ventuza.",
+                en: "Verified representative of a Ventuza partner venue." },
+    expiry: null,
+  },
+  event_organizer: {
+    code: "event_organizer", target: "user", isManual: true, effect: null,
+    label: { ro: "Organizator evenimente", en: "Event Organizer" },
+    icon: Calendar, colorClass: "text-fuchsia-500", priority: 130,
+    criteria: { ro: "Organizator verificat de evenimente comunitare.",
+                en: "Verified community event organizer." },
+    expiry: { ro: "Poate fi acordat cu expirare de admin.", en: "May be granted with expiry by admin." },
+  },
+  ally: {
+    code: "ally", target: "user", isManual: true, effect: "pulse",
+    label: { ro: "Aliat comunitate", en: "Community Ally" },
+    icon: Rainbow, colorClass: "text-pink-400", priority: 110,
+    criteria: { ro: "Aliat verificat al comunității LGBTQ+.",
+                en: "Verified LGBTQ+ community ally." },
+    expiry: null,
+  },
+  press: {
+    code: "press", target: "user", isManual: true, effect: null,
+    label: { ro: "Presă / Media", en: "Press / Media" },
+    icon: Mic, colorClass: "text-yellow-500", priority: 120,
+    criteria: { ro: "Reprezentant media verificat.",
+                en: "Verified press / media representative." },
+    expiry: { ro: "Poate fi acordat cu expirare.", en: "May be granted with expiry." },
+  },
+  moderator_public: {
+    code: "moderator_public", target: "user", isManual: true, effect: "glow",
+    label: { ro: "Moderator", en: "Moderator" },
+    icon: Shield, colorClass: "text-blue-600", priority: 180,
+    criteria: { ro: "Membru al echipei de moderare Ventuza.",
+                en: "Member of the Ventuza moderation team." },
+    expiry: null,
+  },
+  beta_tester: {
+    code: "beta_tester", target: "user", isManual: true, effect: null,
+    label: { ro: "Beta Tester", en: "Beta Tester" },
+    icon: Bug, colorClass: "text-lime-500", priority: 80,
+    criteria: { ro: "A contribuit la testarea versiunilor beta.",
+                en: "Contributed to beta testing." },
     expiry: null,
   },
 };
