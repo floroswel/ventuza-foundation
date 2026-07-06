@@ -1011,6 +1011,7 @@ function ConsentsHistoryPanel({ userId }: { userId: string }) {
 
   const total = q.data?.total ?? 0;
   const rows = q.data?.rows ?? [];
+  // health_data e păstrat pentru filtrare istorică — kind-ul nu se mai poate înregistra.
   const kinds = ["", "age_verification", "ai_features", "push_notifications", "marketing", "health_data", "background_location"];
 
   return (
