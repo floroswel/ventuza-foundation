@@ -62,7 +62,12 @@ export async function sendOne(
   sub: SubscriptionRow,
   payload: PushPayload,
 ): Promise<{ ok: boolean; gone: boolean }> {
-  ensureConfigured();
+  try {
+    ensureConfigured();
+  } catch (e) {
+    console.error("[web-push] config error:", (e as Error).message);
+    return { ok: false, gone: false };
+  }
   if (!sub.endpoint || !sub.p256dh || !sub.auth) return { ok: false, gone: true };
   try {
     await webpush.sendNotification(
