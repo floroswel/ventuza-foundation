@@ -130,14 +130,16 @@ function AgeGateDevBanner() {
     clearAgeGatePolicyCache();
     shouldEnforceAgeGate().then(setEnforce);
   }, []);
-  if (enforce === null || enforce === true) return null;
+  // În producție `shouldEnforceAgeGate()` forțează `true` indiferent de flag,
+  // deci banner-ul este ascuns automat. Rămâne vizibil DOAR pe host-uri de
+  // dev/preview când flag-ul e OFF, ca reminder că sunt pe canal non-prod.
+  if (enforce === null || enforce === true || isProductionHost()) return null;
   return (
     <div className="border-b border-yellow-500/40 bg-yellow-500/10 px-4 py-2 text-center text-xs text-yellow-300">
-      ⚠️ <b>AGE VERIFICATION DEZACTIVAT</b> (feature_flags.age_verification = OFF) — DOAR în
-      non-producție ({typeof window !== "undefined" ? window.location.hostname : "?"}). În build de
-      producție se forțează ON automat indiferent de flag. Reactivează din{" "}
-      <b>Securitate → Feature flags</b> → toggle <code>age_verification</code>.
-      <span className="ml-1 opacity-70">isProductionHost: {String(isProductionHost())}</span>
+      ⚠️ <b>Dev-only:</b> age verification e OFF pe acest host non-producție (
+      {typeof window !== "undefined" ? window.location.hostname : "?"}). În build de producție se
+      forțează ON automat. Pentru a testa fluxul complet local, activează din{" "}
+      <b>Securitate → Feature flags</b> → <code>age_verification</code>.
     </div>
   );
 }
