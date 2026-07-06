@@ -1,111 +1,162 @@
-# Analiză verificare vârstă — Ventuza (iulie 2026)
 
-**ZERO modificări.** Raport pe cod real + DB reală.
+# Raport GO-LIVE Ventuza — Discover · Notificări · Play Store
 
----
-
-## TL;DR
-
-**Sursa unică de adevăr pentru „18+" este Didit.** Fluxul intern (liveness + moderator uman) există ca schelet în DB și cod, dar este **oficial dezactivat** — UI-ul nu îl mai apelează, panoul admin este marcat DEPRECATED, tabelele sunt goale (1 rând istoric în `verification_requests`, 5/5 profiluri verificate au `verification_method='didit'`).
+Doar analiză. Zero modificări.
 
 ---
 
-## 1. Integrare Didit — ACTIVĂ
+## A. GRILA DISCOVER
 
-**Fișiere:**
-- `src/lib/didit.server.ts` — API client (create session, fetch decision, HMAC verify, mapping status).
-- `src/lib/didit.functions.ts` — 3 server fn-uri: `startDiditVerification`, `getMyDiditStatus`, `syncMyDiditStatus`.
-- `src/routes/verify.tsx` — UI complet care apelează `startDiditVerification` → redirect la Didit, poll status la 5s când `age_status='pending'`.
-- `src/routes/verify.status.tsx` — landing după return din Didit.
-- `src/routes/api/public/didit-webhook.ts` — webhook handler (vezi §3).
+### A1. Layout & paginare
+- **EXISTĂ**: grid fix **3 coloane** (`aspect-square`), toggle Grid ↔ Swipe persistat în `localStorage`. Fișier: `src/routes/discover.tsx` (1672 linii, componenta `Cascade` la linia 859).
+- **PARȚIAL**: fetch cu `_limit: 50, _offset: 0` — un singur snapshot; RPC clampează la 50 (`migrations/20260703204411`). Rate-limit 60 apeluri/oră (regula RATE LIMIT DISCOVER).
+- **LIPSEȘTE**: infinite scroll / "Load more" / paginare. Layout responsive (4–5 coloane pe tabletă/desktop).
 
-**Endpoint Didit folosit:** `https://verification.didit.me/v3/session/` (POST create), `/session/{id}/decision/` (GET refresh).
+### A2. Cardul
+Câmpuri afișate pe card (Cascade): poză principală, `display_name`, vârstă (din `birthdate`), punct verde online, distanță bucketizată, până la 2 tribes, badges (Boost/Now/Travel), unread indicator, BadgeStrip (max 3).
+- **RPC `discover_profiles` proiectează** și: `verified`, `gender`, `orientation`, `looking_for`, `bio`, `body_type`, `height_cm`, `weight_kg`, `ethnicity`, `position`, `relationship_status`, `prompts` — folosite doar în ProfileSheet, nu pe card.
+- **LIPSEȘTE pe cardul din grid**: bifa `verified` (există în PosterRow, nu în Cascade), text "last seen"/„acum activ", număr de poze.
 
-## 2. Variabile de mediu Didit — 3 setate
+### A3. Online indicator
+- **EXISTĂ**: coloană `profiles.last_seen`, RPC `touch_last_seen()` (`migrations/20260620175816:85`), punct verde pe card când `Date.now() - last_seen < 5 min` (`src/lib/discover.ts:99`).
+- **PARȚIAL / bug**:
+  - `touch_last_seen` apelat **o singură dată** la mount discover — fără heartbeat periodic → dot devine fals-offline pentru useri activi în alte pagini.
+  - Prag inconsistent: client 5 min, RPC `_online_only` 15 min.
+  - `setInterval(30s)` doar re-randează, nu face refetch (`discover.tsx:279`).
+- **LIPSEȘTE**: heartbeat client global (App-level, nu discover-only), Supabase Presence, respectarea `hide_online` la afișarea punctului verde (RPC returnează `NULL` — clientul nu tratează separat de "offline").
 
-- `DIDIT_API_KEY` — server-only, folosit în `diditCreateSession` + `diditFetchDecision`.
-- `DIDIT_WORKFLOW_ID` — server-only, pasat ca `workflow_id` în create session.
-- `DIDIT_WEBHOOK_SECRET` — server-only, folosit de `verifyDiditSignature` (HMAC-SHA256).
+### A4. Reordonare live
+- **PARȚIAL**: canal Realtime pe `profile_live_events` (`discover.tsx:313`) → refetch complet debounced 60s.
+- **LIPSEȘTE**: upsert incremental (mișcă un card sus când devine online, ca Grindr). Trigger care să populeze `profile_live_events` la schimbări `last_seen` (nu am confirmat existența).
 
-Nu există `VITE_DIDIT_*` — client-ul nu apelează Didit direct, doar prin server fn.
+### A5. Filtre
+- **EXISTĂ** (FiltersDrawer + QuickFiltersStrip): distanță, vârstă min/max, înălțime, tribes, body type, position, looking-for, gender, orientation, Right Now, Verified, With Photo.
+- **PARȚIAL**: `_online_only` există în tipul `DiscoverFilters` și e trimis în RPC, dar **fără toggle în UI** — efectiv inactiv.
+- **PARȚIAL**: RPC suportă parametrul `_tab` (`all|online|fresh|photo|now|verified`) — UI trimite mereu `"all"` și face sort local pentru "Fresh".
 
-## 3. Webhook Didit — ACTIV
+### A6. Tap pe card
+- **EXISTĂ**: deschide `ProfileSheet` fullscreen (bottom sheet), cu swipe și săgeți keyboard, acțiuni Pass/Message/Like, galerie, private album viewer, TapFavoriteRow.
+- **LIPSEȘTE**: link/navigare la pagină publică `/u/$slug` (share/copy URL profil).
 
-**Cale:** `POST /api/public/didit-webhook` (bypasses auth-ul pe deployment publicat, conform convenției `/api/public/*`).
+---
 
-**Ce face:**
-1. Citește raw body → verifică semnătura HMAC (`X-Signature-V2` preferat, `X-Signature` fallback, `X-Signature-Simple` doar pentru envelope).
-2. Dacă `trustedBody=false` (simple sig), re-cere decizia autoritativă via `diditFetchDecision(sessionId)`.
-3. Mapează `status` Didit → `pass|fail|pending` prin `mapDiditStatus`.
-4. Extrage `estimated_age` din `decision.age_estimation` / `liveness_checks[].age_estimation`.
-5. Apelează RPC `didit_apply_result(_session_id, _status, _result, _estimated_age, _status_raw)` (SECURITY DEFINER, `service_role`) — care actualizează atât `didit_sessions` cât și `profiles`.
+## B. NOTIFICĂRI
 
-## 4. Flux intern (liveness + moderator) — SCHELET, DEZACTIVAT
+### B1. Push
+- **EXISTĂ end-to-end Web Push (VAPID)**:
+  - Service worker: `public/push-sw.js` (deep-link din `data.url`).
+  - Config client: `src/lib/web-push-config.ts` (citește `VITE_VAPID_PUBLIC_KEY` cu fallback hardcodat).
+  - Sender server: `src/lib/web-push.server.ts` (`web-push` npm, TTL 24h, auto-prune la 404/410).
+  - Server fns: `savePushSubscription`, `sendPushToUser` cu master toggle, per-categorie, quiet hours, discrete mode (`src/lib/push.functions.ts`).
+  - Buton `EnablePushButton`.
+- **LIPSEȘTE Capacitor nativ (FCM/APNs)**: `@capacitor/push-notifications` nu e configurat în `capacitor.config.ts`. Android/iOS primesc push doar prin browser (Chrome/Safari 16.4+), nu prin FCM nativ.
+- **PARȚIAL — push la evenimente**:
+  - ✅ Mesaj nou → `sendPushToUser` apelat din `src/lib/chat.ts:73`.
+  - ✅ Broadcast partener → `src/lib/partner-broadcasts.functions.ts:173`.
+  - ❌ Match / tap / woof → NU trimit push OS. Triggerele DB populează doar tabelul `notifications` → toast in-app.
+- **RISC HIGH — cheie VAPID privată hardcodată** ca fallback în `src/lib/web-push.server.ts:17` (`iNOglDe-6dSo…`). Dacă `VAPID_PRIVATE_KEY` nu e în secrets, producția rulează cu cheie publică în repo.
 
-**Cod care există dar NU rulează:**
-- `src/lib/admin-verification.functions.ts` — 5 server fn-uri complete (list/stats/claim/take/signed-urls/decide) pe `verification_requests`.
-- `src/lib/verification.functions.ts` — `verifySelfie` (AI compare selfie vs. main photo prin Gemini) și `moderatePhoto` (moderare AI). **Notă: `verifySelfie` NU face age gating** — setează `verification_status/verified_at/verified` (badge de identitate), fără să atingă `age_status`. Nu se cheamă din niciun UI activ.
-- RPC-uri DB: `verification_submit_request`, `verification_moderator_claim/take/decide`, `verification_generate_challenges`, `verification_mark_purged`, `is_verification_staff` — toate există (12 funcții), zero call site UI.
-- `src/components/admin/VerificationQueuePanel.tsx` — **marcat explicit DEPRECATED** cu comentariu:
-  > „Din iulie 2026 verificarea vârstei se face exclusiv prin Didit — fluxul intern a fost dezactivat la cererea business-ului."
+### B2. In-app vizuale
+- **EXISTĂ**: 
+  - Toast global (Sonner) wired în `__root.tsx:237`, declanșat pe `INSERT notifications` (`notifications-context.tsx:92`).
+  - Badge unread messages în `BottomNav` (`useUnreadMessages` hook, realtime debounced 250ms).
+  - `NotificationBell` cu glow — **plasat în header, NU în BottomNav**.
+  - Pagină istoric `/notifications` cu markRead / markAllRead / delete.
+- **LIPSEȘTE**: badge notificări generale în BottomNav (bell), badge matches noi, animație "ramă luminată" pe home, badge pe alte tab-uri.
 
-**Stare DB:**
-- `verification_requests`: 1 rând total (rezidual istoric).
-- `verification_images`: bucket privat + tabela există, dar nu se mai populează.
-- Retenție automată configurată (30 zile), purge activ.
+### B3. Sunet
+- **EXISTĂ**: sunet unic "brand" generat Web Audio API (E5→B5 shimmer, 450ms) în `src/lib/notification-sound.ts`. Toggle persist în localStorage, deblocat pe iOS la primul gest.
+- **LIPSEȘTE**: sunet distinct per tip (match vs mesaj vs tap).
 
-## 5. Ce se întâmplă pas cu pas la un user nou
-
-1. User face signup → completează birthdate (≥18 forțat de trigger DB `enforce_min_age_trg`).
-2. `AgeGate` (montat în root) citește `profiles.age_status`. Default: `unverified`.
-3. `shouldEnforceAgeGate()` (din `age-gate-policy.ts`) → în producție forțează gate ON (ignoră feature flag).
-4. `AgeGate` redirecționează la `/verify` dacă `age_status !== 'verified'`.
-5. `/verify` afișează UI Didit → click „Începe verificarea" → `startDiditVerification` → creează sesiune → redirect fullscreen la URL Didit.
-6. User face selfie live la Didit → Didit trimite webhook la `/api/public/didit-webhook` → `didit_apply_result` setează:
-   - `didit_sessions.status/result/estimated_age/resolved_at`
-   - `profiles.age_status = 'verified'|'failed'|'pending'`
-   - `profiles.age_provider = 'didit'`
-   - `profiles.age_verified_at = now()` (dacă pass)
-   - `profiles.verified = true`, `verified_at = now()` (dacă pass)
-   - `profiles.verification_status = 'verified'`
-   - `profiles.verification_method = 'didit'` (**forțat** — orice altă valoare e suprascrisă la fiecare webhook Didit)
-7. `AgeGate` primește update realtime pe `profiles.age_status` → deblochează app.
-8. Fallback dacă webhook nu ajunge (preview / dev fără tunel): poll la 5s cheamă `syncMyDiditStatus` → `diditFetchDecision` → aplică rezultatul.
-
-**Nicio intervenție umană.** Deciziile în review manual la Didit (`in_review`) sunt tratate ca `pending` și așteaptă tot webhook-ul Didit.
-
-## 6. Coloane DB pentru verificare
-
-Pe `public.profiles`:
-
-| Coloană | Tip | Semantică |
+### B4. Badge count pe tab-uri
+| Tab | Badge | Realtime |
 |---|---|---|
-| `age_status` | enum `age_status` (`unverified`/`pending`/`verified`/`failed`) | sursa de adevăr pentru gate |
-| `age_provider` | text | `'didit'` sau NULL |
-| `age_verified_at` | timestamptz | timestamp pass |
-| `age_pending_at` | timestamptz | când s-a pornit sesiunea |
-| `verification_status` | text | `'verified'/'rejected'/'pending'` (legacy, ținut în sync de `didit_apply_result`) |
-| `verification_method` | text | **azi: `'didit'` pentru toate 5 profilurile verificate** |
-| `verification_version` / `verification_score` / `verification_reviewed_by` | | scheletul intern — neutilizate |
-| `verified` / `verified_at` / `verification_reason` | | badge legacy — setate și de Didit |
+| Inbox | ✅ unread messages | ✅ (`useUnreadMessages`) |
+| Bell (header, nu BottomNav) | ✅ unread notifications | ✅ (`useNotifications`) |
+| Discover / Profile / Partner | ❌ | — |
 
-**Statistici azi:** 5 profiluri cu `verification_method='didit'`, 4 cu `age_status='verified'`, 14 sesiuni Didit total (4 approved).
+### B5. Realtime
+Canale active: `notifications:${uid}`, `unread-msgs-${uid}`, plus canale admin (`risk-flags`, `admin-alerts`, `legal-doc`).
+Tabele publicate în `supabase_realtime`: `messages`, `conversations`, `notifications`, `matches`, `taps`, `stories`, `group_messages`, `story_views`, `profiles`, `profile_live_events`, `admin_alerts`, `legal_documents`.
+- **OBS**: `matches` și `taps` sunt publicate, dar frontend-ul NU se abonează direct pe ele — vin doar prin `notifications` (trigger DB).
 
-## 7. Coadă de moderare
+### B6. Gap-uri paritate Grindr
+Push nativ FCM/APNs, push la match/tap/woof (nu doar mesaje), badge live matches în BottomNav, sunet distinct per tip, animație vizuală "incoming" pe home, scheduler pentru `event_reminder`.
 
-Există în DB (`verification_requests` cu statusuri `pending/in_review/needs_second/approved/rejected/appeal/expired`) și în cod (`admin-verification.functions.ts` complet funcțional, RPC-urile `verification_moderator_*` toate există), dar:
-- Panoul admin (`VerificationQueuePanel`) e placeholder DEPRECATED — nu mai afișează coada.
-- Nimic din UI nu apelează `verification_submit_request` pentru a popula coada.
-- E **cod mort operațional**, viu tehnic. Dacă ai revoca decizia „Didit-only", ai putea reactiva prin remontarea unui panou care apelează server fn-urile existente.
+---
 
-## 8. Sursa de adevăr pentru „user e 18+"
+## C. GO-LIVE READINESS (Play Store)
 
-**Didit, exclusiv.**
-- Singurul cod care mută `age_status` pe `verified` este `didit_apply_result` (declanșat de webhook sau de `syncMyDiditStatus`).
-- `assert_age_verified()` (gate DB pe toate RPC-urile sociale) deleagă la `assert_account_usable()` — verifică doar `age_status='verified'` + email confirmed, nu se uită la `verification_requests`.
-- `age_provider` este fix `'didit'` pentru toate profilurile verificate.
-- `verification_method` este forțat `'didit'` la fiecare update din webhook — schema permite alte valori (`'internal'`), dar nimic în cod nu le scrie astăzi.
+### C1. Build Android
+- **EXISTĂ**: `capacitor.config.ts` corect — `appId=app.ventuza.mobile`, `webDir=dist`, plugins `SplashScreen`/`StatusBar`/`PrivacyScreen(preventScreenshots)`. `server.url` activ **doar** dacă `CAPACITOR_DEV=1` → bundling curat la build prod.
+- **BLOCKER**: folderul `android/` NU e în repo (per `MOBILE.md`, se generează local cu `npx cap add android`). Trebuie inițializat pe mașina de release.
 
-**Concluzie:** Ventuza rulează pe un singur sistem: Didit. Infrastructura pentru verificare internă (tabele, RPC-uri, server fn-uri admin, bucket storage cu retenție) este intactă și reactivabilă, dar UI-ul o ignoră complet și `VerificationQueuePanel` afișează un banner explicit „dezactivat".
+### C2. Env vars pentru producție
+Setate în `.env`: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_PROJECT_ID` + variantele `VITE_*`.
 
-**Notă documentară:** `AGENTS.md → REGULĂ — AGE GATE (permanentă)` încă descrie fluxul ca „100% intern (liveness + moderator uman)". Acest text nu mai reflectă implementarea reală din iulie 2026 — la o viitoare rescriere a regulii se poate corela cu situația de facto (Didit exclusiv, intern rezidual).
+Lipsă / gol:
+| Var | Impact | Severitate |
+|---|---|---|
+| `VITE_TURNSTILE_SITE_KEY` (gol în `.env`) | Anti-bot dezactivat pe signup | 🔴 BLOCKER |
+| `DIDIT_API_KEY`, `DIDIT_WORKFLOW_ID`, `DIDIT_WEBHOOK_SECRET` | Age verification (obligatorie) nu pornește | 🔴 BLOCKER |
+| `SUPABASE_SERVICE_ROLE_KEY` (de confirmat în Secrets) | Server fns admin, webhooks, billing eșuează | 🔴 BLOCKER |
+| `VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` + `VITE_VAPID_PUBLIC_KEY` | Fallback hardcodat expus în repo | 🟠 HIGH |
+| `REVENUECAT_SECRET_API_KEY` | Cancel abonament la delete cont (GDPR Art.17) eșuează silențios | 🟠 HIGH |
+| `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON`, `GOOGLE_PLAY_PACKAGE_NAME` | Validare purchase token — billing inoperabil | 🟠 HIGH |
+| `LOVABLE_API_KEY`, `LOVABLE_SEND_URL` | AI Copilot admin + email transacțional | 🟡 MEDIUM |
+| `HEALTH_COL_KEY` | de confirmat în secrets | ❓ verificat |
+
+### C3. Erori typecheck / build
+Fără `@ts-ignore`/`@ts-expect-error` în `src/`. Un cast suspect: `src/routes/messages.$id.tsx` folosește `to: "n" as never` — rută posibil invalidă la runtime, de verificat.
+
+### C4. Hardcodări
+- ✅ `server.url` Lovable — corect gated pe `CAPACITOR_DEV`.
+- 🟠 `og:image` din `src/routes/__root.tsx:125,130` = screenshot preview Lovable (URL R2 conține `id-preview-…lovable.app`). Branding incorect pentru share și listing.
+- 🟠 VAPID private key fallback hardcodat (`web-push.server.ts:17`).
+- ✅ Referințele lovable din `age-gate-policy.ts` sunt logica de excludere (corect).
+
+### C5. Feature flags
+- `age_verification` — forțat ON în producție prin `age-gate-policy.ts` (kill-switch inactiv pe prod host). ✅
+- `demo_seed` — butoanele sunt disabled în prod via `isProductionHost()`; `DemoSeedBanner` avertizează dacă apar `is_seed=true` pe prod. ✅ UI dezactivat.
+- **Recomandat**: query manual `SELECT flag_key, enabled FROM public.feature_flags` înainte de lansare (n-am putut confirma toate flag-urile live).
+
+### C6. Cod mort / schelet vizibil
+- 🟡 `VerificationQueuePanel` — marcat DEPRECATED, dar apare în nav admin fără `adminOnly` (`admin.tsx:439`), cu badge counter `pendingVerif` care poate afișa număr eronat. De ascuns sau marcat `hidden`.
+- ✅ `DemoSeedPanel` — gated `adminOnly` + disabled în prod.
+- ✅ `/verify` — activ, necesar (flow Didit).
+- ✅ Simulator locație — `super_admin` + dezactivat în prod.
+
+---
+
+## CHECKLIST GO-LIVE PLAY STORE
+
+### 🔴 BLOCKER
+- B1: Generat folder `android/` local (`npx cap add android`).
+- B2: `SUPABASE_SERVICE_ROLE_KEY` confirmat în Lovable Secrets prod.
+- B3: `DIDIT_API_KEY` + `DIDIT_WORKFLOW_ID` + `DIDIT_WEBHOOK_SECRET` în Secrets.
+- B4: `VITE_TURNSTILE_SITE_KEY` setat (acum gol în `.env`).
+
+### 🟠 HIGH
+- H1: `VAPID_PUBLIC_KEY` + `VAPID_PRIVATE_KEY` în Secrets — elimină fallback hardcodat.
+- H2: `REVENUECAT_SECRET_API_KEY` în Secrets.
+- H3: `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` + `GOOGLE_PLAY_PACKAGE_NAME` în Secrets.
+- H4: `og:image` real de brand (nu screenshot preview Lovable).
+- H5: Push OS la match / tap / woof (nu doar mesaje).
+- H6: Ascunde/marchează `hidden` `VerificationQueuePanel` din nav admin.
+- H7: Respectă `hide_online` la afișarea punctului verde pe card (privacy).
+
+### 🟡 MEDIUM
+- M1: Heartbeat periodic `touch_last_seen` la nivel de App (nu doar la mount discover).
+- M2: Unifică pragul "online" client 5 min ↔ RPC 15 min.
+- M3: Toggle "Online only" în UI FiltersDrawer.
+- M4: `LOVABLE_API_KEY` + `LOVABLE_SEND_URL` în Secrets.
+- M5: Query manual `feature_flags` înainte de lansare.
+- M6: Verifică ruta suspectă `to: "n" as never` din `src/routes/messages.$id.tsx`.
+- M7: Capacitor nativ FCM/APNs (paritate reală iOS/Android).
+- M8: Badge matches noi în BottomNav; sunet distinct per tip; animație vizuală incoming.
+- M9: Layout Discover responsive (4–5 coloane desktop/tablet) + paginare/infinite scroll.
+- M10: Link `/u/$slug` din ProfileSheet pentru share.
+
+---
+
+Spune-mi care bucket vrei să atac primul (BLOCKER-urile de secrets/env vs UX Discover vs push nativ) și trec direct în build.
