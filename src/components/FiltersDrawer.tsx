@@ -23,11 +23,17 @@ export function FiltersDrawer({
   onClose,
   value,
   onApply,
+  onReset,
 }: {
   open: boolean;
   onClose: () => void;
   value: DiscoverFilters;
   onApply: (f: DiscoverFilters) => void;
+  /**
+   * Called when the user hits "Reset". Should clear persisted storage AND
+   * return filters to defaults. Falls back to a local-only reset if omitted.
+   */
+  onReset?: () => void;
 }) {
   const [draft, setDraft] = useState<DiscoverFilters>(value);
   useEffect(() => {
@@ -48,12 +54,16 @@ export function FiltersDrawer({
         </button>
         <h2 className="font-display text-lg">Filters</h2>
         <button
-          onClick={() => setDraft(DEFAULT_FILTERS)}
+          onClick={() => {
+            setDraft(DEFAULT_FILTERS);
+            if (onReset) onReset();
+          }}
           className="text-sm text-primary hover:underline"
         >
-          Reset
+          Resetează
         </button>
       </header>
+
 
       <div className="flex-1 space-y-8 overflow-y-auto px-6 py-6">
         {/* quick toggles */}
