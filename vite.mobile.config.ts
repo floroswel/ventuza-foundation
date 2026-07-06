@@ -3,7 +3,7 @@
  *
  * Folosire: `bun run build:mobile`
  *
- * Generează `dist/` ca bundle SPA static, fără nitro/SSR, astfel încât
+ * Generează `dist/client/` ca bundle SPA static, fără nitro/SSR, astfel încât
  * Capacitor să poată împacheta totul fără runtime de Worker.
  *
  * NU afectează `bun run build` (web rămâne SSR pe Cloudflare).
@@ -21,8 +21,15 @@ export default defineConfig({
   },
   vite: {
     build: {
-      outDir: "dist/client",
+      outDir: "dist",
       emptyOutDir: true,
+    },
+    environments: {
+      client: {
+        build: {
+          outDir: "dist/client",
+        },
+      },
     },
     define: {
       "process.env.MOBILE_BUILD": JSON.stringify("1"),
