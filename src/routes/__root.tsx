@@ -171,6 +171,13 @@ function RootComponent() {
       document.documentElement.lang = mod.default.language || "ro";
     });
 
+    // Anti-screenshot (Android FLAG_SECURE + best-effort web)
+    void import("@/lib/privacy-screen").then(({ initPrivacyScreen }) =>
+      initPrivacyScreen(),
+    );
+
+
+
     // Re-apply discreet mode (icon/title swap) chosen by user on previous session.
     import("@/lib/discreet-mode").then(({ loadDiscreetMode, applyDiscreetMode }) => {
       const skin = loadDiscreetMode();
