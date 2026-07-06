@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, MapPin, Mic, Plus, Square, Timer, X } from "lucide-react";
+import { Camera, Image as ImageIcon, MapPin, Mic, Plus, Square, Timer, X } from "lucide-react";
 import { toast } from "sonner";
 import { sendMediaMessage, updateLiveLocationMessage, type MessageRow } from "@/lib/chat";
+import { compressImageForChat } from "@/lib/image-compress";
 import { cn } from "@/lib/utils";
+
 
 type Props = {
   conversationId: string;
@@ -19,6 +21,8 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
   const [recElapsed, setRecElapsed] = useState(0);
   const fileRef = useRef<HTMLInputElement>(null);
   const fileOnceRef = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
+
   const recRef = useRef<{
     mr: MediaRecorder;
     chunks: BlobPart[];
@@ -39,9 +43,11 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
     [],
   );
 
-  async function pickPhoto(viewOnce: boolean) {
+  async function pickPhoto(source: "gallery" | "camera" | "gallery-once") {
     setOpen(false);
-    (viewOnce ? fileOnceRef : fileRef).current?.click();
+    const ref =
+      source === "camera" ? cameraRef : source === "gallery-once" ? fileOnceRef : fileRef;
+    ref.current?.click();
   }
 
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>, viewOnce: boolean) {
@@ -56,11 +62,17 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
     setBusy(true);
     try {
       for (const f of files) {
-        if (f.size > 8 * 1024 * 1024) {
-          toast.error(`"${f.name}" e prea mare (max 8MB)`);
+        if (f.size > 20 * 1024 * 1024) {
+          toast.error(`"${f.name}" e prea mare (max 20MB)`);
           continue;
         }
-        const m = await sendMediaMessage(conversationId, { kind: "image", file: f, viewOnce });
+        // Comprimă înainte de upload pentru viteză (max 2048px, JPEG 82%).
+        const compressed = await compressImageForChat(f);
+        const m = await sendMediaMessage(conversationId, {
+          kind: "image",
+          file: compressed,
+          viewOnce,
+        });
         onSent(m);
       }
       if (files.length > 1) toast.success(`${files.length} imagini trimise`);
@@ -70,6 +82,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
       setBusy(false);
     }
   }
+
 
 
   async function shareLocation() {
@@ -220,6 +233,14 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
         className="hidden"
         onChange={(e) => handleFile(e, true)}
       />
+      <input
+        ref={cameraRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => handleFile(e, false)}
+      />
 
       <div className="relative">
         <button
@@ -235,16 +256,21 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
           <Plus className="size-5" />
         </button>
         {open && (
-          <div className="absolute bottom-14 left-0 z-30 w-52 rounded-2xl border border-border bg-popover p-1 shadow-xl">
+          <div className="absolute bottom-14 left-0 z-30 w-56 rounded-2xl border border-border bg-popover p-1 shadow-xl">
             <MenuItem
               icon={<Camera className="size-4" />}
-              label="Foto (una sau mai multe)"
-              onClick={() => pickPhoto(false)}
+              label="Cameră (foto instant)"
+              onClick={() => pickPhoto("camera")}
+            />
+            <MenuItem
+              icon={<ImageIcon className="size-4" />}
+              label="Galerie"
+              onClick={() => pickPhoto("gallery")}
             />
             <MenuItem
               icon={<Timer className="size-4" />}
               label="Foto o singură vizualizare"
-              onClick={() => pickPhoto(true)}
+              onClick={() => pickPhoto("gallery-once")}
             />
 
             <MenuItem
@@ -260,6 +286,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
           </div>
         )}
       </div>
+
     </>
   );
 }
