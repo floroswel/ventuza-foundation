@@ -723,3 +723,16 @@ export function BreakGlassLogPanel() {
     </div>
   );
 }
+
+/** Rând compact key/value pentru drawer-ul de user. */
+function Row({ k, v }: { k: string; v: string }) {
+  return (
+    <>
+      <dt className="text-muted-foreground">{k}</dt>
+      <dd className="truncate font-medium text-foreground" title={v}>
+        {v}
+      </dd>
+    </>
+  );
+}
+
