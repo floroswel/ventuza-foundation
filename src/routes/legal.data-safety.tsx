@@ -122,9 +122,9 @@ const ITEMS: DataItem[] = [
   },
   {
     category: "Selfie verificare vârstă",
-    types: ["Selfie live cu challenge de gest (liveness)"],
+    types: ["Selfie live (age estimation)"],
     purpose:
-      "Confirmare 18+. Imaginea este trimisă tranzitoriu către Didit (procesator UE) pentru estimare automată a vârstei; Didit șterge imaginea imediat și ne întoarce doar pass/fail. Pentru cazuri borderline / raportări, un moderator uman revizuiește într-un bucket privat Ventuza; imaginile se șterg automat în ≤30 zile de la decizie.",
+      "Confirmare 18+. Imaginea este trimisă tranzitoriu către Didit (procesator UE) pentru estimare automată a vârstei; Didit șterge imaginea imediat după procesare și ne întoarce doar rezultatul pass/fail. Nu solicităm și nu stocăm document de identitate.",
     optional: true,
     shared: true,
     encryptedInTransit: true,
@@ -132,7 +132,7 @@ const ITEMS: DataItem[] = [
     userDeletable: true,
     art9: true,
     howToControl:
-      'Consimțământ „Verificare identitate" în Setări (Art. 9(2)(a)). Retragerea blochează re-verificarea și marchează orice imagine reținută pentru ștergere imediată.',
+      'Consimțământ „Verificare vârstă (18+) prin Didit" în Setări (Art. 9(2)(a)). Retragerea blochează re-verificarea.',
     controlHref: "/settings",
     processors: ["P10 — Didit (age estimation, UE)"],
   },
