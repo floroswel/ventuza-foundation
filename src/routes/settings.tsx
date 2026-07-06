@@ -29,6 +29,7 @@ import { ConsentsCard } from "@/components/settings/ConsentsCard";
 import { ConsentsHistoryCard } from "@/components/settings/ConsentsHistoryCard";
 import { ProximityNotificationsCard } from "@/components/settings/ProximityNotificationsCard";
 import { NotificationSoundCard } from "@/components/settings/NotificationSoundCard";
+import { DebugModeCard } from "@/components/settings/DebugModeCard";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
