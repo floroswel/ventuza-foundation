@@ -1,137 +1,81 @@
-## PROFIL — Raport de stare (analiză, zero modificări)
+## Ce livrez în acest sprint
 
-### A. PROFIL AFIȘAT (ce vezi la altcineva)
+### A. Modul admin User360 — 10 must-have-uri enterprise
 
-**Două suprafețe distincte** care randează profilul altui user:
+1. **Timeline unificat** (`/admin/users/$id` tab nou "Timeline") — feed cronologic ordonat descrescător care agregă: `admin_audit_log`, `consent_log`, `verification_requests`, `reports` (reporter+target), `appeals`, `deletion_requests`, `partner_status_notifications`, sancțiuni (ban/suspend/shadowban), plăți (`partner_invoices`), sesiuni admin (login attempts). Filtre: tip eveniment, interval date. Server fn `adminGetUserTimeline`.
 
-**A1. `ProfileDrawer` (inline în `src/routes/discover.tsx` liniile ~1189–1378)** — sheet full-screen din grilă/swipe/nearby. Este suprafața principală folosită pe zi.
-- Hero: `ProfilePhotoGallery` (poze swipeable) cu overlay: nume, vârstă, badge Verified, punct online + last-seen, distanță bucketizată, înălțime.
-- `MatchScoreBadge` sub titlu.
-- `TagBlock "Tribes"` (chip gold).
-- Grid 2 coloane "Stats": Body, Position, Ethnicity, Weight, Relationship status. (`hiv_status` scos GDPR.)
-- Pronouns (linie separată uppercase).
-- `bio` (paragraf).
-- `prompts` (Q&A, listă de carduri).
-- `TagBlock "Looking for"`, `TagBlock "Interests"`.
-- `PrivateAlbumViewer` (album privat gated).
-- Banner "Right Now" (dacă `looking_now_until` viitor) + `looking_now_intent`.
-- `TapFavoriteRow` (Tap emoji + Woof + Favorite).
-- Sticky bottom bar: Pass / Message / Like.
+2. **Identități legate** (tab "Identities") — vedere agregată: emailuri istorice (auth), telefon, `device_fingerprints`, IP-uri distincte + geo aproximativ, useri care partajează același fingerprint/IP (cluster detection). Server fn `adminGetLinkedIdentities`.
 
-**Aglomerare:** ~10 secțiuni. Scroll mediu (2–3 ecrane pe mobil). Restul câmpurilor de "lifestyle" (job, zodiac, workout, diet, drinking, smoking, education, religion, etc.) și "safer play" (`vaccinations`, `prep_status`, `safety_practices`), `expectations`, `scenes`, `meet_at`, `voice_prompt`, `anthem`, `video_clip`, `ideal_match`, `ask_me_about`, `dealbreakers` NU se randează aici — există în DB și în editor, dar drawer-ul discover le ignoră. → drawer-ul e deja destul de curat de-facto.
+3. **Ban temporar cu expirare automată** — coloană nouă `profiles.banned_until timestamptz`. Trigger `expire_temporary_bans` (rulat de `assert_account_usable`) ridică automat banul la expirare. UI: buton "Ban temporar" cu selector durată (1h/24h/7z/30z/custom).
 
-**A2. `src/routes/u.$slug.tsx` (356 linii)** — pagină publică share-abilă `/u/:slug` (nu e folosită din grilă; e pentru link extern).
-- Hero foto (gallery) + nume + vârstă + Verified + `ProfileBadgesRow`.
-- Auto-translate bio/ideal_match/prompts.
-- Video clip, Voice prompt, Anthem (fiecare card).
-- Ideal match (`"…"`).
-- Ask me about (chip-uri).
-- About (`bio`).
-- Interests, Tribes.
-- Stats grid: Height, Body, Job, Zodiac.
-- CTA "Intră în Ventuza…".
+4. **Strike counter progresiv** — tabel `user_strikes` (user_id, reason, severity, decay_at, issued_by, created_at). Funcție `apply_strike(user, reason, severity)` care aplică automat sancțiune escaladată: 1 = warning, 2 = mute 24h, 3 = shadowban 7z, 4 = ban 30z, 5 = ban permanent. Strike-urile expiră după 90 zile (decay). Panou în tab User360.
 
-**Aglomerare:** e o pagină "vitrină" mai bogată decât drawer-ul; folosită doar pentru share.
+5. **Mesaj oficial in-app** — server fn `adminSendOfficialMessage(user_id, body, subject)` trimite un mesaj din contul de sistem `ventuza-support` (creat la migrare). Apare în inbox-ul userului cu badge "Oficial Ventuza" (nu doar push).
 
-**Vizual dominant:** poza + nume/vârstă/distanță/online = deja "cel mai important". "Zgomotul" = suprapunerea `tribes` + `stats grid` + `pronouns` + `looking-for` + `interests` (multe chip-uri consecutive).
+6. **LTV & sumar financiar** (tab "Financial") — total plătit, MRR curent, invoice count, refunds, chargebacks, plan history. Din `partner_invoices` + `partner_subscriptions`.
 
----
+7. **2FA status vizibil** — coloană în header user360 cu badge verde/roșu din `admin_mfa_status` + istoric enrollment. Buton "Force re-enroll 2FA" (super_admin).
 
-### B. PROFIL EDITAT (formularul tău)
+8. **Legal hold** — coloană `profiles.legal_hold boolean`. Când e `true`, `adminProcessDeletion` refuză cu `legal_hold_active`. Rațiune obligatorie în audit. Doar super_admin.
 
-**Ruta:** `src/routes/profile.tsx` (1194 linii). Combină **profil citit** (afișare) + `EditDrawer` (formular full-screen).
+9. **Assign to moderator + SLA countdown** — coloană `assigned_moderator_id` + `assigned_at` pe `reports` și `verification_requests`. UI: dropdown atribuire în cozi, countdown vizual (verde <2h, galben 2-6h, roșu >6h).
 
-**Componente card-based în afișarea proprie:**
-`PhotoManager`, `PhotoCoachButton`, `ProfileCompleteness`, `ProfileStatsRow`, `ShareProfileCard`, `VoicePromptCard`, `MusicAnthemCard`, `VideoClipCard`, `DateVibesCard` (ask_me_about / dealbreakers / ideal_match), `LifestyleFactsCard` (16 câmpuri), `RightNowCard`, `ProfilePremiumPanel`, `PrivateAlbumManager`, secțiuni Privacy (incognito + location sharing).
+10. **Foto istoric admin** — vedere read-only în tab "Media" cu photo history + reverse-image marker (pHash match cu `photo_hashes` blocked).
 
-**`EditDrawer` (~300 linii) — secțiuni:**
-- **About:** display_name (15c), bio (255c), interests ("My Tags").
-- **Stats:** hide_age toggle, height_cm, weight_kg, ethnicity, body_type, position, relationship_status.
-- **Preferences:** tribes, looking_for, meet_at, expectations, scenes, accept_nsfw_photos.
-- **Identity:** gender, pronouns, orientation.
-- **Health:** prep_status, safety_practices, vaccinations.
+### B. Sistem badge-uri custom (fondator, ONG, bar, verified partner)
 
-**Total câmpuri editabile inventariate (Profile type + carduri):** ~50 (excluzând poze/media/albume).
-Câmpurile "lifestyle" (zodiac, languages, education, school, job_title, company, religion, politics, children, pets, drinking, smoking, cannabis, drugs, workout, diet, sleep_schedule) sunt DOAR în `LifestyleFactsCard` — nu în `EditDrawer`, se editează separat.
+**Extinde `badge_registry`** cu:
+- `is_manual boolean` — dacă badge-ul se acordă manual de admin (nu auto).
+- `effect text` — `null | 'shimmer' | 'pulse' | 'glow'` (efecte vizuale opționale).
+- `default_permanent boolean` — dacă la acordare implicit e permanent sau expirabil.
 
-**Obligatorii (onboarding `/n`, `src/routes/n.tsx`, 6 pași):**
-1. **basics**: `display_name` ≥ 2, `birthdate` cu vârstă ≥ 18. (Locked dacă e deja setat.)
-2. **identity**: `gender` sau `gender_custom`, `pronouns` sau `pronouns_custom`, `orientation` ≥ 1.
-3. **intent**: `looking_for` ≥ 1.
-4. **stats**: TOATE opționale (skip permis).
-5. **personality**: `interests` ≥ 3 (obligatoriu), prompts + bio opțional.
-6. **photos**: cel puțin 1 poză + `terms_accepted`.
+**Tabel nou `user_badge_grants`**:
+- `user_id`, `badge_code`, `granted_by`, `granted_at`, `expires_at NULL = permanent`, `reason`, `revoked_at`, `revoked_by`.
+- RLS: read own + staff; write DOAR prin RPC `admin_grant_badge` / `admin_revoke_badge`.
 
-Restul (tribes, meet_at, expectations, scenes, safety, health, lifestyle 16, voice/anthem/video, ideal_match, ask_me_about, dealbreakers) sunt **opționale**, se completează după în `/profile`.
+**Badge-uri manuale seed-uite** (adăugate în `badge_registry` cu `is_manual=true`):
+- `founder_ventuza` — Fondator Ventuza (crown auriu shimmer, permanent)
+- `ngo_partner` — Partener ONG (heart verde, permanent)
+- `bar_verified` — Local verificat (martini albastru shimmer)
+- `event_organizer` — Organizator evenimente (calendar mov)
+- `ally` — Aliat comunitate (rainbow pulse)
+- `press` — Presă / Media (mic auriu)
+- `moderator_public` — Moderator (shield albastru, permanent)
+- `beta_tester` — Beta Tester (bug verde)
 
-**Onboarding minimal-ok:** 6 pași, dintre care 2 pot fi trecuți repede (stats skip, personality doar interests). Realist ~2–3 min. Nu e extrem, dar identity+intent+personality forțează 5–7 selecții obligatorii.
+**RPC** `public.admin_grant_badge(target_user, code, expires_at, reason)` (SECURITY DEFINER, `is_admin_or_above`, audit critical). Update automat `get_user_badges` să includă grant-urile manuale active.
 
----
+**Panou admin `/admin/users/$id` → tab "Badges"**:
+- Listă badge-uri active (auto + manuale) cu sursă vizibilă.
+- Formular acordare: select badge manual + toggle "permanent"/data expirare + textarea reason.
+- Buton revoke cu confirmare + reason.
 
-### C. COMPARAȚIE GRINDR — ce ai în PLUS
+**UI vizual** — `BadgeStrip` primește `effect` din registry și aplică:
+- `shimmer` → animație CSS `bg-gradient-to-r animate-shimmer`.
+- `pulse` → `animate-pulse` (subtil, opacity).
+- `glow` → `shadow-[0_0_12px_currentColor]`.
+Adaug clase în `styles.css`.
 
-**Grindr afișează pe profil altcuiva:** poză, nume, vârstă, "About", height/weight, body type, position, tribes, ethnicity, HIV status + last test, relationship status, online. Cam atât "above the fold" + expand.
+### C. Ordinea execuției
 
-**Câmpuri PE CARE LE AI ÎN PLUS FAȚĂ DE GRINDR** (candidați la "vezi mai mult" expandabil în ProfileDrawer discover):
-| Zgomot potențial | Sursă |
-|---|---|
-| `prompts` (Q&A multiple) | drawer + `/u/:slug` — Hinge-style, poate rămâne dar sub fold |
-| `MatchScoreBadge` sub titlu | drawer discover |
-| `ask_me_about`, `dealbreakers`, `ideal_match` (`DateVibesCard`) | `/u/:slug`, nu în drawer |
-| `voice_prompt`, `anthem`, `video_clip` | `/u/:slug`, nu în drawer — bogăție Hinge/Bumble |
-| `expectations`, `scenes`, `meet_at` | scos din drawer, doar în `/profile` propriu |
-| `zodiac`, `languages`, `education`, `job_title`, `religion`, `politics`, `children`, `pets`, `drinking`, `smoking`, `cannabis`, `drugs`, `workout`, `diet`, `sleep_schedule` (16 în `LifestyleFactsCard`) | doar în `/profile` propriu — NU se randează la altcineva |
-| `vaccinations`, `safety_practices`, `prep_status` (Safer play) | doar `/profile` propriu; **HIV status intenționat scos GDPR** — un plus față de Grindr, nu un minus |
-| `pronouns` afișat ca linie separată uppercase | drawer discover |
-| `PrivateAlbumViewer` embed în drawer | drawer discover — util, dar mărește scroll |
-| `TapFavoriteRow` embed inline | drawer discover — util, dar poate merge într-un action bar mai compact |
+1. Migrare 1 — `user_strikes` + `admin_send_official_message` sistem user + `banned_until` + `legal_hold` + `assigned_moderator_id` + strike RPC-uri + expire trigger.
+2. Migrare 2 — extindere `badge_registry` + `user_badge_grants` + `admin_grant_badge` + `admin_revoke_badge` + seed 8 badge-uri manuale + update `get_user_badges`.
+3. Server fns noi în `src/lib/admin-user360.functions.ts` (+ `admin-badges.functions.ts` nou).
+4. Componente admin: `UserTimelinePanel`, `UserIdentitiesPanel`, `UserStrikesPanel`, `UserFinancialPanel`, `UserBadgesPanel`, `OfficialMessageDialog`, `TemporaryBanDialog`.
+5. Extindere `BadgeStrip.tsx` cu efecte + CSS shimmer/glow/pulse în `src/styles.css`.
+6. Integrare tab-uri noi în `src/routes/admin.users.$id.tsx`.
 
-**IMPORTANT — de reținut:** `LifestyleFactsCard` (16 câmpuri) există ca editabil pe profilul propriu dar **NU este vizibil altcuiva** nici în drawer nici în `/u/:slug`. Există date "moarte" pe care userii le completează degeaba dacă nu adaugi randare la target.
+### D. Ce NU intră (documentat separat, faza următoare)
 
-**Ce e deja bine / minimal (nu atinge):**
-- **Grila** (sprint anterior): poză + nume + vârstă + distanță + online + snake-border unread. E deja Grindr-clean.
-- **Hero-ul drawer-ului**: poza mare + overlay compact (nume/vârstă/verified/online/distanță/înălțime). Deja aliniat cu Grindr.
-- **Sticky action bar** Pass/Message/Like. Clar și minimal.
-- **Onboarding basics** (nume + birthdate + identity + intent + photos). Rezonabil.
+- Impersonare view-only (există deja `admin-impersonation.functions.ts` — de audit separat).
+- Login map geografic (necesită IP geolocation subprocesor nou — GDPR-blocking, cere update Art. 30 + subprocesatori).
+- Merge/split accounts (risc mare, necesită design separat).
+- Reverse image search full (necesită subprocesor extern).
 
----
+## Detalii tehnice
 
-### RECOMANDĂRI DE SIMPLIFICARE (fără pierderi de funcționalitate)
-
-**R1. Drawer discover (A1) — colapsează sub "Vezi mai mult":**
-Above the fold să rămână: hero foto + nume/vârstă/online/distanță/înălțime + bio (2 linii clamped) + tribes + stats grid + `TapFavoriteRow` + sticky Pass/Message/Like.
-Sub expand: prompts, looking_for, interests, pronouns, banner Right Now, `PrivateAlbumViewer`, `MatchScoreBadge` (mută-l lângă butonul Like, mai discret).
-
-**R2. Randează în drawer câteva câmpuri "vii" care astăzi sunt orfane:**
-Adaugă (opțional, sub expand): `voice_prompt`, `anthem`, `video_clip`, `ideal_match`, `ask_me_about`. Astăzi userii le pot edita dar nimeni nu le vede din grilă → risipă. Sau invers, dacă vrei minimalism strict: **elimină-le din editor** dacă rămân neafișate.
-
-**R3. `/profile` propriu (B) — mută cardurile "grele" într-un tab/accordion:**
-Actual: 12+ carduri consecutive (`PhotoManager`, `Completeness`, `Stats`, `Share`, `Voice`, `Music`, `Video`, `DateVibes`, `Lifestyle`, About/Prompts/Interests/Tribes/Stats/Expectations/MeetAt/Scenes/Safer/Identity/Activity/Verificare/Album/Privacy). Foarte lung.
-Propune: 3 taburi — **"Esențial"** (foto, completeness, share, edit primary), **"Extra"** (voice, anthem, video, date vibes, lifestyle 16), **"Setări"** (privacy, verificare, premium, album, activity).
-
-**R4. `EditDrawer` — reduce câmpurile obligatorii-in-your-face:**
-Actual: 5 secțiuni (About/Stats/Preferences/Identity/Health). Toate deschise simultan. Preferences singură are 5 câmpuri de chip-uri (tribes, looking_for, meet_at, expectations, scenes).
-Propune: colapsează Preferences → doar tribes + looking_for vizibile; meet_at/expectations/scenes sub "Detalii de întâlnire". Health rămâne colapsat by default (privacy-friendly).
-
-**R5. Onboarding `/n` — de la 6 la 4 pași:**
-Combină `identity` + `intent` într-un singur pas (utilizatorul oricum trebuie să le completeze consecutiv). Scoate `stats` din onboarding (toate opționale acolo → mută-le complet în `/profile`). Rezultat: basics → identity+intent → personality → photos = **4 pași, ~90 sec**.
-
-**R6. `/u/:slug` (pagina share) — decide rolul:**
-Astăzi e mai bogată decât drawer-ul. Fie o aliniezi cu drawer-ul (consistent), fie o păstrezi intenționat ca "landing bogat de share" (mai mult conținut = mai bun pentru SEO / conversie click extern). Nu o atinge fără decizie de produs.
-
----
-
-### FIȘIERE CHEIE
-
-- `src/routes/discover.tsx` — L1189–1378 = ProfileDrawer.
-- `src/routes/u.$slug.tsx` — pagina publică share.
-- `src/routes/profile.tsx` — profilul propriu (view + EditDrawer).
-- `src/routes/n.tsx` — onboarding 6 pași.
-- `src/components/QuickProfileDrawer.tsx` — meniul rapid din header (nu e "profil", e nav lateral).
-- `src/components/ProfilePhotoGallery.tsx` — galerie foto (reused hero).
-- `src/components/LifestyleFactsCard.tsx` — 16 câmpuri lifestyle (orfane la target).
-- `src/components/DateVibesCard.tsx` — ask/dealbreakers/ideal_match.
-- `src/components/VoicePromptCard.tsx`, `MusicAnthemCard.tsx`, `VideoClipCard.tsx` — media orfane la target din drawer.
-- `src/components/ProfileBadgesRow.tsx`, `ProfileStatsRow.tsx`, `ProfileCompleteness.tsx`, `ProfilePremiumPanel.tsx`.
-
-**Zero modificări aplicate.** Aștept decizia ta: R1+R5 dau cel mai mare câștig "curat, esențial, ca Grindr" cu efort mic.
+- Toate migrările respectă REGULĂ ADMIN: GRANT-uri, RLS, audit log, MFA guard pe RPC-uri distructive.
+- Badge-urile manuale trec prin `assertAdminMfa` + audit `critical`.
+- `admin_send_official_message` creează userul sistem `ventuza-support@ventuza.app` cu `age_status='verified'` la prima rulare (idempotent), scrie mesajul direct via `supabaseAdmin` bypassând blocking triggers (justificat: mesaj de sistem, nu comunicare user-to-user).
+- `banned_until` este verificat în `assert_account_usable()` deja existent — adaug clause `banned_until IS NULL OR banned_until < now()`.
+- Strike decay rulează on-read (funcție `get_active_strikes(user)` filtrează `decay_at > now()`).
