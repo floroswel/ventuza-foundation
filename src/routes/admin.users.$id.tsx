@@ -67,6 +67,7 @@ import {
 } from "@/lib/admin-wave1.functions";
 import { adminBanUser, adminUnbanUser, adminSuspendUser } from "@/lib/admin-enterprise.functions";
 import { adminBreakGlassReveal } from "@/lib/admin-break-glass.functions";
+import { adminGetMyRoles } from "@/lib/admin-staff.functions";
 import { EnterpriseUser360Panel } from "@/components/admin/EnterpriseUser360Panel";
 import { Eye, EyeOff } from "lucide-react";
 
@@ -1183,27 +1184,70 @@ type BgKind = "orientation" | "location" | "messages";
 
 function BreakGlassPanel({ userId }: { userId: string }) {
   const reveal = useServerFn(adminBreakGlassReveal);
+  const getMyRoles = useServerFn(adminGetMyRoles);
+  const rolesQ = useQuery({
+    queryKey: ["admin", "my-roles"],
+    queryFn: () => getMyRoles({}),
+    staleTime: 60_000,
+  });
   const [revealed, setRevealed] = useState<Partial<Record<BgKind, any>>>({});
+  const [errors, setErrors] = useState<Partial<Record<BgKind, string>>>({});
   const [busy, setBusy] = useState<BgKind | null>(null);
 
+  const isSuper = !!rolesQ.data?.is_super_admin;
+  const isAdmin = !!rolesQ.data?.is_admin;
+  const rolesLoading = rolesQ.isLoading;
+  const rolesError = rolesQ.isError;
+
+  const canFor = (k: BgKind): { ok: boolean; reason?: string } => {
+    if (rolesLoading) return { ok: false, reason: "Se verifică permisiunile…" };
+    if (rolesError) return { ok: false, reason: "Nu s-au putut valida permisiunile." };
+    if (k === "orientation" || k === "location") {
+      return isSuper ? { ok: true } : { ok: false, reason: "Necesită rol super_admin." };
+    }
+    if (k === "messages") {
+      return isAdmin ? { ok: true } : { ok: false, reason: "Necesită rol admin sau super_admin." };
+    }
+    return { ok: false, reason: "Rol necunoscut." };
+  };
+
   const onReveal = async (kind: BgKind) => {
-    const j = window.prompt(
-      `Justificare break-glass [${kind}] (min. 10 caractere).\n` +
-        `Acțiunea e logată în admin_sensitive_access_log + admin_audit_log (critical).`,
-    );
-    if (!j || j.trim().length < 10) {
-      toast.error("Justificare min. 10 caractere.");
+    const perm = canFor(kind);
+    if (!perm.ok) {
+      toast.error(perm.reason ?? "Acțiune blocată.");
+      setErrors((s) => ({ ...s, [kind]: perm.reason ?? "Blocat" }));
       return;
     }
+    const j = window.prompt(
+      `Justificare break-glass [${kind}] (min. 10 caractere, max. 500).\n` +
+        `Acțiunea e logată în admin_sensitive_access_log + admin_audit_log (critical).`,
+    );
+    if (j === null) return; // cancel
+    const trimmed = j.trim();
+    if (trimmed.length < 10) {
+      const msg = "Justificare min. 10 caractere.";
+      toast.error(msg);
+      setErrors((s) => ({ ...s, [kind]: msg }));
+      return;
+    }
+    if (trimmed.length > 500) {
+      const msg = "Justificare max. 500 caractere.";
+      toast.error(msg);
+      setErrors((s) => ({ ...s, [kind]: msg }));
+      return;
+    }
+    setErrors((s) => ({ ...s, [kind]: undefined }));
     setBusy(kind);
     try {
       const r = await reveal({
-        data: { targetUserId: userId, kind, justification: j.trim() },
+        data: { targetUserId: userId, kind, justification: trimmed },
       });
       setRevealed((s) => ({ ...s, [kind]: r.payload }));
       toast.warning(`Acces ${kind} înregistrat în jurnalul sensibil.`);
     } catch (e: any) {
-      toast.error(String(e?.message ?? e));
+      const msg = String(e?.message ?? e);
+      setErrors((s) => ({ ...s, [kind]: msg }));
+      toast.error(msg);
     } finally {
       setBusy(null);
     }
@@ -1241,37 +1285,58 @@ function BreakGlassPanel({ userId }: { userId: string }) {
         <div>
           <div className="text-sm font-semibold">Dezvăluire date sensibile (break-glass)</div>
           <div className="text-xs text-muted-foreground">
-            Fiecare apel cere justificare ≥ 10 caractere și e logat critical în
+            Fiecare apel cere justificare 10–500 caractere și e logat critical în
             <code className="mx-1">admin_sensitive_access_log</code> + audit. Vizibil pentru
             super_admin și auditor.
           </div>
+          {rolesLoading && (
+            <div className="text-[11px] text-muted-foreground mt-1 flex items-center gap-1">
+              <Loader2 className="h-3 w-3 animate-spin" /> Se verifică permisiunile…
+            </div>
+          )}
+          {rolesError && (
+            <div className="text-[11px] text-destructive mt-1">
+              Nu s-au putut valida permisiunile. Reîncarcă pagina.
+            </div>
+          )}
         </div>
       </div>
 
       <div className="grid gap-2 sm:grid-cols-3">
-        {(Object.keys(labels) as BgKind[]).map((k) => (
-          <div key={k} className="border rounded-md p-3 bg-background/60">
-            <div className="text-sm font-medium">{labels[k].title}</div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">
-              Rol necesar: <b>{labels[k].role}</b>
-            </div>
-            <div className="text-[11px] text-muted-foreground mt-0.5">{labels[k].note}</div>
-            <Button
-              size="sm"
-              variant="destructive"
-              className="mt-2 w-full"
-              disabled={busy === k}
-              onClick={() => onReveal(k)}
-            >
-              {busy === k ? (
-                <Loader2 className="h-3 w-3 animate-spin mr-1" />
-              ) : (
-                <Eye className="h-3 w-3 mr-1" />
+        {(Object.keys(labels) as BgKind[]).map((k) => {
+          const perm = canFor(k);
+          const err = errors[k];
+          return (
+            <div key={k} className="border rounded-md p-3 bg-background/60">
+              <div className="text-sm font-medium">{labels[k].title}</div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">
+                Rol necesar: <b>{labels[k].role}</b>
+              </div>
+              <div className="text-[11px] text-muted-foreground mt-0.5">{labels[k].note}</div>
+              <Button
+                size="sm"
+                variant="destructive"
+                className="mt-2 w-full"
+                disabled={busy !== null || !perm.ok}
+                title={perm.ok ? undefined : perm.reason}
+                onClick={() => onReveal(k)}
+              >
+                {busy === k ? (
+                  <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                ) : (
+                  <Eye className="h-3 w-3 mr-1" />
+                )}
+                {busy === k ? "Se procesează…" : "Dezvăluie"}
+              </Button>
+              {!perm.ok && !rolesLoading && (
+                <div className="text-[11px] text-muted-foreground mt-1">{perm.reason}</div>
               )}
-              Dezvăluie
-            </Button>
-          </div>
-        ))}
+              {err && (
+                <div className="text-[11px] text-destructive mt-1 break-words">{err}</div>
+              )}
+            </div>
+          );
+        })}
       </div>
 
       {Object.entries(revealed).map(([k, v]) => (

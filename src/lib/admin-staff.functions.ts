@@ -80,6 +80,30 @@ async function logAudit(opts: {
 }
 
 /* ============================================================
+ * GET MY ROLES (self) — folosit de UI ca să dezactiveze
+ * butoane pe care rolul curent nu are voie să le apese.
+ * Enforcement real rămâne server-side (RPC + RLS).
+ * ============================================================ */
+export const adminGetMyRoles = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sa = supabaseAdmin as any;
+    const { data, error } = await sa
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", context.userId);
+    if (error) throw new Error(error.message);
+    const roles = Array.from(new Set((data ?? []).map((r: any) => r.role))) as string[];
+    return {
+      roles,
+      is_super_admin: roles.includes("super_admin"),
+      is_admin: roles.includes("admin") || roles.includes("super_admin"),
+      is_staff: roles.some((r) => STAFF_ROLES.includes(r as AppRole)),
+    };
+  });
+
+/* ============================================================
  * LIST STAFF (toți userii cu cel puțin un rol din STAFF_ROLES)
  * ============================================================ */
 export const adminListStaff = createServerFn({ method: "GET" })
