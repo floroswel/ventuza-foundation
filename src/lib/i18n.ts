@@ -515,6 +515,11 @@ const en: typeof ro = {
       birthLabel: "Birthdate",
       birthLocked: "We took your birthdate from sign-up. Contact support to change it.",
       minAge: "You must be at least 18.",
+      birthRequired: "Enter your birthdate to continue.",
+      birthInvalid: "Birthdate is not valid.",
+      birthFuture: "Birthdate cannot be in the future.",
+      birthTooOld: "Birthdate looks incorrect (over 120 years).",
+      nameRequired: "Name must have at least 2 characters.",
     },
     identity: {
       title: "Your identity",
