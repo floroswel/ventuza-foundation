@@ -48,7 +48,144 @@ export function EnterpriseUser360Panel({ userId }: { userId: string }) {
         <LegalHoldSection userId={userId} />
         <OfficialMessageSection userId={userId} />
       </div>
+      <PartnerRoleSection userId={userId} />
     </div>
+  );
+}
+
+/* =============== PARTNER ROLE (grant / revoke) =============== */
+const ENTITY_TYPES: { value: string; label: string }[] = [
+  { value: "ong", label: "ONG" },
+  { value: "asociatie", label: "Asociație" },
+  { value: "fundatie", label: "Fundație" },
+  { value: "srl", label: "SRL (bar/club/companie)" },
+  { value: "pfa", label: "PFA" },
+  { value: "ii", label: "Întreprindere individuală" },
+  { value: "sa", label: "SA" },
+  { value: "brand", label: "Brand" },
+  { value: "organizator_eveniment", label: "Organizator eveniment" },
+  { value: "altul", label: "Altul" },
+];
+
+function PartnerRoleSection({ userId }: { userId: string }) {
+  const grantFn = useServerFn(adminGrantPartnerRole);
+  const revokeFn = useServerFn(adminRevokePartnerRole);
+  const [openGrant, setOpenGrant] = useState(false);
+  const [openRevoke, setOpenRevoke] = useState(false);
+  const [entityType, setEntityType] = useState("");
+  const [grantReason, setGrantReason] = useState("");
+  const [revokeReason, setRevokeReason] = useState("");
+
+  const grantMut = useMutation({
+    mutationFn: async () =>
+      grantFn({ data: { user_id: userId, entity_type: entityType as any, reason: grantReason } }),
+    onSuccess: () => {
+      toast.success("Rol partener acordat");
+      setOpenGrant(false); setEntityType(""); setGrantReason("");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  const revokeMut = useMutation({
+    mutationFn: async () => revokeFn({ data: { user_id: userId, reason: revokeReason } }),
+    onSuccess: () => {
+      toast.success("Rol partener retras");
+      setOpenRevoke(false); setRevokeReason("");
+    },
+    onError: (e: any) => toast.error(e.message),
+  });
+
+  return (
+    <Card className="p-4 space-y-2">
+      <div className="flex items-center gap-2">
+        <Briefcase className="w-4 h-4 text-emerald-500" />
+        <h3 className="font-semibold">Rol partener (B2B)</h3>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Refolosește fluxul de aplicație parteneri: creează o cerere aprobată în numele
+        userului, iar trigger-ul acordă rolul standard. Audit warning.
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <Dialog open={openGrant} onOpenChange={setOpenGrant}>
+          <DialogTrigger asChild>
+            <Button size="sm">Fă partener</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Acordă rol partener</DialogTitle>
+              <DialogDescription>
+                Creează o business_application aprobată; trigger-ul acordă rolul.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label>Tip entitate</Label>
+                <Select value={entityType} onValueChange={setEntityType}>
+                  <SelectTrigger><SelectValue placeholder="Alege tip" /></SelectTrigger>
+                  <SelectContent>
+                    {ENTITY_TYPES.map((t) => (
+                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Motiv (min. 10 caractere)</Label>
+                <Textarea
+                  value={grantReason}
+                  onChange={(e) => setGrantReason(e.target.value)}
+                  rows={3}
+                  placeholder="ONG partener aprobat verbal la evenimentul X; contract semnat pe hârtie."
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpenGrant(false)}>Anulează</Button>
+              <Button
+                disabled={!entityType || grantReason.length < 10 || grantMut.isPending}
+                onClick={() => grantMut.mutate()}
+              >
+                {grantMut.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                Acordă
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={openRevoke} onOpenChange={setOpenRevoke}>
+          <DialogTrigger asChild>
+            <Button size="sm" variant="destructive">Retrage rol partener</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Retrage rol partener</DialogTitle>
+              <DialogDescription>
+                Șterge rolul din user_roles. Aplicațiile istorice rămân intacte pentru audit.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3">
+              <Label>Motiv (min. 10 caractere)</Label>
+              <Textarea
+                value={revokeReason}
+                onChange={(e) => setRevokeReason(e.target.value)}
+                rows={3}
+              />
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setOpenRevoke(false)}>Anulează</Button>
+              <Button
+                variant="destructive"
+                disabled={revokeReason.length < 10 || revokeMut.isPending}
+                onClick={() => revokeMut.mutate()}
+              >
+                {revokeMut.isPending && <Loader2 className="w-4 h-4 animate-spin mr-2" />}
+                Retrage
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+    </Card>
   );
 }
 
