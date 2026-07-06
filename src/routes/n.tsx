@@ -127,7 +127,7 @@ function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 }
 
-const STORAGE_KEY = "vz_onboarding_v1";
+const STORAGE_KEY = "vz_onboarding_v1"; // păstrat pentru migrare legacy → DB
 
 function Onboarding() {
   const { t } = useTranslation();
@@ -138,68 +138,104 @@ function Onboarding() {
   const [saving, setSaving] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [donePush, setDonePush] = useState(false);
-
-
-  // Hydrate step + data din localStorage la mount (refresh / kill-app safe).
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as { step?: number; data?: Data; uid?: string };
-        if (parsed.data) setData({ ...empty, ...parsed.data });
-        if (typeof parsed.step === "number") setStep(Math.min(parsed.step, STEPS.length - 1));
-      }
-    } catch {
-      /* corrupt → ignore */
-    }
-    setHydrated(true);
-  }, []);
-
-  // Persist on every change (după hydrate, ca să nu suprascriem cu empty).
-  useEffect(() => {
-    if (!hydrated || typeof window === "undefined") return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ step, data, uid: user?.id ?? null }));
-    } catch {
-      /* quota → ignore */
-    }
-  }, [step, data, hydrated, user?.id]);
-
-  // Guard: dacă userul a terminat deja onboarding-ul, redirect către /discover.
-  // În plus, prefill birthdate + display_name dacă există deja în profil
-  // (setate la signup) — să nu întrebăm a doua oară.
   const [birthdateLocked, setBirthdateLocked] = useState(false);
+
+  // Hydrate din Supabase (draft) + prefill din profil. Fallback: dacă există un
+  // draft legacy în localStorage și DB-ul e gol, îl migrăm o dată.
   useEffect(() => {
-    if (!user || !hydrated) return;
+    if (!user) return;
     let alive = true;
-    supabase
-      .from("profiles")
-      .select("onboarding_completed, birthdate, display_name")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data: row }) => {
-        if (!alive || !row) return;
-        if (row.onboarding_completed) {
-          try {
-            localStorage.removeItem(STORAGE_KEY);
-          } catch {
-            /* noop */
-          }
-          navigate({ to: "/discover", replace: true });
-          return;
+    (async () => {
+      // 1) Profil: dacă onboarding-ul e deja terminat, redirect + curăță draft.
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("onboarding_completed, birthdate, display_name")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!alive) return;
+      if (profile?.onboarding_completed) {
+        await supabase.from("onboarding_drafts").delete().eq("user_id", user.id);
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+        } catch {
+          /* noop */
         }
-        setData((prev) => ({
-          ...prev,
-          birthdate: prev.birthdate || (row.birthdate ?? ""),
-          display_name: prev.display_name || (row.display_name ?? ""),
-        }));
-        if (row.birthdate) setBirthdateLocked(true);
-      });
+        navigate({ to: "/discover", replace: true });
+        return;
+      }
+
+      // 2) Draft server-side.
+      const { data: draft } = await supabase
+        .from("onboarding_drafts")
+        .select("step, data")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!alive) return;
+
+      let nextData: Data = { ...empty };
+      let nextStep = 0;
+
+      if (draft?.data) {
+        nextData = { ...empty, ...(draft.data as Partial<Data>) };
+        if (typeof draft.step === "number") {
+          nextStep = Math.min(Math.max(draft.step, 0), STEPS.length - 1);
+        }
+      } else if (typeof window !== "undefined") {
+        // Migrare one-shot din legacy localStorage.
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          if (raw) {
+            const parsed = JSON.parse(raw) as { step?: number; data?: Data };
+            if (parsed.data) nextData = { ...empty, ...parsed.data };
+            if (typeof parsed.step === "number") {
+              nextStep = Math.min(Math.max(parsed.step, 0), STEPS.length - 1);
+            }
+            await supabase.from("onboarding_drafts").upsert(
+              { user_id: user.id, step: nextStep, data: nextData as any },
+              { onConflict: "user_id" },
+            );
+            localStorage.removeItem(STORAGE_KEY);
+          }
+        } catch {
+          /* ignore corrupt / quota */
+        }
+      }
+
+      // 3) Prefill birthdate + display_name din profil (setate la signup).
+      nextData = {
+        ...nextData,
+        birthdate: nextData.birthdate || (profile?.birthdate ?? ""),
+        display_name: nextData.display_name || (profile?.display_name ?? ""),
+      };
+      if (profile?.birthdate) setBirthdateLocked(true);
+
+      if (!alive) return;
+      setData(nextData);
+      setStep(nextStep);
+      setHydrated(true);
+    })();
     return () => {
       alive = false;
     };
-  }, [user?.id, hydrated, navigate]);
+  }, [user?.id, navigate]);
+
+  // Auto-save draft server-side, debounced 600 ms, doar după hydrate.
+  useEffect(() => {
+    if (!hydrated || !user) return;
+    const handle = setTimeout(() => {
+      supabase
+        .from("onboarding_drafts")
+        .upsert(
+          { user_id: user.id, step, data: data as any },
+          { onConflict: "user_id" },
+        )
+        .then(({ error }) => {
+          if (error) console.warn("[onboarding] draft save failed", error.message);
+        });
+    }, 600);
+    return () => clearTimeout(handle);
+  }, [step, data, hydrated, user?.id]);
+
 
 
   useEffect(() => {
@@ -331,6 +367,8 @@ function Onboarding() {
 
     setSaving(false);
 
+    // Draft-ul nu mai e necesar: șterge înregistrarea din DB + legacy localStorage.
+    await supabase.from("onboarding_drafts").delete().eq("user_id", user.id);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {

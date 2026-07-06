@@ -2384,6 +2384,30 @@ export type Database = {
           },
         ]
       }
+      onboarding_drafts: {
+        Row: {
+          created_at: string
+          data: Json
+          step: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          step?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          step?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       partner_boost_orders: {
         Row: {
           active: boolean
