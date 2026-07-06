@@ -29,6 +29,7 @@ import { ConsentsCard } from "@/components/settings/ConsentsCard";
 import { ConsentsHistoryCard } from "@/components/settings/ConsentsHistoryCard";
 import { ProximityNotificationsCard } from "@/components/settings/ProximityNotificationsCard";
 import { NotificationSoundCard } from "@/components/settings/NotificationSoundCard";
+import { DebugModeCard } from "@/components/settings/DebugModeCard";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
@@ -499,6 +500,10 @@ function SettingsPage() {
 
         {/* SOS contacts + emergency button */}
         <SosCard />
+
+        {/* Loguri detaliate pentru diagnostic */}
+        <DebugModeCard />
+
 
         {/* Listele mele */}
         <section className="rounded-2xl border border-border bg-surface p-4">

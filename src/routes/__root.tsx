@@ -29,6 +29,7 @@ import "@/lib/i18n";
 import { ConsentPromptHost } from "@/components/ConsentPromptHost";
 import { VersionGate } from "@/components/VersionGate";
 import { LanguageToggle } from "@/components/LanguageToggle";
+import { DebugPanel } from "@/components/DebugPanel";
 
 function NotFoundComponent() {
   return (
@@ -229,6 +230,7 @@ function RootComponent() {
           <LanguageToggle />
           <ConsentPromptHost />
           <VersionGate />
+          <DebugPanel />
         </NotificationsProvider>
       </AuthProvider>
     </QueryClientProvider>
