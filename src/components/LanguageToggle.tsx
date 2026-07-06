@@ -1,18 +1,32 @@
 import { useTranslation } from "react-i18next";
 import { useRouterState } from "@tanstack/react-router";
 import { setLanguage } from "@/lib/i18n";
+import { useAuth } from "@/lib/auth-context";
 
 /**
- * Compact global language toggle. Afișat DOAR pe fluxul de login/auth —
- * în restul aplicației colțul din dreapta-sus rămâne curat.
+ * Compact global language toggle.
+ *
+ * REGULĂ STRICTĂ (nu se slăbește):
+ *   Afișat DOAR pe fluxul de auth (/auth*, /reset-password) și DOAR când
+ *   utilizatorul NU are sesiune activă. După logare este complet ascuns și
+ *   nu răspunde la evenimente — orice cod care încearcă să-l randeze în
+ *   restul aplicației trebuie să iasă din funcție înainte de JSX.
  */
 export function LanguageToggle() {
   const { i18n } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { session, loading } = useAuth();
 
-  const isAuth = pathname === "/auth" || pathname.startsWith("/auth/");
-  if (!isAuth) return null;
-
+  // 1) Cât timp nu știm dacă e logat, nu randăm nimic (evită flicker + hydration mismatch).
+  if (loading) return null;
+  // 2) Dacă există sesiune — ascuns complet, indiferent de path.
+  if (session) return null;
+  // 3) Doar pe rutele de auth publice.
+  const isPublicAuthRoute =
+    pathname === "/auth" ||
+    pathname.startsWith("/auth/") ||
+    pathname === "/reset-password";
+  if (!isPublicAuthRoute) return null;
 
   const current = (i18n.resolvedLanguage || i18n.language || "en").startsWith("ro") ? "ro" : "en";
 
