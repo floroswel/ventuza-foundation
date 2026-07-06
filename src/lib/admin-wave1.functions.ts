@@ -253,6 +253,8 @@ export const adminGetUserView = createServerFn({ method: "POST" })
       "updated_at",
       "last_seen",
       "last_check_in_at",
+      "interests",
+      "prompts",
     ].join(",");
     const [prof, consents, verifs, reports, roles, activeSubs] = await Promise.all([
       sa.from("profiles").select(SAFE_PROFILE).eq("id", data.userId).maybeSingle(),
