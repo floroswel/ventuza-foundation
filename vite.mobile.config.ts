@@ -3,18 +3,15 @@
  *
  * Folosire: `bun run build:mobile`
  *
- * Generează `dist/` ca bundle static prin nitro preset `static`, astfel încât
+ * Generează `dist/` ca bundle SPA static, fără nitro/SSR, astfel încât
  * Capacitor să poată împacheta totul fără runtime de Worker.
  *
  * NU afectează `bun run build` (web rămâne SSR pe Cloudflare).
- *
- * Pe mobil, codul client folosește direct clientul Supabase (auth + RLS).
- * Server functions rămân disponibile pe web; pe mobil le poți apela prin
- * fetch către domeniul published Lovable dacă ai nevoie.
  */
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  nitro: false,
   tanstackStart: {
     server: { entry: "server" },
     spa: {
@@ -22,11 +19,11 @@ export default defineConfig({
       prerender: { outputPath: "/index.html" },
     },
   },
-  nitro: {
-    preset: "static",
-    output: { dir: "dist", publicDir: "dist" },
-  },
   vite: {
+    build: {
+      outDir: "dist",
+      emptyOutDir: true,
+    },
     define: {
       "process.env.MOBILE_BUILD": JSON.stringify("1"),
     },

@@ -16,7 +16,7 @@ const isDev = process.env.CAPACITOR_DEV === "1";
 const config: CapacitorConfig = {
   appId: "app.ventuza.mobile",
   appName: "Ventuza",
-  webDir: "dist",
+  webDir: "dist/client",
   ...(isDev
     ? {
         server: {
