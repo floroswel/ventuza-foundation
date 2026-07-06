@@ -391,12 +391,15 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     let printOverride = false;
     let panicTimer: number | undefined;
     const applyDefocus = (defocused: boolean) => {
+      if (isAdminSurface() && defocused) return;
       ensureOverlay();
       const el = document.getElementById(overlayId);
       if (el) el.style.display = defocused ? "block" : "none";
       document.documentElement.classList.toggle("__privacy_defocused", defocused);
     };
     const panicMask = (reason: "capture-key" | "window-leave") => {
+      if (isAdminSurface()) return;
+
       applyDefocus(true);
       emit(reason, document.documentElement);
       window.clearTimeout(panicTimer);
