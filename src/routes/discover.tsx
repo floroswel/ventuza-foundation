@@ -183,6 +183,21 @@ function DiscoverPage() {
     });
   }, [user, locStatus]);
 
+  // Load persisted filters once, when user becomes available.
+  useEffect(() => {
+    if (!user || filtersHydratedRef.current) return;
+    const saved = loadDiscoverFilters(user.id);
+    filtersHydratedRef.current = true;
+    setFilters(saved);
+    setDebouncedFilters(saved);
+  }, [user]);
+
+  // Persist filters (safe subset only — see discover-filters-storage.ts).
+  useEffect(() => {
+    if (!user || !filtersHydratedRef.current) return;
+    saveDiscoverFilters(user.id, filters);
+  }, [user, filters]);
+
   // Debounce filter changes to avoid hammering the DB
   useEffect(() => {
     const t = setTimeout(() => setDebouncedFilters(filters), 350);
