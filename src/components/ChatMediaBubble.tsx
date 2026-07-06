@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Eye, EyeOff, MapPin, Pause, Play, Timer } from "lucide-react";
+import { Eye, EyeOff, MapPin, Pause, Play, Timer, X } from "lucide-react";
 import { markMediaViewed, signChatMedia, type MessageRow } from "@/lib/chat";
 import { cn } from "@/lib/utils";
+
 
 type Props = { m: MessageRow; mine: boolean };
 
@@ -189,20 +190,87 @@ function ImageBubble({ m, mine }: Props) {
     );
   }
 
+  const [fullscreen, setFullscreen] = useState(false);
+  const canOpenFullscreen = !m.view_once; // view-once nu se re-deschide
+
+  return (
+    <>
+      <div
+        className={cn(
+          "max-w-[78%] overflow-hidden rounded-2xl",
+          mine ? "bg-primary/10" : "bg-muted",
+        )}
+        data-private-media
+      >
+        {url ? (
+          <img
+            src={url}
+            alt=""
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
+            onClick={() => canOpenFullscreen && setFullscreen(true)}
+            className={cn(
+              "block max-h-80 w-full select-none object-cover",
+              canOpenFullscreen && "cursor-zoom-in",
+            )}
+            style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
+          />
+        ) : (
+          <div className="h-48 w-56 animate-pulse bg-background/30" />
+        )}
+        {m.view_once && (
+          <div className="flex items-center gap-1 px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <Timer className="size-3" /> View once
+          </div>
+        )}
+      </div>
+
+      {fullscreen && url && (
+        <FullscreenImage src={url} onClose={() => setFullscreen(false)} />
+      )}
+    </>
+  );
+}
+
+function FullscreenImage({ src, onClose }: { src: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
   return (
     <div
-      className={cn("max-w-[78%] overflow-hidden rounded-2xl", mine ? "bg-primary/10" : "bg-muted")}
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      data-private-media
     >
-      {url ? (
-        <img src={url} alt="" className="block max-h-80 w-full object-cover" />
-      ) : (
-        <div className="h-48 w-56 animate-pulse bg-background/30" />
-      )}
-      {m.view_once && (
-        <div className="flex items-center gap-1 px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-          <Timer className="size-3" /> View once
-        </div>
-      )}
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Închide"
+        className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20"
+      >
+        <X className="size-5" />
+      </button>
+      <img
+        src={src}
+        alt=""
+        draggable={false}
+        onContextMenu={(e) => e.preventDefault()}
+        onClick={(e) => e.stopPropagation()}
+        className="max-h-full max-w-full select-none object-contain"
+        style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
+      />
     </div>
   );
 }
+
