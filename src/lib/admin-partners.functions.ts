@@ -110,14 +110,15 @@ export const adminListPartners = createServerFn({ method: "POST" })
   .handler(async ({ context, data }) => {
     await assertStaff(context.supabase, context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    // user_roles holds the partner role grant
+    // Rolul de partener este `business` (vezi grant_business_role_on_approval +
+    // PartnerAccessGate). Includem și `partner` pentru compat legacy.
     const { data: roleRows, error: rErr } = await (supabaseAdmin as any)
       .from("user_roles")
-      .select("user_id, created_at")
-      .eq("role", "partner")
+      .select("user_id, role")
+      .in("role", ["business", "partner"])
       .limit(data.limit);
     if (rErr) throw new Error(rErr.message);
-    const ids = (roleRows ?? []).map((r: any) => r.user_id);
+    const ids = Array.from(new Set((roleRows ?? []).map((r: any) => r.user_id))) as string[];
     if (ids.length === 0) return [];
     let q = (supabaseAdmin as any)
       .from("profiles")
@@ -128,6 +129,18 @@ export const adminListPartners = createServerFn({ method: "POST" })
     if (data.search) q = q.ilike("display_name", `%${data.search}%`);
     const { data: profs, error: pErr } = await q;
     if (pErr) throw new Error(pErr.message);
+
+    // entity_type din cea mai recentă aplicație aprobată per user
+    const { data: apps } = await (supabaseAdmin as any)
+      .from("business_applications")
+      .select("user_id, entity_type, updated_at")
+      .in("user_id", ids)
+      .eq("status", "approved")
+      .order("updated_at", { ascending: false });
+    const entityByUser: Record<string, string> = {};
+    for (const a of apps ?? []) {
+      if (!entityByUser[a.user_id]) entityByUser[a.user_id] = a.entity_type;
+    }
 
     // counts
     const { data: venues } = await (supabaseAdmin as any)
@@ -158,8 +171,148 @@ export const adminListPartners = createServerFn({ method: "POST" })
 
     return (profs ?? []).map((p: any) => ({
       ...p,
+      entity_type: entityByUser[p.id] ?? null,
       stats: byOwner[p.id] ?? { venues: 0, published: 0, offers: 0 },
     }));
+  });
+
+/* ---------------------- MANUAL GRANT / REVOKE PARTNER --------------------- */
+
+const ENTITY_TYPES = [
+  "srl",
+  "pfa",
+  "ii",
+  "sa",
+  "ong",
+  "asociatie",
+  "fundatie",
+  "brand",
+  "organizator_eveniment",
+  "altul",
+] as const;
+
+/**
+ * Acordare manuală a rolului de partener din admin.
+ * Refolosește fluxul existent: creează o business_application marcată aprobată,
+ * pentru ca trigger-ul `grant_business_role_on_approval` să acorde rolul
+ * exact ca la fluxul normal. Trigger-ul se declanșează DOAR pe UPDATE, așa că
+ * inserăm cu status='pending' și facem imediat UPDATE la 'approved'.
+ */
+export const adminGrantPartnerRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        user_id: z.string().uuid(),
+        entity_type: z.enum(ENTITY_TYPES),
+        reason: z.string().min(10).max(1000),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: prof } = await (supabaseAdmin as any)
+      .from("profiles")
+      .select("id, display_name")
+      .eq("id", data.user_id)
+      .maybeSingle();
+    if (!prof) throw new Error("Utilizator inexistent.");
+
+    const { data: authUser, error: aErr } = await (supabaseAdmin as any).auth.admin.getUserById(
+      data.user_id,
+    );
+    if (aErr || !authUser?.user) throw new Error("Nu am putut citi contul auth al userului.");
+    const email = authUser.user.email ?? `user-${data.user_id}@unknown.local`;
+    const displayName = (prof.display_name as string) || email;
+
+    const insertRow = {
+      user_id: data.user_id,
+      entity_type: data.entity_type,
+      legal_name: displayName,
+      contact_name: displayName,
+      contact_email: email,
+      goals: `Acordat manual din admin. Motiv: ${data.reason}`,
+      accepts_terms: true,
+      accepts_dpa: true,
+      accepts_lgbt_charter: true,
+      status: "pending" as const,
+      admin_notes: `manual_grant_by=${context.userId}`,
+    };
+    const { data: inserted, error: insErr } = await (supabaseAdmin as any)
+      .from("business_applications")
+      .insert(insertRow)
+      .select("id")
+      .single();
+    if (insErr) throw new Error(insErr.message);
+
+    // UPDATE → declanșează trigger-ul care acordă rolul `business`.
+    const { error: updErr } = await (supabaseAdmin as any)
+      .from("business_applications")
+      .update({
+        status: "approved",
+        admin_notes: `manual_grant_by=${context.userId}: ${data.reason}`,
+      })
+      .eq("id", inserted.id);
+    if (updErr) throw new Error(updErr.message);
+
+    await (supabaseAdmin as any).from("admin_audit_log").insert({
+      actor_id: context.userId,
+      action: "partner_granted_manually",
+      target_table: "profiles",
+      target_id: data.user_id,
+      justification: data.reason,
+      after_data: { entity_type: data.entity_type, business_application_id: inserted.id },
+      severity: "warning",
+    });
+    return { ok: true, business_application_id: inserted.id };
+  });
+
+/**
+ * Retrage rolul de partener acordat manual sau prin aplicație.
+ * NU șterge business_applications — doar revocă rolul din `user_roles`.
+ */
+export const adminRevokePartnerRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) =>
+    z
+      .object({
+        user_id: z.string().uuid(),
+        reason: z.string().min(10).max(1000),
+      })
+      .parse(d),
+  )
+  .handler(async ({ context, data }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: existing } = await (supabaseAdmin as any)
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", data.user_id)
+      .in("role", ["business", "partner"]);
+    if (!existing || existing.length === 0) {
+      throw new Error("Userul nu are rol de partener.");
+    }
+
+    const { error: delErr } = await (supabaseAdmin as any)
+      .from("user_roles")
+      .delete()
+      .eq("user_id", data.user_id)
+      .in("role", ["business", "partner"]);
+    if (delErr) throw new Error(delErr.message);
+
+    await (supabaseAdmin as any).from("admin_audit_log").insert({
+      actor_id: context.userId,
+      action: "partner_revoked_manually",
+      target_table: "profiles",
+      target_id: data.user_id,
+      justification: data.reason,
+      before_data: { roles: existing.map((r: any) => r.role) },
+      severity: "warning",
+    });
+    return { ok: true };
   });
 
 export const adminSuspendPartner = createServerFn({ method: "POST" })
