@@ -11,14 +11,9 @@ export async function initPrivacyScreen(): Promise<void> {
     const { Capacitor } = await import("@capacitor/core");
     if (Capacitor.isNativePlatform()) {
       const mod = await import("@capacitor-community/privacy-screen");
-      // API: enable() sets FLAG_SECURE on Android. Idempotent.
-      await mod.PrivacyScreen.enable({
-        android: { enable: true, privacyModeOnActivityHidden: "splash" },
-        ios: { enable: true, privacyImageName: "" },
-      }).catch(() => {
-        // Fallback shape for older plugin versions
-        return (mod.PrivacyScreen as { enable: () => Promise<void> }).enable();
-      });
+      // Enables Android FLAG_SECURE + iOS screenshot prevention (when configured).
+      await mod.PrivacyScreen.enable();
+
     }
   } catch (err) {
     console.info("[privacy-screen] native init skipped", err);
