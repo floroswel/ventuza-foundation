@@ -58,7 +58,7 @@ export const adminGrantBadge = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     await assertAdminMfa(context.userId);
-    const { error } = await context.supabase.rpc("admin_grant_badge", {
+    const { error } = await (context.supabase as any).rpc("admin_grant_badge", {
       _target: data.userId,
       _code: data.code,
       _expires_at: data.expiresAt ?? null,

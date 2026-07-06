@@ -35,7 +35,7 @@ export const adminApplyStrike = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     await assertAdminMfa(context.userId);
-    const { data: res, error } = await context.supabase.rpc("admin_apply_strike", {
+    const { data: res, error } = await (context.supabase as any).rpc("admin_apply_strike", {
       _target: data.userId,
       _reason: data.reason,
       _reason_code: data.reasonCode ?? null,
@@ -51,10 +51,10 @@ export const adminGetUserStrikes = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => ListStrikesInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
+    const sb = context.supabase as any;
     const [active, all] = await Promise.all([
-      context.supabase.rpc("get_active_strikes", { _user_id: data.userId }),
-      context.supabase
-        .from("user_strikes")
+      sb.rpc("get_active_strikes", { _user_id: data.userId }),
+      sb.from("user_strikes")
         .select("id,severity,reason,reason_code,issued_by,decay_at,revoked_at,created_at")
         .eq("user_id", data.userId)
         .order("created_at", { ascending: false })
@@ -75,7 +75,7 @@ export const adminSetTemporaryBan = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
     await assertAdminMfa(context.userId);
-    const { error } = await context.supabase.rpc("admin_set_temporary_ban", {
+    const { error } = await (context.supabase as any).rpc("admin_set_temporary_ban", {
       _target: data.userId,
       _until: data.until,
       _reason: data.reason,
@@ -96,7 +96,7 @@ export const adminSetLegalHold = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertSuper(context.supabase, context.userId);
     await assertAdminMfa(context.userId);
-    const { error } = await context.supabase.rpc("admin_set_legal_hold", {
+    const { error } = await (context.supabase as any).rpc("admin_set_legal_hold", {
       _target: data.userId,
       _enable: data.enable,
       _reason: data.reason,
@@ -116,7 +116,7 @@ export const adminAssignModerator = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => AssignInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
-    const { error } = await context.supabase.rpc("admin_assign_moderator", {
+    const { error } = await (context.supabase as any).rpc("admin_assign_moderator", {
       _kind: data.kind,
       _item_id: data.itemId,
       _moderator: data.moderatorId,
@@ -137,7 +137,7 @@ export const adminSendOfficialMessage = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
     await assertAdminMfa(context.userId);
-    const { data: msgId, error } = await context.supabase.rpc("admin_send_official_message", {
+    const { data: msgId, error } = await (context.supabase as any).rpc("admin_send_official_message", {
       _target: data.userId,
       _body: data.body,
       _subject: data.subject ?? null,
