@@ -96,6 +96,7 @@ type Profile = {
   relationship_status: string | null;
   verified_at: string | null;
   incognito: boolean;
+  location_sharing_enabled: boolean | null;
   verification_status: string;
   verification_selfie_path: string | null;
   travel_city: string | null;
