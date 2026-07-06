@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "@tanstack/react-router";
 import { MapPin, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,12 +22,21 @@ const STORAGE_PREFIX = "ventuza_loc_prompt_seen_v1:";
 
 export function LocationPermissionPrompt() {
   const { user } = useAuth();
+  const location = useLocation();
   const { forceStealth, hidePreciseLocation, isBlocked } = useCountryGate();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (!user) return;
+    const path = location.pathname || "/";
+    const needsLocationPrimer =
+      path === "/" ||
+      path.startsWith("/discover") ||
+      path.startsWith("/nearby") ||
+      path.startsWith("/cruise") ||
+      path.startsWith("/visitors");
+    if (!needsLocationPrimer) return;
     if (forceStealth || hidePreciseLocation || isBlocked) return;
     if (typeof window === "undefined" || !("geolocation" in navigator)) return;
 
@@ -65,7 +75,7 @@ export function LocationPermissionPrompt() {
     return () => {
       cancelled = true;
     };
-  }, [user, forceStealth, hidePreciseLocation, isBlocked]);
+  }, [user, location.pathname, forceStealth, hidePreciseLocation, isBlocked]);
 
   function markSeen() {
     if (user) localStorage.setItem(STORAGE_PREFIX + user.id, "1");
