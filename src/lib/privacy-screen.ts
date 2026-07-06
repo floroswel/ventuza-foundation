@@ -272,10 +272,19 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
       );
     };
 
+    // Normalizează e.target la Element (Text nodes / Document / window nu au .closest).
+    const asElement = (t: EventTarget | null): HTMLElement | null => {
+      if (!t) return null;
+      if (t instanceof HTMLElement) return t;
+      // Text node → parent element
+      if (typeof Node !== "undefined" && t instanceof Node && t.parentElement) return t.parentElement;
+      return null;
+    };
+
     // Context menu pe media (permite input-uri și zone marcate explicit).
     const onCtx = (e: MouseEvent) => {
       if (isAdminSurface()) return;
-      const t = e.target as HTMLElement | null;
+      const t = asElement(e.target);
       if (!t) return;
 
       if (t.closest("input, textarea, [contenteditable='true']")) return;
@@ -291,7 +300,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     // Drag pe imagini/video.
     const onDrag = (e: DragEvent) => {
       if (isAdminSurface()) return;
-      const t = e.target as HTMLElement | null;
+      const t = asElement(e.target);
       if (!t) return;
 
       const hit =
@@ -308,7 +317,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     // Copy / cut pe zone private.
     const onClip = (kind: "copy" | "cut") => (e: ClipboardEvent) => {
       if (isAdminSurface()) return;
-      const t = e.target as HTMLElement | null;
+      const t = asElement(e.target);
       if (!t) return;
 
       const hit =
@@ -325,7 +334,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     // Selectarea pe media / zone private poate alimenta copy indirect.
     const onSelectStart = (e: Event) => {
       if (isAdminSurface()) return;
-      const t = e.target as HTMLElement | null;
+      const t = asElement(e.target);
       if (!t) return;
 
       const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
@@ -339,7 +348,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     // Middle-click / aux click pe media poate deschide resurse în tab separat.
     const onAuxClick = (e: MouseEvent) => {
       if (isAdminSurface()) return;
-      const t = e.target as HTMLElement | null;
+      const t = asElement(e.target);
       if (!t) return;
 
       const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
