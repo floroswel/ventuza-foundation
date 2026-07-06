@@ -59,7 +59,7 @@ async function notify(status: PrivacyScreenStatus) {
 export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
   if (typeof window === "undefined") return lastStatus;
 
-  // 1) Native (Android/iOS): FLAG_SECURE / screenshot prevention
+  // 1) Native (Android/iOS): FLAG_SECURE / preventScreenshots
   try {
     const { Capacitor } = await import("@capacitor/core");
     const isNative = Capacitor.isNativePlatform();
@@ -67,13 +67,68 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     if (isNative) {
       const t0 = performance.now();
+      let pluginOk = false;
+      let pluginErr: string | undefined;
+
+      // 1a) Încearcă plugin-ul oficial (Android FLAG_SECURE + iOS
+      //     preventScreenshots + splash mask la background).
       try {
         const mod = await import("@capacitor-community/privacy-screen");
         await mod.PrivacyScreen.enable();
+        pluginOk = true;
         const ms = Math.round(performance.now() - t0);
         console.info(
-          `[privacy-screen] ✅ enabled on ${platform} in ${ms}ms (preventScreenshots=true via capacitor.config)`,
+          `[privacy-screen] ✅ plugin activ pe ${platform} în ${ms}ms (FLAG_SECURE / preventScreenshots)`,
         );
+
+        // Re-arm după fiecare resume — unele OEM-uri Android pierd FLAG_SECURE
+        // când activity-ul e recreat (rotire, split-screen).
+        try {
+          const { App } = await import("@capacitor/app");
+          App.addListener("appStateChange", async ({ isActive }) => {
+            if (isActive) {
+              try {
+                await mod.PrivacyScreen.enable();
+                console.info("[privacy-screen] re-armat la resume");
+              } catch (e) {
+                console.warn("[privacy-screen] re-arm eșuat", e);
+              }
+            }
+          });
+        } catch {
+          /* App plugin absent — best-effort */
+        }
+
+        // Listeners iOS: alertăm user-ul când OS raportează captură/ecran înregistrat.
+        if (platform === "ios") {
+          try {
+            mod.PrivacyScreen.addListener("screenshotTaken", async () => {
+              console.warn("[privacy-screen] iOS a semnalat screenshotTaken");
+              const { toast } = await import("sonner");
+              toast.warning("Cineva a făcut o captură de ecran", {
+                description: "Sistemul iOS ne-a notificat. Fii atent la ce partajezi.",
+                duration: 5000,
+              });
+              window.dispatchEvent(new CustomEvent("ventuza:screenshot-detected"));
+            });
+            mod.PrivacyScreen.addListener("screenRecordingStarted", async () => {
+              console.warn("[privacy-screen] iOS screen recording pornit");
+              const { toast } = await import("sonner");
+              toast.error("Înregistrare de ecran detectată", {
+                description: "Conținutul sensibil e ascuns până se oprește.",
+                duration: 6000,
+              });
+              document.documentElement.classList.add("__privacy_defocused");
+            });
+            mod.PrivacyScreen.addListener("screenRecordingStopped", () => {
+              console.info("[privacy-screen] iOS screen recording oprit");
+              document.documentElement.classList.remove("__privacy_defocused");
+            });
+          } catch (e) {
+            console.warn("[privacy-screen] listeners iOS indisponibili", e);
+          }
+        }
+
         await notify({
           platform,
           native: true,
@@ -81,18 +136,45 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
           preventScreenshots: true,
         });
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.error(`[privacy-screen] ❌ native enable failed on ${platform}:`, msg);
-        await notify({
-          platform,
-          native: true,
-          enabled: false,
-          preventScreenshots: false,
-          error: msg,
-        });
+        pluginErr = err instanceof Error ? err.message : String(err);
+        console.error(`[privacy-screen] ❌ plugin indisponibil pe ${platform}:`, pluginErr);
+      }
+
+      // 1b) Fallback nativ fără plugin — cel puțin mascăm ecranul la background
+      //     (recent-apps preview) via App.appStateChange + overlay CSS.
+      if (!pluginOk) {
+        try {
+          const { App } = await import("@capacitor/app");
+          const applyMask = (active: boolean) => {
+            document.documentElement.classList.toggle("__privacy_defocused", !active);
+            const el = document.getElementById("__privacy_hide_overlay");
+            if (el) el.style.display = active ? "none" : "block";
+          };
+          App.addListener("appStateChange", ({ isActive }) => applyMask(isActive));
+          console.info(
+            `[privacy-screen] ⚠ fallback nativ activ pe ${platform} (mascare background, FĂRĂ blocare capturi)`,
+          );
+          await notify({
+            platform,
+            native: true,
+            enabled: true,
+            preventScreenshots: false,
+            error: pluginErr,
+          });
+        } catch (e) {
+          const emsg = e instanceof Error ? e.message : String(e);
+          console.error(`[privacy-screen] fallback nativ eșuat pe ${platform}:`, emsg);
+          await notify({
+            platform,
+            native: true,
+            enabled: false,
+            preventScreenshots: false,
+            error: pluginErr ?? emsg,
+          });
+        }
       }
     } else {
-      console.info("[privacy-screen] web platform — native FLAG_SECURE not available");
+      console.info("[privacy-screen] web — FLAG_SECURE indisponibil, aplicăm best-effort");
       await notify({
         platform: "web",
         native: false,
@@ -107,6 +189,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
       error: err instanceof Error ? err.message : String(err),
     });
   }
+
 
 
   // 2) Web best-effort — nu putem bloca screenshot-uri OS, dar reducem
