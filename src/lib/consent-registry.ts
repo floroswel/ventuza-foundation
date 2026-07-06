@@ -83,16 +83,9 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
       "Prelucrăm intern selfie-urile tale (liveness cu instrucțiuni random) pentru a acorda badge-ul verificat. Imaginile nu părăsesc infrastructura noastră, nu sunt vândute, nu sunt folosite pentru antrenare AI, nu sunt folosite pentru publicitate. Sunt vizibile doar moderatorilor de verificare pentru maxim 30 de zile, apoi șterse automat. Poți retrage consimțământul oricând (badge-ul se retrage și cererile în curs se șterg).",
     gates: ["verification_submit_request"],
   },
-  health_data: {
-    kind: "health_data",
-    currentVersion: "2026-06-26",
-    required: false,
-    art9: true,
-    label: "Date de sănătate (HIV status)",
-    description:
-      "Alegi opțional să declari status HIV / dată test. Datele sunt cifrate la coloană și accesibile doar ție și partenerilor cu care alegi să le împărtășești. Poți retrage oricând (câmpurile se șterg automat).",
-    gates: ["set_user_health"],
-  },
+  // health_data: eliminat complet (decizie GDPR — Ventuza nu procesează date HIV).
+
+
 
   ai_features: {
     kind: "ai_features",
