@@ -470,6 +470,7 @@ function ActionsBar({
         <BanDialog userId={userId} onDone={onSuccess} />
       )}
       <SuspendDialog userId={userId} onDone={onSuccess} />
+      <PurgeAccountDialog userId={userId} onDone={onSuccess} />
     </div>
   );
 }
