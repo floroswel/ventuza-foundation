@@ -338,8 +338,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Middle-click / aux click pe media poate deschide resurse în tab separat.
     const onAuxClick = (e: MouseEvent) => {
+      if (isAdminSurface()) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
+
       const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
       if (hit) {
         e.preventDefault();
