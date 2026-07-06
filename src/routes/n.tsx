@@ -856,7 +856,7 @@ function PhotosStep({
       }
       if (added.length) setData({ ...data, photos: [...data.photos, ...added] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("onboarding.photos.uploadFailed"));
+      showAuthErrorToast(t, e instanceof Error ? e : new Error(t("onboarding.photos.uploadFailed")));
     } finally {
       setUploading(false);
     }
