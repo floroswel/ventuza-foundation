@@ -212,6 +212,20 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     if (webFallbackInstalled) return lastStatus;
     webFallbackInstalled = true;
 
+    // Bypass complet pe rutele /admin — adminul trebuie să poată face capturi
+    // de ecran pentru rapoarte, audit vizual și support. Rutele sunt deja
+    // gated server-side prin rol; dacă un non-admin ajunge acolo, nu are ce
+    // să exfiltreze. Verificarea se face la runtime pentru că pathname-ul se
+    // schimbă fără reload (SPA).
+    const isAdminSurface = () => {
+      try {
+        return window.location.pathname.startsWith("/admin");
+      } catch {
+        return false;
+      }
+    };
+
+
     // Helper: descrie succint elementul care a declanșat blocarea (fără PII).
     const describe = (el: HTMLElement | null): string => {
       if (!el) return "unknown";
@@ -260,8 +274,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Context menu pe media (permite input-uri și zone marcate explicit).
     const onCtx = (e: MouseEvent) => {
+      if (isAdminSurface()) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
+
       if (t.closest("input, textarea, [contenteditable='true']")) return;
       if (t.closest("[data-allow-context]")) return;
       const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
@@ -274,8 +290,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Drag pe imagini/video.
     const onDrag = (e: DragEvent) => {
+      if (isAdminSurface()) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
+
       const hit =
         t.tagName === "IMG" || t.tagName === "VIDEO"
           ? t
@@ -289,8 +307,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Copy / cut pe zone private.
     const onClip = (kind: "copy" | "cut") => (e: ClipboardEvent) => {
+      if (isAdminSurface()) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
+
       const hit =
         (t.closest("[data-private-media]") as HTMLElement | null) ??
         (t.closest("img, video") as HTMLElement | null);
@@ -304,8 +324,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Selectarea pe media / zone private poate alimenta copy indirect.
     const onSelectStart = (e: Event) => {
+      if (isAdminSurface()) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
+
       const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
       if (hit) {
         e.preventDefault();
@@ -316,8 +338,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Middle-click / aux click pe media poate deschide resurse în tab separat.
     const onAuxClick = (e: MouseEvent) => {
+      if (isAdminSurface()) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
+
       const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
       if (hit) {
         e.preventDefault();
@@ -367,12 +391,15 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     let printOverride = false;
     let panicTimer: number | undefined;
     const applyDefocus = (defocused: boolean) => {
+      if (isAdminSurface() && defocused) return;
       ensureOverlay();
       const el = document.getElementById(overlayId);
       if (el) el.style.display = defocused ? "block" : "none";
       document.documentElement.classList.toggle("__privacy_defocused", defocused);
     };
     const panicMask = (reason: "capture-key" | "window-leave") => {
+      if (isAdminSurface()) return;
+
       applyDefocus(true);
       emit(reason, document.documentElement);
       window.clearTimeout(panicTimer);
@@ -418,7 +445,9 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Ctrl+P / Cmd+P + Ctrl+S / Cmd+S → prevenim shortcut-ul.
     const onKey = (e: KeyboardEvent) => {
+      if (isAdminSurface()) return;
       const key = e.key.toLowerCase();
+
       const looksLikeCapture =
         e.key === "PrintScreen" ||
         (e.metaKey && e.shiftKey && ["3", "4", "5", "s"].includes(key)) ||
@@ -431,12 +460,14 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     };
     window.addEventListener("keydown", onKey, { capture: true });
     window.addEventListener("keyup", (e) => {
+      if (isAdminSurface()) return;
       if (e.key === "PrintScreen") {
         e.preventDefault();
         panicMask("capture-key");
         void navigator.clipboard?.writeText("").catch(() => undefined);
       }
     }, { capture: true });
+
 
     console.info("[privacy-screen] fallback web întărit: blur/overlay la blur, print, capture keys, pointer leave, copy/cut/drag/select pe media");
   } catch (err) {
