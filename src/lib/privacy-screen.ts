@@ -307,8 +307,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Copy / cut pe zone private.
     const onClip = (kind: "copy" | "cut") => (e: ClipboardEvent) => {
+      if (isAdminSurface()) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
+
       const hit =
         (t.closest("[data-private-media]") as HTMLElement | null) ??
         (t.closest("img, video") as HTMLElement | null);
