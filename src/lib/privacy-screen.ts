@@ -20,6 +20,8 @@ let lastStatus: PrivacyScreenStatus = {
   preventScreenshots: false,
 };
 
+let webFallbackInstalled = false;
+
 export function getPrivacyScreenStatus(): PrivacyScreenStatus {
   return lastStatus;
 }
@@ -81,6 +83,16 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
           `[privacy-screen] ✅ plugin activ pe ${platform} în ${ms}ms (FLAG_SECURE / preventScreenshots)`,
         );
 
+        // Re-arm imediat de câteva ori după boot: în unele WebView-uri native
+        // primul enable() se pierde dacă Activity/Scene este încă în bootstrap.
+        const reenable = (reason: string) => {
+          void mod.PrivacyScreen.enable()
+            .then(() => console.info(`[privacy-screen] re-arm ${reason} OK`))
+            .catch((e) => console.warn(`[privacy-screen] re-arm ${reason} eșuat`, e));
+        };
+        window.setTimeout(() => reenable("post-boot 500ms"), 500);
+        window.setTimeout(() => reenable("post-boot 2000ms"), 2000);
+
         // Re-arm după fiecare resume — unele OEM-uri Android pierd FLAG_SECURE
         // când activity-ul e recreat (rotire, split-screen).
         try {
@@ -90,6 +102,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
               try {
                 await mod.PrivacyScreen.enable();
                 console.info("[privacy-screen] re-armat la resume");
+                window.setTimeout(() => reenable("resume delayed"), 350);
               } catch (e) {
                 console.warn("[privacy-screen] re-arm eșuat", e);
               }
@@ -178,7 +191,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
       await notify({
         platform: "web",
         native: false,
-        enabled: false,
+        enabled: true,
         preventScreenshots: false,
       });
     }
@@ -196,6 +209,9 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
   //    considerabil ferestrele "accidentale": long-press save, drag, copy,
   //    print, snipping tool care surprinde ecranul cât tabul e defocalizat.
   try {
+    if (webFallbackInstalled) return lastStatus;
+    webFallbackInstalled = true;
+
     // Helper: descrie succint elementul care a declanșat blocarea (fără PII).
     const describe = (el: HTMLElement | null): string => {
       if (!el) return "unknown";
@@ -223,7 +239,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
       }
     };
 
-    const emit = (action: "contextmenu" | "drag" | "copy" | "cut", el: HTMLElement) => {
+    const emit = (action: "contextmenu" | "drag" | "copy" | "cut" | "select" | "capture-key" | "window-leave", el: HTMLElement | null) => {
       const target = describe(el);
       console.warn(`[privacy-screen] 🚫 ${action} blocat pe ${target}`);
       window.dispatchEvent(
@@ -234,7 +250,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
       void maybeToast(
         action === "contextmenu" ? "meniu contextual" :
         action === "drag" ? "drag imagine" :
-        action === "copy" ? "copiere" : "decupare",
+        action === "copy" ? "copiere" :
+        action === "cut" ? "decupare" :
+        action === "select" ? "selectare" :
+        action === "capture-key" ? "scurtătură captură" : "ieșire din fereastră",
         target,
       );
     };
@@ -283,6 +302,30 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     window.addEventListener("copy", onClip("copy"), { capture: true });
     window.addEventListener("cut", onClip("cut"), { capture: true });
 
+    // Selectarea pe media / zone private poate alimenta copy indirect.
+    const onSelectStart = (e: Event) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
+      if (hit) {
+        e.preventDefault();
+        emit("select", hit);
+      }
+    };
+    window.addEventListener("selectstart", onSelectStart, { capture: true });
+
+    // Middle-click / aux click pe media poate deschide resurse în tab separat.
+    const onAuxClick = (e: MouseEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
+      if (hit) {
+        e.preventDefault();
+        emit("contextmenu", hit);
+      }
+    };
+    window.addEventListener("auxclick", onAuxClick, { capture: true });
+
     // Long-press save pe iOS/Android web → suprimă callout-ul.
     const style = document.createElement("style");
     style.setAttribute("data-privacy-screen", "");
@@ -299,6 +342,9 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
       html.__privacy_defocused video {
         filter: blur(28px) brightness(0.55) !important;
         transition: filter 120ms ease-out;
+      }
+      html.__privacy_defocused body > *:not(#__privacy_hide_overlay) {
+        filter: blur(34px) brightness(0.18) saturate(0) !important;
       }
       #__privacy_hide_overlay {
         position: fixed; inset: 0; background: #000; z-index: 2147483647;
@@ -319,11 +365,22 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
       document.body.appendChild(el);
     };
     let printOverride = false;
+    let panicTimer: number | undefined;
     const applyDefocus = (defocused: boolean) => {
       ensureOverlay();
       const el = document.getElementById(overlayId);
       if (el) el.style.display = defocused ? "block" : "none";
       document.documentElement.classList.toggle("__privacy_defocused", defocused);
+    };
+    const panicMask = (reason: "capture-key" | "window-leave") => {
+      applyDefocus(true);
+      emit(reason, document.documentElement);
+      window.clearTimeout(panicTimer);
+      panicTimer = window.setTimeout(() => {
+        if (!printOverride && document.visibilityState === "visible" && document.hasFocus()) {
+          applyDefocus(false);
+        }
+      }, 2200);
     };
     const onVis = () => applyDefocus(document.visibilityState === "hidden");
     const onBlur = () => applyDefocus(true);
@@ -333,6 +390,19 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     window.addEventListener("focus", onFocus);
     window.addEventListener("pagehide", onBlur);
     window.addEventListener("pageshow", onFocus);
+    window.addEventListener("freeze", onBlur);
+    window.addEventListener("resume", onFocus);
+
+    // Când cursorul părăsește fereastra, multe unelte de snipping încep selecția
+    // din afara browserului. Mascăm rapid până revine focusul/pointerul.
+    document.addEventListener("pointerleave", (e) => {
+      if (!e.relatedTarget) panicMask("window-leave");
+    });
+    document.addEventListener("pointerenter", () => {
+      if (!printOverride && document.visibilityState === "visible" && document.hasFocus()) {
+        applyDefocus(false);
+      }
+    });
 
     // Blochează print (Ctrl+P / dialog OS) — mascăm complet conținutul.
     const onBeforePrint = () => {
@@ -348,11 +418,27 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Ctrl+P / Cmd+P + Ctrl+S / Cmd+S → prevenim shortcut-ul.
     const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "s")) {
+      const key = e.key.toLowerCase();
+      const looksLikeCapture =
+        e.key === "PrintScreen" ||
+        (e.metaKey && e.shiftKey && ["3", "4", "5", "s"].includes(key)) ||
+        (e.ctrlKey && e.shiftKey && ["s", "p"].includes(key)) ||
+        ((e.ctrlKey || e.metaKey) && ["p", "s"].includes(key));
+      if (looksLikeCapture) {
         e.preventDefault();
+        panicMask("capture-key");
       }
     };
     window.addEventListener("keydown", onKey, { capture: true });
+    window.addEventListener("keyup", (e) => {
+      if (e.key === "PrintScreen") {
+        e.preventDefault();
+        panicMask("capture-key");
+        void navigator.clipboard?.writeText("").catch(() => undefined);
+      }
+    }, { capture: true });
+
+    console.info("[privacy-screen] fallback web întărit: blur/overlay la blur, print, capture keys, pointer leave, copy/cut/drag/select pe media");
   } catch (err) {
     console.info("[privacy-screen] web init failed", err);
   }
