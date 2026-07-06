@@ -68,7 +68,7 @@ import {
 import { adminBanUser, adminUnbanUser, adminSuspendUser } from "@/lib/admin-enterprise.functions";
 import { adminBreakGlassReveal } from "@/lib/admin-break-glass.functions";
 import { EnterpriseUser360Panel } from "@/components/admin/EnterpriseUser360Panel";
-import { Eye, EyeOff, ShieldAlert as ShieldAlertIcon } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/admin/users/$id")({
   head: () => ({
