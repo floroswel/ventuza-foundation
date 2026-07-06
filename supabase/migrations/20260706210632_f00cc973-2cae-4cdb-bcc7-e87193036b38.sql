@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.security_invariants_snapshot() TO anon, authenticated;
