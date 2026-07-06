@@ -646,7 +646,14 @@ function DiscoverPage() {
         onClose={() => setFiltersOpen(false)}
         value={filters}
         onApply={setFilters}
+        onReset={() => {
+          const cleared = resetDiscoverFilters(user?.id);
+          setFilters(cleared);
+          setDebouncedFilters(cleared);
+          toast.success("Filtre resetate");
+        }}
       />
+
       <MatchModal
         open={!!match}
         onClose={() => setMatch(null)}
