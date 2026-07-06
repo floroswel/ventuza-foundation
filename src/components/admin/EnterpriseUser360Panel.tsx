@@ -24,7 +24,7 @@ import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogTrigger, DialogDescription,
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Clock, Award, ShieldAlert, Ban, Scale, MessageSquareWarning, Loader2 } from "lucide-react";
+import { Clock, Award, ShieldAlert, Ban, Scale, MessageSquareWarning, Loader2, Briefcase } from "lucide-react";
 import {
   adminApplyStrike, adminGetUserStrikes, adminSetTemporaryBan, adminSetLegalHold,
   adminSendOfficialMessage,
@@ -33,6 +33,7 @@ import {
   adminListManualBadges, adminListUserBadgeGrants, adminGrantBadge, adminRevokeBadge,
 } from "@/lib/admin-badges.functions";
 import { adminGetUserTimeline } from "@/lib/admin-timeline.functions";
+import { adminGrantPartnerRole, adminRevokePartnerRole } from "@/lib/admin-partners.functions";
 
 export function EnterpriseUser360Panel({ userId }: { userId: string }) {
   return (
