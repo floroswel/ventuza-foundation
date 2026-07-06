@@ -3,21 +3,111 @@
 // - Pe web: best-effort — dezactivează context menu pe imagini/media, drag,
 //   selectare text și afișează un overlay negru când tab-ul iese din focus
 //   (mitigare parțială pentru screenshot-uri făcute din alt app).
-export async function initPrivacyScreen(): Promise<void> {
-  if (typeof window === "undefined") return;
 
-  // 1) Native (Android): FLAG_SECURE
+export type PrivacyScreenStatus = {
+  platform: "web" | "android" | "ios" | "unknown";
+  native: boolean;
+  enabled: boolean;
+  preventScreenshots: boolean;
+  error?: string;
+};
+
+// Ultimul status calculat — util pentru UI (badge/toast în Setări → Securitate).
+let lastStatus: PrivacyScreenStatus = {
+  platform: "unknown",
+  native: false,
+  enabled: false,
+  preventScreenshots: false,
+};
+
+export function getPrivacyScreenStatus(): PrivacyScreenStatus {
+  return lastStatus;
+}
+
+async function notify(status: PrivacyScreenStatus) {
+  lastStatus = status;
+  try {
+    window.dispatchEvent(new CustomEvent("ventuza:privacy-screen", { detail: status }));
+  } catch {
+    /* ignore */
+  }
+  // Toast doar pe nativ (pe web e zgomot — nu putem bloca screenshot-uri oricum).
+  if (!status.native) return;
+  try {
+    const { toast } = await import("sonner");
+    if (status.enabled && status.preventScreenshots) {
+      toast.success("Protecție capturi activă", {
+        description: `${status.platform === "ios" ? "iOS" : "Android"} · screenshot-urile sunt blocate`,
+        duration: 2500,
+      });
+    } else if (status.enabled) {
+      toast("Protecție capturi parțială", {
+        description: "Ecranul e ascuns la switch de app, dar screenshot-urile nu sunt blocate.",
+        duration: 4000,
+      });
+    } else {
+      toast.error("Protecție capturi INACTIVĂ", {
+        description: status.error ?? "PrivacyScreen nu a putut fi pornit.",
+        duration: 6000,
+      });
+    }
+  } catch {
+    /* sonner poate lipsi în SSR */
+  }
+}
+
+export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
+  if (typeof window === "undefined") return lastStatus;
+
+  // 1) Native (Android/iOS): FLAG_SECURE / screenshot prevention
   try {
     const { Capacitor } = await import("@capacitor/core");
-    if (Capacitor.isNativePlatform()) {
-      const mod = await import("@capacitor-community/privacy-screen");
-      // Enables Android FLAG_SECURE + iOS screenshot prevention (when configured).
-      await mod.PrivacyScreen.enable();
+    const isNative = Capacitor.isNativePlatform();
+    const platform = (Capacitor.getPlatform?.() ?? "web") as PrivacyScreenStatus["platform"];
 
+    if (isNative) {
+      const t0 = performance.now();
+      try {
+        const mod = await import("@capacitor-community/privacy-screen");
+        await mod.PrivacyScreen.enable();
+        const ms = Math.round(performance.now() - t0);
+        console.info(
+          `[privacy-screen] ✅ enabled on ${platform} in ${ms}ms (preventScreenshots=true via capacitor.config)`,
+        );
+        await notify({
+          platform,
+          native: true,
+          enabled: true,
+          preventScreenshots: true,
+        });
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        console.error(`[privacy-screen] ❌ native enable failed on ${platform}:`, msg);
+        await notify({
+          platform,
+          native: true,
+          enabled: false,
+          preventScreenshots: false,
+          error: msg,
+        });
+      }
+    } else {
+      console.info("[privacy-screen] web platform — native FLAG_SECURE not available");
+      await notify({
+        platform: "web",
+        native: false,
+        enabled: false,
+        preventScreenshots: false,
+      });
     }
   } catch (err) {
     console.info("[privacy-screen] native init skipped", err);
+    await notify({
+      ...lastStatus,
+      error: err instanceof Error ? err.message : String(err),
+    });
   }
+
 
   // 2) Web best-effort
   try {
