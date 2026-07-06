@@ -90,7 +90,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           if (!lastToastIdRef.current.has(n.id)) {
             lastToastIdRef.current.add(n.id);
             // Privacy: pentru mesaje nu afișăm niciodată body-ul ca preview
-            const desc = n.kind === "message" ? "Ai un mesaj nou" : (n.body ?? undefined);
+            const desc = n.type === "message" ? "Ai un mesaj nou" : (n.body ?? undefined);
             toast(n.title, { description: desc });
             playNotificationSound();
           }
