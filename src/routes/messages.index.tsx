@@ -211,7 +211,11 @@ function MessagesPage() {
                         c.unread ? "text-foreground" : "text-muted-foreground",
                       )}
                     >
-                      {c.last_message_at ? "Ai un mesaj nou" : "Say hi 👋"}
+                      {showPreview
+                        ? (c.last_message_preview ?? "Say hi 👋")
+                        : c.last_message_at
+                          ? "Ai un mesaj nou"
+                          : "Say hi 👋"}
                     </p>
                   </div>
                   {c.unread_count > 0 ? (
