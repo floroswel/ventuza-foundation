@@ -2,6 +2,9 @@ import { auth, defineMcp } from "@lovable.dev/mcp-js";
 import whoami from "./tools/whoami";
 import unreadCounts from "./tools/unread-counts";
 import recentNotifications from "./tools/recent-notifications";
+import markNotificationsRead from "./tools/mark-notifications-read";
+import sendTap from "./tools/send-tap";
+import listConversations from "./tools/list-conversations";
 
 // Direct Supabase issuer (not the .lovable.cloud proxy) — RFC 8414 requires
 // the OAuth issuer to match the discovery document. VITE_SUPABASE_PROJECT_ID
@@ -18,5 +21,5 @@ export default defineMcp({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
     acceptedAudiences: "authenticated",
   }),
-  tools: [whoami, unreadCounts, recentNotifications],
+  tools: [whoami, unreadCounts, recentNotifications, markNotificationsRead, sendTap, listConversations],
 });
