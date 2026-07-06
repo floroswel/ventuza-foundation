@@ -229,6 +229,7 @@ function RootComponent() {
           <ProximityWatcherMount />
           <Outlet />
           <OfflineBanner />
+          <LocationPermissionPrompt />
           <AgeGate />
           <CookieBanner />
           <TravelWarning />
