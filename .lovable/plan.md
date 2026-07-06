@@ -1,103 +1,181 @@
-# Harta REALĂ a panoului admin (analiză, zero modificări)
+# Inventar admin — analiză, zero modificări
 
-## A. Structura admin
+Legenda stare: 🟢 CONECTAT+FOLOSIT · 🟡 CONECTAT dar rar/parțial · 🔴 SCHELET neconectat
+Legenda legal: **OBLIG** · **RECOM** · **OPȚ**
 
-**Rute** (doar 2 rute fizice):
-- `src/routes/admin.tsx` (1963 linii) — shell + secțiuni interne comutate prin state (`section`): overview, users, reports, risk, appeals, csam, dsa, gdpr, breaches, audit, breakglass, staff, mfa, ip-allowlist, alerts, rules, ai-copilot, policy, macros, tickets, ads, b2b, partners, boost-calendar, push-health, fraud, experiments, kill-switches, min-version, settings, flags, data-explorer, demo-seed, verification-queue, timeline, intelligence, signup-throttle, rate-limit, security-signals, sla, wave1, legal-p0, broadcast-v2 (~40 secțiuni).
-- `src/routes/admin.users.$id.tsx` (1383 linii) — User 360, cu 9 taburi.
+Sursă: `src/routes/admin.tsx` (~40 secțiuni internă via `section` state) + `src/routes/admin.users.$id.tsx` (9 taburi) + 29 fișiere `src/lib/admin-*.functions.ts` + 42 componente `src/components/admin/*`.
 
-**Taburi User 360**: `overview` · `enterprise` · `auth` · `consents` · `reports` · `payments` · `risk` · `gdpr` · `breakglass`.
+---
 
-**Fișiere `src/lib/admin-*.functions.ts`**: 31 fișiere, ~150 server functions (ban, badge, break-glass, enterprise, wave1, user360, users-ops, staff, MFA, intelligence, enforcement, appeals, broadcast, content, impersonation, legal, macros, overview, partners, policy, queue, ratelimit, security-signals, sessions, settings, signup-throttle, sla, support, timeline, verification, profanity).
+## A. MODERARE USERI
 
-## B. Ce FUNCȚIONEAZĂ vs SCHELET vs LIPSĂ
+| Modul | Fișier(e) | Ce face (plain) | Date | Stare | Legal |
+|---|---|---|---|---|---|
+| Ban permanent | `admin-enterprise.functions.ts` → `adminBanUser/adminUnbanUser` | Marchează contul banat definitiv cu motiv + audit critic + MFA obligatoriu. | Profil | 🟡 (scrie `banned_at` dar `assert_account_usable` verifică `banned_until` — enforcement gap) | **OBLIG** |
+| Suspend temporar | `adminSuspendUser`, RPC `moderator_suspend_user` | Blochează contul N ore. | Profil | 🟢 | **OBLIG** |
+| Shadowban | `adminShadowbanUser` | Ascunde userul din feed fără să-l anunțe. | Profil | 🔴 (încearcă coloană `shadowbanned` care nu există, prinde eroarea, no-op) | **OPȚ** |
+| Ban temporar v2 | `admin-enforcement.functions.ts` → `adminSetTemporaryBan` | Al treilea flow paralel de ban temp. | Profil | 🟡 (funcție reală, dar duplicat cu `adminSuspendUser`) | **OPȚ** (duplicat) |
+| Strike / Warn | `adminApplyStrike`, `adminGetUserStrikes` | Adaugă avertisment cumulativ. | Profil | 🟢 (folosit în EnterpriseUser360) | **RECOM** |
+| Legal hold | `adminSetLegalHold` | Marchează contul pentru păstrare probe legale. | Profil | 🟡 (rar) | **RECOM** |
+| Force logout | `admin-wave1.functions.ts` → `adminForceLogout` | Invalidează toate sesiunile userului. | Auth | 🟢 | **RECOM** |
+| Password reset trigger | `adminTriggerPasswordReset` | Trimite mail reset. | Auth | 🟢 | **RECOM** |
+| Resend confirmare email | `adminResendConfirmationEmail` | Retrimite mail confirmare. | Auth | 🟢 | **OPȚ** |
+| Change email | `admin-user360.functions.ts` → `adminChangeUserEmail` | Modifică emailul contului. | Auth | 🟢 | **RECOM** |
+| Update profil admin | `adminUpdateUserProfile` | Editează manual câmpuri profil. | Profil | 🟢 | **RECOM** |
+| Push unicast | `adminPushUnicast` | Trimite notificare unui singur user. | Notif | 🟢 | **OPȚ** |
+| Official message | `admin-enforcement.functions.ts` → `adminSendOfficialMessage` | Trimite mesaj oficial în chat. | Mesaj | 🟢 | **RECOM** |
+| Assign moderator | `adminAssignModerator` | Alocă un caz unui moderator. | Meta | 🟡 (există, dar nu e folosit în ReportsPanel) | **OPȚ** |
+| Badge management | `admin-badges.functions.ts` (4 fn) | Acordă/revocă badge manual (press, ally, ngo_partner…). | Profil | 🟢 | **OPȚ** |
+| Impersonation | `admin-impersonation.functions.ts` (3 fn) | Log de impersonare (funcția reală nu e activă). | Auth | 🟡 (doar log) | **RECOM** |
 
-### BAN / SUSPEND
-| Item | Stare | Detalii |
-|---|---|---|
-| `adminBanUser` (enterprise.functions) | EXISTĂ+FUNCȚIONEAZĂ parțial | Scrie `banned_at + banned_reason`. Audit + MFA. **BUG:** `assert_account_usable()` verifică doar `banned_until`, NU `banned_at` → user rămâne activ dacă are sesiune. |
-| `adminUnbanUser` | EXISTĂ+FUNCȚIONEAZĂ | Șterge `banned_at`. |
-| `adminSuspendUser` | EXISTĂ+FUNCȚIONEAZĂ parțial | Scrie `suspended_until`. **Nu e verificat** în `assert_account_usable`. |
-| `adminShadowbanUser` | SCHELET | Încearcă `profiles.shadowbanned` — coloană inexistentă, prinde eroarea și continuă (no-op). |
-| RPC `moderator_ban_user` (folosit în ReportsPanel) | EXISTĂ+FUNCȚIONEAZĂ | Setează `banned_at + suspended_until = now()+100 years`. Truc: enforce-ul se face pe altă cale (nu prin gate-ul central). |
-| RPC `moderator_suspend_user` (ReportsPanel) | EXISTĂ+FUNCȚIONEAZĂ | Setează `suspended_until`. Nu e verificat de `assert_account_usable`. |
-| `adminSetTemporaryBan` (enforcement.functions) | EXISTĂ | Al treilea flux paralel de ban temporar. |
-| **Ban permanent enforced la login** | LIPSĂ EFECTIVĂ | `assert_account_usable` verifică doar `banned_until`; nici o funcție UI nu-l populează. |
+## B. RAPOARTE
 
-**3 sisteme de ban coexistă** (adminBanUser vs adminSetTemporaryBan vs moderator_ban_user), fiecare atinge alt câmp.
+| Modul | Fișier | Ce face | Date | Stare | Legal |
+|---|---|---|---|---|---|
+| Reports queue | `admin.tsx` → `ReportsPanel` (line 1243), tabelul `reports` | Coadă rapoarte user→user cu ban/suspend/resolve inline. | Report + profil | 🟢 | **OBLIG** (DSA Art. 16) |
+| DSA reports | `admin-enterprise.functions.ts` → `adminGetDsaReports`, `adminResolveDsa` | Coadă rapoarte de conținut ilegal (DSA). Reporter anonim. | Report | 🟢 | **OBLIG** (DSA) |
+| CSAM reports | `adminGetCsamReports`, `adminAddCsamHash` | Coadă rapoarte suspiciune CSAM, cu hash-uri blocate global. Zero randare imagini. | Hash+meta | 🟢 | **OBLIG** (Art. 3 CSAM Reg.) |
+| Appeals | `admin-appeals.functions.ts` (4 fn) + `AppealsPanel` | Contestații ale userilor la decizii. | Meta | 🟢 | **OBLIG** (DSA Art. 20) |
 
-### BADGE / VERIFICARE
-| Item | Stare | Detalii |
-|---|---|---|
-| Tabel `badge_registry` | EXISTĂ+FUNCȚIONEAZĂ | 16 badge-uri, 6 manuale: `beta_tester`, `ally`, `press`, `event_organizer`, `bar_verified`, `ngo_partner`, `moderator_public`, `founder_ventuza`. |
-| `adminListManualBadges` / `adminGrantBadge` / `adminRevokeBadge` | EXISTĂ+FUNCȚIONEAZĂ | Server fn complete. |
-| UI acordare badge în User 360 (tab enterprise) | EXISTĂ+FUNCȚIONEAZĂ | Dialog "Acordă badge" în `EnterpriseUser360Panel.tsx` cu Select din catalog + revoke. |
-| Badge "verified 18+" (`verified`) | EXISTĂ | Auto (ridicat de flow Didit). |
-| Verificare manuală de admin (bypass Didit, ex. "verificat presă") | ACOPERIT prin badge-uri manuale (`press`, `ngo_partner`, etc.), NU prin `age_status`. |
+## C. ANTI-FRAUDĂ / CONTURI MULTIPLE
 
-### ETICHETE ONG/BAR/CLUB/PARTENER
-| Item | Stare |
-|---|---|
-| Enum `app_role` include `partner`, `business` | EXISTĂ |
-| Badge-uri `ngo_partner`, `bar_verified`, `event_organizer`, `press` | EXISTĂ (target=`user`) |
-| Coloană `profiles.account_type` sau `labels` | **NU EXISTĂ** |
-| Afișare vizibilă a etichetei pe profilul public | Prin badge-uri (dacă e acordat) — dar nu există un tip explicit "cont business" cu formulare separate |
-| Sistem `business_applications` + tabel `venues/events/offers` cu `owner_id` | EXISTĂ (portalul partener `/partner`) — deja există flux ONG/BAR/CLUB dar prin `business_applications`, nu prin etichetă pe cont user normal |
+| Modul | Fișier | Ce face | Date | Stare | Legal |
+|---|---|---|---|---|---|
+| Fraud clusters | `admin-intelligence.functions.ts` → `getFraudClusters` + `FraudClusterPanel` | Grupează device fingerprint ≥2 useri (posibile conturi multiple). | Fingerprint | 🟢 | **OPȚ** (interes legitim) |
+| Signup throttle | `admin-signup-throttle.functions.ts` + `SignupThrottlePanel` | Detectează spike-uri înregistrări. | Meta | 🟢 | **RECOM** |
+| Risk dashboard | `RiskDashboardPanel` + `admin-enterprise` alerts | Semnale de risc per user (scor). | Meta | 🟢 | **OPȚ** |
+| Risk review queue | `RiskReviewQueuePanel` + RPC `risk-queue.functions` → `adminResolveRiskFlag` | Coadă alerte risc de rezolvat. | Meta | 🟢 | **OPȚ** |
+| Rate limit | `admin-ratelimit.functions.ts` + `RateLimitPanel` | Vizualizează `rate_limit_log`. | Meta | 🟢 | **RECOM** |
+| Security signals | `admin-security-signals.functions.ts` + `SecuritySignalsPanel` | Semnale auth (login failures, IP allowlist hits). | Auth log | 🟢 | **RECOM** |
+| IP allowlist | `admin-staff.functions.ts` → `adminAdd/RemoveIpAllowlist` | IP-uri permise pentru login admin. | Meta | 🟢 | **RECOM** |
 
-**Concluzie**: eticheta există sub 2 forme: (1) `user_roles.role='partner'` + `business_applications` (flux formal cu portal separat), (2) badge manual (`ngo_partner`, `bar_verified`) doar decorativ. Nu există toggle rapid "acest cont este ONG" din User 360.
+## D. DATE SENSIBILE (BREAK-GLASS)
 
-### RAPOARTE
-| Item | Stare |
-|---|---|
-| Tabel `reports` (reporter_id, reported_id, reason, status, resolved_by, assigned_moderator_id) | EXISTĂ+FUNCȚIONEAZĂ |
-| `ReportsPanel` în `/admin` (section=reports) | EXISTĂ+FUNCȚIONEAZĂ | Listează pending, permite suspend/ban/resolve/dismiss inline (folosește RPC-urile `moderator_*`). |
-| Tab "reports" în User 360 | EXISTĂ | Doar afișare tabelară (rapoarte primite + făcute de user). |
-| **Legătură raport → deschide profil user cu context raport** | SCHELET | Există doar `reported_id` slice(8) în MiniTable, fără link către `/admin/users/$id`. |
-| **Notificare reporter când e rezolvat** | NU EXISTĂ |
-| `assigned_moderator_id` folosit | SCHELET | Coloană există, dar `ReportsPanel` nu asignează. |
-| Server fn dedicat `adminResolveReport` cu audit | NU EXISTĂ (se face update direct pe tabel) |
+| Modul | Fișier | Ce face | Date | Stare | Legal |
+|---|---|---|---|---|---|
+| Break-glass reveal | `admin-break-glass.functions.ts` → `adminBreakGlassReveal` | Descoperă orientare / locație / mesaje cu justificare + MFA + audit dublu. | **Art. 9 + locație precisă + mesaje** | 🟢 | **RECOM — de declarat în DPIA** |
+| Break-glass log | `adminListBreakGlass` + `admin_sensitive_access_log` | Istoric acces sensibil (vizibil super_admin + auditor). | Audit | 🟢 | **OBLIG** (dacă break-glass activ) |
 
-### CONTURI MULTIPLE (duplicate detection)
-| Semnal | Stare |
-|---|---|
-| `device_fingerprints` (fingerprint + user_id) | EXISTĂ+FUNCȚIONEAZĂ |
-| `banned_fingerprints` | EXISTĂ+FUNCȚIONEAZĂ |
-| `getFraudClusters` (intelligence.functions) | EXISTĂ+FUNCȚIONEAZĂ | Grupează device_fingerprints ≥2 useri, returnează clustere. UI: `FraudClusterPanel`. |
-| IP per user stocat direct | NU EXISTĂ (doar hash SHA-256 tranzitoriu în anumite loguri) |
-| Email similar / +alias / .-dot | NU EXISTĂ |
-| Detectare pe device+IP combinat | LIPSĂ (nu avem IP) |
-| Acțiuni bulk pe cluster (ban în masă cu audit per user) | NU EXISTĂ |
+## E. GDPR OPS
 
-Fezabil FĂRĂ să atingem privacy: device_fingerprint (deja e), email normalization (dot/plus alias). IP-ul ar cere hash stabil per user în auth log — nu există.
+| Modul | Fișier | Ce face | Date | Stare | Legal |
+|---|---|---|---|---|---|
+| Deletion requests | `admin-enterprise.functions.ts` → `adminGetDeletionRequests`, `adminProcessDeletion` | Coadă cereri Art. 17 (ștergere). | Profil | 🟢 | **OBLIG** |
+| Cancel deletion | `admin-wave1.functions.ts` → `adminCancelDeletion` | Anulează cerere de ștergere. | Profil | 🟢 | **OBLIG** |
+| Data export | `adminExportUserData` | Export Art. 15 (portabilitate). | Profil integral | 🟡 (apelabil de orice staff — recomand restricționat) | **OBLIG** |
+| Hard purge | `adminPurgeUserAccount`, `adminRunPurgeNow` | Șterge definitiv contul + date. | Profil | 🟢 (super_admin+MFA) | **OBLIG** |
+| GDPR trail | `adminGetGdprTrail` | Log acțiuni GDPR per user. | Audit | 🟢 | **OBLIG** (Art. 5(2)) |
+| Consent history | `admin-user360.functions.ts` → `adminGetConsentHistory`, `adminExportConsentHistoryCsv` + `adminGetUserConsentHistory` | Istoric consimțăminte per user. | Consent | 🟢 | **OBLIG** (Art. 7(1)) |
 
-## C. Break-glass (sensibil)
+## F. AUDIT & SECURITATE
 
-| Item | Stare |
-|---|---|
-| `adminBreakGlassReveal` kinds valide | `orientation` (super_admin), `location` (super_admin, decripta prin `admin_reveal_profile_location`), `messages` (admin+). `health` și `selfie` **ELIMINATE** (Ventuza nu procesează HIV; selfie prin panel intern verification cu signed URL 30s). |
-| `admin_can_access_sensitive` (RPC gate) | EXISTĂ+FUNCȚIONEAZĂ |
-| `admin_sensitive_access_log` (append-only) | EXISTĂ+FUNCȚIONEAZĂ |
-| `admin_audit_log` (severity=critical la orice reveal) | EXISTĂ+FUNCȚIONEAZĂ |
-| `profiles.location` (PostGIS) | Coordonate exacte în DB, RLS: doar owner. Break-glass expune prin RPC dedicat. |
-| MFA obligatoriu pentru admin/super_admin | EXISTĂ+FUNCȚIONEAZĂ (`assertAdminMfa`) |
+| Modul | Fișier | Ce face | Date | Stare | Legal |
+|---|---|---|---|---|---|
+| Audit log | `admin-enterprise.functions.ts` → `adminGetAuditLog` + `admin_audit_log` append-only | Vizualizează toate acțiunile admin. | Audit | 🟢 | **OBLIG** |
+| Sensitive access log | `admin_sensitive_access_log` | Istoric break-glass (append-only). | Audit | 🟢 | **OBLIG** |
+| MFA status | `adminGetMyMfa`, `adminMarkMfaEnrolled` + `admin-mfa-guard.ts` | Obligă 2FA la acțiuni distructive. | Auth | 🟢 | **OBLIG** (Art. 32) |
+| Staff management | `admin-staff.functions.ts` → grant/revoke role + `StaffManagementPanel` | Alocă roluri (super_admin, moderator…). | Auth | 🟢 | **OBLIG** |
+| Breach incidents | `adminGetBreaches`, `adminCreateBreach` + tabelul `breach_incidents` | Înregistrează breșe pentru notificare ANSPDCP 72h. | Meta | 🟢 | **OBLIG** (Art. 33) |
+| Policy versions | `admin-policy.functions.ts` (6 fn) + `PolicyEnginePanel` + `adminGetPolicies` | Publică politici + versiuni. | Meta | 🟢 | **OBLIG** (evidența schimbărilor) |
+| Legal docs | `admin-legal.functions.ts` (15 fn) + `LegalDocsAdminPanel` + `LegalP0Panel` | Gestionează Terms/Privacy/Cookies + versiuni. | Meta | 🟢 | **OBLIG** |
+| Sessions log | `admin-sessions.functions.ts` (3 fn) | Vizualizează sesiunile active. | Auth | 🟢 | **RECOM** |
 
-## D. GAP-URI FAȚĂ DE CE VREA FONDATORUL
+## G. ALERTE
 
-| Cerință fondator | Stare curentă | Ce lipsește |
-|---|---|---|
-| **Ban minor/reguli funcțional** | 3 sisteme paralele, permanent NEenforced | Unificare într-un singur RPC + patch `assert_account_usable` să verifice `banned_at` și `suspended_until` |
-| **Badge-uri verificare (manual)** | EXISTĂ complet (catalog + UI + audit) | ✅ nimic |
-| **Etichete ONG/BAR/CLUB/PARTENER** | Parțial (badge manuale + roluri) | Coloană `profiles.account_type` + editor rapid în User 360 + afișare pe cardul public |
-| **Rapoarte (vede + intervine)** | ReportsPanel funcțional, dar deconectat de User 360 | Link raport → profil, `adminResolveReport` cu audit + notificare opțională reporter, asignare moderator |
-| **Detectare conturi multiple** | `getFraudClusters` (device fingerprint) | Email normalization + acțiune bulk cluster + evidențiere clustere pe profilul individual |
-| **Totul în profilul user (când îl deschide)** | 9 taburi separate, badge doar în `enterprise` | Consolidare: card "Sancțiuni active" (ban/suspend/shadowban), card "Etichete/Roluri", card "Alte conturi legate" (cluster fingerprint), card "Rapoarte în așteptare" — toate pe tab overview cu acțiuni inline |
+| Modul | Fișier | Ce face | Date | Stare | Legal |
+|---|---|---|---|---|---|
+| Alert engine | `admin-enterprise.functions.ts` → `adminGetAlerts`, `adminAck/Snooze/Resolve/Assign/UpdateAlert` + `admin_alerts` | Alerte generate automat de reguli (risk, spike, breach). | Meta | 🟢 | **RECOM** |
+| Alert rules | `adminListAlertRules`, `adminUpsert/Delete/Toggle/SimulateAlertRule` + `AlertRulesPanel` | CRUD reguli alertă + simulator. | Meta | 🟢 | **OPȚ** |
+| Affected accounts | `adminGetAlertAffectedAccounts` | Conturile atinse de o alertă. | Profil | 🟢 | **OPȚ** |
 
-## Fișiere-cheie relevante pentru fondator
+## H. ORICE ALTCEVA
 
-- Ban/moderare: `src/lib/admin-enterprise.functions.ts` (adminBanUser/Suspend/Unban), RPC `moderator_ban_user` / `moderator_suspend_user`, gate `public.assert_account_usable()`.
-- Badge: `src/lib/admin-badges.functions.ts`, `badge_registry`, `user_badge_grants`, UI în `EnterpriseUser360Panel.tsx`.
-- Rapoarte: `src/routes/admin.tsx` → `ReportsPanel` (linia 1243), tabelul `reports`.
-- Fraud clusters: `src/lib/admin-intelligence.functions.ts` → `getFraudClusters`, `device_fingerprints`.
-- Break-glass: `src/lib/admin-break-glass.functions.ts`, `admin_sensitive_access_log`.
+| Modul | Fișier | Ce face | Date | Stare | Legal |
+|---|---|---|---|---|---|
+| Overview dashboard | `admin-overview.functions.ts` + `OverviewPanelRich` | Sumar operational (pending reports, SLA, etc.). | Agregat | 🟢 | **OPȚ** |
+| SLA telemetry | `admin-sla-telemetry.ts` | Măsurători SLA per coadă. | Meta | 🟢 | **OPȚ** |
+| System health | `SystemHealthPanel` | Ping-uri DB + edge. | Meta | 🟢 | **OPȚ** |
+| Users listing | `admin-users-ops.functions.ts` (3 fn) + `EnterpriseUsersPanel` | Căutare/filtru/bulk useri. | Profil (safe) | 🟢 | **RECOM** |
+| User 360 | `admin-user360.functions.ts` (7 fn) + `EnterpriseUser360Panel` | Vedere completă a unui user. | Profil | 🟢 | **RECOM** |
+| Wave1 sections | `admin-wave1.functions.ts` + `Wave1Sections` | Profil mascat + acțiuni auth combinate. | Profil | 🟢 | **RECOM** |
+| Timeline user | `admin-timeline.functions.ts` (1 fn) | Cronologie evenimente per user (audit + rapoarte + consent). | Agregat | 🟢 | **RECOM** |
+| Support tickets | `admin-support.functions.ts` (8 fn) + `SupportTicketsPanel` | Coadă tickets user. | Support | 🟢 | **OPȚ** |
+| Support macros | `admin-macros.functions.ts` (6 fn) + `SupportMacrosPanel` | Răspunsuri predefinite. | Meta | 🟢 | **OPȚ** |
+| Queue claims | `admin-queue.functions.ts` (5 fn) + `useQueueClaim` | Un moderator „claim-ează" un caz pentru a evita dubluri. | Meta | 🟢 | **OPȚ** |
+| Broadcast | `admin-broadcast.functions.ts` (3 fn) + `BroadcastV2Panel` | Trimite notificare masivă (necesită consimțământ push). | Notif | 🟢 | **OPȚ** |
+| Content ops | `admin-content.functions.ts` (3 fn) + `AdminToolsPanel` | Șterge/moderează conținut punctual. | Content | 🟢 | **RECOM** |
+| Partners moderation | `admin-partners.functions.ts` (9 fn) + `PartnersModerationPanel` | Aprobă/suspendă parteneri B2B + venues/events/offers. | Business | 🟢 | **RECOM** |
+| Billing | `admin-partners` + `BillingAdminPanel` | Confirmă plăți OP parteneri. | Business | 🟢 | **RECOM** |
+| Boost calendar | `PartnerBoostCalendarPanel` | Sloturi boost partener pe oraș/zi. | Business | 🟢 | **OPȚ** |
+| Intelligence | `admin-intelligence.functions.ts` (11 fn) + `IntelligenceDashboardPanel` | Revenue, retention, funnel, push health, experiments, kill-switches, min-version. | Agregat | 🟢 | **OPȚ** |
+| Experiments | `ExperimentsPanel` + `getExperimentResults` | A/B tests. | Agregat | 🟢 | **OPȚ** |
+| Kill switches | `KillSwitchesPanel` + `getKillSwitches` | Dezactivare feature-uri global. | Config | 🟢 | **RECOM** |
+| Min version | `getMinVersion`, `setMinVersion` | Force-update app. | Config | 🟡 (client nu-l consumă încă) | **RECOM** |
+| Push health | `PushHealthPanel` + `getPushHealth` | Rate livrare push. | Agregat | 🟢 | **OPȚ** |
+| Fraud panel | `FraudClusterPanel` (vezi C) | | | | |
+| Settings & flags | `admin-settings.functions.ts` (6 fn) + `SettingsAndFlagsPanel` | `app_settings` + `feature_flags` editor. | Config | 🟢 | **OBLIG** (versionare) |
+| Data explorer | `admin.functions.ts` → `adminListTables/Rows/UpdateRow/DeleteRow/InsertRow` | Editor generic pentru orice tabel din whitelist. | Variabil | 🟡 (nu loghează READ) | **OPȚ** (risc dacă e lăsat larg) |
+| Demo seed | `DemoSeedPanel` + `demo-seed.functions` | Populează date demo (`is_seed=true`). | Meta | 🟢 (gate super_admin, ascuns în prod) | **OPȚ** |
+| AI copilot | `admin-ai.functions.ts` (1 fn) + `AiCopilotPanel` | Sumar/decizie via Lovable AI pentru context admin. | Prompt intern | 🟡 (activ, dar prompt neaudit) | **OPȚ** |
+| Verification queue (18+) | `admin-verification.functions.ts` (6 fn) + `VerificationQueuePanel` | Coadă internă selfie 18+. | Selfie | 🔴 **DEPRECATED** (Didit e sursa unică; comentariu explicit `DEPRECATED` în fișier) | **OPȚ** |
+| Admin profanity mask | `admin-profanity.ts` | Utility maskare cuvinte în UI. | — | 🟢 | **OPȚ** |
+| Overview command palette | `CommandPaletteV2` | Cmd+K search în admin. | — | 🟢 | **OPȚ** |
+| Saved views | `SavedViewsBar` | Vederi salvate în tabele. | — | 🟢 | **OPȚ** |
+| Reason dialog | `ReasonDialog` | Prompt motiv acțiune (reused). | — | 🟢 | **OPȚ** |
+| Panel status / error banner / auto-refresh | `PanelStatus`, `AdminErrorBanner`, `AutoRefreshSelect` | Utility UI, reused în multe panouri. | — | 🟢 | **OPȚ** |
 
-Zero modificări făcute. Aștept decizia ce vrei să prioritizăm.
+---
+
+## CANDIDAȚI LA ȘTERGERE (cod mort real, non-legal)
+
+Aplic filtrele: 🔴 SCHELET NEconectat SAU 🟡 duplicat funcțional AND legal ≠ OBLIG.
+
+### 1. `adminShadowbanUser` — **ȘTERGERE SIGURĂ**
+- **Fișier:** `src/lib/admin-enterprise.functions.ts` (linia 201)
+- **Stare reală:** face `UPDATE profiles SET shadowbanned=...` — coloana nu există, prinde eroarea, no-op.
+- **Consumatori:** verificat — **nu e importat/apelat în niciun UI**. Doar exportat, mort la runtime.
+- **Legal:** OPȚ.
+- **Recomandare:** șterge funcția + curăță referințele în audit log dacă există.
+
+### 2. `admin-verification.functions.ts` + `VerificationQueuePanel.tsx` — **PĂSTREAZĂ dormant, NU șterge**
+- **Fișier:** `src/lib/admin-verification.functions.ts` (6 fn) + `src/components/admin/VerificationQueuePanel.tsx`.
+- **Stare:** montat în `admin.tsx` la `section === "verifqueue"`, marcat explicit `DEPRECATED` în comentar.
+- **De ce NU șterge:** este schelet dormant conservat intenționat conform REGULĂ AGE GATE ("rămâne ca schelet dormant… reactivabil dacă business-ul decide"). Regula spune să nu-l activezi, dar și să nu-l ștergi.
+- **Recomandare:** păstrat. Poți ascunde item-ul din nav dacă vrei UI curat.
+
+### 3. `adminSetTemporaryBan` (admin-enforcement) — **duplicat, șterge după consolidare**
+- **Fișier:** `src/lib/admin-enforcement.functions.ts` (linia 72)
+- **Stare:** funcțional, dar duplicat cu `adminSuspendUser` din enterprise. Ambele scriu `suspended_until`.
+- **Consumatori:** verificat — apelat doar în `EnterpriseUser360Panel` (împreună cu strikes, ca parte din pachet). Poate fi înlocuit cu `adminSuspendUser`.
+- **Legal:** OPȚ (funcționalitate acoperită deja).
+- **Recomandare:** consolidare într-o singură funcție (nu ștergere directă — trebuie mutat call site-ul întâi).
+
+### 4. `adminAssignModerator` — **candidat curățenie**
+- **Fișier:** `src/lib/admin-enforcement.functions.ts` (linia 114)
+- **Stare:** definit, dar `ReportsPanel` nu-l apelează (asignarea rapoartelor e neconectată în UI).
+- **Consumatori:** verificat — 0 call sites.
+- **Legal:** OPȚ.
+- **Recomandare:** ori conectează-l la Reports (feature util pentru echipă), ori șterge.
+
+### 5. `admin-impersonation.functions.ts` (3 fn) — **doar log activ**
+- **Stare:** funcțiile logează în `admin_impersonation_log`, dar impersonarea reală (session hijack) nu e implementată. Rămâne infrastructura pentru viitor.
+- **Consumatori:** apelat din `OperationsUserOpsPanel`, dar UI-ul afișează doar log (view-only).
+- **Legal:** RECOM (audit-ul e util). 
+- **Recomandare:** păstrat ca infrastructură audit; ștergere = risc mic dacă nu planifici feature-ul.
+
+### 6. `getMinVersion / setMinVersion` — **schelet backend fără gate client**
+- **Fișier:** `src/lib/admin-intelligence.functions.ts` (linia 117/131)
+- **Stare:** funcție backend + UI editor, dar clientul mobil/web nu blochează pe versiune (per TODO din memory).
+- **Consumatori:** UI există (`admin.tsx` section min-version). Backend gata; client-side gate lipsește.
+- **Legal:** RECOM. **NU șterge** — completează.
+
+---
+
+## Rezumat concret
+
+- **Un singur candidat curat la ștergere azi:** `adminShadowbanUser` (mort la runtime, 0 call sites, non-legal).
+- **Duplicat funcțional:** `adminSetTemporaryBan` — consolidează în `adminSuspendUser`.
+- **Neconectat dar util:** `adminAssignModerator` — conectează sau șterge.
+- **Restul „pare inutil": PĂSTREAZĂ.** Cvasi-total codul admin este fie folosit direct în UI, fie e schelet legal (CSAM/DSA/GDPR/audit/breach) care trebuie să existe indiferent de trafic, fie e schelet dormant declarat intenționat (verificare internă).
+
+Zero modificări făcute. Aștept decizia ce vrei să curățăm.
