@@ -38,6 +38,7 @@ import {
 } from "@/lib/admin-wave1.functions";
 import { adminBreakGlassReveal, adminListBreakGlass } from "@/lib/admin-break-glass.functions";
 import { adminGetDeletionRequests } from "@/lib/admin-enterprise.functions";
+import { isOffensiveName, maskName } from "@/lib/admin-profanity";
 
 /* =================================================================
    M1 — USER DETAIL DRAWER (mascat by default + break-glass)
