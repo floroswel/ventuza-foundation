@@ -882,24 +882,7 @@ function EditDrawer({
             value={form.looking_for ?? []}
             onChange={(v) => setForm({ ...form, looking_for: v })}
           />
-          <EditChips
-            label="Meet At"
-            options={MEET_AT_OPTIONS}
-            value={form.meet_at ?? []}
-            onChange={(v) => setForm({ ...form, meet_at: v })}
-          />
-          <EditChips
-            label="Expectations"
-            options={EXPECTATIONS_OPTIONS}
-            value={form.expectations ?? []}
-            onChange={(v) => setForm({ ...form, expectations: v })}
-          />
-          <EditChips
-            label="Scenes"
-            options={SCENES_OPTIONS}
-            value={form.scenes ?? []}
-            onChange={(v) => setForm({ ...form, scenes: v })}
-          />
+          {/* meet_at / expectations / scenes — demontate din editor (rămân în DB). */}
 
           <label className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
             <div>
