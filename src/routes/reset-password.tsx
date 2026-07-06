@@ -50,7 +50,10 @@ function ResetPasswordPage() {
     setSubmitting(true);
     const { error } = await supabase.auth.updateUser({ password: parsed.data });
     setSubmitting(false);
-    if (error) return toast.error(translateAuthError(t, error).message);
+    if (error) {
+      showAuthErrorToast(t, error);
+      return;
+    }
     toast.success(t("auth.errors.passwordUpdated"));
     navigate({ to: "/discover", replace: true });
   }
