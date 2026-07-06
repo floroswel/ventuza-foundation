@@ -3069,6 +3069,7 @@ export type Database = {
           leaderboard_opt_in: boolean
           level: number
           location: unknown
+          location_sharing_enabled: boolean
           looking_for: string[] | null
           looking_now_intent: string | null
           looking_now_until: string | null
@@ -3194,6 +3195,7 @@ export type Database = {
           leaderboard_opt_in?: boolean
           level?: number
           location?: unknown
+          location_sharing_enabled?: boolean
           looking_for?: string[] | null
           looking_now_intent?: string | null
           looking_now_until?: string | null
@@ -3319,6 +3321,7 @@ export type Database = {
           leaderboard_opt_in?: boolean
           level?: number
           location?: unknown
+          location_sharing_enabled?: boolean
           looking_for?: string[] | null
           looking_now_intent?: string | null
           looking_now_until?: string | null

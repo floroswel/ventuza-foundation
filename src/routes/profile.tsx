@@ -96,6 +96,7 @@ type Profile = {
   relationship_status: string | null;
   verified_at: string | null;
   incognito: boolean;
+  location_sharing_enabled: boolean | null;
   verification_status: string;
   verification_selfie_path: string | null;
   travel_city: string | null;
@@ -597,6 +598,42 @@ function ProfilePage() {
               }
             >
               {profile.incognito ? "On" : "Off"}
+            </span>
+          </button>
+
+          <button
+            onClick={async () => {
+              const current = profile.location_sharing_enabled !== false;
+              const next = !current;
+              const { error } = await supabase
+                .from("profiles")
+                .update({ location_sharing_enabled: next })
+                .eq("id", profile.id);
+              if (error) return toast.error(error.message);
+              setProfile({ ...profile, location_sharing_enabled: next });
+              toast.success(
+                next
+                  ? "Partajare locație activată."
+                  : "Partajare locație oprită. Nu mai trimitem poziția ta.",
+              );
+            }}
+            className="mt-2 flex w-full items-center justify-between rounded-2xl border border-border bg-surface p-4 text-left hover:border-primary/50"
+          >
+            <div>
+              <p className="text-sm font-medium">Partajare locație</p>
+              <p className="text-xs text-muted-foreground">
+                Trimite poziția ta pentru distanță și hartă. Poți opri oricând — vei rămâne vizibil
+                fără distanță calculată.
+              </p>
+            </div>
+            <span
+              className={
+                profile.location_sharing_enabled !== false
+                  ? "rounded-full bg-primary px-3 py-1 text-xs font-medium text-primary-foreground"
+                  : "rounded-full bg-surface-elevated px-3 py-1 text-xs text-muted-foreground"
+              }
+            >
+              {profile.location_sharing_enabled !== false ? "On" : "Off"}
             </span>
           </button>
         </Section>
