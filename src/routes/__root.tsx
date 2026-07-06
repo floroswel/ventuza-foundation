@@ -7,7 +7,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -167,9 +167,17 @@ function ProximityWatcherMount() {
   return null;
 }
 
+function LocationPermissionPromptMount() {
+  const [show, setShow] = useState(false);
+  useEffect(() => {
+    setShow(!window.location.pathname.startsWith("/admin"));
+  }, []);
+  if (!show) return null;
+  return <LocationPermissionPrompt />;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const isAdminSurface = typeof window !== "undefined" && window.location.pathname.startsWith("/admin");
 
   useEffect(() => {
     // i18n e deja inițializat de import eager; aici doar setăm <html lang>.
@@ -232,7 +240,7 @@ function RootComponent() {
           <ProximityWatcherMount />
           <Outlet />
           <OfflineBanner />
-          {!isAdminSurface && <LocationPermissionPrompt />}
+          <LocationPermissionPromptMount />
           <AgeGate />
           <CookieBanner />
           <TravelWarning />
