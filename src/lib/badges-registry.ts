@@ -7,6 +7,12 @@ import {
   Crown,
   Rocket,
   ShieldCheck,
+  Wine,
+  Calendar,
+  Rainbow,
+  Mic,
+  Shield,
+  Bug,
   type LucideIcon,
 } from "lucide-react";
 
@@ -18,12 +24,23 @@ export type BadgeCode =
   | "explorer"
   | "partner_premium"
   | "partner_boost"
-  | "official";
+  | "official"
+  // Manual admin-granted:
+  | "founder_ventuza"
+  | "ngo_partner"
+  | "bar_verified"
+  | "event_organizer"
+  | "ally"
+  | "press"
+  | "moderator_public"
+  | "beta_tester";
 
 export type BadgeTarget = "user" | "venue" | "event";
 
 export type BadgeLang = "ro" | "en";
 export type LocalizedText = { ro: string; en: string };
+
+export type BadgeEffect = "shimmer" | "glow" | "pulse" | null;
 
 export type BadgeDef = {
   code: BadgeCode;
@@ -32,11 +49,12 @@ export type BadgeDef = {
   icon: LucideIcon;
   colorClass: string;
   priority: number;
-  /** Motivul pentru care se acordă badge-ul, bilingv. */
   criteria: LocalizedText;
-  /** Când/în ce condiții expiră. `null` = permanent. */
   expiry: LocalizedText | null;
+  effect?: BadgeEffect;
+  isManual?: boolean;
 };
+
 
 
 export const BADGES: Record<BadgeCode, BadgeDef> = {
