@@ -1,0 +1,1 @@
+Îmbunătățiri de stabilitate și corectări de bug-uri.
