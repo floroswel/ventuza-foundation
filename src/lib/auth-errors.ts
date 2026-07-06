@@ -97,7 +97,7 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
       i18nKey: "authErrors.captchaMissing",
       actionKey: "authErrors.actions.captchaMissing",
       message: "Verificarea anti-bot lipsește.",
-      action: "Bifează caseta „Nu sunt robot" din partea de jos a formularului.",
+      action: 'Bifează caseta „Nu sunt robot” din partea de jos a formularului.',
       resetCaptcha: true,
     };
   }
