@@ -19,6 +19,26 @@ function MessagesPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState<ConversationListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showPreview, setShowPreview] = useState(false);
+
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    supabase
+      .from("profiles")
+      .select("notification_prefs")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (!alive) return;
+        const p = (data as { notification_prefs?: { show_preview?: boolean } } | null)
+          ?.notification_prefs;
+        setShowPreview(p?.show_preview === true);
+      });
+    return () => {
+      alive = false;
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
@@ -191,7 +211,11 @@ function MessagesPage() {
                         c.unread ? "text-foreground" : "text-muted-foreground",
                       )}
                     >
-                      {c.last_message_at ? "Ai un mesaj nou" : "Say hi 👋"}
+                      {showPreview
+                        ? (c.last_message_preview ?? "Say hi 👋")
+                        : c.last_message_at
+                          ? "Ai un mesaj nou"
+                          : "Say hi 👋"}
                     </p>
                   </div>
                   {c.unread_count > 0 ? (

@@ -48,6 +48,7 @@ type Prefs = {
   quiet_enabled: boolean;
   quiet_start: number;
   quiet_end: number;
+  show_preview: boolean;
 };
 const DEFAULT_PREFS: Prefs = {
   matches: true,
@@ -60,6 +61,7 @@ const DEFAULT_PREFS: Prefs = {
   quiet_enabled: false,
   quiet_start: 23,
   quiet_end: 7,
+  show_preview: false,
 };
 
 function SettingsPage() {
@@ -327,6 +329,23 @@ function SettingsPage() {
               className="size-4 accent-primary"
             />
           </label>
+
+          {/* Preview conținut mesaj */}
+          <label className="mt-2 flex items-center justify-between rounded-xl border border-border bg-background px-3 py-2.5 text-sm">
+            <span>
+              <span className="font-medium">Arată conținutul mesajului în notificări</span>
+              <span className="block text-xs text-muted-foreground">
+                Când e dezactivat, notificarea afișează doar „Ai un mesaj nou” (recomandat).
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              checked={prefs.show_preview}
+              onChange={(e) => savePrefs({ ...prefs, show_preview: e.target.checked })}
+              className="size-4 accent-primary"
+            />
+          </label>
+
 
           <div
             className={`mt-3 divide-y divide-border ${prefs.master_push ? "" : "pointer-events-none opacity-50"}`}
