@@ -247,7 +247,8 @@ function Onboarding() {
       .insert(consents.map((c) => ({ user_id: user.id, ...c, user_agent: ua })));
     if (consentError) {
       setSaving(false);
-      return toast.error(consentError.message);
+      showAuthErrorToast(t, consentError);
+      return;
     }
 
     const { error } = await supabase
