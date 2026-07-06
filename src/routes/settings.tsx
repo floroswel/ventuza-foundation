@@ -48,6 +48,7 @@ type Prefs = {
   quiet_enabled: boolean;
   quiet_start: number;
   quiet_end: number;
+  show_preview: boolean;
 };
 const DEFAULT_PREFS: Prefs = {
   matches: true,
@@ -60,6 +61,7 @@ const DEFAULT_PREFS: Prefs = {
   quiet_enabled: false,
   quiet_start: 23,
   quiet_end: 7,
+  show_preview: false,
 };
 
 function SettingsPage() {
