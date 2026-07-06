@@ -41,6 +41,7 @@ type Prefs = {
   matches: boolean;
   messages: boolean;
   likes: boolean;
+  taps: boolean;
   events: boolean;
   marketing: boolean;
   master_push: boolean;
@@ -52,6 +53,7 @@ const DEFAULT_PREFS: Prefs = {
   matches: true,
   messages: true,
   likes: true,
+  taps: true,
   events: true,
   marketing: false,
   master_push: true,
@@ -334,6 +336,7 @@ function SettingsPage() {
                 ["matches", "Match-uri noi"],
                 ["messages", "Mesaje noi"],
                 ["likes", "Like-uri primite"],
+                ["taps", "Taps & Woofs"],
                 ["events", "Evenimente"],
                 ["marketing", "Newsletter & oferte"],
               ] as const

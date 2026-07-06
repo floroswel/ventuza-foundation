@@ -13,6 +13,26 @@ export async function sendTap(receiverId: string, emoji: TapEmoji) {
     .from("taps")
     .insert({ sender_id: u.user.id, receiver_id: receiverId, emoji });
   if (error) throw error;
+  // Push către receiver. Row `notifications` (toast + badge) e creat de
+  // triggerul DB `taps_notify`. `sendPushToUser` respectă master_push,
+  // per-category (`taps`), quiet hours și discrete_mode.
+  void (async () => {
+    try {
+      const { sendPushToUser } = await import("@/lib/push.functions");
+      await sendPushToUser({
+        data: {
+          toUserId: receiverId,
+          title: `Cineva ți-a trimis ${emoji}`,
+          body: "Deschide Ventuza să răspunzi.",
+          url: "/notifications",
+          tag: `tap:${u.user.id}:${receiverId}`,
+          category: "taps",
+        },
+      });
+    } catch (e) {
+      console.warn("[social] tap push failed", e);
+    }
+  })();
 }
 
 export async function addFavorite(targetId: string) {
