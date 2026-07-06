@@ -100,13 +100,14 @@ const SendInput = z.object({
   url: z.string().max(500).optional(),
   tag: z.string().max(80).optional(),
   /** Logical category — checked against recipient's notification_prefs. */
-  category: z.enum(["matches", "messages", "likes", "events", "marketing"]).optional(),
+  category: z.enum(["matches", "messages", "likes", "taps", "events", "marketing"]).optional(),
 });
 
 type Prefs = {
   matches?: boolean;
   messages?: boolean;
   likes?: boolean;
+  taps?: boolean;
   events?: boolean;
   marketing?: boolean;
   master_push?: boolean;

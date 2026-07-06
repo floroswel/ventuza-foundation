@@ -48,7 +48,7 @@ export function BottomNav() {
                 <Icon className={cn("size-5", active && "drop-shadow-[0_0_6px_var(--primary)]")} />
                 {badge > 0 && (
                   <span className="absolute -right-2 -top-1.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-rose-500 px-1 text-[10px] font-bold leading-none text-white shadow-[0_0_8px_rgba(244,63,94,0.6)] ring-2 ring-background">
-                    {badge > 99 ? "99+" : badge}
+                    {badge > 9 ? "9+" : badge}
                   </span>
                 )}
               </span>

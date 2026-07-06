@@ -96,8 +96,13 @@ export function formatDistance(meters: number | null): string {
   return `${Math.round(meters / 10000) * 10} km+`;
 }
 
+// Cu heartbeat presence la 45s (usePresenceHeartbeat), un client activ
+// împrospătează `last_seen` la fiecare ~45s. Punctul verde reflectă
+// activitate reală ≤ 2 min → tolerăm 2 ratări de heartbeat pe network flap.
+// Invisible mode (`profiles.hide_online=true`) oprește heartbeat-ul → punctul
+// verde dispare natural.
 export function isOnline(lastSeen: string): boolean {
-  return Date.now() - new Date(lastSeen).getTime() < 5 * 60 * 1000;
+  return Date.now() - new Date(lastSeen).getTime() < 2 * 60 * 1000;
 }
 
 /** Detailed "Active …" formatter à la Grindr / Hinge. */
