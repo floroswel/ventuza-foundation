@@ -34,13 +34,13 @@ export const adminGetUserTimeline = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => Input.parse(d))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
-    const sb = context.supabase;
+    const sb = context.supabase as any;
     const events: TimelineEvent[] = [];
 
     // audit log where target
     const { data: audit } = await sb
       .from("admin_audit_log")
-      .select("created_at,action,severity,after")
+      .select("created_at,action,severity,after_data")
       .eq("target_id", data.userId)
       .order("created_at", { ascending: false })
       .limit(100);
@@ -49,7 +49,7 @@ export const adminGetUserTimeline = createServerFn({ method: "POST" })
         at: a.created_at,
         kind: "admin_action",
         title: a.action,
-        details: a.after ? JSON.stringify(a.after).slice(0, 200) : undefined,
+        details: a.after_data ? JSON.stringify(a.after_data).slice(0, 200) : undefined,
         severity: a.severity ?? "info",
       });
     }
@@ -74,7 +74,7 @@ export const adminGetUserTimeline = createServerFn({ method: "POST" })
     const { data: reports } = await sb
       .from("reports")
       .select("created_at,reason,status")
-      .eq("target_user_id", data.userId)
+      .eq("reported_id", data.userId)
       .order("created_at", { ascending: false })
       .limit(50);
     for (const r of reports ?? []) {
@@ -171,13 +171,13 @@ export const adminGetUserTimeline = createServerFn({ method: "POST" })
     // deletion requests
     const { data: dels } = await sb
       .from("deletion_requests")
-      .select("created_at,status,requested_at,processed_at")
+      .select("requested_at,status,processed_at")
       .eq("user_id", data.userId)
-      .order("created_at", { ascending: false })
+      .order("requested_at", { ascending: false })
       .limit(10);
     for (const d of dels ?? []) {
       events.push({
-        at: d.created_at,
+        at: d.requested_at,
         kind: "deletion_request",
         title: `Cerere ștergere: ${d.status}`,
         severity: "critical",
