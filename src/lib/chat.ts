@@ -86,17 +86,20 @@ async function pushNewMessageNotification(
     const toUserId = conv.user_a === senderId ? conv.user_b : conv.user_a;
     if (!toUserId || toUserId === senderId) return;
 
-    const { data: me } = await supabase
-      .from("profiles")
-      .select("display_name")
-      .eq("id", senderId)
-      .maybeSingle();
+    const [{ data: me }, { data: recip }] = await Promise.all([
+      supabase.from("profiles").select("display_name").eq("id", senderId).maybeSingle(),
+      supabase.from("profiles").select("notification_prefs").eq("id", toUserId).maybeSingle(),
+    ]);
+    const showPreview =
+      ((recip as { notification_prefs?: { show_preview?: boolean } } | null)?.notification_prefs
+        ?.show_preview ?? false) === true;
+    const body = showPreview ? preview.slice(0, 140) : "Ai un mesaj nou";
     const { sendPushToUser } = await import("@/lib/push.functions");
     const result = await sendPushToUser({
       data: {
         toUserId,
         title: (me as { display_name?: string } | null)?.display_name || "Mesaj nou",
-        body: "Ai un mesaj nou",
+        body,
         url: `/messages/${conversationId}`,
         tag: `msg:${conversationId}`,
         category: "messages",
