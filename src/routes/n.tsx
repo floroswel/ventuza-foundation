@@ -367,6 +367,8 @@ function Onboarding() {
 
     setSaving(false);
 
+    // Draft-ul nu mai e necesar: șterge înregistrarea din DB + legacy localStorage.
+    await supabase.from("onboarding_drafts").delete().eq("user_id", user.id);
     try {
       localStorage.removeItem(STORAGE_KEY);
     } catch {
