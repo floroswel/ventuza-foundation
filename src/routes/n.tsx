@@ -213,7 +213,8 @@ function Onboarding() {
     switch (current) {
       case "basics":
         return (
-          data.display_name.trim().length >= 2 && !!data.birthdate && calcAge(data.birthdate) >= 18
+          data.display_name.trim().length >= 2 &&
+          validateBirthdate(data.birthdate, t) === null
         );
       case "identity":
         return (
