@@ -110,6 +110,17 @@ function calcAge(iso: string) {
   return a;
 }
 
+function validateBirthdate(iso: string, t: (k: string) => string): string | null {
+  if (!iso) return t("onboarding.basics.birthRequired");
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return t("onboarding.basics.birthInvalid");
+  const now = new Date();
+  if (d.getTime() > now.getTime()) return t("onboarding.basics.birthFuture");
+  const age = calcAge(iso);
+  if (age > 120) return t("onboarding.basics.birthTooOld");
+  if (age < 18) return t("onboarding.basics.minAge");
+  return null;
+
 function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 }
