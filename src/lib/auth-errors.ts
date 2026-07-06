@@ -452,5 +452,22 @@ export function showAuthErrorToast(t: TFunction, err: unknown): FriendlyAuthErro
     description: mapped.action,
     duration: mapped.retryAfterSec && mapped.retryAfterSec > 30 ? 8000 : 5500,
   });
+  // Emitem eveniment pentru debug-logger (mod loguri detaliate).
+  if (typeof window !== "undefined") {
+    try {
+      window.dispatchEvent(
+        new CustomEvent("ventuza:auth-error", {
+          detail: {
+            code: mapped.code,
+            message: mapped.message,
+            action: mapped.action,
+            raw: err instanceof Error ? err.message : String(err ?? ""),
+          },
+        }),
+      );
+    } catch {
+      /* noop */
+    }
+  }
   return mapped;
 }
