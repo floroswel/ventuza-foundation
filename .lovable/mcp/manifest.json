@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "sdk_version": "0.20.0",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://szzxhvvmwqvfyoldcuyz.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "ventuza-mcp",
+      "version": "0.1.0",
+      "title": "Ventuza"
+    },
+    "tools": [
+      {
+        "name": "whoami",
+        "title": "Cine sunt",
+        "description": "Returnează informații de bază despre profilul utilizatorului autentificat (display name, username, oraș, plan).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "unread_counts",
+        "title": "Necitite",
+        "description": "Numărul de mesaje și notificări necitite pentru utilizatorul autentificat.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "recent_notifications",
+        "title": "Notificări recente",
+        "description": "Ultimele notificări (tip, titlu, timp, citit/necitit) pentru utilizatorul autentificat.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50,
+              "description": "Câte notificări (1-50). Default 10."
+            }
+          },
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
