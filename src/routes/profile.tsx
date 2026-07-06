@@ -308,59 +308,11 @@ function ProfilePage() {
 
         <ShareProfileCard slug={profile.profile_slug} displayName={profile.display_name} />
 
-        <VoicePromptCard
-          userId={profile.id}
-          voicePath={profile.voice_prompt_path}
-          question={profile.voice_prompt_question}
-          durationSec={profile.voice_prompt_duration_sec}
-          onChange={(next) => setProfile({ ...profile, ...next })}
-        />
-
-        <MusicAnthemCard
-          userId={profile.id}
-          anthem={profile.anthem}
-          onChange={(next) => setProfile({ ...profile, anthem: next })}
-        />
-
-        <VideoClipCard
-          userId={profile.id}
-          videoPath={profile.video_clip_path}
-          onChange={(p) => setProfile({ ...profile, video_clip_path: p })}
-        />
-
-        <DateVibesCard
-          userId={profile.id}
-          vibes={{
-            ask_me_about: profile.ask_me_about,
-            dealbreakers: profile.dealbreakers,
-            ideal_match: profile.ideal_match,
-          }}
-          onChange={(next) => setProfile({ ...profile, ...next })}
-        />
-
-        <LifestyleFactsCard
-          userId={profile.id}
-          facts={{
-            zodiac: profile.zodiac,
-            languages: profile.languages,
-            education: profile.education,
-            school: profile.school,
-            job_title: profile.job_title,
-            company: profile.company,
-            religion: profile.religion,
-            politics: profile.politics,
-            children: profile.children,
-            pets: profile.pets,
-            drinking: profile.drinking,
-            smoking: profile.smoking,
-            cannabis: profile.cannabis,
-            drugs: profile.drugs,
-            workout: profile.workout,
-            diet: profile.diet,
-            sleep_schedule: profile.sleep_schedule,
-          }}
-          onChange={(next) => setProfile({ ...profile, ...next })}
-        />
+        {/* Orfane la target — carduri demontate din editor (reversibil).
+            Coloanele DB rămân intacte: voice_prompt_*, anthem, video_clip_path,
+            ask_me_about, dealbreakers, ideal_match, plus 16 câmpuri lifestyle.
+            Vezi VoicePromptCard / MusicAnthemCard / VideoClipCard / DateVibesCard /
+            LifestyleFactsCard — reactivabile prin remontare. */}
 
         {profile.bio && (
           <Section title="About">
