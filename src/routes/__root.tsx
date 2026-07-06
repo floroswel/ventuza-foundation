@@ -227,6 +227,7 @@ function RootComponent() {
           <CountryRiskGuard />
           <ProximityWatcherMount />
           <Outlet />
+          <OfflineBanner />
           <AgeGate />
           <CookieBanner />
           <TravelWarning />
