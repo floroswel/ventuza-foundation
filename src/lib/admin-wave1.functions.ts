@@ -253,8 +253,10 @@ export const adminGetUserView = createServerFn({ method: "POST" })
       "updated_at",
       "last_seen",
       "last_check_in_at",
+      "interests",
+      "prompts",
     ].join(",");
-    const [prof, consents, verifs, reports, roles, activeSubs] = await Promise.all([
+    const [prof, consents, verifs, reports, roles, activeSubs, authRes] = await Promise.all([
       sa.from("profiles").select(SAFE_PROFILE).eq("id", data.userId).maybeSingle(),
       sa
         .from("consent_log")
@@ -282,6 +284,7 @@ export const adminGetUserView = createServerFn({ method: "POST" })
         .eq("status", "active")
         .order("expires_at", { ascending: false })
         .limit(1),
+      sa.auth.admin.getUserById(data.userId).catch(() => ({ data: { user: null } })),
     ]);
     const p = prof.data ?? null;
     let age: number | null = null;
@@ -295,6 +298,7 @@ export const adminGetUserView = createServerFn({ method: "POST" })
       }
     }
     const activeSub = (activeSubs.data ?? [])[0] ?? null;
+    const authUser = (authRes as any)?.data?.user ?? null;
     const enrichedProfile: any = p
       ? {
           ...(p as any),
@@ -302,6 +306,9 @@ export const adminGetUserView = createServerFn({ method: "POST" })
           is_premium: !!activeSub,
           last_active_at: (p as any).last_seen ?? null,
           active_subscription: activeSub,
+          auth_email: authUser?.email ?? null,
+          auth_email_confirmed_at: authUser?.email_confirmed_at ?? null,
+          auth_providers: authUser?.app_metadata?.providers ?? [],
         }
       : null;
     return {
