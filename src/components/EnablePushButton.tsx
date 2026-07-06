@@ -25,14 +25,17 @@ export function EnablePushButton({
 }) {
   const [busy, setBusy] = useState(false);
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
+  const [permission, setPermission] = useState<NotificationPermission | "unsupported">("unsupported");
   const save = useServerFn(savePushSubscription);
   const remove = useServerFn(removePushSubscription);
 
   useEffect(() => {
     if (!supported()) {
+      setPermission("unsupported");
       setSubscribed(false);
       return;
     }
+    setPermission(Notification.permission);
     (async () => {
       try {
         const reg =
@@ -51,9 +54,18 @@ export function EnablePushButton({
       toast.error("Browserul tău nu suportă notificări push.");
       return;
     }
+    if (Notification.permission === "denied") {
+      setPermission("denied");
+      toast.error("Notificările sunt blocate pe acest dispozitiv", {
+        description: "Deblochează permisiunea Ventuza din setările telefonului/browserului, apoi revino aici.",
+        duration: 8000,
+      });
+      return;
+    }
     setBusy(true);
     try {
       const perm = await Notification.requestPermission();
+      setPermission(perm);
       if (perm !== "granted") {
         toast.error("Notificările au fost respinse.");
         return;
@@ -105,6 +117,20 @@ export function EnablePushButton({
 
   if (subscribed === null) return null;
   if (enableOnly && subscribed) return null;
+  if (permission === "denied") {
+    return (
+      <div className={className}>
+        <Button type="button" variant="outline" size="sm" disabled className="w-full">
+          <BellOff className="size-4" />
+          <span className="ml-2">Notificările sunt blocate pe dispozitiv</span>
+        </Button>
+        <p className="mt-2 text-[11px] text-destructive">
+          Permisiunea push este respinsă în telefon/browser. Aplicația poate afișa notificări în inbox,
+          dar push-ul nu poate porni până când permisiunea este deblocată din setările dispozitivului.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <Button

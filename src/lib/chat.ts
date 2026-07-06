@@ -50,6 +50,45 @@ async function signPhoto(path: string | null): Promise<string | null> {
   return data?.signedUrl ?? null;
 }
 
+async function pushNewMessageNotification(
+  conversationId: string,
+  senderId: string,
+  preview: string,
+): Promise<void> {
+  try {
+    const { data: conv } = await supabase
+      .from("conversations")
+      .select("user_a,user_b")
+      .eq("id", conversationId)
+      .maybeSingle();
+    if (!conv) return;
+    const toUserId = conv.user_a === senderId ? conv.user_b : conv.user_a;
+    if (!toUserId || toUserId === senderId) return;
+
+    const { data: me } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", senderId)
+      .maybeSingle();
+    const { sendPushToUser } = await import("@/lib/push.functions");
+    const result = await sendPushToUser({
+      data: {
+        toUserId,
+        title: (me as { display_name?: string } | null)?.display_name || "Mesaj nou",
+        body: preview.slice(0, 140),
+        url: `/messages/${conversationId}`,
+        tag: `msg:${conversationId}`,
+        category: "messages",
+      },
+    });
+    if (result.delivered === 0) {
+      console.info("[messages] push notification not delivered", result);
+    }
+  } catch (error) {
+    console.warn("[messages] push notification failed", error);
+  }
+}
+
 export async function getOrCreateConversation(otherUserId: string): Promise<string> {
   const { data, error } = await supabase.rpc("get_or_create_conversation", { _other: otherUserId });
   if (error) throw error;
@@ -227,37 +266,7 @@ export async function sendMessage(
     throw error;
   }
 
-  // Fire-and-forget Web Push to the recipient
-  void (async () => {
-    try {
-      const { data: conv } = await supabase
-        .from("conversations")
-        .select("user_a,user_b")
-        .eq("id", conversationId)
-        .maybeSingle();
-      if (!conv) return;
-      const toUserId = conv.user_a === u.user!.id ? conv.user_b : conv.user_a;
-      if (!toUserId || toUserId === u.user!.id) return;
-      const { data: me } = await supabase
-        .from("profiles")
-        .select("display_name")
-        .eq("id", u.user!.id)
-        .maybeSingle();
-      const { sendPushToUser } = await import("@/lib/push.functions");
-      await sendPushToUser({
-        data: {
-          toUserId,
-          title: (me as { display_name?: string } | null)?.display_name || "Mesaj nou",
-          body: trimmed.slice(0, 140),
-          url: `/messages/${conversationId}`,
-          tag: `msg:${conversationId}`,
-          category: "messages",
-        },
-      });
-    } catch {
-      /* best-effort */
-    }
-  })();
+  void pushNewMessageNotification(conversationId, u.user.id, trimmed);
 
   return data as MessageRow;
 }
@@ -335,6 +344,7 @@ export async function sendMediaMessage(
     .select("*")
     .single();
   if (error) throw error;
+  void pushNewMessageNotification(conversationId, uid, String(insert.body ?? "Mesaj nou"));
   return data as MessageRow;
 }
 
