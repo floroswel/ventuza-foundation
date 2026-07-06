@@ -41,7 +41,10 @@ export function loadUiLocale(): UiLocale {
 
 /** React hook — re-renders when i18next language changes. */
 export function useUiLocale(): UiLocale {
-  const [locale, setLocale] = useState<UiLocale>(() => loadUiLocale());
+  // Start with a stable default ("en") on both server and initial client render
+  // to avoid SSR hydration mismatch — the real locale is applied in useEffect
+  // after hydration, so first paint matches server output.
+  const [locale, setLocale] = useState<UiLocale>("en");
   useEffect(() => {
     function onChange() {
       setLocale(currentI18nLocale());
