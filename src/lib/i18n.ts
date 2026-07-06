@@ -220,6 +220,11 @@ const ro = {
       birthLabel: "Data nașterii",
       birthLocked: "Am preluat data nașterii de la înscriere. Pentru schimbări, contactează suportul.",
       minAge: "Trebuie să ai cel puțin 18 ani.",
+      birthRequired: "Introdu data nașterii pentru a continua.",
+      birthInvalid: "Data nașterii nu este validă.",
+      birthFuture: "Data nașterii nu poate fi în viitor.",
+      birthTooOld: "Data nașterii pare incorectă (mai mult de 120 de ani).",
+      nameRequired: "Numele trebuie să aibă cel puțin 2 caractere.",
     },
     identity: {
       title: "Identitatea ta",
@@ -510,6 +515,11 @@ const en: typeof ro = {
       birthLabel: "Birthdate",
       birthLocked: "We took your birthdate from sign-up. Contact support to change it.",
       minAge: "You must be at least 18.",
+      birthRequired: "Enter your birthdate to continue.",
+      birthInvalid: "Birthdate is not valid.",
+      birthFuture: "Birthdate cannot be in the future.",
+      birthTooOld: "Birthdate looks incorrect (over 120 years).",
+      nameRequired: "Name must have at least 2 characters.",
     },
     identity: {
       title: "Your identity",

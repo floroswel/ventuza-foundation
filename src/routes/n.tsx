@@ -110,6 +110,19 @@ function calcAge(iso: string) {
   return a;
 }
 
+function validateBirthdate(iso: string, t: (k: string) => string): string | null {
+  if (!iso) return t("onboarding.basics.birthRequired");
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return t("onboarding.basics.birthInvalid");
+  const now = new Date();
+  if (d.getTime() > now.getTime()) return t("onboarding.basics.birthFuture");
+  const age = calcAge(iso);
+  if (age > 120) return t("onboarding.basics.birthTooOld");
+  if (age < 18) return t("onboarding.basics.minAge");
+  return null;
+}
+
+
 function toggle<T>(arr: T[], v: T) {
   return arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v];
 }
@@ -200,7 +213,8 @@ function Onboarding() {
     switch (current) {
       case "basics":
         return (
-          data.display_name.trim().length >= 2 && !!data.birthdate && calcAge(data.birthdate) >= 18
+          data.display_name.trim().length >= 2 &&
+          validateBirthdate(data.birthdate, t) === null
         );
       case "identity":
         return (
@@ -437,22 +451,44 @@ function StepView({
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("onboarding.basics.birthLabel")}</Label>
-            <Input
-              type="date"
-              value={data.birthdate}
-              onChange={(e) => setData({ ...data, birthdate: e.target.value })}
-              max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split("T")[0]}
-              className="h-14 bg-surface border-border text-lg disabled:opacity-100"
-              disabled={birthdateLocked}
-              readOnly={birthdateLocked}
-            />
-            {birthdateLocked && (
-              <p className="text-xs text-muted-foreground">{t("onboarding.basics.birthLocked")}</p>
-            )}
-            {data.birthdate && calcAge(data.birthdate) < 18 && (
-              <p className="text-sm text-destructive">{t("onboarding.basics.minAge")}</p>
-            )}
+            <Label htmlFor="ob-birth">{t("onboarding.basics.birthLabel")}</Label>
+            {(() => {
+              const err = validateBirthdate(data.birthdate, t);
+              const invalid = !!err && !birthdateLocked;
+              return (
+                <>
+                  <Input
+                    id="ob-birth"
+                    type="date"
+                    value={data.birthdate}
+                    onChange={(e) => setData({ ...data, birthdate: e.target.value })}
+                    max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split("T")[0]}
+                    className={
+                      "h-14 bg-surface border-border text-lg disabled:opacity-100 " +
+                      (invalid ? "border-destructive focus-visible:ring-destructive" : "")
+                    }
+                    disabled={birthdateLocked}
+                    readOnly={birthdateLocked}
+                    aria-invalid={invalid || undefined}
+                    aria-describedby={invalid ? "ob-birth-err" : undefined}
+                  />
+                  {birthdateLocked && (
+                    <p className="text-xs text-muted-foreground">
+                      {t("onboarding.basics.birthLocked")}
+                    </p>
+                  )}
+                  {invalid && (
+                    <p
+                      id="ob-birth-err"
+                      role="alert"
+                      className="text-sm text-destructive"
+                    >
+                      {err}
+                    </p>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
       );
