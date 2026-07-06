@@ -502,7 +502,18 @@ export const adminExportUserData = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
-    await assertAdmin(context.supabase, context.userId);
+    // GDPR Art.15: self-export always allowed. Otherwise require super_admin
+    // (health-gated + Art.9 data must not be exposed to generic staff).
+    const isSelf = context.userId === data.userId;
+    let mode: "self" | "super_admin" = "self";
+    if (!isSelf) {
+      const { data: ok } = await context.supabase.rpc("has_role", {
+        _user_id: context.userId,
+        _role: "super_admin",
+      });
+      if (!ok) throw new Error("Forbidden: super_admin required for cross-user GDPR export");
+      mode = "super_admin";
+    }
     const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
     const sa = _sa as any;
     const tables = [
@@ -543,6 +554,7 @@ export const adminExportUserData = createServerFn({ method: "POST" })
       targetId: data.userId,
       justification: data.justification,
       severity: "warning",
+      after: { mode, self: isSelf },
     });
     return out;
   });
