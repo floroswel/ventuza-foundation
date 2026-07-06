@@ -276,8 +276,13 @@ function PartnersList({ canAdmin }: { canAdmin: boolean }) {
             <div key={p.id} className="rounded-lg border border-border bg-surface p-3 text-xs">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-semibold flex items-center gap-2">
+                  <p className="font-semibold flex flex-wrap items-center gap-2">
                     {p.display_name || "(fără nume)"}
+                    {p.entity_type && (
+                      <span className="rounded bg-emerald-500/20 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-emerald-300">
+                        {p.entity_type}
+                      </span>
+                    )}
                     {p.partner_suspended_at ? (
                       <span className="rounded bg-red-500/20 px-1.5 py-0.5 text-[10px] text-red-300">
                         SUSPENDAT
