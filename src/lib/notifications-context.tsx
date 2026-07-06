@@ -89,7 +89,9 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           // Toast preview + signature sound, dedupe
           if (!lastToastIdRef.current.has(n.id)) {
             lastToastIdRef.current.add(n.id);
-            toast(n.title, { description: n.body ?? undefined });
+            // Privacy: pentru mesaje nu afișăm niciodată body-ul ca preview
+            const desc = n.type === "message" ? "Ai un mesaj nou" : (n.body ?? undefined);
+            toast(n.title, { description: desc });
             playNotificationSound();
           }
         },
