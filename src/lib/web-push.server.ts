@@ -2,19 +2,19 @@
 //
 // Rotația VAPID: cheile trăiesc în secretele Lovable Cloud
 // (`VAPID_PRIVATE_KEY`, `VAPID_PUBLIC_KEY`, `VAPID_SUBJECT`) și se citesc
-// la runtime — nu sunt hardcodate. Pentru rotație:
+// la runtime — NU sunt hardcodate. Pentru rotație:
 //   1) generează pereche nouă (`npx web-push generate-vapid-keys`),
 //   2) update la ambele secrete (server) + `VITE_VAPID_PUBLIC_KEY` (client),
-//   3) subscriberii existenți rămân valabili cu cheia veche până la resub;
-//      păstrează cheia veche în `VAPID_PRIVATE_KEY_PREV` pentru grace period
-//      dacă vrei livrare fără întrerupere.
-// Fallback la constantele publice ale MVP-ului dacă env-ul lipsește (nu mai
-// blocăm push-urile la deploy dacă un secret n-a ajuns încă).
+//   3) subscriberii existenți rămân valabili cu cheia veche până la resub.
+//
+// SECURITATE: cheia PRIVATĂ nu are fallback în cod. Dacă `VAPID_PRIVATE_KEY`
+// lipsește din env, trimiterile eșuează cu eroare explicită — NU cădem pe
+// o cheie hardcodată (ar permite oricui cu acces la sursă să trimită push
+// în numele Ventuza). Cheia publică poate rămâne cu fallback (nu e secretă).
 import webpush from "web-push";
 
 const FALLBACK_PUBLIC =
   "BOO0M7jilN8SYJCuFoiFqzfWYzRdcadEhpZbuhIZG5Iz8fYwGzYLjcqZ1nUGrwX5p4EHDwYNVT5AH5HWfEpABto";
-const FALLBACK_PRIVATE = "iNOglDe-6dSogIb1DeNo-mqlEJWZq7zdBzZPORilfvk";
 const FALLBACK_SUBJECT = "mailto:hello@ventuza.app";
 
 let _configured = false;
@@ -22,9 +22,13 @@ let _lastKeyId: string | null = null;
 
 function currentKeys() {
   const pub = process.env.VAPID_PUBLIC_KEY || FALLBACK_PUBLIC;
-  const priv = process.env.VAPID_PRIVATE_KEY || FALLBACK_PRIVATE;
+  const priv = process.env.VAPID_PRIVATE_KEY;
   const subj = process.env.VAPID_SUBJECT || FALLBACK_SUBJECT;
-  // key id derivat din publică — dacă se schimbă, reconfigurăm webpush.
+  if (!priv) {
+    throw new Error(
+      "VAPID_PRIVATE_KEY missing — push disabled. Configure it in Lovable Cloud secrets.",
+    );
+  }
   const keyId = pub.slice(0, 12);
   return { pub, priv, subj, keyId };
 }
@@ -58,7 +62,12 @@ export async function sendOne(
   sub: SubscriptionRow,
   payload: PushPayload,
 ): Promise<{ ok: boolean; gone: boolean }> {
-  ensureConfigured();
+  try {
+    ensureConfigured();
+  } catch (e) {
+    console.error("[web-push] config error:", (e as Error).message);
+    return { ok: false, gone: false };
+  }
   if (!sub.endpoint || !sub.p256dh || !sub.auth) return { ok: false, gone: true };
   try {
     await webpush.sendNotification(

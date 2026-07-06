@@ -399,6 +399,46 @@ function DiscoverPage() {
             name: target.display_name ?? "Someone wonderful",
             photo: signed ?? null,
           });
+
+          // Push MATCH către celălalt user. Server fn skip-uie self automat.
+          // `sendPushToUser` respectă notification_prefs + quiet hours + discrete_mode.
+          void (async () => {
+            try {
+              const { sendPushToUser } = await import("@/lib/push.functions");
+              await sendPushToUser({
+                data: {
+                  toUserId: target.id,
+                  title: "Match nou pe Ventuza! 💫",
+                  body: `Ai făcut match cu ${target.display_name ?? "cineva"}.`,
+                  url: "/messages",
+                  tag: `match:${m.id}`,
+                  category: "matches",
+                },
+              });
+            } catch (e) {
+              console.warn("[discover] match push failed", e);
+            }
+          })();
+        } else {
+          // Like unilateral: push anonim către target (nu dezvăluim identitatea).
+          // Notificarea in-app (toast + badge) e creată de trigger-ul DB `notify_new_like`.
+          void (async () => {
+            try {
+              const { sendPushToUser } = await import("@/lib/push.functions");
+              await sendPushToUser({
+                data: {
+                  toUserId: target.id,
+                  title: "Cuiva îi place de tine 👀",
+                  body: "Deschide Ventuza să vezi cine.",
+                  url: "/discover",
+                  tag: `like:${user.id}:${target.id}`,
+                  category: "likes",
+                },
+              });
+            } catch (e) {
+              console.warn("[discover] like push failed", e);
+            }
+          })();
         }
       }
     },

@@ -6396,6 +6396,7 @@ export type Database = {
         | "tap"
         | "admin_message"
         | "partner_broadcast"
+        | "like"
       policy_rule_state: "draft" | "shadow" | "enforcing" | "archived"
       rsvp_status: "going" | "interested"
     }
@@ -6577,6 +6578,7 @@ export const Constants = {
         "tap",
         "admin_message",
         "partner_broadcast",
+        "like",
       ],
       policy_rule_state: ["draft", "shadow", "enforcing", "archived"],
       rsvp_status: ["going", "interested"],
