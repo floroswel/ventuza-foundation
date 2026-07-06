@@ -98,6 +98,7 @@ function DiscoverPage() {
   const [filters, setFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [debouncedFilters, setDebouncedFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const filtersHydratedRef = useRef(false);
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [badgesMap, setBadgesMap] = useState<Record<string, string[]>>({});
   const [badgesLoading, setBadgesLoading] = useState(false);
