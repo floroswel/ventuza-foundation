@@ -154,6 +154,19 @@ function VerifyPage() {
         url: string;
       };
       if (!res?.url) throw new Error("Didit nu a returnat un URL de verificare.");
+      // Dacă suntem într-un iframe (ex: preview Lovable), navigăm în top-level
+      // window — altfel browserul blochează camera pe iframe cross-origin fără
+      // `allow="camera"`.
+      try {
+        if (window.top && window.top !== window.self) {
+          window.top.location.href = res.url;
+          return;
+        }
+      } catch {
+        // Cross-origin top access blocat → deschidem în tab nou ca fallback.
+        const opened = window.open(res.url, "_blank", "noopener,noreferrer");
+        if (opened) return;
+      }
       window.location.assign(res.url);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Nu am putut porni verificarea.");
