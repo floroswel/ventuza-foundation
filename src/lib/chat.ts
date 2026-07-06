@@ -96,7 +96,7 @@ async function pushNewMessageNotification(
       data: {
         toUserId,
         title: (me as { display_name?: string } | null)?.display_name || "Mesaj nou",
-        body: preview.slice(0, 140),
+        body: "Ai un mesaj nou",
         url: `/messages/${conversationId}`,
         tag: `msg:${conversationId}`,
         category: "messages",
