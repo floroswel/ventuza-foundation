@@ -93,7 +93,8 @@ async function pushNewMessageNotification(
     const showPreview =
       ((recip as { notification_prefs?: { show_preview?: boolean } } | null)?.notification_prefs
         ?.show_preview ?? false) === true;
-    const body = showPreview ? preview.slice(0, 140) : "Ai un mesaj nou";
+    const { buildMessageNotificationBody } = await import("@/lib/notification-privacy");
+    const body = buildMessageNotificationBody(showPreview, preview);
     const { sendPushToUser } = await import("@/lib/push.functions");
     const result = await sendPushToUser({
       data: {
