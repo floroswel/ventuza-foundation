@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { moderatePhoto } from "@/lib/verification.functions";
 import { useAuth } from "@/lib/auth-context";
 import { EnablePushButton } from "@/components/EnablePushButton";
+import { showAuthErrorToast } from "@/lib/auth-errors";
 
 
 import { Button } from "@/components/ui/button";
@@ -246,7 +247,8 @@ function Onboarding() {
       .insert(consents.map((c) => ({ user_id: user.id, ...c, user_agent: ua })));
     if (consentError) {
       setSaving(false);
-      return toast.error(consentError.message);
+      showAuthErrorToast(t, consentError);
+      return;
     }
 
     const { error } = await supabase
@@ -286,7 +288,8 @@ function Onboarding() {
       .eq("id", user.id);
     if (error) {
       setSaving(false);
-      return toast.error(error.message);
+      showAuthErrorToast(t, error);
+      return;
     }
 
     setSaving(false);
@@ -791,7 +794,7 @@ function PhotosStep({
           .from("profile-photos")
           .upload(path, file, { upsert: false, contentType: file.type });
         if (error) {
-          toast.error(error.message);
+          showAuthErrorToast(t, error);
           continue;
         }
 
@@ -853,7 +856,7 @@ function PhotosStep({
       }
       if (added.length) setData({ ...data, photos: [...data.photos, ...added] });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : t("onboarding.photos.uploadFailed"));
+      showAuthErrorToast(t, e instanceof Error ? e : new Error(t("onboarding.photos.uploadFailed")));
     } finally {
       setUploading(false);
     }

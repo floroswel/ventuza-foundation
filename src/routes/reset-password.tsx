@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { translateAuthError } from "@/lib/auth-errors";
+import { showAuthErrorToast } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({ meta: [{ title: "Reset password — Ventuza" }] }),
@@ -50,7 +50,10 @@ function ResetPasswordPage() {
     setSubmitting(true);
     const { error } = await supabase.auth.updateUser({ password: parsed.data });
     setSubmitting(false);
-    if (error) return toast.error(translateAuthError(t, error).message);
+    if (error) {
+      showAuthErrorToast(t, error);
+      return;
+    }
     toast.success(t("auth.errors.passwordUpdated"));
     navigate({ to: "/discover", replace: true });
   }

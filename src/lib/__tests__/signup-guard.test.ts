@@ -48,7 +48,7 @@ describe("mapAuthError — mesaje RO pentru signup throttle", () => {
     const mapped = mapAuthError(new Error("signup_throttled_ip"));
     expect(mapped.code).toBe("signup_throttled");
     expect(mapped.message).toMatch(/conexiune/i);
-    expect(mapped.message).toMatch(/peste o oră/i);
+    expect(mapped.action).toMatch(/oră|hour/i);
     expect(mapped.retryAfterSec).toBe(3600);
     expect(mapped.resetCaptcha).toBe(true);
   });

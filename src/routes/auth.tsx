@@ -131,7 +131,7 @@ function AuthPage() {
       setCaptchaToken(null);
       setCaptchaNonce((n) => n + 1);
     }
-    toast.error(mapped.message);
+    toast.error(mapped.message, { description: mapped.action, duration: mapped.retryAfterSec && mapped.retryAfterSec > 30 ? 8000 : 5500 });
   }
 
   useEffect(() => {
