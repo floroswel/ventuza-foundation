@@ -2245,6 +2245,33 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_dispatch_log: {
+        Row: {
+          actor_id: string | null
+          channel: string
+          created_at: string
+          id: number
+          kind: string
+          target_id: string
+        }
+        Insert: {
+          actor_id?: string | null
+          channel?: string
+          created_at?: string
+          id?: number
+          kind: string
+          target_id: string
+        }
+        Update: {
+          actor_id?: string | null
+          channel?: string
+          created_at?: string
+          id?: number
+          kind?: string
+          target_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           actor_id: string | null
@@ -5027,6 +5054,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_log_notification_access: {
+        Args: { _count: number; _justification?: string; _target_user: string }
+        Returns: undefined
+      }
       admin_moderate_item: {
         Args: {
           p_decision: string
@@ -5660,6 +5691,15 @@ export type Database = {
           expires_at: string
           item_id: string
         }[]
+      }
+      log_notification_dispatch: {
+        Args: {
+          _actor: string
+          _channel?: string
+          _kind: string
+          _target: string
+        }
+        Returns: undefined
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
       mark_inactive_for_deletion: { Args: never; Returns: number }
