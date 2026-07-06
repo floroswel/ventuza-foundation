@@ -923,35 +923,8 @@ function EditDrawer({
           />
         </EditSection>
 
-        {/* Health */}
-        <SectionDivider label="Health" />
-        <EditSection>
-          {single("prep_status", PREP_STATUS_OPTIONS)}
-          <EditChips
-            label="Health Practices"
-            options={SAFETY_OPTIONS}
-            value={form.safety_practices ?? []}
-            onChange={(v) => setForm({ ...form, safety_practices: v })}
-          />
-          <EditChips
-            label="Vaccinations"
-            options={VACCINATION_OPTIONS}
-            value={form.vaccinations ?? []}
-            onChange={(v) => setForm({ ...form, vaccinations: v })}
-          />
-          <p className="rounded-xl border border-border/50 bg-surface/50 p-3 text-[11px] leading-relaxed text-muted-foreground">
-            <strong className="text-foreground/80">Resurse de sănătate.</strong> Ventuza nu
-            stochează date despre HIV. Pentru testare gratuită și consiliere vezi{" "}
-            <a href="https://www.arasnet.ro" target="_blank" rel="noreferrer" className="underline">
-              ARAS
-            </a>{" "}
-            sau centrul de siguranță (
-            <a href="/safety" className="underline">
-              /safety
-            </a>
-            ).
-          </p>
-        </EditSection>
+        {/* Health — secțiune demontată din editor (prep_status, safety_practices,
+            vaccinations rămân în DB, dormante). Info-ul de sănătate rămâne în /safety. */}
       </div>
     </div>
   );
