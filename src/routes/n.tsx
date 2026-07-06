@@ -24,10 +24,6 @@ import {
   INTEREST_OPTIONS,
   PROMPT_OPTIONS,
   TRIBE_OPTIONS,
-  BODY_TYPE_OPTIONS,
-  POSITION_OPTIONS,
-  RELATIONSHIP_STATUS_OPTIONS,
-  ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
 import {
   useOptionLabel,
@@ -91,9 +87,7 @@ const empty: Data = {
 
 const STEPS = [
   "basics", // name + birthdate
-  "identity", // gender + pronouns + orientation
-  "intent", // looking_for + tribes
-  "stats", // body/position/height/weight/ethnicity/relationship + health
+  "identity", // gender + pronouns + orientation + looking_for + tribes
   "personality", // interests + prompts + bio
   "photos", // photos + terms
 ] as const;
@@ -101,8 +95,6 @@ const STEPS = [
 const STEP_KEYS: Record<(typeof STEPS)[number], string> = {
   basics: "onboarding.step.basics",
   identity: "onboarding.step.identity",
-  intent: "onboarding.step.intent",
-  stats: "onboarding.step.stats",
   personality: "onboarding.step.personality",
   photos: "onboarding.step.photos",
 };
@@ -214,12 +206,9 @@ function Onboarding() {
         return (
           (data.gender.length > 0 || data.gender_custom.trim().length > 0) &&
           (data.pronouns.length > 0 || data.pronouns_custom.trim().length > 0) &&
-          data.orientation.length > 0
+          data.orientation.length > 0 &&
+          data.looking_for.length > 0
         );
-      case "intent":
-        return data.looking_for.length > 0;
-      case "stats":
-        return true;
       case "personality":
         return data.interests.length >= 3;
       case "photos":
@@ -478,18 +467,6 @@ function StepView({
               onToggle={(v) => setData({ ...data, orientation: toggle(data.orientation, v) })}
             />
           </div>
-        </div>
-      );
-
-    case "intent":
-      return (
-        <div className="mx-auto w-full max-w-lg space-y-8">
-          <div>
-            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
-              {t("onboarding.intent.title")}
-            </h2>
-            <p className="mt-2 text-muted-foreground">{t("onboarding.intent.hint")}</p>
-          </div>
           <div className="space-y-3">
             <Label>{t("onboarding.intent.looking")}</Label>
             <ChipGrid
@@ -514,79 +491,6 @@ function StepView({
         </div>
       );
 
-    case "stats":
-      return (
-        <div className="mx-auto w-full max-w-lg space-y-6">
-          <div>
-            <h2 className="wordmark text-3xl font-medium leading-tight sm:text-4xl">
-              {t("onboarding.stats.title")}
-            </h2>
-            <p className="mt-2 text-muted-foreground">{t("onboarding.stats.hint")}</p>
-          </div>
-          <div className="space-y-2">
-            <Label>{t("onboarding.stats.body")}</Label>
-            <ChipGrid
-              options={BODY_TYPE_OPTIONS}
-              selected={data.body_type ? [data.body_type] : []}
-              onToggle={(v) => setData({ ...data, body_type: data.body_type === v ? "" : v })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>{t("onboarding.stats.position")}</Label>
-            <ChipGrid
-              options={POSITION_OPTIONS}
-              selected={data.position ? [data.position] : []}
-              onToggle={(v) => setData({ ...data, position: data.position === v ? "" : v })}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label>{t("onboarding.stats.height")}</Label>
-              <Input
-                type="number"
-                min={140}
-                max={220}
-                value={data.height_cm ?? ""}
-                onChange={(e) =>
-                  setData({ ...data, height_cm: e.target.value ? Number(e.target.value) : null })
-                }
-                className="h-12 bg-surface border-border"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>{t("onboarding.stats.weight")}</Label>
-              <Input
-                type="number"
-                min={40}
-                max={200}
-                value={data.weight_kg ?? ""}
-                onChange={(e) =>
-                  setData({ ...data, weight_kg: e.target.value ? Number(e.target.value) : null })
-                }
-                className="h-12 bg-surface border-border"
-              />
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>{t("onboarding.stats.ethnicity")}</Label>
-            <ChipGrid
-              options={ETHNICITY_OPTIONS}
-              selected={data.ethnicity ? [data.ethnicity] : []}
-              onToggle={(v) => setData({ ...data, ethnicity: data.ethnicity === v ? "" : v })}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>{t("onboarding.stats.relationship")}</Label>
-            <ChipGrid
-              options={RELATIONSHIP_STATUS_OPTIONS}
-              selected={data.relationship_status ? [data.relationship_status] : []}
-              onToggle={(v) =>
-                setData({ ...data, relationship_status: data.relationship_status === v ? "" : v })
-              }
-            />
-          </div>
-        </div>
-      );
 
     case "personality":
       return (

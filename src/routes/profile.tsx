@@ -32,12 +32,9 @@ import { RightNowCard } from "@/components/RightNowCard";
 import { PrivateAlbumManager } from "@/components/PrivateAlbum";
 import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { ProfileStatsRow } from "@/components/ProfileStatsRow";
-import { VoicePromptCard } from "@/components/VoicePromptCard";
-import { MusicAnthemCard } from "@/components/MusicAnthemCard";
-import { LifestyleFactsCard } from "@/components/LifestyleFactsCard";
+// VoicePromptCard, MusicAnthemCard, VideoClipCard, DateVibesCard, LifestyleFactsCard —
+// demontate din editor (câmpuri orfane la target). Reactivabile prin re-import + remontare.
 import { ShareProfileCard } from "@/components/ShareProfileCard";
-import { VideoClipCard } from "@/components/VideoClipCard";
-import { DateVibesCard } from "@/components/DateVibesCard";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { BackButton } from "@/components/BackButton";
 import { formatHeight } from "@/lib/discover";
@@ -52,12 +49,6 @@ import {
   POSITION_OPTIONS,
   RELATIONSHIP_STATUS_OPTIONS,
   ETHNICITY_OPTIONS,
-  MEET_AT_OPTIONS,
-  EXPECTATIONS_OPTIONS,
-  SCENES_OPTIONS,
-  SAFETY_OPTIONS,
-  PREP_STATUS_OPTIONS,
-  VACCINATION_OPTIONS,
 } from "@/lib/profile-options";
 import {
   useOptionLabel,
@@ -308,59 +299,11 @@ function ProfilePage() {
 
         <ShareProfileCard slug={profile.profile_slug} displayName={profile.display_name} />
 
-        <VoicePromptCard
-          userId={profile.id}
-          voicePath={profile.voice_prompt_path}
-          question={profile.voice_prompt_question}
-          durationSec={profile.voice_prompt_duration_sec}
-          onChange={(next) => setProfile({ ...profile, ...next })}
-        />
-
-        <MusicAnthemCard
-          userId={profile.id}
-          anthem={profile.anthem}
-          onChange={(next) => setProfile({ ...profile, anthem: next })}
-        />
-
-        <VideoClipCard
-          userId={profile.id}
-          videoPath={profile.video_clip_path}
-          onChange={(p) => setProfile({ ...profile, video_clip_path: p })}
-        />
-
-        <DateVibesCard
-          userId={profile.id}
-          vibes={{
-            ask_me_about: profile.ask_me_about,
-            dealbreakers: profile.dealbreakers,
-            ideal_match: profile.ideal_match,
-          }}
-          onChange={(next) => setProfile({ ...profile, ...next })}
-        />
-
-        <LifestyleFactsCard
-          userId={profile.id}
-          facts={{
-            zodiac: profile.zodiac,
-            languages: profile.languages,
-            education: profile.education,
-            school: profile.school,
-            job_title: profile.job_title,
-            company: profile.company,
-            religion: profile.religion,
-            politics: profile.politics,
-            children: profile.children,
-            pets: profile.pets,
-            drinking: profile.drinking,
-            smoking: profile.smoking,
-            cannabis: profile.cannabis,
-            drugs: profile.drugs,
-            workout: profile.workout,
-            diet: profile.diet,
-            sleep_schedule: profile.sleep_schedule,
-          }}
-          onChange={(next) => setProfile({ ...profile, ...next })}
-        />
+        {/* Orfane la target — carduri demontate din editor (reversibil).
+            Coloanele DB rămân intacte: voice_prompt_*, anthem, video_clip_path,
+            ask_me_about, dealbreakers, ideal_match, plus 16 câmpuri lifestyle.
+            Vezi VoicePromptCard / MusicAnthemCard / VideoClipCard / DateVibesCard /
+            LifestyleFactsCard — reactivabile prin remontare. */}
 
         {profile.bio && (
           <Section title="About">
@@ -930,24 +873,7 @@ function EditDrawer({
             value={form.looking_for ?? []}
             onChange={(v) => setForm({ ...form, looking_for: v })}
           />
-          <EditChips
-            label="Meet At"
-            options={MEET_AT_OPTIONS}
-            value={form.meet_at ?? []}
-            onChange={(v) => setForm({ ...form, meet_at: v })}
-          />
-          <EditChips
-            label="Expectations"
-            options={EXPECTATIONS_OPTIONS}
-            value={form.expectations ?? []}
-            onChange={(v) => setForm({ ...form, expectations: v })}
-          />
-          <EditChips
-            label="Scenes"
-            options={SCENES_OPTIONS}
-            value={form.scenes ?? []}
-            onChange={(v) => setForm({ ...form, scenes: v })}
-          />
+          {/* meet_at / expectations / scenes — demontate din editor (rămân în DB). */}
 
           <label className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4">
             <div>
@@ -988,35 +914,8 @@ function EditDrawer({
           />
         </EditSection>
 
-        {/* Health */}
-        <SectionDivider label="Health" />
-        <EditSection>
-          {single("prep_status", PREP_STATUS_OPTIONS)}
-          <EditChips
-            label="Health Practices"
-            options={SAFETY_OPTIONS}
-            value={form.safety_practices ?? []}
-            onChange={(v) => setForm({ ...form, safety_practices: v })}
-          />
-          <EditChips
-            label="Vaccinations"
-            options={VACCINATION_OPTIONS}
-            value={form.vaccinations ?? []}
-            onChange={(v) => setForm({ ...form, vaccinations: v })}
-          />
-          <p className="rounded-xl border border-border/50 bg-surface/50 p-3 text-[11px] leading-relaxed text-muted-foreground">
-            <strong className="text-foreground/80">Resurse de sănătate.</strong> Ventuza nu
-            stochează date despre HIV. Pentru testare gratuită și consiliere vezi{" "}
-            <a href="https://www.arasnet.ro" target="_blank" rel="noreferrer" className="underline">
-              ARAS
-            </a>{" "}
-            sau centrul de siguranță (
-            <a href="/safety" className="underline">
-              /safety
-            </a>
-            ).
-          </p>
-        </EditSection>
+        {/* Health — secțiune demontată din editor (prep_status, safety_practices,
+            vaccinations rămân în DB, dormante). Info-ul de sănătate rămâne în /safety. */}
       </div>
     </div>
   );
