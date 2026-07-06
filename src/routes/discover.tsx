@@ -521,6 +521,40 @@ function DiscoverPage() {
       <div className="px-3 pt-2">
         <SponsoredBanner placement="discover_card" />
       </div>
+      {locStatus === "denied" && (
+        <div className="mx-3 mt-2 flex flex-wrap items-center gap-3 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2.5 text-xs">
+          <MapPin className="size-4 shrink-0 text-primary" aria-hidden />
+          <div className="min-w-0 flex-1">
+            <div className="font-medium text-foreground">Activează locația</div>
+            <div className="text-muted-foreground">
+              Fără locație nu îți putem arăta cine e aproape. O poți opri oricând din 🔒
+              (lângă URL) sau din setările telefonului.
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="hero"
+            className="shrink-0"
+            onClick={async () => {
+              const r = await requestAndStoreLocation();
+              if (r.ok) {
+                setLocStatus("granted");
+                toast.success("Locație activată");
+                load();
+              } else {
+                toast.message("Permisiune blocată", {
+                  description:
+                    "Deschide 🔒 din bara de adrese → Permisiuni → Locație → Permite, apoi reîncarcă pagina.",
+                  duration: 8000,
+                });
+              }
+            }}
+          >
+            Activează locația
+          </Button>
+        </div>
+      )}
+
       {loading ? (
         <CenterMessage
           icon={<Loader2 className="size-6 animate-spin text-primary" />}
