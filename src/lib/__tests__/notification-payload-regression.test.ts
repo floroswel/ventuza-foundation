@@ -129,8 +129,11 @@ describe("Trigger SQL — tg_notify_new_message", () => {
     expect(fnBody).toMatch(/'Ai un mesaj nou'/);
 
     // Split pe IF/ELSE și asigură că NEW.body și media_type apar DOAR în ramura IF
+    // ELSE al IF-ului exterior este cel care setează body-ul generic.
+    // Îl delimităm strict prin `ELSE\s+body_out :=` ca să nu capturăm ELSE-ul
+    // din CASE-ul interior.
     const ifElseMatch = fnBody.match(
-      /IF\s+show_preview\s+THEN([\s\S]*?)ELSE([\s\S]*?)END\s+IF/i,
+      /IF\s+show_preview\s+THEN([\s\S]*?)ELSE\s+body_out\s*:=([\s\S]*?)END\s+IF/i,
     );
     expect(ifElseMatch, "IF/ELSE pe show_preview lipsește").not.toBeNull();
     const [, thenBranch, elseBranch] = ifElseMatch!;
