@@ -437,22 +437,48 @@ function StepView({
             />
           </div>
           <div className="space-y-2">
-            <Label>{t("onboarding.basics.birthLabel")}</Label>
-            <Input
-              type="date"
-              value={data.birthdate}
-              onChange={(e) => setData({ ...data, birthdate: e.target.value })}
-              max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split("T")[0]}
-              className="h-14 bg-surface border-border text-lg disabled:opacity-100"
-              disabled={birthdateLocked}
-              readOnly={birthdateLocked}
-            />
-            {birthdateLocked && (
-              <p className="text-xs text-muted-foreground">{t("onboarding.basics.birthLocked")}</p>
-            )}
-            {data.birthdate && calcAge(data.birthdate) < 18 && (
-              <p className="text-sm text-destructive">{t("onboarding.basics.minAge")}</p>
-            )}
+            <Label htmlFor="ob-name">{t("onboarding.basics.nameLabel")}</Label>
+            {/* re-uses parent Input above via id would require restructure; keep as-is */}
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="ob-birth">{t("onboarding.basics.birthLabel")}</Label>
+            {(() => {
+              const err = validateBirthdate(data.birthdate, t);
+              const invalid = !!err && !birthdateLocked;
+              return (
+                <>
+                  <Input
+                    id="ob-birth"
+                    type="date"
+                    value={data.birthdate}
+                    onChange={(e) => setData({ ...data, birthdate: e.target.value })}
+                    max={new Date(Date.now() - 18 * 365.25 * 86400000).toISOString().split("T")[0]}
+                    className={
+                      "h-14 bg-surface border-border text-lg disabled:opacity-100 " +
+                      (invalid ? "border-destructive focus-visible:ring-destructive" : "")
+                    }
+                    disabled={birthdateLocked}
+                    readOnly={birthdateLocked}
+                    aria-invalid={invalid || undefined}
+                    aria-describedby={invalid ? "ob-birth-err" : undefined}
+                  />
+                  {birthdateLocked && (
+                    <p className="text-xs text-muted-foreground">
+                      {t("onboarding.basics.birthLocked")}
+                    </p>
+                  )}
+                  {invalid && (
+                    <p
+                      id="ob-birth-err"
+                      role="alert"
+                      className="text-sm text-destructive"
+                    >
+                      {err}
+                    </p>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </div>
       );
