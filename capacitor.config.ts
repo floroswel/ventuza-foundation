@@ -40,6 +40,11 @@ const config: CapacitorConfig = {
       style: "DARK",
       backgroundColor: "#0B0B0F",
     },
+    PrivacyScreen: {
+      enable: true,
+      imageName: "Splash",
+      preventScreenshots: true,
+    },
   },
 };
 

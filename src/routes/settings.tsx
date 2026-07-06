@@ -23,7 +23,7 @@ import { setLookingNow } from "@/lib/social";
 import { UniquesCard } from "@/components/UniquesCard";
 import { SosCard } from "@/components/SosCard";
 import { EnablePushButton } from "@/components/EnablePushButton";
-import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+
 import { ReferralCard } from "@/components/ReferralCard";
 import { ConsentsCard } from "@/components/settings/ConsentsCard";
 import { ConsentsHistoryCard } from "@/components/settings/ConsentsHistoryCard";
@@ -245,7 +245,6 @@ function SettingsPage() {
       </header>
 
       <div className="mx-auto max-w-md space-y-6 px-4 py-6">
-        <LanguageSwitcher />
         <ReferralCard />
 
         {/* Account */}
