@@ -235,8 +235,10 @@ export const adminSearchUsersV2 = createServerFn({ method: "POST" })
         .from("profile-photos")
         .createSignedUrls(uniq, 600);
       (signed ?? []).forEach((s: any, i: number) => {
-        if (s?.signedUrl) thumbUrlByKey[uniq[i]] = s.signedUrl;
+        const key = uniq[i];
+        if (typeof key === "string" && s?.signedUrl) thumbUrlByKey[key] = s.signedUrl;
       });
+
     }
 
     let out = (rows ?? []).map((r: any) => {
