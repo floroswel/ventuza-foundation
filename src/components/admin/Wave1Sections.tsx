@@ -153,9 +153,13 @@ export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose:
               <h3 className="text-xs uppercase tracking-wide text-muted-foreground">
                 Profil (mascat)
               </h3>
-              <div className="mt-2 flex items-center justify-between">
-                <p className="text-sm font-medium">
-                  {view.profile?.display_name ?? "—"}
+              <div className="mt-2 flex items-center justify-between gap-2">
+                <p className="text-sm font-medium truncate" title={view.profile?.display_name ?? ""}>
+                  {isOffensiveName(view.profile?.display_name) ? (
+                    <span className="text-amber-400">{maskName(view.profile?.display_name)}</span>
+                  ) : (
+                    (view.profile?.display_name ?? "—")
+                  )}
                   {view.profile?.is_premium && (
                     <span className="ml-2 rounded bg-amber-500/20 px-1.5 py-0.5 text-[9px] uppercase text-amber-300">
                       premium
@@ -170,12 +174,22 @@ export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose:
                 <Link
                   to="/admin/users/$id"
                   params={{ id: userId }}
-                  className="rounded-full bg-primary/15 px-2.5 py-1 text-[10px] text-primary"
+                  className="rounded-full bg-primary/15 px-2.5 py-1 text-[10px] text-primary shrink-0"
                 >
                   User 360 →
                 </Link>
               </div>
               <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px]">
+                <Row k="Email" v={view.profile?.auth_email ?? "—"} />
+                <Row
+                  k="Email confirmat"
+                  v={
+                    view.profile?.auth_email_confirmed_at
+                      ? new Date(view.profile.auth_email_confirmed_at).toLocaleDateString("ro-RO")
+                      : "nu"
+                  }
+                />
+                <Row k="Provideri auth" v={(view.profile?.auth_providers ?? []).join(", ") || "email"} />
                 <Row k="Slug" v={view.profile?.profile_slug ?? "—"} />
                 <Row k="Oraș" v={view.profile?.travel_city ?? "—"} />
                 <Row k="Vârstă" v={view.profile?.age != null ? String(view.profile.age) : "—"} />
@@ -246,6 +260,44 @@ export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose:
                   }
                 />
               </dl>
+
+              {Array.isArray(view.profile?.interests) && view.profile.interests.length > 0 && (
+                <div className="mt-2">
+                  <div className="text-[10px] uppercase text-muted-foreground mb-1">Interese</div>
+                  <div className="flex flex-wrap gap-1">
+                    {view.profile.interests.slice(0, 20).map((t: string, i: number) => (
+                      <span key={i} className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] text-primary">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {view.profile?.prompts && (() => {
+                const p = view.profile.prompts;
+                const entries: Array<[string, string]> = Array.isArray(p)
+                  ? p.map((x: any) => [String(x?.q ?? x?.question ?? ""), String(x?.a ?? x?.answer ?? "")])
+                  : typeof p === "object"
+                    ? Object.entries(p).map(([k, v]) => [k, String(v ?? "")])
+                    : [];
+                const filtered = entries.filter(([, a]) => a && a.trim());
+                if (!filtered.length) return null;
+                return (
+                  <div className="mt-2">
+                    <div className="text-[10px] uppercase text-muted-foreground mb-1">Prompturi</div>
+                    <ul className="space-y-1">
+                      {filtered.slice(0, 6).map(([q, a], i) => (
+                        <li key={i} className="rounded border border-border bg-background/50 p-1.5 text-[11px]">
+                          {q && <div className="text-muted-foreground">{q}</div>}
+                          <div>{a}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              })()}
+
               {view.profile?.bio && (
                 <p className="mt-2 rounded border border-border bg-background/50 p-2 text-[11px] italic text-muted-foreground">
                   „{view.profile.bio}"
@@ -267,10 +319,13 @@ export function UserDetailDrawer({ userId, onClose }: { userId: string; onClose:
                 {" · "}Cereri verificare: {view.verifications?.length ?? 0}
               </p>
               <p className="mt-1 text-[10px] text-muted-foreground">
-                Câmpurile Art. 9 (orientare, HIV), locația precisă și mesajele brute rămân mascate
-                — folosește <b>break-glass</b> pentru dezvăluire cu audit.
+                Orientarea, pronumele, tribes, HIV, locația precisă și mesajele brute (Art. 9) rămân
+                mascate — folosește <b>break-glass</b> pentru dezvăluire cu audit.
               </p>
             </section>
+
+
+
 
 
             {/* BREAK-GLASS BUTTONS — fiecare categorie loghează separat */}
