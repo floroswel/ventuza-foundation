@@ -220,6 +220,11 @@ const ro = {
       birthLabel: "Data nașterii",
       birthLocked: "Am preluat data nașterii de la înscriere. Pentru schimbări, contactează suportul.",
       minAge: "Trebuie să ai cel puțin 18 ani.",
+      birthRequired: "Introdu data nașterii pentru a continua.",
+      birthInvalid: "Data nașterii nu este validă.",
+      birthFuture: "Data nașterii nu poate fi în viitor.",
+      birthTooOld: "Data nașterii pare incorectă (mai mult de 120 de ani).",
+      nameRequired: "Numele trebuie să aibă cel puțin 2 caractere.",
     },
     identity: {
       title: "Identitatea ta",
