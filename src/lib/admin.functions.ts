@@ -257,6 +257,40 @@ export const adminListRows = createServerFn({ method: "POST" })
     q = q.order(orderBy, { ascending: orderDir === "asc", nullsFirst: false });
     q = q.range(offset, offset + limit - 1);
     const { data: rows, count, error } = await q;
+    // GDPR Art.5(2): log read access to PII-carrying tables (metadata only, never row contents)
+    const PII_TABLES = new Set([
+      "profiles",
+      "messages",
+      "reports",
+      "private_albums",
+      "album_requests",
+      "album_unlocks",
+      "device_fingerprints",
+      "banned_fingerprints",
+      "push_subscriptions",
+      "sos_events",
+      "risk_flags",
+      "notifications",
+      "consent_log",
+    ]);
+    if (PII_TABLES.has(data.table)) {
+      try {
+        await supabaseAdmin.from("admin_audit_log").insert({
+          actor_id: context.userId,
+          action: "data_explorer.read",
+          target_table: data.table,
+          severity: "info",
+          after_data: {
+            table: data.table,
+            search: data.search ?? null,
+            search_column: data.searchColumn ?? null,
+            count: count ?? (rows?.length ?? 0),
+            limit,
+            offset,
+          },
+        });
+      } catch {}
+    }
     if (error) {
       let q2: any = supabaseAdmin
         .from(data.table)
