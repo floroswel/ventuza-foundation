@@ -196,34 +196,92 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
   //    considerabil ferestrele "accidentale": long-press save, drag, copy,
   //    print, snipping tool care surprinde ecranul cât tabul e defocalizat.
   try {
-    // Block context menu pe media (permite input-uri și zone marcate explicit).
+    // Helper: descrie succint elementul care a declanșat blocarea (fără PII).
+    const describe = (el: HTMLElement | null): string => {
+      if (!el) return "unknown";
+      const tag = el.tagName.toLowerCase();
+      const id = el.id ? `#${el.id}` : "";
+      const cls = el.className && typeof el.className === "string"
+        ? "." + el.className.trim().split(/\s+/).slice(0, 2).join(".")
+        : "";
+      const priv = el.closest("[data-private-media]") ? "[private]" : "";
+      const src = tag === "img" ? ` src=${((el as HTMLImageElement).currentSrc || "").split("/").pop()?.slice(0, 40) || "?"}` : "";
+      return `${tag}${id}${cls}${priv}${src}`;
+    };
+
+    // Throttle notificări (evită spam când user-ul insistă).
+    let lastToastAt = 0;
+    const maybeToast = async (action: string, detail: string) => {
+      const now = Date.now();
+      if (now - lastToastAt < 2500) return;
+      lastToastAt = now;
+      try {
+        const { toast } = await import("sonner");
+        toast.warning(`Acțiune blocată: ${action}`, { description: detail, duration: 2500 });
+      } catch {
+        /* sonner absent la SSR */
+      }
+    };
+
+    const emit = (action: "contextmenu" | "drag" | "copy" | "cut", el: HTMLElement) => {
+      const target = describe(el);
+      console.warn(`[privacy-screen] 🚫 ${action} blocat pe ${target}`);
+      window.dispatchEvent(
+        new CustomEvent("ventuza:privacy-blocked", {
+          detail: { action, target, at: new Date().toISOString() },
+        }),
+      );
+      void maybeToast(
+        action === "contextmenu" ? "meniu contextual" :
+        action === "drag" ? "drag imagine" :
+        action === "copy" ? "copiere" : "decupare",
+        target,
+      );
+    };
+
+    // Context menu pe media (permite input-uri și zone marcate explicit).
     const onCtx = (e: MouseEvent) => {
       const t = e.target as HTMLElement | null;
       if (!t) return;
       if (t.closest("input, textarea, [contenteditable='true']")) return;
       if (t.closest("[data-allow-context]")) return;
-      if (t.closest("img, video, picture, canvas, [data-private-media]"))
+      const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
+      if (hit) {
         e.preventDefault();
+        emit("contextmenu", hit);
+      }
     };
     window.addEventListener("contextmenu", onCtx, { capture: true });
 
-    // Blochează drag pe orice imagine/video (previne salvare prin drag-out).
+    // Drag pe imagini/video.
     const onDrag = (e: DragEvent) => {
       const t = e.target as HTMLElement | null;
       if (!t) return;
-      if (t.tagName === "IMG" || t.tagName === "VIDEO" || t.closest("[data-private-media]"))
+      const hit =
+        t.tagName === "IMG" || t.tagName === "VIDEO"
+          ? t
+          : (t.closest("[data-private-media]") as HTMLElement | null);
+      if (hit) {
         e.preventDefault();
+        emit("drag", hit);
+      }
     };
     window.addEventListener("dragstart", onDrag, { capture: true });
 
-    // Copy / cut pe zone private → blocat.
-    const onCopy = (e: ClipboardEvent) => {
+    // Copy / cut pe zone private.
+    const onClip = (kind: "copy" | "cut") => (e: ClipboardEvent) => {
       const t = e.target as HTMLElement | null;
       if (!t) return;
-      if (t.closest("[data-private-media]") || t.closest("img, video")) e.preventDefault();
+      const hit =
+        (t.closest("[data-private-media]") as HTMLElement | null) ??
+        (t.closest("img, video") as HTMLElement | null);
+      if (hit) {
+        e.preventDefault();
+        emit(kind, hit);
+      }
     };
-    window.addEventListener("copy", onCopy, { capture: true });
-    window.addEventListener("cut", onCopy, { capture: true });
+    window.addEventListener("copy", onClip("copy"), { capture: true });
+    window.addEventListener("cut", onClip("cut"), { capture: true });
 
     // Long-press save pe iOS/Android web → suprimă callout-ul.
     const style = document.createElement("style");
