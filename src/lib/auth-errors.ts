@@ -190,7 +190,7 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
       i18nKey: "authErrors.userAlreadyExists",
       actionKey: "authErrors.actions.userAlreadyExists",
       message: "Există deja un cont cu acest email.",
-      action: "Autentifică-te cu parola pe care ai setat-o, sau folosește „Am uitat parola".",
+      action: "Autentifică-te cu parola pe care ai setat-o, sau folosește „Am uitat parola”.",
     };
   }
 
@@ -256,7 +256,7 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
       i18nKey: "authErrors.ageRequired",
       actionKey: "authErrors.actions.ageRequired",
       message: "Trebuie să-ți verifici vârsta.",
-      action: "Mergi la „Verificare vârstă" din meniu și urmează pașii (selfie + document).",
+      action: "Mergi la „Verificare vârstă” din meniu și urmează pașii (selfie + document).",
     };
   }
 
@@ -360,7 +360,7 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
       i18nKey: "authErrors.healthConsentRequired",
       actionKey: "authErrors.actions.healthConsentRequired",
       message: "Consimțământul pentru date de sănătate lipsește.",
-      action: "Bifează opțiunea „Sunt de acord cu prelucrarea datelor de sănătate" înainte de a salva.",
+      action: "Bifează opțiunea „Sunt de acord cu prelucrarea datelor de sănătate” înainte de a salva.",
     };
   }
   if (msg.includes("consent_required") || msg.includes("terms_not_accepted")) {
