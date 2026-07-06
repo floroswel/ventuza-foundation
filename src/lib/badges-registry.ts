@@ -48,8 +48,8 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     colorClass: "text-rose-500",
     priority: 100,
     criteria: {
-      ro: "Verificare identitate internă completă (liveness + moderator, 18+).",
-      en: "Completed internal identity verification (liveness + moderator, 18+).",
+      ro: "Verificare vârstă (18+) confirmată prin Didit (procesator extern, age estimation).",
+      en: "Age verification (18+) confirmed via Didit (external processor, age estimation).",
     },
     expiry: null,
   },
