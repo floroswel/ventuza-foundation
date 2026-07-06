@@ -3,24 +3,16 @@ import { useRouterState } from "@tanstack/react-router";
 import { setLanguage } from "@/lib/i18n";
 
 /**
- * Compact global language toggle mounted in the root layout.
- * Hidden on the landing page (which has its own switcher) and on the
- * onboarding flow (`/n`) where the top-right corner is used for step controls.
+ * Compact global language toggle. Afișat DOAR pe fluxul de login/auth —
+ * în restul aplicației colțul din dreapta-sus rămâne curat.
  */
 export function LanguageToggle() {
   const { i18n } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
-  // Landing has its own switcher; profile/account hide it to keep the corner clean.
-  if (
-    pathname === "/" ||
-    pathname === "" ||
-    pathname === "/profile" ||
-    pathname.startsWith("/profile/") ||
-    pathname === "/account" ||
-    pathname.startsWith("/account/")
-  )
-    return null;
+  const isAuth = pathname === "/auth" || pathname.startsWith("/auth/");
+  if (!isAuth) return null;
+
 
   const current = (i18n.resolvedLanguage || i18n.language || "en").startsWith("ro") ? "ro" : "en";
 
