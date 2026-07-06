@@ -91,9 +91,7 @@ const empty: Data = {
 
 const STEPS = [
   "basics", // name + birthdate
-  "identity", // gender + pronouns + orientation
-  "intent", // looking_for + tribes
-  "stats", // body/position/height/weight/ethnicity/relationship + health
+  "identity", // gender + pronouns + orientation + looking_for + tribes
   "personality", // interests + prompts + bio
   "photos", // photos + terms
 ] as const;
@@ -101,8 +99,6 @@ const STEPS = [
 const STEP_KEYS: Record<(typeof STEPS)[number], string> = {
   basics: "onboarding.step.basics",
   identity: "onboarding.step.identity",
-  intent: "onboarding.step.intent",
-  stats: "onboarding.step.stats",
   personality: "onboarding.step.personality",
   photos: "onboarding.step.photos",
 };
