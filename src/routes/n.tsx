@@ -216,16 +216,75 @@ function Onboarding() {
     }
   }, [current, data]);
 
+  function buildStepPatch(s: (typeof STEPS)[number]): Record<string, any> {
+    switch (s) {
+      case "basics":
+        return {
+          display_name: data.display_name.trim(),
+          birthdate: data.birthdate,
+        };
+      case "identity":
+        return {
+          gender: canonicalizeOptionValues(data.gender),
+          gender_custom: data.gender_custom.trim() || null,
+          pronouns: canonicalizeOptionValues(data.pronouns),
+          pronouns_custom: data.pronouns_custom.trim() || null,
+          orientation: canonicalizeOptionValues(data.orientation),
+          looking_for: canonicalizeOptionValues(data.looking_for),
+          tribes: canonicalizeOptionValues(data.tribes),
+          body_type: data.body_type ? canonicalizeOptionValue(data.body_type) : null,
+          height_cm: data.height_cm,
+          weight_kg: data.weight_kg,
+          ethnicity: data.ethnicity ? canonicalizeOptionValue(data.ethnicity) : null,
+          position: data.position ? canonicalizeOptionValue(data.position) : null,
+          relationship_status: data.relationship_status
+            ? canonicalizeOptionValue(data.relationship_status)
+            : null,
+        };
+      case "personality":
+        return {
+          interests: canonicalizeOptionValues(data.interests),
+          bio: data.bio.trim(),
+          prompts: data.prompts.map((p) => ({
+            question: canonicalizeOptionValue(p.question),
+            answer: p.answer,
+          })),
+        };
+      case "photos":
+        return { photos: data.photos };
+    }
+  }
+
+  async function persistStep(s: (typeof STEPS)[number]): Promise<boolean> {
+    if (!user) return false;
+    const patch = buildStepPatch(s);
+    const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
+    if (error) {
+      showAuthErrorToast(t, error);
+      return false;
+    }
+    return true;
+  }
+
   async function next() {
+    if (!user) return;
+    setSaving(true);
+
+    // Persistă imediat pasul curent în Supabase (nu doar în localStorage).
+    const ok = await persistStep(current);
+    if (!ok) {
+      setSaving(false);
+      return;
+    }
+
     if (step < STEPS.length - 1) {
+      setSaving(false);
       setStep(step + 1);
       window.scrollTo(0, 0);
       return;
     }
-    if (!user) return;
-    setSaving(true);
 
-    // GDPR: înregistrăm consimțămintele obligatorii (terms/privacy) înainte de update.
+    // Ultimul pas: consents (terms/privacy) + finalizare + marcare onboarding complet.
     const ua = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 400) : null;
     const consents: Array<{ kind: string; version: string; accepted: boolean }> = [
       { kind: "terms", version: "2026-06-22", accepted: true },
@@ -243,31 +302,6 @@ function Onboarding() {
     const { error } = await supabase
       .from("profiles")
       .update({
-        display_name: data.display_name.trim(),
-        birthdate: data.birthdate,
-        gender: canonicalizeOptionValues(data.gender),
-        gender_custom: data.gender_custom.trim() || null,
-        pronouns: canonicalizeOptionValues(data.pronouns),
-        pronouns_custom: data.pronouns_custom.trim() || null,
-        orientation: canonicalizeOptionValues(data.orientation),
-        looking_for: canonicalizeOptionValues(data.looking_for),
-        tribes: canonicalizeOptionValues(data.tribes),
-        body_type: data.body_type ? canonicalizeOptionValue(data.body_type) : null,
-        height_cm: data.height_cm,
-        weight_kg: data.weight_kg,
-        ethnicity: data.ethnicity ? canonicalizeOptionValue(data.ethnicity) : null,
-        position: data.position ? canonicalizeOptionValue(data.position) : null,
-        relationship_status: data.relationship_status
-          ? canonicalizeOptionValue(data.relationship_status)
-          : null,
-        interests: canonicalizeOptionValues(data.interests),
-        bio: data.bio.trim(),
-        prompts: data.prompts.map((p) => ({
-          question: canonicalizeOptionValue(p.question),
-          answer: p.answer,
-        })),
-        photos: data.photos,
-
         terms_accepted_version: "2026-06-22",
         terms_accepted_at: new Date().toISOString(),
         privacy_accepted_version: "2026-06-22",
@@ -293,6 +327,7 @@ function Onboarding() {
     // recorded prin EnablePushButton → savePushSubscription → record_consent).
     setDonePush(true);
   }
+
 
   function back() {
     if (step === 0) navigate({ to: "/" });
