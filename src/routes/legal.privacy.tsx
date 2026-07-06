@@ -69,10 +69,9 @@ function PrivacyPage() {
                     <strong>Selfie de verificare 18+</strong> — Art. 9(1) date biometrice.
                     Imaginea este transmisă tranzitoriu către procesatorul nostru{" "}
                     <strong>Didit</strong> (UE) exclusiv pentru estimarea automată a vârstei;
-                    Didit șterge imaginea imediat după emiterea rezultatului și ne întoarce doar
-                    un verdict pass/fail. Nu stocăm document de identitate. Cazurile borderline
-                    sau contestate ajung într-un bucket privat Ventuza și sunt revizuite de un
-                    moderator uman, cu ștergere automată în ≤30 de zile de la decizie.
+                    Didit șterge imaginea imediat după emiterea rezultatului și ne întoarce
+                    doar un verdict pass/fail. Nu solicităm și nu stocăm document de
+                    identitate.
                   </li>
                 </ul>
                 <p className="mt-2 text-xs text-muted-foreground">

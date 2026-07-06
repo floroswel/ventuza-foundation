@@ -41,7 +41,7 @@ const STACK = [
   },
   { k: "Mobil", v: "Capacitor 6 (Android + iOS), Google Play Billing + RTDN webhook" },
   { k: "AI", v: "Lovable AI Gateway (wingman, bio, moderare foto, copilot admin)" },
-  { k: "Verificare", v: "Liveness intern (3 selfie challenge) + moderator uman" },
+  { k: "Verificare", v: "Didit — age estimation (procesator extern UE), imagine tranzitorie ștearsă imediat" },
   {
     k: "Geo",
     v: "Bucket distance privacy-preserving, 2 straturi proximity (foreground + geofencing)",
@@ -251,9 +251,10 @@ function SalePitch() {
               consimțământ activ; retragerea cascadează în NULL în aceeași tranzacție.
             </p>
             <p>
-              · <strong>Verificare vârstă</strong> flux intern (liveness + moderator uman),
-              forțată ON în producție via <code>shouldEnforceAgeGate</code> (host-based, nu
-              flag-based). Imaginile trăiesc într-un bucket privat și se șterg în 30 zile.
+              · <strong>Verificare vârstă</strong> exclusiv prin Didit (procesator extern UE,
+              age estimation din selfie; imaginea e ștearsă imediat de Didit, primim doar
+              pass/fail), forțată ON în producție via <code>shouldEnforceAgeGate</code>
+              (host-based, nu flag-based).
             </p>
             <p>
               · <strong>CSAM no-render</strong>: rapoartele nu expun <code>photo_url</code>; doar

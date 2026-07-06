@@ -190,12 +190,13 @@ function AccountPage() {
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-semibold text-amber-100">Verificare în curs</p>
                 <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
-                  Am primit selfie-urile tale de liveness. Un moderator intern le verifică în cel
-                  mai scurt timp — de obicei sub câteva ore. Te anunțăm imediat ce decizia e gata.
+                  Selfie-ul tău e procesat de Didit (procesator extern UE) pentru estimare
+                  vârstă. De obicei durează câteva secunde, ocazional câteva minute. Te
+                  anunțăm imediat ce decizia e gata.
                 </p>
                 <ol className="mt-3 space-y-1.5 text-[11px] text-amber-100/70">
-                  <li>1. Analiză automată document + selfie</li>
-                  <li>2. Confirmare vârstă ≥ 18 ani</li>
+                  <li>1. Selfie live trimis tranzitoriu la Didit</li>
+                  <li>2. Age estimation → pass/fail (imaginea e ștearsă imediat)</li>
                   <li>3. Activare acces la Discover și mesagerie</li>
                 </ol>
                 <p className="mt-3 text-[11px] text-amber-100/60">

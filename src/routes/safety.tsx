@@ -63,7 +63,7 @@ function SafetyCenter() {
         <Tip
           icon={<ShieldCheck />}
           title="Verificare 18+ obligatorie"
-          body="Folosim un flux intern de liveness cu selfie (3 gesturi random) verificat manual de moderatori. Imaginile trăiesc în bucket privat și se șterg automat în 30 de zile."
+          body="Confirmarea vârstei se face prin Didit — procesator extern UE specializat în age estimation. Trimiți un selfie live, Didit estimează vârsta pe imagine, ne întoarce doar rezultatul (trecut/respins) și șterge imaginea imediat."
         />
         <Tip
           icon={<MapPin />}

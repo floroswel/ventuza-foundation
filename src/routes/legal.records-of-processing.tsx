@@ -69,14 +69,14 @@ const ACTIVITIES: Activity[] = [
   },
   {
     id: "A4",
-    name: "Verificare vârstă (18+) — Didit age estimation + moderator uman",
+    name: "Verificare vârstă (18+) — Didit age estimation",
     purpose:
-      "Confirmare vârstă minimă prin: (1) selfie live cu challenge trimis la Didit pentru estimare automată a vârstei, imaginea ștearsă la Didit imediat, (2) review moderator uman pentru cazuri borderline / raportări.",
+      "Confirmare vârstă minimă prin selfie live trimis tranzitoriu la Didit pentru estimare automată a vârstei. Didit șterge imaginea imediat după procesare și ne întoarce doar rezultatul (pass/fail + ageEstimate). Nu solicităm și nu stocăm document de identitate.",
     art9: true,
     legalBasis: "6(1)(c) obligație legală (DSA) + 6(1)(f)",
-    art9Basis: "9(2)(a) consimțământ explicit + 9(2)(g) interes public substanțial (biometric)",
+    art9Basis: "9(2)(a) consimțământ explicit (biometric)",
     processors: "P1 Supabase, P8 Cloudflare, P10 Didit (age estimation, UE — imagine tranzitorie)",
-    retention: "Didit: 0 (ștergere imediată). Bucket intern review: ≤30 zile. Decizia rămâne pe cont.",
+    retention: "Didit: 0 (ștergere imediată). Ventuza stochează doar decizia + sessionId pe cont.",
   },
 
   {

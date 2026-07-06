@@ -370,9 +370,8 @@ câmpuri sub formă brută între useri (vezi RPC `discover_profiles`).
 
 ## REGULĂ — AGE GATE (permanentă)
 
-Verificarea de vârstă (flux intern: liveness + moderator) este OBLIGATORIE în
-producție. Dating app cu risc legal: minori + conținut adult. Această regulă nu
-se negociază.
+Verificarea de vârstă este OBLIGATORIE în producție. Dating app cu risc legal:
+minori + conținut adult. Această regulă nu se negociază.
 
 1. **Sursa de adevăr UI**: `src/lib/age-gate-policy.ts → shouldEnforceAgeGate()`.
    - Producție (orice host care NU e `localhost`, `127.0.0.1`, `*.local`,
@@ -383,22 +382,37 @@ se negociază.
 2. **Flag-ul `feature_flags.age_verification`** poate fi DOAR un kill-switch
    pentru dezvoltare. Nu există circumstanță în care setarea OFF să aibă
    efect în producție.
-3. **Reactivare la publicare**: din admin → Securitate → Feature flags →
-   toggle `age_verification` pe ON. În producție acest pas este redundant
-   (codul forțează ON), dar îl facem oricum pentru curățenie + paritate
-   între medii.
-4. **Fluxul de verificare** este 100% intern (liveness + moderator uman) și
-   trăiește în `verification_requests` / `verification_images` cu RLS strict
-   și retenție 30 zile. Nu există procesator KYC extern. Bypass-ul dev este
-   strict la nivel de UX (componenta `AgeGate` nu redirecționează la `/verify`
-   când flag-ul e OFF ȘI host-ul e non-prod). Triggerele
-   `enforce_health_consent`, `cascade_health_consent_withdrawal` și restul
-   protecțiilor de date NU sunt afectate.
-5. **Code review automat:** orice diff care
+3. **Fluxul de verificare = EXCLUSIV Didit** (procesator extern UE, age
+   estimation). Din iulie 2026: capturăm un selfie live, îl trimitem
+   tranzitoriu la Didit, Didit rulează modelul de estimare a vârstei,
+   întoarce pass/fail și ȘTERGE imaginea imediat. Nu solicităm și nu stocăm
+   document de identitate. Temei GDPR Art. 9(2)(a) — consimțământ explicit
+   `age_verification` înregistrat în `consent_log` ÎNAINTE de captură.
+   Endpoint webhook: `POST /api/public/didit-webhook` (HMAC verificat),
+   procesat de `didit_apply_result` (SECURITY DEFINER, service_role).
+4. **Sursa de adevăr pentru "18+" = `profiles.age_status`**, setat EXCLUSIV
+   de `didit_apply_result` (via webhook Didit). `age_provider` este mereu
+   `'didit'`. Nicio altă cale nu poate marca un cont ca verificat.
+   `assert_age_verified()` delegă la `assert_account_usable()` care verifică
+   `age_status='verified'` + email confirmat.
+5. **Fluxul intern (liveness + moderator) = DEZACTIVAT.** Rămâne ca schelet
+   dormant în DB (`verification_requests`, `verification_images`,
+   `verification_moderator_*`, `is_verification_staff`) și în cod
+   (`src/lib/admin-verification.functions.ts`, `verification.functions.ts`,
+   `VerificationQueuePanel.tsx` marcat DEPRECATED), reactivabil dacă
+   business-ul decide, dar UI-ul NU îl invocă și NU este sursa de adevăr.
+   Consimțământul `internal_verification` a fost RETRAS din
+   `consent_kinds()` — nu se mai poate acorda nou. Intrările istorice din
+   `consent_log` rămân intacte pentru audit.
+6. **Code review automat:** orice diff care
    - schimbă `isProductionHost` să întoarcă `false` pentru un host real,
    - șterge override-ul de producție din `shouldEnforceAgeGate`,
    - ocolește `<AgeGate>` în root layout,
    - șterge banner-ul `AgeGateDevBanner` din admin,
+   - marchează `age_status='verified'` pe altă cale decât `didit_apply_result`,
+   - reintroduce `internal_verification` în `consent_kinds()` sau
+     restaurează textele "verificare internă, fără terți" în paginile
+     user-facing,
    trebuie REFUZAT.
 
 ## REGULĂ — MODERARE OBLIGATORIE VENUES/EVENTS/OFFERS (permanentă)
