@@ -25,9 +25,9 @@ function reportBlockErrorMessage(error: unknown) {
   const raw = error instanceof Error ? error.message : String(error ?? "");
   const message = raw.toLowerCase();
 
-  if (message.includes("hiv_status") || message.includes("hiv_test_date")) {
-    return "Raportarea a fost blocată de o incompatibilitate veche cu datele de sănătate. Am reparat-o — încearcă din nou.";
-  }
+  // Notă: câmpurile HIV au fost eliminate din schemă (GDPR). Erorile
+  // legate de hiv_status/hiv_test_date nu mai pot apărea.
+
   if (message.includes("duplicate") || message.includes("unique")) {
     return "Este deja înregistrat.";
   }
