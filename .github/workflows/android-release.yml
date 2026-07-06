@@ -76,7 +76,7 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6enhodnZtd3F2ZnlvbGRjdXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NzE5NTUsImV4cCI6MjA5NzU0Nzk1NX0.Wf-m_9h3GtQMV6zC6L6ti4ZlR1HCqqHhw4f5ilE-LTs' }}
           VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID || 'szzxhvvmwqvfyoldcuyz' }}
           VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
-        run: bun run build
+        run: bun run build:mobile
 
       - name: Add Android platform (dacă lipsește)
         run: |
