@@ -288,7 +288,8 @@ function Onboarding() {
       .eq("id", user.id);
     if (error) {
       setSaving(false);
-      return toast.error(error.message);
+      showAuthErrorToast(t, error);
+      return;
     }
 
     setSaving(false);
