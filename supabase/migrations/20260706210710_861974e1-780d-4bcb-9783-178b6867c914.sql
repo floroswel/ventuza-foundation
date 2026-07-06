@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.app_role_values() TO anon, authenticated;
