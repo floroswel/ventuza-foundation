@@ -1,120 +1,137 @@
+## PROFIL — Raport de stare (analiză, zero modificări)
 
-# Raport NOTIFICĂRI — stare reală (read-only, zero modificări)
+### A. PROFIL AFIȘAT (ce vezi la altcineva)
 
-Investigat: `src/lib/push.functions.ts`, `src/lib/web-push.server.ts`, `src/lib/web-push-config.ts`, `src/lib/notifications-context.tsx`, `src/lib/notification-sound.ts`, `src/lib/notifications.ts`, `src/lib/chat.ts`, `src/lib/social.ts`, `src/hooks/useUnreadMessages.ts`, `src/components/EnablePushButton.tsx`, `src/components/NotificationBell.tsx`, `src/components/MatchModal.tsx`, `public/push-sw.js`, `package.json`, migrări `push_subscriptions` + `profile_live_events`.
+**Două suprafețe distincte** care randează profilul altui user:
 
----
+**A1. `ProfileDrawer` (inline în `src/routes/discover.tsx` liniile ~1189–1378)** — sheet full-screen din grilă/swipe/nearby. Este suprafața principală folosită pe zi.
+- Hero: `ProfilePhotoGallery` (poze swipeable) cu overlay: nume, vârstă, badge Verified, punct online + last-seen, distanță bucketizată, înălțime.
+- `MatchScoreBadge` sub titlu.
+- `TagBlock "Tribes"` (chip gold).
+- Grid 2 coloane "Stats": Body, Position, Ethnicity, Weight, Relationship status. (`hiv_status` scos GDPR.)
+- Pronouns (linie separată uppercase).
+- `bio` (paragraf).
+- `prompts` (Q&A, listă de carduri).
+- `TagBlock "Looking for"`, `TagBlock "Interests"`.
+- `PrivateAlbumViewer` (album privat gated).
+- Banner "Right Now" (dacă `looking_now_until` viitor) + `looking_now_intent`.
+- `TapFavoriteRow` (Tap emoji + Woof + Favorite).
+- Sticky bottom bar: Pass / Message / Like.
 
-## PUSH
+**Aglomerare:** ~10 secțiuni. Scroll mediu (2–3 ecrane pe mobil). Restul câmpurilor de "lifestyle" (job, zodiac, workout, diet, drinking, smoking, education, religion, etc.) și "safer play" (`vaccinations`, `prep_status`, `safety_practices`), `expectations`, `scenes`, `meet_at`, `voice_prompt`, `anthem`, `video_clip`, `ideal_match`, `ask_me_about`, `dealbreakers` NU se randează aici — există în DB și în editor, dar drawer-ul discover le ignoră. → drawer-ul e deja destul de curat de-facto.
 
-### 1. Web Push (VAPID) — EXISTĂ, FUNCȚIONAL
-- Client: `src/components/EnablePushButton.tsx` → înregistrează `/push-sw.js`, cere permisiune Notification, `pushManager.subscribe({ userVisibleOnly: true, applicationServerKey })`, trimite la `savePushSubscription`.
-- Server fn: `src/lib/push.functions.ts`
-  - `savePushSubscription` (POST) — upsert în `push_subscriptions` cu auto-repair pe conflict endpoint (șterge orfane cu `supabaseAdmin`) + `record_consent('push_notifications')`.
-  - `removePushSubscription` (POST) — șterge + retrage consent.
-  - `sendPushToUser` (POST) — respectă `notification_prefs` (master, per-category, quiet hours, `discrete_mode`), livrare per subscription via `sendOne`.
-- Sender: `src/lib/web-push.server.ts` — librăria `web-push` (npm), `sendOne` prinde 404/410 → marchează endpoint expirat, apelantul șterge din DB.
-- Service worker: `public/push-sw.js` există (worker dedicat, scope propriu, NU e atins de `pwa-register.ts`).
+**A2. `src/routes/u.$slug.tsx` (356 linii)** — pagină publică share-abilă `/u/:slug` (nu e folosită din grilă; e pentru link extern).
+- Hero foto (gallery) + nume + vârstă + Verified + `ProfileBadgesRow`.
+- Auto-translate bio/ideal_match/prompts.
+- Video clip, Voice prompt, Anthem (fiecare card).
+- Ideal match (`"…"`).
+- Ask me about (chip-uri).
+- About (`bio`).
+- Interests, Tribes.
+- Stats grid: Height, Body, Job, Zodiac.
+- CTA "Intră în Ventuza…".
 
-### 2. Cheile VAPID — PARȚIAL (env vars cu FALLBACK HARDCODAT — risc de securitate)
-`web-push.server.ts:17-19`:
-```
-const FALLBACK_PUBLIC  = "BOO0M7jilN8SYJCu...EpABto";
-const FALLBACK_PRIVATE = "iNOglDe-6dSogIb1DeNo-mqlEJWZq7zdBzZPORilfvk";  // ← PRIVATE key în plaintext
-const FALLBACK_SUBJECT = "mailto:hello@ventuza.app";
-```
-Runtime citește `process.env.VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY / VAPID_SUBJECT`, dar dacă env lipsește **cade pe fallback hardcodat**. Cheia privată e commit-ată în cod → oricine cu acces la sursă poate trimite push în numele Ventuza. **CRITIC de rezolvat înainte de prod.**
+**Aglomerare:** e o pagină "vitrină" mai bogată decât drawer-ul; folosită doar pentru share.
 
-Client: `web-push-config.ts` — `VITE_VAPID_PUBLIC_KEY` (env) cu același fallback public (OK, cheia publică poate fi commit-ată).
-
-### 3. Push Android/iOS via Capacitor (FCM/APNs) — LIPSEȘTE
-- `@capacitor/push-notifications` **NU e în `package.json`**. Există alte plugin-uri Capacitor (`@capacitor/android`, `@capacitor/app`, `splash-screen`, `status-bar`, `@revenuecat/purchases-capacitor`) — nimic pentru push nativ.
-- `push_subscriptions.kind` are valori `webpush` populate, dar `sendPushToUser` filtrează `if (s.kind !== "webpush") continue;` — deci chiar dacă ar exista o subscription FCM/APNs, nu s-ar trimite.
-- Referințele "FCM/APNs" există doar în copy legal (`legal.privacy.tsx`, `legal.data-safety.tsx`), în admin panel (`PushHealthPanel.tsx` — placeholder monitorizare) și în text consent — **zero implementare reală**.
-
-### 4. Tabel `push_subscriptions` — EXISTĂ, se populează
-Coloane cheie: `user_id`, `endpoint`, `p256dh`, `auth`, `platform`, `kind`, `fcm_token` (legacy NOT NULL — reused ca endpoint), `last_seen_at`, `user_agent`. RLS activ (4 policies). Se populează la fiecare abonare din `EnablePushButton`. Service worker `/push-sw.js` — există în `public/`.
-
-### 5. Când se trimite push efectiv — DOAR pe mesaj chat nou
-- `src/lib/chat.ts:53` `pushNewMessageNotification` → apelat la fiecare mesaj trimis (`chat.ts:269, :347`) → `sendPushToUser({ category: "messages", ... })`.
-- **LIPSEȘTE push pe**: match nou, like/swipe, tap, woof, favorite, view profil, event RSVP, offer claim, admin broadcast targeted, story view. `src/lib/social.ts` NU cheamă `sendPushToUser` nicăieri. Match-ul are doar realtime in-app (MatchModal), fără push.
-- Broadcast-uri partener (`partner-broadcasts.functions.ts`) au flux separat propriu.
+**Vizual dominant:** poza + nume/vârstă/distanță/online = deja "cel mai important". "Zgomotul" = suprapunerea `tribes` + `stats grid` + `pronouns` + `looking-for` + `interests` (multe chip-uri consecutive).
 
 ---
 
-## IN-APP
+### B. PROFIL EDITAT (formularul tău)
 
-### 6. Toast la mesaj/match/like live — PARȚIAL
-- **Notificări (tabelul `notifications`)**: `NotificationsProvider` (`src/lib/notifications-context.tsx:73`) ascultă canal `notifications:{userId}` (INSERT/UPDATE/DELETE cu filter `user_id=eq.{id}`). La INSERT → `toast(title, { description: body })` cu `sonner` + sunet + dedup pe `id`.
-- **Match live**: canal separat `matches-{userId}` în `src/routes/discover.tsx:331` → deschide `MatchModal` full-screen (nu doar toast).
-- **Mesaje chat live cât ești în app**: nu văd toast dedicat mesajelor primite când NU ești pe ruta chat (verificare: `chat.ts` are canal per conversație, dar toast-ul global depinde exclusiv de existența unui `notifications` row creat pentru mesaj). **PARȚIAL** — dacă backend inserează un `notifications` row pe mesaj, apare toast; dacă nu, ești orb la mesajele primite pe alte rute.
-- **Likes**: dacă serverul inserează row în `notifications` cu `type='like'`, apare toast. Altfel nimic.
+**Ruta:** `src/routes/profile.tsx` (1194 linii). Combină **profil citit** (afișare) + `EditDrawer` (formular full-screen).
 
-### 7. Badge count pe taburi — PARȚIAL
-- `NotificationBell.tsx` (bell icon în nav) afișează `unread` din `useNotifications()` — **EXISTĂ**.
-- `useUnreadMessages()` (`src/hooks/useUnreadMessages.ts`) returnează `total / bySender / byConversation`. Consumat pe cardurile discover ca overlay (rose count + `snake-border`), dar **NU afișat ca badge pe tab-ul Messages din bottom nav**. → **LIPSEȘTE badge Messages pe nav.**
-- **LIPSEȘTE badge pentru likes** pe tab-ul Favorites/Likes.
+**Componente card-based în afișarea proprie:**
+`PhotoManager`, `PhotoCoachButton`, `ProfileCompleteness`, `ProfileStatsRow`, `ShareProfileCard`, `VoicePromptCard`, `MusicAnthemCard`, `VideoClipCard`, `DateVibesCard` (ask_me_about / dealbreakers / ideal_match), `LifestyleFactsCard` (16 câmpuri), `RightNowCard`, `ProfilePremiumPanel`, `PrivateAlbumManager`, secțiuni Privacy (incognito + location sharing).
 
-### 8. "Ramă luminată" pe home — PARȚIAL
-- Există efectul `snake-border` (CSS) aplicat pe cardurile discover când `unread > 0` pentru senderul respectiv. Grindr-style border curcubeu.
-- NU există echivalent la nivel de nav/tab (ex: bottom nav highlight când vin mesaje noi în background). NU există glow pe home layout.
+**`EditDrawer` (~300 linii) — secțiuni:**
+- **About:** display_name (15c), bio (255c), interests ("My Tags").
+- **Stats:** hide_age toggle, height_cm, weight_kg, ethnicity, body_type, position, relationship_status.
+- **Preferences:** tribes, looking_for, meet_at, expectations, scenes, accept_nsfw_photos.
+- **Identity:** gender, pronouns, orientation.
+- **Health:** prep_status, safety_practices, vaccinations.
 
-### 9. Realtime — canale Supabase active
-| Canal | Sursă | Eveniment | Reacție |
-|---|---|---|---|
-| `notifications:{userId}` | `notifications-context.tsx` | INSERT/UPDATE/DELETE `notifications` | toast + sunet + update bell |
-| `matches-{userId}` | `discover.tsx:331` | INSERT `matches` | MatchModal full-screen |
-| `discover-profiles:{userId}` | `discover.tsx:314` | INSERT `profile_live_events` | refresh grid (debounced 60s) |
-| Chat conversation | `chat.ts` (nu detaliat aici) | INSERT `messages` per conv | update chat UI |
-| Unread messages | `useUnreadMessages.ts` | (verificare separată) | recalcul badge |
+**Total câmpuri editabile inventariate (Profile type + carduri):** ~50 (excluzând poze/media/albume).
+Câmpurile "lifestyle" (zodiac, languages, education, school, job_title, company, religion, politics, children, pets, drinking, smoking, cannabis, drugs, workout, diet, sleep_schedule) sunt DOAR în `LifestyleFactsCard` — nu în `EditDrawer`, se editează separat.
 
-**Zero `.on("presence", ...)`** — presence real Grindr-style lipsește complet.
+**Obligatorii (onboarding `/n`, `src/routes/n.tsx`, 6 pași):**
+1. **basics**: `display_name` ≥ 2, `birthdate` cu vârstă ≥ 18. (Locked dacă e deja setat.)
+2. **identity**: `gender` sau `gender_custom`, `pronouns` sau `pronouns_custom`, `orientation` ≥ 1.
+3. **intent**: `looking_for` ≥ 1.
+4. **stats**: TOATE opționale (skip permis).
+5. **personality**: `interests` ≥ 3 (obligatoriu), prompts + bio opțional.
+6. **photos**: cel puțin 1 poză + `terms_accepted`.
 
----
+Restul (tribes, meet_at, expectations, scenes, safety, health, lifestyle 16, voice/anthem/video, ideal_match, ask_me_about, dealbreakers) sunt **opționale**, se completează după în `/profile`.
 
-## SONORE
-
-### 10. Sunet la notificări — EXISTĂ (generat în cod, nu fișier audio)
-- `src/lib/notification-sound.ts` — Web Audio API generează sunet ~450ms (E5 → B5 cu shimmer octavă, envelope soft, low-pass filter). ZERO fișier audio extern.
-- Toggle: `localStorage['ventuza:notification-sound']` (default: ON).
-- Priming: `primeNotificationSound()` chemat în `NotificationsProvider` la mount → deblochează AudioContext la primul gest user (cerință iOS/Safari).
-- Se joacă la fiecare INSERT în `notifications` (`notifications-context.tsx:93`), dedup pe `id`.
-- **LIPSEȘTE**: sunete diferite per categorie (match vs mesaj vs like — toate au același sunet). Nu există sunet separat pentru match care să fie mai proeminent.
-- **LIPSEȘTE**: sunet in-app la mesaj chat primit dacă nu s-a creat notification row (depinde de backend).
+**Onboarding minimal-ok:** 6 pași, dintre care 2 pot fi trecuți repede (stats skip, personality doar interests). Realist ~2–3 min. Nu e extrem, dar identity+intent+personality forțează 5–7 selecții obligatorii.
 
 ---
 
-## Sumar EXISTĂ / PARȚIAL / LIPSEȘTE
+### C. COMPARAȚIE GRINDR — ce ai în PLUS
 
-| Item | Stare |
+**Grindr afișează pe profil altcuiva:** poză, nume, vârstă, "About", height/weight, body type, position, tribes, ethnicity, HIV status + last test, relationship status, online. Cam atât "above the fold" + expand.
+
+**Câmpuri PE CARE LE AI ÎN PLUS FAȚĂ DE GRINDR** (candidați la "vezi mai mult" expandabil în ProfileDrawer discover):
+| Zgomot potențial | Sursă |
 |---|---|
-| Web Push VAPID + service worker | EXISTĂ (fallback keys hardcodate = risc) |
-| Cheia privată VAPID hardcodată în cod | **CRITIC — fix necesar** |
-| Native FCM (Android) / APNs (iOS) | LIPSEȘTE |
-| Tabel `push_subscriptions` populat | EXISTĂ |
-| Push pe mesaj chat | EXISTĂ |
-| Push pe match / like / tap / woof / favorite | LIPSEȘTE |
-| Push admin broadcast targeted | LIPSEȘTE |
-| Toast in-app pe `notifications` INSERT | EXISTĂ |
-| MatchModal realtime | EXISTĂ |
-| Toast garantat pe mesaj chat cross-route | PARȚIAL (depinde de `notifications` row) |
-| Badge bell notificări | EXISTĂ |
-| Badge Messages pe bottom nav | LIPSEȘTE |
-| Badge likes | LIPSEȘTE |
-| Snake-border unread pe carduri discover | EXISTĂ |
-| Sunet generat Web Audio | EXISTĂ |
-| Sunete diferențiate per categorie | LIPSEȘTE |
-| Presence Supabase (`.on("presence")`) | LIPSEȘTE |
-| Quiet hours / discrete mode / per-category prefs | EXISTĂ |
+| `prompts` (Q&A multiple) | drawer + `/u/:slug` — Hinge-style, poate rămâne dar sub fold |
+| `MatchScoreBadge` sub titlu | drawer discover |
+| `ask_me_about`, `dealbreakers`, `ideal_match` (`DateVibesCard`) | `/u/:slug`, nu în drawer |
+| `voice_prompt`, `anthem`, `video_clip` | `/u/:slug`, nu în drawer — bogăție Hinge/Bumble |
+| `expectations`, `scenes`, `meet_at` | scos din drawer, doar în `/profile` propriu |
+| `zodiac`, `languages`, `education`, `job_title`, `religion`, `politics`, `children`, `pets`, `drinking`, `smoking`, `cannabis`, `drugs`, `workout`, `diet`, `sleep_schedule` (16 în `LifestyleFactsCard`) | doar în `/profile` propriu — NU se randează la altcineva |
+| `vaccinations`, `safety_practices`, `prep_status` (Safer play) | doar `/profile` propriu; **HIV status intenționat scos GDPR** — un plus față de Grindr, nu un minus |
+| `pronouns` afișat ca linie separată uppercase | drawer discover |
+| `PrivateAlbumViewer` embed în drawer | drawer discover — util, dar mărește scroll |
+| `TapFavoriteRow` embed inline | drawer discover — util, dar poate merge într-un action bar mai compact |
+
+**IMPORTANT — de reținut:** `LifestyleFactsCard` (16 câmpuri) există ca editabil pe profilul propriu dar **NU este vizibil altcuiva** nici în drawer nici în `/u/:slug`. Există date "moarte" pe care userii le completează degeaba dacă nu adaugi randare la target.
+
+**Ce e deja bine / minimal (nu atinge):**
+- **Grila** (sprint anterior): poză + nume + vârstă + distanță + online + snake-border unread. E deja Grindr-clean.
+- **Hero-ul drawer-ului**: poza mare + overlay compact (nume/vârstă/verified/online/distanță/înălțime). Deja aliniat cu Grindr.
+- **Sticky action bar** Pass/Message/Like. Clar și minimal.
+- **Onboarding basics** (nume + birthdate + identity + intent + photos). Rezonabil.
 
 ---
 
-## Cel mai CRITIC pentru retenție
+### RECOMANDĂRI DE SIMPLIFICARE (fără pierderi de funcționalitate)
 
-1. **VAPID_PRIVATE_KEY hardcodată în `web-push.server.ts:18`** — nu e feature de retenție dar e blocker de securitate. Trebuie eliminat fallback-ul înainte de orice go-live.
-2. **Push pe MATCH și pe LIKE** — motorul emoțional al app-urilor de dating. Astăzi userul primește push doar la mesaj efectiv trimis; ratează 80% din "hook events". Server fn `sendPushToUser` există gata, doar cablarea lipsește în `social.ts` (like → match + like unilateral, favorite, tap, woof).
-3. **Native FCM/APNs** — fără asta app-ul Capacitor Android nu primește push când e închis (Web Push funcționează în browser Chrome Android, dar în WebView Capacitor comportamentul e inconsistent). Blocker pentru retenție mobile reală.
-4. **Badge Messages pe bottom nav** — signal vizual constant "ai mesaje noi" chiar când toast-ul a dispărut. Hook simplu de retenție, cost mic (`useUnreadMessages` deja returnează totalul).
-5. **Presence real** — punct verde curent minte (5min prag pe `last_seen` fără heartbeat). Fără presence, "cine e activ acum" e nesincer și scade încrederea în app.
+**R1. Drawer discover (A1) — colapsează sub "Vezi mai mult":**
+Above the fold să rămână: hero foto + nume/vârstă/online/distanță/înălțime + bio (2 linii clamped) + tribes + stats grid + `TapFavoriteRow` + sticky Pass/Message/Like.
+Sub expand: prompts, looking_for, interests, pronouns, banner Right Now, `PrivateAlbumViewer`, `MatchScoreBadge` (mută-l lângă butonul Like, mai discret).
 
-Aștept confirmare pentru sprint de execuție (recomand ordine: VAPID fix → push pe match+like → badge Messages → presence heartbeat → native FCM/APNs Capacitor).
+**R2. Randează în drawer câteva câmpuri "vii" care astăzi sunt orfane:**
+Adaugă (opțional, sub expand): `voice_prompt`, `anthem`, `video_clip`, `ideal_match`, `ask_me_about`. Astăzi userii le pot edita dar nimeni nu le vede din grilă → risipă. Sau invers, dacă vrei minimalism strict: **elimină-le din editor** dacă rămân neafișate.
+
+**R3. `/profile` propriu (B) — mută cardurile "grele" într-un tab/accordion:**
+Actual: 12+ carduri consecutive (`PhotoManager`, `Completeness`, `Stats`, `Share`, `Voice`, `Music`, `Video`, `DateVibes`, `Lifestyle`, About/Prompts/Interests/Tribes/Stats/Expectations/MeetAt/Scenes/Safer/Identity/Activity/Verificare/Album/Privacy). Foarte lung.
+Propune: 3 taburi — **"Esențial"** (foto, completeness, share, edit primary), **"Extra"** (voice, anthem, video, date vibes, lifestyle 16), **"Setări"** (privacy, verificare, premium, album, activity).
+
+**R4. `EditDrawer` — reduce câmpurile obligatorii-in-your-face:**
+Actual: 5 secțiuni (About/Stats/Preferences/Identity/Health). Toate deschise simultan. Preferences singură are 5 câmpuri de chip-uri (tribes, looking_for, meet_at, expectations, scenes).
+Propune: colapsează Preferences → doar tribes + looking_for vizibile; meet_at/expectations/scenes sub "Detalii de întâlnire". Health rămâne colapsat by default (privacy-friendly).
+
+**R5. Onboarding `/n` — de la 6 la 4 pași:**
+Combină `identity` + `intent` într-un singur pas (utilizatorul oricum trebuie să le completeze consecutiv). Scoate `stats` din onboarding (toate opționale acolo → mută-le complet în `/profile`). Rezultat: basics → identity+intent → personality → photos = **4 pași, ~90 sec**.
+
+**R6. `/u/:slug` (pagina share) — decide rolul:**
+Astăzi e mai bogată decât drawer-ul. Fie o aliniezi cu drawer-ul (consistent), fie o păstrezi intenționat ca "landing bogat de share" (mai mult conținut = mai bun pentru SEO / conversie click extern). Nu o atinge fără decizie de produs.
+
+---
+
+### FIȘIERE CHEIE
+
+- `src/routes/discover.tsx` — L1189–1378 = ProfileDrawer.
+- `src/routes/u.$slug.tsx` — pagina publică share.
+- `src/routes/profile.tsx` — profilul propriu (view + EditDrawer).
+- `src/routes/n.tsx` — onboarding 6 pași.
+- `src/components/QuickProfileDrawer.tsx` — meniul rapid din header (nu e "profil", e nav lateral).
+- `src/components/ProfilePhotoGallery.tsx` — galerie foto (reused hero).
+- `src/components/LifestyleFactsCard.tsx` — 16 câmpuri lifestyle (orfane la target).
+- `src/components/DateVibesCard.tsx` — ask/dealbreakers/ideal_match.
+- `src/components/VoicePromptCard.tsx`, `MusicAnthemCard.tsx`, `VideoClipCard.tsx` — media orfane la target din drawer.
+- `src/components/ProfileBadgesRow.tsx`, `ProfileStatsRow.tsx`, `ProfileCompleteness.tsx`, `ProfilePremiumPanel.tsx`.
+
+**Zero modificări aplicate.** Aștept decizia ta: R1+R5 dau cel mai mare câștig "curat, esențial, ca Grindr" cu efort mic.
