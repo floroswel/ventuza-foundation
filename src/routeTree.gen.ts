@@ -24,6 +24,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as NearbyRouteImport } from './routes/nearby'
 import { Route as NRouteImport } from './routes/n'
+import { Route as McpRouteImport } from './routes/mcp'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as GalleryTestRouteImport } from './routes/gallery-test'
 import { Route as FavoritesRouteImport } from './routes/favorites'
@@ -67,10 +68,14 @@ import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as BusinessDashboardRouteImport } from './routes/business.dashboard'
 import { Route as AuthCheckEmailRouteImport } from './routes/auth.check-email'
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
+import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
+import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicDiditWebhookRouteImport } from './routes/api/public/didit-webhook'
 import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
+import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
+import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/email/queue/process'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
@@ -149,6 +154,11 @@ const NearbyRoute = NearbyRouteImport.update({
 const NRoute = NRouteImport.update({
   id: '/n',
   path: '/n',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const McpRoute = McpRouteImport.update({
+  id: '/mcp',
+  path: '/mcp',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsRoute = GroupsRouteImport.update({
@@ -367,6 +377,18 @@ const AdvertiseNewRoute = AdvertiseNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdvertiseRoute,
 } as any)
+const Char91DotwellKnownChar93OauthProtectedResourceRoute =
+  Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
+    id: '/.well-known/oauth-protected-resource',
+    path: '/.well-known/oauth-protected-resource',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const Char91DotmcpChar93ListToolsRoute =
+  Char91DotmcpChar93ListToolsRouteImport.update({
+    id: '/.mcp/list-tools',
+    path: '/.mcp/list-tools',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicSignupGuardRoute = ApiPublicSignupGuardRouteImport.update({
   id: '/api/public/signup-guard',
   path: '/api/public/signup-guard',
@@ -386,6 +408,17 @@ const AdminUsersIdRoute = AdminUsersIdRouteImport.update({
   id: '/users/$id',
   path: '/users/$id',
   getParentRoute: () => AdminRoute,
+} as any)
+const Char91DotmcpChar93InvokeToolToolRoute =
+  Char91DotmcpChar93InvokeToolToolRouteImport.update({
+    id: '/.mcp/invoke-tool/$tool',
+    path: '/.mcp/invoke-tool/$tool',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
+  id: '/.lovable/oauth/consent',
+  path: '/.lovable/oauth/consent',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const LovableEmailQueueProcessRoute =
   LovableEmailQueueProcessRouteImport.update({
@@ -427,6 +460,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/mcp': typeof McpRoute
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
@@ -442,6 +476,8 @@ export interface FileRoutesByFullPath {
   '/status': typeof StatusRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
   '/business/dashboard': typeof BusinessDashboardRoute
@@ -469,6 +505,8 @@ export interface FileRoutesByFullPath {
   '/venues/$id': typeof VenuesIdRoute
   '/verify/status': typeof VerifyStatusRoute
   '/messages/': typeof MessagesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -495,6 +533,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/mcp': typeof McpRoute
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
@@ -510,6 +549,8 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
   '/business/dashboard': typeof BusinessDashboardRoute
@@ -537,6 +578,8 @@ export interface FileRoutesByTo {
   '/venues/$id': typeof VenuesIdRoute
   '/verify/status': typeof VerifyStatusRoute
   '/messages': typeof MessagesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -564,6 +607,7 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/mcp': typeof McpRoute
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
@@ -579,6 +623,8 @@ export interface FileRoutesById {
   '/status': typeof StatusRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
+  '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
+  '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
   '/business/dashboard': typeof BusinessDashboardRoute
@@ -606,6 +652,8 @@ export interface FileRoutesById {
   '/venues/$id': typeof VenuesIdRoute
   '/verify/status': typeof VerifyStatusRoute
   '/messages/': typeof MessagesIndexRoute
+  '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
+  '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users/$id': typeof AdminUsersIdRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -634,6 +682,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/gallery-test'
     | '/groups'
+    | '/mcp'
     | '/n'
     | '/nearby'
     | '/notifications'
@@ -649,6 +698,8 @@ export interface FileRouteTypes {
     | '/status'
     | '/verify'
     | '/visitors'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/advertise/new'
     | '/auth/check-email'
     | '/business/dashboard'
@@ -676,6 +727,8 @@ export interface FileRouteTypes {
     | '/venues/$id'
     | '/verify/status'
     | '/messages/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin/users/$id'
     | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
@@ -702,6 +755,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/gallery-test'
     | '/groups'
+    | '/mcp'
     | '/n'
     | '/nearby'
     | '/notifications'
@@ -717,6 +771,8 @@ export interface FileRouteTypes {
     | '/status'
     | '/verify'
     | '/visitors'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/advertise/new'
     | '/auth/check-email'
     | '/business/dashboard'
@@ -744,6 +800,8 @@ export interface FileRouteTypes {
     | '/venues/$id'
     | '/verify/status'
     | '/messages'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin/users/$id'
     | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
@@ -770,6 +828,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/gallery-test'
     | '/groups'
+    | '/mcp'
     | '/n'
     | '/nearby'
     | '/notifications'
@@ -785,6 +844,8 @@ export interface FileRouteTypes {
     | '/status'
     | '/verify'
     | '/visitors'
+    | '/.mcp/list-tools'
+    | '/.well-known/oauth-protected-resource'
     | '/advertise/new'
     | '/auth/check-email'
     | '/business/dashboard'
@@ -812,6 +873,8 @@ export interface FileRouteTypes {
     | '/venues/$id'
     | '/verify/status'
     | '/messages/'
+    | '/.lovable/oauth/consent'
+    | '/.mcp/invoke-tool/$tool'
     | '/admin/users/$id'
     | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
@@ -839,6 +902,7 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   GalleryTestRoute: typeof GalleryTestRoute
   GroupsRoute: typeof GroupsRouteWithChildren
+  McpRoute: typeof McpRoute
   NRoute: typeof NRoute
   NearbyRoute: typeof NearbyRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -854,6 +918,8 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   VerifyRoute: typeof VerifyRouteWithChildren
   VisitorsRoute: typeof VisitorsRoute
+  Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
+  Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   LegalAgePolicyRoute: typeof LegalAgePolicyRoute
   LegalBadgesRoute: typeof LegalBadgesRoute
   LegalBusinessTermsRoute: typeof LegalBusinessTermsRoute
@@ -872,6 +938,8 @@ export interface RootRouteChildren {
   USlugRoute: typeof USlugRoute
   VenuesIdRoute: typeof VenuesIdRoute
   MessagesIndexRoute: typeof MessagesIndexRoute
+  DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
+  Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicDiditWebhookRoute: typeof ApiPublicDiditWebhookRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
   ApiPublicSignupGuardRoute: typeof ApiPublicSignupGuardRoute
@@ -986,6 +1054,13 @@ declare module '@tanstack/react-router' {
       path: '/n'
       fullPath: '/n'
       preLoaderRoute: typeof NRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mcp': {
+      id: '/mcp'
+      path: '/mcp'
+      fullPath: '/mcp'
+      preLoaderRoute: typeof McpRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/groups': {
@@ -1289,6 +1364,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdvertiseNewRouteImport
       parentRoute: typeof AdvertiseRoute
     }
+    '/.well-known/oauth-protected-resource': {
+      id: '/.well-known/oauth-protected-resource'
+      path: '/.well-known/oauth-protected-resource'
+      fullPath: '/.well-known/oauth-protected-resource'
+      preLoaderRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.mcp/list-tools': {
+      id: '/.mcp/list-tools'
+      path: '/.mcp/list-tools'
+      fullPath: '/.mcp/list-tools'
+      preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/signup-guard': {
       id: '/api/public/signup-guard'
       path: '/api/public/signup-guard'
@@ -1316,6 +1405,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/users/$id'
       preLoaderRoute: typeof AdminUsersIdRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/.mcp/invoke-tool/$tool': {
+      id: '/.mcp/invoke-tool/$tool'
+      path: '/.mcp/invoke-tool/$tool'
+      fullPath: '/.mcp/invoke-tool/$tool'
+      preLoaderRoute: typeof Char91DotmcpChar93InvokeToolToolRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.lovable/oauth/consent': {
+      id: '/.lovable/oauth/consent'
+      path: '/.lovable/oauth/consent'
+      fullPath: '/.lovable/oauth/consent'
+      preLoaderRoute: typeof DotlovableOauthConsentRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/lovable/email/queue/process': {
       id: '/lovable/email/queue/process'
@@ -1457,6 +1560,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   GalleryTestRoute: GalleryTestRoute,
   GroupsRoute: GroupsRouteWithChildren,
+  McpRoute: McpRoute,
   NRoute: NRoute,
   NearbyRoute: NearbyRoute,
   NotificationsRoute: NotificationsRoute,
@@ -1472,6 +1576,9 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   VerifyRoute: VerifyRouteWithChildren,
   VisitorsRoute: VisitorsRoute,
+  Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
+  Char91DotwellKnownChar93OauthProtectedResourceRoute:
+    Char91DotwellKnownChar93OauthProtectedResourceRoute,
   LegalAgePolicyRoute: LegalAgePolicyRoute,
   LegalBadgesRoute: LegalBadgesRoute,
   LegalBusinessTermsRoute: LegalBusinessTermsRoute,
@@ -1490,6 +1597,8 @@ const rootRouteChildren: RootRouteChildren = {
   USlugRoute: USlugRoute,
   VenuesIdRoute: VenuesIdRoute,
   MessagesIndexRoute: MessagesIndexRoute,
+  DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
+  Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicDiditWebhookRoute: ApiPublicDiditWebhookRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
   ApiPublicSignupGuardRoute: ApiPublicSignupGuardRoute,
@@ -1501,3 +1610,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
