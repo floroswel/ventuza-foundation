@@ -212,6 +212,20 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     if (webFallbackInstalled) return lastStatus;
     webFallbackInstalled = true;
 
+    // Bypass complet pe rutele /admin — adminul trebuie să poată face capturi
+    // de ecran pentru rapoarte, audit vizual și support. Rutele sunt deja
+    // gated server-side prin rol; dacă un non-admin ajunge acolo, nu are ce
+    // să exfiltreze. Verificarea se face la runtime pentru că pathname-ul se
+    // schimbă fără reload (SPA).
+    const isAdminSurface = () => {
+      try {
+        return window.location.pathname.startsWith("/admin");
+      } catch {
+        return false;
+      }
+    };
+
+
     // Helper: descrie succint elementul care a declanșat blocarea (fără PII).
     const describe = (el: HTMLElement | null): string => {
       if (!el) return "unknown";
