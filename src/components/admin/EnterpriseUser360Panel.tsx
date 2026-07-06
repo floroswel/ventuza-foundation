@@ -302,7 +302,7 @@ function TemporaryBanSection({ userId }: { userId: string }) {
   };
 
   const mut = useMutation({
-    mutationFn: async (lift = false) => banFn({ data: {
+    mutationFn: async (lift: boolean) => banFn({ data: {
       userId,
       until: lift ? null : new Date(until).toISOString(),
       reason,
@@ -323,9 +323,9 @@ function TemporaryBanSection({ userId }: { userId: string }) {
       <Textarea placeholder="Motiv (min. 10)" value={reason} onChange={(e) => setReason(e.target.value)} rows={2} />
       <div className="flex gap-2">
         <Button size="sm" variant="destructive" disabled={!until || reason.length < 10 || mut.isPending}
-                onClick={() => mut.mutate(false as any)}>Aplică ban</Button>
+                onClick={() => mut.mutate(false)}>Aplică ban</Button>
         <Button size="sm" variant="ghost" disabled={reason.length < 10 || mut.isPending}
-                onClick={() => mut.mutate(true as any)}>Ridică ban</Button>
+                onClick={() => mut.mutate(true)}>Ridică ban</Button>
       </div>
     </Card>
   );
