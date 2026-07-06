@@ -1,110 +1,120 @@
 
-# Analiză — GRILA DISCOVER + NOTIFICĂRI (read-only, zero modificări)
+# Raport NOTIFICĂRI — stare reală (read-only, zero modificări)
 
-Sursă: `src/routes/discover.tsx`, `src/lib/discover.ts`, `src/lib/notifications-context.tsx`, `src/lib/notification-sound.ts`, `src/lib/push.functions.ts`, `src/lib/web-push.server.ts`, `src/lib/web-push-config.ts`, `src/components/EnablePushButton.tsx`, `src/hooks/useUnreadMessages.ts`, `src/lib/chat.ts`, `supabase/migrations/*profile_live_events*`, `public/push-sw.js`.
-
----
-
-## A. GRILA DISCOVER
-
-### 1. Layout — EXISTĂ (parțial modern)
-- `discover.tsx:880` — `grid grid-cols-3 gap-[1px]` → **3 carduri/rând** pe toate breakpoint-urile (nu se lățește pe desktop, nu are `sm:grid-cols-4 lg:grid-cols-5` ca Grindr web).
-- **NU există infinite scroll și nici paginare.** RPC `discover_profiles` e chemat cu `_limit: 50, _offset: 0` (`discover.ts:196`), hard-cap server-side 50 (regula anti-scrape). Userul vede maxim 50 profiluri per încărcare; nu există buton "load more".
-- Tab-uri: `nearby` / `fresh` (sortare client-side pe `last_seen`) + view alternativă `swipe`.
-
-### 2. Card — ce afișează / ce lipsește
-EXISTĂ (`discover.tsx:880-960`): poză (`aspect-square`, semnată prin `signPhotos`), nume + vârstă (`ageFrom(birthdate)`), distanță **bucketizată** (`formatDistance` → "< 1 km", "~ 2 km"…), tribes (2 din listă), badge-uri (`BadgeStrip` — verified etc.), indicator BOOST, indicator NOW ("Looking now"), tag `Plane` cu oraș de călătorie, badge unread mesaje (`snake-border` + count rose).
-
-LIPSEȘTE vs Grindr:
-- **Text "Active Xm ago"** pe card — funcția `formatLastSeen` există în `discover.ts:104` dar NU e folosită în grilă (doar în `ProfileSheet:1152`).
-- **Distanță precisă în metri** — imposibil (regulă anti-triangulație, corect așa; e o alegere de siguranță, nu un bug).
-- **Tag-uri "Looking For" / "Position"** vizibile pe card — datele vin, dar nu se afișează în grilă.
-- **Skeleton loading pe card individual** — există doar skeleton global.
-- **Story/live ring** în jurul avatarului (Grindr Fresh).
-
-### 3. Indicator online — EXISTĂ, dar șubred
-- `discover.tsx:915` randează punct verde emerald cu glow când `isOnline(p.last_seen)` (`discover.ts:98` → prag **5 minute** față de `last_seen`).
-- `last_seen` se scrie prin RPC `supabase.rpc("touch_last_seen")` chemat **o singură dată** la mount (`discover.tsx:155`). Nu se face heartbeat periodic → dacă user stă mai mult de 5 min fără să reintre pe Discover, apare offline pentru ceilalți deși e activ.
-- **Nu există Supabase Presence** (`.on("presence")`) — nici pe Discover, nici global. Punctul verde e derivat exclusiv din timestamp DB.
-- Există canal realtime `profile_live_events` (`discover.tsx:314`) care doar declanșează re-fetch la mișcare de locație — nu e presence real, doar notificare de "s-a schimbat ceva la un profil".
-
-### 4. Reordonare live — PARȚIAL
-- Există `setInterval(30_000)` care forțează re-render (`discover.tsx:279`) pentru ca `isOnline` să se reevalueze — dar NU schimbă ordinea, doar recalculează dot-ul.
-- Refresh real (`load()`) e triggered de canalul `profile_live_events`, **debounced la 60s** ca să evite `discover_rate_limited`. Deci reordonarea "cineva devine online" apare cu până la 60s întârziere și doar dacă acel user și-a mișcat locația (ce populează `profile_live_events`), NU la simpla revenire.
-- **Concluzie:** grid quasi-static; nu ai senzația Grindr de "cineva tocmai a apărut sus".
-
-### 5. Filtre — EXISTĂ complet
-`DiscoverFilters` (`discover.ts:3-40`): distanță max, min/max age, `lookingFor`, `gender`, `orientation`, `tribes`, `bodyTypes`, `positions`, height range, `onlineOnly`, `withPhotoOnly`, `verifiedOnly`, `lookingNowOnly`. UI: `FiltersDrawer`. Sortare: `smart` (score) vs `distance` — hardcodat pe `smart` implicit.
-
-### 6. Tap pe card — drawer overlay (nu route)
-`ProfileSheet` (`discover.tsx:1083-1440`) — panou lateral custom cu backdrop + swipe la prev/next. Butoane pass / message / like în footer. Nu navighează la un route separat. E ok, dar nu are deep-link partajabil.
+Investigat: `src/lib/push.functions.ts`, `src/lib/web-push.server.ts`, `src/lib/web-push-config.ts`, `src/lib/notifications-context.tsx`, `src/lib/notification-sound.ts`, `src/lib/notifications.ts`, `src/lib/chat.ts`, `src/lib/social.ts`, `src/hooks/useUnreadMessages.ts`, `src/components/EnablePushButton.tsx`, `src/components/NotificationBell.tsx`, `src/components/MatchModal.tsx`, `public/push-sw.js`, `package.json`, migrări `push_subscriptions` + `profile_live_events`.
 
 ---
 
-## B. NOTIFICĂRI
+## PUSH
 
-### 1. PUSH — Web Push VAPID FUNCȚIONAL, native FCM/APNs LIPSEȘTE
-- **Web Push (browser)**: `EnablePushButton.tsx` înregistrează `/push-sw.js` (`public/push-sw.js` există), obține subscription cu `VAPID_PUBLIC_KEY` (`web-push-config.ts` — env `VITE_VAPID_PUBLIC_KEY` cu fallback hardcodat MVP), salvează prin `savePushSubscription` (`push.functions.ts:12`). Trimitere reală: `sendOne` cu librăria `web-push` folosind `VAPID_PRIVATE_KEY` + `VAPID_SUBJECT` (`web-push.server.ts`, fallback la MVP dacă env lipsește — **security smell**: fallback la cheie hardcodată în cod).
-- **Consimțământ**: `push_notifications` înregistrat în `consent_log` la abonare/dezabonare.
-- **Preferințe recipient**: master toggle + per-category (`matches/messages/likes/events/marketing`) + quiet hours + `discrete_mode` (strip preview) — toate respectate în `sendPushToUser`.
-- **Native mobil (FCM/APNs prin Capacitor)**: LIPSEȘTE. `@capacitor/push-notifications` NU e în `package.json`. Coloana `push_subscriptions.kind` există și `sendPushToUser` filtrează pe `kind='webpush'` — restul (FCM/APNS) apare doar în UI admin/legal ca text, nu e implementat. `PushHealthPanel` monitorizează canale care nu sunt încă cablate.
-- **Triggere**: doar **mesaj chat nou** (`chat.ts:269`, `:347` via `pushNewMessageNotification`). LIPSEȘTE push pe: match nou, like/tap, woof, event RSVP, offer claim, admin broadcast direct la user (broadcast-urile există dar prin alt flux `partner-broadcasts`).
+### 1. Web Push (VAPID) — EXISTĂ, FUNCȚIONAL
+- Client: `src/components/EnablePushButton.tsx` → înregistrează `/push-sw.js`, cere permisiune Notification, `pushManager.subscribe({ userVisibleOnly: true, applicationServerKey })`, trimite la `savePushSubscription`.
+- Server fn: `src/lib/push.functions.ts`
+  - `savePushSubscription` (POST) — upsert în `push_subscriptions` cu auto-repair pe conflict endpoint (șterge orfane cu `supabaseAdmin`) + `record_consent('push_notifications')`.
+  - `removePushSubscription` (POST) — șterge + retrage consent.
+  - `sendPushToUser` (POST) — respectă `notification_prefs` (master, per-category, quiet hours, `discrete_mode`), livrare per subscription via `sendOne`.
+- Sender: `src/lib/web-push.server.ts` — librăria `web-push` (npm), `sendOne` prinde 404/410 → marchează endpoint expirat, apelantul șterge din DB.
+- Service worker: `public/push-sw.js` există (worker dedicat, scope propriu, NU e atins de `pwa-register.ts`).
 
-### 2. IN-APP vizuale — EXISTĂ prin `NotificationsProvider`
-- `notifications-context.tsx:73` — canal realtime `notifications:{userId}` pe tabela `notifications` (INSERT/UPDATE/DELETE cu filter `user_id=eq.{id}`). La INSERT: toast `sonner` + push local + sunet.
-- Match nou: canal separat `matches-{userId}` în `discover.tsx:331` care deschide `MatchModal` full-screen când vine INSERT.
-- **LIPSEȘTE**: badge count global pe tab-uri (mesaje necitite sunt calculate în `useUnreadMessages` dar afișate DOAR ca overlay pe cardul discover — nu apar în bottom nav ca număr roșu pe tab Messages). Fără "ramă luminată" pe home.
+### 2. Cheile VAPID — PARȚIAL (env vars cu FALLBACK HARDCODAT — risc de securitate)
+`web-push.server.ts:17-19`:
+```
+const FALLBACK_PUBLIC  = "BOO0M7jilN8SYJCu...EpABto";
+const FALLBACK_PRIVATE = "iNOglDe-6dSogIb1DeNo-mqlEJWZq7zdBzZPORilfvk";  // ← PRIVATE key în plaintext
+const FALLBACK_SUBJECT = "mailto:hello@ventuza.app";
+```
+Runtime citește `process.env.VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY / VAPID_SUBJECT`, dar dacă env lipsește **cade pe fallback hardcodat**. Cheia privată e commit-ată în cod → oricine cu acces la sursă poate trimite push în numele Ventuza. **CRITIC de rezolvat înainte de prod.**
 
-### 3. SONORE — EXISTĂ (semnătură generată în cod)
-- `notification-sound.ts` — Web Audio API generează sunet ~450ms (E5→B5 shimmer). Toggle localStorage. Priming pe primul gest user (iOS/Safari).
-- Se joacă la fiecare INSERT în `notifications` (`notifications-context.tsx:93`). **NU se joacă separat la mesaj chat** — depinde de faptul că mesajul chat generează notification row (verificat implicit, dar nu e evident în cod).
-- LIPSEȘTE: sunete diferite per categorie (match vs mesaj vs like). Un singur sunet pentru tot.
+Client: `web-push-config.ts` — `VITE_VAPID_PUBLIC_KEY` (env) cu același fallback public (OK, cheia publică poate fi commit-ată).
 
-### 4. Badge count — PARȚIAL
-- Bell icon în nav (`NotificationBell.tsx`) afișează `unread` count din `useNotifications()` — EXISTĂ.
-- Mesaje: `useUnreadMessages()` returnează `total/bySender/byConversation`. Total afișat pe cardurile discover (overlay `snake-border` + număr). **NU e afișat ca badge pe tab-ul Messages din bottom nav** (verificare grep — folosit doar pe cardurile discover).
-- Likes: LIPSEȘTE badge.
+### 3. Push Android/iOS via Capacitor (FCM/APNs) — LIPSEȘTE
+- `@capacitor/push-notifications` **NU e în `package.json`**. Există alte plugin-uri Capacitor (`@capacitor/android`, `@capacitor/app`, `splash-screen`, `status-bar`, `@revenuecat/purchases-capacitor`) — nimic pentru push nativ.
+- `push_subscriptions.kind` are valori `webpush` populate, dar `sendPushToUser` filtrează `if (s.kind !== "webpush") continue;` — deci chiar dacă ar exista o subscription FCM/APNs, nu s-ar trimite.
+- Referințele "FCM/APNs" există doar în copy legal (`legal.privacy.tsx`, `legal.data-safety.tsx`), în admin panel (`PushHealthPanel.tsx` — placeholder monitorizare) și în text consent — **zero implementare reală**.
 
-### 5. Realtime — Supabase postgres_changes (nu presence)
-Canale active:
-- `notifications:{userId}` (INSERT/UPDATE/DELETE) — bell + toast + sunet.
-- `matches-{userId}` (INSERT) — MatchModal.
-- `discover-profiles:{userId}` (`profile_live_events` *) — refresh grid debounced 60s.
-- Chat: (nu verificat aici) canal pe `messages` per conversație.
-- **Zero `channel.on("presence", ...)` global** — presence Grindr-style nu există.
+### 4. Tabel `push_subscriptions` — EXISTĂ, se populează
+Coloane cheie: `user_id`, `endpoint`, `p256dh`, `auth`, `platform`, `kind`, `fcm_token` (legacy NOT NULL — reused ca endpoint), `last_seen_at`, `user_agent`. RLS activ (4 policies). Se populează la fiecare abonare din `EnablePushButton`. Service worker `/push-sw.js` — există în `public/`.
 
-### 6. Ce lipsește pentru paritate Grindr
-- **Native push mobil** (FCM Android + APNs iOS prin Capacitor) — 0% implementat.
-- **Presence real** (heartbeat + Supabase Presence) → punct verde curent nu reflectă onlinu real.
-- **Badge tab Messages** în bottom nav (număr mesaje necitite).
-- **Push pe match/like/tap/woof** — există server fn `sendPushToUser` gata, dar nu e apelat din `social.ts`.
-- **Sunet diferențiat** per categorie (opțional).
-- **Grid live-reorder** când cineva devine online (necesită presence sau eveniment separat, azi doar refresh la mișcare locație).
-- **Infinite scroll** + `_offset` progresiv (dar atenție la rate limit 10 req/oră — necesită regândit contract server).
-- **Fallback VAPID hardcodat în cod** — trebuie eliminat înainte de prod real (`web-push.server.ts:17` are `FALLBACK_PRIVATE` = cheie privată în plaintext).
+### 5. Când se trimite push efectiv — DOAR pe mesaj chat nou
+- `src/lib/chat.ts:53` `pushNewMessageNotification` → apelat la fiecare mesaj trimis (`chat.ts:269, :347`) → `sendPushToUser({ category: "messages", ... })`.
+- **LIPSEȘTE push pe**: match nou, like/swipe, tap, woof, favorite, view profil, event RSVP, offer claim, admin broadcast targeted, story view. `src/lib/social.ts` NU cheamă `sendPushToUser` nicăieri. Match-ul are doar realtime in-app (MatchModal), fără push.
+- Broadcast-uri partener (`partner-broadcasts.functions.ts`) au flux separat propriu.
+
+---
+
+## IN-APP
+
+### 6. Toast la mesaj/match/like live — PARȚIAL
+- **Notificări (tabelul `notifications`)**: `NotificationsProvider` (`src/lib/notifications-context.tsx:73`) ascultă canal `notifications:{userId}` (INSERT/UPDATE/DELETE cu filter `user_id=eq.{id}`). La INSERT → `toast(title, { description: body })` cu `sonner` + sunet + dedup pe `id`.
+- **Match live**: canal separat `matches-{userId}` în `src/routes/discover.tsx:331` → deschide `MatchModal` full-screen (nu doar toast).
+- **Mesaje chat live cât ești în app**: nu văd toast dedicat mesajelor primite când NU ești pe ruta chat (verificare: `chat.ts` are canal per conversație, dar toast-ul global depinde exclusiv de existența unui `notifications` row creat pentru mesaj). **PARȚIAL** — dacă backend inserează un `notifications` row pe mesaj, apare toast; dacă nu, ești orb la mesajele primite pe alte rute.
+- **Likes**: dacă serverul inserează row în `notifications` cu `type='like'`, apare toast. Altfel nimic.
+
+### 7. Badge count pe taburi — PARȚIAL
+- `NotificationBell.tsx` (bell icon în nav) afișează `unread` din `useNotifications()` — **EXISTĂ**.
+- `useUnreadMessages()` (`src/hooks/useUnreadMessages.ts`) returnează `total / bySender / byConversation`. Consumat pe cardurile discover ca overlay (rose count + `snake-border`), dar **NU afișat ca badge pe tab-ul Messages din bottom nav**. → **LIPSEȘTE badge Messages pe nav.**
+- **LIPSEȘTE badge pentru likes** pe tab-ul Favorites/Likes.
+
+### 8. "Ramă luminată" pe home — PARȚIAL
+- Există efectul `snake-border` (CSS) aplicat pe cardurile discover când `unread > 0` pentru senderul respectiv. Grindr-style border curcubeu.
+- NU există echivalent la nivel de nav/tab (ex: bottom nav highlight când vin mesaje noi în background). NU există glow pe home layout.
+
+### 9. Realtime — canale Supabase active
+| Canal | Sursă | Eveniment | Reacție |
+|---|---|---|---|
+| `notifications:{userId}` | `notifications-context.tsx` | INSERT/UPDATE/DELETE `notifications` | toast + sunet + update bell |
+| `matches-{userId}` | `discover.tsx:331` | INSERT `matches` | MatchModal full-screen |
+| `discover-profiles:{userId}` | `discover.tsx:314` | INSERT `profile_live_events` | refresh grid (debounced 60s) |
+| Chat conversation | `chat.ts` (nu detaliat aici) | INSERT `messages` per conv | update chat UI |
+| Unread messages | `useUnreadMessages.ts` | (verificare separată) | recalcul badge |
+
+**Zero `.on("presence", ...)`** — presence real Grindr-style lipsește complet.
+
+---
+
+## SONORE
+
+### 10. Sunet la notificări — EXISTĂ (generat în cod, nu fișier audio)
+- `src/lib/notification-sound.ts` — Web Audio API generează sunet ~450ms (E5 → B5 cu shimmer octavă, envelope soft, low-pass filter). ZERO fișier audio extern.
+- Toggle: `localStorage['ventuza:notification-sound']` (default: ON).
+- Priming: `primeNotificationSound()` chemat în `NotificationsProvider` la mount → deblochează AudioContext la primul gest user (cerință iOS/Safari).
+- Se joacă la fiecare INSERT în `notifications` (`notifications-context.tsx:93`), dedup pe `id`.
+- **LIPSEȘTE**: sunete diferite per categorie (match vs mesaj vs like — toate au același sunet). Nu există sunet separat pentru match care să fie mai proeminent.
+- **LIPSEȘTE**: sunet in-app la mesaj chat primit dacă nu s-a creat notification row (depinde de backend).
 
 ---
 
 ## Sumar EXISTĂ / PARȚIAL / LIPSEȘTE
 
-| Zonă | Stare |
+| Item | Stare |
 |---|---|
-| Grilă 3-col cu cards, poze semnate | EXISTĂ |
-| Infinite scroll / paginare | LIPSEȘTE (hard-cap 50) |
-| Indicator online (punct verde) | PARȚIAL (last_seen fără heartbeat) |
-| Presence realtime | LIPSEȘTE |
-| Live-reorder online | PARȚIAL (60s debounce, doar la mișcare) |
-| Filtre complete | EXISTĂ |
-| Card tap → sheet | EXISTĂ (drawer, nu route) |
 | Web Push VAPID + service worker | EXISTĂ (fallback keys hardcodate = risc) |
-| Native FCM / APNs | LIPSEȘTE |
-| Push pe mesaj | EXISTĂ |
-| Push pe match/like/tap/woof | LIPSEȘTE |
-| Toast + sunet in-app la notif | EXISTĂ |
-| Sunete diferențiate | LIPSEȘTE |
+| Cheia privată VAPID hardcodată în cod | **CRITIC — fix necesar** |
+| Native FCM (Android) / APNs (iOS) | LIPSEȘTE |
+| Tabel `push_subscriptions` populat | EXISTĂ |
+| Push pe mesaj chat | EXISTĂ |
+| Push pe match / like / tap / woof / favorite | LIPSEȘTE |
+| Push admin broadcast targeted | LIPSEȘTE |
+| Toast in-app pe `notifications` INSERT | EXISTĂ |
 | MatchModal realtime | EXISTĂ |
-| Badge bell (notificări) | EXISTĂ |
-| Badge tab Messages | LIPSEȘTE |
-| Quiet hours / discrete / per-category prefs | EXISTĂ |
+| Toast garantat pe mesaj chat cross-route | PARȚIAL (depinde de `notifications` row) |
+| Badge bell notificări | EXISTĂ |
+| Badge Messages pe bottom nav | LIPSEȘTE |
+| Badge likes | LIPSEȘTE |
+| Snake-border unread pe carduri discover | EXISTĂ |
+| Sunet generat Web Audio | EXISTĂ |
+| Sunete diferențiate per categorie | LIPSEȘTE |
+| Presence Supabase (`.on("presence")`) | LIPSEȘTE |
+| Quiet hours / discrete mode / per-category prefs | EXISTĂ |
 
-Aștept confirmare pentru a intra în build mode cu sprint-ul de finisare Discover + Notificări (sau alt scope pe care îl indici).
+---
+
+## Cel mai CRITIC pentru retenție
+
+1. **VAPID_PRIVATE_KEY hardcodată în `web-push.server.ts:18`** — nu e feature de retenție dar e blocker de securitate. Trebuie eliminat fallback-ul înainte de orice go-live.
+2. **Push pe MATCH și pe LIKE** — motorul emoțional al app-urilor de dating. Astăzi userul primește push doar la mesaj efectiv trimis; ratează 80% din "hook events". Server fn `sendPushToUser` există gata, doar cablarea lipsește în `social.ts` (like → match + like unilateral, favorite, tap, woof).
+3. **Native FCM/APNs** — fără asta app-ul Capacitor Android nu primește push când e închis (Web Push funcționează în browser Chrome Android, dar în WebView Capacitor comportamentul e inconsistent). Blocker pentru retenție mobile reală.
+4. **Badge Messages pe bottom nav** — signal vizual constant "ai mesaje noi" chiar când toast-ul a dispărut. Hook simplu de retenție, cost mic (`useUnreadMessages` deja returnează totalul).
+5. **Presence real** — punct verde curent minte (5min prag pe `last_seen` fără heartbeat). Fără presence, "cine e activ acum" e nesincer și scade încrederea în app.
+
+Aștept confirmare pentru sprint de execuție (recomand ordine: VAPID fix → push pe match+like → badge Messages → presence heartbeat → native FCM/APNs Capacitor).
