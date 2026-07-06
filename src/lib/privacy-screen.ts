@@ -445,7 +445,9 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Ctrl+P / Cmd+P + Ctrl+S / Cmd+S → prevenim shortcut-ul.
     const onKey = (e: KeyboardEvent) => {
+      if (isAdminSurface()) return;
       const key = e.key.toLowerCase();
+
       const looksLikeCapture =
         e.key === "PrintScreen" ||
         (e.metaKey && e.shiftKey && ["3", "4", "5", "s"].includes(key)) ||
