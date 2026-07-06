@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "@tanstack/react-router";
 import { MapPin, X } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,14 +20,31 @@ import { toast } from "sonner";
  */
 const STORAGE_PREFIX = "ventuza_loc_prompt_seen_v1:";
 
+function routeNeedsLocationPrimer(pathname: string) {
+  return (
+    pathname === "/" ||
+    pathname.startsWith("/discover") ||
+    pathname.startsWith("/nearby") ||
+    pathname.startsWith("/cruise") ||
+    pathname.startsWith("/visitors")
+  );
+}
+
 export function LocationPermissionPrompt() {
   const { user } = useAuth();
+  const location = useLocation();
   const { forceStealth, hidePreciseLocation, isBlocked } = useCountryGate();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (!routeNeedsLocationPrimer(location.pathname || "/")) setOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
     if (!user) return;
+    const path = location.pathname || "/";
+    if (!routeNeedsLocationPrimer(path)) return;
     if (forceStealth || hidePreciseLocation || isBlocked) return;
     if (typeof window === "undefined" || !("geolocation" in navigator)) return;
 
@@ -65,7 +83,7 @@ export function LocationPermissionPrompt() {
     return () => {
       cancelled = true;
     };
-  }, [user, forceStealth, hidePreciseLocation, isBlocked]);
+  }, [user, location.pathname, forceStealth, hidePreciseLocation, isBlocked]);
 
   function markSeen() {
     if (user) localStorage.setItem(STORAGE_PREFIX + user.id, "1");

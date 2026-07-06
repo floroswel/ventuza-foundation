@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useLocation,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -167,6 +168,12 @@ function ProximityWatcherMount() {
   return null;
 }
 
+function LocationPermissionPromptMount() {
+  const location = useLocation();
+  if (location.pathname.startsWith("/admin")) return null;
+  return <LocationPermissionPrompt />;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
@@ -231,7 +238,7 @@ function RootComponent() {
           <ProximityWatcherMount />
           <Outlet />
           <OfflineBanner />
-          <LocationPermissionPrompt />
+          <LocationPermissionPromptMount />
           <AgeGate />
           <CookieBanner />
           <TravelWarning />

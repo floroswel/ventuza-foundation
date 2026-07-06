@@ -2081,6 +2081,38 @@ export type Database = {
         }
         Relationships: []
       }
+      message_locations: {
+        Row: {
+          lat: number
+          lng: number
+          message_id: string
+          sender_id: string
+          updated_at: string
+        }
+        Insert: {
+          lat: number
+          lng: number
+          message_id: string
+          sender_id: string
+          updated_at?: string
+        }
+        Update: {
+          lat?: number
+          lng?: number
+          message_id?: string
+          sender_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_locations_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: true
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           audio_duration_ms: number | null
@@ -4891,6 +4923,10 @@ export type Database = {
           signups: number
         }[]
       }
+      admin_reveal_profile_location: {
+        Args: { _target_user_id: string }
+        Returns: Json
+      }
       admin_revenue_stats: { Args: never; Returns: Json }
       admin_risk_dashboard: { Args: { _window_hours?: number }; Returns: Json }
       admin_risk_queue: {
@@ -5300,6 +5336,15 @@ export type Database = {
           weekly_xp: number
         }[]
       }
+      get_message_location_bucket: {
+        Args: { _message_id: string }
+        Returns: {
+          bucket_m: number
+          can_open_map: boolean
+          label: string
+          message_id: string
+        }[]
+      }
       get_my_gamification: { Args: never; Returns: Json }
       get_my_quests: {
         Args: never
@@ -5652,8 +5697,59 @@ export type Database = {
         Args: { _action: string; _max: number; _window_seconds: number }
         Returns: undefined
       }
+      safe_message_row: {
+        Args: { _message_id: string }
+        Returns: {
+          audio_duration_ms: number
+          body: string
+          conversation_id: string
+          created_at: string
+          deleted_at: string
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          reactions: Json
+          read_at: string
+          reply_to_id: string
+          sender_id: string
+          translated_text: Json
+          view_once: boolean
+          viewed_at: string
+          voice_duration_sec: number
+          voice_url: string
+        }[]
+      }
       security_invariants_snapshot: { Args: never; Returns: Json }
       seed_content_summary: { Args: never; Returns: Json }
+      send_location_message: {
+        Args: {
+          _conversation_id: string
+          _label?: string
+          _lat: number
+          _lng: number
+        }
+        Returns: {
+          audio_duration_ms: number
+          body: string
+          conversation_id: string
+          created_at: string
+          deleted_at: string
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          reactions: Json
+          read_at: string
+          reply_to_id: string
+          sender_id: string
+          translated_text: Json
+          view_once: boolean
+          viewed_at: string
+          voice_duration_sec: number
+          voice_url: string
+        }[]
+      }
       set_looking_now:
         | { Args: { _hours: number; _intent?: string }; Returns: undefined }
         | { Args: { _hours: number; _intent: string }; Returns: undefined }
@@ -6253,6 +6349,29 @@ export type Database = {
       }
       unlockrows: { Args: { "": string }; Returns: number }
       unsend_message: { Args: { _message_id: string }; Returns: undefined }
+      update_live_location_message: {
+        Args: { _lat: number; _lng: number; _message_id: string }
+        Returns: {
+          audio_duration_ms: number
+          body: string
+          conversation_id: string
+          created_at: string
+          deleted_at: string
+          expires_at: string
+          id: string
+          media_type: string
+          media_url: string
+          reactions: Json
+          read_at: string
+          reply_to_id: string
+          sender_id: string
+          translated_text: Json
+          view_once: boolean
+          viewed_at: string
+          voice_duration_sec: number
+          voice_url: string
+        }[]
+      }
       update_my_location: {
         Args: { lat: number; lng: number }
         Returns: undefined
