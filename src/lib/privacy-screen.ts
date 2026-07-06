@@ -324,8 +324,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     // Selectarea pe media / zone private poate alimenta copy indirect.
     const onSelectStart = (e: Event) => {
+      if (isAdminSurface()) return;
       const t = e.target as HTMLElement | null;
       if (!t) return;
+
       const hit = t.closest("img, video, picture, canvas, [data-private-media]") as HTMLElement | null;
       if (hit) {
         e.preventDefault();
