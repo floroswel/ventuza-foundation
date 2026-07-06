@@ -69,6 +69,13 @@ export function FiltersDrawer({
         {/* quick toggles */}
         <section className="flex flex-wrap gap-2">
           <Toggle
+            active={draft.onlineOnly}
+            onClick={() => setDraft({ ...draft, onlineOnly: !draft.onlineOnly })}
+          >
+            <span className="mr-1.5 inline-block size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />
+            Online now
+          </Toggle>
+          <Toggle
             active={draft.lookingNowOnly}
             onClick={() => setDraft({ ...draft, lookingNowOnly: !draft.lookingNowOnly })}
           >
@@ -88,6 +95,7 @@ export function FiltersDrawer({
             With photo
           </Toggle>
         </section>
+
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
