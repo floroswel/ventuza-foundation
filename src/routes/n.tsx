@@ -24,10 +24,6 @@ import {
   INTEREST_OPTIONS,
   PROMPT_OPTIONS,
   TRIBE_OPTIONS,
-  BODY_TYPE_OPTIONS,
-  POSITION_OPTIONS,
-  RELATIONSHIP_STATUS_OPTIONS,
-  ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
 import {
   useOptionLabel,
