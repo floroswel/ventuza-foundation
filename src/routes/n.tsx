@@ -258,7 +258,7 @@ function Onboarding() {
   async function persistStep(s: (typeof STEPS)[number]): Promise<boolean> {
     if (!user) return false;
     const patch = buildStepPatch(s);
-    const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
+    const { error } = await supabase.from("profiles").update(patch as any).eq("id", user.id);
     if (error) {
       showAuthErrorToast(t, error);
       return false;
