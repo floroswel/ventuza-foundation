@@ -56,10 +56,10 @@ jobs:
         with:
           bun-version: latest
 
-      - name: Setup Node (pentru @capacitor/cli)
+      - name: Setup Node (pentru @capacitor/cli — cere >=22)
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
