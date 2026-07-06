@@ -201,6 +201,7 @@ function User360Page() {
           <TabsTrigger value="payments">Plăți / Abonament</TabsTrigger>
           <TabsTrigger value="risk">Risc</TabsTrigger>
           <TabsTrigger value="gdpr">GDPR</TabsTrigger>
+          <TabsTrigger value="breakglass">Break-glass</TabsTrigger>
         </TabsList>
 
         <TabsContent value="enterprise" className="space-y-3 mt-4">
