@@ -456,6 +456,26 @@ export const getFraudClusters = createServerFn({ method: "POST" })
       .sort((a, b) => b.users_count - a.users_count)
       .slice(0, 200);
 
+    // GDPR Art.6(1)(f) — legitimate interest: log cluster inspection (metadata, masked hashes only)
+    try {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await (supabaseAdmin as any).from("admin_audit_log").insert({
+        actor_id: context.userId,
+        action: "fraud.cluster_view",
+        target_table: "device_fingerprints",
+        severity: "info",
+        after_data: {
+          min_users: data.min_users,
+          days: data.days,
+          cluster_count: clusters.length,
+          top_clusters: clusters.slice(0, 10).map((c) => ({
+            fp_hash: c.fp_hash,
+            users_count: c.users_count,
+          })),
+        },
+      });
+    } catch {}
+
     return {
       clusters,
       total_fingerprints: rows?.length ?? 0,
