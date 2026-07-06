@@ -256,7 +256,7 @@ export const adminGetUserView = createServerFn({ method: "POST" })
       "interests",
       "prompts",
     ].join(",");
-    const [prof, consents, verifs, reports, roles, activeSubs] = await Promise.all([
+    const [prof, consents, verifs, reports, roles, activeSubs, authRes] = await Promise.all([
       sa.from("profiles").select(SAFE_PROFILE).eq("id", data.userId).maybeSingle(),
       sa
         .from("consent_log")
@@ -284,6 +284,7 @@ export const adminGetUserView = createServerFn({ method: "POST" })
         .eq("status", "active")
         .order("expires_at", { ascending: false })
         .limit(1),
+      sa.auth.admin.getUserById(data.userId).catch(() => ({ data: { user: null } })),
     ]);
     const p = prof.data ?? null;
     let age: number | null = null;
