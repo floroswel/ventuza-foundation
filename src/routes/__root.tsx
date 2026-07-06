@@ -31,6 +31,7 @@ import { VersionGate } from "@/components/VersionGate";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { DebugPanel } from "@/components/DebugPanel";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { LocationPermissionPrompt } from "@/components/LocationPermissionPrompt";
 
 function NotFoundComponent() {
   return (
@@ -228,6 +229,7 @@ function RootComponent() {
           <ProximityWatcherMount />
           <Outlet />
           <OfflineBanner />
+          <LocationPermissionPrompt />
           <AgeGate />
           <CookieBanner />
           <TravelWarning />
