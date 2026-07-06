@@ -84,21 +84,24 @@ describe("Post-login surface guard", () => {
     expect(src).toMatch(/isPublicAuthRoute/);
   });
 
-  it("Niciun cod app nu apelează getUserMedia fără marcaj explicit", () => {
+  it("Niciun cod app nu solicită camera prin getUserMedia fără marcaj explicit", () => {
+    // Regula vizează CAMERA (video). Voice notes / prompts audio sunt permise
+    // (mic-only) — vezi ChatComposerExtras / VoicePromptCard. Considerăm apel
+    // "cameră" doar dacă pe aceeași linie apare `video`.
     const offenders: { file: string; line: number; text: string }[] = [];
     for (const f of files) {
       const src = read(f);
       if (!src.includes("getUserMedia")) continue;
       const lines = src.split("\n");
       lines.forEach((line, i) => {
-        if (!/getUserMedia\s*\(/.test(line)) return;
-        if (/privacy:camera-allowed/.test(line)) return; // exceptare explicită
+        if (!/getUserMedia\s*\([^)]*video/.test(line)) return;
+        if (/privacy:camera-allowed/.test(line)) return;
         offenders.push({ file: rel(f), line: i + 1, text: line.trim() });
       });
     }
     expect(
       offenders,
-      `Apeluri getUserMedia neexceptate: ${offenders
+      `Apeluri getUserMedia({video:...}) neexceptate: ${offenders
         .map((o) => `${o.file}:${o.line} → ${o.text}`)
         .join("\n")}`,
     ).toEqual([]);
