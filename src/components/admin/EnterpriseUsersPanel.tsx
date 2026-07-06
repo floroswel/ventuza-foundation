@@ -49,6 +49,8 @@ import {
   adminBulkUserAction,
 } from "@/lib/admin-users-ops.functions";
 import { adminGrantRole, adminRevokeRole, adminDeleteUser } from "@/lib/admin.functions";
+import { isOffensiveName, maskName } from "@/lib/admin-profanity";
+
 
 type UserRow = {
   id: string;
