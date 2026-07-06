@@ -149,4 +149,6 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
   } catch (err) {
     console.info("[privacy-screen] web init failed", err);
   }
+
+  return lastStatus;
 }
