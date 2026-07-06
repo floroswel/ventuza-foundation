@@ -1,4 +1,4 @@
-import { BadgeCheck, Camera, Flame, Image as ImageIcon, Plane, Rocket } from "lucide-react";
+import { BadgeCheck, Camera, Circle, Flame } from "lucide-react";
 import type { DiscoverFilters } from "@/lib/discover";
 import { TRIBE_OPTIONS, POSITION_OPTIONS } from "@/lib/profile-options";
 import { useOptionLabel } from "@/lib/i18n/option-labels";
@@ -22,6 +22,14 @@ export function QuickFiltersStrip({
   return (
     <div className="-mx-1 flex gap-1.5 overflow-x-auto px-3 pb-2 pt-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
 
+      <Pill
+        active={value.onlineOnly}
+        onClick={() => onChange({ ...value, onlineOnly: !value.onlineOnly })}
+        icon={<Circle className="size-2 fill-emerald-400 text-emerald-400" />}
+        tone="emerald"
+      >
+        Online
+      </Pill>
       <Pill
         active={value.lookingNowOnly}
         onClick={() => onChange({ ...value, lookingNowOnly: !value.lookingNowOnly })}
@@ -87,7 +95,7 @@ function Pill({
   onClick: () => void;
   children: React.ReactNode;
   icon?: React.ReactNode;
-  tone?: "rose";
+  tone?: "rose" | "emerald";
 }) {
   return (
     <button
@@ -97,7 +105,9 @@ function Pill({
         active
           ? tone === "rose"
             ? "border-rose-500/60 bg-rose-500/15 text-rose-400"
-            : "border-primary/60 bg-primary/15 text-primary"
+            : tone === "emerald"
+              ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-400"
+              : "border-primary/60 bg-primary/15 text-primary"
           : "border-border bg-surface text-muted-foreground hover:text-foreground",
       )}
     >
