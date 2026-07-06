@@ -109,43 +109,109 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
   }
 
 
-  // 2) Web best-effort
+  // 2) Web best-effort — nu putem bloca screenshot-uri OS, dar reducem
+  //    considerabil ferestrele "accidentale": long-press save, drag, copy,
+  //    print, snipping tool care surprinde ecranul cât tabul e defocalizat.
   try {
-    // Block context menu on chat/photo areas (allow inputs)
+    // Block context menu pe media (permite input-uri și zone marcate explicit).
     const onCtx = (e: MouseEvent) => {
       const t = e.target as HTMLElement | null;
       if (!t) return;
       if (t.closest("input, textarea, [contenteditable='true']")) return;
       if (t.closest("[data-allow-context]")) return;
-      if (t.closest("img, video, [data-private-media]")) e.preventDefault();
+      if (t.closest("img, video, picture, canvas, [data-private-media]"))
+        e.preventDefault();
     };
     window.addEventListener("contextmenu", onCtx, { capture: true });
 
-    // Block drag of images
+    // Blochează drag pe orice imagine/video (previne salvare prin drag-out).
     const onDrag = (e: DragEvent) => {
       const t = e.target as HTMLElement | null;
-      if (t && t.tagName === "IMG") e.preventDefault();
+      if (!t) return;
+      if (t.tagName === "IMG" || t.tagName === "VIDEO" || t.closest("[data-private-media]"))
+        e.preventDefault();
     };
     window.addEventListener("dragstart", onDrag, { capture: true });
 
-    // Hide sensitive media when tab hidden (helps against OS screenshot APIs
-    // that grab the last visible frame after switching apps).
+    // Copy / cut pe zone private → blocat.
+    const onCopy = (e: ClipboardEvent) => {
+      const t = e.target as HTMLElement | null;
+      if (!t) return;
+      if (t.closest("[data-private-media]") || t.closest("img, video")) e.preventDefault();
+    };
+    window.addEventListener("copy", onCopy, { capture: true });
+    window.addEventListener("cut", onCopy, { capture: true });
+
+    // Long-press save pe iOS/Android web → suprimă callout-ul.
+    const style = document.createElement("style");
+    style.setAttribute("data-privacy-screen", "");
+    style.textContent = `
+      img, video, picture, [data-private-media] {
+        -webkit-touch-callout: none;
+        -webkit-user-drag: none;
+        -webkit-user-select: none;
+        user-select: none;
+      }
+      [data-private-media] { -webkit-tap-highlight-color: transparent; }
+      html.__privacy_defocused [data-private-media],
+      html.__privacy_defocused img,
+      html.__privacy_defocused video {
+        filter: blur(28px) brightness(0.55) !important;
+        transition: filter 120ms ease-out;
+      }
+      #__privacy_hide_overlay {
+        position: fixed; inset: 0; background: #000; z-index: 2147483647;
+        display: none; pointer-events: none;
+        backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Overlay negru + blur pe media când tabul iese din focus SAU pagina e
+    // ascunsă (switch tab / minimizare / snipping tool). Mitigare parțială
+    // pentru capturi făcute cât fereastra nu e activă.
     const overlayId = "__privacy_hide_overlay";
     const ensureOverlay = () => {
       if (document.getElementById(overlayId)) return;
       const el = document.createElement("div");
       el.id = overlayId;
-      el.style.cssText =
-        "position:fixed;inset:0;background:#000;z-index:2147483647;display:none;pointer-events:none;";
       document.body.appendChild(el);
     };
-    const onVis = () => {
+    let printOverride = false;
+    const applyDefocus = (defocused: boolean) => {
       ensureOverlay();
       const el = document.getElementById(overlayId);
-      if (!el) return;
-      el.style.display = document.visibilityState === "hidden" ? "block" : "none";
+      if (el) el.style.display = defocused ? "block" : "none";
+      document.documentElement.classList.toggle("__privacy_defocused", defocused);
     };
+    const onVis = () => applyDefocus(document.visibilityState === "hidden");
+    const onBlur = () => applyDefocus(true);
+    const onFocus = () => applyDefocus(printOverride ? true : false);
     document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("blur", onBlur);
+    window.addEventListener("focus", onFocus);
+    window.addEventListener("pagehide", onBlur);
+    window.addEventListener("pageshow", onFocus);
+
+    // Blochează print (Ctrl+P / dialog OS) — mascăm complet conținutul.
+    const onBeforePrint = () => {
+      printOverride = true;
+      applyDefocus(true);
+    };
+    const onAfterPrint = () => {
+      printOverride = false;
+      applyDefocus(document.visibilityState === "hidden");
+    };
+    window.addEventListener("beforeprint", onBeforePrint);
+    window.addEventListener("afterprint", onAfterPrint);
+
+    // Ctrl+P / Cmd+P + Ctrl+S / Cmd+S → prevenim shortcut-ul.
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && (e.key === "p" || e.key === "s")) {
+        e.preventDefault();
+      }
+    };
+    window.addEventListener("keydown", onKey, { capture: true });
   } catch (err) {
     console.info("[privacy-screen] web init failed", err);
   }
