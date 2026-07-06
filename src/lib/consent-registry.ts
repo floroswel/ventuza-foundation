@@ -15,7 +15,6 @@ export type ConsentKind =
   | "terms"
   | "privacy"
   | "age_verification"
-  | "internal_verification"
   | "ai_features"
   | "push_notifications"
   | "background_location"
