@@ -63,9 +63,12 @@ import {
   adminTriggerPasswordReset,
   adminResendConfirmationEmail,
   adminCancelDeletion,
+  adminPurgeUserAccount,
 } from "@/lib/admin-wave1.functions";
 import { adminBanUser, adminUnbanUser, adminSuspendUser } from "@/lib/admin-enterprise.functions";
+import { adminBreakGlassReveal } from "@/lib/admin-break-glass.functions";
 import { EnterpriseUser360Panel } from "@/components/admin/EnterpriseUser360Panel";
+import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/admin/users/$id")({
   head: () => ({
@@ -198,6 +201,7 @@ function User360Page() {
           <TabsTrigger value="payments">Plăți / Abonament</TabsTrigger>
           <TabsTrigger value="risk">Risc</TabsTrigger>
           <TabsTrigger value="gdpr">GDPR</TabsTrigger>
+          <TabsTrigger value="breakglass">Break-glass</TabsTrigger>
         </TabsList>
 
         <TabsContent value="enterprise" className="space-y-3 mt-4">
@@ -424,6 +428,9 @@ function User360Page() {
             />
           </Card>
         </TabsContent>
+        <TabsContent value="breakglass" className="space-y-3 mt-4">
+          <BreakGlassPanel userId={id} />
+        </TabsContent>
       </Tabs>
     </div>
   );
@@ -463,6 +470,7 @@ function ActionsBar({
         <BanDialog userId={userId} onDone={onSuccess} />
       )}
       <SuspendDialog userId={userId} onDone={onSuccess} />
+      <PurgeAccountDialog userId={userId} onDone={onSuccess} />
     </div>
   );
 }
