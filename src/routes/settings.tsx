@@ -113,14 +113,12 @@ function SettingsPage() {
     supabase
       .from("profiles")
       .select(
-        "notification_prefs, hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent, read_receipts_enabled, auto_share_album_on_match, discrete_mode",
+        "hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent, read_receipts_enabled, auto_share_album_on_match",
       )
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return;
-        if (data.notification_prefs)
-          setPrefs({ ...DEFAULT_PREFS, ...(data.notification_prefs as Prefs) });
         const d = data as {
           hide_age?: boolean;
           hide_distance?: boolean;
@@ -129,7 +127,6 @@ function SettingsPage() {
           auto_share_album_on_match?: boolean;
           looking_now_until?: string | null;
           looking_now_intent?: string | null;
-          discrete_mode?: boolean;
         };
         setPrivacy({
           hide_age: !!d.hide_age,
@@ -137,7 +134,6 @@ function SettingsPage() {
           hide_online: !!d.hide_online,
           read_receipts_enabled: d.read_receipts_enabled ?? true,
           auto_share_album_on_match: !!d.auto_share_album_on_match,
-          discrete_mode: !!d.discrete_mode,
         });
         setLookingUntil(d.looking_now_until ?? null);
         setIntent(d.looking_now_intent ?? "");
@@ -174,15 +170,18 @@ function SettingsPage() {
 
   async function savePrefs(next: Prefs) {
     if (!user) return;
-    setPrefs(next);
     setSavingPrefs(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ notification_prefs: next })
-      .eq("id", user.id);
-    setSavingPrefs(false);
-    if (error) toast.error(error.message);
+    try {
+      // Delegăm către context: update optimistic + persist + broadcast în
+      // toate suprafețele (inbox, toast) fără refresh.
+      await updatePrefsCtx(next);
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setSavingPrefs(false);
+    }
   }
+
 
   async function changeEmail() {
     if (!newEmail) return;
