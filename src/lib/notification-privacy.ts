@@ -163,6 +163,16 @@ export interface SanitizeRedactionReport {
   truncated: { title: boolean; body: boolean; tag: boolean };
   /** Unknown top-level keys the sanitizer refused to propagate. */
   droppedTopLevelKeys: string[];
+  /**
+   * Keys dropped from `data` because they are not on the allowlist for the
+   * resolved category (strict mode). JSON-path pointers, no values.
+   */
+  notAllowlistedKeys: string[];
+  /**
+   * The category name whose allowlist was applied. `null` when no allowlist
+   * ran (unknown category + `strict:false`, the legacy default).
+   */
+  allowlistApplied: string | null;
 }
 
 function emptyReport(): SanitizeRedactionReport {
@@ -173,8 +183,11 @@ function emptyReport(): SanitizeRedactionReport {
     urlQueryDropped: false,
     truncated: { title: false, body: false, tag: false },
     droppedTopLevelKeys: [],
+    notAllowlistedKeys: [],
+    allowlistApplied: null,
   };
 }
+
 
 function isForbiddenKey(key: string): boolean {
   if (ALLOWED_KEYS.has(key)) return false;
