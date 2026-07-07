@@ -130,17 +130,17 @@ describe("[E2E preview=off] Strat 3: toast in-app nu inventează body", () => {
 // STRAT 4 — Inbox listă conversații.
 // ─────────────────────────────────────────────────────────────────────────────
 describe("[E2E preview=off] Strat 4: inbox afișează doar copy generic", () => {
-  it("buildInboxPreview cu showPreview=false → mereu generic pentru orice preview brut", () => {
+  it("buildInboxPreview cu showPreview=false → copy explicit „Previzualizare dezactivată"", () => {
     for (const m of HOSTILE_MESSAGES) {
       const out = buildInboxPreview(false, m.body, true);
-      expect(out).toBe(GENERIC_MESSAGE_BODY);
+      expect(out).toBe("Previzualizare dezactivată");
       expect(out).not.toContain(m.body);
     }
   });
 
-  it("buildInboxPreview cu showPreview=true → tot generic (policy override)", () => {
-    // Regula curentă: preview-ul este dezactivat sistemic; nici măcar
-    // toggle-ul individual nu poate scurge conținut.
+  it("buildInboxPreview cu showPreview=true → generic „Ai un mesaj nou" (policy override pe conținut)", () => {
+    // Regula curentă: preview-ul de conținut este dezactivat sistemic; nici
+    // măcar toggle-ul individual nu poate scurge textul mesajului.
     for (const m of HOSTILE_MESSAGES) {
       expect(buildInboxPreview(true, m.body, true)).toBe(GENERIC_MESSAGE_BODY);
     }
