@@ -841,6 +841,50 @@ function DiscoverPage() {
   );
 }
 
+function InfiniteScrollSentinel({
+  onReach,
+  hasMore,
+  loading,
+}: {
+  onReach: () => void;
+  hasMore: boolean;
+  loading: boolean;
+}) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!hasMore) return;
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) if (entry.isIntersecting) onReach();
+      },
+      { rootMargin: "600px 0px" },
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, [hasMore, onReach]);
+  if (!hasMore && !loading) return null;
+  return (
+    <div
+      ref={ref}
+      className="flex items-center justify-center gap-2 py-6 text-xs text-muted-foreground"
+      aria-live="polite"
+    >
+      {loading ? (
+        <>
+          <Loader2 className="size-3.5 animate-spin" />
+          Se încarcă mai multe…
+        </>
+      ) : hasMore ? (
+        "Scroll pentru mai multe"
+      ) : null}
+    </div>
+  );
+}
+
+
+
 function TabBtn({
   active,
   onClick,
