@@ -17,6 +17,11 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import {
+  useNotificationPrefs,
+  DEFAULT_NOTIFICATION_PREFS,
+  type NotificationPrefs,
+} from "@/lib/notification-prefs-context";
 import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
 import { BottomNav } from "@/components/BottomNav";
 import { setLookingNow } from "@/lib/social";
