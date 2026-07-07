@@ -30,6 +30,11 @@ on:
         required: true
         default: true
         type: boolean
+      version:
+        description: "Versiune SemVer (ex: 9.74.12). Gol = derivat automat din tag/timestamp."
+        required: false
+        default: ""
+        type: string
 
 concurrency:
   group: android-release
@@ -155,8 +160,12 @@ jobs:
 
       - name: Derive versionCode & versionName din tag
         id: version
+        env:
+          MANUAL_VERSION: ${{ inputs.version }}
         run: |
-          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+          if [[ -n "$MANUAL_VERSION" ]]; then
+            RAW="$MANUAL_VERSION"
+          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             RAW="${GITHUB_REF#refs/tags/v}"
           else
             RAW="0.0.$(date +%s | tail -c 6)"
