@@ -21,26 +21,24 @@ export const MAX_PREVIEW_LEN = 140;
  * kind).
  */
 export function buildMessageNotificationBody(
-  showPreview: boolean,
-  preview: string | null | undefined,
+  _showPreview: boolean,
+  _preview: string | null | undefined,
 ): string {
-  if (!showPreview) return GENERIC_MESSAGE_BODY;
-  const trimmed = (preview ?? "").trim();
-  if (!trimmed) return GENERIC_MESSAGE_BODY;
-  return trimmed.slice(0, MAX_PREVIEW_LEN);
+  // Policy schimbată: notificările NU expun niciodată conținutul mesajului,
+  // indiferent de preferința userului. Parametrii rămân în semnătură pentru
+  // compatibilitate cu apelanții existenți, dar sunt ignorați.
+  return GENERIC_MESSAGE_BODY;
 }
 
 /**
- * Preview-ul afișat în lista de conversații.
+ * Preview-ul afișat în lista de conversații. Ignoră `showPreview` din
+ * același motiv de confidențialitate.
  */
 export function buildInboxPreview(
-  showPreview: boolean,
-  lastMessagePreview: string | null | undefined,
+  _showPreview: boolean,
+  _lastMessagePreview: string | null | undefined,
   hasAnyMessage: boolean,
 ): string {
-  if (showPreview) {
-    const trimmed = (lastMessagePreview ?? "").trim();
-    return trimmed.length > 0 ? trimmed : GENERIC_INBOX_FALLBACK;
-  }
   return hasAnyMessage ? GENERIC_MESSAGE_BODY : GENERIC_INBOX_FALLBACK;
 }
+
