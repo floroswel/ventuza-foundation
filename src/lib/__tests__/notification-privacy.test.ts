@@ -4,9 +4,11 @@ import { join } from "node:path";
 import {
   buildInboxPreview,
   buildMessageNotificationBody,
+  sanitizeNotificationPayload,
   GENERIC_INBOX_FALLBACK,
   GENERIC_MESSAGE_BODY,
 } from "@/lib/notification-privacy";
+
 
 const SRC = join(process.cwd(), "src");
 const read = (rel: string) => readFileSync(join(SRC, rel), "utf8");
