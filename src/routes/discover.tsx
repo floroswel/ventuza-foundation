@@ -58,11 +58,9 @@ import {
   type DiscoverFilters,
   type DiscoverProfile,
 } from "@/lib/discover";
-import {
-  loadDiscoverFilters,
-  saveDiscoverFilters,
-  resetDiscoverFilters,
-} from "@/lib/discover-filters-storage";
+// Filtrele Discover pornesc mereu goale (DEFAULT_FILTERS) — nu mai
+// re-hidratăm nimic din localStorage la fiecare sesiune.
+
 import {
   addFavorite,
   isFavorite,
