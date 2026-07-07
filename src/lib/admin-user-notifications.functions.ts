@@ -116,7 +116,7 @@ export const adminGetUserNotificationsTimeline = createServerFn({ method: "POST"
 
     let q = sb
       .from("notification_dispatch_log")
-      .select("id,kind,channel,actor_id,created_at")
+      .select("id,kind,channel,actor_id,created_at,message_id,event_id")
       .eq("target_id", data.userId)
       .order("created_at", { ascending: false })
       .limit(data.limit);
@@ -134,10 +134,13 @@ export const adminGetUserNotificationsTimeline = createServerFn({ method: "POST"
       channel: string;
       actor_id: string | null;
       created_at: string;
+      message_id: string | null;
+      event_id: string | null;
     }>;
 
     // Cursor pentru pagină următoare (based on ultima intrare).
     const nextBefore = items.length === data.limit ? items[items.length - 1].created_at : null;
+
 
     return {
       items,

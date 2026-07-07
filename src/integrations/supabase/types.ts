@@ -2250,24 +2250,30 @@ export type Database = {
           actor_id: string | null
           channel: string
           created_at: string
+          event_id: string | null
           id: number
           kind: string
+          message_id: string | null
           target_id: string
         }
         Insert: {
           actor_id?: string | null
           channel?: string
           created_at?: string
+          event_id?: string | null
           id?: number
           kind: string
+          message_id?: string | null
           target_id: string
         }
         Update: {
           actor_id?: string | null
           channel?: string
           created_at?: string
+          event_id?: string | null
           id?: number
           kind?: string
+          message_id?: string | null
           target_id?: string
         }
         Relationships: []
@@ -5702,7 +5708,9 @@ export type Database = {
         Args: {
           _actor: string
           _channel?: string
+          _event_id?: string
           _kind: string
+          _message_id?: string
           _target: string
         }
         Returns: undefined
