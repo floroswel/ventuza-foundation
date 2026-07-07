@@ -24,6 +24,8 @@ import {
   primeNotificationSound,
 } from "@/lib/notification-sound";
 import { setNativePushNavigator } from "@/lib/native-push";
+import { buildToastBody } from "@/lib/notification-privacy";
+import { useNotificationPrefs } from "@/lib/notification-prefs-context";
 
 type Ctx = {
   notifications: NotificationRow[];
