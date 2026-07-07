@@ -759,6 +759,25 @@ function DiscoverPage() {
             toast.error(e instanceof Error ? e.message : "Couldn't open chat");
           }
         }}
+        onViewFull={async (p) => {
+          try {
+            const { data, error } = await supabase
+              .from("profiles")
+              .select("profile_slug")
+              .eq("id", p.id)
+              .maybeSingle();
+            if (error) throw error;
+            const slug = (data as { profile_slug?: string | null } | null)?.profile_slug;
+            if (!slug) {
+              toast.error("Acest profil nu are un link public încă.");
+              return;
+            }
+            setSelected(null);
+            navigate({ to: "/u/$slug", params: { slug } });
+          } catch (e) {
+            toast.error(e instanceof Error ? e.message : "Nu am putut deschide profilul.");
+          }
+        }}
       />
       <BottomNav />
     </main>
