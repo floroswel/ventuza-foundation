@@ -249,7 +249,7 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     const safePayload = sanitizeNotificationPayload({
       title: rawTitle,
       body: rawBody,
-      url: profile?.discrete_mode ? undefined : data.url,
+      url: showPreview ? data.url : undefined,
       tag: data.tag,
       type: data.category,
       category: data.category,
