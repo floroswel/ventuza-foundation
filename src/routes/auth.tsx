@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
-import { nativeGoogleSignIn, nativeGoogleSupported } from "@/lib/native-google-auth";
+import { nativeGoogleSignIn, nativeGoogleSupported, isNativePlatform, hasNativeGoogleConfig } from "@/lib/native-google-auth";
 
 
 
