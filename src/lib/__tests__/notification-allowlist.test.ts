@@ -20,7 +20,7 @@ describe("strict allowlist — known categories", () => {
       data: {
         conversation_id: "c1",
         actor_id: "u1",
-        sent_at: "2026-07-07T12:00:00Z",
+        sent_at: "2026-07-07",
         // Extra keys that must be dropped by the allowlist:
         room_name: "secret-room",
         thread_topic: "cancer treatment",
@@ -32,7 +32,7 @@ describe("strict allowlist — known categories", () => {
     expect(payload.data).toEqual({
       conversation_id: "c1",
       actor_id: "u1",
-      sent_at: "2026-07-07T12:00:00Z",
+      sent_at: "2026-07-07",
     });
     expect(report.allowlistApplied).toBe("messages");
     expect(report.notAllowlistedKeys).toEqual(
