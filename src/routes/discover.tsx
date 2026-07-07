@@ -362,7 +362,20 @@ function DiscoverPage() {
         (a, b) => new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime(),
       );
     }
-    return profiles;
+    // Nearby (Grindr-style): online first, apoi distanță ascendentă.
+    // Profilele NU dispar după interacțiune — se reordonează doar când
+    // se schimbă distanța sau status-ul online (see load() + interval 30s).
+    const DIST_UNKNOWN = Number.POSITIVE_INFINITY;
+    return [...profiles].sort((a, b) => {
+      const aOn = isOnline(a.last_seen) ? 0 : 1;
+      const bOn = isOnline(b.last_seen) ? 0 : 1;
+      if (aOn !== bOn) return aOn - bOn;
+      const da = a.distance_m ?? DIST_UNKNOWN;
+      const db = b.distance_m ?? DIST_UNKNOWN;
+      if (da !== db) return da - db;
+      // Tie-break: cel mai recent văzut sus, ca să nu bâlbâie ordinea.
+      return new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime();
+    });
   }, [profiles, tab]);
 
   const handleDecision = useCallback(
@@ -380,8 +393,12 @@ function DiscoverPage() {
         return;
       }
 
-      // Remove from grid only after DB confirms
-      setProfiles((p) => p.filter((x) => x.id !== target.id));
+      // Grid (Grindr-style): profilul rămâne în grilă — se reordonează doar
+      // după distance/online. Doar view=swipe scoate cardul (altfel utilizatorul
+      // ar vedea la infinit același card).
+      if (view === "swipe") {
+        setProfiles((p) => p.filter((x) => x.id !== target.id));
+      }
 
       if (action === "like" || action === "super") {
         const { data: m } = await supabase
@@ -442,7 +459,7 @@ function DiscoverPage() {
         }
       }
     },
-    [user],
+    [user, view],
   );
 
   if (countryGate.isDiscoverDisabled || countryGate.forceStealth || countryGate.isBlocked) {
