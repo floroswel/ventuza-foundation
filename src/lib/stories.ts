@@ -27,12 +27,21 @@ export async function uploadStory(file: File, caption?: string): Promise<Story> 
   if (!u.user) throw new Error("not signed in");
   if (file.size > 12 * 1024 * 1024) throw new Error("Fișierul depășește 12 MB.");
 
-  const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  let uploadFile: File | Blob = file;
+  let ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+  let contentType = file.type || "image/jpeg";
+  if (ext === "heic" || ext === "heif" || contentType === "image/heic" || contentType === "image/heif") {
+    const heic2any = (await import("heic2any")).default;
+    const converted = (await heic2any({ blob: file, toType: "image/jpeg", quality: 0.9 })) as Blob | Blob[];
+    uploadFile = Array.isArray(converted) ? converted[0] : converted;
+    ext = "jpg";
+    contentType = "image/jpeg";
+  }
   const path = `${u.user.id}/${crypto.randomUUID()}.${ext}`;
-  const { error: upErr } = await supabase.storage.from(STORIES_BUCKET).upload(path, file, {
+  const { error: upErr } = await supabase.storage.from(STORIES_BUCKET).upload(path, uploadFile, {
     cacheControl: "3600",
     upsert: false,
-    contentType: file.type || "image/jpeg",
+    contentType,
   });
   if (upErr) throw upErr;
 

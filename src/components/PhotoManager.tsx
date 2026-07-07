@@ -127,17 +127,32 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
     const added: string[] = [];
     try {
       for (let idx = 0; idx < list.length; idx++) {
-        const file = list[idx];
+        let file: File | Blob = list[idx];
         const item = initial[idx];
         if (item.status === "error") continue;
 
         updateQueue(item.id, { status: "uploading" });
-        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-        const path = `${userId}/${crypto.randomUUID()}.${ext}`;
+        let ext = ((list[idx].name.split(".").pop() || "jpg").toLowerCase());
+        let contentType = list[idx].type || "image/jpeg";
 
+        // Convert HEIC/HEIF → JPEG (browsers can't render HEIC).
+        if (ext === "heic" || ext === "heif" || contentType === "image/heic" || contentType === "image/heif") {
+          try {
+            const heic2any = (await import("heic2any")).default;
+            const converted = (await heic2any({ blob: list[idx], toType: "image/jpeg", quality: 0.9 })) as Blob | Blob[];
+            file = Array.isArray(converted) ? converted[0] : converted;
+            ext = "jpg";
+            contentType = "image/jpeg";
+          } catch (convErr) {
+            updateQueue(item.id, { status: "error", error: `HEIC neconvertibil: ${(convErr as Error).message}` });
+            continue;
+          }
+        }
+
+        const path = `${userId}/${crypto.randomUUID()}.${ext}`;
         const { error: upErr } = await supabase.storage
           .from("profile-photos")
-          .upload(path, file, { upsert: false, contentType: file.type || "image/jpeg" });
+          .upload(path, file, { upsert: false, contentType });
         if (upErr) {
           updateQueue(item.id, { status: "error", error: upErr.message });
           continue;
@@ -171,7 +186,8 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
 
         // Perceptual hash → server (catfishing detection) — non-blocking
         try {
-          const phash = await computePhash(file);
+          const asFile = file instanceof File ? file : new File([file], `${path}`, { type: contentType });
+          const phash = await computePhash(asFile);
           if (phash) await supabase.rpc("record_photo_hash", { _path: path, _phash: phash });
         } catch {
           /* non-blocking */
