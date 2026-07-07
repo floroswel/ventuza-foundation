@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { deleteStory, markStorySeen, signStoryMedia, type StoryGroup } from "@/lib/stories";
 import { useAuth } from "@/lib/auth-context";
@@ -108,19 +109,35 @@ export function StoryViewer({
           ))}
         </div>
         <div className="mt-2 flex items-center justify-between text-white">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">
-              {isMine ? "Tu" : (group.display_name ?? "—")}
-            </span>
-            <span className="text-[10px] text-white/60">
-              {Math.round((Date.now() - new Date(story.created_at).getTime()) / 60000)}m
-            </span>
-            {isMine && (
-              <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px]">
-                👁 {story.view_count}
+          {isMine || !group.profile_slug ? (
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">
+                {isMine ? "Tu" : (group.display_name ?? "—")}
               </span>
-            )}
-          </div>
+              <span className="text-[10px] text-white/60">
+                {Math.round((Date.now() - new Date(story.created_at).getTime()) / 60000)}m
+              </span>
+              {isMine && (
+                <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px]">
+                  👁 {story.view_count}
+                </span>
+              )}
+            </div>
+          ) : (
+            <Link
+              to="/u/$slug"
+              params={{ slug: group.profile_slug }}
+              onClick={(e) => e.stopPropagation()}
+              className="flex items-center gap-2 rounded-full bg-white/5 pr-2 hover:bg-white/15"
+              aria-label={`Profilul ${group.display_name ?? ""}`}
+            >
+              <span className="text-sm font-medium">{group.display_name ?? "—"}</span>
+              <span className="text-[10px] text-white/60">
+                {Math.round((Date.now() - new Date(story.created_at).getTime()) / 60000)}m
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-white/80">Profil ›</span>
+            </Link>
+          )}
           <div className="flex items-center gap-2">
             {isMine && (
               <button

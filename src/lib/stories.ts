@@ -15,6 +15,7 @@ export type StoryGroup = {
   user_id: string;
   display_name: string | null;
   photos: string[] | null;
+  profile_slug: string | null;
   stories: Story[];
   hasUnseen: boolean;
 };
@@ -108,24 +109,30 @@ export async function fetchActiveStoryGroups(): Promise<StoryGroup[]> {
         stories.map((s) => s.id),
       ),
   ]);
-  const profMap = new Map<string, { display_name: string | null; photos: string[] | null }>();
+  const profMap = new Map<
+    string,
+    { display_name: string | null; photos: string[] | null; profile_slug: string | null }
+  >();
   (profs ?? []).forEach((p) =>
     profMap.set((p as { id: string }).id, {
       display_name: (p as { display_name: string | null }).display_name,
       photos: (p as { photos: string[] | null }).photos,
+      profile_slug: (p as { profile_slug: string | null }).profile_slug ?? null,
     }),
   );
   const seenSet = new Set((seenRows ?? []).map((r) => r.story_id as string));
 
   const grouped = new Map<string, StoryGroup>();
   for (const s of stories) {
-    const meta = profMap.get(s.user_id) ?? { display_name: null, photos: null };
+    const meta =
+      profMap.get(s.user_id) ?? { display_name: null, photos: null, profile_slug: null };
     let g = grouped.get(s.user_id);
     if (!g) {
       g = {
         user_id: s.user_id,
         display_name: meta.display_name,
         photos: meta.photos,
+        profile_slug: meta.profile_slug,
         stories: [],
         hasUnseen: false,
       };
