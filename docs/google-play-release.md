@@ -246,7 +246,7 @@ bun run build && npx cap sync android && \
 # Upload manual → Play Console → Release → Create new release
 ```
 
-## 16. FCM (Firebase Cloud Messaging) — notificări push native
+## 17. FCM (Firebase Cloud Messaging) — notificări push native
 
 Wrapper-ul Android folosește FCM prin `@capacitor/push-notifications`.
 Web-ul continuă cu Web Push (VAPID) — cele două rulează în paralel, aceeași
