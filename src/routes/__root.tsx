@@ -167,6 +167,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function ProximityWatcherMount() {
   useProximityForegroundWatcher();
   usePresenceHeartbeat();
+  useLocationWatcher();
   return null;
 }
 
