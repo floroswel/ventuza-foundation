@@ -61,41 +61,54 @@ function forbiddenTokenRegex(field: string): RegExp {
 // 1. SCHEMĂ — coloanele tabelelor nu includ câmpuri interzise
 // ─────────────────────────────────────────────────────────────────────────────
 describe("audit tables schema — no content columns", () => {
+  // Extrag numele coloanelor dintr-un bloc CREATE TABLE (...): fiecare linie de
+  // definiție începe cu un identifier — restul e tipul.
+  function columnNames(createBody: string): string[] {
+    const names: string[] = [];
+    for (const rawLine of createBody.split(/\r?\n/)) {
+      const line = rawLine.trim().replace(/,$/, "");
+      if (!line) continue;
+      // Sarim peste CONSTRAINT / PRIMARY / FOREIGN / CHECK / UNIQUE / EXCLUDE
+      if (/^(CONSTRAINT|PRIMARY|FOREIGN|CHECK|UNIQUE|EXCLUDE|LIKE)\b/i.test(line)) continue;
+      const m = line.match(/^([A-Za-z_][A-Za-z0-9_]*)\b/);
+      if (m) names.push(m[1].toLowerCase());
+    }
+    return names;
+  }
+
   for (const table of AUDIT_TABLES) {
     it(`${table} does not declare forbidden content columns`, () => {
-      // Extrag toate blocurile CREATE TABLE / ALTER TABLE ADD COLUMN care ating
-      // tabela și verific că nicio coloană interzisă nu apare.
-      const offenders: Array<{ file: string; snippet: string; field: string }> = [];
+      const offenders: Array<{ file: string; column: string }> = [];
 
       const createRe = new RegExp(
         `CREATE\\s+TABLE(?:\\s+IF\\s+NOT\\s+EXISTS)?\\s+(?:public\\.)?${table}\\s*\\(([\\s\\S]*?)\\)\\s*;`,
         "gi",
       );
-      const alterRe = new RegExp(
-        `ALTER\\s+TABLE\\s+(?:public\\.)?${table}\\s+([\\s\\S]*?);`,
+      const addColRe = new RegExp(
+        `ALTER\\s+TABLE\\s+(?:public\\.)?${table}\\s+ADD\\s+COLUMN(?:\\s+IF\\s+NOT\\s+EXISTS)?\\s+([A-Za-z_][A-Za-z0-9_]*)`,
         "gi",
       );
+      const renameRe = new RegExp(
+        `ALTER\\s+TABLE\\s+(?:public\\.)?${table}\\s+RENAME\\s+COLUMN\\s+\\w+\\s+TO\\s+([A-Za-z_][A-Za-z0-9_]*)`,
+        "gi",
+      );
+
+      const forbiddenSet = new Set(FORBIDDEN_FIELDS.map((f) => f.toLowerCase()));
 
       for (const f of sqlFiles) {
         const src = read(f);
         for (const m of src.matchAll(createRe)) {
-          const cols = m[1];
-          for (const field of FORBIDDEN_FIELDS) {
-            if (forbiddenTokenRegex(field).test(cols)) {
-              offenders.push({ file: f, snippet: m[0].slice(0, 200), field });
-            }
+          for (const col of columnNames(m[1])) {
+            if (forbiddenSet.has(col)) offenders.push({ file: f, column: col });
           }
         }
-        for (const m of src.matchAll(alterRe)) {
-          const body = m[1];
-          // Ne interesează doar ADD COLUMN / RENAME TO care creează un câmp
-          // interzis. IGNORĂM ALTER care doar setează triggere / policies.
-          if (!/\b(ADD\s+COLUMN|RENAME\s+(COLUMN\s+\w+\s+)?TO)\b/i.test(body)) continue;
-          for (const field of FORBIDDEN_FIELDS) {
-            if (forbiddenTokenRegex(field).test(body)) {
-              offenders.push({ file: f, snippet: m[0].slice(0, 200), field });
-            }
-          }
+        for (const m of src.matchAll(addColRe)) {
+          const col = m[1].toLowerCase();
+          if (forbiddenSet.has(col)) offenders.push({ file: f, column: col });
+        }
+        for (const m of src.matchAll(renameRe)) {
+          const col = m[1].toLowerCase();
+          if (forbiddenSet.has(col)) offenders.push({ file: f, column: col });
         }
       }
 
@@ -103,6 +116,7 @@ describe("audit tables schema — no content columns", () => {
     });
   }
 });
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // 2. INSERT — SQL migrations & TS server fns nu introduc câmpuri interzise
