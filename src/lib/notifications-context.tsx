@@ -112,8 +112,12 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           // Toast preview + signature sound, dedupe
           if (!lastToastIdRef.current.has(n.id)) {
             lastToastIdRef.current.add(n.id);
-            // Body-ul din DB respectă deja preferința show_preview a destinatarului (trigger).
-            toast(n.title, { description: n.body ?? undefined });
+            // Body-ul din DB este deja sanitizat de trigger; în plus, când
+            // userul are `show_preview=false`, forțăm „Previzualizare
+            // dezactivată" ca UI să fie explicit despre setare.
+            toast(n.title, {
+              description: buildToastBody(showPreviewRef.current, n.body),
+            });
             playNotificationSound();
           }
         },
