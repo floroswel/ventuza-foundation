@@ -128,44 +128,116 @@ const ALLOWED_KEYS = new Set([
   "created_at", "sent_at", "priority",
 ]);
 
-const PII_PATTERNS: Array<[RegExp, string]> = [
+const PII_PATTERNS: Array<[RegExp, string, PiiKind]> = [
   // email
-  [/[\w.+-]+@[\w-]+\.[\w.-]+/g, "[email]"],
-  // telefon E.164 sau internațional
-  [/\+?\d[\d\s().-]{7,}\d/g, "[phone]"],
-  // IBAN (RO + generic)
-  [/\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/g, "[iban]"],
-  // CNP RO (13 cifre)
-  [/\b[1-9]\d{12}\b/g, "[cnp]"],
+  [/[\w.+-]+@[\w-]+\.[\w.-]+/g, "[email]", "email"],
+  // IBAN (RO + generic) — MUST run before phone (phone is a greedy digit run).
+  [/\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/g, "[iban]", "iban"],
+  // CNP RO (13 cifre) — MUST also run before phone for the same reason.
+  [/\b[1-9]\d{12}\b/g, "[cnp]", "cnp"],
   // coordonate lat,lng
-  [/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g, "[coords]"],
+  [/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g, "[coords]", "coords"],
+  // telefon E.164 sau internațional (LAST — greedy digit-run).
+  [/\+?\d[\d\s().-]{7,}\d/g, "[phone]", "phone"],
 ];
+
+
+export type PiiKind = "email" | "phone" | "iban" | "cnp" | "coords";
+
+/**
+ * Structured redaction report produced alongside every sanitize call.
+ *
+ * Rule: NEVER contains the removed data — only the shape of what was scrubbed
+ * (JSON path + kind of leak). Safe to log to console or an audit sink.
+ */
+export interface SanitizeRedactionReport {
+  /** JSON-path pointers (RFC-6901-ish) of forbidden keys removed from `data`. */
+  removedKeys: string[];
+  /** Where PII patterns were matched and scrubbed inside surviving strings. */
+  scrubbedStrings: Array<{ path: string; kinds: PiiKind[]; count: number }>;
+  /** `true` when body was forced to the generic copy because category=messages. */
+  bodyForcedGeneric: boolean;
+  /** `true` when the incoming `url` had its query string dropped. */
+  urlQueryDropped: boolean;
+  /** `true` when title/body/tag were clamped to the max length. */
+  truncated: { title: boolean; body: boolean; tag: boolean };
+  /** Unknown top-level keys the sanitizer refused to propagate. */
+  droppedTopLevelKeys: string[];
+}
+
+function emptyReport(): SanitizeRedactionReport {
+  return {
+    removedKeys: [],
+    scrubbedStrings: [],
+    bodyForcedGeneric: false,
+    urlQueryDropped: false,
+    truncated: { title: false, body: false, tag: false },
+    droppedTopLevelKeys: [],
+  };
+}
 
 function isForbiddenKey(key: string): boolean {
   if (ALLOWED_KEYS.has(key)) return false;
   return FORBIDDEN_KEY_PATTERNS.some((rx) => rx.test(key));
 }
 
+/** Scrub PII from a string, recording which kinds matched (not the values). */
+function scrubStringTracked(
+  s: string,
+  path: string,
+  report: SanitizeRedactionReport,
+): string {
+  let out = s;
+  const kinds: PiiKind[] = [];
+  let count = 0;
+  for (const [rx, repl, kind] of PII_PATTERNS) {
+    // Reset lastIndex because regexes are shared /g instances.
+    rx.lastIndex = 0;
+    const matches = out.match(rx);
+    if (matches && matches.length > 0) {
+      count += matches.length;
+      if (!kinds.includes(kind)) kinds.push(kind);
+      out = out.replace(rx, repl);
+    }
+  }
+  if (kinds.length > 0) {
+    report.scrubbedStrings.push({ path, kinds, count });
+  }
+  return out;
+}
+
+/** Backwards-compat wrapper used by internal callers that don't need tracking. */
 function scrubString(s: string): string {
   let out = s;
   for (const [rx, repl] of PII_PATTERNS) out = out.replace(rx, repl);
   return out;
 }
 
-function deepStrip(value: unknown): unknown {
+function deepStripTracked(
+  value: unknown,
+  path: string,
+  report: SanitizeRedactionReport,
+): unknown {
   if (value == null) return value;
-  if (typeof value === "string") return scrubString(value);
-  if (Array.isArray(value)) return value.map(deepStrip);
+  if (typeof value === "string") return scrubStringTracked(value, path, report);
+  if (Array.isArray(value)) {
+    return value.map((v, i) => deepStripTracked(v, `${path}/${i}`, report));
+  }
   if (typeof value === "object") {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (isForbiddenKey(k)) continue; // ELIMINĂ complet
-      out[k] = deepStrip(v);
+      const childPath = `${path}/${k}`;
+      if (isForbiddenKey(k)) {
+        report.removedKeys.push(childPath);
+        continue; // ELIMINĂ complet
+      }
+      out[k] = deepStripTracked(v, childPath, report);
     }
     return out;
   }
   return value;
 }
+
 
 export interface NotificationPayloadIn {
   title?: string | null;
@@ -280,6 +352,38 @@ export function defineNotificationData<T extends SafeNotificationData>(
 }
 
 /**
+ * Pluggable audit sink. Register once at boot (e.g. wire it to your logging
+ * pipeline in `src/start.ts` or per-runtime). Never invoked with raw values —
+ * only structural metadata (paths, kinds, counts).
+ */
+export type SanitizeAuditLogger = (event: {
+  channel?: string;
+  category?: string;
+  type?: string;
+  report: SanitizeRedactionReport;
+  hasAnyRedaction: boolean;
+}) => void;
+
+let auditLogger: SanitizeAuditLogger | null = defaultConsoleLogger;
+
+/** Default sink: `console.warn` with a stable `[notif-sanitize]` prefix. */
+function defaultConsoleLogger(event: {
+  channel?: string;
+  report: SanitizeRedactionReport;
+  hasAnyRedaction: boolean;
+}): void {
+  if (!event.hasAnyRedaction) return;
+  // Structured, JSON-friendly — no raw values in payload.
+  // eslint-disable-next-line no-console
+  console.warn("[notif-sanitize]", JSON.stringify(event));
+}
+
+/** Replace the default console sink (pass `null` to disable logging). */
+export function setNotificationSanitizeLogger(logger: SanitizeAuditLogger | null): void {
+  auditLogger = logger;
+}
+
+/**
  * Sanitizează un payload de notificare. Trebuie apelat de FIECARE canal
  * (web push, FCM, native, in-app, email) înainte de trimitere.
  *
@@ -288,10 +392,27 @@ export function defineNotificationData<T extends SafeNotificationData>(
  * - Orice cheie sensibilă din payload sau `data` este eliminată (nu doar
  *   mascată). Stringurile rămase sunt scanate pentru PII.
  * - Câmpurile necunoscute la nivel top se ignoră (nu se propagă mai departe).
+ * - Emite un `SanitizeRedactionReport` structurat (fără valori) prin loggerul
+ *   configurat cu `setNotificationSanitizeLogger`; pentru acces direct la
+ *   report folosește `sanitizeNotificationPayloadWithReport`.
  */
 export function sanitizeNotificationPayload(
   input: NotificationPayloadIn,
+  opts?: { channel?: string },
 ): SanitizedNotificationPayload {
+  return sanitizeNotificationPayloadWithReport(input, opts).payload;
+}
+
+/**
+ * Variantă care întoarce și `SanitizeRedactionReport`. Util pentru teste și
+ * pentru canale care vor să atașeze report-ul la propria telemetrie.
+ */
+export function sanitizeNotificationPayloadWithReport(
+  input: NotificationPayloadIn,
+  opts?: { channel?: string },
+): { payload: SanitizedNotificationPayload; report: SanitizeRedactionReport } {
+  const report = emptyReport();
+
   const category = typeof input.category === "string" ? input.category : undefined;
   const type = typeof input.type === "string" ? input.type : undefined;
   const isMessage =
@@ -301,29 +422,80 @@ export function sanitizeNotificationPayload(
   const rawTitle = (input.title ?? "").toString().trim() || "Ventuza";
   const rawBody = (input.body ?? "").toString().trim() || GENERIC_MESSAGE_BODY;
 
-  const title = scrubString(rawTitle).slice(0, 120);
-  const body = isMessage
-    ? GENERIC_MESSAGE_BODY
-    : scrubString(rawBody).slice(0, MAX_PREVIEW_LEN);
+  const scrubbedTitle = scrubStringTracked(rawTitle, "/title", report);
+  const title = scrubbedTitle.slice(0, 120);
+  if (scrubbedTitle.length > 120) report.truncated.title = true;
+
+  let body: string;
+  if (isMessage) {
+    body = GENERIC_MESSAGE_BODY;
+    // Only note "forced generic" when the caller actually tried to pass a body.
+    if (rawBody && rawBody !== GENERIC_MESSAGE_BODY) report.bodyForcedGeneric = true;
+  } else {
+    const scrubbedBody = scrubStringTracked(rawBody, "/body", report);
+    body = scrubbedBody.slice(0, MAX_PREVIEW_LEN);
+    if (scrubbedBody.length > MAX_PREVIEW_LEN) report.truncated.body = true;
+  }
 
   const out: SanitizedNotificationPayload = { title, body };
+
   if (typeof input.url === "string" && input.url) {
-    // păstrăm doar path-ul, fără query care poate conține tokens/PII
+    const hasQuery = input.url.includes("?");
     try {
       const u = new URL(input.url, "https://placeholder.local");
       out.url = u.pathname;
     } catch {
       out.url = input.url.split("?")[0].slice(0, 300);
     }
+    if (hasQuery) report.urlQueryDropped = true;
   }
-  if (typeof input.tag === "string" && input.tag) out.tag = scrubString(input.tag).slice(0, 80);
+
+  if (typeof input.tag === "string" && input.tag) {
+    const scrubbedTag = scrubStringTracked(input.tag, "/tag", report);
+    out.tag = scrubbedTag.slice(0, 80);
+    if (scrubbedTag.length > 80) report.truncated.tag = true;
+  }
+
   if (type) out.type = type.slice(0, 40);
   if (category) out.category = category.slice(0, 40);
+
   if (input.data && typeof input.data === "object") {
-    const stripped = deepStrip(input.data) as Record<string, unknown>;
+    const stripped = deepStripTracked(input.data, "/data", report) as Record<string, unknown>;
     if (Object.keys(stripped).length > 0) out.data = stripped;
   }
-  return out;
+
+  // Detect unknown top-level keys (anything not in the accepted shape).
+  const KNOWN_TOP = new Set(["title", "body", "url", "tag", "type", "category", "data"]);
+  for (const k of Object.keys(input)) {
+    if (!KNOWN_TOP.has(k)) report.droppedTopLevelKeys.push(k);
+  }
+
+  const hasAnyRedaction =
+    report.removedKeys.length > 0 ||
+    report.scrubbedStrings.length > 0 ||
+    report.bodyForcedGeneric ||
+    report.urlQueryDropped ||
+    report.truncated.title ||
+    report.truncated.body ||
+    report.truncated.tag ||
+    report.droppedTopLevelKeys.length > 0;
+
+  if (auditLogger) {
+    try {
+      auditLogger({
+        channel: opts?.channel,
+        category,
+        type,
+        report,
+        hasAnyRedaction,
+      });
+    } catch {
+      // A broken logger must never break notification delivery.
+    }
+  }
+
+  return { payload: out, report };
 }
+
 
 
