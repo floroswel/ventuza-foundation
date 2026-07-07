@@ -48,28 +48,23 @@ const HOSTILE_MESSAGES = [
 describe("[E2E preview=off] Strat 1: trigger SQL nu propagă body", () => {
   const migration = read("supabase/migrations/20260707120057_d82ced9c-87cc-4739-9733-651394c29299.sql");
 
-  it("migrarea de policy există și forțează body generic în notifications", () => {
-    expect(migration).toMatch(/tg_notify_new_message|notifications/i);
-    expect(migration).toMatch(/Ai un mesaj nou/);
+  it("migrarea redefinește tg_notify_new_message cu body hardcodat generic", () => {
+    expect(migration).toMatch(/CREATE OR REPLACE FUNCTION public\.tg_notify_new_message/);
+    expect(migration).toMatch(/'Ai un mesaj nou'/);
   });
 
-  it("migrarea NU proiectează câmpuri de conținut în payload notificare", () => {
-    // Blocul care construiește payload-ul notificării nu trebuie să
-    // referențieze NEW.body / NEW.media_type / NEW.caption / NEW.media_url.
-    // (Coloanele pot apărea în alte contexte — DELETE, filtru — de aceea
-    // căutăm doar în ferestre de ~600 caractere din jurul cuvântului cheie
-    // "notifications" folosit ca INSERT.)
-    const inserts = [...migration.matchAll(/insert\s+into\s+public\.notifications[\s\S]{0,800}/gi)];
-    expect(inserts.length).toBeGreaterThan(0);
-    for (const m of inserts) {
-      expect(m[0]).not.toMatch(/NEW\.(body|media_type|media_url|caption|voice_url)/);
-    }
+  it("corpul funcției NU referențiază câmpuri sensibile din NEW", () => {
+    const fn = migration.match(/CREATE OR REPLACE FUNCTION[\s\S]*?\$function\$;/);
+    expect(fn).not.toBeNull();
+    expect(fn![0]).not.toMatch(/NEW\.(body|media_type|media_url|caption|voice_url)/);
   });
 
-  it("migrarea forțează show_preview=false pentru toate profilele existente", () => {
-    expect(migration).toMatch(/show_preview[^,\n]*false|'show_preview'\s*,\s*'?false/i);
+  it("migrarea forțează show_preview=false pentru profilele existente + default", () => {
+    expect(migration).toMatch(/show_preview['"\s:,]+false/);
+    expect(migration).toMatch(/ALTER COLUMN notification_prefs SET DEFAULT/);
   });
 });
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // STRAT 2 — Filtru central: sanitizeNotificationPayload.
