@@ -5572,6 +5572,8 @@ export type Database = {
           bucket_m: number
           can_open_map: boolean
           label: string
+          lat: number
+          lng: number
           message_id: string
         }[]
       }

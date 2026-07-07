@@ -1,19 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Eye, EyeOff, MapPin, Pause, Play, Timer, X } from "lucide-react";
+import { Eye, EyeOff, MapPin, Navigation, Pause, Play, Timer, X } from "lucide-react";
 import {
   getMessageLocationBucket,
   markMediaViewed,
   signChatMedia,
+  type LocationBucket,
   type MessageRow,
 } from "@/lib/chat";
 import { cn } from "@/lib/utils";
 
-
 type Props = { m: MessageRow; mine: boolean };
+
+const VIEW_ONCE_SECONDS = 8;
 
 export function ChatMediaBubble({ m, mine }: Props) {
   if (m.media_type === "location") return <LocationBubble m={m} mine={mine} />;
-
   if (m.media_type === "audio") return <AudioBubble m={m} mine={mine} />;
   if (m.media_type === "image") return <ImageBubble m={m} mine={mine} />;
 
@@ -31,41 +32,150 @@ export function ChatMediaBubble({ m, mine }: Props) {
   );
 }
 
+// ---------------- LOCATION ----------------
+
 function LocationBubble({ m, mine }: Props) {
-  const [label, setLabel] = useState<string>(mine ? "Locația trimisă" : "Se calculează…");
+  const [info, setInfo] = useState<LocationBucket | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [mapOpen, setMapOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
+    setLoading(true);
     getMessageLocationBucket(m.id)
-      .then((bucket) => {
-        if (cancelled) return;
-        setLabel(bucket?.label ?? "Distanță indisponibilă");
+      .then((b) => {
+        if (!cancelled) setInfo(b);
       })
       .catch(() => {
-        if (!cancelled) setLabel("Distanță indisponibilă");
+        if (!cancelled) setInfo(null);
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
       });
     return () => {
       cancelled = true;
     };
   }, [m.id]);
 
+  const label = loading
+    ? mine
+      ? "Locația trimisă"
+      : "Se calculează…"
+    : (info?.label ?? "Distanță indisponibilă");
+
+  const canOpen = !!info?.can_open_map && info.lat != null && info.lng != null;
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => canOpen && setMapOpen(true)}
+        disabled={!canOpen}
+        className={cn(
+          "flex max-w-[78%] items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm transition",
+          mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
+          canOpen && "cursor-pointer hover:brightness-110",
+        )}
+      >
+        <MapPin className="size-5 shrink-0" />
+        <div className="min-w-0">
+          <p className="font-medium leading-tight">Locație partajată</p>
+          <p className="truncate text-[11px] opacity-80">
+            {mine ? "Trimisă în siguranță" : `Distanță aproximativă: ${label}`}
+          </p>
+          {canOpen && (
+            <p className="mt-0.5 text-[10px] opacity-75">Tap pentru a deschide harta</p>
+          )}
+        </div>
+      </button>
+      {mapOpen && info?.lat != null && info?.lng != null && (
+        <LocationMap
+          lat={info.lat}
+          lng={info.lng}
+          title={mine ? "Locația trimisă" : "Locație primită"}
+          onClose={() => setMapOpen(false)}
+        />
+      )}
+    </>
+  );
+}
+
+function LocationMap({
+  lat,
+  lng,
+  title,
+  onClose,
+}: {
+  lat: number;
+  lng: number;
+  title: string;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [onClose]);
+
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01}%2C${lat - 0.01}%2C${lng + 0.01}%2C${lat + 0.01}&layer=mapnik&marker=${lat}%2C${lng}`;
+  const gmaps = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
+  const osm = `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=17/${lat}/${lng}`;
+
   return (
     <div
-      className={cn(
-        "flex max-w-[78%] items-center gap-3 rounded-2xl px-3 py-2.5 text-sm",
-        mine ? "bg-primary text-primary-foreground" : "bg-muted text-foreground",
-      )}
+      className="fixed inset-0 z-[100] flex flex-col bg-black/90"
+      role="dialog"
+      aria-modal="true"
     >
-      <MapPin className="size-5 shrink-0" />
-      <div className="min-w-0">
-        <p className="font-medium leading-tight">Locație partajată</p>
-        <p className="truncate text-[11px] opacity-80">
-          {mine ? "Trimisă sigur" : `Distanță aproximativă: ${label}`}
-        </p>
+      <div className="flex items-center justify-between gap-2 px-4 py-3 text-white">
+        <p className="text-sm font-medium">{title}</p>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Închide"
+          className="flex size-9 items-center justify-center rounded-full bg-white/10 backdrop-blur hover:bg-white/20"
+        >
+          <X className="size-5" />
+        </button>
+      </div>
+      <div className="relative flex-1">
+        <iframe
+          title="Hartă"
+          src={src}
+          className="h-full w-full border-0"
+          loading="lazy"
+        />
+      </div>
+      <div className="flex flex-col gap-2 border-t border-white/10 bg-black/80 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+        <a
+          href={gmaps}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground hover:brightness-110"
+        >
+          <Navigation className="size-4" /> Navighează cu Google Maps
+        </a>
+        <a
+          href={osm}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center gap-2 rounded-full border border-white/20 py-2.5 text-xs text-white/80 hover:bg-white/10"
+        >
+          Deschide în OpenStreetMap
+        </a>
       </div>
     </div>
   );
 }
+
+// ---------------- AUDIO ----------------
 
 function AudioBubble({ m, mine }: Props) {
   const [url, setUrl] = useState<string | null>(null);
@@ -105,7 +215,6 @@ function AudioBubble({ m, mine }: Props) {
     }
   }
 
-  // Deterministic waveform bars derived from message id (no decoding needed).
   const bars = useMemo<number[]>(() => {
     const n = 28;
     let h = 0;
@@ -113,8 +222,8 @@ function AudioBubble({ m, mine }: Props) {
     const out: number[] = [];
     for (let i = 0; i < n; i++) {
       h = (h * 1664525 + 1013904223) >>> 0;
-      const v = ((h >>> 8) % 1000) / 1000; // 0..1
-      out.push(0.25 + v * 0.75); // 0.25..1
+      const v = ((h >>> 8) % 1000) / 1000;
+      out.push(0.25 + v * 0.75);
     }
     return out;
   }, [m.id]);
@@ -157,48 +266,46 @@ function AudioBubble({ m, mine }: Props) {
   );
 }
 
-function ImageBubble({ m, mine }: Props) {
-  const [url, setUrl] = useState<string | null>(null);
-  const [revealed, setRevealed] = useState(!m.view_once);
-  const [opened, setOpened] = useState(false);
+// ---------------- IMAGE ----------------
 
+function ImageBubble({ m, mine }: Props) {
+  const alreadyBurned = !mine && !!m.view_once && !!m.viewed_at;
+  const [url, setUrl] = useState<string | null>(null);
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [viewedOnce, setViewedOnce] = useState(alreadyBurned);
+
+  // Sign URL as soon as bubble mounts (needed for both preview and fullscreen).
   useEffect(() => {
-    if (!revealed) return;
+    if (!m.media_url) return;
+    if (alreadyBurned) return;
     let cancelled = false;
-    signChatMedia(m.media_url).then((u) => {
-      if (!cancelled) setUrl(u);
-    });
+    setUrlError(null);
+    signChatMedia(m.media_url)
+      .then((u) => {
+        if (cancelled) return;
+        if (!u) setUrlError("Nu am putut încărca poza");
+        else setUrl(u);
+      })
+      .catch(() => {
+        if (!cancelled) setUrlError("Nu am putut încărca poza");
+      });
     return () => {
       cancelled = true;
     };
-  }, [m.media_url, revealed]);
+  }, [m.media_url, alreadyBurned]);
 
-  // For receiver of view-once: mark viewed once they open
-  const isViewer = !mine && m.view_once && !opened && revealed;
-  useEffect(() => {
-    if (isViewer) {
-      setOpened(true);
+  function openFullscreen() {
+    if (!url) return;
+    setFullscreen(true);
+    if (!mine && m.view_once && !viewedOnce) {
+      setViewedOnce(true);
       void markMediaViewed(m.id);
     }
-  }, [isViewer, m.id]);
-
-  if (!revealed) {
-    return (
-      <button
-        onClick={() => setRevealed(true)}
-        className={cn(
-          "flex max-w-[78%] items-center gap-3 rounded-2xl px-4 py-3 text-sm",
-          mine ? "bg-primary/80 text-primary-foreground" : "bg-muted text-foreground",
-        )}
-      >
-        <Eye className="size-5" />
-        <span>Foto view-once · Tap pentru a deschide</span>
-      </button>
-    );
   }
 
-  // If recipient already viewed once and reload, hide
-  if (!mine && m.view_once && m.viewed_at && !opened) {
+  // Recipient-side burned view-once: don't show anything openable.
+  if (alreadyBurned) {
     return (
       <div
         className={cn(
@@ -212,9 +319,35 @@ function ImageBubble({ m, mine }: Props) {
     );
   }
 
-  const [fullscreen, setFullscreen] = useState(false);
-  const canOpenFullscreen = !m.view_once; // view-once nu se re-deschide
+  // View-once (not yet viewed by recipient): show sealed placeholder.
+  if (!mine && m.view_once && !viewedOnce) {
+    return (
+      <>
+        <button
+          type="button"
+          onClick={openFullscreen}
+          disabled={!url}
+          className={cn(
+            "flex max-w-[78%] items-center gap-3 rounded-2xl px-4 py-3 text-sm transition",
+            "bg-muted text-foreground hover:brightness-110",
+            !url && "opacity-60",
+          )}
+        >
+          <Eye className="size-5" />
+          <span>Foto view-once · Tap pentru a deschide</span>
+        </button>
+        {fullscreen && url && (
+          <FullscreenImage
+            src={url}
+            viewOnce
+            onClose={() => setFullscreen(false)}
+          />
+        )}
+      </>
+    );
+  }
 
+  // Normal image (or sender's own view-once preview).
   return (
     <>
       <div
@@ -230,13 +363,14 @@ function ImageBubble({ m, mine }: Props) {
             alt=""
             draggable={false}
             onContextMenu={(e) => e.preventDefault()}
-            onClick={() => canOpenFullscreen && setFullscreen(true)}
-            className={cn(
-              "block max-h-80 w-full select-none object-cover",
-              canOpenFullscreen && "cursor-zoom-in",
-            )}
+            onClick={openFullscreen}
+            className="block max-h-80 w-full cursor-zoom-in select-none object-cover"
             style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
           />
+        ) : urlError ? (
+          <div className="flex h-32 w-56 items-center justify-center px-3 text-center text-xs text-muted-foreground">
+            {urlError}
+          </div>
         ) : (
           <div className="h-48 w-56 animate-pulse bg-background/30" />
         )}
@@ -246,15 +380,28 @@ function ImageBubble({ m, mine }: Props) {
           </div>
         )}
       </div>
-
       {fullscreen && url && (
-        <FullscreenImage src={url} onClose={() => setFullscreen(false)} />
+        <FullscreenImage
+          src={url}
+          viewOnce={!!m.view_once && !mine}
+          onClose={() => setFullscreen(false)}
+        />
       )}
     </>
   );
 }
 
-function FullscreenImage({ src, onClose }: { src: string; onClose: () => void }) {
+function FullscreenImage({
+  src,
+  viewOnce,
+  onClose,
+}: {
+  src: string;
+  viewOnce?: boolean;
+  onClose: () => void;
+}) {
+  const [progress, setProgress] = useState(0); // 0..1
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -267,6 +414,26 @@ function FullscreenImage({ src, onClose }: { src: string; onClose: () => void })
       document.body.style.overflow = prev;
     };
   }, [onClose]);
+
+  // View-once timer: fills in VIEW_ONCE_SECONDS then auto-closes.
+  useEffect(() => {
+    if (!viewOnce) return;
+    const start = performance.now();
+    let raf = 0;
+    const tick = () => {
+      const elapsed = (performance.now() - start) / 1000;
+      const p = Math.min(1, elapsed / VIEW_ONCE_SECONDS);
+      setProgress(p);
+      if (p >= 1) {
+        onClose();
+        return;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [viewOnce, onClose]);
+
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/95 p-4"
@@ -275,11 +442,22 @@ function FullscreenImage({ src, onClose }: { src: string; onClose: () => void })
       aria-modal="true"
       data-private-media
     >
+      {viewOnce && (
+        <div className="pointer-events-none absolute inset-x-4 top-4 h-1 overflow-hidden rounded-full bg-white/20">
+          <div
+            className="h-full bg-white"
+            style={{ width: `${Math.round(progress * 100)}%` }}
+          />
+        </div>
+      )}
       <button
         type="button"
-        onClick={onClose}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
         aria-label="Închide"
-        className="absolute right-4 top-4 flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20"
+        className="absolute right-4 top-6 z-10 flex size-10 items-center justify-center rounded-full bg-white/10 text-white backdrop-blur hover:bg-white/20"
       >
         <X className="size-5" />
       </button>
@@ -288,11 +466,10 @@ function FullscreenImage({ src, onClose }: { src: string; onClose: () => void })
         alt=""
         draggable={false}
         onContextMenu={(e) => e.preventDefault()}
-        onClick={(e) => e.stopPropagation()}
-        className="max-h-full max-w-full select-none object-contain"
+        onClick={onClose}
+        className="max-h-full max-w-full cursor-pointer select-none object-contain"
         style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
       />
     </div>
   );
 }
-
