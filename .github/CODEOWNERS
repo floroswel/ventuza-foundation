@@ -1,0 +1,24 @@
+# CODEOWNERS — cere review pe fișierele care ating pipeline-ul de notificări.
+# Combinat cu regula de branch protection "Require review from Code Owners"
+# pe branch-ul `main`, orice PR care atinge aceste fișiere are nevoie de
+# aprobare explicită înainte de merge.
+#
+# Fallback pentru restul repo-ului: owner-ul workspace-ului.
+
+* @ventuza-foundation-owners
+
+# Pipeline notificări — sursă de adevăr pentru privacy payload.
+/src/lib/notification-privacy.ts            @ventuza-foundation-owners
+/src/lib/notifications-context.tsx          @ventuza-foundation-owners
+/src/lib/notification-prefs-context.tsx     @ventuza-foundation-owners
+/src/lib/push.functions.ts                  @ventuza-foundation-owners
+/src/lib/chat.functions.ts                  @ventuza-foundation-owners
+/src/lib/__tests__/notification-*.test.ts   @ventuza-foundation-owners
+/src/lib/__tests__/notifications-*.test.ts  @ventuza-foundation-owners
+/src/lib/__tests__/fcm-payload-privacy.test.ts @ventuza-foundation-owners
+/public/push-sw.js                          @ventuza-foundation-owners
+/src/routes/messages.index.tsx              @ventuza-foundation-owners
+
+# CI-ul care aplică regula — schimbarea lui trebuie să treacă tot pe review.
+/.github/workflows/notification-privacy.yml @ventuza-foundation-owners
+/.github/CODEOWNERS                         @ventuza-foundation-owners
