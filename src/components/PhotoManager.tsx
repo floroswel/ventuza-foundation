@@ -186,7 +186,8 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
 
         // Perceptual hash → server (catfishing detection) — non-blocking
         try {
-          const phash = await computePhash(file as Blob);
+          const asFile = file instanceof File ? file : new File([file], `${path}`, { type: contentType });
+          const phash = await computePhash(asFile);
           if (phash) await supabase.rpc("record_photo_hash", { _path: path, _phash: phash });
         } catch {
           /* non-blocking */
