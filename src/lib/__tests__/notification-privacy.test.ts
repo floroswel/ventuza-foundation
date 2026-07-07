@@ -88,3 +88,64 @@ describe("Invariante de sursă — nicio suprafață nu scurge conținut", () =>
     }
   });
 });
+
+describe("sanitizeNotificationPayload — filtru central", () => {
+  it("forțează body generic când categoria este 'messages'", () => {
+    const out = sanitizeNotificationPayload({
+      title: "Andrei",
+      body: "Salut, ne vedem la 20? +40 712 345 678",
+      category: "messages",
+    });
+    expect(out.body).toBe(GENERIC_MESSAGE_BODY);
+    expect(out.title).toBe("Andrei");
+  });
+
+  it("mascheaza email/telefon/IBAN în title/body pentru alte categorii", () => {
+    const out = sanitizeNotificationPayload({
+      title: "Contact: user@example.com",
+      body: "IBAN RO49AAAA1B31007593840000 tel +40712345678",
+      category: "marketing",
+    });
+    expect(out.title).not.toContain("user@example.com");
+    expect(out.body).not.toMatch(/RO49AAAA1B31007593840000/);
+    expect(out.body).not.toMatch(/\+40712345678/);
+  });
+
+  it("elimină chei sensibile din data la orice adâncime", () => {
+    const out = sanitizeNotificationPayload({
+      title: "t",
+      body: "b",
+      data: {
+        conversation_id: "abc",
+        hiv_status: "positive",
+        hiv_status_enc: "xxx",
+        location: { lat: 44.4, lng: 26.1 },
+        phone: "+40712345678",
+        auth: "secret",
+        endpoint: "https://fcm/x",
+        nested: { message: "salut", body: "leak", ok: true, gender: "male" },
+      },
+    });
+    const d = out.data!;
+    expect(d.conversation_id).toBe("abc");
+    expect("hiv_status" in d).toBe(false);
+    expect("hiv_status_enc" in d).toBe(false);
+    expect("location" in d).toBe(false);
+    expect("phone" in d).toBe(false);
+    expect("auth" in d).toBe(false);
+    expect("endpoint" in d).toBe(false);
+    const nested = d.nested as Record<string, unknown>;
+    expect("message" in nested).toBe(false);
+    expect("body" in nested).toBe(false);
+    expect("gender" in nested).toBe(false);
+    expect(nested.ok).toBe(true);
+  });
+
+  it("elimină query-ul din url (poate conține tokens)", () => {
+    const out = sanitizeNotificationPayload({
+      title: "t", body: "b",
+      url: "/messages/123?token=SECRET&code=42",
+    });
+    expect(out.url).toBe("/messages/123");
+  });
+});
