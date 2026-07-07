@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
-import { X, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Trash2, AlertTriangle, RotateCcw } from "lucide-react";
+
 import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { deleteStory, markStorySeen, signStoryMedia, type StoryGroup } from "@/lib/stories";
@@ -24,6 +25,8 @@ export function StoryViewer({
   const [si, setSi] = useState(0);
   const [progress, setProgress] = useState(0);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [mediaError, setMediaError] = useState<string | null>(null);
+  const [retryTick, setRetryTick] = useState(0);
   const [paused, setPaused] = useState(false);
   const tickRef = useRef<number | null>(null);
 
@@ -34,14 +37,30 @@ export function StoryViewer({
   useEffect(() => {
     if (!story) return;
     setMediaUrl(null);
+    setMediaError(null);
     setProgress(0);
-    signStoryMedia([story.media_path]).then((m) => setMediaUrl(m[story.media_path] ?? null));
+    let cancelled = false;
+    signStoryMedia([story.media_path])
+      .then((m) => {
+        if (cancelled) return;
+        const u = m[story.media_path] ?? null;
+        if (!u) setMediaError("Poza nu mai este disponibilă");
+        else setMediaUrl(u);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setMediaError(e instanceof Error ? e.message : "Nu am putut încărca poza");
+      });
     void markStorySeen(story.id);
-  }, [story?.id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [story?.id, retryTick]);
+
 
   // tick progress
   useEffect(() => {
-    if (!story || paused) return;
+    if (!story || paused || mediaError || !mediaUrl) return;
     const start = Date.now() - progress * STORY_DURATION_MS;
     const id = window.setInterval(() => {
       const elapsed = Date.now() - start;
@@ -55,7 +74,8 @@ export function StoryViewer({
     tickRef.current = id;
     return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [story?.id, paused]);
+  }, [story?.id, paused, mediaError, mediaUrl]);
+
 
   function next() {
     if (!group) return;
@@ -161,11 +181,34 @@ export function StoryViewer({
 
       {/* Media */}
       <div className="relative size-full max-w-md">
-        {mediaUrl ? (
-          <img src={mediaUrl} alt="" className="size-full object-contain" />
+        {mediaError ? (
+          <div className="grid size-full place-items-center px-6 text-center">
+            <div className="flex flex-col items-center gap-3 text-white/90">
+              <AlertTriangle className="size-10 text-white/70" />
+              <p className="text-sm">{mediaError}</p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRetryTick((n) => n + 1);
+                }}
+                className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white hover:bg-white/25"
+              >
+                <RotateCcw className="size-4" /> Reîncearcă
+              </button>
+            </div>
+          </div>
+        ) : mediaUrl ? (
+          <img
+            src={mediaUrl}
+            alt=""
+            className="size-full object-contain"
+            onError={() => setMediaError("Poza nu s-a încărcat")}
+          />
         ) : (
           <div className="grid size-full place-items-center text-white/60">Se încarcă…</div>
         )}
+
         {story.caption && (
           <p
             className={cn(
