@@ -60,9 +60,11 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
   const [recording, setRecording] = useState(false);
   const [liveLocationId, setLiveLocationId] = useState<string | null>(null);
   const [recElapsed, setRecElapsed] = useState(0);
+  const [uploads, setUploads] = useState<UploadJob[]>([]);
   const fileRef = useRef<HTMLInputElement>(null);
   const fileOnceRef = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
+
 
   const recRef = useRef<{
     mr: MediaRecorder;
