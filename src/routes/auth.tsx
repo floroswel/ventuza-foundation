@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
+import { nativeGoogleSignIn, nativeGoogleSupported } from "@/lib/native-google-auth";
+
 
 
 const searchSchema = z.object({
@@ -323,6 +325,27 @@ function AuthPage() {
     }
     setOauthBusy(provider);
     try {
+      // Pe Android (Capacitor) Google blochează WebView-urile (404). Folosim
+      // Google Sign-In nativ prin @capgo/capacitor-social-login → id_token →
+      // supabase.auth.signInWithIdToken. Web-ul rămâne pe fluxul managed.
+      if (provider === "google" && (await nativeGoogleSupported())) {
+        const native = await nativeGoogleSignIn();
+        if (native.ok) {
+          const { data } = await supabase.auth.getUser();
+          if (data.user) {
+            await persistPendingBirthdate(data.user.id);
+            await routeAfterAuth(data.user.id, navigate, search.redirect);
+          }
+          return;
+        }
+        if (native.code === "cancelled") return;
+        if (native.code !== "unsupported") {
+          toast.error(native.message ?? t("auth.errors.oauthFailed", { provider }));
+          return;
+        }
+        // "unsupported" → cădem pe fluxul web de mai jos.
+      }
+
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin + "/auth",
       });
@@ -343,6 +366,7 @@ function AuthPage() {
       setOauthBusy(null);
     }
   }
+
 
   async function onForgotPassword() {
     const emailParsed = emailSchema.safeParse(email);
