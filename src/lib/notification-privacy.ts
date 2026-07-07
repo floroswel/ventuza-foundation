@@ -131,15 +131,16 @@ const ALLOWED_KEYS = new Set([
 const PII_PATTERNS: Array<[RegExp, string, PiiKind]> = [
   // email
   [/[\w.+-]+@[\w-]+\.[\w.-]+/g, "[email]", "email"],
-  // telefon E.164 sau internațional
-  [/\+?\d[\d\s().-]{7,}\d/g, "[phone]", "phone"],
-  // IBAN (RO + generic)
+  // IBAN (RO + generic) — MUST run before phone (phone is a greedy digit run).
   [/\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/g, "[iban]", "iban"],
-  // CNP RO (13 cifre)
+  // CNP RO (13 cifre) — MUST also run before phone for the same reason.
   [/\b[1-9]\d{12}\b/g, "[cnp]", "cnp"],
   // coordonate lat,lng
   [/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g, "[coords]", "coords"],
+  // telefon E.164 sau internațional (LAST — greedy digit-run).
+  [/\+?\d[\d\s().-]{7,}\d/g, "[phone]", "phone"],
 ];
+
 
 export type PiiKind = "email" | "phone" | "iban" | "cnp" | "coords";
 
