@@ -36,17 +36,30 @@ export function EnablePushButton({
   const [busy, setBusy] = useState(false);
   const [subscribed, setSubscribed] = useState<boolean | null>(null);
   const [permission, setPermission] = useState<NotificationPermission | "unsupported">("unsupported");
+  const [isNative, setIsNative] = useState(false);
+  const [nativeToken, setNativeToken] = useState<string | null>(null);
   const save = useServerFn(savePushSubscription);
   const remove = useServerFn(removePushSubscription);
+  const saveFcm = useServerFn(saveFcmSubscription);
+  const removeFcm = useServerFn(removeFcmSubscription);
 
   useEffect(() => {
-    if (!supported()) {
-      setPermission("unsupported");
-      setSubscribed(false);
-      return;
-    }
-    setPermission(Notification.permission);
     (async () => {
+      const native = await isNativePlatform();
+      setIsNative(native);
+      if (native) {
+        // Native: we can't peek "is subscribed" without registering; show the
+        // Enable button by default. Permission state is tracked lazily.
+        setPermission("default");
+        setSubscribed(false);
+        return;
+      }
+      if (!supported()) {
+        setPermission("unsupported");
+        setSubscribed(false);
+        return;
+      }
+      setPermission(Notification.permission);
       try {
         const reg =
           (await navigator.serviceWorker.getRegistration("/push-sw.js")) ??
@@ -60,20 +73,44 @@ export function EnablePushButton({
   }, []);
 
   async function enable() {
-    if (!supported()) {
-      toast.error("Browserul tău nu suportă notificări push.");
-      return;
-    }
-    if (Notification.permission === "denied") {
-      setPermission("denied");
-      toast.error("Notificările sunt blocate pe acest dispozitiv", {
-        description: "Deblochează permisiunea Ventuza din setările telefonului/browserului, apoi revino aici.",
-        duration: 8000,
-      });
-      return;
-    }
     setBusy(true);
     try {
+      if (isNative) {
+        const r = await initNativePush({
+          saveToken: async (token) => {
+            setNativeToken(token);
+            await saveFcm({
+              data: { token, platform: "android", userAgent: navigator.userAgent.slice(0, 500) },
+            });
+          },
+        });
+        if (!r.ok) {
+          if (r.reason === "denied") {
+            setPermission("denied");
+            toast.error("Notificările au fost respinse.");
+          } else {
+            toast.error("Nu am putut activa notificările native.");
+          }
+          return;
+        }
+        setSubscribed(true);
+        setPermission("granted");
+        toast.success("Notificări activate.");
+        return;
+      }
+
+      if (!supported()) {
+        toast.error("Browserul tău nu suportă notificări push.");
+        return;
+      }
+      if (Notification.permission === "denied") {
+        setPermission("denied");
+        toast.error("Notificările sunt blocate pe acest dispozitiv", {
+          description: "Deblochează permisiunea Ventuza din setările telefonului/browserului, apoi revino aici.",
+          duration: 8000,
+        });
+        return;
+      }
       const perm = await Notification.requestPermission();
       setPermission(perm);
       if (perm !== "granted") {
@@ -109,6 +146,16 @@ export function EnablePushButton({
   async function disable() {
     setBusy(true);
     try {
+      if (isNative) {
+        if (nativeToken) {
+          await removeFcm({ data: { token: nativeToken } });
+        }
+        await teardownNativePush({ removeToken: async () => {} });
+        setSubscribed(false);
+        setNativeToken(null);
+        toast.success("Notificări dezactivate.");
+        return;
+      }
       const reg = await navigator.serviceWorker.getRegistration("/push-sw.js");
       const sub = await reg?.pushManager.getSubscription();
       if (sub) {
@@ -124,6 +171,7 @@ export function EnablePushButton({
       setBusy(false);
     }
   }
+
 
   if (subscribed === null) return null;
   if (enableOnly && subscribed) return null;
