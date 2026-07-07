@@ -185,20 +185,19 @@ function DiscoverPage() {
     });
   }, [user, locStatus]);
 
-  // Load persisted filters once, when user becomes available.
+  // Filtrele NU se restaurează automat între sesiuni — pornim mereu de la
+  // DEFAULT_FILTERS (fără nimic activ). Se activează doar dacă userul apasă
+  // explicit pe un pill/opțiune. Curățăm și orice snapshot vechi din localStorage.
   useEffect(() => {
     if (!user || filtersHydratedRef.current) return;
-    const saved = loadDiscoverFilters(user.id);
     filtersHydratedRef.current = true;
-    setFilters(saved);
-    setDebouncedFilters(saved);
+    try {
+      window.localStorage.removeItem(`vz_discover_filters:${user.id}`);
+    } catch {
+      /* private mode / quota — ignore */
+    }
   }, [user]);
 
-  // Persist filters (safe subset only — see discover-filters-storage.ts).
-  useEffect(() => {
-    if (!user || !filtersHydratedRef.current) return;
-    saveDiscoverFilters(user.id, filters);
-  }, [user, filters]);
 
   // Debounce filter changes to avoid hammering the DB
   useEffect(() => {
