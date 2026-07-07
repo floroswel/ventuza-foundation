@@ -369,18 +369,30 @@ function ImageBubble({ m, mine }: Props) {
       >
         {url ? (
           <img
+            key={url}
             src={url}
             alt=""
             draggable={false}
             onContextMenu={(e) => e.preventDefault()}
             onClick={openFullscreen}
+            onError={() => {
+              setUrl(null);
+              setUrlError("Poza nu s-a încărcat");
+            }}
             className="block max-h-80 w-full cursor-zoom-in select-none object-cover"
             style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
           />
         ) : urlError ? (
-          <div className="flex h-32 w-56 items-center justify-center px-3 text-center text-xs text-muted-foreground">
-            {urlError}
-          </div>
+          <button
+            type="button"
+            onClick={retry}
+            className="flex h-32 w-56 flex-col items-center justify-center gap-2 px-3 text-center text-xs text-muted-foreground hover:text-foreground"
+          >
+            <span>{urlError}</span>
+            <span className="rounded-full bg-background/50 px-3 py-1 text-[11px] uppercase tracking-wider">
+              Reîncearcă
+            </span>
+          </button>
         ) : (
           <div className="h-48 w-56 animate-pulse bg-background/30" />
         )}
