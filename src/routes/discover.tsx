@@ -46,6 +46,7 @@ import { QuickFiltersStrip } from "@/components/QuickFiltersStrip";
 import { NotificationBell } from "@/components/NotificationBell";
 import {
   DEFAULT_FILTERS,
+  DISCOVER_PAGE_SIZE,
   fetchDiscover,
   requestAndStoreLocation,
   signPhotos,
