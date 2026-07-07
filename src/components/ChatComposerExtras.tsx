@@ -1,9 +1,50 @@
 import { useEffect, useRef, useState } from "react";
-import { Camera, Image as ImageIcon, MapPin, Mic, Plus, Square, Timer, X } from "lucide-react";
+import {
+  AlertTriangle,
+  Camera,
+  Image as ImageIcon,
+  Loader2,
+  MapPin,
+  Mic,
+  Plus,
+  RefreshCw,
+  Square,
+  Timer,
+  X,
+} from "lucide-react";
 import { toast } from "sonner";
 import { sendMediaMessage, updateLiveLocationMessage, type MessageRow } from "@/lib/chat";
 import { compressImageForChat } from "@/lib/image-compress";
 import { cn } from "@/lib/utils";
+
+type UploadJob = {
+  id: string;
+  name: string;
+  status: "uploading" | "error" | "done";
+  attempt: number;
+  maxAttempts: number;
+  error?: string;
+  file: File;
+  viewOnce: boolean;
+};
+
+const MAX_ATTEMPTS = 3;
+
+function isTransient(err: unknown): boolean {
+  const msg = (err as Error)?.message?.toLowerCase() ?? "";
+  return (
+    msg.includes("network") ||
+    msg.includes("fetch") ||
+    msg.includes("timeout") ||
+    msg.includes("aborted") ||
+    msg.includes("temporarily") ||
+    msg.includes("503") ||
+    msg.includes("502") ||
+    msg.includes("504") ||
+    msg.includes("429")
+  );
+}
+
 
 
 type Props = {
