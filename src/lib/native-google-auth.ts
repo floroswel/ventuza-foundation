@@ -69,7 +69,7 @@ export type NativeGoogleResult =
 export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
   const clientId = webClientId();
   if (!clientId) return { ok: false, code: "unsupported", message: "missing VITE_GOOGLE_WEB_CLIENT_ID" };
-  if (!(await isNative())) return { ok: false, code: "unsupported" };
+  if (!(await isNativeAndroid())) return { ok: false, code: "unsupported" };
 
   try {
     await ensureInit(clientId);
