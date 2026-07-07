@@ -208,13 +208,18 @@ function DiscoverPage() {
 
   const [loadError, setLoadError] = useState<{ message: string; code?: string } | null>(null);
   const [autoExpanded, setAutoExpanded] = useState<number | null>(null);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const effectiveFiltersRef = useRef<DiscoverFilters>(debouncedFilters);
   const load = useCallback(async () => {
     if (!user) return;
     setLoading(true);
     setLoadError(null);
     setAutoExpanded(null);
+    setHasMore(false);
     try {
-      let data = await fetchDiscover(debouncedFilters, "distance");
+      let data = await fetchDiscover(debouncedFilters, "distance", { offset: 0 });
+      let effective = debouncedFilters;
       // Auto-fallback progresiv: dacă userul nu are NICIUN rezultat la raza
       // curentă, încercăm trepte 25→50→200→5000 km. Nu modificăm filtrele
       // userului (nu rescriem `filters`) — doar arătăm rezultate marcate
@@ -228,9 +233,11 @@ function DiscoverPage() {
             const alt = await fetchDiscover(
               { ...debouncedFilters, maxDistanceKm: fallbackKm },
               "distance",
+              { offset: 0 },
             );
             if (alt.length > 0) {
               data = alt;
+              effective = { ...debouncedFilters, maxDistanceKm: fallbackKm };
               setAutoExpanded(fallbackKm);
             }
           } catch {
@@ -238,7 +245,9 @@ function DiscoverPage() {
           }
         }
       }
+      effectiveFiltersRef.current = effective;
       setProfiles(data);
+      setHasMore(data.length >= DISCOVER_PAGE_SIZE);
       // Fetch server-side badges for the loaded profiles (fire-and-forget).
       if (data.length > 0) {
         setBadgesLoading(true);
@@ -270,6 +279,48 @@ function DiscoverPage() {
       setLoading(false);
     }
   }, [debouncedFilters, user]);
+
+  const loadMore = useCallback(async () => {
+    if (!user || loadingMore || loading || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const nextOffset = profiles.length;
+      const batch = await fetchDiscover(effectiveFiltersRef.current, "distance", {
+        offset: nextOffset,
+      });
+      if (batch.length === 0) {
+        setHasMore(false);
+        return;
+      }
+      // Dedup pe id (RPC-ul poate returna aceleași profiluri la reordonări).
+      setProfiles((prev) => {
+        const seen = new Set(prev.map((p) => p.id));
+        const merged = [...prev];
+        for (const p of batch) if (!seen.has(p.id)) merged.push(p);
+        return merged;
+      });
+      setHasMore(batch.length >= DISCOVER_PAGE_SIZE);
+      // Badges pentru batch-ul nou.
+      const ids = batch.map((b) => b.id);
+      if (ids.length > 0) {
+        void fetchUserBadges(ids)
+          .then((map) => setBadgesMap((prev) => ({ ...prev, ...map })))
+          .catch(() => {
+            /* fallback silențios — deja avem badge-uri pentru batch-ul anterior */
+          });
+      }
+    } catch (e) {
+      const code = (e as { code?: string } | null)?.code;
+      if (code === "discover_rate_limited") {
+        setHasMore(false);
+        toast.info("Ai atins limita de răsfoire pe oră. Reia mai târziu.", {
+          id: "discover-more-limited",
+        });
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [user, loadingMore, loading, hasMore, profiles.length]);
 
   useEffect(() => {
     void load();
