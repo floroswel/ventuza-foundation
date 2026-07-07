@@ -1253,7 +1253,7 @@ function ReportsPanel({ meId }: { meId: string }) {
       const { data, error } = await supabase
         .from("reports")
         .select("*")
-        .eq("status", "pending")
+        .in("status", ["open", "pending"])
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
