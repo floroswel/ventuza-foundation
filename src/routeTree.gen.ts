@@ -25,6 +25,7 @@ import { Route as NotificationsRouteImport } from './routes/notifications'
 import { Route as NearbyRouteImport } from './routes/nearby'
 import { Route as NRouteImport } from './routes/n'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as GalleryTestRouteImport } from './routes/gallery-test'
 import { Route as FavoritesRouteImport } from './routes/favorites'
@@ -159,6 +160,11 @@ const NRoute = NRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MatchesRoute = MatchesRouteImport.update({
+  id: '/matches',
+  path: '/matches',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GroupsRoute = GroupsRouteImport.update({
@@ -460,6 +466,7 @@ export interface FileRoutesByFullPath {
   '/favorites': typeof FavoritesRoute
   '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
@@ -533,6 +540,7 @@ export interface FileRoutesByTo {
   '/favorites': typeof FavoritesRoute
   '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
@@ -607,6 +615,7 @@ export interface FileRoutesById {
   '/favorites': typeof FavoritesRoute
   '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
@@ -682,6 +691,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/gallery-test'
     | '/groups'
+    | '/matches'
     | '/mcp'
     | '/n'
     | '/nearby'
@@ -755,6 +765,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/gallery-test'
     | '/groups'
+    | '/matches'
     | '/mcp'
     | '/n'
     | '/nearby'
@@ -828,6 +839,7 @@ export interface FileRouteTypes {
     | '/favorites'
     | '/gallery-test'
     | '/groups'
+    | '/matches'
     | '/mcp'
     | '/n'
     | '/nearby'
@@ -902,6 +914,7 @@ export interface RootRouteChildren {
   FavoritesRoute: typeof FavoritesRoute
   GalleryTestRoute: typeof GalleryTestRoute
   GroupsRoute: typeof GroupsRouteWithChildren
+  MatchesRoute: typeof MatchesRoute
   McpRoute: typeof McpRoute
   NRoute: typeof NRoute
   NearbyRoute: typeof NearbyRoute
@@ -1061,6 +1074,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/matches': {
+      id: '/matches'
+      path: '/matches'
+      fullPath: '/matches'
+      preLoaderRoute: typeof MatchesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/groups': {
@@ -1560,6 +1580,7 @@ const rootRouteChildren: RootRouteChildren = {
   FavoritesRoute: FavoritesRoute,
   GalleryTestRoute: GalleryTestRoute,
   GroupsRoute: GroupsRouteWithChildren,
+  MatchesRoute: MatchesRoute,
   McpRoute: McpRoute,
   NRoute: NRoute,
   NearbyRoute: NearbyRoute,
