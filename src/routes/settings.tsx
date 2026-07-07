@@ -79,7 +79,7 @@ function SettingsPage() {
     }
   }
 
-  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
+  // `prefs` vine din context; păstrăm doar flag-ul de saving pentru UI.
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -92,8 +92,8 @@ function SettingsPage() {
     hide_online: false,
     read_receipts_enabled: true,
     auto_share_album_on_match: false,
-    discrete_mode: false,
   });
+
   const [savingPrivacy, setSavingPrivacy] = useState(false);
   const [lookingUntil, setLookingUntil] = useState<string | null>(null);
   const [intent, setIntent] = useState("");
