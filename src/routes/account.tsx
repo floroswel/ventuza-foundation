@@ -217,13 +217,13 @@ function AccountPage() {
                       if (!confirm("Anulezi sesiunea de verificare curentă și o iei de la capăt?")) return;
                       const { error } = await supabase
                         .from("profiles")
-                        .update({ age_status: null, age_provider: null })
+                        .update({ age_status: "unverified" })
                         .eq("id", user.id);
                       if (error) {
                         toast.error(error.message);
                       } else {
                         toast.success("Sesiune anulată. Poți relua verificarea.");
-                        refetch?.();
+                        setProfile((p) => (p ? { ...p, age_status: "unverified" } : p));
                       }
                     }}
                     className="rounded-full border border-amber-500/40 px-4 py-2 text-xs font-medium text-amber-100 hover:bg-amber-500/10"
