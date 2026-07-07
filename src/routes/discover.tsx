@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
+  ExternalLink,
   Eye,
   EyeOff,
   Flame,
