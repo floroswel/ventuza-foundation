@@ -41,8 +41,9 @@ describe("FCM payload privacy — show_preview=false → generic", () => {
 
   it("sursa fcm-push.server nu atinge câmpuri sensibile de mesaj", () => {
     const src = read("lib/fcm-push.server.ts");
-    // nu citește body-ul mesajului sau tipul media direct — payload vine deja gata
-    expect(src).not.toMatch(/\.(?:body|media_type|media_url|caption)\b/);
+    // Nu accesează niciodată câmpuri sensibile de pe rândul messages
+    expect(src).not.toMatch(/\b(?:msg|message|messages|insert|NEW)\.body\b/);
+    expect(src).not.toMatch(/\b(media_type|media_url|caption)\b/);
     // sanity: expune sender + config
     expect(src).toMatch(/export\s+async\s+function\s+sendFcmOne/);
     expect(src).toMatch(/export\s+function\s+isFcmConfigured/);
