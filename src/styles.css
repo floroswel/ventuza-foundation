@@ -300,3 +300,21 @@ html {
 .badge-effect-pulse {
   animation: pulse 1.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Safe-area utilitare pentru Capacitor / notch / bară gestuală Android 15+.
+   Se combină cu <meta name="viewport" content="viewport-fit=cover">. */
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
+}
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@utility pl-safe {
+  padding-left: env(safe-area-inset-left);
+}
+@utility pr-safe {
+  padding-right: env(safe-area-inset-right);
+}
+@utility min-h-dvh-safe {
+  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+}
