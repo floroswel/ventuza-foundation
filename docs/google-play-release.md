@@ -129,9 +129,9 @@ Datele COLECTATE (declară în Play Console → App content → Data safety):
 | Mesaje | Da | Nu | Nu | Chat |
 | Info audio | Da (mesaje vocale) | Nu | Nu | Chat |
 | Orientare sexuală | Da (opt-in) | Nu | Nu | Matching |
-| Info sănătate (HIV) | Da (opt-in, criptat coloană) | Nu | Nu (retrageri = ștergere) | Filtre matching |
 | Fotografii verificare (Didit) | Da (tranzient) | **Da → Didit** (procesator UE) | **Da** (Didit șterge imediat) | Verificare 18+ |
 | Diagnostics / crash | Da | Nu | Nu | Stabilitate |
+| ID device (FCM push token) | Da | **Da → Google FCM** (livrare push) | Nu | Notificări push native |
 
 Practicile de securitate:
 - ✅ Data encrypted in transit (HTTPS obligatoriu).
