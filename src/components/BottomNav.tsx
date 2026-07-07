@@ -107,9 +107,7 @@ export function BottomNav() {
           const { to, label, Icon } = item;
           const badge = "badge" in item ? item.badge : 0;
           const filledWhenActive = "filledWhenActive" in item ? item.filledWhenActive : false;
-          const active =
-            (to === "/" && pathname === "/") ||
-            (to !== "/" && pathname.startsWith(to));
+          const active = pathname === to || pathname.startsWith(`${to}/`);
           return (
             <Link
               key={to}
