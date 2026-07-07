@@ -112,39 +112,23 @@ describe("Trigger SQL — tg_notify_new_message", () => {
     expect(latest, "nu am găsit tg_notify_new_message în migrări").toBeDefined();
   });
 
-  it("branch-ul care expune NEW.body / media_type există DOAR sub IF show_preview", () => {
+  it("body-ul este mereu generic — nu apar NEW.body / media_type / caption niciunde", () => {
     if (!latest) return;
     const src = read(latest);
-    // Extrage corpul funcției
     const bodyMatch = src.match(
       /CREATE OR REPLACE FUNCTION\s+public\.tg_notify_new_message[\s\S]*?\$function\$([\s\S]*?)\$function\$/i,
     );
     expect(bodyMatch, "nu am extras corpul funcției").not.toBeNull();
     const fnBody = bodyMatch![1];
 
-    // Trebuie să existe un IF show_preview
-    expect(fnBody).toMatch(/IF\s+show_preview\s+THEN/i);
-
-    // Trebuie să existe branch-ul ELSE care setează body-ul generic
+    // Body-ul generic e singurul acceptat
     expect(fnBody).toMatch(/'Ai un mesaj nou'/);
 
-    // Split pe IF/ELSE și asigură că NEW.body și media_type apar DOAR în ramura IF
-    // ELSE al IF-ului exterior este cel care setează body-ul generic.
-    // Îl delimităm strict prin `ELSE\s+body_out :=` ca să nu capturăm ELSE-ul
-    // din CASE-ul interior.
-    const ifElseMatch = fnBody.match(
-      /IF\s+show_preview\s+THEN([\s\S]*?)ELSE\s+body_out\s*:=([\s\S]*?)END\s+IF/i,
-    );
-    expect(ifElseMatch, "IF/ELSE pe show_preview lipsește").not.toBeNull();
-    const [, thenBranch, elseBranch] = ifElseMatch!;
-
-    // Ramura ELSE NU poate referi NEW.body / media_type / media_url / caption
-    expect(elseBranch).not.toMatch(/NEW\.body/i);
-    expect(elseBranch).not.toMatch(/NEW\.media_type/i);
-    expect(elseBranch).not.toMatch(/NEW\.media_url/i);
-    expect(elseBranch).not.toMatch(/caption/i);
-
-    // Ramura THEN e cea care poate referi conținutul (așteptat)
-    expect(thenBranch).toMatch(/NEW\.(body|media_type)/i);
+    // Nicăieri în funcție nu apar câmpurile de conținut
+    expect(fnBody).not.toMatch(/NEW\.body/i);
+    expect(fnBody).not.toMatch(/NEW\.media_type/i);
+    expect(fnBody).not.toMatch(/NEW\.media_url/i);
+    expect(fnBody).not.toMatch(/caption/i);
   });
 });
+
