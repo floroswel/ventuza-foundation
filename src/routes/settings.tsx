@@ -52,6 +52,16 @@ function SettingsPage() {
   const navigate = useNavigate();
   const deleteAcct = useServerFn(deleteMyAccount);
   const exportData = useServerFn(exportMyData);
+  // Sursa unică pentru preferințele de notificări + discrete mode. Se
+  // hidratează la login și se actualizează în realtime în toate suprafețele
+  // (inbox, toast) fără refresh.
+  const {
+    prefs,
+    discreteMode,
+    updatePrefs: updatePrefsCtx,
+    setDiscreteMode,
+  } = useNotificationPrefs();
+
 
   async function downloadMyData() {
     try {
