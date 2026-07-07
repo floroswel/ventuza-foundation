@@ -1245,6 +1245,8 @@ function ReportsPanel({ meId }: { meId: string }) {
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [userFilter, setUserFilter] = useState("");
+
 
   const load = async () => {
     setLoading(true);
