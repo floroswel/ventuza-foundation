@@ -93,6 +93,50 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
     ref.current?.click();
   }
 
+  function updateJob(id: string, patch: Partial<UploadJob>) {
+    setUploads((prev) => prev.map((j) => (j.id === id ? { ...j, ...patch } : j)));
+  }
+
+  async function attemptUpload(job: UploadJob) {
+    updateJob(job.id, { status: "uploading", error: undefined });
+    try {
+      const compressed = await compressImageForChat(job.file);
+      const m = await sendMediaMessage(conversationId, {
+        kind: "image",
+        file: compressed,
+        viewOnce: job.viewOnce,
+      });
+      onSent(m);
+      updateJob(job.id, { status: "done" });
+      // Auto-clean successful jobs after short delay.
+      setTimeout(() => {
+        setUploads((prev) => prev.filter((j) => j.id !== job.id));
+      }, 1500);
+    } catch (err) {
+      const message = (err as Error)?.message ?? "Eroare necunoscută";
+      const attempt = job.attempt;
+      if (attempt < job.maxAttempts && isTransient(err)) {
+        const delay = 400 * Math.pow(2, attempt - 1);
+        updateJob(job.id, { error: `Reîncerc (${attempt}/${job.maxAttempts})…` });
+        await new Promise((r) => setTimeout(r, delay));
+        await attemptUpload({ ...job, attempt: attempt + 1 });
+      } else {
+        updateJob(job.id, { status: "error", error: message });
+        toast.error(`Nu am putut trimite "${job.name}": ${message}`);
+      }
+    }
+  }
+
+  async function retryUpload(id: string) {
+    const job = uploads.find((j) => j.id === id);
+    if (!job) return;
+    await attemptUpload({ ...job, attempt: 1, status: "uploading", error: undefined });
+  }
+
+  function dismissUpload(id: string) {
+    setUploads((prev) => prev.filter((j) => j.id !== id));
+  }
+
   async function handleFile(e: React.ChangeEvent<HTMLInputElement>, viewOnce: boolean) {
     const files = Array.from(e.target.files ?? []);
     e.target.value = "";
@@ -102,29 +146,35 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
       toast.error(`Maxim ${MAX} imagini deodată`);
       return;
     }
+    const jobs: UploadJob[] = [];
+    for (const f of files) {
+      if (f.size > 20 * 1024 * 1024) {
+        toast.error(`"${f.name}" e prea mare (max 20MB)`);
+        continue;
+      }
+      jobs.push({
+        id: crypto.randomUUID(),
+        name: f.name,
+        status: "uploading",
+        attempt: 1,
+        maxAttempts: MAX_ATTEMPTS,
+        file: f,
+        viewOnce,
+      });
+    }
+    if (!jobs.length) return;
+    setUploads((prev) => [...prev, ...jobs]);
     setBusy(true);
     try {
-      for (const f of files) {
-        if (f.size > 20 * 1024 * 1024) {
-          toast.error(`"${f.name}" e prea mare (max 20MB)`);
-          continue;
-        }
-        // Comprimă înainte de upload pentru viteză (max 2048px, JPEG 82%).
-        const compressed = await compressImageForChat(f);
-        const m = await sendMediaMessage(conversationId, {
-          kind: "image",
-          file: compressed,
-          viewOnce,
-        });
-        onSent(m);
+      for (const j of jobs) {
+        await attemptUpload(j);
       }
-      if (files.length > 1) toast.success(`${files.length} imagini trimise`);
-    } catch (err) {
-      toast.error((err as Error).message);
     } finally {
       setBusy(false);
     }
   }
+
+
 
 
 
