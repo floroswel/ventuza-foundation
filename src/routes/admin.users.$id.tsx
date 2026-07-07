@@ -192,6 +192,15 @@ function User360Page() {
         </div>
       </Card>
 
+      <div className="flex flex-wrap gap-2">
+        <Button asChild size="sm" variant="outline">
+          <Link to="/admin/users/$id/notifications" params={{ id }}>
+            <Bell className="h-4 w-4 mr-1" />
+            Notificări livrate
+          </Link>
+        </Button>
+      </div>
+
       <Tabs defaultValue="overview">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview">Overview</TabsTrigger>
