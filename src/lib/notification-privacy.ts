@@ -74,7 +74,7 @@ export function buildInboxPreview(
 const FORBIDDEN_KEY_PATTERNS: RegExp[] = [
   // conținut mesaj
   /^(body|text|message|msg|content|preview|snippet|caption|transcript|translation|quoted|reply_to|last_message.*)$/i,
-  /(media_url|voice_url|photo_url|attachment|audio_url|video_url|image_url)/i,
+  /(media_url|voice_url|photo_url|attachment|audio_url|video_url|image_url|media_type|media_kind)/i,
   // sănătate (Art. 9)
   /(hiv|prep|std|health)/i,
   /_enc$/i,
