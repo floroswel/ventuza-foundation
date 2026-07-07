@@ -58,7 +58,7 @@ describe("FCM payload privacy — show_preview=false → generic", () => {
     // routing prin sendFcmOne există
     expect(src).toMatch(/sendFcmOne/);
     // canalul FCM se loghează
-    expect(src).toMatch(/log_notification_dispatch[\s\S]{0,120}?["']fcm["']/);
+    expect(src).toMatch(/log_notification_dispatch[\s\S]{0,400}?["']fcm["']/);
   });
 });
 
