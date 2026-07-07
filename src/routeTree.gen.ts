@@ -61,6 +61,7 @@ import { Route as LegalDmcaRouteImport } from './routes/legal.dmca'
 import { Route as LegalDataSafetyRouteImport } from './routes/legal.data-safety'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalCommunityRouteImport } from './routes/legal.community'
+import { Route as LegalChildSafetyRouteImport } from './routes/legal.child-safety'
 import { Route as LegalBusinessTermsRouteImport } from './routes/legal.business-terms'
 import { Route as LegalBadgesRouteImport } from './routes/legal.badges'
 import { Route as LegalAgePolicyRouteImport } from './routes/legal.age-policy'
@@ -343,6 +344,11 @@ const LegalCommunityRoute = LegalCommunityRouteImport.update({
   path: '/legal/community',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalChildSafetyRoute = LegalChildSafetyRouteImport.update({
+  id: '/legal/child-safety',
+  path: '/legal/child-safety',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalBusinessTermsRoute = LegalBusinessTermsRouteImport.update({
   id: '/legal/business-terms',
   path: '/legal/business-terms',
@@ -493,6 +499,7 @@ export interface FileRoutesByFullPath {
   '/legal/age-policy': typeof LegalAgePolicyRoute
   '/legal/badges': typeof LegalBadgesRoute
   '/legal/business-terms': typeof LegalBusinessTermsRoute
+  '/legal/child-safety': typeof LegalChildSafetyRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
@@ -567,6 +574,7 @@ export interface FileRoutesByTo {
   '/legal/age-policy': typeof LegalAgePolicyRoute
   '/legal/badges': typeof LegalBadgesRoute
   '/legal/business-terms': typeof LegalBusinessTermsRoute
+  '/legal/child-safety': typeof LegalChildSafetyRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
@@ -642,6 +650,7 @@ export interface FileRoutesById {
   '/legal/age-policy': typeof LegalAgePolicyRoute
   '/legal/badges': typeof LegalBadgesRoute
   '/legal/business-terms': typeof LegalBusinessTermsRoute
+  '/legal/child-safety': typeof LegalChildSafetyRoute
   '/legal/community': typeof LegalCommunityRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
@@ -718,6 +727,7 @@ export interface FileRouteTypes {
     | '/legal/age-policy'
     | '/legal/badges'
     | '/legal/business-terms'
+    | '/legal/child-safety'
     | '/legal/community'
     | '/legal/cookies'
     | '/legal/data-safety'
@@ -792,6 +802,7 @@ export interface FileRouteTypes {
     | '/legal/age-policy'
     | '/legal/badges'
     | '/legal/business-terms'
+    | '/legal/child-safety'
     | '/legal/community'
     | '/legal/cookies'
     | '/legal/data-safety'
@@ -866,6 +877,7 @@ export interface FileRouteTypes {
     | '/legal/age-policy'
     | '/legal/badges'
     | '/legal/business-terms'
+    | '/legal/child-safety'
     | '/legal/community'
     | '/legal/cookies'
     | '/legal/data-safety'
@@ -936,6 +948,7 @@ export interface RootRouteChildren {
   LegalAgePolicyRoute: typeof LegalAgePolicyRoute
   LegalBadgesRoute: typeof LegalBadgesRoute
   LegalBusinessTermsRoute: typeof LegalBusinessTermsRoute
+  LegalChildSafetyRoute: typeof LegalChildSafetyRoute
   LegalCommunityRoute: typeof LegalCommunityRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
   LegalDataSafetyRoute: typeof LegalDataSafetyRoute
@@ -1328,6 +1341,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalCommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/child-safety': {
+      id: '/legal/child-safety'
+      path: '/legal/child-safety'
+      fullPath: '/legal/child-safety'
+      preLoaderRoute: typeof LegalChildSafetyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/business-terms': {
       id: '/legal/business-terms'
       path: '/legal/business-terms'
@@ -1603,6 +1623,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalAgePolicyRoute: LegalAgePolicyRoute,
   LegalBadgesRoute: LegalBadgesRoute,
   LegalBusinessTermsRoute: LegalBusinessTermsRoute,
+  LegalChildSafetyRoute: LegalChildSafetyRoute,
   LegalCommunityRoute: LegalCommunityRoute,
   LegalCookiesRoute: LegalCookiesRoute,
   LegalDataSafetyRoute: LegalDataSafetyRoute,
