@@ -60,7 +60,7 @@ export function StoryViewer({
 
   // tick progress
   useEffect(() => {
-    if (!story || paused) return;
+    if (!story || paused || mediaError || !mediaUrl) return;
     const start = Date.now() - progress * STORY_DURATION_MS;
     const id = window.setInterval(() => {
       const elapsed = Date.now() - start;
@@ -74,7 +74,8 @@ export function StoryViewer({
     tickRef.current = id;
     return () => window.clearInterval(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [story?.id, paused]);
+  }, [story?.id, paused, mediaError, mediaUrl]);
+
 
   function next() {
     if (!group) return;
