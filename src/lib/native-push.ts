@@ -23,9 +23,42 @@ import { playNotificationSound } from "@/lib/notification-sound";
 
 type NavigateFn = (path: string) => void;
 
+const FCM_TOKEN_STORAGE_KEY = "ventuza.fcm_token";
+
 let _initialized = false;
 let _pendingUrl: string | null = null;
 let _navigate: NavigateFn | null = null;
+
+function persistFcmToken(token: string) {
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(FCM_TOKEN_STORAGE_KEY, token);
+    }
+  } catch {
+    /* noop */
+  }
+}
+
+export function readPersistedFcmToken(): string | null {
+  try {
+    if (typeof localStorage !== "undefined") {
+      return localStorage.getItem(FCM_TOKEN_STORAGE_KEY);
+    }
+  } catch {
+    /* noop */
+  }
+  return null;
+}
+
+function clearPersistedFcmToken() {
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.removeItem(FCM_TOKEN_STORAGE_KEY);
+    }
+  } catch {
+    /* noop */
+  }
+}
 
 async function isNative(): Promise<boolean> {
   try {
