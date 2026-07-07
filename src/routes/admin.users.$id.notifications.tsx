@@ -353,6 +353,7 @@ function AdminUserNotificationsPage() {
                   <TableHead>Tip</TableHead>
                   <TableHead>Canal</TableHead>
                   <TableHead>Actor</TableHead>
+                  <TableHead>Corelare</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -370,9 +371,29 @@ function AdminUserNotificationsPage() {
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {it.actor_id ? it.actor_id.slice(0, 8) + "…" : "sistem"}
                     </TableCell>
+                    <TableCell className="font-mono text-xs">
+                      {it.message_id ? (
+                        <span
+                          className="text-muted-foreground"
+                          title={`message_id: ${it.message_id}`}
+                        >
+                          msg:{it.message_id.slice(0, 8)}…
+                        </span>
+                      ) : it.event_id ? (
+                        <span
+                          className="text-muted-foreground"
+                          title={`event_id: ${it.event_id}`}
+                        >
+                          evt:{it.event_id.slice(0, 8)}…
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground/60">—</span>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
+
             </Table>
             {timeline.nextBefore && (
               <div className="p-3 text-xs text-muted-foreground text-center border-t">
