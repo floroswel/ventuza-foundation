@@ -1438,16 +1438,47 @@ function ReportsPanel({ meId }: { meId: string }) {
     },
   ];
 
+  const q = userFilter.trim().toLowerCase();
+  const filteredReports = q
+    ? reports.filter((r) => {
+        const name = (r.reported_profile?.display_name ?? "").toLowerCase();
+        const id = r.reported_id.toLowerCase();
+        return name.includes(q) || id.includes(q);
+      })
+    : reports;
+
   return (
-    <DataTable
-      rows={reports}
-      columns={columns}
-      rowKey={(r) => r.id}
-      exportName="rapoarte"
-      searchPlaceholder="Filtrare locală rapoarte…"
-    />
+    <div className="space-y-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <input
+          value={userFilter}
+          onChange={(e) => setUserFilter(e.target.value)}
+          placeholder="Filtrează după user raportat (nume sau ID)…"
+          className="min-w-[280px] flex-1 rounded-md border border-[var(--admin-border)] bg-[var(--admin-surface)] px-3 py-2 text-xs text-[var(--admin-text)] placeholder:text-[var(--admin-text-faint)]"
+        />
+        {userFilter && (
+          <button
+            onClick={() => setUserFilter("")}
+            className="rounded-md border border-[var(--admin-border)] px-2 py-1 text-[10px] text-[var(--admin-text-dim)]"
+          >
+            Reset
+          </button>
+        )}
+        <span className="admin-mono text-[10px] text-[var(--admin-text-faint)]">
+          {filteredReports.length}/{reports.length}
+        </span>
+      </div>
+      <DataTable
+        rows={filteredReports}
+        columns={columns}
+        rowKey={(r) => r.id}
+        exportName="rapoarte"
+        searchPlaceholder="Filtrare locală rapoarte…"
+      />
+    </div>
   );
 }
+
 
 /* ---------------- RISK ---------------- */
 function RiskPanel() {
