@@ -24,6 +24,8 @@ import {
   primeNotificationSound,
 } from "@/lib/notification-sound";
 import { setNativePushNavigator } from "@/lib/native-push";
+import { buildToastBody } from "@/lib/notification-privacy";
+import { useNotificationPrefs } from "@/lib/notification-prefs-context";
 
 type Ctx = {
   notifications: NotificationRow[];
@@ -39,6 +41,12 @@ const NotificationsContext = createContext<Ctx | null>(null);
 
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const { prefs } = useNotificationPrefs();
+  const showPreview = prefs.show_preview;
+  const showPreviewRef = useRef(showPreview);
+  useEffect(() => {
+    showPreviewRef.current = showPreview;
+  }, [showPreview]);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -104,8 +112,12 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           // Toast preview + signature sound, dedupe
           if (!lastToastIdRef.current.has(n.id)) {
             lastToastIdRef.current.add(n.id);
-            // Body-ul din DB respectă deja preferința show_preview a destinatarului (trigger).
-            toast(n.title, { description: n.body ?? undefined });
+            // Body-ul din DB este deja sanitizat de trigger; în plus, când
+            // userul are `show_preview=false`, forțăm „Previzualizare
+            // dezactivată" ca UI să fie explicit despre setare.
+            toast(n.title, {
+              description: buildToastBody(showPreviewRef.current, n.body),
+            });
             playNotificationSound();
           }
         },

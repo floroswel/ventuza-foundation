@@ -12,6 +12,8 @@
 
 export const GENERIC_MESSAGE_BODY = "Ai un mesaj nou";
 export const GENERIC_INBOX_FALLBACK = "Say hi 👋";
+/** Copy explicit când destinatarul a dezactivat preview-ul din Setări. */
+export const PREVIEW_DISABLED_BODY = "Previzualizare dezactivată";
 export const MAX_PREVIEW_LEN = 140;
 
 /**
@@ -24,22 +26,39 @@ export function buildMessageNotificationBody(
   _showPreview: boolean,
   _preview: string | null | undefined,
 ): string {
-  // Policy schimbată: notificările NU expun niciodată conținutul mesajului,
-  // indiferent de preferința userului. Parametrii rămân în semnătură pentru
-  // compatibilitate cu apelanții existenți, dar sunt ignorați.
+  // Policy: notificările push NU expun niciodată conținutul mesajului.
   return GENERIC_MESSAGE_BODY;
 }
 
 /**
- * Preview-ul afișat în lista de conversații. Ignoră `showPreview` din
- * același motiv de confidențialitate.
+ * Preview-ul afișat în lista de conversații. Diferențiază starea:
+ *   - nicio conversație activă → invitație generică (`Say hi 👋`)
+ *   - show_preview OFF explicit → „Previzualizare dezactivată"
+ *   - orice altă stare → „Ai un mesaj nou"
+ * Nu expune niciodată textul real, indiferent de preferință.
  */
 export function buildInboxPreview(
-  _showPreview: boolean,
+  showPreview: boolean | null | undefined,
   _lastMessagePreview: string | null | undefined,
   hasAnyMessage: boolean,
 ): string {
-  return hasAnyMessage ? GENERIC_MESSAGE_BODY : GENERIC_INBOX_FALLBACK;
+  if (!hasAnyMessage) return GENERIC_INBOX_FALLBACK;
+  if (showPreview === false) return PREVIEW_DISABLED_BODY;
+  return GENERIC_MESSAGE_BODY;
+}
+
+/**
+ * Copy pentru toast in-app. Când `show_preview` este OFF explicit,
+ * afișează „Previzualizare dezactivată"; altfel folosește body-ul deja
+ * sanitizat de trigger-ul DB (care e tot generic pentru categoria messages).
+ */
+export function buildToastBody(
+  showPreview: boolean | null | undefined,
+  dbBody: string | null | undefined,
+): string {
+  if (showPreview === false) return PREVIEW_DISABLED_BODY;
+  const clean = (dbBody ?? "").toString().trim();
+  return clean || GENERIC_MESSAGE_BODY;
 }
 
 /**
