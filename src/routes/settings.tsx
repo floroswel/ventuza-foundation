@@ -17,6 +17,11 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import {
+  useNotificationPrefs,
+  DEFAULT_NOTIFICATION_PREFS,
+  type NotificationPrefs,
+} from "@/lib/notification-prefs-context";
 import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
 import { BottomNav } from "@/components/BottomNav";
 import { setLookingNow } from "@/lib/social";
@@ -37,38 +42,26 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type Prefs = {
-  matches: boolean;
-  messages: boolean;
-  likes: boolean;
-  taps: boolean;
-  events: boolean;
-  marketing: boolean;
-  master_push: boolean;
-  quiet_enabled: boolean;
-  quiet_start: number;
-  quiet_end: number;
-  show_preview: boolean;
-};
-const DEFAULT_PREFS: Prefs = {
-  matches: true,
-  messages: true,
-  likes: true,
-  taps: true,
-  events: true,
-  marketing: false,
-  master_push: true,
-  quiet_enabled: false,
-  quiet_start: 23,
-  quiet_end: 7,
-  show_preview: false,
-};
+// Structura preferințelor este definită canonic în notification-prefs-context.
+type Prefs = NotificationPrefs;
+const DEFAULT_PREFS: Prefs = DEFAULT_NOTIFICATION_PREFS;
+
 
 function SettingsPage() {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const deleteAcct = useServerFn(deleteMyAccount);
   const exportData = useServerFn(exportMyData);
+  // Sursa unică pentru preferințele de notificări + discrete mode. Se
+  // hidratează la login și se actualizează în realtime în toate suprafețele
+  // (inbox, toast) fără refresh.
+  const {
+    prefs,
+    discreteMode,
+    updatePrefs: updatePrefsCtx,
+    setDiscreteMode,
+  } = useNotificationPrefs();
+
 
   async function downloadMyData() {
     try {
@@ -86,7 +79,7 @@ function SettingsPage() {
     }
   }
 
-  const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS);
+  // `prefs` vine din context; păstrăm doar flag-ul de saving pentru UI.
   const [savingPrefs, setSavingPrefs] = useState(false);
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
@@ -99,8 +92,8 @@ function SettingsPage() {
     hide_online: false,
     read_receipts_enabled: true,
     auto_share_album_on_match: false,
-    discrete_mode: false,
   });
+
   const [savingPrivacy, setSavingPrivacy] = useState(false);
   const [lookingUntil, setLookingUntil] = useState<string | null>(null);
   const [intent, setIntent] = useState("");
@@ -120,14 +113,12 @@ function SettingsPage() {
     supabase
       .from("profiles")
       .select(
-        "notification_prefs, hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent, read_receipts_enabled, auto_share_album_on_match, discrete_mode",
+        "hide_age, hide_distance, hide_online, looking_now_until, looking_now_intent, read_receipts_enabled, auto_share_album_on_match",
       )
       .eq("id", user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (!data) return;
-        if (data.notification_prefs)
-          setPrefs({ ...DEFAULT_PREFS, ...(data.notification_prefs as Prefs) });
         const d = data as {
           hide_age?: boolean;
           hide_distance?: boolean;
@@ -136,7 +127,6 @@ function SettingsPage() {
           auto_share_album_on_match?: boolean;
           looking_now_until?: string | null;
           looking_now_intent?: string | null;
-          discrete_mode?: boolean;
         };
         setPrivacy({
           hide_age: !!d.hide_age,
@@ -144,7 +134,6 @@ function SettingsPage() {
           hide_online: !!d.hide_online,
           read_receipts_enabled: d.read_receipts_enabled ?? true,
           auto_share_album_on_match: !!d.auto_share_album_on_match,
-          discrete_mode: !!d.discrete_mode,
         });
         setLookingUntil(d.looking_now_until ?? null);
         setIntent(d.looking_now_intent ?? "");
@@ -181,15 +170,18 @@ function SettingsPage() {
 
   async function savePrefs(next: Prefs) {
     if (!user) return;
-    setPrefs(next);
     setSavingPrefs(true);
-    const { error } = await supabase
-      .from("profiles")
-      .update({ notification_prefs: next })
-      .eq("id", user.id);
-    setSavingPrefs(false);
-    if (error) toast.error(error.message);
+    try {
+      // Delegăm către context: update optimistic + persist + broadcast în
+      // toate suprafețele (inbox, toast) fără refresh.
+      await updatePrefsCtx(next);
+    } catch (error) {
+      toast.error((error as Error).message);
+    } finally {
+      setSavingPrefs(false);
+    }
   }
+
 
   async function changeEmail() {
     if (!newEmail) return;
@@ -483,7 +475,6 @@ function SettingsPage() {
                 ["hide_online", "Ascunde statusul online / „Active …"],
                 ["read_receipts_enabled", "Trimite confirmări de citire (read receipts)"],
                 ["auto_share_album_on_match", "Auto-share album privat la match"],
-                ["discrete_mode", "Mod Discret (notificările nu arată preview)"],
               ] as const
             ).map(([key, label]) => (
               <label key={key} className="flex items-center justify-between py-2.5 text-sm">
@@ -496,8 +487,24 @@ function SettingsPage() {
                 />
               </label>
             ))}
+            {/* Discrete mode este propagat instant prin context — inbox + toast
+                se actualizează fără refresh. */}
+            <label className="flex items-center justify-between py-2.5 text-sm">
+              <span>Mod Discret (notificările nu arată preview)</span>
+              <input
+                type="checkbox"
+                checked={discreteMode}
+                onChange={(e) => {
+                  void setDiscreteMode(e.target.checked).catch((err) =>
+                    toast.error((err as Error).message),
+                  );
+                }}
+                className="size-4 accent-primary"
+              />
+            </label>
           </div>
         </section>
+
 
         {/* GDPR consents (single source of truth = src/lib/consent-registry.ts) */}
         <ConsentsCard />

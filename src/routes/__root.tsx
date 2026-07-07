@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { AuthProvider } from "@/lib/auth-context";
 import { NotificationsProvider } from "@/lib/notifications-context";
+import { NotificationPrefsProvider } from "@/lib/notification-prefs-context";
 import { Toaster } from "sonner";
 import { CookieBanner } from "@/components/CookieBanner";
 import { TravelWarning } from "@/components/TravelWarning";
@@ -232,25 +233,28 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <NotificationsProvider>
-          <SessionGuards />
-          <CountryRiskGuard />
-          <ProximityWatcherMount />
-          <Outlet />
-          <OfflineBanner />
-          <LocationPermissionPromptMount />
-          <AgeGate />
-          <CookieBanner />
-          <TravelWarning />
-          <PinLockGate />
-          <Toaster theme="dark" position="top-center" richColors />
+        <NotificationPrefsProvider>
+          <NotificationsProvider>
+            <SessionGuards />
+            <CountryRiskGuard />
+            <ProximityWatcherMount />
+            <Outlet />
+            <OfflineBanner />
+            <LocationPermissionPromptMount />
+            <AgeGate />
+            <CookieBanner />
+            <TravelWarning />
+            <PinLockGate />
+            <Toaster theme="dark" position="top-center" richColors />
 
-          <LanguageToggle />
-          <ConsentPromptHost />
-          <VersionGate />
-          <DebugPanel />
-        </NotificationsProvider>
+            <LanguageToggle />
+            <ConsentPromptHost />
+            <VersionGate />
+            <DebugPanel />
+          </NotificationsProvider>
+        </NotificationPrefsProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
 }
+
