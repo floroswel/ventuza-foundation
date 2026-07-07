@@ -24,7 +24,7 @@ export const Route = createFileRoute("/account-deletion")({
 
 function AccountDeletionPage() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-dvh bg-background text-foreground">
       <div className="mx-auto max-w-3xl px-6 py-12 space-y-8">
         <header className="space-y-3">
           <div className="inline-flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">

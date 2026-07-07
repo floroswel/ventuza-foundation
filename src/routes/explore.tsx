@@ -41,7 +41,7 @@ function ExplorePage() {
     : cities;
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="min-h-dvh bg-background pb-28">
       {/* Header */}
       <header className="relative overflow-hidden px-4 pb-3 pt-[max(env(safe-area-inset-top),1rem)]">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/25 via-background to-background" />

@@ -108,7 +108,7 @@ function VerifyStatusPage() {
 
   if (authLoading || loading) {
     return (
-      <main className="grid min-h-screen place-items-center bg-background px-5">
+      <main className="grid min-h-dvh place-items-center bg-background px-5">
         <Loader2 className="size-7 animate-spin text-primary" />
       </main>
     );
@@ -126,7 +126,7 @@ function VerifyStatusPage() {
       : "În așteptare. Didit procesează selfie-ul tău.";
 
   return (
-    <main className="min-h-screen bg-background pb-10 text-foreground">
+    <main className="min-h-dvh bg-background pb-10 text-foreground">
       <div className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),1.25rem)]">
         <Link
           to="/verify"

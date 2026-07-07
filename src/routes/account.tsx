@@ -77,7 +77,7 @@ function AccountPage() {
 
   if (authLoading || !user) {
     return (
-      <div className="grid min-h-screen place-items-center">
+      <div className="grid min-h-dvh place-items-center">
         <Loader2 className="size-6 animate-spin text-primary" />
       </div>
     );
@@ -94,7 +94,7 @@ function AccountPage() {
     profile?.looking_now_until && new Date(profile.looking_now_until).getTime() > Date.now();
 
   return (
-    <div className="min-h-screen bg-background pb-28">
+    <div className="min-h-dvh bg-background pb-28">
       {/* Header */}
       <header className="relative overflow-hidden px-4 pb-4 pt-[max(env(safe-area-inset-top),1rem)]">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/25 via-background to-background" />

@@ -18,7 +18,7 @@ export const Route = createFileRoute("/blocked-region")({
 
 function BlockedRegionPage() {
   return (
-    <main className="min-h-screen bg-background px-6 py-16 text-foreground">
+    <main className="min-h-dvh bg-background px-6 py-16 text-foreground">
       <div className="mx-auto max-w-xl space-y-6 text-center">
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
           <ShieldAlert className="h-7 w-7 text-primary" aria-hidden />

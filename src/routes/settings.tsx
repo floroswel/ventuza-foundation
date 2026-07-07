@@ -231,14 +231,14 @@ function SettingsPage() {
 
   if (loading || !user) {
     return (
-      <div className="grid min-h-screen place-items-center">
+      <div className="grid min-h-dvh place-items-center">
         <Loader2 className="size-6 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-32">
+    <div className="min-h-dvh bg-background pb-32">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur">
         <Link
           to="/profile"

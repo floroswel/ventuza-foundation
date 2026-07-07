@@ -207,7 +207,7 @@ function PartnerPortal() {
 
   if (authLoading || rolesLoading)
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-dvh">
         <Loader2 className="animate-spin" />
       </div>
     );
@@ -218,7 +218,7 @@ function PartnerPortal() {
   if (!isPartner) {
     if (!pendingChecked) {
       return (
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-dvh">
           <Loader2 className="animate-spin" />
         </div>
       );

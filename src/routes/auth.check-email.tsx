@@ -89,7 +89,7 @@ function CheckEmailPage() {
   const disabled = resending || cooldown > 0 || !email || (captchaRequired && !captchaToken);
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
+    <div className="min-h-dvh flex items-center justify-center p-6">
       <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 text-center space-y-4">
         <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-primary/10">
           <Mail className="size-6 text-primary" />
