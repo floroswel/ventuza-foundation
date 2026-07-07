@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { sanitizeNotificationPayload } from "./notification-privacy";
+
 
 const SubInput = z.object({
   endpoint: z.string().url(),
@@ -218,8 +220,8 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     }
 
     // Discrete mode: strip preview, replace with generic copy.
-    const title = profile?.discrete_mode ? "Ventuza" : data.title;
-    const body = profile?.discrete_mode ? "Ai o notificare nouă" : data.body;
+    const rawTitle = profile?.discrete_mode ? "Ventuza" : data.title;
+    const rawBody = profile?.discrete_mode ? "Ai o notificare nouă" : data.body;
 
     const { data: subs } = await supabaseAdmin
       .from("push_subscriptions")
@@ -230,18 +232,30 @@ export const sendPushToUser = createServerFn({ method: "POST" })
 
     const kindForLog = (data.category ?? "generic") as string;
 
+    // Filtru central: mascăm/eliminăm orice câmp sensibil ÎNAINTE să iasă
+    // payload-ul din server (indiferent de canal — web push sau FCM).
+    const safePayload = sanitizeNotificationPayload({
+      title: rawTitle,
+      body: rawBody,
+      url: profile?.discrete_mode ? undefined : data.url,
+      tag: data.tag,
+      type: data.category,
+      category: data.category,
+    });
+
     let delivered = 0;
     const expired: string[] = [];
     const fcmConfigured = isFcmConfigured();
     for (const s of subs) {
       if (!s.endpoint) continue;
       const payload = {
-        title,
-        body,
-        url: profile?.discrete_mode ? undefined : data.url,
-        tag: data.tag,
-        type: data.category,
+        title: safePayload.title,
+        body: safePayload.body,
+        url: safePayload.url,
+        tag: safePayload.tag,
+        type: safePayload.type,
       };
+
       if (s.kind === "fcm") {
         if (!fcmConfigured) continue;
         const r = await sendFcmOne({ id: s.id, endpoint: s.endpoint }, payload);
