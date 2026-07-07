@@ -202,7 +202,7 @@ Toate există în cod (`src/routes/legal.*`).
 - **SMS/Call Log**: NU folosim.
 - **Foreground services location**: NU (deocamdată; dacă activezi geofencing
   background trebuie declarat aici + demo video).
-- **Health Connect**: NU (câmpul HIV nu e Health Connect data).
+- **Health Connect**: NU — aplicația nu procesează date de sănătate.
 
 ## 13. Testing tracks
 
