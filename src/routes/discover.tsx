@@ -58,11 +58,9 @@ import {
   type DiscoverFilters,
   type DiscoverProfile,
 } from "@/lib/discover";
-import {
-  loadDiscoverFilters,
-  saveDiscoverFilters,
-  resetDiscoverFilters,
-} from "@/lib/discover-filters-storage";
+// Filtrele Discover pornesc mereu goale (DEFAULT_FILTERS) — nu mai
+// re-hidratăm nimic din localStorage la fiecare sesiune.
+
 import {
   addFavorite,
   isFavorite,
@@ -185,20 +183,19 @@ function DiscoverPage() {
     });
   }, [user, locStatus]);
 
-  // Load persisted filters once, when user becomes available.
+  // Filtrele NU se restaurează automat între sesiuni — pornim mereu de la
+  // DEFAULT_FILTERS (fără nimic activ). Se activează doar dacă userul apasă
+  // explicit pe un pill/opțiune. Curățăm și orice snapshot vechi din localStorage.
   useEffect(() => {
     if (!user || filtersHydratedRef.current) return;
-    const saved = loadDiscoverFilters(user.id);
     filtersHydratedRef.current = true;
-    setFilters(saved);
-    setDebouncedFilters(saved);
+    try {
+      window.localStorage.removeItem(`vz_discover_filters:${user.id}`);
+    } catch {
+      /* private mode / quota — ignore */
+    }
   }, [user]);
 
-  // Persist filters (safe subset only — see discover-filters-storage.ts).
-  useEffect(() => {
-    if (!user || !filtersHydratedRef.current) return;
-    saveDiscoverFilters(user.id, filters);
-  }, [user, filters]);
 
   // Debounce filter changes to avoid hammering the DB
   useEffect(() => {
@@ -774,11 +771,16 @@ function DiscoverPage() {
         value={filters}
         onApply={setFilters}
         onReset={() => {
-          const cleared = resetDiscoverFilters(user?.id);
-          setFilters(cleared);
-          setDebouncedFilters(cleared);
+          setFilters(DEFAULT_FILTERS);
+          setDebouncedFilters(DEFAULT_FILTERS);
+          try {
+            if (user) window.localStorage.removeItem(`vz_discover_filters:${user.id}`);
+          } catch {
+            /* ignore */
+          }
           toast.success("Filtre resetate");
         }}
+
       />
 
       <MatchModal
