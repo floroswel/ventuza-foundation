@@ -475,7 +475,6 @@ function SettingsPage() {
                 ["hide_online", "Ascunde statusul online / „Active …"],
                 ["read_receipts_enabled", "Trimite confirmări de citire (read receipts)"],
                 ["auto_share_album_on_match", "Auto-share album privat la match"],
-                ["discrete_mode", "Mod Discret (notificările nu arată preview)"],
               ] as const
             ).map(([key, label]) => (
               <label key={key} className="flex items-center justify-between py-2.5 text-sm">
@@ -488,8 +487,24 @@ function SettingsPage() {
                 />
               </label>
             ))}
+            {/* Discrete mode este propagat instant prin context — inbox + toast
+                se actualizează fără refresh. */}
+            <label className="flex items-center justify-between py-2.5 text-sm">
+              <span>Mod Discret (notificările nu arată preview)</span>
+              <input
+                type="checkbox"
+                checked={discreteMode}
+                onChange={(e) => {
+                  void setDiscreteMode(e.target.checked).catch((err) =>
+                    toast.error((err as Error).message),
+                  );
+                }}
+                className="size-4 accent-primary"
+              />
+            </label>
           </div>
         </section>
+
 
         {/* GDPR consents (single source of truth = src/lib/consent-registry.ts) */}
         <ConsentsCard />
