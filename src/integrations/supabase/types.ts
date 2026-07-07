@@ -5681,6 +5681,10 @@ export type Database = {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
+      is_profile_publicly_visible: {
+        Args: { _owner: string; _viewer: string }
+        Returns: boolean
+      }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_verification_staff: { Args: { _uid: string }; Returns: boolean }
       list_my_block_relations: { Args: never; Returns: string[] }
