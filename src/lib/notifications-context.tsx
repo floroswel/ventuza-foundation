@@ -116,7 +116,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
             // userul are `show_preview=false`, forțăm „Previzualizare
             // dezactivată" ca UI să fie explicit despre setare.
             toast(n.title, {
-              description: buildToastBody(showPreviewRef.current, n.body),
+              description: buildToastBody(showPreviewRef.current, n.body, n.type),
             });
             playNotificationSound();
           }
