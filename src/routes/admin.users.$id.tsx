@@ -30,6 +30,7 @@ import {
   AlertTriangle,
   Loader2,
   Crown,
+  Bell,
 } from "lucide-react";
 
 import { Card } from "@/components/ui/card";
