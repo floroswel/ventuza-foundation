@@ -62,7 +62,7 @@ Cod-ul backend este pregătit:
 
 ### Ce trebuie să faci tu în Play Console:
 
-1. **Creează aplicația** în Play Console (package: `app.ventuza.mobile`).
+1. **Creează aplicația** în Play Console (package: `com.ventuza.dating`).
 2. **Monetizare → Produse → Abonamente** → adaugă SKU-urile:
    - `ventuza_premium_monthly`
    - `ventuza_premium_yearly`
@@ -151,7 +151,7 @@ UI-ul (`EnablePushButton`) alege automat platforma.
 ### Pași manuali (o singură dată)
 
 1. **Firebase project**: creează un proiect cu același `applicationId`
-   (`app.ventuza.mobile`).
+   (`com.ventuza.dating`).
 2. **`google-services.json`**: descarcă și pune în `android/app/`. NU
    comita — `android/` e generat local cu `npx cap add android`.
 3. **Gradle**: în `android/build.gradle` (top-level) adaugă în

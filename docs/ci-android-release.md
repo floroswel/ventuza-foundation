@@ -49,7 +49,7 @@ Toate sub environment-ul `production` (protejat cu review manual):
    - **Releases → Manage production and testing tracks**: ✅
    - **App access → View app information**: ✅
    - Restul: nu.
-5. **Aplicație Play**: adaugă contul la app-ul `app.ventuza.mobile` (dacă nu e
+5. **Aplicație Play**: adaugă contul la app-ul `com.ventuza.dating` (dacă nu e
    automat prin org).
 6. Salvează conținutul integral al `key.json` (inclusiv acolade) în secretul
    GitHub `PLAY_SERVICE_ACCOUNT_JSON`.
@@ -65,7 +65,7 @@ base64 -w 0 ventuza-release.keystore > keystore.b64
 ```
 
 ⚠️ **Nu pierde keystore-ul.** Fără el nu mai poți urca update-uri sub
-`app.ventuza.mobile`. Google Play App Signing (recomandat la prima urcare
+`com.ventuza.dating`. Google Play App Signing (recomandat la prima urcare
 manuală în Console) reduce riscul: cheia de upload poate fi rotită dacă e
 compromisă.
 
