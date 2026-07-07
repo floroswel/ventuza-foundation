@@ -23,9 +23,42 @@ import { playNotificationSound } from "@/lib/notification-sound";
 
 type NavigateFn = (path: string) => void;
 
+const FCM_TOKEN_STORAGE_KEY = "ventuza.fcm_token";
+
 let _initialized = false;
 let _pendingUrl: string | null = null;
 let _navigate: NavigateFn | null = null;
+
+function persistFcmToken(token: string) {
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem(FCM_TOKEN_STORAGE_KEY, token);
+    }
+  } catch {
+    /* noop */
+  }
+}
+
+export function readPersistedFcmToken(): string | null {
+  try {
+    if (typeof localStorage !== "undefined") {
+      return localStorage.getItem(FCM_TOKEN_STORAGE_KEY);
+    }
+  } catch {
+    /* noop */
+  }
+  return null;
+}
+
+function clearPersistedFcmToken() {
+  try {
+    if (typeof localStorage !== "undefined") {
+      localStorage.removeItem(FCM_TOKEN_STORAGE_KEY);
+    }
+  } catch {
+    /* noop */
+  }
+}
 
 async function isNative(): Promise<boolean> {
   try {
@@ -126,6 +159,7 @@ export async function initNativePush(opts: {
 
   // Listener: token registration + rotation.
   await PushNotifications.addListener("registration", async (token) => {
+    persistFcmToken(token.value);
     try {
       await opts.saveToken(token.value);
     } catch (e) {
@@ -170,23 +204,29 @@ export async function initNativePush(opts: {
 }
 
 /**
- * Best-effort cleanup on logout. We don't unregister the device from FCM
- * (tokens survive re-login) but we drop the row from push_subscriptions so
- * the previous user stops receiving pushes on this device.
+ * Best-effort cleanup on logout / disable. Uses the persisted FCM token to
+ * drop the row from `push_subscriptions` so the previous user stops receiving
+ * pushes on this shared device. Also removes native listeners and clears the
+ * local token cache.
  */
-export async function teardownNativePush(opts: {
-  removeToken: (token: string) => Promise<void>;
+export async function teardownNativePush(opts?: {
+  removeToken?: (token: string) => Promise<void>;
 }): Promise<void> {
   if (!(await isNative())) return;
+  const token = readPersistedFcmToken();
+  if (token && opts?.removeToken) {
+    try {
+      await opts.removeToken(token);
+    } catch (e) {
+      console.warn("[native-push] removeToken failed", e);
+    }
+  }
   try {
     const { PushNotifications } = await import("@capacitor/push-notifications");
     await PushNotifications.removeAllListeners();
-    // We don't have direct access to the current token; the caller is
-    // expected to pass the last-known token when it has one. If not, this
-    // is a no-op — the row will get pruned server-side on next 404 from FCM.
-    _initialized = false;
-    void opts;
   } catch {
     /* noop */
   }
+  clearPersistedFcmToken();
+  _initialized = false;
 }
