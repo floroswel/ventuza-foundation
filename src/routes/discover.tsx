@@ -1143,6 +1143,7 @@ function ProfileSheet({
   onNavigate,
   onDecision,
   onMessage,
+  onViewFull,
 }: {
   profile: DiscoverProfile | null;
   allProfiles: DiscoverProfile[];
@@ -1151,6 +1152,7 @@ function ProfileSheet({
   onNavigate: (p: DiscoverProfile) => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
   onMessage: (p: DiscoverProfile) => void;
+  onViewFull: (p: DiscoverProfile) => void;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
 
