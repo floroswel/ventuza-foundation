@@ -13,7 +13,7 @@
     "format": "prettier --write .",
     "typecheck": "tsgo --noEmit",
     "test": "vitest run",
-    "test:notifications": "vitest run src/lib/__tests__/notification-payload-regression.test.ts src/lib/__tests__/notification-payload-types.test.ts src/lib/__tests__/notification-privacy.test.ts src/lib/__tests__/notification-preview-off-e2e.test.ts src/lib/__tests__/notification-preview-off-ui-system.test.ts src/lib/__tests__/notifications-context-toast.test.ts src/lib/__tests__/fcm-payload-privacy.test.ts src/lib/__tests__/audit-logs-no-content.test.ts",
+    "test:notifications": "vitest run src/lib/__tests__/notification-payload-regression.test.ts src/lib/__tests__/notification-payload-types.test.ts src/lib/__tests__/notification-privacy.test.ts src/lib/__tests__/notification-preview-off-e2e.test.ts src/lib/__tests__/notification-preview-off-ui-system.test.ts src/lib/__tests__/notifications-context-toast.test.ts src/lib/__tests__/fcm-payload-privacy.test.ts src/lib/__tests__/audit-logs-no-content.test.ts"
   },
   "dependencies": {
     "@capacitor-community/privacy-screen": "^8.0.0",
