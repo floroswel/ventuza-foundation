@@ -24,6 +24,7 @@ import { CountryRiskGuard } from "@/components/CountryRiskGuard";
 import { AgeGate } from "@/components/AgeGate";
 import { useProximityForegroundWatcher } from "@/lib/proximity-watcher";
 import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
+import { useLocationWatcher } from "@/hooks/useLocationWatcher";
 // Init i18n eagerly — useTranslation() în orice rută/child are nevoie de
 // instanță înainte de prima randare (altfel NO_I18NEXT_INSTANCE).
 import "@/lib/i18n";
