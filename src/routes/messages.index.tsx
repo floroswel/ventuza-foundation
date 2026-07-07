@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { fetchConversations, type ConversationListItem } from "@/lib/chat";
+import { buildInboxPreview } from "@/lib/notification-privacy";
 import { StoriesStrip } from "@/components/StoriesStrip";
 import { cn } from "@/lib/utils";
 
@@ -158,11 +159,8 @@ function MessagesPage() {
                         c.unread ? "text-foreground/90" : "text-muted-foreground",
                       )}
                     >
-                      {showPreview
-                        ? (c.last_message_preview ?? "Say hi 👋")
-                        : c.last_message_at
-                          ? "Ai un mesaj nou"
-                          : "Say hi 👋"}
+                      {buildInboxPreview(showPreview, c.last_message_preview, !!c.last_message_at)}
+
                     </p>
                   </div>
 

@@ -73,21 +73,15 @@ describe("Invariante de sursă — nicio suprafață nu scurge conținut", () =>
     expect(src).not.toMatch(/media_type|media_url|caption/);
   });
 
-  it("messages.index.tsx nu afișează last_message_preview când show_preview=false", () => {
+  it("messages.index.tsx randează prin buildInboxPreview (nu conținut brut)", () => {
     const src = read("routes/messages.index.tsx");
     expect(src).toContain("showPreview");
-    expect(src).toContain("Ai un mesaj nou");
-    // Preview-ul apare doar sub gate showPreview
-    const previewUses = [...src.matchAll(/last_message_preview/g)];
-    expect(previewUses.length).toBeGreaterThan(0);
-    // toate ocurentele trebuie într-un context care conține showPreview
-    // (verificare simplă: în același fragment JSX de 400 caractere)
-    for (const m of previewUses) {
-      const window = src.slice(Math.max(0, m.index! - 200), m.index! + 200);
-      expect(window).toMatch(/showPreview|SafeColumns|type\s|interface\s/i);
-    }
+    expect(src).toContain("buildInboxPreview");
+    // Preview-ul brut NU mai este referențiat direct în JSX
+    expect(src).not.toMatch(/showPreview\s*\?\s*\(?c\.last_message_preview/);
   });
 });
+
 
 describe("sanitizeNotificationPayload — filtru central", () => {
   it("forțează body generic când categoria este 'messages'", () => {
