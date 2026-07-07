@@ -71,6 +71,19 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     primeNotificationSound();
   }, []);
 
+  // Wire the native-push tap navigator (no-op on the web).
+  const navigate = useNavigate();
+  useEffect(() => {
+    setNativePushNavigator((path) => {
+      navigate({ to: path }).catch(() => {
+        // path may not be typed as a known route; fall back to window
+        if (typeof window !== "undefined") window.location.assign(path);
+      });
+    });
+  }, [navigate]);
+
+
+
   // Realtime subscription
   useEffect(() => {
     if (!user) return;
