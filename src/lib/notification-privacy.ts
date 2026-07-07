@@ -532,9 +532,23 @@ export function setNotificationSanitizeLogger(logger: SanitizeAuditLogger | null
  *   configurat cu `setNotificationSanitizeLogger`; pentru acces direct la
  *   report folosește `sanitizeNotificationPayloadWithReport`.
  */
+export interface SanitizeOptions {
+  /** Channel name (for the audit log). */
+  channel?: string;
+  /**
+   * Force strict allowlist mode:
+   *   - `true`  → apply the category allowlist (or the empty allowlist if the
+   *              category is unknown, dropping every `data` key).
+   *   - `false` → disable the allowlist even when the category is known.
+   *   - `undefined` (default) → strict when the category is known, legacy
+   *                             (denylist only) when unknown.
+   */
+  strict?: boolean;
+}
+
 export function sanitizeNotificationPayload(
   input: NotificationPayloadIn,
-  opts?: { channel?: string },
+  opts?: SanitizeOptions,
 ): SanitizedNotificationPayload {
   return sanitizeNotificationPayloadWithReport(input, opts).payload;
 }
@@ -545,7 +559,7 @@ export function sanitizeNotificationPayload(
  */
 export function sanitizeNotificationPayloadWithReport(
   input: NotificationPayloadIn,
-  opts?: { channel?: string },
+  opts?: SanitizeOptions,
 ): { payload: SanitizedNotificationPayload; report: SanitizeRedactionReport } {
   const report = emptyReport();
 
@@ -565,7 +579,6 @@ export function sanitizeNotificationPayloadWithReport(
   let body: string;
   if (isMessage) {
     body = GENERIC_MESSAGE_BODY;
-    // Only note "forced generic" when the caller actually tried to pass a body.
     if (rawBody && rawBody !== GENERIC_MESSAGE_BODY) report.bodyForcedGeneric = true;
   } else {
     const scrubbedBody = scrubStringTracked(rawBody, "/body", report);
@@ -595,8 +608,13 @@ export function sanitizeNotificationPayloadWithReport(
   if (type) out.type = type.slice(0, 40);
   if (category) out.category = category.slice(0, 40);
 
+  const { allow, name: allowName } = resolveAllowlist(category, opts?.strict);
+  report.allowlistApplied = allowName;
+
   if (input.data && typeof input.data === "object") {
-    const stripped = deepStripTracked(input.data, "/data", report) as Record<string, unknown>;
+    const stripped = allow
+      ? deepStripWithAllowlist(input.data as Record<string, unknown>, allow, report)
+      : (deepStripTracked(input.data, "/data", report) as Record<string, unknown>);
     if (Object.keys(stripped).length > 0) out.data = stripped;
   }
 
@@ -614,7 +632,9 @@ export function sanitizeNotificationPayloadWithReport(
     report.truncated.title ||
     report.truncated.body ||
     report.truncated.tag ||
-    report.droppedTopLevelKeys.length > 0;
+    report.droppedTopLevelKeys.length > 0 ||
+    report.notAllowlistedKeys.length > 0;
+
 
   if (auditLogger) {
     try {
