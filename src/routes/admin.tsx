@@ -1284,7 +1284,21 @@ function ReportsPanel({ meId }: { meId: string }) {
   };
   useEffect(() => {
     load();
+    const channel = supabase
+      .channel("admin-reports-live")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "reports" },
+        () => {
+          load();
+        },
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
+
 
   const suspend = async (userId: string, hours: number, reason: string) => {
     setBusy(true);
