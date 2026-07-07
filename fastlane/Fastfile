@@ -1,0 +1,80 @@
+# Fastlane pentru Ventuza — upload pe Google Play Console.
+#
+# Cerințe host:
+#   - Ruby 3.x + Bundler
+#   - `bundle install` (folosește Gemfile-ul din rădăcină)
+#   - Cont Google Play service account cu rol "Release manager", cheia JSON
+#     salvată la release/play-store-service-account.json (git-ignored) SAU
+#     path expus prin env `SUPPLY_JSON_KEY`.
+#
+# Versiunea (versionCode / versionName) este DOAR în release/version.json și
+# se propagă în build.gradle prin release/android-version.gradle.
+
+default_platform(:android)
+
+BUNDLE_PATH_DEFAULT = "android/app/build/outputs/bundle/release/app-release.aab"
+
+def load_version
+  require "json"
+  JSON.parse(File.read(File.expand_path("../release/version.json", __dir__)))
+end
+
+platform :android do
+  desc "Bump versionCode/versionName (mode: patch|minor|major|set)"
+  lane :bump do |options|
+    mode = options[:mode] || "patch"
+    extra = []
+    extra << "--name=#{options[:name]}" if options[:name]
+    extra << "--code=#{options[:code]}" if options[:code]
+    sh("node ../scripts/bump-android-version.mjs #{mode} #{extra.join(' ')}")
+  end
+
+  desc "Validează metadata Play Store fără să facă upload"
+  lane :validate do
+    v = load_version
+    UI.message("Validare pentru versionCode=#{v['versionCode']} versionName=#{v['versionName']}")
+    %w[en-US ro-RO].each do |loc|
+      path = File.expand_path("metadata/android/#{loc}/changelogs/#{v['versionCode']}.txt", __dir__)
+      UI.user_error!("Lipsește changelog: #{path}") unless File.exist?(path)
+      body = File.read(path)
+      UI.user_error!("Changelog gol: #{path}") if body.strip.empty?
+      UI.user_error!("Changelog > 500 chars: #{path}") if body.length > 500
+    end
+    UI.success("Metadata OK.")
+  end
+
+  desc "Upload .aab pe track-ul internal (nu promovează, doar publish draft-friendly)"
+  lane :internal do |options|
+    validate
+    v = load_version
+    aab = options[:aab] || BUNDLE_PATH_DEFAULT
+    UI.user_error!("Bundle inexistent: #{aab}. Rulează: cd android && ./gradlew bundleRelease") unless File.exist?(File.expand_path("../#{aab}", __dir__))
+
+    upload_to_play_store(
+      track: "internal",
+      aab: aab,
+      release_status: "draft",
+      version_code: v["versionCode"],
+      version_name: v["versionName"],
+      skip_upload_apk: true,
+      skip_upload_metadata: false,
+      skip_upload_changelogs: false,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      validate_only: false,
+    )
+    UI.success("Upload internal reușit: #{v['versionName']} (code #{v['versionCode']}).")
+  end
+
+  desc "Doar metadata + changelogs (fără .aab nou)"
+  lane :metadata_only do
+    validate
+    upload_to_play_store(
+      track: "internal",
+      skip_upload_aab: true,
+      skip_upload_apk: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+end
