@@ -332,7 +332,8 @@ export async function fetchDiscover(
     };
     if (msg.includes("discover_rate_limited")) {
       // Dacă avem cache (chiar expirat), îl returnăm în loc de ecran gol.
-      if (cached) return cached.data;
+      const stale = offset === 0 ? readDiscoverCache(cacheKey) : null;
+      if (stale) return stale.data;
       throw make(
         "discover_rate_limited",
         "Ai răsfoit prea repede (max 500 profiluri/oră). Reia explorarea peste aproximativ o oră.",
