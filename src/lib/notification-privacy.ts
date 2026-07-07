@@ -316,7 +316,7 @@ export function sanitizeNotificationPayload(
       out.url = input.url.split("?")[0].slice(0, 300);
     }
   }
-  if (typeof input.tag === "string" && input.tag) out.tag = input.tag.slice(0, 80);
+  if (typeof input.tag === "string" && input.tag) out.tag = scrubString(input.tag).slice(0, 80);
   if (type) out.type = type.slice(0, 40);
   if (category) out.category = category.slice(0, 40);
   if (input.data && typeof input.data === "object") {
