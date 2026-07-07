@@ -459,7 +459,7 @@ function DiscoverPage() {
         }
       }
     },
-    [user],
+    [user, view],
   );
 
   if (countryGate.isDiscoverDisabled || countryGate.forceStealth || countryGate.isBlocked) {
