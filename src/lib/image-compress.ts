@@ -7,8 +7,23 @@ export async function compressImageForChat(
 ): Promise<Blob> {
   const maxDim = opts.maxDim ?? 2048;
   const quality = opts.quality ?? 0.82;
-  const size = (file as File).size ?? 0;
-  const type = (file as File).type ?? "";
+  let size = (file as File).size ?? 0;
+  let type = (file as File).type ?? "";
+  const name = (file as File).name ?? "";
+  const ext = name.split(".").pop()?.toLowerCase() ?? "";
+
+  // HEIC/HEIF: convert to JPEG first (browsers can't render HEIC).
+  if (type === "image/heic" || type === "image/heif" || ext === "heic" || ext === "heif") {
+    try {
+      const heic2any = (await import("heic2any")).default;
+      const converted = (await heic2any({ blob: file, toType: "image/jpeg", quality })) as Blob | Blob[];
+      file = Array.isArray(converted) ? converted[0] : converted;
+      type = "image/jpeg";
+      size = (file as Blob).size;
+    } catch (e) {
+      console.warn("[image-compress] HEIC conversion failed", e);
+    }
+  }
 
   // GIFs: keep as-is (animation would be lost).
   if (type === "image/gif") return file;
