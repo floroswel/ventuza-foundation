@@ -351,6 +351,7 @@ export async function fetchDiscover(
 }
 
 export async function signPhotos(paths: string[]): Promise<Record<string, string>> {
+  const { reportSignedUrlError, reportSignedUrlMissing } = await import("@/lib/media-telemetry");
   const out: Record<string, string> = {};
   await Promise.all(
     paths.map(async (p) => {
@@ -359,12 +360,24 @@ export async function signPhotos(paths: string[]): Promise<Record<string, string
         out[p] = p;
         return;
       }
-      const { data } = await supabase.storage.from("profile-photos").createSignedUrl(p, 3600);
-      if (data?.signedUrl) out[p] = data.signedUrl;
+      try {
+        const { data, error } = await supabase.storage
+          .from("profile-photos")
+          .createSignedUrl(p, 3600);
+        if (error) {
+          reportSignedUrlError({ bucket: "profile-photos", path: p, context: "discover", error });
+          return;
+        }
+        if (data?.signedUrl) out[p] = data.signedUrl;
+        else reportSignedUrlMissing({ bucket: "profile-photos", path: p, context: "discover" });
+      } catch (error) {
+        reportSignedUrlError({ bucket: "profile-photos", path: p, context: "discover", error });
+      }
     }),
   );
   return out;
 }
+
 
 export async function logProfileView(viewedId: string) {
   await supabase.from("profile_views").insert({
