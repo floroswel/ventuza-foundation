@@ -99,16 +99,17 @@ function MessagesPage() {
                 <Link
                   to="/messages/$id"
                   params={{ id: c.id }}
-                  className="flex items-center gap-4 rounded-xl px-3 py-3 transition-colors hover:bg-muted/30"
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-muted/30"
                 >
+                  {/* Avatar — mereu în stânga, cu inel auriu */}
                   <div className="relative shrink-0">
-                    <span
+                    <div
                       className={cn(
-                        "block size-14 rounded-full p-[2px]",
+                        "size-14 rounded-full p-[2px]",
                         "bg-gradient-to-tr from-primary/70 via-primary to-primary/70",
                       )}
                     >
-                      <span className="block size-full overflow-hidden rounded-full bg-surface ring-2 ring-background">
+                      <div className="size-full overflow-hidden rounded-full bg-surface ring-2 ring-background">
                         {c.other_photo ? (
                           <img
                             src={c.other_photo}
@@ -116,12 +117,12 @@ function MessagesPage() {
                             className="size-full object-cover"
                           />
                         ) : (
-                          <span className="flex size-full items-center justify-center text-sm text-muted-foreground">
+                          <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
                             {(c.other_name ?? "?").slice(0, 1)}
-                          </span>
+                          </div>
                         )}
-                      </span>
-                    </span>
+                      </div>
+                    </div>
                     {c.other_online && (
                       <span
                         aria-label="Online"
@@ -130,35 +131,41 @@ function MessagesPage() {
                     )}
                   </div>
 
+                  {/* Corp — nume+oră pe rândul 1, preview+badge pe rândul 2 */}
                   <div className="min-w-0 flex-1">
-                    <p
-                      className={cn(
-                        "truncate font-serif text-lg leading-tight text-primary",
-                        c.unread ? "font-semibold" : "font-medium",
-                      )}
-                    >
-                      {c.other_name ?? "Unknown"}
-                    </p>
-                    <p
-                      className={cn(
-                        "mt-0.5 truncate text-sm",
-                        c.unread ? "text-foreground/90" : "text-muted-foreground",
-                      )}
-                    >
-                      {buildInboxPreview(showPreview, c.last_message_preview, !!c.last_message_at)}
-
-                    </p>
-                  </div>
-
-                  <div className="flex shrink-0 flex-col items-end gap-1.5">
-                    <span className="text-[11px] text-muted-foreground">
-                      {formatWhen(c.last_message_at)}
-                    </span>
-                    {c.unread_count > 0 ? (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold leading-none text-primary-foreground shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
-                        {c.unread_count > 99 ? "99+" : c.unread_count}
+                    <div className="flex items-baseline gap-2">
+                      <p
+                        className={cn(
+                          "min-w-0 flex-1 truncate font-serif text-lg leading-tight text-primary",
+                          c.unread ? "font-semibold" : "font-medium",
+                        )}
+                      >
+                        {c.other_name ?? "Unknown"}
+                      </p>
+                      <span
+                        className={cn(
+                          "shrink-0 text-[11px] tabular-nums",
+                          c.unread ? "text-primary" : "text-muted-foreground",
+                        )}
+                      >
+                        {formatWhen(c.last_message_at)}
                       </span>
-                    ) : null}
+                    </div>
+                    <div className="mt-0.5 flex items-center gap-2">
+                      <p
+                        className={cn(
+                          "min-w-0 flex-1 truncate text-sm",
+                          c.unread ? "text-foreground/90" : "text-muted-foreground",
+                        )}
+                      >
+                        {buildInboxPreview(showPreview, c.last_message_preview, !!c.last_message_at)}
+                      </p>
+                      {c.unread_count > 0 ? (
+                        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold leading-none text-primary-foreground shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
+                          {c.unread_count > 99 ? "99+" : c.unread_count}
+                        </span>
+                      ) : null}
+                    </div>
                   </div>
                 </Link>
               </li>
