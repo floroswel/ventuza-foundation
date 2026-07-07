@@ -265,7 +265,7 @@ function AccountPage() {
           <MenuRow to="/favorites" icon={<Album className="size-5" />} label="Albume & favorite" />
           <MenuRow to="/safety" icon={<ShieldCheck className="size-5" />} label="Siguranță" />
           <MenuRow to="/quests" icon={<Flame className="size-5" />} label="Quests & recompense" />
-          <MenuRow to="/discover" icon={<Users className="size-5" />} label="Vezi profile demo" />
+          
         </section>
 
         {/* Support — direct chat OR email */}
