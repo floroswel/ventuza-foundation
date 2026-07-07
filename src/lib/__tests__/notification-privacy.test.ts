@@ -44,12 +44,16 @@ describe("buildMessageNotificationBody — push payload", () => {
 });
 
 describe("buildInboxPreview — listă conversații", () => {
-  it("are mesaje → generic, indiferent de show_preview sau preview-ul real", () => {
-    expect(buildInboxPreview(false, "📷 Photo caption", true)).toBe(GENERIC_MESSAGE_BODY);
-    expect(buildInboxPreview(true, "salut", true)).toBe(GENERIC_MESSAGE_BODY);
+  it("show_preview=false + are mesaje → copy explicit Previzualizare dezactivata", () => {
+    expect(buildInboxPreview(false, "📷 Photo caption", true)).toBe("Previzualizare dezactivată");
   });
 
-  it("fără mesaje → fallback neutru", () => {
+  it("show_preview=true/undefined + are mesaje → generic Ai un mesaj nou", () => {
+    expect(buildInboxPreview(true, "salut", true)).toBe(GENERIC_MESSAGE_BODY);
+    expect(buildInboxPreview(undefined, "salut", true)).toBe(GENERIC_MESSAGE_BODY);
+  });
+
+  it("fără mesaje → fallback neutru, indiferent de show_preview", () => {
     expect(buildInboxPreview(false, null, false)).toBe(GENERIC_INBOX_FALLBACK);
     expect(buildInboxPreview(true, "salut", false)).toBe(GENERIC_INBOX_FALLBACK);
   });
