@@ -181,11 +181,34 @@ export function StoryViewer({
 
       {/* Media */}
       <div className="relative size-full max-w-md">
-        {mediaUrl ? (
-          <img src={mediaUrl} alt="" className="size-full object-contain" />
+        {mediaError ? (
+          <div className="grid size-full place-items-center px-6 text-center">
+            <div className="flex flex-col items-center gap-3 text-white/90">
+              <AlertTriangle className="size-10 text-white/70" />
+              <p className="text-sm">{mediaError}</p>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRetryTick((n) => n + 1);
+                }}
+                className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-medium text-white hover:bg-white/25"
+              >
+                <RotateCcw className="size-4" /> Reîncearcă
+              </button>
+            </div>
+          </div>
+        ) : mediaUrl ? (
+          <img
+            src={mediaUrl}
+            alt=""
+            className="size-full object-contain"
+            onError={() => setMediaError("Poza nu s-a încărcat")}
+          />
         ) : (
           <div className="grid size-full place-items-center text-white/60">Se încarcă…</div>
         )}
+
         {story.caption && (
           <p
             className={cn(
