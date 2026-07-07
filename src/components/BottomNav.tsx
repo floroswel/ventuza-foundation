@@ -93,9 +93,9 @@ export function BottomNav() {
   const { total: unreadTotal } = useUnreadMessages();
 
   const items = [
-    { to: "/", label: "Ventuza", Icon: VentuzaMark },
-    { to: "/discover", label: "Descoperă", Icon: DiamondIcon },
-    { to: "/favorites", label: "Potriviri", Icon: HeartIcon },
+    { to: "/discover", label: "Ventuza", Icon: VentuzaMark },
+    { to: "/nearby", label: "Descoperă", Icon: DiamondIcon },
+    { to: "/matches", label: "Potriviri", Icon: HeartIcon },
     { to: "/messages", label: "Mesaje", Icon: ChatBubbleIcon, badge: unreadTotal, filledWhenActive: true },
     { to: "/profile", label: "Profil", Icon: PersonIcon },
   ] as const;
