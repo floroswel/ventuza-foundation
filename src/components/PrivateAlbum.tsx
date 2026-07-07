@@ -72,16 +72,30 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
     setBusy(true);
     const added: string[] = [];
     try {
-      for (const file of Array.from(files).slice(0, room)) {
-        if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-          toast.error(`${file.name} > ${MAX_SIZE_MB}MB`);
+      for (const original of Array.from(files).slice(0, room)) {
+        if (original.size > MAX_SIZE_MB * 1024 * 1024) {
+          toast.error(`${original.name} > ${MAX_SIZE_MB}MB`);
           continue;
         }
-        const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+        let uploadFile: File | Blob = original;
+        let ext = (original.name.split(".").pop() || "jpg").toLowerCase();
+        let contentType = original.type || "image/jpeg";
+        if (ext === "heic" || ext === "heif" || contentType === "image/heic" || contentType === "image/heif") {
+          try {
+            const heic2any = (await import("heic2any")).default;
+            const converted = (await heic2any({ blob: original, toType: "image/jpeg", quality: 0.9 })) as Blob | Blob[];
+            uploadFile = Array.isArray(converted) ? converted[0] : converted;
+            ext = "jpg";
+            contentType = "image/jpeg";
+          } catch {
+            toast.error(`${original.name}: format HEIC nesuportat, reîncearcă cu JPG/PNG`);
+            continue;
+          }
+        }
         const path = `${userId}/${crypto.randomUUID()}.${ext}`;
         const { error } = await supabase.storage
           .from("private-albums")
-          .upload(path, file, { contentType: file.type });
+          .upload(path, uploadFile, { contentType });
         if (error) {
           toast.error(error.message);
           continue;

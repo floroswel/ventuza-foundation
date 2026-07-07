@@ -2,6 +2,7 @@ import { motion, PanInfo, useMotionValue, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Heart, Star, X, MapPin, Flag } from "lucide-react";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";
+import { SmartImage } from "@/components/SmartImage";
 import { ageFrom, formatDistance, signPhotos, type DiscoverProfile } from "@/lib/discover";
 
 type Props = {
@@ -73,7 +74,7 @@ export function SwipeCard({ profile, onDecision, stackIndex }: Props) {
       {/* photo */}
       <div className="relative size-full">
         {photoUrl ? (
-          <img
+          <SmartImage
             src={photoUrl}
             alt={profile.display_name ?? ""}
             className="size-full object-cover"
