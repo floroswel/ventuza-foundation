@@ -639,6 +639,12 @@ function SettingsPage() {
               <Shield className="size-4" /> Politica 18+
             </Link>
             <Link
+              to="/legal/child-safety"
+              className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
+            >
+              <Shield className="size-4" /> Child Safety (CSAE)
+            </Link>
+            <Link
               to="/legal/dmca"
               className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
             >
