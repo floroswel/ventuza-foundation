@@ -202,13 +202,16 @@ jobs:
             exit 1
           fi
           echo "→ Test 3: parola cheii (ANDROID_KEY_PASSWORD) descifrează cheia privată"
-          if ! keytool -keypasswd -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" \
-                -alias "$KEY_ALIAS" -keypass "$KEY_PASSWORD" -new "$KEY_PASSWORD" > /tmp/kt.out 2>&1; then
-            echo "::error::ANDROID_KEY_PASSWORD este GREȘITĂ pentru aliasul '$KEY_ALIAS'. (Given final block not properly padded)"
+          # `-certreq` cere descifrarea cheii private — funcționează atât pe JKS cât și pe PKCS12
+          # (spre deosebire de `-keypasswd`, care nu e suportat pe PKCS12).
+          if ! keytool -certreq -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" \
+                -alias "$KEY_ALIAS" -keypass "$KEY_PASSWORD" > /tmp/kt.out 2>&1; then
+            echo "::error::ANDROID_KEY_PASSWORD este GREȘITĂ pentru aliasul '$KEY_ALIAS'."
             cat /tmp/kt.out
             echo ""
             echo "Fix: în GitHub → Settings → Secrets → Actions, actualizează ANDROID_KEY_PASSWORD"
-            echo "cu parola reală a cheii din keystore (nu parola keystore-ului — sunt separate)."
+            echo "cu parola reală a cheii din keystore. Pe PKCS12 (default modern),"
+            echo "keyPassword TREBUIE să fie identic cu storePassword."
             exit 1
           fi
           echo "✓ Toate cele 3 secrete potrivesc keystore-ul."
