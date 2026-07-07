@@ -6,7 +6,6 @@ import {
   buildMessageNotificationBody,
   GENERIC_INBOX_FALLBACK,
   GENERIC_MESSAGE_BODY,
-  MAX_PREVIEW_LEN,
 } from "@/lib/notification-privacy";
 
 const SRC = join(process.cwd(), "src");
@@ -23,47 +22,37 @@ describe("buildMessageNotificationBody — push payload", () => {
     "IBAN RO49AAAA1B31007593840000",
   ];
 
-  it("întoarce mereu textul generic când show_preview=false, indiferent de conținut", () => {
+  it("întoarce mereu textul generic, indiferent de show_preview sau conținut", () => {
     for (const s of secrets) {
       expect(buildMessageNotificationBody(false, s)).toBe(GENERIC_MESSAGE_BODY);
+      expect(buildMessageNotificationBody(true, s)).toBe(GENERIC_MESSAGE_BODY);
     }
   });
 
   it("nu scurge tipul media sau URL-ul chiar dacă preview-ul le conține", () => {
-    const body = buildMessageNotificationBody(false, "📷 Photo https://cdn/x.jpg");
+    const body = buildMessageNotificationBody(true, "📷 Photo https://cdn/x.jpg");
     expect(body).toBe(GENERIC_MESSAGE_BODY);
     expect(body).not.toMatch(/photo|voice|http|cdn|📷|🎤|📍/i);
   });
 
   it("null / undefined / empty → generic", () => {
     expect(buildMessageNotificationBody(false, null)).toBe(GENERIC_MESSAGE_BODY);
-    expect(buildMessageNotificationBody(false, undefined)).toBe(GENERIC_MESSAGE_BODY);
     expect(buildMessageNotificationBody(true, "")).toBe(GENERIC_MESSAGE_BODY);
-    expect(buildMessageNotificationBody(true, "   ")).toBe(GENERIC_MESSAGE_BODY);
-  });
-
-  it("show_preview=true → afișează preview trunchiat la 140", () => {
-    expect(buildMessageNotificationBody(true, "hei")).toBe("hei");
-    const long = "a".repeat(500);
-    const body = buildMessageNotificationBody(true, long);
-    expect(body.length).toBe(MAX_PREVIEW_LEN);
   });
 });
 
 describe("buildInboxPreview — listă conversații", () => {
-  it("show_preview=false + are mesaje → generic, nu preview-ul real", () => {
+  it("are mesaje → generic, indiferent de show_preview sau preview-ul real", () => {
     expect(buildInboxPreview(false, "📷 Photo caption", true)).toBe(GENERIC_MESSAGE_BODY);
-    expect(buildInboxPreview(false, "salut", true)).toBe(GENERIC_MESSAGE_BODY);
+    expect(buildInboxPreview(true, "salut", true)).toBe(GENERIC_MESSAGE_BODY);
   });
 
-  it("show_preview=false + fără mesaje → fallback neutru", () => {
+  it("fără mesaje → fallback neutru", () => {
     expect(buildInboxPreview(false, null, false)).toBe(GENERIC_INBOX_FALLBACK);
-  });
-
-  it("show_preview=true → afișează preview-ul real", () => {
-    expect(buildInboxPreview(true, "salut", true)).toBe("salut");
+    expect(buildInboxPreview(true, "salut", false)).toBe(GENERIC_INBOX_FALLBACK);
   });
 });
+
 
 describe("Invariante de sursă — nicio suprafață nu scurge conținut", () => {
   it("chat.ts folosește buildMessageNotificationBody, nu string literal", () => {
