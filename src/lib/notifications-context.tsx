@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -22,6 +23,7 @@ import {
   playNotificationSound,
   primeNotificationSound,
 } from "@/lib/notification-sound";
+import { setNativePushNavigator } from "@/lib/native-push";
 
 type Ctx = {
   notifications: NotificationRow[];
