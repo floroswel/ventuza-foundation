@@ -82,6 +82,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         loading,
         signOut: async () => {
+          // Best-effort: drop the FCM row for the previous user on this device
+          // BEFORE we invalidate the session, so shared devices don't keep
+          // receiving pushes for the old account. Never blocks logout.
+          try {
+            const { Capacitor } = await import("@capacitor/core");
+            if (Capacitor.isNativePlatform()) {
+              const [{ teardownNativePush, readPersistedFcmToken }, { removeFcmSubscription }] =
+                await Promise.all([
+                  import("@/lib/native-push"),
+                  import("@/lib/push.functions"),
+                ]);
+              const token = readPersistedFcmToken();
+              await teardownNativePush({
+                removeToken: async (t) => {
+                  await removeFcmSubscription({ data: { token: t } });
+                },
+              }).catch(() => {});
+              void token;
+            }
+          } catch {
+            /* noop — logout must always proceed */
+          }
           await supabase.auth.signOut();
           setSession(null);
         },
