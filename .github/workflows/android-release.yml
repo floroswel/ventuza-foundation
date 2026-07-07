@@ -81,6 +81,11 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN6enhodnZtd3F2ZnlvbGRjdXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE5NzE5NTUsImV4cCI6MjA5NzU0Nzk1NX0.Wf-m_9h3GtQMV6zC6L6ti4ZlR1HCqqHhw4f5ilE-LTs' }}
           VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID || 'szzxhvvmwqvfyoldcuyz' }}
           VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
+          # Google Web OAuth client ID (Web application type din Google Cloud Console).
+          # Necesar pentru Google Sign-In nativ (Capacitor) — pasat la
+          # `supabase.auth.signInWithIdToken` ca `audience`. Fără el, butonul
+          # Google din Android nativ nu funcționează (cade back la web OAuth).
+          VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID }}
         run: bun run build:mobile
 
       - name: Verifică bundle-ul web (dist/client/index.html)

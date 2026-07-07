@@ -32,6 +32,18 @@ export function CookieBanner() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    // Pe aplicația nativă (Capacitor Android/iOS) NU afișăm banner-ul de
+    // cookies — nu există cookies third-party într-un WebView nativ, iar
+    // Play Store cere ca UI-ul nativ să nu imite dialoguri web irelevante.
+    // Consimțămintele reale (analytics/marketing) rămân gestionate din
+    // Settings → Consimțăminte, care este sursa unică pe nativ.
+    try {
+      const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+        .Capacitor;
+      if (cap?.isNativePlatform?.()) return;
+    } catch {
+      /* ignore */
+    }
     try {
       if (!localStorage.getItem(KEY)) setVisible(true);
     } catch {

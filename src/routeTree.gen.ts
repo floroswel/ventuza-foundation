@@ -75,6 +75,7 @@ import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]
 import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicDiditWebhookRouteImport } from './routes/api/public/didit-webhook'
+import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
 import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
@@ -417,6 +418,11 @@ const ApiPublicDiditWebhookRoute = ApiPublicDiditWebhookRouteImport.update({
   path: '/api/public/didit-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAgeWebhookRoute = ApiPublicAgeWebhookRouteImport.update({
+  id: '/api/public/age-webhook',
+  path: '/api/public/age-webhook',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminUsersIdRoute = AdminUsersIdRouteImport.update({
   id: '/users/$id',
   path: '/users/$id',
@@ -529,6 +535,7 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
+  '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -605,6 +612,7 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
+  '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -682,6 +690,7 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
+  '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -760,6 +769,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/users/$id'
+    | '/api/public/age-webhook'
     | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -836,6 +846,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/users/$id'
+    | '/api/public/age-webhook'
     | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -912,6 +923,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/admin/users/$id'
+    | '/api/public/age-webhook'
     | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -979,6 +991,7 @@ export interface RootRouteChildren {
   MessagesIndexRoute: typeof MessagesIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
+  ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicDiditWebhookRoute: typeof ApiPublicDiditWebhookRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
   ApiPublicSignupGuardRoute: typeof ApiPublicSignupGuardRoute
@@ -1452,6 +1465,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDiditWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/age-webhook': {
+      id: '/api/public/age-webhook'
+      path: '/api/public/age-webhook'
+      fullPath: '/api/public/age-webhook'
+      preLoaderRoute: typeof ApiPublicAgeWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin/users/$id': {
       id: '/admin/users/$id'
       path: '/users/$id'
@@ -1673,6 +1693,7 @@ const rootRouteChildren: RootRouteChildren = {
   MessagesIndexRoute: MessagesIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
+  ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicDiditWebhookRoute: ApiPublicDiditWebhookRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
   ApiPublicSignupGuardRoute: ApiPublicSignupGuardRoute,
