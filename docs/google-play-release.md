@@ -245,3 +245,43 @@ bun run build && npx cap sync android && \
 
 # Upload manual → Play Console → Release → Create new release
 ```
+
+## 16. FCM (Firebase Cloud Messaging) — notificări push native
+
+Wrapper-ul Android folosește FCM prin `@capacitor/push-notifications`.
+Web-ul continuă cu Web Push (VAPID) — cele două rulează în paralel, aceeași
+tabelă `push_subscriptions` (`kind='fcm'` vs `kind='webpush'`).
+
+### One-time — proiect Firebase
+
+1. Creează proiect Firebase (același `applicationId`: `app.ventuza.mobile`).
+2. Descarcă `google-services.json` și pune-l în `android/app/`
+   (NU comita în repo — adaugă în `.gitignore`).
+3. În `android/build.gradle` (top-level), adaugă la `buildscript.dependencies`:
+   ```gradle
+   classpath 'com.google.gms:google-services:4.4.2'
+   ```
+4. În `android/app/build.gradle`, la finalul fișierului:
+   ```gradle
+   apply plugin: 'com.google.gms.google-services'
+   ```
+5. `bunx cap sync android` — pluginul Capacitor se leagă automat.
+
+### One-time — service account server-side
+
+1. Firebase Console → Project Settings → Service accounts → *Generate new
+   private key*. Descarcă JSON-ul.
+2. În Lovable Cloud → Project Settings → Secrets, adaugă un secret nou
+   `FIREBASE_SERVICE_ACCOUNT_JSON` cu **întregul conținut JSON** ca valoare.
+3. Fără acest secret, trimiterea FCM devine no-op și logica webpush rămâne
+   funcțională (nu crapă).
+
+### Canale Android
+
+Aplicația creează la primul enable trei canale:
+- `messages` (high, sunet + vibrație) — mesaje directe
+- `matches` (high, sunet + vibrație) — matches / taps / woofs / likes
+- `system` (default) — anunțuri, rezumate
+
+Payload-ul FCM setează `channel_id` server-side; utilizatorul poate ajusta
+per-canal din setările Android.
