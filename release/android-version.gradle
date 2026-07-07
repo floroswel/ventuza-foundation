@@ -1,0 +1,16 @@
+// Include din android/app/build.gradle astfel:
+//   apply from: "../../release/android-version.gradle"
+//   android { defaultConfig { versionCode project.ext.ventuzaVersionCode
+//                             versionName project.ext.ventuzaVersionName } }
+//
+// Citește release/version.json ca sursă unică pentru versionCode / versionName.
+import groovy.json.JsonSlurper
+
+def versionFile = new File(rootDir, "../release/version.json")
+if (!versionFile.exists()) {
+    throw new GradleException("release/version.json lipsă — rulează `bun run version:bump` sau editează manual.")
+}
+def parsed = new JsonSlurper().parse(versionFile)
+project.ext.ventuzaVersionCode = parsed.versionCode as int
+project.ext.ventuzaVersionName = parsed.versionName as String
+println "[ventuza] versionCode=${project.ext.ventuzaVersionCode} versionName=${project.ext.ventuzaVersionName}"
