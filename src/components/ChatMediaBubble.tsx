@@ -424,10 +424,11 @@ function ImageBubble({ m, mine }: Props) {
       {fullscreen && url && (
         <FullscreenImage
           src={url}
-          viewOnce={!!m.view_once && !mine}
-          onClose={() => setFullscreen(false)}
+          viewOnce={isViewOnceRecipient}
+          onClose={handleFullscreenClose}
         />
       )}
+
     </>
   );
 }
