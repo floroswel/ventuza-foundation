@@ -7,6 +7,7 @@ import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { fetchConversations, type ConversationListItem } from "@/lib/chat";
 import { buildInboxPreview } from "@/lib/notification-privacy";
+import { useNotificationPrefs } from "@/lib/notification-prefs-context";
 import { StoriesStrip } from "@/components/StoriesStrip";
 import { cn } from "@/lib/utils";
 
@@ -20,26 +21,11 @@ function MessagesPage() {
   const navigate = useNavigate();
   const [items, setItems] = useState<ConversationListItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showPreview, setShowPreview] = useState(false);
+  // Sursa unică — se hidratează la login și se actualizează în realtime la
+  // schimbarea toggle-ului din Settings (fără refresh).
+  const { prefs } = useNotificationPrefs();
+  const showPreview = prefs.show_preview;
 
-  useEffect(() => {
-    if (!user) return;
-    let alive = true;
-    supabase
-      .from("profiles")
-      .select("notification_prefs")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (!alive) return;
-        const p = (data as { notification_prefs?: { show_preview?: boolean } } | null)
-          ?.notification_prefs;
-        setShowPreview(p?.show_preview === true);
-      });
-    return () => {
-      alive = false;
-    };
-  }, [user]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
