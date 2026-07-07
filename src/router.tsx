@@ -5,7 +5,7 @@ import { routeTree } from "./routeTree.gen";
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
           This page didn't load

@@ -55,7 +55,7 @@ function QuestsPage() {
   }, [authLoading, user, navigate]);
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col bg-background pb-24">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-24">
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/85 px-5 py-4 backdrop-blur">
         <h1 className="text-xl font-semibold tracking-tight">Provocări</h1>
         <p className="text-xs text-muted-foreground">Câștigă XP, boost-uri și super-taps</p>

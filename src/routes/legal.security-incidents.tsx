@@ -20,7 +20,7 @@ export const Route = createFileRoute("/legal/security-incidents")({
 
 function Page() {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-dvh bg-background">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur">
         <Link
           to="/settings"

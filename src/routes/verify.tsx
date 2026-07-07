@@ -176,7 +176,7 @@ function VerifyPage() {
 
   if (authLoading || loading) {
     return (
-      <main className="grid min-h-screen place-items-center bg-background px-5">
+      <main className="grid min-h-dvh place-items-center bg-background px-5">
         <Loader2 className="size-7 animate-spin text-primary" />
       </main>
     );
@@ -185,7 +185,7 @@ function VerifyPage() {
 
   if (ageStatus === "verified") {
     return (
-      <main className="min-h-screen bg-background px-5 pb-10 pt-[max(env(safe-area-inset-top),1.25rem)] text-foreground">
+      <main className="min-h-dvh bg-background px-5 pb-10 pt-[max(env(safe-area-inset-top),1.25rem)] text-foreground">
         <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center text-center">
           <div className="grid size-20 place-items-center rounded-full border border-primary/30 bg-primary/10">
             <BadgeCheck className="size-10 text-primary" />
@@ -203,7 +203,7 @@ function VerifyPage() {
   }
 
   return (
-    <main className="min-h-screen bg-background pb-10 text-foreground">
+    <main className="min-h-dvh bg-background pb-10 text-foreground">
       <div className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),1.25rem)]">
         <BackLink />
 
