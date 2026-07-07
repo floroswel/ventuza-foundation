@@ -105,8 +105,9 @@ describe("[E2E preview=off] Strat 2: sanitizer forțează body generic", () => {
 describe("[E2E preview=off] Strat 3: toast in-app nu inventează body", () => {
   const src = read("src/lib/notifications-context.tsx");
 
-  it("toast folosește DOAR n.body (deja filtrat de trigger)", () => {
-    expect(src).toMatch(/toast\([^)]*n\.title[^)]*description:\s*n\.body/);
+  it("toast trece n.body prin buildToastBody (fail-closed pe type=message)", () => {
+    expect(src).toMatch(/buildToastBody\s*\(\s*showPreviewRef\.current\s*,\s*n\.body\s*,\s*n\.type\s*\)/);
+    expect(src).not.toMatch(/description:\s*n\.body/);
   });
 
   it("nu concatenează câmpuri sensibile din payload realtime în toast", () => {
