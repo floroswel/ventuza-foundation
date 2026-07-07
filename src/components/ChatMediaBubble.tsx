@@ -274,6 +274,7 @@ function ImageBubble({ m, mine }: Props) {
   const [urlError, setUrlError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [viewedOnce, setViewedOnce] = useState(alreadyBurned);
+  const [retryTick, setRetryTick] = useState(0);
 
   // Sign URL as soon as bubble mounts (needed for both preview and fullscreen).
   useEffect(() => {
@@ -281,19 +282,28 @@ function ImageBubble({ m, mine }: Props) {
     if (alreadyBurned) return;
     let cancelled = false;
     setUrlError(null);
+    setUrl(null);
     signChatMedia(m.media_url)
       .then((u) => {
         if (cancelled) return;
-        if (!u) setUrlError("Nu am putut încărca poza");
+        if (!u) setUrlError("Poza nu mai este disponibilă");
         else setUrl(u);
       })
-      .catch(() => {
-        if (!cancelled) setUrlError("Nu am putut încărca poza");
+      .catch((e: unknown) => {
+        if (!cancelled) {
+          const msg = e instanceof Error ? e.message : "Eroare la încărcare";
+          setUrlError(msg);
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [m.media_url, alreadyBurned]);
+  }, [m.media_url, alreadyBurned, retryTick]);
+
+  function retry() {
+    setUrlError(null);
+    setRetryTick((n) => n + 1);
+  }
 
   function openFullscreen() {
     if (!url) return;
@@ -359,18 +369,30 @@ function ImageBubble({ m, mine }: Props) {
       >
         {url ? (
           <img
+            key={url}
             src={url}
             alt=""
             draggable={false}
             onContextMenu={(e) => e.preventDefault()}
             onClick={openFullscreen}
+            onError={() => {
+              setUrl(null);
+              setUrlError("Poza nu s-a încărcat");
+            }}
             className="block max-h-80 w-full cursor-zoom-in select-none object-cover"
             style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
           />
         ) : urlError ? (
-          <div className="flex h-32 w-56 items-center justify-center px-3 text-center text-xs text-muted-foreground">
-            {urlError}
-          </div>
+          <button
+            type="button"
+            onClick={retry}
+            className="flex h-32 w-56 flex-col items-center justify-center gap-2 px-3 text-center text-xs text-muted-foreground hover:text-foreground"
+          >
+            <span>{urlError}</span>
+            <span className="rounded-full bg-background/50 px-3 py-1 text-[11px] uppercase tracking-wider">
+              Reîncearcă
+            </span>
+          </button>
         ) : (
           <div className="h-48 w-56 animate-pulse bg-background/30" />
         )}
