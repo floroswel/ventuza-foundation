@@ -203,25 +203,37 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     const { sendOne } = await import("./web-push.server");
     const { sendFcmOne, isFcmConfigured } = await import("./fcm-push.server");
 
-    // Respect recipient preferences (master toggle, per-category, quiet hours, discrete mode).
-    const { data: profile } = await supabaseAdmin
+    // Respect recipient preferences (master toggle, per-category, quiet hours,
+    // discrete mode, show_preview). FAIL-CLOSED: dacă nu putem citi
+    // preferințele destinatarului, NU trimitem preview — nici măcar generic
+    // dacă profilul lipsește complet.
+    const { data: profile, error: profileErr } = await supabaseAdmin
       .from("profiles")
       .select("notification_prefs, tz_offset_minutes, discrete_mode")
       .eq("id", data.toUserId)
       .maybeSingle();
 
-    const prefs = (profile?.notification_prefs ?? {}) as Prefs;
+    if (profileErr || !profile) {
+      // Preferințele destinatarului sunt necunoscute → nu riscăm scurgere de
+      // preview. Renunțăm complet la dispatch.
+      return { delivered: 0, skipped: "prefs_unknown" as const };
+    }
+
+    const prefs = (profile.notification_prefs ?? {}) as Prefs & { show_preview?: boolean };
     if (prefs.master_push === false) return { delivered: 0, skipped: "master_off" as const };
     if (data.category && prefs[data.category] === false) {
       return { delivered: 0, skipped: "category_off" as const };
     }
-    if (inQuietWindow(prefs, profile?.tz_offset_minutes ?? 0)) {
+    if (inQuietWindow(prefs, profile.tz_offset_minutes ?? 0)) {
       return { delivered: 0, skipped: "quiet_hours" as const };
     }
 
-    // Discrete mode: strip preview, replace with generic copy.
-    const rawTitle = profile?.discrete_mode ? "Ventuza" : data.title;
-    const rawBody = profile?.discrete_mode ? "Ai o notificare nouă" : data.body;
+    // Preview permis DOAR dacă destinatarul are explicit `show_preview=true`
+    // ȘI NU este în mod discret. Orice altă valoare (undefined, false, mod
+    // discret) → generic. Fail-closed pe preview.
+    const showPreview = prefs.show_preview === true && profile.discrete_mode !== true;
+    const rawTitle = showPreview ? data.title : "Ventuza";
+    const rawBody = showPreview ? data.body : "Ai o notificare nouă";
 
     const { data: subs } = await supabaseAdmin
       .from("push_subscriptions")
