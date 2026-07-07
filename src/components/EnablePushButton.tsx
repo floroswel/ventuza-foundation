@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { savePushSubscription, removePushSubscription, saveFcmSubscription, removeFcmSubscription } from "@/lib/push.functions";
 import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/web-push-config";
-import { initNativePush, teardownNativePush } from "@/lib/native-push";
+import { initNativePush, teardownNativePush, readPersistedFcmToken } from "@/lib/native-push";
 
 async function isNativePlatform(): Promise<boolean> {
   try {
