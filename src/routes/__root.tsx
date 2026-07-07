@@ -35,6 +35,7 @@ import { LanguageToggle } from "@/components/LanguageToggle";
 import { DebugPanel } from "@/components/DebugPanel";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { LocationPermissionPrompt } from "@/components/LocationPermissionPrompt";
+import { NativePushNavigatorMount } from "@/components/NativePushNavigatorMount";
 
 function NotFoundComponent() {
   return (
@@ -238,6 +239,7 @@ function RootComponent() {
             <SessionGuards />
             <CountryRiskGuard />
             <ProximityWatcherMount />
+            <NativePushNavigatorMount />
             <Outlet />
             <OfflineBanner />
             <LocationPermissionPromptMount />
