@@ -99,6 +99,12 @@ html {
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    /* Capacitor edge-to-edge: WebView-ul se întinde sub status/nav bar.
+       Adăugăm padding safe-area la nivel de body ca headerul și conținutul
+       să nu intre sub ceas/baterie/bara gestuală. */
+    padding-top: env(safe-area-inset-top);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
   }
 
   h1, h2, h3, .font-display {
