@@ -357,7 +357,7 @@ export async function fetchDiscover(
     throw error;
   }
   const result = (data ?? []) as DiscoverProfile[];
-  writeDiscoverCache(cacheKey, result);
+  if (offset === 0) writeDiscoverCache(cacheKey, result);
   return result;
 }
 
