@@ -325,10 +325,36 @@ function AuthPage() {
     }
     setOauthBusy(provider);
     try {
-      // Pe Android (Capacitor) Google blochează WebView-urile (404). Folosim
-      // Google Sign-In nativ prin @capgo/capacitor-social-login → id_token →
-      // supabase.auth.signInWithIdToken. Web-ul rămâne pe fluxul managed.
+      // Detectăm platforma: pe nativ Android (Capacitor WebView) Google
+      // returnează 404 pentru fluxul OAuth în WebView, deci folosim
+      // Google Sign-In nativ (@capgo/capacitor-social-login) → id_token →
+      // supabase.auth.signInWithIdToken. Pe browser web folosim fluxul
+      // managed lovable.auth.signInWithOAuth.
+      const onNative = await isNativePlatform();
+
+      if (provider === "google" && onNative) {
+        if (!hasNativeGoogleConfig()) {
+          toast.error(
+            "Google Sign-In nativ nu este configurat (lipsește VITE_GOOGLE_WEB_CLIENT_ID). Folosește email/parolă pe Android.",
+          );
+          return;
+        }
+        const native = await nativeGoogleSignIn();
+        if (native.ok) {
+          const { data } = await supabase.auth.getUser();
+          if (data.user) {
+            await persistPendingBirthdate(data.user.id);
+            await routeAfterAuth(data.user.id, navigate, search.redirect);
+          }
+          return;
+        }
+        if (native.code === "cancelled") return;
+        toast.error(native.message ?? t("auth.errors.oauthFailed", { provider }));
+        return;
+      }
+
       if (provider === "google" && (await nativeGoogleSupported())) {
+        // Safety net (nu ar trebui să fie atins — cazul de mai sus îl acoperă).
         const native = await nativeGoogleSignIn();
         if (native.ok) {
           const { data } = await supabase.auth.getUser();
@@ -343,9 +369,9 @@ function AuthPage() {
           toast.error(native.message ?? t("auth.errors.oauthFailed", { provider }));
           return;
         }
-        // "unsupported" → cădem pe fluxul web de mai jos.
       }
 
+      // Web / browser: fluxul managed OAuth (popup + web_message → sesiune).
       const result = await lovable.auth.signInWithOAuth(provider, {
         redirect_uri: window.location.origin + "/auth",
       });
