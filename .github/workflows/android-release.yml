@@ -87,6 +87,72 @@ jobs:
       - name: Sync Capacitor
         run: bunx cap sync android
 
+      - name: Injectează google-services.json (FCM)
+        env:
+          GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
+        run: |
+          if [ -z "$GOOGLE_SERVICES_B64" ]; then
+            echo "::warning::GOOGLE_SERVICES_JSON_BASE64 lipsește — push nativ FCM NU va funcționa pe device. Adaugă secretul în GitHub → Settings → Secrets → Actions."
+          else
+            echo "$GOOGLE_SERVICES_B64" | base64 -d > android/app/google-services.json
+            test -s android/app/google-services.json
+            echo "✓ google-services.json scris ($(stat -c%s android/app/google-services.json) bytes)"
+          fi
+
+      - name: Wire Firebase (google-services plugin + firebase-messaging)
+        run: |
+          ROOT_GRADLE=android/build.gradle
+          APP_GRADLE=android/app/build.gradle
+          # Plugin la nivel de root (dacă nu există deja)
+          if ! grep -q "com.google.gms:google-services" "$ROOT_GRADLE"; then
+            python3 <<'PY'
+          p = "android/build.gradle"
+          s = open(p).read()
+          if "dependencies {" in s:
+              s = s.replace(
+                  "dependencies {",
+                  "dependencies {\n        classpath 'com.google.gms:google-services:4.4.2'",
+                  1,
+              )
+          open(p, 'w').write(s)
+          PY
+            echo "✓ google-services classpath adăugat în android/build.gradle"
+          fi
+          # Apply plugin + dependință messaging la nivel app
+          if ! grep -q "com.google.gms.google-services" "$APP_GRADLE"; then
+            echo "" >> "$APP_GRADLE"
+            echo "apply plugin: 'com.google.gms.google-services'" >> "$APP_GRADLE"
+            echo "✓ google-services plugin aplicat în app/build.gradle"
+          fi
+          if ! grep -q "firebase-messaging" "$APP_GRADLE"; then
+            python3 <<'PY'
+          p = "android/app/build.gradle"
+          s = open(p).read()
+          if "dependencies {" in s:
+              s = s.replace(
+                  "dependencies {",
+                  "dependencies {\n    implementation platform('com.google.firebase:firebase-bom:33.5.1')\n    implementation 'com.google.firebase:firebase-messaging'",
+                  1,
+              )
+          open(p, 'w').write(s)
+          PY
+            echo "✓ firebase-messaging + BoM adăugate în app/build.gradle"
+          fi
+
+      - name: Hardening Manifest (allowBackup=false, dataExtraction=false)
+        run: |
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          # Dating app — nu permite backup automat al datelor sensibile
+          if grep -q 'android:allowBackup="true"' "$MANIFEST"; then
+            sed -i 's/android:allowBackup="true"/android:allowBackup="false"/' "$MANIFEST"
+            echo "✓ allowBackup=false"
+          fi
+          if ! grep -q 'android:dataExtractionRules' "$MANIFEST" && ! grep -q 'android:allowBackup' "$MANIFEST"; then
+            sed -i 's|<application |<application android:allowBackup="false" |' "$MANIFEST"
+            echo "✓ allowBackup=false injectat"
+          fi
+
+
       - name: Derive versionCode & versionName din tag
         id: version
         run: |
