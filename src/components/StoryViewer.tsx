@@ -131,21 +131,17 @@ export function StoryViewer({
           ))}
         </div>
         <div className="mt-2 flex items-center justify-between text-white">
-          {isMine || !group.profile_slug ? (
+          {isMine ? (
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium">
-                {isMine ? "Tu" : (group.display_name ?? "—")}
-              </span>
+              <span className="text-sm font-medium">Tu</span>
               <span className="text-[10px] text-white/60">
                 {Math.round((Date.now() - new Date(story.created_at).getTime()) / 60000)}m
               </span>
-              {isMine && (
-                <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px]">
-                  👁 {story.view_count}
-                </span>
-              )}
+              <span className="rounded-full bg-white/15 px-2 py-0.5 text-[10px]">
+                👁 {story.view_count}
+              </span>
             </div>
-          ) : (
+          ) : group.profile_slug ? (
             <Link
               to="/u/$slug"
               params={{ slug: group.profile_slug }}
@@ -159,7 +155,42 @@ export function StoryViewer({
               </span>
               <span className="text-[10px] uppercase tracking-wider text-white/80">Profil ›</span>
             </Link>
+          ) : (
+            <button
+              type="button"
+              onClick={async (e) => {
+                e.stopPropagation();
+                setPaused(true);
+                try {
+                  const { data, error } = await supabase
+                    .from("profiles")
+                    .select("profile_slug")
+                    .eq("id", group.user_id)
+                    .maybeSingle();
+                  const slug = (data as { profile_slug: string | null } | null)?.profile_slug;
+                  if (error || !slug) {
+                    toast.error("Profilul nu poate fi deschis");
+                    setPaused(false);
+                    return;
+                  }
+                  onClose();
+                  await navigate({ to: "/u/$slug", params: { slug } });
+                } catch {
+                  toast.error("Profilul nu poate fi deschis");
+                  setPaused(false);
+                }
+              }}
+              className="flex items-center gap-2 rounded-full bg-white/5 pr-2 text-left hover:bg-white/15"
+              aria-label={`Profilul ${group.display_name ?? ""}`}
+            >
+              <span className="text-sm font-medium">{group.display_name ?? "—"}</span>
+              <span className="text-[10px] text-white/60">
+                {Math.round((Date.now() - new Date(story.created_at).getTime()) / 60000)}m
+              </span>
+              <span className="text-[10px] uppercase tracking-wider text-white/80">Profil ›</span>
+            </button>
           )}
+
           <div className="flex items-center gap-2">
             {isMine && (
               <button
