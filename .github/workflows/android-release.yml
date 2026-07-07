@@ -83,6 +83,28 @@ jobs:
           VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
         run: bun run build:mobile
 
+      - name: Verifică bundle-ul web (dist/client/index.html)
+        run: |
+          INDEX=dist/client/index.html
+          if [ ! -f "$INDEX" ]; then
+            echo "::error::$INDEX lipsește — build:mobile nu a produs bundle-ul. Capacitor ar împacheta un webDir gol."
+            echo "Conținut dist/ (dacă există):"
+            ls -la dist/ 2>/dev/null || echo "  (dist/ nu există)"
+            ls -la dist/client/ 2>/dev/null || echo "  (dist/client/ nu există)"
+            exit 1
+          fi
+          SIZE=$(stat -c%s "$INDEX")
+          if [ "$SIZE" -lt 200 ]; then
+            echo "::error::$INDEX este suspect de mic ($SIZE bytes) — probabil build incomplet."
+            exit 1
+          fi
+          if ! grep -q "<div id=\"root\"" "$INDEX" && ! grep -qi "<body" "$INDEX"; then
+            echo "::error::$INDEX nu conține markup HTML așteptat (root/body). Abort înainte de cap sync."
+            head -c 500 "$INDEX"
+            exit 1
+          fi
+          echo "✓ $INDEX OK ($SIZE bytes)"
+
       - name: Add Android platform (dacă lipsește)
         run: |
           if [ ! -d android ]; then
