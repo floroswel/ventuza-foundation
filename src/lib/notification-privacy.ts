@@ -128,44 +128,115 @@ const ALLOWED_KEYS = new Set([
   "created_at", "sent_at", "priority",
 ]);
 
-const PII_PATTERNS: Array<[RegExp, string]> = [
+const PII_PATTERNS: Array<[RegExp, string, PiiKind]> = [
   // email
-  [/[\w.+-]+@[\w-]+\.[\w.-]+/g, "[email]"],
+  [/[\w.+-]+@[\w-]+\.[\w.-]+/g, "[email]", "email"],
   // telefon E.164 sau internațional
-  [/\+?\d[\d\s().-]{7,}\d/g, "[phone]"],
+  [/\+?\d[\d\s().-]{7,}\d/g, "[phone]", "phone"],
   // IBAN (RO + generic)
-  [/\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/g, "[iban]"],
+  [/\b[A-Z]{2}\d{2}[A-Z0-9]{10,30}\b/g, "[iban]", "iban"],
   // CNP RO (13 cifre)
-  [/\b[1-9]\d{12}\b/g, "[cnp]"],
+  [/\b[1-9]\d{12}\b/g, "[cnp]", "cnp"],
   // coordonate lat,lng
-  [/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g, "[coords]"],
+  [/-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/g, "[coords]", "coords"],
 ];
+
+export type PiiKind = "email" | "phone" | "iban" | "cnp" | "coords";
+
+/**
+ * Structured redaction report produced alongside every sanitize call.
+ *
+ * Rule: NEVER contains the removed data — only the shape of what was scrubbed
+ * (JSON path + kind of leak). Safe to log to console or an audit sink.
+ */
+export interface SanitizeRedactionReport {
+  /** JSON-path pointers (RFC-6901-ish) of forbidden keys removed from `data`. */
+  removedKeys: string[];
+  /** Where PII patterns were matched and scrubbed inside surviving strings. */
+  scrubbedStrings: Array<{ path: string; kinds: PiiKind[]; count: number }>;
+  /** `true` when body was forced to the generic copy because category=messages. */
+  bodyForcedGeneric: boolean;
+  /** `true` when the incoming `url` had its query string dropped. */
+  urlQueryDropped: boolean;
+  /** `true` when title/body/tag were clamped to the max length. */
+  truncated: { title: boolean; body: boolean; tag: boolean };
+  /** Unknown top-level keys the sanitizer refused to propagate. */
+  droppedTopLevelKeys: string[];
+}
+
+function emptyReport(): SanitizeRedactionReport {
+  return {
+    removedKeys: [],
+    scrubbedStrings: [],
+    bodyForcedGeneric: false,
+    urlQueryDropped: false,
+    truncated: { title: false, body: false, tag: false },
+    droppedTopLevelKeys: [],
+  };
+}
 
 function isForbiddenKey(key: string): boolean {
   if (ALLOWED_KEYS.has(key)) return false;
   return FORBIDDEN_KEY_PATTERNS.some((rx) => rx.test(key));
 }
 
+/** Scrub PII from a string, recording which kinds matched (not the values). */
+function scrubStringTracked(
+  s: string,
+  path: string,
+  report: SanitizeRedactionReport,
+): string {
+  let out = s;
+  const kinds: PiiKind[] = [];
+  let count = 0;
+  for (const [rx, repl, kind] of PII_PATTERNS) {
+    // Reset lastIndex because regexes are shared /g instances.
+    rx.lastIndex = 0;
+    const matches = out.match(rx);
+    if (matches && matches.length > 0) {
+      count += matches.length;
+      if (!kinds.includes(kind)) kinds.push(kind);
+      out = out.replace(rx, repl);
+    }
+  }
+  if (kinds.length > 0) {
+    report.scrubbedStrings.push({ path, kinds, count });
+  }
+  return out;
+}
+
+/** Backwards-compat wrapper used by internal callers that don't need tracking. */
 function scrubString(s: string): string {
   let out = s;
   for (const [rx, repl] of PII_PATTERNS) out = out.replace(rx, repl);
   return out;
 }
 
-function deepStrip(value: unknown): unknown {
+function deepStripTracked(
+  value: unknown,
+  path: string,
+  report: SanitizeRedactionReport,
+): unknown {
   if (value == null) return value;
-  if (typeof value === "string") return scrubString(value);
-  if (Array.isArray(value)) return value.map(deepStrip);
+  if (typeof value === "string") return scrubStringTracked(value, path, report);
+  if (Array.isArray(value)) {
+    return value.map((v, i) => deepStripTracked(v, `${path}/${i}`, report));
+  }
   if (typeof value === "object") {
     const out: Record<string, unknown> = {};
     for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
-      if (isForbiddenKey(k)) continue; // ELIMINĂ complet
-      out[k] = deepStrip(v);
+      const childPath = `${path}/${k}`;
+      if (isForbiddenKey(k)) {
+        report.removedKeys.push(childPath);
+        continue; // ELIMINĂ complet
+      }
+      out[k] = deepStripTracked(v, childPath, report);
     }
     return out;
   }
   return value;
 }
+
 
 export interface NotificationPayloadIn {
   title?: string | null;
