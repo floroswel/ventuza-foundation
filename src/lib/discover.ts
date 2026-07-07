@@ -270,10 +270,12 @@ export function clearDiscoverCache() {
   }
 }
 
+export const DISCOVER_PAGE_SIZE = 50;
+
 export async function fetchDiscover(
   filters: DiscoverFilters,
   orderMode: "score" | "distance",
-  options?: { forceRefresh?: boolean },
+  options?: { forceRefresh?: boolean; offset?: number; limit?: number },
 ): Promise<DiscoverProfile[]> {
   const arr = (v: string[]) => (v.length ? v : null);
   const { data: u } = await supabase.auth.getUser();
@@ -284,10 +286,17 @@ export async function fetchDiscover(
     throw e;
   }
 
+  const offset = Math.max(0, options?.offset ?? 0);
+  const limit = Math.min(DISCOVER_PAGE_SIZE, Math.max(1, options?.limit ?? DISCOVER_PAGE_SIZE));
+
+  // Cache-ul păstrează DOAR prima pagină (offset=0). Paginile ulterioare merg
+  // direct la RPC (sunt cerute doar când userul scrollează, deci sunt puține).
   const cacheKey = discoverCacheKey(viewerId, filters, orderMode);
-  const cached = readDiscoverCache(cacheKey);
-  if (!options?.forceRefresh && cached && Date.now() - cached.at < DISCOVER_CACHE_TTL_MS) {
-    return cached.data;
+  if (offset === 0 && !options?.forceRefresh) {
+    const cached = readDiscoverCache(cacheKey);
+    if (cached && Date.now() - cached.at < DISCOVER_CACHE_TTL_MS) {
+      return cached.data;
+    }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -299,8 +308,8 @@ export async function fetchDiscover(
     _genders: arr(filters.gender),
     _tribes: arr(filters.tribes),
     _looking_for: arr(filters.lookingFor),
-    _limit: 50,
-    _offset: 0,
+    _limit: limit,
+    _offset: offset,
     _looking_now_only: filters.lookingNowOnly,
     _sort: orderMode === "distance" ? "distance" : "smart",
     _tab: "all",
@@ -313,6 +322,7 @@ export async function fetchDiscover(
     _with_photo_only: filters.withPhotoOnly,
     _verified_only: filters.verifiedOnly,
   });
+
   if (error) {
     const msg = (error.message ?? "").toLowerCase();
     const make = (code: string, message: string) => {
@@ -322,7 +332,8 @@ export async function fetchDiscover(
     };
     if (msg.includes("discover_rate_limited")) {
       // Dacă avem cache (chiar expirat), îl returnăm în loc de ecran gol.
-      if (cached) return cached.data;
+      const stale = offset === 0 ? readDiscoverCache(cacheKey) : null;
+      if (stale) return stale.data;
       throw make(
         "discover_rate_limited",
         "Ai răsfoit prea repede (max 500 profiluri/oră). Reia explorarea peste aproximativ o oră.",
@@ -346,7 +357,7 @@ export async function fetchDiscover(
     throw error;
   }
   const result = (data ?? []) as DiscoverProfile[];
-  writeDiscoverCache(cacheKey, result);
+  if (offset === 0) writeDiscoverCache(cacheKey, result);
   return result;
 }
 
