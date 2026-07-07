@@ -116,6 +116,37 @@ jobs:
           test -s android/app/release.keystore
           echo "Keystore size: $(stat -c%s android/app/release.keystore) bytes"
 
+      - name: Verifică parolele keystore (fail-fast)
+        env:
+          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -e
+          echo "→ Test 1: parola keystore-ului (ANDROID_KEYSTORE_PASSWORD)"
+          if ! keytool -list -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" > /tmp/kt.out 2>&1; then
+            echo "::error::ANDROID_KEYSTORE_PASSWORD este GREȘITĂ pentru keystore-ul din ANDROID_KEYSTORE_BASE64."
+            cat /tmp/kt.out
+            exit 1
+          fi
+          echo "→ Test 2: aliasul (ANDROID_KEY_ALIAS='$KEY_ALIAS') există în keystore"
+          if ! keytool -list -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" > /tmp/kt.out 2>&1; then
+            echo "::error::Aliasul '$KEY_ALIAS' NU există în keystore. Aliasuri disponibile:"
+            keytool -list -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" | grep -i "alias name" || true
+            exit 1
+          fi
+          echo "→ Test 3: parola cheii (ANDROID_KEY_PASSWORD) descifrează cheia privată"
+          if ! keytool -keypasswd -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" \
+                -alias "$KEY_ALIAS" -keypass "$KEY_PASSWORD" -new "$KEY_PASSWORD" > /tmp/kt.out 2>&1; then
+            echo "::error::ANDROID_KEY_PASSWORD este GREȘITĂ pentru aliasul '$KEY_ALIAS'. (Given final block not properly padded)"
+            cat /tmp/kt.out
+            echo ""
+            echo "Fix: în GitHub → Settings → Secrets → Actions, actualizează ANDROID_KEY_PASSWORD"
+            echo "cu parola reală a cheii din keystore (nu parola keystore-ului — sunt separate)."
+            exit 1
+          fi
+          echo "✓ Toate cele 3 secrete potrivesc keystore-ul."
+
       - name: Scrie keystore.properties
         env:
           STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
