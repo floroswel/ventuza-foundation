@@ -5908,6 +5908,8 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      purge_admin_audit_log: { Args: never; Returns: number }
+      purge_notification_dispatch_log: { Args: never; Returns: number }
       purge_scheduled_deletions: { Args: never; Returns: number }
       read_email_batch: {
         Args: { batch_size: number; queue_name: string; vt: number }
@@ -5950,6 +5952,7 @@ export type Database = {
         Args: { _action: string; _max: number; _window_seconds: number }
         Returns: undefined
       }
+      run_audit_retention_purge: { Args: never; Returns: Json }
       safe_message_row: {
         Args: { _message_id: string }
         Returns: {
