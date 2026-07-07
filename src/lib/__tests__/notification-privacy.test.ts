@@ -44,12 +44,16 @@ describe("buildMessageNotificationBody — push payload", () => {
 });
 
 describe("buildInboxPreview — listă conversații", () => {
-  it("are mesaje → generic, indiferent de show_preview sau preview-ul real", () => {
-    expect(buildInboxPreview(false, "📷 Photo caption", true)).toBe(GENERIC_MESSAGE_BODY);
-    expect(buildInboxPreview(true, "salut", true)).toBe(GENERIC_MESSAGE_BODY);
+  it("show_preview=false + are mesaje → copy explicit Previzualizare dezactivata", () => {
+    expect(buildInboxPreview(false, "📷 Photo caption", true)).toBe("Previzualizare dezactivată");
   });
 
-  it("fără mesaje → fallback neutru", () => {
+  it("show_preview=true/undefined + are mesaje → generic Ai un mesaj nou", () => {
+    expect(buildInboxPreview(true, "salut", true)).toBe(GENERIC_MESSAGE_BODY);
+    expect(buildInboxPreview(undefined, "salut", true)).toBe(GENERIC_MESSAGE_BODY);
+  });
+
+  it("fără mesaje → fallback neutru, indiferent de show_preview", () => {
     expect(buildInboxPreview(false, null, false)).toBe(GENERIC_INBOX_FALLBACK);
     expect(buildInboxPreview(true, "salut", false)).toBe(GENERIC_INBOX_FALLBACK);
   });
@@ -65,10 +69,12 @@ describe("Invariante de sursă — nicio suprafață nu scurge conținut", () =>
     expect(src).not.toMatch(/body:\s*payload\.body/);
   });
 
-  it("notifications-context nu suprascrie n.body cu conținutul din payload realtime", () => {
+  it("notifications-context trece toast body prin buildToastBody, nu n.body direct", () => {
     const src = read("lib/notifications-context.tsx");
-    // Foloseste doar n.body (deja filtrat de trigger)
-    expect(src).toMatch(/description:\s*n\.body/);
+    // Trece prin helper-ul central (fail-closed pentru type=message)
+    expect(src).toMatch(/buildToastBody\s*\(/);
+    // NU are voie să folosească n.body brut ca description
+    expect(src).not.toMatch(/description:\s*n\.body/);
     // Nu concatenează media_type / caption / body raw din messages în toast
     expect(src).not.toMatch(/media_type|media_url|caption/);
   });
