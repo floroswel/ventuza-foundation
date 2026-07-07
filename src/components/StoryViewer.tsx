@@ -23,6 +23,8 @@ export function StoryViewer({
   onChanged?: () => void;
 }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [gi, setGi] = useState(startIndex);
   const [si, setSi] = useState(0);
   const [progress, setProgress] = useState(0);
