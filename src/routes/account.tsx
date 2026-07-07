@@ -191,17 +191,46 @@ function AccountPage() {
                 <p className="text-sm font-semibold text-amber-100">Verificare în curs</p>
                 <p className="mt-1 text-xs leading-relaxed text-amber-100/80">
                   Selfie-ul tău e procesat de Didit (procesator extern UE) pentru estimare
-                  vârstă. De obicei durează câteva secunde, ocazional câteva minute. Te
-                  anunțăm imediat ce decizia e gata.
+                  vârstă. De obicei durează câteva secunde, ocazional câteva minute.
                 </p>
-                <ol className="mt-3 space-y-1.5 text-[11px] text-amber-100/70">
-                  <li>1. Selfie live trimis tranzitoriu la Didit</li>
-                  <li>2. Age estimation → pass/fail (imaginea e ștearsă imediat)</li>
-                  <li>3. Activare acces la Discover și mesagerie</li>
-                </ol>
-                <p className="mt-3 text-[11px] text-amber-100/60">
-                  Îți trimitem notificare când e gata. Nu e nevoie să reîncerci.
+                <p className="mt-2 text-[11px] leading-relaxed text-amber-100/70">
+                  Dacă nu ai apucat să finalizezi selfie-ul la Didit, sesiunea rămâne
+                  neterminată. Poți relua verificarea:
                 </p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      try {
+                        sessionStorage.setItem("force_age_gate", "1");
+                      } catch {}
+                      navigate({ to: "/verify" });
+                    }}
+                    className="rounded-full bg-amber-500 px-4 py-2 text-xs font-semibold text-black hover:bg-amber-400"
+                  >
+                    Reia verificarea
+                  </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      if (!user) return;
+                      if (!confirm("Anulezi sesiunea de verificare curentă și o iei de la capăt?")) return;
+                      const { error } = await supabase
+                        .from("profiles")
+                        .update({ age_status: "unverified" })
+                        .eq("id", user.id);
+                      if (error) {
+                        toast.error(error.message);
+                      } else {
+                        toast.success("Sesiune anulată. Poți relua verificarea.");
+                        setProfile((p) => (p ? { ...p, age_status: "unverified" } : p));
+                      }
+                    }}
+                    className="rounded-full border border-amber-500/40 px-4 py-2 text-xs font-medium text-amber-100 hover:bg-amber-500/10"
+                  >
+                    Anulează sesiunea
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -265,7 +294,7 @@ function AccountPage() {
           <MenuRow to="/favorites" icon={<Album className="size-5" />} label="Albume & favorite" />
           <MenuRow to="/safety" icon={<ShieldCheck className="size-5" />} label="Siguranță" />
           <MenuRow to="/quests" icon={<Flame className="size-5" />} label="Quests & recompense" />
-          <MenuRow to="/discover" icon={<Users className="size-5" />} label="Vezi profile demo" />
+          
         </section>
 
         {/* Support — direct chat OR email */}
