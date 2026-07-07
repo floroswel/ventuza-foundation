@@ -42,32 +42,10 @@ export const Route = createFileRoute("/settings")({
   component: SettingsPage,
 });
 
-type Prefs = {
-  matches: boolean;
-  messages: boolean;
-  likes: boolean;
-  taps: boolean;
-  events: boolean;
-  marketing: boolean;
-  master_push: boolean;
-  quiet_enabled: boolean;
-  quiet_start: number;
-  quiet_end: number;
-  show_preview: boolean;
-};
-const DEFAULT_PREFS: Prefs = {
-  matches: true,
-  messages: true,
-  likes: true,
-  taps: true,
-  events: true,
-  marketing: false,
-  master_push: true,
-  quiet_enabled: false,
-  quiet_start: 23,
-  quiet_end: 7,
-  show_preview: false,
-};
+// Structura preferințelor este definită canonic în notification-prefs-context.
+type Prefs = NotificationPrefs;
+const DEFAULT_PREFS: Prefs = DEFAULT_NOTIFICATION_PREFS;
+
 
 function SettingsPage() {
   const { user, loading, signOut } = useAuth();
