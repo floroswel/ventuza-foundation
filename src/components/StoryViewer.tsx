@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Trash2, AlertTriangle, RotateCcw } from "lucide-react";
 
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { deleteStory, markStorySeen, signStoryMedia, type StoryGroup } from "@/lib/stories";
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+
 
 const STORY_DURATION_MS = 5000;
 
