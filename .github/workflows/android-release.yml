@@ -74,6 +74,28 @@ jobs:
       - name: Install web deps
         run: bun install
 
+      - name: Validează secretele obligatorii pentru release Android
+        env:
+          VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID }}
+        run: |
+          MISSING=0
+          if [ -z "$VITE_GOOGLE_WEB_CLIENT_ID" ]; then
+            echo "::error::Secretul VITE_GOOGLE_WEB_CLIENT_ID lipsește. Fără el, Google Sign-In nativ (Capacitor → supabase.auth.signInWithIdToken) NU funcționează pe Android. Adaugă în GitHub → Settings → Secrets and variables → Actions valoarea OAuth Client ID de tip 'Web application' din Google Cloud Console (format: xxxxx.apps.googleusercontent.com)."
+            MISSING=1
+          else
+            case "$VITE_GOOGLE_WEB_CLIENT_ID" in
+              *.apps.googleusercontent.com) ;;
+              *)
+                echo "::error::VITE_GOOGLE_WEB_CLIENT_ID='$VITE_GOOGLE_WEB_CLIENT_ID' nu are formatul așteptat (*.apps.googleusercontent.com). Verifică că ai copiat Client ID-ul de tip 'Web application', nu 'Android' sau alt tip."
+                MISSING=1
+                ;;
+            esac
+          fi
+          if [ "$MISSING" != "0" ]; then
+            exit 1
+          fi
+          echo "✓ VITE_GOOGLE_WEB_CLIENT_ID prezent și cu format valid."
+
       - name: Build web bundle
         env:
           # Publishable keys (safe în bundle). Fallback la valorile din .env dacă lipsesc secretele repo.
@@ -87,6 +109,7 @@ jobs:
           # Google din Android nativ nu funcționează (cade back la web OAuth).
           VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID }}
         run: bun run build:mobile
+
 
       - name: Verifică bundle-ul web (dist/client/index.html)
         run: |
