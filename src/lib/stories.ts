@@ -164,15 +164,28 @@ export async function fetchActiveStoryGroups(): Promise<StoryGroup[]> {
 }
 
 export async function signStoryMedia(paths: string[]): Promise<Record<string, string>> {
+  const { reportSignedUrlError, reportSignedUrlMissing } = await import("@/lib/media-telemetry");
   const out: Record<string, string> = {};
   await Promise.all(
     paths.map(async (p) => {
-      const { data } = await supabase.storage.from(STORIES_BUCKET).createSignedUrl(p, 3600);
-      if (data?.signedUrl) out[p] = data.signedUrl;
+      try {
+        const { data, error } = await supabase.storage
+          .from(STORIES_BUCKET)
+          .createSignedUrl(p, 3600);
+        if (error) {
+          reportSignedUrlError({ bucket: "stories", path: p, context: "story-viewer", error });
+          return;
+        }
+        if (data?.signedUrl) out[p] = data.signedUrl;
+        else reportSignedUrlMissing({ bucket: "stories", path: p, context: "story-viewer" });
+      } catch (error) {
+        reportSignedUrlError({ bucket: "stories", path: p, context: "story-viewer", error });
+      }
     }),
   );
   return out;
 }
+
 
 export async function markStorySeen(storyId: string) {
   const { data: u } = await supabase.auth.getUser();
