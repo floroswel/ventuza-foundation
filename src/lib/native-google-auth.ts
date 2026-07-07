@@ -13,10 +13,19 @@ import { supabase } from "@/integrations/supabase/client";
 
 let initialized = false;
 
-async function isNative(): Promise<boolean> {
+export async function isNativeAndroid(): Promise<boolean> {
   try {
     const { Capacitor } = await import("@capacitor/core");
     return Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
+  } catch {
+    return false;
+  }
+}
+
+export async function isNativePlatform(): Promise<boolean> {
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    return Capacitor.isNativePlatform();
   } catch {
     return false;
   }
@@ -30,10 +39,15 @@ function webClientId(): string | null {
   return id.trim() ? id.trim() : null;
 }
 
+export function hasNativeGoogleConfig(): boolean {
+  return webClientId() !== null;
+}
+
 export function nativeGoogleSupported(): Promise<boolean> {
   if (!webClientId()) return Promise.resolve(false);
-  return isNative();
+  return isNativeAndroid();
 }
+
 
 async function ensureInit(clientId: string): Promise<void> {
   if (initialized) return;
@@ -55,7 +69,7 @@ export type NativeGoogleResult =
 export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
   const clientId = webClientId();
   if (!clientId) return { ok: false, code: "unsupported", message: "missing VITE_GOOGLE_WEB_CLIENT_ID" };
-  if (!(await isNative())) return { ok: false, code: "unsupported" };
+  if (!(await isNativeAndroid())) return { ok: false, code: "unsupported" };
 
   try {
     await ensureInit(clientId);
