@@ -375,6 +375,14 @@ function DiscoverPage() {
     };
   }, [user, load, loadError?.code]);
 
+  // Re-fetch când watcher-ul de locație raportează mișcare semnificativă.
+  useEffect(() => {
+    if (!user) return;
+    const onMoved = () => void load();
+    window.addEventListener("ventuza:location-updated", onMoved);
+    return () => window.removeEventListener("ventuza:location-updated", onMoved);
+  }, [user, load]);
+
   // Realtime: new match notifications (when someone else likes me back)
   useEffect(() => {
     if (!user) return;
