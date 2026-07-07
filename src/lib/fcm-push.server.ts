@@ -80,9 +80,10 @@ async function signJwt(account: ServiceAccount): Promise<string> {
     exp: iat + 3600,
   };
   const signingInput = `${b64urlEncode(JSON.stringify(header))}.${b64urlEncode(JSON.stringify(claim))}`;
+  const pk = pemToPkcs8(account.private_key);
   const key = await crypto.subtle.importKey(
     "pkcs8",
-    pemToPkcs8(account.private_key),
+    pk.buffer.slice(pk.byteOffset, pk.byteOffset + pk.byteLength) as ArrayBuffer,
     { name: "RSASSA-PKCS1-v1_5", hash: "SHA-256" },
     false,
     ["sign"],
