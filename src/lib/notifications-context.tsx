@@ -41,6 +41,12 @@ const NotificationsContext = createContext<Ctx | null>(null);
 
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth();
+  const { prefs } = useNotificationPrefs();
+  const showPreview = prefs.show_preview;
+  const showPreviewRef = useRef(showPreview);
+  useEffect(() => {
+    showPreviewRef.current = showPreview;
+  }, [showPreview]);
   const [notifications, setNotifications] = useState<NotificationRow[]>([]);
   const [unread, setUnread] = useState(0);
   const [loading, setLoading] = useState(true);
