@@ -419,8 +419,11 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
       }, 2200);
     };
     // Skip panic pe blur/pointerleave când suntem în iframe (preview Lovable,
-    // embed etc.) — orice interacțiune cu chrome-ul containerului declanșează
-    // blur și făcea ecranul negru la fiecare click.
+    // embed etc.) SAU pe device-uri touch/native: WebView-ul de Android emite
+    // `blur` la fiecare tap pe zone non-focusable, ceea ce declanșa overlay-ul
+    // negru la fiecare atingere („ecran devine negru la press, revine la
+    // release"). Pe nativ avem oricum FLAG_SECURE/preventScreenshots — overlay-ul
+    // web ar fi redundant și rupe UX-ul.
     const inIframe = (() => {
       try {
         return window.self !== window.top;
@@ -428,10 +431,28 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
         return true;
       }
     })();
+    const isTouchDevice = (() => {
+      try {
+        return (
+          window.matchMedia?.("(pointer: coarse)").matches === true ||
+          (navigator.maxTouchPoints ?? 0) > 0
+        );
+      } catch {
+        return false;
+      }
+    })();
+    let isNativePlatform = false;
+    try {
+      const { Capacitor } = await import("@capacitor/core");
+      isNativePlatform = Capacitor.isNativePlatform();
+    } catch {
+      /* web-only */
+    }
+    const skipBlurMask = inIframe || isTouchDevice || isNativePlatform;
 
     const onVis = () => applyDefocus(document.visibilityState === "hidden");
     const onBlur = () => {
-      if (inIframe) return;
+      if (skipBlurMask) return;
       applyDefocus(true);
     };
     const onFocus = () => applyDefocus(printOverride ? true : false);
