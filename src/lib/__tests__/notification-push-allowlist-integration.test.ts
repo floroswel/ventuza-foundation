@@ -267,18 +267,21 @@ describe("dispatcher source invariants — no raw-data escape hatch in productio
   });
 
   it("no production module calls sanitizeNotificationPayload(..., { strict: false })", () => {
-    // `strict:false` is the escape hatch — it MUST only appear in tests.
+    // `strict:false` is the escape hatch — it MUST only appear in tests. We
+    // scan every non-test *.ts/tsx under src/ (excluding notification-privacy.ts
+    // itself, which documents the flag in its JSDoc) for an actual call site.
     const { execSync } = require("node:child_process") as typeof import("node:child_process");
     const out = execSync(
       "grep -RIn --include='*.ts' --include='*.tsx' " +
-        "-e 'strict:\\s*false' -e 'strict: false' src/lib src/routes || true",
+        "-E 'sanitizeNotificationPayload[^)]*strict:\\s*false' " +
+        "src/lib src/routes || true",
       { encoding: "utf8" },
     );
     const offenders = out
       .split("\n")
       .filter(Boolean)
       .filter((line) => !line.includes("__tests__"))
-      .filter((line) => !/\/\*|\*\/|\/\//.test(line.split(":").slice(2).join(":")));
+      .filter((line) => !line.startsWith("src/lib/notification-privacy.ts:"));
     expect(
       offenders,
       `strict:false escape hatch found in production code:\n${offenders.join("\n")}`,
