@@ -189,6 +189,97 @@ export interface SanitizedNotificationPayload {
 }
 
 /**
+ * ============================================================
+ * COMPILE-TIME GUARD: câmpuri interzise în payload-uri notificări
+ * ============================================================
+ *
+ * TypeScript-ul refuză, la compilare, orice payload sau `data` care
+ * conține unul din câmpurile care ar putea scurge conținutul mesajului
+ * (text, tip media, URL media, caption). Regula e independentă de
+ * `sanitizeNotificationPayload` (care e ultimul strat, la runtime): tipurile
+ * blochează scurgerile ÎNAINTE ca un dev să-și dea seama că trebuia să
+ * apeleze sanitizer-ul.
+ *
+ * Cum se folosește:
+ *
+ *   import { defineNotificationPayload } from "@/lib/notification-privacy";
+ *
+ *   const p = defineNotificationPayload({
+ *     title: "Andrei",
+ *     body: "Ai un mesaj nou",
+ *     data: { conversation_id: "abc" },   // OK
+ *   });
+ *
+ *   defineNotificationPayload({
+ *     title: "Andrei",
+ *     body: "Ai un mesaj nou",
+ *     data: { media_url: "..." },         // ❌ TS2322 la compilare
+ *   });
+ *
+ * Pentru a extinde lista de câmpuri interzise, adaugă cheia în
+ * `ForbiddenNotificationField` — și `FORBIDDEN_KEYS` (runtime) în același
+ * PR, ca sursa de adevăr să rămână unică.
+ */
+export type ForbiddenNotificationField =
+  | "media_type"
+  | "media_url"
+  | "caption"
+  | "voice_url"
+  | "body_preview"
+  | "last_message_preview"
+  | "message_body"
+  | "text";
+
+/**
+ * Marchează câmpurile interzise ca `never` pe orice tip T. Un obiect care
+ * încearcă să pună o valoare pe una din chei devine incompatibil cu T și
+ * TypeScript raportează eroare la compilare.
+ */
+export type NoForbiddenFields<T> = T & {
+  readonly [K in ForbiddenNotificationField]?: never;
+};
+
+/** `data` extras — Record cu chei string, dar fără câmpurile interzise. */
+export type SafeNotificationData = NoForbiddenFields<Record<string, unknown>>;
+
+/**
+ * Forma strict-tipată acceptată de canalele de notificări. Diferă de
+ * `NotificationPayloadIn` (care rămâne laxă pentru a putea primi payload-uri
+ * externe/necunoscute la sanitizare) prin faptul că interzice explicit
+ * câmpurile de conținut la nivel top ȘI în `data`.
+ */
+export type SafeNotificationPayload = NoForbiddenFields<{
+  title?: string | null;
+  /** Body-ul afișat — permis, dar sanitizat la runtime; NU pune text mesaj. */
+  body?: string | null;
+  url?: string | null;
+  tag?: string | null;
+  type?: string | null;
+  category?: string | null;
+  data?: SafeNotificationData | null;
+}>;
+
+/**
+ * Helper compile-time care nu face nimic la runtime, doar constrânge
+ * tipul argumentului la `SafeNotificationPayload`. Folosește-l în orice
+ * loc în care construiești un payload de notificare literal.
+ */
+export function defineNotificationPayload<T extends SafeNotificationPayload>(
+  payload: T & NoForbiddenFields<T>,
+): T {
+  return payload;
+}
+
+/**
+ * Helper compile-time echivalent pentru sub-obiectul `data`.
+ */
+export function defineNotificationData<T extends SafeNotificationData>(
+  data: T & NoForbiddenFields<T>,
+): T {
+  return data;
+}
+
+/**
  * Sanitizează un payload de notificare. Trebuie apelat de FIECARE canal
  * (web push, FCM, native, in-app, email) înainte de trimitere.
  *
