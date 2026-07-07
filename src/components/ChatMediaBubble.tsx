@@ -274,6 +274,7 @@ function ImageBubble({ m, mine }: Props) {
   const [urlError, setUrlError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [viewedOnce, setViewedOnce] = useState(alreadyBurned);
+  const [retryTick, setRetryTick] = useState(0);
 
   // Sign URL as soon as bubble mounts (needed for both preview and fullscreen).
   useEffect(() => {
@@ -281,19 +282,28 @@ function ImageBubble({ m, mine }: Props) {
     if (alreadyBurned) return;
     let cancelled = false;
     setUrlError(null);
+    setUrl(null);
     signChatMedia(m.media_url)
       .then((u) => {
         if (cancelled) return;
-        if (!u) setUrlError("Nu am putut încărca poza");
+        if (!u) setUrlError("Poza nu mai este disponibilă");
         else setUrl(u);
       })
-      .catch(() => {
-        if (!cancelled) setUrlError("Nu am putut încărca poza");
+      .catch((e: unknown) => {
+        if (!cancelled) {
+          const msg = e instanceof Error ? e.message : "Eroare la încărcare";
+          setUrlError(msg);
+        }
       });
     return () => {
       cancelled = true;
     };
-  }, [m.media_url, alreadyBurned]);
+  }, [m.media_url, alreadyBurned, retryTick]);
+
+  function retry() {
+    setUrlError(null);
+    setRetryTick((n) => n + 1);
+  }
 
   function openFullscreen() {
     if (!url) return;
