@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { X, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { deleteStory, markStorySeen, signStoryMedia, type StoryGroup } from "@/lib/stories";
 import { useAuth } from "@/lib/auth-context";
