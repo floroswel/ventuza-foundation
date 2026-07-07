@@ -76,6 +76,8 @@ function ThreadPage() {
     id: string;
     name: string | null;
     photo: string | null;
+    verified: boolean;
+    profile_slug: string | null;
     bio?: string | null;
     interests?: string[] | null;
   } | null>(null);
@@ -546,23 +548,62 @@ function ThreadPage() {
         >
           <ChevronLeft className="size-5" />
         </Link>
-        <div className="size-9 overflow-hidden rounded-full bg-muted">
-          {other?.photo ? (
-            <img src={other.photo} alt="" className="size-full object-cover" />
-          ) : null}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold">{other?.name ?? "…"}</p>
-          <p className="truncate text-[10px] text-muted-foreground">
-            {otherTyping ? (
-              <span className="text-primary">typing…</span>
-            ) : connected ? (
-              "online"
-            ) : (
-              "reconnecting…"
-            )}
-          </p>
-        </div>
+        {other?.profile_slug ? (
+          <Link
+            to="/u/$slug"
+            params={{ slug: other.profile_slug }}
+            className="flex min-w-0 flex-1 items-center gap-3 rounded-full pr-2 hover:bg-muted/40"
+            aria-label={`Deschide profilul ${other?.name ?? ""}`}
+          >
+            <div className="size-9 shrink-0 overflow-hidden rounded-full bg-muted">
+              {other?.photo ? (
+                <img src={other.photo} alt="" className="size-full object-cover" />
+              ) : null}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="flex items-center gap-1 truncate text-sm font-semibold">
+                {other?.name ?? "…"}
+                {other?.verified && (
+                  <BadgeCheck className="size-3.5 shrink-0 text-primary" aria-label="Verificat" />
+                )}
+              </p>
+              <p className="truncate text-[10px] text-muted-foreground">
+                {otherTyping ? (
+                  <span className="text-primary">typing…</span>
+                ) : connected ? (
+                  "online"
+                ) : (
+                  "reconnecting…"
+                )}
+              </p>
+            </div>
+          </Link>
+        ) : (
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="size-9 shrink-0 overflow-hidden rounded-full bg-muted">
+              {other?.photo ? (
+                <img src={other.photo} alt="" className="size-full object-cover" />
+              ) : null}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="flex items-center gap-1 truncate text-sm font-semibold">
+                {other?.name ?? "…"}
+                {other?.verified && (
+                  <BadgeCheck className="size-3.5 shrink-0 text-primary" aria-label="Verificat" />
+                )}
+              </p>
+              <p className="truncate text-[10px] text-muted-foreground">
+                {otherTyping ? (
+                  <span className="text-primary">typing…</span>
+                ) : connected ? (
+                  "online"
+                ) : (
+                  "reconnecting…"
+                )}
+              </p>
+            </div>
+          </div>
+        )}
         <input
           ref={selfieInputRef}
           type="file"
@@ -578,27 +619,27 @@ function ThreadPage() {
         <button
           type="button"
           onClick={() => {
-            if (verifying) return;
-            if (meVerified) {
-              toast.success("Profilul tău e deja verificat ✓");
-              return;
+            if (other?.verified) {
+              toast.success("Acest cont este verificat ✓", {
+                description: "Ventuza a confirmat identitatea acestei persoane.",
+              });
+            } else {
+              toast.message("Cont neverificat", {
+                description:
+                  "Această persoană nu are încă badge-ul de verificare. Fii precaut și folosește pagina „Siguranță”.",
+              });
             }
-            selfieInputRef.current?.click();
           }}
-          disabled={verifying}
-          aria-label={meVerified ? "Verificat" : "Verifică-te"}
+          aria-label={other?.verified ? "Cont verificat" : "Cont neverificat"}
           className={cn(
             "flex size-9 items-center justify-center rounded-full transition-colors",
-            meVerified
+            other?.verified
               ? "bg-primary/15 text-primary"
-              : "border border-primary/40 bg-primary/10 text-primary hover:bg-primary/20",
-            verifying && "opacity-60",
+              : "border border-border bg-muted text-muted-foreground hover:text-foreground",
           )}
-          title={meVerified ? "Verificat" : "Fă selfie de verificare"}
+          title={other?.verified ? "Acest cont este verificat" : "Cont neverificat"}
         >
-          {verifying ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : meVerified ? (
+          {other?.verified ? (
             <BadgeCheck className="size-4" />
           ) : (
             <ShieldCheck className="size-4" />
@@ -620,6 +661,7 @@ function ThreadPage() {
           />
         )}
       </header>
+
 
       <MessagesScroller
         loading={loading}
