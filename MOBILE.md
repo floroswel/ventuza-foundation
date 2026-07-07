@@ -140,3 +140,43 @@ producția forțează `enforce=true`.
   fără un PR explicit (vezi AGENTS.md → REGULĂ — AGE GATE).
 - Dacă adaugi un custom domain de staging care trebuie tratat ca dev,
   adaugă-l explicit în `isProductionHost` și actualizează regula.
+
+## Notificări push native (FCM)
+
+Wrapper-ul Android folosește **Firebase Cloud Messaging** prin
+`@capacitor/push-notifications`. Web-ul continuă cu Web Push (VAPID).
+Aceeași tabelă `push_subscriptions` (`kind='fcm'` vs `kind='webpush'`) —
+UI-ul (`EnablePushButton`) alege automat platforma.
+
+### Pași manuali (o singură dată)
+
+1. **Firebase project**: creează un proiect cu același `applicationId`
+   (`app.ventuza.mobile`).
+2. **`google-services.json`**: descarcă și pune în `android/app/`. NU
+   comita — `android/` e generat local cu `npx cap add android`.
+3. **Gradle**: în `android/build.gradle` (top-level) adaugă în
+   `buildscript.dependencies`:
+   ```gradle
+   classpath 'com.google.gms:google-services:4.4.2'
+   ```
+   Și la finalul `android/app/build.gradle`:
+   ```gradle
+   apply plugin: 'com.google.gms.google-services'
+   ```
+4. **`bunx cap sync android`** — pluginul Capacitor se leagă automat.
+
+### Server-side (Lovable Cloud)
+
+- Secret `FIREBASE_SERVICE_ACCOUNT_JSON` = conținutul JSON al service
+  account-ului Firebase (Project Settings → Service accounts → *Generate
+  new private key*).
+- Fără acest secret, FCM devine no-op (webpush-ul rămâne funcțional).
+
+### Regulile de confidențialitate rămân neschimbate
+
+- `notification_prefs.master_push = false` → nu se trimite nimic pe
+  niciun canal.
+- Body-ul respectă `show_preview` (când e off → "Ai un mesaj nou",
+  fără conținut).
+- Dispatch-ul se loghează prin `log_notification_dispatch(_channel='fcm')`
+  — fără conținut, doar metadata.

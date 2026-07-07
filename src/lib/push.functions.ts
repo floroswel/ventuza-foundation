@@ -93,6 +93,69 @@ export const removePushSubscription = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+// ────────────────────────────────────────────────────────────────────────────
+// FCM (native Android via Capacitor) — same table, kind='fcm'
+// ────────────────────────────────────────────────────────────────────────────
+
+const FcmSaveInput = z.object({
+  token: z.string().min(10).max(4096),
+  platform: z.enum(["android", "ios"]).default("android"),
+  userAgent: z.string().max(500).optional(),
+});
+
+export const saveFcmSubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => FcmSaveInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const row = {
+      user_id: context.userId,
+      endpoint: data.token, // reuse endpoint column for FCM token
+      p256dh: null,
+      auth: null,
+      user_agent: data.userAgent ?? null,
+      platform: data.platform,
+      kind: "fcm",
+      fcm_token: data.token,
+      last_seen_at: new Date().toISOString(),
+    };
+
+    let { error } = await context.supabase
+      .from("push_subscriptions")
+      .upsert(row, { onConflict: "fcm_token" });
+
+    if (error && ((error as { code?: string }).code === "23505" || /duplicate|unique/i.test(error.message ?? ""))) {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      await supabaseAdmin
+        .from("push_subscriptions")
+        .delete()
+        .or(`endpoint.eq.${data.token},fcm_token.eq.${data.token}`);
+      const retry = await context.supabase.from("push_subscriptions").insert(row);
+      error = retry.error;
+    }
+    if (error) throw error;
+
+    await context.supabase.rpc("record_consent", {
+      _kind: "push_notifications",
+      _version: undefined,
+      _accepted: true,
+    });
+    return { ok: true };
+  });
+
+const FcmRemoveInput = z.object({ token: z.string().min(10) });
+export const removeFcmSubscription = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => FcmRemoveInput.parse(d))
+  .handler(async ({ data, context }) => {
+    await context.supabase
+      .from("push_subscriptions")
+      .delete()
+      .eq("user_id", context.userId)
+      .or(`fcm_token.eq.${data.token},endpoint.eq.${data.token}`);
+    return { ok: true };
+  });
+
+
 const SendInput = z.object({
   toUserId: z.string().uuid(),
   title: z.string().min(1).max(120),
@@ -136,6 +199,7 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     if (data.toUserId === context.userId) return { delivered: 0, skipped: "self" as const };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { sendOne } = await import("./web-push.server");
+    const { sendFcmOne, isFcmConfigured } = await import("./fcm-push.server");
 
     // Respect recipient preferences (master toggle, per-category, quiet hours, discrete mode).
     const { data: profile } = await supabaseAdmin
@@ -164,19 +228,59 @@ export const sendPushToUser = createServerFn({ method: "POST" })
 
     if (!subs?.length) return { delivered: 0 };
 
+    const kindForLog = (data.category ?? "generic") as string;
+
     let delivered = 0;
     const expired: string[] = [];
+    const fcmConfigured = isFcmConfigured();
     for (const s of subs) {
-      if (s.kind !== "webpush" || !s.endpoint) continue;
-      const r = await sendOne(
-        { id: s.id, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
-        { title, body, url: profile?.discrete_mode ? undefined : data.url, tag: data.tag },
-      );
-      if (r.ok) delivered++;
-      else if (r.gone) expired.push(s.id);
+      if (!s.endpoint) continue;
+      const payload = {
+        title,
+        body,
+        url: profile?.discrete_mode ? undefined : data.url,
+        tag: data.tag,
+        type: data.category,
+      };
+      if (s.kind === "fcm") {
+        if (!fcmConfigured) continue;
+        const r = await sendFcmOne({ id: s.id, endpoint: s.endpoint }, payload);
+        if (r.ok) {
+          delivered++;
+          try {
+            await supabaseAdmin.rpc("log_notification_dispatch", {
+              _actor: context.userId,
+              _target: data.toUserId,
+              _kind: kindForLog,
+              _channel: "fcm",
+            });
+          } catch {
+            /* logging must never block dispatch */
+          }
+        } else if (r.gone) expired.push(s.id);
+      } else if (s.kind === "webpush") {
+        const r = await sendOne(
+          { id: s.id, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
+          payload,
+        );
+        if (r.ok) {
+          delivered++;
+          try {
+            await supabaseAdmin.rpc("log_notification_dispatch", {
+              _actor: context.userId,
+              _target: data.toUserId,
+              _kind: kindForLog,
+              _channel: "webpush",
+            });
+          } catch {
+            /* noop */
+          }
+        } else if (r.gone) expired.push(s.id);
+      }
     }
     if (expired.length) {
       await supabaseAdmin.from("push_subscriptions").delete().in("id", expired);
     }
     return { delivered };
   });
+

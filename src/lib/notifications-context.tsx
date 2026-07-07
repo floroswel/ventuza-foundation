@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -22,6 +23,7 @@ import {
   playNotificationSound,
   primeNotificationSound,
 } from "@/lib/notification-sound";
+import { setNativePushNavigator } from "@/lib/native-push";
 
 type Ctx = {
   notifications: NotificationRow[];
@@ -68,6 +70,19 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     primeNotificationSound();
   }, []);
+
+  // Wire the native-push tap navigator (no-op on the web).
+  const navigate = useNavigate();
+  useEffect(() => {
+    setNativePushNavigator((path) => {
+      navigate({ to: path }).catch(() => {
+        // path may not be typed as a known route; fall back to window
+        if (typeof window !== "undefined") window.location.assign(path);
+      });
+    });
+  }, [navigate]);
+
+
 
   // Realtime subscription
   useEffect(() => {
