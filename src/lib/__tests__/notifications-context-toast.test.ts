@@ -106,7 +106,7 @@ describe("notifications-context toast — comportament buildToastBody", () => {
     describe(label, () => {
       for (const body of HOSTILE_BODIES) {
         it(`nu scurge conținut pentru body=${JSON.stringify(body)}`, () => {
-          const description = buildToastBody(showPreview, body);
+          const description = buildToastBody(showPreview, body, "message");
           // 1. Description-ul e mereu una din valorile albe.
           expect(ALLOWED.has(description)).toBe(true);
           // 2. Nicio pattern periculoasă.
@@ -125,8 +125,24 @@ describe("notifications-context toast — comportament buildToastBody", () => {
   }
 
   it("body gol / whitespace cade tot pe generic, nu pe stringul gol", () => {
-    expect(buildToastBody(true, "")).toBe(GENERIC_MESSAGE_BODY);
-    expect(buildToastBody(true, "   ")).toBe(GENERIC_MESSAGE_BODY);
-    expect(buildToastBody(undefined, null)).toBe(GENERIC_MESSAGE_BODY);
+    expect(buildToastBody(true, "", "message")).toBe(GENERIC_MESSAGE_BODY);
+    expect(buildToastBody(true, "   ", "message")).toBe(GENERIC_MESSAGE_BODY);
+    expect(buildToastBody(undefined, null, "message")).toBe(GENERIC_MESSAGE_BODY);
+  });
+
+  it("chiar și fără type explicit tratează ca mesaj (fail-closed)", () => {
+    for (const body of HOSTILE_BODIES) {
+      const out = buildToastBody(true, body);
+      expect(ALLOWED.has(out)).toBe(true);
+    }
+  });
+
+  it("notificările non-message (match/tap) păstrează dbBody sigur", () => {
+    expect(buildToastBody(true, "New match with Alex", "match")).toBe(
+      "New match with Alex",
+    );
+    expect(buildToastBody(false, "Someone tapped you", "tap")).toBe(
+      "Someone tapped you",
+    );
   });
 });
