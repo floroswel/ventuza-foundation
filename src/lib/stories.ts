@@ -15,6 +15,7 @@ export type StoryGroup = {
   user_id: string;
   display_name: string | null;
   photos: string[] | null;
+  profile_slug: string | null;
   stories: Story[];
   hasUnseen: boolean;
 };
