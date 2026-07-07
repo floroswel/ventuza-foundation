@@ -1,0 +1,97 @@
+name: notification-privacy
+
+# Regresie obligatorie pentru payload-urile de notificări.
+#
+# Regula centrală (vezi src/lib/notification-privacy.ts):
+#   `show_preview=false` NU trebuie să scurgă niciodată body/media/caption
+#   nici în notificarea de sistem (push web / FCM / SW), nici în toast
+#   in-app, nici în inbox. Regula este enforced pe trei axe:
+#     1. Runtime: `sanitizeNotificationPayload` + trigger SQL
+#        `tg_notify_new_message`.
+#     2. UI: `buildToastBody` / `buildInboxPreview`.
+#     3. Compile-time: `defineNotificationPayload` +
+#        `ForbiddenNotificationField` (blochează `media_type`, `media_url`,
+#        `caption`, `voice_url`, `body_preview`, `last_message_preview`,
+#        `message_body`, `text`).
+#
+# Acest job este BLOCANT pe orice PR care atinge fișiere sensibile sau
+# codul de notificări. Fără el (verde), PR-ul nu se merge — vezi setările
+# de branch protection (regula "Require status checks to pass" +
+# "notification-privacy / regression").
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/lib/notification-privacy.ts"
+      - "src/lib/notifications-context.tsx"
+      - "src/lib/notification-prefs-context.tsx"
+      - "src/lib/push.functions.ts"
+      - "src/lib/chat.functions.ts"
+      - "src/lib/__tests__/notification-*.test.ts"
+      - "src/lib/__tests__/notifications-*.test.ts"
+      - "src/lib/__tests__/fcm-payload-privacy.test.ts"
+      - "src/routes/messages.index.tsx"
+      - "src/routes/settings.tsx"
+      - "public/push-sw.js"
+      - "supabase/migrations/**"
+      - "package.json"
+      - "bun.lock*"
+      - ".github/workflows/notification-privacy.yml"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: notification-privacy-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    name: regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      # Compile-time guard: `@ts-expect-error` din
+      # notification-payload-types.test.ts trebuie să corespundă unor erori
+      # reale. Dacă cineva slăbește `ForbiddenNotificationField`, tsgo iese
+      # non-zero — PR blocat.
+      - name: Typecheck (compile-time forbidden-fields guard)
+        run: bun run typecheck
+
+      # Suita completă de teste pentru pipeline-ul de notificări:
+      #   - notification-privacy.test.ts           (unit sanitizer)
+      #   - notification-payload-regression.test.ts (regresii SQL trigger)
+      #   - notification-payload-types.test.ts     (compile-time types)
+      #   - notification-preview-off-e2e.test.ts   (E2E preview=off)
+      #   - notification-preview-off-ui-system.test.ts (SW + UI preview=off)
+      #   - notifications-context-toast.test.ts    (toast in-app)
+      #   - fcm-payload-privacy.test.ts            (FCM push)
+      - name: Run notification regression suite
+        run: bun run test:notifications
+
+      # Ancoră pentru branch protection: numele acestui job
+      # ("notification-privacy / regression") este cel care trebuie marcat
+      # ca "Required status check" pe branch-ul `main`.
+      - name: Summary
+        if: always()
+        run: |
+          echo "### Notification privacy regression" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Typecheck (forbidden-fields guard)" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Runtime suite ('bun run test:notifications')" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "Status: ${{ job.status }}" >> "$GITHUB_STEP_SUMMARY"
