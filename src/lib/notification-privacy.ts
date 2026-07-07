@@ -251,6 +251,129 @@ function deepStripTracked(
   return value;
 }
 
+/**
+ * ============================================================
+ * STRICT ALLOWLIST — per notification category
+ * ============================================================
+ *
+ * The `FORBIDDEN_KEY_PATTERNS` denylist above is defense in depth. The
+ * allowlist below is the primary contract: for a known category, ONLY the
+ * listed keys survive into the outgoing `data` object. Anything else — even a
+ * seemingly innocent field a caller adds ad-hoc — is dropped and recorded in
+ * `report.notAllowlistedKeys`.
+ *
+ * Default behavior:
+ *   - Known category (present in `CATEGORY_DATA_ALLOWLISTS`) → strict is ON.
+ *   - Unknown category + no explicit `strict` opt → legacy behavior (denylist
+ *     only) for backwards compatibility.
+ *   - `sanitizeNotificationPayload(input, { strict: true })` forces strict
+ *     mode. When the category is unknown, `EMPTY_ALLOWLIST` is used, which
+ *     drops EVERY `data` key.
+ *   - `sanitizeNotificationPayload(input, { strict: false })` disables
+ *     strict mode even for known categories (escape hatch — audited).
+ *
+ * Adding a new category:
+ *   1. Add an entry here with the minimal set of keys needed by the client
+ *      (routing, deduping, rendering — no content, no PII).
+ *   2. Never add keys that could carry sensitive data even indirectly
+ *      (e.g. `preview`, `snippet`, `media_url` — those are already blocked
+ *      by the denylist, but the allowlist keeps them out at the design layer).
+ *   3. Update `src/lib/__tests__/notification-allowlist.test.ts` with the
+ *      new category.
+ */
+const CATEGORY_DATA_ALLOWLISTS: Record<string, ReadonlySet<string>> = {
+  // 1:1 chat notification — only routing IDs.
+  messages: new Set(["conversation_id", "actor_id", "sent_at"]),
+  // Match / mutual like.
+  match: new Set(["match_id", "actor_id", "created_at"]),
+  // Someone tapped / woofed the current user.
+  tap: new Set(["actor_id", "created_at"]),
+  woof: new Set(["actor_id", "created_at"]),
+  // Album share / grant.
+  album: new Set(["album_id", "actor_id", "created_at"]),
+  // Proximity notification (venue/event nearby).
+  proximity: new Set(["point_id", "point_kind", "distance_bucket", "layer"]),
+  // Admin -> user broadcast or partner status change.
+  admin_message: new Set(["message_id", "priority", "created_at"]),
+  partner_status: new Set(["item_id", "item_kind", "status", "created_at"]),
+  // System / housekeeping (verifications, GDPR, etc.).
+  system: new Set(["subject", "created_at"]),
+};
+
+const EMPTY_ALLOWLIST: ReadonlySet<string> = new Set<string>();
+
+/**
+ * Register (or override) the allowlist for a category at runtime. Intended for
+ * plugins / feature flags. Tests may also use it to isolate a scenario.
+ */
+export function registerNotificationCategoryAllowlist(
+  category: string,
+  keys: Iterable<string>,
+): void {
+  (CATEGORY_DATA_ALLOWLISTS as Record<string, ReadonlySet<string>>)[category] =
+    new Set(keys);
+}
+
+/** Read-only view of the currently-registered allowlists (for diagnostics). */
+export function getNotificationCategoryAllowlists(): Readonly<
+  Record<string, ReadonlyArray<string>>
+> {
+  const out: Record<string, ReadonlyArray<string>> = {};
+  for (const [k, v] of Object.entries(CATEGORY_DATA_ALLOWLISTS)) {
+    out[k] = [...v].sort();
+  }
+  return out;
+}
+
+function resolveAllowlist(
+  category: string | undefined,
+  strict: boolean | undefined,
+): { allow: ReadonlySet<string> | null; name: string | null } {
+  const known =
+    category && Object.prototype.hasOwnProperty.call(CATEGORY_DATA_ALLOWLISTS, category)
+      ? CATEGORY_DATA_ALLOWLISTS[category]
+      : null;
+
+  if (strict === false) return { allow: null, name: null };
+  if (strict === true) {
+    return {
+      allow: known ?? EMPTY_ALLOWLIST,
+      name: known ? (category as string) : "__strict_empty__",
+    };
+  }
+  // Default: strict when the category is known.
+  if (known) return { allow: known, name: category as string };
+  return { allow: null, name: null };
+}
+
+/**
+ * Deep-strip variant that also enforces a top-level allowlist on the direct
+ * children of `data`. Nested objects still go through denylist-only stripping
+ * — the allowlist governs the CONTRACT of `data`, not arbitrary nested trees.
+ */
+function deepStripWithAllowlist(
+  data: Record<string, unknown>,
+  allow: ReadonlySet<string>,
+  report: SanitizeRedactionReport,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(data)) {
+    const path = `/data/${k}`;
+    if (isForbiddenKey(k)) {
+      report.removedKeys.push(path);
+      continue;
+    }
+    if (!allow.has(k)) {
+      report.notAllowlistedKeys.push(path);
+      continue;
+    }
+    out[k] = deepStripTracked(v, path, report);
+  }
+  return out;
+}
+
+
+
 
 export interface NotificationPayloadIn {
   title?: string | null;
