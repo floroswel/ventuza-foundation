@@ -178,9 +178,102 @@ export async function requestAndStoreLocation(): Promise<{ ok: boolean; error?: 
   return { ok: true };
 }
 
+// ---------------------------------------------------------------------------
+// Local cache pentru rezultatele Discover
+// ---------------------------------------------------------------------------
+// Motivația: pe telefon utilizatorul intră/iese des din tab-ul Discover, iar
+// fiecare intrare declanșa un RPC discover_profiles (rate-limited la 500/oră).
+// Ținem ultimul rezultat per (viewer + filtre + sortare) în localStorage cu TTL
+// de 3 minute. Dacă e "proaspăt" → returnăm direct din cache, fără RPC. La
+// eroare de rate limit, dacă avem cache stale, îl returnăm ca fallback.
+//
+// NB: cache-ul conține DOAR ce ne întoarce deja RPC-ul (fără coordonate exacte,
+// doar distanță bucketizată). Nu introducem date noi sensibile.
+const DISCOVER_CACHE_PREFIX = "discover:v1:";
+const DISCOVER_CACHE_TTL_MS = 3 * 60 * 1000;
+const DISCOVER_CACHE_MAX_KEYS = 8;
+
+type DiscoverCacheEntry = { at: number; data: DiscoverProfile[] };
+
+function discoverCacheKey(
+  viewerId: string,
+  filters: DiscoverFilters,
+  orderMode: "score" | "distance",
+): string {
+  const norm = {
+    o: orderMode,
+    d: filters.maxDistanceKm,
+    a: [filters.minAge, filters.maxAge],
+    lf: [...filters.lookingFor].sort(),
+    g: [...filters.gender].sort(),
+    or: [...filters.orientation].sort(),
+    t: [...filters.tribes].sort(),
+    b: [...filters.bodyTypes].sort(),
+    p: [...filters.positions].sort(),
+    h: [filters.minHeight, filters.maxHeight],
+    fl: [
+      filters.onlineOnly ? 1 : 0,
+      filters.withPhotoOnly ? 1 : 0,
+      filters.verifiedOnly ? 1 : 0,
+      filters.lookingNowOnly ? 1 : 0,
+    ],
+  };
+  return `${DISCOVER_CACHE_PREFIX}${viewerId}:${JSON.stringify(norm)}`;
+}
+
+function readDiscoverCache(key: string): DiscoverCacheEntry | null {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as DiscoverCacheEntry;
+    if (!parsed || typeof parsed.at !== "number" || !Array.isArray(parsed.data)) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeDiscoverCache(key: string, data: DiscoverProfile[]) {
+  try {
+    localStorage.setItem(
+      key,
+      JSON.stringify({ at: Date.now(), data } satisfies DiscoverCacheEntry),
+    );
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(DISCOVER_CACHE_PREFIX)) keys.push(k);
+    }
+    if (keys.length > DISCOVER_CACHE_MAX_KEYS) {
+      const entries = keys
+        .map((k) => ({ k, at: readDiscoverCache(k)?.at ?? 0 }))
+        .sort((a, b) => a.at - b.at);
+      for (const e of entries.slice(0, entries.length - DISCOVER_CACHE_MAX_KEYS)) {
+        localStorage.removeItem(e.k);
+      }
+    }
+  } catch {
+    /* localStorage plin/dezactivat — cache opțional */
+  }
+}
+
+export function clearDiscoverCache() {
+  try {
+    const toDelete: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(DISCOVER_CACHE_PREFIX)) toDelete.push(k);
+    }
+    for (const k of toDelete) localStorage.removeItem(k);
+  } catch {
+    /* noop */
+  }
+}
+
 export async function fetchDiscover(
   filters: DiscoverFilters,
   orderMode: "score" | "distance",
+  options?: { forceRefresh?: boolean },
 ): Promise<DiscoverProfile[]> {
   const arr = (v: string[]) => (v.length ? v : null);
   const { data: u } = await supabase.auth.getUser();
@@ -190,6 +283,13 @@ export async function fetchDiscover(
     e.code = "not_authenticated";
     throw e;
   }
+
+  const cacheKey = discoverCacheKey(viewerId, filters, orderMode);
+  const cached = readDiscoverCache(cacheKey);
+  if (!options?.forceRefresh && cached && Date.now() - cached.at < DISCOVER_CACHE_TTL_MS) {
+    return cached.data;
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase.rpc as any)("discover_profiles", {
     _viewer: viewerId,
@@ -221,6 +321,8 @@ export async function fetchDiscover(
       return e;
     };
     if (msg.includes("discover_rate_limited")) {
+      // Dacă avem cache (chiar expirat), îl returnăm în loc de ecran gol.
+      if (cached) return cached.data;
       throw make(
         "discover_rate_limited",
         "Ai răsfoit prea repede (max 500 profiluri/oră). Reia explorarea peste aproximativ o oră.",
@@ -243,7 +345,9 @@ export async function fetchDiscover(
     }
     throw error;
   }
-  return (data ?? []) as DiscoverProfile[];
+  const result = (data ?? []) as DiscoverProfile[];
+  writeDiscoverCache(cacheKey, result);
+  return result;
 }
 
 export async function signPhotos(paths: string[]): Promise<Record<string, string>> {
