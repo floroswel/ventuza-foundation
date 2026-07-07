@@ -199,6 +199,7 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     if (data.toUserId === context.userId) return { delivered: 0, skipped: "self" as const };
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { sendOne } = await import("./web-push.server");
+    const { sendFcmOne, isFcmConfigured } = await import("./fcm-push.server");
 
     // Respect recipient preferences (master toggle, per-category, quiet hours, discrete mode).
     const { data: profile } = await supabaseAdmin
@@ -227,19 +228,59 @@ export const sendPushToUser = createServerFn({ method: "POST" })
 
     if (!subs?.length) return { delivered: 0 };
 
+    const kindForLog = (data.category ?? "generic") as string;
+
     let delivered = 0;
     const expired: string[] = [];
+    const fcmConfigured = isFcmConfigured();
     for (const s of subs) {
-      if (s.kind !== "webpush" || !s.endpoint) continue;
-      const r = await sendOne(
-        { id: s.id, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
-        { title, body, url: profile?.discrete_mode ? undefined : data.url, tag: data.tag },
-      );
-      if (r.ok) delivered++;
-      else if (r.gone) expired.push(s.id);
+      if (!s.endpoint) continue;
+      const payload = {
+        title,
+        body,
+        url: profile?.discrete_mode ? undefined : data.url,
+        tag: data.tag,
+        type: data.category,
+      };
+      if (s.kind === "fcm") {
+        if (!fcmConfigured) continue;
+        const r = await sendFcmOne({ id: s.id, endpoint: s.endpoint }, payload);
+        if (r.ok) {
+          delivered++;
+          try {
+            await supabaseAdmin.rpc("log_notification_dispatch", {
+              _actor_id: context.userId,
+              _target_id: data.toUserId,
+              _kind: kindForLog,
+              _channel: "fcm",
+            });
+          } catch {
+            /* logging must never block dispatch */
+          }
+        } else if (r.gone) expired.push(s.id);
+      } else if (s.kind === "webpush") {
+        const r = await sendOne(
+          { id: s.id, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
+          payload,
+        );
+        if (r.ok) {
+          delivered++;
+          try {
+            await supabaseAdmin.rpc("log_notification_dispatch", {
+              _actor_id: context.userId,
+              _target_id: data.toUserId,
+              _kind: kindForLog,
+              _channel: "webpush",
+            });
+          } catch {
+            /* noop */
+          }
+        } else if (r.gone) expired.push(s.id);
+      }
     }
     if (expired.length) {
       await supabaseAdmin.from("push_subscriptions").delete().in("id", expired);
     }
     return { delivered };
   });
+
