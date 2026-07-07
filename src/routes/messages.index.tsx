@@ -158,11 +158,8 @@ function MessagesPage() {
                         c.unread ? "text-foreground/90" : "text-muted-foreground",
                       )}
                     >
-                      {showPreview
-                        ? (c.last_message_preview ?? "Say hi 👋")
-                        : c.last_message_at
-                          ? "Ai un mesaj nou"
-                          : "Say hi 👋"}
+                      {buildInboxPreview(showPreview, c.last_message_preview, !!c.last_message_at)}
+
                     </p>
                   </div>
 
