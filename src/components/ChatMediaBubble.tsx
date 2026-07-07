@@ -269,17 +269,24 @@ function AudioBubble({ m, mine }: Props) {
 // ---------------- IMAGE ----------------
 
 function ImageBubble({ m, mine }: Props) {
-  const alreadyBurned = !mine && !!m.view_once && !!m.viewed_at;
+  const isViewOnceRecipient = !mine && !!m.view_once;
+  const alreadyBurned = isViewOnceRecipient && !!m.viewed_at;
   const [url, setUrl] = useState<string | null>(null);
   const [urlError, setUrlError] = useState<string | null>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [viewedOnce, setViewedOnce] = useState(alreadyBurned);
   const [retryTick, setRetryTick] = useState(0);
 
+  // Recipient burned this view-once photo permanently once opened.
+  const burned = alreadyBurned || (isViewOnceRecipient && viewedOnce);
+
   // Sign URL as soon as bubble mounts (needed for both preview and fullscreen).
   useEffect(() => {
     if (!m.media_url) return;
-    if (alreadyBurned) return;
+    if (burned) {
+      setUrl(null);
+      return;
+    }
     let cancelled = false;
     setUrlError(null);
     setUrl(null);
@@ -298,7 +305,7 @@ function ImageBubble({ m, mine }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [m.media_url, alreadyBurned, retryTick]);
+  }, [m.media_url, burned, retryTick]);
 
   function retry() {
     setUrlError(null);
@@ -307,15 +314,25 @@ function ImageBubble({ m, mine }: Props) {
 
   function openFullscreen() {
     if (!url) return;
+    if (isViewOnceRecipient && viewedOnce) return; // already burned this session
     setFullscreen(true);
-    if (!mine && m.view_once && !viewedOnce) {
-      setViewedOnce(true);
+    if (isViewOnceRecipient && !viewedOnce) {
+      // Mark viewed immediately (permanent, server-side) so a refresh or another
+      // device also sees it as burned.
       void markMediaViewed(m.id);
     }
   }
 
+  function handleFullscreenClose() {
+    setFullscreen(false);
+    if (isViewOnceRecipient && !viewedOnce) {
+      setViewedOnce(true);
+      setUrl(null);
+    }
+  }
+
   // Recipient-side burned view-once: don't show anything openable.
-  if (alreadyBurned) {
+  if (burned) {
     return (
       <div
         className={cn(
@@ -328,6 +345,7 @@ function ImageBubble({ m, mine }: Props) {
       </div>
     );
   }
+
 
   // View-once (not yet viewed by recipient): show sealed placeholder.
   if (!mine && m.view_once && !viewedOnce) {
