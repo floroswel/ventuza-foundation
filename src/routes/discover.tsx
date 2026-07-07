@@ -27,6 +27,7 @@ import {
   X,
 } from "lucide-react";
 import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
+import { SmartImage } from "@/components/SmartImage";
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
 import { useCachedUserBadges } from "@/lib/badges-cache";
@@ -373,6 +374,14 @@ function DiscoverPage() {
       supabase.removeChannel(ch);
     };
   }, [user, load, loadError?.code]);
+
+  // Re-fetch când watcher-ul de locație raportează mișcare semnificativă.
+  useEffect(() => {
+    if (!user) return;
+    const onMoved = () => void load();
+    window.addEventListener("ventuza:location-updated", onMoved);
+    return () => window.removeEventListener("ventuza:location-updated", onMoved);
+  }, [user, load]);
 
   // Realtime: new match notifications (when someone else likes me back)
   useEffect(() => {
@@ -989,7 +998,7 @@ function OnlineRow({
               >
                 <span className="relative z-[3] block size-full overflow-hidden rounded-full bg-surface ring-2 ring-background">
                   {url ? (
-                    <img src={url} alt={p.display_name ?? ""} className="size-full object-cover" />
+                    <SmartImage src={url} alt={p.display_name ?? ""} className="size-full object-cover" />
                   ) : (
                     <span className="flex size-full items-center justify-center text-lg text-muted-foreground/50">
                       {p.display_name?.[0]?.toUpperCase() ?? "?"}
@@ -1052,7 +1061,7 @@ function Cascade({
             )}
           >
             {url ? (
-              <img
+              <SmartImage
                 src={url}
                 alt={p.display_name ?? ""}
                 loading="lazy"
@@ -1184,7 +1193,7 @@ function PosterRow({
               )}
             >
               {url ? (
-                <img
+                <SmartImage
                   src={url}
                   alt={p.display_name ?? ""}
                   loading="lazy"

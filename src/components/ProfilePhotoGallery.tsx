@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, ImageOff, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { convertHeicUrl, isHeicUrl } from "@/lib/heic-fallback";
 
 /**
  * Image cu skeleton (loading) + fallback (error).
@@ -30,9 +31,23 @@ function GalleryImage({
 }) {
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [nonce, setNonce] = useState(0);
+  const [resolvedSrc, setResolvedSrc] = useState(src);
 
   useEffect(() => {
     setStatus("loading");
+    let cancelled = false;
+    if (isHeicUrl(src)) {
+      void convertHeicUrl(src).then((url) => {
+        if (cancelled) return;
+        if (url) setResolvedSrc(url);
+        else setStatus("error");
+      });
+    } else {
+      setResolvedSrc(src);
+    }
+    return () => {
+      cancelled = true;
+    };
   }, [src, onRetryKey, nonce]);
   useEffect(() => {
     onStatusChange?.(status);
@@ -43,8 +58,8 @@ function GalleryImage({
       {status !== "error" && (
         <motion.img
           {...motionProps}
-          key={`${src}-${nonce}`}
-          src={src}
+          key={`${resolvedSrc}-${nonce}`}
+          src={resolvedSrc}
           alt={alt}
           draggable={false}
           onClick={onClick}
