@@ -48,15 +48,25 @@ export function buildInboxPreview(
 }
 
 /**
- * Copy pentru toast in-app. Când `show_preview` este OFF explicit,
- * afișează „Previzualizare dezactivată"; altfel folosește body-ul deja
- * sanitizat de trigger-ul DB (care e tot generic pentru categoria messages).
+ * Copy pentru toast in-app.
+ *
+ * Policy:
+ *   - `type === "message"` → NU expune niciodată `dbBody` (chiar dacă
+ *     trigger-ul DB e „safe" astăzi, un regress la nivel SQL nu trebuie
+ *     să lovească UI). Cu `show_preview=false` → „Previzualizare
+ *     dezactivată"; altfel „Ai un mesaj nou".
+ *   - Alte tipuri (match, tap, album, etc.) → `dbBody` deja este un label
+ *     scurt fără PII; se pasează așa cum e. Dacă lipsește, generic.
  */
 export function buildToastBody(
   showPreview: boolean | null | undefined,
   dbBody: string | null | undefined,
+  type?: string | null,
 ): string {
-  if (showPreview === false) return PREVIEW_DISABLED_BODY;
+  if (type === "message" || !type) {
+    if (showPreview === false) return PREVIEW_DISABLED_BODY;
+    return GENERIC_MESSAGE_BODY;
+  }
   const clean = (dbBody ?? "").toString().trim();
   return clean || GENERIC_MESSAGE_BODY;
 }
