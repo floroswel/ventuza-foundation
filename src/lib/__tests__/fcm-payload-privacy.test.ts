@@ -53,7 +53,14 @@ describe("FCM payload privacy — show_preview=false → generic", () => {
     const src = read("lib/push.functions.ts");
     // singurul body: variabila `body` decisă server-side (discrete_mode / preview)
     // sub nicio formă `msg.body`, `NEW.body`, `payload.body` etc.
-    expect(src).not.toMatch(/body:\s*[a-zA-Z_$][\w$]*\.body\b/);
+    // singurul `.body` acceptat este cel al payload-ului sanitizat central
+    // (safePayload.body din sanitizeNotificationPayload). Orice altă sursă
+    // (msg.body, NEW.body, data.body raw) este interzisă.
+    const bodyRefs = [...src.matchAll(/body:\s*([a-zA-Z_$][\w$]*)\.body\b/g)];
+    for (const m of bodyRefs) {
+      expect(m[1]).toBe("safePayload");
+    }
+
     expect(src).not.toMatch(/\bmedia_type\b|\bmedia_url\b|\bcaption\b/);
     // routing prin sendFcmOne există
     expect(src).toMatch(/sendFcmOne/);
