@@ -82,6 +82,7 @@ import { Route as LovableEmailQueueProcessRouteImport } from './routes/lovable/e
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as ApiPublicHooksBillingTickRouteImport } from './routes/api/public/hooks/billing-tick'
+import { Route as AdminUsersIdNotificationsRouteImport } from './routes/admin.users.$id.notifications'
 
 const VisitorsRoute = VisitorsRouteImport.update({
   id: '/visitors',
@@ -454,6 +455,12 @@ const ApiPublicHooksBillingTickRoute =
     path: '/api/public/hooks/billing-tick',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AdminUsersIdNotificationsRoute =
+  AdminUsersIdNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AdminUsersIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -521,10 +528,11 @@ export interface FileRoutesByFullPath {
   '/messages/': typeof MessagesIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/admin/users/$id': typeof AdminUsersIdRoute
+  '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
+  '/admin/users/$id/notifications': typeof AdminUsersIdNotificationsRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -596,10 +604,11 @@ export interface FileRoutesByTo {
   '/messages': typeof MessagesIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/admin/users/$id': typeof AdminUsersIdRoute
+  '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
+  '/admin/users/$id/notifications': typeof AdminUsersIdNotificationsRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -672,10 +681,11 @@ export interface FileRoutesById {
   '/messages/': typeof MessagesIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
-  '/admin/users/$id': typeof AdminUsersIdRoute
+  '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
+  '/admin/users/$id/notifications': typeof AdminUsersIdNotificationsRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -753,6 +763,7 @@ export interface FileRouteTypes {
     | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
+    | '/admin/users/$id/notifications'
     | '/api/public/hooks/billing-tick'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -828,6 +839,7 @@ export interface FileRouteTypes {
     | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
+    | '/admin/users/$id/notifications'
     | '/api/public/hooks/billing-tick'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -903,6 +915,7 @@ export interface FileRouteTypes {
     | '/api/public/didit-webhook'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
+    | '/admin/users/$id/notifications'
     | '/api/public/hooks/billing-tick'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1488,15 +1501,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksBillingTickRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/users/$id/notifications': {
+      id: '/admin/users/$id/notifications'
+      path: '/notifications'
+      fullPath: '/admin/users/$id/notifications'
+      preLoaderRoute: typeof AdminUsersIdNotificationsRouteImport
+      parentRoute: typeof AdminUsersIdRoute
+    }
   }
 }
 
+interface AdminUsersIdRouteChildren {
+  AdminUsersIdNotificationsRoute: typeof AdminUsersIdNotificationsRoute
+}
+
+const AdminUsersIdRouteChildren: AdminUsersIdRouteChildren = {
+  AdminUsersIdNotificationsRoute: AdminUsersIdNotificationsRoute,
+}
+
+const AdminUsersIdRouteWithChildren = AdminUsersIdRoute._addFileChildren(
+  AdminUsersIdRouteChildren,
+)
+
 interface AdminRouteChildren {
-  AdminUsersIdRoute: typeof AdminUsersIdRoute
+  AdminUsersIdRoute: typeof AdminUsersIdRouteWithChildren
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
-  AdminUsersIdRoute: AdminUsersIdRoute,
+  AdminUsersIdRoute: AdminUsersIdRouteWithChildren,
 }
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
