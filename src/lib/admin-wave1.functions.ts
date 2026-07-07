@@ -421,10 +421,13 @@ export const adminGetGdprTrail = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: rows, error } = await (supabaseAdmin as any)
       .from("admin_audit_log")
-      .select("*")
+      .select(
+        "id,actor_id,actor_email,action,target_table,target_id,before_data,after_data,justification,ip,user_agent,severity,created_at",
+      )
       .or("action.ilike.gdpr.%,action.ilike.backfill%")
       .order("created_at", { ascending: false })
       .limit(data.limit ?? 200);
+
     if (error) throw new Error(error.message);
     return rows ?? [];
   });
