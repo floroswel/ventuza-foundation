@@ -25,6 +25,8 @@ export function StoryViewer({
   const [si, setSi] = useState(0);
   const [progress, setProgress] = useState(0);
   const [mediaUrl, setMediaUrl] = useState<string | null>(null);
+  const [mediaError, setMediaError] = useState<string | null>(null);
+  const [retryTick, setRetryTick] = useState(0);
   const [paused, setPaused] = useState(false);
   const tickRef = useRef<number | null>(null);
 
@@ -35,10 +37,26 @@ export function StoryViewer({
   useEffect(() => {
     if (!story) return;
     setMediaUrl(null);
+    setMediaError(null);
     setProgress(0);
-    signStoryMedia([story.media_path]).then((m) => setMediaUrl(m[story.media_path] ?? null));
+    let cancelled = false;
+    signStoryMedia([story.media_path])
+      .then((m) => {
+        if (cancelled) return;
+        const u = m[story.media_path] ?? null;
+        if (!u) setMediaError("Poza nu mai este disponibilă");
+        else setMediaUrl(u);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setMediaError(e instanceof Error ? e.message : "Nu am putut încărca poza");
+      });
     void markStorySeen(story.id);
-  }, [story?.id]);
+    return () => {
+      cancelled = true;
+    };
+  }, [story?.id, retryTick]);
+
 
   // tick progress
   useEffect(() => {
