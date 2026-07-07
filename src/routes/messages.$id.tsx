@@ -564,12 +564,14 @@ function ThreadPage() {
               <p className="flex items-center gap-1 truncate text-sm font-semibold">
                 {other?.name ?? "…"}
                 {other?.verified && (
-                  <BadgeCheck
-                    className="size-3.5 shrink-0 text-primary"
-                    aria-label="Acest cont este verificat"
-                    title="Acest cont este verificat"
-                  />
+                  <span title="Acest cont este verificat" className="inline-flex">
+                    <BadgeCheck
+                      className="size-3.5 shrink-0 text-primary"
+                      aria-label="Acest cont este verificat"
+                    />
+                  </span>
                 )}
+
 
               </p>
               <p className="truncate text-[10px] text-muted-foreground">
