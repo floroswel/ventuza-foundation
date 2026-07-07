@@ -1,55 +1,49 @@
-Ventuza este comunitatea LGBTQ+ 18+ din România — o aplicație gratuită de dating, prieteni și evenimente pentru persoane gay, lesbiene, bisexuale, trans, queer, non-binare și aliați. Fără abonamente, fără funcții blocate. Tot ce alte aplicații pun după paywall, la noi e deschis din prima zi.
+Ventuza este comunitatea LGBTQ+ 18+ din România — aplicație gratuită de dating, prieteni și evenimente pentru persoane gay, lesbiene, bisexuale, trans, queer, non-binare și aliați. Fără abonamente, fără funcții blocate. Tot ce alte aplicații pun după paywall, la noi e deschis din prima zi.
 
 ━━ DE CE VENTUZA ━━
 
-• 100% GRATUIT — mesaje nelimitate, like-uri primite vizibile, boost profil, travel mode, verificare AI, asistent AI pentru chat și bio. Zero costuri ascunse.
+• 100% GRATUIT — mesaje nelimitate, like-uri primite vizibile, boost profil, travel mode, verificare AI, asistent AI. Zero costuri ascunse.
 • CONSTRUITĂ ÎN ROMÂNIA pentru comunitatea LGBTQ+ din România, Moldova și diaspora, cu suport nativ RO și EN.
-• SIGURANȚĂ REALĂ — verificare 18+ obligatorie prin selfie live (procesator UE, imagini șterse imediat), Panic Button, Fake Call, Quick Exit, PIN lock, mod discret.
-• ANTI-OUTING — control fin peste vizibilitate publică, mod incognito, album privat, discreet mode.
-• MODERARE UMANĂ 24/7 — raportare rapidă, blocare bilaterală enforced la nivel de bază de date.
+• SIGURANȚĂ REALĂ — verificare 18+ prin selfie live (procesator UE, imagini șterse imediat), Panic Button, Fake Call, Quick Exit, PIN lock.
+• ANTI-OUTING — mod incognito, album privat, discreet mode, control fin peste vizibilitate.
+• MODERARE UMANĂ 24/7 — raportare rapidă, blocare bilaterală enforced la nivel DB.
 
 ━━ FUNCȚII ━━
 
 DATING & MATCHING
-• Swipe cu filtre avansate: vârstă, distanță, orientare, gen, triburi, stil de viață
-• Discover cu profiluri verificate ordonate după compatibilitate reală
-• Nearby / Hartă — vezi cine e aproape, cu distanțe bucketizate (locația exactă nu părăsește telefonul)
-• Match Modal cu icebreaker AI
-• Woofs, Taps, Likes — reacții rapide
+• Swipe cu filtre avansate (vârstă, distanță, orientare, gen, triburi, stil de viață)
+• Discover cu profiluri verificate ordonate după compatibilitate
+• Nearby / Hartă — cine e aproape, cu distanțe bucketizate (locația exactă nu părăsește telefonul)
+• Icebreaker AI, Woofs, Taps, Likes
 
 CHAT & MEDIA
 • Mesagerie criptată în tranzit, cu foto, video, voice notes
 • Traducere automată RO ↔ EN ↔ 40+ limbi
-• Swipe-to-reply, reacții emoji, share profil și eveniment
 • AI Wingman: sugerează replici, deschide conversații
 
 PROFIL
-• Galerie foto până la 9 imagini + album privat cu unlock 1-la-1
-• Video clip scurt, Music Anthem (Spotify), Voice Prompt
+• Până la 9 foto + album privat cu unlock 1-la-1
+• Video clip, Music Anthem (Spotify), Voice Prompt
 • Badge-uri câștigate (Verified, Traveler, Event Host, Community Guardian)
 • Bio AI-assist, prompts curatoriate
 
 EVENIMENTE & LOCAȚII LGBTQ+
-• Hartă cu venues friendly (baruri, cluburi, cafenele, cabinete) verificate manual
-• Calendar evenimente: Pride, party-uri, workshop-uri, meetup-uri
-• Notificări de proximitate opt-in — calcul pe device, fără tracking
+• Hartă cu venues friendly verificate manual (baruri, cluburi, cafenele, cabinete)
+• Calendar: Pride, party-uri, workshop-uri, meetup-uri
+• Notificări proximitate opt-in — calcul pe device, fără tracking
 • Travel / Roam Mode — schimbi orașul înainte de plecare
 
 SIGURANȚĂ
-• Verificare 18+ cu selfie live (Didit, UE, GDPR, imagini șterse imediat)
+• Verificare 18+ cu selfie live (Didit, UE, GDPR)
 • Panic Button cu 112 și trimitere locație la contacte de urgență
-• Fake Call Screen, Quick Exit, PIN Lock + biometric
-• Screenshot Protection (ecrane private ascunse din task switcher)
-• Country Risk Guard — avertizări la călătorii în țări cu riscuri LGBTQ+
-• SOS Card cu resurse (ACCEPT, ARAS, MozaiQ)
+• Screenshot Protection, Country Risk Guard, SOS Card (ACCEPT, ARAS, MozaiQ)
 • Raportare CSAM zero-tolerance, escaladare la autorități
 
 INTIMITATE & GDPR
-• Locația exactă NU pleacă niciodată de pe telefon — distanțe server-side bucketizate
-• Date de sănătate (HIV status opțional) cifrate cu pgcrypto, consimțământ Art. 9 explicit
-• Registru consimțăminte transparent (Data safety, Cookies, AI, Marketing, Push)
-• Ștergere cont în 30 zile, export date GDPR Art. 20
-• DPO desemnat, procesatori auditați, transferuri legale (SCC 2021/914 UE), găzduire UE
+• Locația exactă NU pleacă niciodată de pe telefon
+• Date sănătate (HIV opțional) cifrate pgcrypto, consimțământ Art. 9 explicit
+• Registru consimțăminte transparent, ștergere cont în 30 zile, export date Art. 20
+• DPO desemnat, procesatori auditați, găzduire UE
 
 ━━ PENTRU CINE ━━
 
@@ -61,7 +55,7 @@ INTIMITATE & GDPR
 
 ━━ COMUNITATE ━━
 
-Zero-tolerance față de discriminare, outing involuntar, harassment, transfobie, bifobie, rasism, capacitism. Reguli publice, moderatori umani, apel transparent la orice sancțiune (DSA compliant).
+Zero-tolerance față de discriminare, outing involuntar, harassment, transfobie, bifobie, rasism, capacitism. Reguli publice, moderatori umani, apel transparent (DSA compliant).
 
 ━━ CUM NE SUSȚINEM ━━
 
@@ -69,11 +63,11 @@ Prin Ventuza Ads — parteneriate cu cluburi, baruri, evenimente și branduri LG
 
 ━━ LEGAL ━━
 
-• Termeni: https://ventuza.app/legal/terms
-• Confidențialitate: https://ventuza.app/legal/privacy
-• Politică 18+: https://ventuza.app/legal/age-policy
-• Comunitate: https://ventuza.app/legal/community
-• DSA: https://ventuza.app/legal/dsa
+Termeni: https://ventuza.app/legal/terms
+Confidențialitate: https://ventuza.app/legal/privacy
+Politică 18+: https://ventuza.app/legal/age-policy
+Comunitate: https://ventuza.app/legal/community
+DSA: https://ventuza.app/legal/dsa
 
 Conformă GDPR (UE 2016/679), DSA (UE 2022/2065), Legea 190/2018 România.
 
