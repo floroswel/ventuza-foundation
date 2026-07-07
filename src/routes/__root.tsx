@@ -233,25 +233,28 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <NotificationsProvider>
-          <SessionGuards />
-          <CountryRiskGuard />
-          <ProximityWatcherMount />
-          <Outlet />
-          <OfflineBanner />
-          <LocationPermissionPromptMount />
-          <AgeGate />
-          <CookieBanner />
-          <TravelWarning />
-          <PinLockGate />
-          <Toaster theme="dark" position="top-center" richColors />
+        <NotificationPrefsProvider>
+          <NotificationsProvider>
+            <SessionGuards />
+            <CountryRiskGuard />
+            <ProximityWatcherMount />
+            <Outlet />
+            <OfflineBanner />
+            <LocationPermissionPromptMount />
+            <AgeGate />
+            <CookieBanner />
+            <TravelWarning />
+            <PinLockGate />
+            <Toaster theme="dark" position="top-center" richColors />
 
-          <LanguageToggle />
-          <ConsentPromptHost />
-          <VersionGate />
-          <DebugPanel />
-        </NotificationsProvider>
+            <LanguageToggle />
+            <ConsentPromptHost />
+            <VersionGate />
+            <DebugPanel />
+          </NotificationsProvider>
+        </NotificationPrefsProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
 }
+
