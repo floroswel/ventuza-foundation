@@ -147,18 +147,14 @@ export function EnablePushButton({
     setBusy(true);
     try {
       if (isNative) {
-        const tokenToRemove = nativeToken ?? readPersistedFcmToken();
+        // Fallback: după restart de app, `nativeToken` din state e null;
+        // teardownNativePush citește token-ul persistat pe device.
+        void (nativeToken ?? readPersistedFcmToken());
         await teardownNativePush({
           removeToken: async (t) => {
             await removeFcm({ data: { token: t } });
           },
         });
-        // If teardown had no persisted token but state did (edge case), still try.
-        if (!readPersistedFcmToken() && !tokenToRemove && nativeToken) {
-          try {
-            await removeFcm({ data: { token: nativeToken } });
-          } catch { /* noop */ }
-        }
         setSubscribed(false);
         setNativeToken(null);
         toast.success("Notificări dezactivate.");
