@@ -771,11 +771,16 @@ function DiscoverPage() {
         value={filters}
         onApply={setFilters}
         onReset={() => {
-          const cleared = resetDiscoverFilters(user?.id);
-          setFilters(cleared);
-          setDebouncedFilters(cleared);
+          setFilters(DEFAULT_FILTERS);
+          setDebouncedFilters(DEFAULT_FILTERS);
+          try {
+            if (user) window.localStorage.removeItem(`vz_discover_filters:${user.id}`);
+          } catch {
+            /* ignore */
+          }
           toast.success("Filtre resetate");
         }}
+
       />
 
       <MatchModal
