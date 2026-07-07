@@ -249,8 +249,8 @@ export const sendPushToUser = createServerFn({ method: "POST" })
           delivered++;
           try {
             await supabaseAdmin.rpc("log_notification_dispatch", {
-              _actor_id: context.userId,
-              _target_id: data.toUserId,
+              _actor: context.userId,
+              _target: data.toUserId,
               _kind: kindForLog,
               _channel: "fcm",
             });
@@ -267,8 +267,8 @@ export const sendPushToUser = createServerFn({ method: "POST" })
           delivered++;
           try {
             await supabaseAdmin.rpc("log_notification_dispatch", {
-              _actor_id: context.userId,
-              _target_id: data.toUserId,
+              _actor: context.userId,
+              _target: data.toUserId,
               _kind: kindForLog,
               _channel: "webpush",
             });
