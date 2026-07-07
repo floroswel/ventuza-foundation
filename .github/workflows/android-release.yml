@@ -178,9 +178,25 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "$KEYSTORE_B64" | base64 -d > android/app/release.keystore
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::Secretul ANDROID_KEYSTORE_BASE64 lipsește sau e gol."
+            exit 1
+          fi
+          # Strip whitespace/newlines/CR și eventuale ghilimele din secret,
+          # apoi decodează tolerant (base64 -d e strict la caractere non-alfabet).
+          printf '%s' "$KEYSTORE_B64" | tr -d '\r\n\t "'"'" | base64 -d -i > android/app/release.keystore 2>/tmp/b64.err || {
+            echo "::error::Decodarea base64 a keystore-ului a eșuat. Verifică ANDROID_KEYSTORE_BASE64 (fără prefix data:, fără ghilimele, doar caractere base64)."
+            cat /tmp/b64.err || true
+            exit 1
+          }
           test -s android/app/release.keystore
-          echo "Keystore size: $(stat -c%s android/app/release.keystore) bytes"
+          SIZE=$(stat -c%s android/app/release.keystore)
+          echo "Keystore size: $SIZE bytes"
+          # PKCS12 începe cu 0x30 0x82 (SEQUENCE) — verificare sanity fără a expune conținut.
+          head -c 2 android/app/release.keystore | od -An -tx1 | tr -d ' \n' | grep -qi '^3082' || {
+            echo "::error::Fișierul decodat NU pare a fi un keystore valid (header greșit)."
+            exit 1
+          }
 
       - name: Verifică parolele keystore (fail-fast)
         env:
