@@ -330,21 +330,15 @@ function SettingsPage() {
             />
           </label>
 
-          {/* Preview conținut mesaj */}
-          <label className="mt-2 flex items-center justify-between rounded-xl border border-border bg-background px-3 py-2.5 text-sm">
-            <span>
-              <span className="font-medium">Arată conținutul mesajului în notificări</span>
-              <span className="block text-xs text-muted-foreground">
-                Când e dezactivat, notificarea afișează doar „Ai un mesaj nou” (recomandat).
-              </span>
-            </span>
-            <input
-              type="checkbox"
-              checked={prefs.show_preview}
-              onChange={(e) => savePrefs({ ...prefs, show_preview: e.target.checked })}
-              className="size-4 accent-primary"
-            />
-          </label>
+          {/* Preview conținut mesaj — dezactivat permanent din motive de
+              confidențialitate. Toate notificările afișează doar expeditorul
+              + „Ai un mesaj nou”, indiferent de setări. */}
+          <div className="mt-2 rounded-xl border border-border bg-background px-3 py-2.5 text-xs text-muted-foreground">
+            Notificările afișează doar numele expeditorului și „Ai un mesaj nou”.
+            Conținutul mesajului nu este trimis niciodată prin push, pentru
+            confidențialitate.
+          </div>
+
 
 
           <div
