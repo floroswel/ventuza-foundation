@@ -335,7 +335,58 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
         onChange={(e) => handleFile(e, false)}
       />
 
+      {uploads.length > 0 && (
+        <div className="absolute bottom-16 left-2 right-2 z-30 flex max-h-64 flex-col gap-1 overflow-y-auto">
+          {uploads.map((j) => (
+            <div
+              key={j.id}
+              className={cn(
+                "flex items-center gap-2 rounded-xl border px-3 py-2 text-xs shadow-lg backdrop-blur",
+                j.status === "uploading" && "border-border bg-popover/95 text-foreground",
+                j.status === "done" && "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+                j.status === "error" && "border-destructive/50 bg-destructive/10 text-destructive",
+              )}
+            >
+              {j.status === "uploading" && <Loader2 className="size-4 shrink-0 animate-spin" />}
+              {j.status === "error" && <AlertTriangle className="size-4 shrink-0" />}
+              {j.status === "done" && <ImageIcon className="size-4 shrink-0" />}
+              <div className="min-w-0 flex-1">
+                <div className="truncate font-medium">{j.name}</div>
+                <div className="truncate opacity-80">
+                  {j.status === "uploading" &&
+                    (j.error ?? `Se încarcă… (încercare ${j.attempt}/${j.maxAttempts})`)}
+                  {j.status === "done" && "Trimis ✓"}
+                  {j.status === "error" && (j.error ?? "Eroare la trimitere")}
+                </div>
+              </div>
+              {j.status === "error" && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => retryUpload(j.id)}
+                    className="flex items-center gap-1 rounded-md bg-destructive/20 px-2 py-1 text-[11px] font-medium hover:bg-destructive/30"
+                    aria-label="Reîncearcă"
+                  >
+                    <RefreshCw className="size-3" />
+                    Reîncearcă
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => dismissUpload(j.id)}
+                    className="rounded-md p-1 opacity-70 hover:opacity-100"
+                    aria-label="Renunță"
+                  >
+                    <X className="size-3.5" />
+                  </button>
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
       <div className="relative">
+
         <button
           type="button"
           onClick={() => setOpen((o) => !o)}
