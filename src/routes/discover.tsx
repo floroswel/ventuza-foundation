@@ -760,6 +760,11 @@ function DiscoverPage() {
             badgesLoading={badgesLoading}
             badgesError={badgesError}
           />
+          <InfiniteScrollSentinel
+            onReach={loadMore}
+            hasMore={hasMore}
+            loading={loadingMore}
+          />
         </>
       )}
 
