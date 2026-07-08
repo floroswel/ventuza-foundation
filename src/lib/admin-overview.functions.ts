@@ -176,7 +176,7 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
         q.in("status", ["open", "pending", "in_progress"]).eq("priority", "urgent"),
       ),
       head("deletion_requests", (q) => q.eq("status", "pending")),
-      oldest("deletion_requests", "created_at", (q) => q.eq("status", "pending")),
+      oldest("deletion_requests", "requested_at", (q) => q.eq("status", "pending")),
       head("business_applications", (q) => q.in("status", ["pending", "reviewing"])),
       oldest("business_applications", "created_at", (q) =>
         q.in("status", ["pending", "reviewing"]),
@@ -204,7 +204,7 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
         .select("total_minor, currency, due_at")
         .in("status", ["issued", "sent", "overdue"]),
       sa.from("feature_flags").select("key, enabled, updated_at"),
-      sa.from("queue_claims").select("queue, claimed_by, expires_at").gt("expires_at", nowIso),
+      sa.from("queue_claims").select("queue, actor_id, expires_at").gt("expires_at", nowIso),
       sa
         .from("admin_audit_log")
         .select("id, action, target_table, actor_id, severity, created_at, metadata")
@@ -225,7 +225,7 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
         .gte("created_at", since24h)
         .not("city", "is", null)
         .limit(1000),
-      head("risk_flags", (q) => q.gte("score", 70).gte("created_at", since7d)),
+      head("risk_flags", (q) => q.gte("severity", 70).gte("created_at", since7d)),
       head("risk_flags", (q) => q.eq("status", "pending")),
       head("profiles", (q) => q.not("partner_suspended_at", "is", null)),
     ]);
@@ -263,7 +263,7 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
 
     // Moderatori online (queue_claims valide)
     const claims = activeClaims.data ?? [];
-    const onlineOperators = new Set(claims.map((c: any) => c.claimed_by)).size;
+    const onlineOperators = new Set(claims.map((c: any) => c.actor_id)).size;
     const claimsByQueue: Record<string, number> = {};
     claims.forEach((c: any) => {
       claimsByQueue[c.queue] = (claimsByQueue[c.queue] ?? 0) + 1;
@@ -357,7 +357,7 @@ export const adminGetOverviewRich = createServerFn({ method: "POST" })
           key: "deletion",
           label: "Ștergere cont (GDPR)",
           pending: deletionPending.count ?? 0,
-          oldestMin: ageMinutes(deletionOldest, "created_at"),
+          oldestMin: ageMinutes(deletionOldest, "requested_at"),
           route: "gdpr",
           sla: 30 * 24 * 60,
         },

@@ -148,9 +148,9 @@ export const adminGetUserActivity = createServerFn({ method: "POST" })
         .limit(10),
       sa
         .from("deletion_requests")
-        .select("id, status, scheduled_at, created_at")
+        .select("id, status, scheduled_for, requested_at")
         .eq("user_id", data.userId)
-        .order("created_at", { ascending: false })
+        .order("requested_at", { ascending: false })
         .limit(5),
       sa
         .from("risk_flags")

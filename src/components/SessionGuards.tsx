@@ -1,5 +1,5 @@
 import { useDeviceFingerprint } from "@/hooks/useDeviceFingerprint";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -24,6 +24,43 @@ export function SessionGuards() {
   const geoWatchRef = useRef<number | null>(null);
   const lastSentRef = useRef(0);
   const { forceStealth, hidePreciseLocation, isBlocked } = useCountryGate();
+  const [sharingEnabled, setSharingEnabled] = useState<boolean | null>(null);
+
+  // Ține sincron flag-ul `location_sharing_enabled` din profil (fetch inițial +
+  // realtime UPDATE). Când userul îl oprește din Profil, watch-ul se închide
+  // instant fără reload.
+  useEffect(() => {
+    if (!user) {
+      setSharingEnabled(null);
+      return;
+    }
+    let cancelled = false;
+    void supabase
+      .from("profiles")
+      .select("location_sharing_enabled")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setSharingEnabled(data?.location_sharing_enabled !== false);
+      });
+    const chan = supabase
+      .channel(`profile-loc-share:${user.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "profiles", filter: `id=eq.${user.id}` },
+        (payload) => {
+          const next = (payload.new as { location_sharing_enabled?: boolean | null } | null)
+            ?.location_sharing_enabled;
+          setSharingEnabled(next !== false);
+        },
+      )
+      .subscribe();
+    return () => {
+      cancelled = true;
+      void supabase.removeChannel(chan);
+    };
+  }, [user]);
 
   useDeviceFingerprint();
 
@@ -66,52 +103,28 @@ export function SessionGuards() {
 
   useEffect(() => {
     if (!user || !("geolocation" in navigator)) return;
-    // Country gate: NU publica coordonatele când userul este într-o țară care
-    // forțează stealth / ascunde locația precisă / e blocată.
     if (forceStealth || hidePreciseLocation || isBlocked) return;
+    if (sharingEnabled !== true) return;
 
-    let cancelled = false;
-    let cleanup: (() => void) | null = null;
-
-    void (async () => {
-      // Respectă comutatorul din profil (poate fi oprit oricând).
-      const { data } = await supabase
-        .from("profiles")
-        .select("location_sharing_enabled")
-        .eq("id", user.id)
-        .maybeSingle();
-      if (cancelled) return;
-      if (data && data.location_sharing_enabled === false) return;
-
-      const id = navigator.geolocation.watchPosition(
-        (pos) => {
-          const now = Date.now();
-          if (now - lastSentRef.current < 15_000) return;
-          lastSentRef.current = now;
-          void supabase.rpc("update_my_location", {
-            lng: pos.coords.longitude,
-            lat: pos.coords.latitude,
-          });
-        },
-        () => {},
-        { enableHighAccuracy: true, maximumAge: 10_000, timeout: 20_000 },
-      );
-      geoWatchRef.current = id;
-      cleanup = () => {
-        navigator.geolocation.clearWatch(id);
-        geoWatchRef.current = null;
-      };
-    })();
-
+    const id = navigator.geolocation.watchPosition(
+      (pos) => {
+        const now = Date.now();
+        if (now - lastSentRef.current < 15_000) return;
+        lastSentRef.current = now;
+        void supabase.rpc("update_my_location", {
+          lng: pos.coords.longitude,
+          lat: pos.coords.latitude,
+        });
+      },
+      () => {},
+      { enableHighAccuracy: true, maximumAge: 10_000, timeout: 20_000 },
+    );
+    geoWatchRef.current = id;
     return () => {
-      cancelled = true;
-      if (cleanup) cleanup();
-      else if (geoWatchRef.current != null) {
-        navigator.geolocation.clearWatch(geoWatchRef.current);
-        geoWatchRef.current = null;
-      }
+      navigator.geolocation.clearWatch(id);
+      geoWatchRef.current = null;
     };
-  }, [user, forceStealth, hidePreciseLocation, isBlocked]);
+  }, [user, forceStealth, hidePreciseLocation, isBlocked, sharingEnabled]);
 
   return null;
 }
