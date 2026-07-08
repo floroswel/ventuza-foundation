@@ -407,8 +407,8 @@ function User360Page() {
               rows={activity?.deletion_requests ?? []}
               cols={[
                 { k: "status", h: "Status" },
-                { k: "created_at", h: "Creată", fmt: fmtDate },
-                { k: "scheduled_at", h: "Programată", fmt: fmtDate },
+                { k: "requested_at", h: "Creată", fmt: fmtDate },
+                { k: "scheduled_for", h: "Programată", fmt: fmtDate },
               ]}
             />
             {(activity?.deletion_requests ?? []).some((d: any) => d.status === "scheduled") && (
