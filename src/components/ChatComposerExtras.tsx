@@ -15,6 +15,8 @@ import {
 import { toast } from "sonner";
 import { sendMediaMessage, updateLiveLocationMessage, type MessageRow } from "@/lib/chat";
 import { compressImageForChat } from "@/lib/image-compress";
+import { pickImage } from "@/lib/native-camera";
+import { watchPosition, type WatchHandle } from "@/lib/native-geolocation";
 import { cn } from "@/lib/utils";
 
 type UploadJob = {
@@ -73,14 +75,14 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
     stream: MediaStream;
   } | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const geoWatchRef = useRef<number | null>(null);
+  const geoWatchRef = useRef<WatchHandle | null>(null);
   const liveMessageIdRef = useRef<string | null>(null);
   const lastLocationUpdateRef = useRef(0);
 
   useEffect(
     () => () => {
       if (tickRef.current) clearInterval(tickRef.current);
-      if (geoWatchRef.current != null) navigator.geolocation.clearWatch(geoWatchRef.current);
+      geoWatchRef.current?.clear();
       recRef.current?.stream.getTracks().forEach((t) => t.stop());
     },
     [],
@@ -88,9 +90,14 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
 
   async function pickPhoto(source: "gallery" | "camera" | "gallery-once") {
     setOpen(false);
-    const ref =
-      source === "camera" ? cameraRef : source === "gallery-once" ? fileOnceRef : fileRef;
-    ref.current?.click();
+    try {
+      const file = await pickImage(source === "camera" ? "camera" : "gallery");
+      if (!file) return;
+      const viewOnce = source === "gallery-once";
+      await enqueueFiles([file], viewOnce);
+    } catch (err) {
+      toast.error((err as Error).message || "Nu am putut deschide camera");
+    }
   }
 
   function updateJob(id: string, patch: Partial<UploadJob>) {
