@@ -180,6 +180,8 @@ function LocationPermissionPromptMount() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
 
   useEffect(() => {
     // i18n e deja inițializat de import eager; aici doar setăm <html lang>.
