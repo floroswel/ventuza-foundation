@@ -12,6 +12,12 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
+import { lovable } from "@/integrations/lovable";
+import {
+  nativeGoogleSignIn,
+  isNativeAndroid,
+  hasNativeGoogleConfig,
+} from "@/lib/native-google-auth";
 
 
 
