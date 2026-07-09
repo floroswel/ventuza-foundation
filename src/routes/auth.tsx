@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
 import { useCountryGate } from "@/lib/country-gate";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
-import { nativeGoogleSignIn, nativeGoogleSupported, isNativePlatform, hasNativeGoogleConfig } from "@/lib/native-google-auth";
 
 
 
