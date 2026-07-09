@@ -70,13 +70,9 @@ export function SosCard() {
     try {
       let coords: { latitude?: number; longitude?: number } = {};
       try {
-        const pos = await new Promise<GeolocationPosition>((res, rej) =>
-          navigator.geolocation.getCurrentPosition(res, rej, {
-            timeout: 4000,
-            enableHighAccuracy: true,
-          }),
-        );
-        coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
+        const { getCurrentPosition } = await import("@/lib/native-geolocation");
+        const pos = await getCurrentPosition({ timeout: 4000, enableHighAccuracy: true });
+        if (pos) coords = { latitude: pos.coords.latitude, longitude: pos.coords.longitude };
       } catch {
         /* locație opțională */
       }
