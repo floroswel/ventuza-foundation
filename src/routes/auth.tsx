@@ -112,36 +112,13 @@ function AuthPage() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [birthDate, setBirthDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [oauthBusy, setOauthBusy] = useState<"google" | "apple" | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaNonce, setCaptchaNonce] = useState(0);
   const [authError, setAuthError] = useState<FriendlyAuthError | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
   const captchaRequired = isTurnstileConfigured();
-  // Pe Android nativ (Capacitor WebView), Google blochează OAuth-ul web în
-  // WebView (403 disallowed_useragent). Dacă nu avem Google Sign-In nativ
-  // configurat (VITE_GOOGLE_WEB_CLIENT_ID lipsă), ascundem butonul complet
-  // ca să nu ajungă userul într-o fundătură. Apple pe Android e oricum
-  // inutil, deci îl ascundem pe nativ Android indiferent de config.
-  const [nativeAndroid, setNativeAndroid] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const { Capacitor } = await import("@capacitor/core");
-        const isNative =
-          Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
-        if (!cancelled) setNativeAndroid(isNative);
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  const showGoogleButton = !nativeAndroid || hasNativeGoogleConfig();
-  const showAppleButton = !nativeAndroid;
+
+
 
   useEffect(() => {
     if (retryCountdown <= 0) return;
