@@ -129,47 +129,16 @@ export function formatHeight(cm: number | null): string | null {
 }
 
 export async function requestAndStoreLocation(): Promise<{ ok: boolean; error?: string }> {
-  if (!("geolocation" in navigator)) return { ok: false, error: "Geolocation not supported" };
-
-  const tryGet = (highAccuracy: boolean) =>
-    new Promise<GeolocationPosition | GeolocationPositionError>((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => resolve(pos),
-        (err) => resolve(err),
-        {
-          enableHighAccuracy: highAccuracy,
-          maximumAge: 10 * 60 * 1000,
-          timeout: highAccuracy ? 12_000 : 20_000,
-        },
-      );
-    });
-
-  // Primul try: high accuracy. Dacă eșuează (timeout/unavailable), retry cu low accuracy.
-  let result = await tryGet(true);
-  if ("code" in result) {
-    // PERMISSION_DENIED (1) → nu are rost retry, userul a refuzat.
-    if (result.code === 1) {
-      return {
-        ok: false,
-        error:
-          "Ai blocat locația din browser. Deschide setările site-ului (🔒 lângă URL) și pornește Permisiuni → Locație.",
-      };
-    }
-    // POSITION_UNAVAILABLE (2) sau TIMEOUT (3) → retry cu low accuracy
-    result = await tryGet(false);
+  const { getCurrentPosition } = await import("./native-geolocation");
+  let pos = await getCurrentPosition({ enableHighAccuracy: true, maximumAge: 10 * 60 * 1000, timeout: 12_000 });
+  if (!pos) pos = await getCurrentPosition({ enableHighAccuracy: false, maximumAge: 10 * 60 * 1000, timeout: 20_000 });
+  if (!pos) {
+    return {
+      ok: false,
+      error:
+        "Nu am putut obține locația. Verifică permisiunea aplicației (Setări → Aplicații → Ventuza → Permisiuni → Locație) și că Location Services este activ.",
+    };
   }
-
-  if ("code" in result) {
-    const msg =
-      result.code === 2
-        ? "Nu am putut obține locația (GPS/Wi-Fi indisponibil). Încearcă în alt loc sau activează Location Services în sistem."
-        : result.code === 3
-          ? "Locația nu a răspuns la timp. Verifică conexiunea și reîncearcă."
-          : result.message || "Locație indisponibilă.";
-    return { ok: false, error: msg };
-  }
-
-  const pos = result;
   const { error } = await supabase.rpc("update_my_location", {
     lng: pos.coords.longitude,
     lat: pos.coords.latitude,
