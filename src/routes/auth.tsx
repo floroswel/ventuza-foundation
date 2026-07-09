@@ -540,7 +540,6 @@ function AuthPage() {
             type="submit"
             disabled={
               submitting ||
-              oauthBusy !== null ||
               signupDisabled ||
               (captchaRequired && !captchaToken) ||
               retryCountdown > 0
