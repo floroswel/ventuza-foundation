@@ -324,3 +324,14 @@ html {
 @utility min-h-dvh-safe {
   min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
+
+/* Native Android — Keyboard aware bottom padding.
+   Populated by src/lib/native-runtime.ts via @capacitor/keyboard listeners.
+   Utility: <div class="pb-keyboard">  → padding-bottom grows when keyboard is up. */
+:root { --keyboard-height: 0px; }
+@utility pb-keyboard {
+  padding-bottom: calc(env(safe-area-inset-bottom) + var(--keyboard-height));
+}
+@utility mb-keyboard {
+  margin-bottom: var(--keyboard-height);
+}

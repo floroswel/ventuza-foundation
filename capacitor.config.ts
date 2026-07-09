@@ -40,11 +40,16 @@ const config: CapacitorConfig = {
       style: "DARK",
       backgroundColor: "#0B0B0F",
     },
+    Keyboard: {
+      resize: "native",
+      resizeOnFullScreen: true,
+    },
     PrivacyScreen: {
       enable: true,
       imageName: "Splash",
       preventScreenshots: true,
     },
+
   },
 };
 

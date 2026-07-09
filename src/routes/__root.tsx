@@ -180,6 +180,8 @@ function LocationPermissionPromptMount() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
+
 
   useEffect(() => {
     // i18n e deja inițializat de import eager; aici doar setăm <html lang>.
@@ -231,7 +233,12 @@ function RootComponent() {
   useEffect(() => {
     // Guarded PWA registration (dev/preview/iframe/?sw=off all refuse).
     void import("@/lib/pwa-register").then(({ registerPwa }) => registerPwa());
-  }, []);
+    // Native Android runtime: back button, keyboard resize, status bar.
+    void import("@/lib/native-runtime").then(({ bootstrapNativeRuntime }) =>
+      bootstrapNativeRuntime(router),
+    );
+  }, [router]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
