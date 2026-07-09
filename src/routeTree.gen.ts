@@ -27,7 +27,6 @@ import { Route as NRouteImport } from './routes/n'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as GroupsRouteImport } from './routes/groups'
-import { Route as GalleryTestRouteImport } from './routes/gallery-test'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as EventsRouteImport } from './routes/events'
@@ -173,11 +172,6 @@ const MatchesRoute = MatchesRouteImport.update({
 const GroupsRoute = GroupsRouteImport.update({
   id: '/groups',
   path: '/groups',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GalleryTestRoute = GalleryTestRouteImport.update({
-  id: '/gallery-test',
-  path: '/gallery-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -483,7 +477,6 @@ export interface FileRoutesByFullPath {
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
-  '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
   '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
@@ -560,7 +553,6 @@ export interface FileRoutesByTo {
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
-  '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
   '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
@@ -638,7 +630,6 @@ export interface FileRoutesById {
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
   '/favorites': typeof FavoritesRoute
-  '/gallery-test': typeof GalleryTestRoute
   '/groups': typeof GroupsRouteWithChildren
   '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
@@ -717,7 +708,6 @@ export interface FileRouteTypes {
     | '/events'
     | '/explore'
     | '/favorites'
-    | '/gallery-test'
     | '/groups'
     | '/matches'
     | '/mcp'
@@ -794,7 +784,6 @@ export interface FileRouteTypes {
     | '/events'
     | '/explore'
     | '/favorites'
-    | '/gallery-test'
     | '/groups'
     | '/matches'
     | '/mcp'
@@ -871,7 +860,6 @@ export interface FileRouteTypes {
     | '/events'
     | '/explore'
     | '/favorites'
-    | '/gallery-test'
     | '/groups'
     | '/matches'
     | '/mcp'
@@ -949,7 +937,6 @@ export interface RootRouteChildren {
   EventsRoute: typeof EventsRouteWithChildren
   ExploreRoute: typeof ExploreRoute
   FavoritesRoute: typeof FavoritesRoute
-  GalleryTestRoute: typeof GalleryTestRoute
   GroupsRoute: typeof GroupsRouteWithChildren
   MatchesRoute: typeof MatchesRoute
   McpRoute: typeof McpRoute
@@ -1127,13 +1114,6 @@ declare module '@tanstack/react-router' {
       path: '/groups'
       fullPath: '/groups'
       preLoaderRoute: typeof GroupsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gallery-test': {
-      id: '/gallery-test'
-      path: '/gallery-test'
-      fullPath: '/gallery-test'
-      preLoaderRoute: typeof GalleryTestRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -1650,7 +1630,6 @@ const rootRouteChildren: RootRouteChildren = {
   EventsRoute: EventsRouteWithChildren,
   ExploreRoute: ExploreRoute,
   FavoritesRoute: FavoritesRoute,
-  GalleryTestRoute: GalleryTestRoute,
   GroupsRoute: GroupsRouteWithChildren,
   MatchesRoute: MatchesRoute,
   McpRoute: McpRoute,
