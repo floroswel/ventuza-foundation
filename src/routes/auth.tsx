@@ -5,7 +5,6 @@ import { toast } from "sonner";
 import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
 import { useAuth } from "@/lib/auth-context";
 import { useCountryGate } from "@/lib/country-gate";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
-import { nativeGoogleSignIn, nativeGoogleSupported, isNativePlatform, hasNativeGoogleConfig } from "@/lib/native-google-auth";
 
 
 
@@ -112,36 +110,13 @@ function AuthPage() {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [birthDate, setBirthDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [oauthBusy, setOauthBusy] = useState<"google" | "apple" | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaNonce, setCaptchaNonce] = useState(0);
   const [authError, setAuthError] = useState<FriendlyAuthError | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
   const captchaRequired = isTurnstileConfigured();
-  // Pe Android nativ (Capacitor WebView), Google blochează OAuth-ul web în
-  // WebView (403 disallowed_useragent). Dacă nu avem Google Sign-In nativ
-  // configurat (VITE_GOOGLE_WEB_CLIENT_ID lipsă), ascundem butonul complet
-  // ca să nu ajungă userul într-o fundătură. Apple pe Android e oricum
-  // inutil, deci îl ascundem pe nativ Android indiferent de config.
-  const [nativeAndroid, setNativeAndroid] = useState(false);
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const { Capacitor } = await import("@capacitor/core");
-        const isNative =
-          Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
-        if (!cancelled) setNativeAndroid(isNative);
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-  const showGoogleButton = !nativeAndroid || hasNativeGoogleConfig();
-  const showAppleButton = !nativeAndroid;
+
+
 
   useEffect(() => {
     if (retryCountdown <= 0) return;
@@ -311,111 +286,9 @@ function AuthPage() {
     }
   }
 
-  async function onOAuth(provider: "google" | "apple") {
-    if (provider === ("signup-blocked" as never)) return;
-    if (countryGate.isBlocked) {
-      navigate({ to: "/blocked-region", replace: true });
-      return;
-    }
-    if (mode === "signup") {
-      if (!over18 || !acceptTerms) {
-        toast.error(t("auth.errors.confirmChecks"));
-        return;
-      }
-      // Require a real birthdate before OAuth signup. The trigger
-      // `enforce_min_age_trg` cannot reject NULL, so we enforce here too.
-      const age = ageFromBirthDate(birthDate);
-      if (age === null) {
-        toast.error(t("auth.errors.needBirthdateOAuth"));
-        return;
-      }
-      if (age < 18) {
-        toast.error(t("auth.errors.tooYoung"));
-        return;
-      }
+  // OAuth dezactivat — folosim doar email + parolă.
 
-      // Persist în ambele storage-uri ca să supraviețuiască redirect-ului OAuth
-      // (sessionStorage e pierdut pe Safari/WebView; localStorage rămâne).
-      try {
-        sessionStorage.setItem("vz_pending_birthdate", birthDate);
-      } catch {
-        /* ignore */
-      }
-      try {
-        localStorage.setItem("vz_pending_birthdate", birthDate);
-      } catch {
-        /* ignore */
-      }
-    }
-    setOauthBusy(provider);
-    try {
-      // Detectăm platforma: pe nativ Android (Capacitor WebView) Google
-      // returnează 404 pentru fluxul OAuth în WebView, deci folosim
-      // Google Sign-In nativ (@capgo/capacitor-social-login) → id_token →
-      // supabase.auth.signInWithIdToken. Pe browser web folosim fluxul
-      // managed lovable.auth.signInWithOAuth.
-      const onNative = await isNativePlatform();
 
-      if (provider === "google" && onNative) {
-        if (!hasNativeGoogleConfig()) {
-          toast.error(
-            "Google Sign-In nativ nu este configurat (lipsește VITE_GOOGLE_WEB_CLIENT_ID). Folosește email/parolă pe Android.",
-          );
-          return;
-        }
-        const native = await nativeGoogleSignIn();
-        if (native.ok) {
-          const { data } = await supabase.auth.getUser();
-          if (data.user) {
-            await persistPendingBirthdate(data.user.id);
-            await routeAfterAuth(data.user.id, navigate, search.redirect);
-          }
-          return;
-        }
-        if (native.code === "cancelled") return;
-        toast.error(native.message ?? t("auth.errors.oauthFailed", { provider }));
-        return;
-      }
-
-      if (provider === "google" && (await nativeGoogleSupported())) {
-        // Safety net (nu ar trebui să fie atins — cazul de mai sus îl acoperă).
-        const native = await nativeGoogleSignIn();
-        if (native.ok) {
-          const { data } = await supabase.auth.getUser();
-          if (data.user) {
-            await persistPendingBirthdate(data.user.id);
-            await routeAfterAuth(data.user.id, navigate, search.redirect);
-          }
-          return;
-        }
-        if (native.code === "cancelled") return;
-        if (native.code !== "unsupported") {
-          toast.error(native.message ?? t("auth.errors.oauthFailed", { provider }));
-          return;
-        }
-      }
-
-      // Web / browser: fluxul managed OAuth (popup + web_message → sesiune).
-      const result = await lovable.auth.signInWithOAuth(provider, {
-        redirect_uri: window.location.origin + "/auth",
-      });
-      if (result.error) {
-        toast.error(result.error.message ?? t("auth.errors.oauthFailed", { provider }));
-        return;
-      }
-      if (result.redirected) return; // browser navigates
-      // session set in place
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        await persistPendingBirthdate(data.user.id);
-        await routeAfterAuth(data.user.id, navigate, search.redirect);
-      }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : t("auth.errors.oauthFailed", { provider }));
-    } finally {
-      setOauthBusy(null);
-    }
-  }
 
 
   async function onForgotPassword() {
@@ -491,58 +364,8 @@ function AuthPage() {
           ))}
         </div>
 
-        {/* OAuth */}
-        {(showGoogleButton || showAppleButton) && (
-          <div className="mt-6 space-y-3">
-            {showGoogleButton && (
-              <button
-                type="button"
-                onClick={() => onOAuth("google")}
-                disabled={oauthBusy !== null || submitting}
-                className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50"
-              >
-                {oauthBusy === "google" ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-                    <path
-                      fill="#EA4335"
-                      d="M12 10.2v3.9h5.5c-.2 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.6 14.6 2.7 12 2.7 6.9 2.7 2.7 6.9 2.7 12s4.2 9.3 9.3 9.3c5.4 0 8.9-3.8 8.9-9.1 0-.6-.1-1.1-.2-1.6H12z"
-                    />
-                  </svg>
-                )}
-                {t("auth.continueGoogle")}
-              </button>
-            )}
-            {showAppleButton && (
-              <button
-                type="button"
-                onClick={() => onOAuth("apple")}
-                disabled={oauthBusy !== null || submitting}
-                className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50"
-              >
-                {oauthBusy === "apple" ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden>
-                    <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.9-1.4-.1-2.8.9-3.5.9-.7 0-1.9-.8-3.1-.8-1.6 0-3 .9-3.8 2.4-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2-.1 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-1.1 2.8-2.3.9-1.3 1.2-2.6 1.3-2.7-.1 0-2.4-.9-2.4-3.7zM14.4 5.6c.6-.8 1.1-1.9 1-3-1 .1-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.5 2.8-1.3z" />
-                  </svg>
-                )}
-                {t("auth.continueApple")}
-              </button>
-            )}
-          </div>
-        )}
+        {/* OAuth dezactivat — folosim doar email + parolă */}
 
-
-        <div className="my-6 flex items-center gap-3">
-          <div className="h-px flex-1 bg-border" />
-          <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-            {t("auth.orEmail")}
-          </span>
-
-          <div className="h-px flex-1 bg-border" />
-        </div>
 
         {/* Email form */}
         <form onSubmit={onSubmit} className="space-y-4">
@@ -715,7 +538,6 @@ function AuthPage() {
             type="submit"
             disabled={
               submitting ||
-              oauthBusy !== null ||
               signupDisabled ||
               (captchaRequired && !captchaToken) ||
               retryCountdown > 0
