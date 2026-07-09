@@ -144,10 +144,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
     setUploads((prev) => prev.filter((j) => j.id !== id));
   }
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>, viewOnce: boolean) {
-    const files = Array.from(e.target.files ?? []);
-    e.target.value = "";
-    if (!files.length) return;
+  async function enqueueFiles(files: File[], viewOnce: boolean) {
     const MAX = 10;
     if (files.length > MAX) {
       toast.error(`Maxim ${MAX} imagini deodată`);
@@ -181,15 +178,21 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
     }
   }
 
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>, viewOnce: boolean) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (!files.length) return;
+    await enqueueFiles(files, viewOnce);
+  }
+
 
 
 
 
   async function shareLocation() {
     setOpen(false);
-    if (!("geolocation" in navigator)) return toast.error("Locația nu e disponibilă");
-    if (geoWatchRef.current != null) {
-      navigator.geolocation.clearWatch(geoWatchRef.current);
+    if (geoWatchRef.current) {
+      geoWatchRef.current.clear();
       geoWatchRef.current = null;
       liveMessageIdRef.current = null;
       setLiveLocationId(null);
@@ -197,7 +200,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
       return;
     }
     setBusy(true);
-    geoWatchRef.current = navigator.geolocation.watchPosition(
+    geoWatchRef.current = await watchPosition(
       async (pos) => {
         try {
           const now = Date.now();
@@ -226,7 +229,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
       },
       (err) => {
         setBusy(false);
-        if (geoWatchRef.current != null) navigator.geolocation.clearWatch(geoWatchRef.current);
+        geoWatchRef.current?.clear();
         geoWatchRef.current = null;
         liveMessageIdRef.current = null;
         setLiveLocationId(null);
@@ -235,6 +238,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 15_000 },
     );
   }
+
 
   async function startRecording() {
     setOpen(false);
