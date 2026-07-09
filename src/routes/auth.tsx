@@ -492,41 +492,48 @@ function AuthPage() {
         </div>
 
         {/* OAuth */}
-        <div className="mt-6 space-y-3">
-          <button
-            type="button"
-            onClick={() => onOAuth("google")}
-            disabled={oauthBusy !== null || submitting}
-            className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50"
-          >
-            {oauthBusy === "google" ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
-                <path
-                  fill="#EA4335"
-                  d="M12 10.2v3.9h5.5c-.2 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.6 14.6 2.7 12 2.7 6.9 2.7 2.7 6.9 2.7 12s4.2 9.3 9.3 9.3c5.4 0 8.9-3.8 8.9-9.1 0-.6-.1-1.1-.2-1.6H12z"
-                />
-              </svg>
+        {(showGoogleButton || showAppleButton) && (
+          <div className="mt-6 space-y-3">
+            {showGoogleButton && (
+              <button
+                type="button"
+                onClick={() => onOAuth("google")}
+                disabled={oauthBusy !== null || submitting}
+                className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50"
+              >
+                {oauthBusy === "google" ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <svg viewBox="0 0 24 24" className="size-4" aria-hidden>
+                    <path
+                      fill="#EA4335"
+                      d="M12 10.2v3.9h5.5c-.2 1.4-1.7 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1s2.7-6.1 6-6.1c1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.8 3.6 14.6 2.7 12 2.7 6.9 2.7 2.7 6.9 2.7 12s4.2 9.3 9.3 9.3c5.4 0 8.9-3.8 8.9-9.1 0-.6-.1-1.1-.2-1.6H12z"
+                    />
+                  </svg>
+                )}
+                {t("auth.continueGoogle")}
+              </button>
             )}
-            {t("auth.continueGoogle")}
-          </button>
-          <button
-            type="button"
-            onClick={() => onOAuth("apple")}
-            disabled={oauthBusy !== null || submitting}
-            className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50"
-          >
-            {oauthBusy === "apple" ? (
-              <Loader2 className="size-4 animate-spin" />
-            ) : (
-              <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden>
-                <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.9-1.4-.1-2.8.9-3.5.9-.7 0-1.9-.8-3.1-.8-1.6 0-3 .9-3.8 2.4-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2-.1 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-1.1 2.8-2.3.9-1.3 1.2-2.6 1.3-2.7-.1 0-2.4-.9-2.4-3.7zM14.4 5.6c.6-.8 1.1-1.9 1-3-1 .1-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.5 2.8-1.3z" />
-              </svg>
+            {showAppleButton && (
+              <button
+                type="button"
+                onClick={() => onOAuth("apple")}
+                disabled={oauthBusy !== null || submitting}
+                className="flex w-full items-center justify-center gap-3 rounded-xl border border-border bg-surface px-4 py-3 text-sm font-medium text-foreground transition-colors hover:border-primary/50 hover:bg-primary/5 disabled:opacity-50"
+              >
+                {oauthBusy === "apple" ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <svg viewBox="0 0 24 24" className="size-4 fill-current" aria-hidden>
+                    <path d="M16.4 12.7c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.9-1.4-.1-2.8.9-3.5.9-.7 0-1.9-.8-3.1-.8-1.6 0-3 .9-3.8 2.4-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2-.1 1.6-.7 3-.7s1.8.7 3 .7c1.2 0 2-1.1 2.8-2.3.9-1.3 1.2-2.6 1.3-2.7-.1 0-2.4-.9-2.4-3.7zM14.4 5.6c.6-.8 1.1-1.9 1-3-1 .1-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1.1.1 2.2-.5 2.8-1.3z" />
+                  </svg>
+                )}
+                {t("auth.continueApple")}
+              </button>
             )}
-            {t("auth.continueApple")}
-          </button>
-        </div>
+          </div>
+        )}
+
 
         <div className="my-6 flex items-center gap-3">
           <div className="h-px flex-1 bg-border" />
