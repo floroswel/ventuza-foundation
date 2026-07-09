@@ -50,10 +50,6 @@ const config: CapacitorConfig = {
       preventScreenshots: true,
     },
 
-      enable: true,
-      imageName: "Splash",
-      preventScreenshots: true,
-    },
   },
 };
 
