@@ -233,7 +233,12 @@ function RootComponent() {
   useEffect(() => {
     // Guarded PWA registration (dev/preview/iframe/?sw=off all refuse).
     void import("@/lib/pwa-register").then(({ registerPwa }) => registerPwa());
-  }, []);
+    // Native Android runtime: back button, keyboard resize, status bar.
+    void import("@/lib/native-runtime").then(({ bootstrapNativeRuntime }) =>
+      bootstrapNativeRuntime(router),
+    );
+  }, [router]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
