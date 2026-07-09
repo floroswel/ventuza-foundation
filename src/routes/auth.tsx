@@ -121,6 +121,54 @@ function AuthPage() {
   const [authError, setAuthError] = useState<FriendlyAuthError | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
   const captchaRequired = isTurnstileConfigured();
+  const [googleBusy, setGoogleBusy] = useState(false);
+  const [isNative, setIsNative] = useState(false);
+  useEffect(() => {
+    void isNativeAndroid().then(setIsNative);
+  }, []);
+  // Butonul Google apare doar dacă avem cale funcțională:
+  //  - pe Android nativ: doar dacă VITE_GOOGLE_WEB_CLIENT_ID e setat (altfel WebView Google → 403)
+  //  - pe web: mereu (broker Lovable managed OAuth)
+  const googleAvailable = isNative ? hasNativeGoogleConfig() : true;
+
+  async function onGoogleSignIn() {
+    if (googleBusy) return;
+    if (countryGate.isBlocked) {
+      navigate({ to: "/blocked-region", replace: true });
+      return;
+    }
+    if (mode === "signup" && birthDate) {
+      // Persist pentru completare profil post-OAuth (SessionGuards → /n).
+      try {
+        sessionStorage.setItem("vz_pending_birthdate", birthDate);
+        localStorage.setItem("vz_pending_birthdate", birthDate);
+      } catch { /* ignore */ }
+    }
+    setAuthError(null);
+    setGoogleBusy(true);
+    try {
+      if (isNative) {
+        const res = await nativeGoogleSignIn();
+        if (!res.ok) {
+          if (res.code === "cancelled") return;
+          handleAuthError(new Error(res.message ?? "Google sign-in failed"));
+          return;
+        }
+        // Session set by supabase.auth.signInWithIdToken; SessionGuards redirects.
+      } else {
+        const result = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: `${window.location.origin}/auth`,
+        });
+        if (result?.error) {
+          handleAuthError(result.error);
+          return;
+        }
+        // if redirected, browser leaves this page
+      }
+    } finally {
+      setGoogleBusy(false);
+    }
+  }
 
 
 
