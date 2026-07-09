@@ -49,6 +49,18 @@ export async function bootstrapNativeRuntime(router: Router<any, any, any, any, 
         App.exitApp();
       }
     });
+
+    // Deep link handler — https://ventuza.app/... deschide direct în app
+    // (necesită assetlinks.json + intent-filter în AndroidManifest, deja livrat).
+    App.addListener("appUrlOpen", ({ url }) => {
+      try {
+        const u = new URL(url);
+        const path = `${u.pathname}${u.search}${u.hash}`;
+        if (path && path !== "/") router.navigate({ to: path, replace: false });
+      } catch {
+        /* ignore invalid url */
+      }
+    });
   } catch (err) {
     console.warn("[native] back button unavailable", err);
   }

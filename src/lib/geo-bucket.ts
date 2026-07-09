@@ -50,48 +50,20 @@ export class GeoError extends Error {
   }
 }
 
-export function getCurrentCoords(opts?: { maxAgeMs?: number }): Promise<Coords> {
-  return new Promise((resolve, reject) => {
-    if (typeof navigator === "undefined" || !navigator.geolocation) {
-      reject(new GeoError("unavailable", "Geolocation nu e disponibilă pe acest dispozitiv."));
-      return;
-    }
-    const maxAge = opts?.maxAgeMs ?? COORDS_CACHE_MS;
-    if (cached && Date.now() - cached.at < maxAge) {
-      resolve(cached.coords);
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-        cached = { at: Date.now(), coords };
-        resolve(coords);
-      },
-      (err) => {
-        // 1 = PERMISSION_DENIED, 2 = POSITION_UNAVAILABLE, 3 = TIMEOUT
-        if (err.code === 1) {
-          reject(
-            new GeoError(
-              "denied",
-              "Ai blocat locația pentru acest site. Deschide setările browserului → Locație → Permite.",
-            ),
-          );
-        } else if (err.code === 2) {
-          reject(
-            new GeoError(
-              "position_unavailable",
-              "Nu am putut obține locația (GPS/rețea indisponibile). Încearcă din nou peste câteva secunde.",
-            ),
-          );
-        } else if (err.code === 3) {
-          reject(new GeoError("timeout", "Locația a durat prea mult. Reîncearcă."));
-        } else {
-          reject(new GeoError("position_unavailable", err.message || "Eroare locație."));
-        }
-      },
-      { enableHighAccuracy: false, timeout: 15_000, maximumAge: 30_000 },
+export async function getCurrentCoords(opts?: { maxAgeMs?: number }): Promise<Coords> {
+  const maxAge = opts?.maxAgeMs ?? COORDS_CACHE_MS;
+  if (cached && Date.now() - cached.at < maxAge) return cached.coords;
+  const { getCurrentPosition } = await import("./native-geolocation");
+  const pos = await getCurrentPosition({ enableHighAccuracy: false, timeout: 15_000, maximumAge: 30_000 });
+  if (!pos) {
+    throw new GeoError(
+      "denied",
+      "Locația nu e disponibilă. Verifică permisiunile aplicației (Setări → Aplicații → Ventuza → Permisiuni → Locație).",
     );
-  });
+  }
+  const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+  cached = { at: Date.now(), coords };
+  return coords;
 }
 
 
@@ -107,19 +79,28 @@ export function watchSignificantMovement(
   cb: (coords: Coords) => void,
   thresholdM = 250,
 ): () => void {
-  if (typeof navigator === "undefined" || !navigator.geolocation) return () => {};
+  let cancelled = false;
+  let handle: { clear: () => void } | null = null;
   let last: Coords | null = null;
-  const id = navigator.geolocation.watchPosition(
-    (pos) => {
-      const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-      if (!last || distanceMeters(last, coords) >= thresholdM) {
-        last = coords;
-        cached = { at: Date.now(), coords };
-        cb(coords);
-      }
-    },
-    () => {},
-    { enableHighAccuracy: false, maximumAge: 30_000 },
-  );
-  return () => navigator.geolocation.clearWatch(id);
+  void (async () => {
+    const { watchPosition } = await import("./native-geolocation");
+    if (cancelled) return;
+    handle = await watchPosition(
+      (pos) => {
+        const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        if (!last || distanceMeters(last, coords) >= thresholdM) {
+          last = coords;
+          cached = { at: Date.now(), coords };
+          cb(coords);
+        }
+      },
+      () => {},
+      { enableHighAccuracy: false, maximumAge: 30_000 },
+    );
+    if (cancelled) handle?.clear();
+  })();
+  return () => {
+    cancelled = true;
+    handle?.clear();
+  };
 }

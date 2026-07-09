@@ -90,29 +90,25 @@ export function LocationPermissionPrompt() {
     setOpen(false);
   }
 
-  function handleAllow() {
-    if (!("geolocation" in navigator)) {
-      markSeen();
-      return;
-    }
+  async function handleAllow() {
     setBusy(true);
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setBusy(false);
+    try {
+      const { getCurrentPosition } = await import("@/lib/native-geolocation");
+      const pos = await getCurrentPosition({ enableHighAccuracy: true, timeout: 20_000, maximumAge: 10_000 });
+      if (pos) {
         markSeen();
         void supabase.rpc("update_my_location", {
           lng: pos.coords.longitude,
           lat: pos.coords.latitude,
         });
         toast.success("Locația a fost activată");
-      },
-      () => {
-        setBusy(false);
+      } else {
         markSeen();
         toast("Poți activa locația mai târziu din Profil → Confidențialitate");
-      },
-      { enableHighAccuracy: true, timeout: 20_000, maximumAge: 10_000 },
-    );
+      }
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function handleDisable() {

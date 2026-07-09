@@ -15,6 +15,8 @@ import {
 import { toast } from "sonner";
 import { sendMediaMessage, updateLiveLocationMessage, type MessageRow } from "@/lib/chat";
 import { compressImageForChat } from "@/lib/image-compress";
+import { pickImage } from "@/lib/native-camera";
+import { watchPosition, type WatchHandle } from "@/lib/native-geolocation";
 import { cn } from "@/lib/utils";
 
 type UploadJob = {
@@ -73,14 +75,14 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
     stream: MediaStream;
   } | null>(null);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const geoWatchRef = useRef<number | null>(null);
+  const geoWatchRef = useRef<WatchHandle | null>(null);
   const liveMessageIdRef = useRef<string | null>(null);
   const lastLocationUpdateRef = useRef(0);
 
   useEffect(
     () => () => {
       if (tickRef.current) clearInterval(tickRef.current);
-      if (geoWatchRef.current != null) navigator.geolocation.clearWatch(geoWatchRef.current);
+      geoWatchRef.current?.clear();
       recRef.current?.stream.getTracks().forEach((t) => t.stop());
     },
     [],
@@ -88,9 +90,14 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
 
   async function pickPhoto(source: "gallery" | "camera" | "gallery-once") {
     setOpen(false);
-    const ref =
-      source === "camera" ? cameraRef : source === "gallery-once" ? fileOnceRef : fileRef;
-    ref.current?.click();
+    try {
+      const file = await pickImage(source === "camera" ? "camera" : "gallery");
+      if (!file) return;
+      const viewOnce = source === "gallery-once";
+      await enqueueFiles([file], viewOnce);
+    } catch (err) {
+      toast.error((err as Error).message || "Nu am putut deschide camera");
+    }
   }
 
   function updateJob(id: string, patch: Partial<UploadJob>) {
@@ -137,10 +144,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
     setUploads((prev) => prev.filter((j) => j.id !== id));
   }
 
-  async function handleFile(e: React.ChangeEvent<HTMLInputElement>, viewOnce: boolean) {
-    const files = Array.from(e.target.files ?? []);
-    e.target.value = "";
-    if (!files.length) return;
+  async function enqueueFiles(files: File[], viewOnce: boolean) {
     const MAX = 10;
     if (files.length > MAX) {
       toast.error(`Maxim ${MAX} imagini deodată`);
@@ -174,15 +178,21 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
     }
   }
 
+  async function handleFile(e: React.ChangeEvent<HTMLInputElement>, viewOnce: boolean) {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = "";
+    if (!files.length) return;
+    await enqueueFiles(files, viewOnce);
+  }
+
 
 
 
 
   async function shareLocation() {
     setOpen(false);
-    if (!("geolocation" in navigator)) return toast.error("Locația nu e disponibilă");
-    if (geoWatchRef.current != null) {
-      navigator.geolocation.clearWatch(geoWatchRef.current);
+    if (geoWatchRef.current) {
+      geoWatchRef.current.clear();
       geoWatchRef.current = null;
       liveMessageIdRef.current = null;
       setLiveLocationId(null);
@@ -190,7 +200,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
       return;
     }
     setBusy(true);
-    geoWatchRef.current = navigator.geolocation.watchPosition(
+    geoWatchRef.current = await watchPosition(
       async (pos) => {
         try {
           const now = Date.now();
@@ -219,7 +229,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
       },
       (err) => {
         setBusy(false);
-        if (geoWatchRef.current != null) navigator.geolocation.clearWatch(geoWatchRef.current);
+        geoWatchRef.current?.clear();
         geoWatchRef.current = null;
         liveMessageIdRef.current = null;
         setLiveLocationId(null);
@@ -228,6 +238,7 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
       { enableHighAccuracy: true, maximumAge: 5000, timeout: 15_000 },
     );
   }
+
 
   async function startRecording() {
     setOpen(false);
