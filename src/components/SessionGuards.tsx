@@ -4,6 +4,7 @@ import { useLocation, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { useCountryGate } from "@/lib/country-gate";
+import { watchPosition, type WatchHandle } from "@/lib/native-geolocation";
 
 // Routes a not-yet-onboarded user is allowed to land on. Everything else is
 // hard-redirected to /n so OAuth signups cannot reach the app without supplying
@@ -21,7 +22,7 @@ export function SessionGuards() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const geoWatchRef = useRef<number | null>(null);
+  const geoWatchRef = useRef<WatchHandle | null>(null);
   const lastSentRef = useRef(0);
   const { forceStealth, hidePreciseLocation, isBlocked } = useCountryGate();
   const [sharingEnabled, setSharingEnabled] = useState<boolean | null>(null);
@@ -102,26 +103,31 @@ export function SessionGuards() {
   }, [user, location.pathname, navigate]);
 
   useEffect(() => {
-    if (!user || !("geolocation" in navigator)) return;
+    if (!user) return;
     if (forceStealth || hidePreciseLocation || isBlocked) return;
     if (sharingEnabled !== true) return;
 
-    const id = navigator.geolocation.watchPosition(
-      (pos) => {
-        const now = Date.now();
-        if (now - lastSentRef.current < 15_000) return;
-        lastSentRef.current = now;
-        void supabase.rpc("update_my_location", {
-          lng: pos.coords.longitude,
-          lat: pos.coords.latitude,
-        });
-      },
-      () => {},
-      { enableHighAccuracy: true, maximumAge: 10_000, timeout: 20_000 },
-    );
-    geoWatchRef.current = id;
+    let cancelled = false;
+    void (async () => {
+      const handle = await watchPosition(
+        (pos) => {
+          const now = Date.now();
+          if (now - lastSentRef.current < 15_000) return;
+          lastSentRef.current = now;
+          void supabase.rpc("update_my_location", {
+            lng: pos.coords.longitude,
+            lat: pos.coords.latitude,
+          });
+        },
+        () => {},
+        { enableHighAccuracy: true, maximumAge: 10_000, timeout: 20_000 },
+      );
+      if (cancelled) handle.clear();
+      else geoWatchRef.current = handle;
+    })();
     return () => {
-      navigator.geolocation.clearWatch(id);
+      cancelled = true;
+      geoWatchRef.current?.clear();
       geoWatchRef.current = null;
     };
   }, [user, forceStealth, hidePreciseLocation, isBlocked, sharingEnabled]);
