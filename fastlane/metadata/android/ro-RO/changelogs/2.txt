@@ -1,5 +1,5 @@
-Ventuza 1.0.1
+Fix login pe Android: butoanele Google/Apple sunt ascunse când Google Sign-In nativ nu este configurat, ca să nu blochezi userii într-un flux WebView refuzat de Google. Email + parolă merge normal.
 
-- Îmbunătățiri și corectări de bug-uri.
+Fix bară de cookies: nu se mai afișează în aplicația nativă (nu au relevanță într-un WebView instalat).
 
-Completează înainte de upload pe Play Console.
+Îmbunătățiri de safe-area (notch, tastatură) și mici corecții vizuale.
