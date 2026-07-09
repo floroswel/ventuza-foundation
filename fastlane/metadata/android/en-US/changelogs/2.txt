@@ -1,0 +1,5 @@
+Login fix on Android: Google/Apple buttons are hidden when native Google Sign-In is not configured, so users don't hit a WebView flow Google refuses. Email + password works as expected.
+
+Cookie banner fix: no longer shown in the native app (no cross-site cookies exist in an installed WebView).
+
+Safe-area improvements (notch, keyboard) and minor visual polish.
