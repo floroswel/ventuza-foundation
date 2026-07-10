@@ -91,6 +91,14 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
   async function pickPhoto(source: "gallery" | "camera" | "gallery-once") {
     setOpen(false);
     try {
+      // On web, use hidden multi-file input for gallery to preserve multi-select.
+      // On native, Capacitor Camera returns a single image.
+      const native = await isNativeCameraAvailable();
+      if (!native && source !== "camera") {
+        const el = source === "gallery-once" ? fileOnceRef.current : fileRef.current;
+        el?.click();
+        return;
+      }
       const file = await pickImage(source === "camera" ? "camera" : "gallery");
       if (!file) return;
       const viewOnce = source === "gallery-once";
