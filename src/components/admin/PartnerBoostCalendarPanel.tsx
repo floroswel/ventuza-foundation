@@ -62,7 +62,7 @@ export function PartnerBoostCalendarPanel() {
                 <tbody>
                   {data.orders.slice(0, 20).map((o) => (
                     <tr key={o.id} className="border-t border-border/50">
-                      <td className="py-1.5 pr-2 truncate max-w-[180px]">{o.event_title}{o.is_seed && <span className="ml-1 text-[10px] text-muted-foreground">seed</span>}</td>
+                      <td className="py-1.5 pr-2 truncate max-w-[180px]">{o.event_title}</td>
                       <td className="text-xs">{o.city ?? "—"}</td>
                       <td className="text-xs font-mono">{o.starts_at?.slice(5, 16) ?? "—"}</td>
                       <td className="text-xs font-mono">{o.ends_at?.slice(5, 16) ?? "—"}</td>

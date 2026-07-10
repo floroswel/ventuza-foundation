@@ -35,7 +35,7 @@ import {
   KeyRound,
   Download,
   AlertOctagon,
-  Sparkles,
+  
   Activity,
   Bot,
   Flag,
@@ -96,7 +96,7 @@ import {
   shouldEnforceAgeGate,
   clearAgeGatePolicyCache,
 } from "@/lib/age-gate-policy";
-import { DemoSeedPanel, DemoSeedBanner } from "@/components/admin/DemoSeedPanel";
+
 import { RateLimitPanel } from "@/components/admin/RateLimitPanel";
 import { SecuritySignalsPanel } from "@/components/admin/SecuritySignalsPanel";
 import { RiskDashboardPanel } from "@/components/admin/RiskDashboardPanel";
@@ -170,7 +170,7 @@ type Section =
   | "policies"
   | "security"
   | "partners"
-  | "demoseed"
+  
   | "health"
   | "copilot"
   | "billing"
@@ -254,7 +254,6 @@ function AdminDashboard() {
       "policies",
       "security",
       "partners",
-      "demoseed",
       "health",
       "copilot",
       "billing",
@@ -548,7 +547,7 @@ function AdminDashboard() {
     { id: "signupthrottle", label: "Signup throttling", icon: ShieldAlert, group: "System" },
     { id: "signals", label: "Semnale securitate", icon: ShieldAlert, group: "System" },
     { id: "data", label: "Date (toate)", icon: Database, group: "System", adminOnly: true },
-    { id: "demoseed", label: "Demo seed", icon: Sparkles, group: "System", adminOnly: true },
+    
     {
       id: "settings",
       label: "Settings & flags",
@@ -586,12 +585,7 @@ function AdminDashboard() {
       active={section}
       onSelect={(id) => setSection(id as Section)}
       roleLabel={roleLabel}
-      banner={
-        <>
-          <AgeGateDevBanner />
-          <DemoSeedBanner />
-        </>
-      }
+      banner={<AgeGateDevBanner />}
     >
       {section === "overview" && isAdmin && (
         <OverviewPanelRich onNavigate={(id: string) => setSection(id as Section)} />
@@ -620,7 +614,7 @@ function AdminDashboard() {
       {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
       {section === "billing" && <BillingAdminPanel isAdmin={!!isAdmin} />}
       {section === "security" && <SecurityPanel />}
-      {section === "demoseed" && isAdmin && <DemoSeedPanel isSuperAdmin={isSuper} />}
+      
       {section === "health" && <SystemHealthPanel />}
       {section === "ratelimit" && <RateLimitPanel />}
       {section === "signupthrottle" && <SignupThrottlePanel />}
