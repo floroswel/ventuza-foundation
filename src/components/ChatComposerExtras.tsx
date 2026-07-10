@@ -15,7 +15,7 @@ import {
 import { toast } from "sonner";
 import { sendMediaMessage, updateLiveLocationMessage, type MessageRow } from "@/lib/chat";
 import { compressImageForChat } from "@/lib/image-compress";
-import { pickImage } from "@/lib/native-camera";
+import { isNativeCameraAvailable, pickImage } from "@/lib/native-camera";
 import { watchPosition, type WatchHandle } from "@/lib/native-geolocation";
 import { cn } from "@/lib/utils";
 
