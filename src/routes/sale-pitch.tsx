@@ -117,7 +117,7 @@ const DAY_30 = [
   "Completare Data Safety form Play Store",
   "Migrare DNS ventuza.eu pe cumpărător",
   "Handover credențiale: Supabase, Cloudflare, Lovable Cloud, Google Play Console",
-  "Onboarding 3-5 venues plătitoare în București (lead-uri demo deja în DB)",
+  "Onboarding 3-5 venues plătitoare în București prin outreach direct",
   "Setup billing real cu prima emitere facturi recurente prin pg_cron (cod live)",
   "Transfer DPO formal + actualizare /legal/privacy",
 ];

@@ -35,7 +35,7 @@ import {
   KeyRound,
   Download,
   AlertOctagon,
-  Sparkles,
+  
   Activity,
   Bot,
   Flag,
