@@ -142,6 +142,55 @@ jobs:
       - name: Sync Capacitor
         run: bunx cap sync android
 
+      - name: Aplică android-overrides (compliance Google Play targetSdk 35 + no AD_ID + no background location)
+        run: |
+          set -e
+          # 1) variables.gradle — pin targetSdk/compileSdk 35
+          if [ -f android-overrides/variables.gradle ]; then
+            cp android-overrides/variables.gradle android/variables.gradle
+            echo "✓ variables.gradle override aplicat (targetSdk=35)"
+          fi
+
+          # 2) AndroidManifest — adaugă xmlns:tools + node="remove" pentru AD_ID + ACCESS_BACKGROUND_LOCATION
+          MANIFEST=android/app/src/main/AndroidManifest.xml
+          python3 <<'PY'
+          import re
+          p = "android/app/src/main/AndroidManifest.xml"
+          s = open(p).read()
+          # a) namespace tools
+          if 'xmlns:tools="http://schemas.android.com/tools"' not in s:
+              s = s.replace(
+                  '<manifest',
+                  '<manifest xmlns:tools="http://schemas.android.com/tools"',
+                  1,
+              )
+          # b) remove AD_ID
+          if 'com.google.android.gms.permission.AD_ID' not in s or 'tools:node="remove"' not in s:
+              # scoate orice ocurență existentă (pentru a evita duplicate)
+              s = re.sub(
+                  r'\s*<uses-permission[^>]*android:name="com\.google\.android\.gms\.permission\.AD_ID"[^/]*/>',
+                  '',
+                  s,
+              )
+              inject = (
+                  '\n    <uses-permission android:name="com.google.android.gms.permission.AD_ID"\n'
+                  '                     tools:node="remove"/>\n'
+                  '    <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"\n'
+                  '                     tools:node="remove"/>\n'
+              )
+              s = s.replace('</manifest>', inject + '</manifest>', 1)
+          open(p, 'w').write(s)
+          print("✓ AndroidManifest.xml patched (tools:node=remove pentru AD_ID + ACCESS_BACKGROUND_LOCATION)")
+          PY
+
+          # 3) Copiere resurse override dacă există (icon monochrome, splash)
+          if [ -d android-overrides/res ]; then
+            cp -rv android-overrides/res/* android/app/src/main/res/
+            echo "✓ Resurse override copiate din android-overrides/res/"
+          fi
+
+
+
       - name: Injectează google-services.json (FCM)
         env:
           GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
@@ -363,10 +412,46 @@ jobs:
           echo "--- build.gradle after ---"
           cat "$GRADLE"
 
-      - name: Build AAB semnat
+      - name: Verifică merged manifest — compliance Google Play (targetSdk ≥ 34 + no AD_ID + no ACCESS_BACKGROUND_LOCATION)
         working-directory: android
         run: |
           chmod +x ./gradlew
+          ./gradlew :app:processReleaseManifest --no-daemon
+          MERGED=app/build/intermediates/merged_manifests/release/AndroidManifest.xml
+          if [ ! -f "$MERGED" ]; then
+            # Path variază între versiuni AGP; caută recursiv
+            MERGED=$(find app/build/intermediates -name AndroidManifest.xml -path "*merged*release*" | head -n1)
+          fi
+          test -f "$MERGED" || { echo "::error::Merged manifest lipsă"; exit 1; }
+          echo "--- merged manifest: $MERGED ---"
+          # 1) targetSdk >= 34
+          TSDK=$(grep -oP 'android:targetSdkVersion="\K[0-9]+' "$MERGED" | head -1 || echo "0")
+          if [ -z "$TSDK" ] || [ "$TSDK" -lt 34 ]; then
+            echo "::error::targetSdk=$TSDK < 34. Google Play cere targetSdk ≥ 34 din 31.08.2025."
+            exit 1
+          fi
+          echo "✓ targetSdk=$TSDK"
+          # 2) AD_ID trebuie să LIPSEASCĂ
+          if grep -q 'com.google.android.gms.permission.AD_ID' "$MERGED" | grep -qv 'tools:node="remove"'; then
+            if grep 'com.google.android.gms.permission.AD_ID' "$MERGED" | grep -qv 'tools:node'; then
+              echo "::error::AD_ID prezent în merged manifest. Data Safety declară 'No advertising' — permisiunea trebuie eliminată."
+              grep 'AD_ID' "$MERGED"
+              exit 1
+            fi
+          fi
+          echo "✓ AD_ID absent din merged manifest"
+          # 3) ACCESS_BACKGROUND_LOCATION trebuie să LIPSEASCĂ (geofencing dormant)
+          if grep 'android.permission.ACCESS_BACKGROUND_LOCATION' "$MERGED" | grep -qv 'tools:node'; then
+            echo "::error::ACCESS_BACKGROUND_LOCATION prezent. Geofencing background nu e activ — permisiunea trebuie eliminată."
+            grep 'ACCESS_BACKGROUND_LOCATION' "$MERGED"
+            exit 1
+          fi
+          echo "✓ ACCESS_BACKGROUND_LOCATION absent din merged manifest"
+          echo "✓✓✓ Compliance Google Play OK"
+
+      - name: Build AAB semnat
+        working-directory: android
+        run: |
           ./gradlew bundleRelease --no-daemon --stacktrace
 
       - name: Upload artefact AAB (pentru inspecție)

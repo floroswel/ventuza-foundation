@@ -408,17 +408,12 @@ export const adminModerateItem = createServerFn({ method: "POST" })
   )
   .handler(async ({ context, data }) => {
     await assertStaff(context.supabase, context.userId);
-    // MFA cerut DOAR pentru acțiuni cu impact ridicat: respingere definitivă,
-    // marcare oficială, sau aprobare cu rază de notificare > 5km (anti-spam push).
-    // Aprobările obișnuite (rază implicită, non-oficial) nu cer MFA.
-    const needsMfa =
-      data.decision === "rejected" ||
-      (data.notification_radius_m ?? 0) > 5000 ||
-      data.is_official === true;
-    if (needsMfa) {
-      const { assertAdminMfa } = await import("./admin-mfa-guard");
-      await assertAdminMfa(context.userId);
-    }
+    // Paritate strictă cu restul funcțiilor admin: MFA obligatoriu pentru
+    // ORICE decizie de moderare (aprobare/respingere/changes_requested),
+    // indiferent de rază sau `is_official`. Moderarea afectează
+    // vizibilitatea publică + notificări push.
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     // Folosim clientul autentificat, nu supabaseAdmin, ca `auth.uid()` să fie
     // populat în RPC-ul SECURITY DEFINER (verifică `is_staff(auth.uid())` intern).
     const { error } = await context.supabase.rpc("admin_moderate_item", {

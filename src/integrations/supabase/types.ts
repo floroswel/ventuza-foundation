@@ -5386,6 +5386,7 @@ export type Database = {
           weight_kg: number
         }[]
       }
+      discover_recent_call_count: { Args: { _user: string }; Returns: number }
       distance_bucket_label: { Args: { d: number }; Returns: string }
       dropgeometrycolumn:
         | {
