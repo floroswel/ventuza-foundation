@@ -629,7 +629,24 @@ function ThreadPage() {
     void runTranslate(m, lang, true);
   }
 
+  // Mesajele din outbox (pending/failed) apar în listă la finalul conversației,
+  // marcate cu _status ca să obțină chip-ul "sending" / "failed · tap to retry".
+  const outboxAsMessages: UiMessage[] = user
+    ? outbox.map((o) => ({
+        id: `outbox-${o.client_id}`,
+        conversation_id: o.conversation_id,
+        sender_id: user.id,
+        body: o.body,
+        read_at: null,
+        created_at: o.created_at,
+        reply_to_id: o.reply_to_id,
+        _status: o.status === "failed" ? "failed" : "pending",
+      }))
+    : [];
+  const renderedMessages: UiMessage[] = [...messages, ...outboxAsMessages];
+
   return (
+
     <div className="mx-auto flex h-[100dvh] max-w-md flex-col bg-background">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
         <Link
