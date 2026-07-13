@@ -1,0 +1,19 @@
+<!--
+  Fragment de aplicat în `android/app/src/main/AndroidManifest.xml`
+  DUPĂ `npx cap add android`.
+
+  1) Adaugă la <manifest ...> namespace-ul `tools`:
+       xmlns:tools="http://schemas.android.com/tools"
+
+  2) Adaugă imediat înainte de </manifest> permisiunile de mai jos.
+     - REMOVE AD_ID: FCM și RevenueCat îl includ automat în merged manifest,
+       dar Ventuza nu folosește advertising ID. Play Data Safety: "No".
+     - REMOVE ACCESS_BACKGROUND_LOCATION: geofencing background nu e activ
+       încă; când îl activezi, elimină linia și adaugă justificare în
+       Play Console + consent `background_location` în app.
+-->
+<uses-permission android:name="com.google.android.gms.permission.AD_ID"
+                 tools:node="remove"/>
+
+<uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"
+                 tools:node="remove"/>
