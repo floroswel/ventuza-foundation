@@ -516,6 +516,12 @@ function ThreadPage() {
   }
 
   async function retryFailed(m: UiMessage) {
+    // Item din outbox (persistat) — retry prin coadă (dedup prin client_id).
+    if (m.id.startsWith("outbox-")) {
+      const clientId = m.id.slice("outbox-".length);
+      await retryFailedOutbox(clientId);
+      return;
+    }
     setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, _status: "pending" } : x)));
     try {
       // Păstrează reply_to_id la retry — altfel răspunsul își pierde legătura silențios.
@@ -529,6 +535,28 @@ function ThreadPage() {
       setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, _status: "failed" } : x)));
     }
   }
+
+  // Curățare outbox item pending când mesajul real apare din realtime (dedup
+  // pe body + sender + timestamp apropiat, best-effort).
+  useEffect(() => {
+    if (outbox.length === 0 || !user) return;
+    const recent = messages.filter(
+      (m) => !m._status && m.sender_id === user.id && Date.now() - new Date(m.created_at).getTime() < 5 * 60_000,
+    );
+    for (const o of outbox) {
+      const match = recent.find((r) => r.body === o.body);
+      if (match) void removeFromOutbox(o.client_id);
+    }
+  }, [messages, outbox, user]);
+
+  // Trigger flush când user-ul deschide conversația online (îl scoate din
+  // starea "pending" salvată de o sesiune anterioară).
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.onLine !== false) {
+      void flushOutbox({ convId: id });
+    }
+  }, [id]);
+
 
   async function handleWingman() {
     if (wingmanLoading) return;
