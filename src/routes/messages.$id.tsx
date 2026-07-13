@@ -81,7 +81,14 @@ function ThreadPage() {
   const { id } = Route.useParams();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<UiMessage[]>([]);
+  const queryClient = useQueryClient();
+  // Cache key ["conversation-messages", id] este în allowlist-ul persister-ului
+  // → apare offline la re-open. UI-ul folosește `messages` ca sursă de adevăr
+  // (pentru optimistic + realtime), iar la schimbări sincronizează în cache.
+  const cachedInitial = queryClient.getQueryData<MessageRow[]>(["conversation-messages", id]);
+  const [messages, setMessages] = useState<UiMessage[]>(() => cachedInitial ?? []);
+  const [outbox, setOutbox] = useState<OutboxItem[]>([]);
+
   const [other, setOther] = useState<{
     id: string;
     name: string | null;
