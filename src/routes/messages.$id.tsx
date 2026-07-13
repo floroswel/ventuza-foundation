@@ -98,7 +98,7 @@ function ThreadPage() {
     bio?: string | null;
     interests?: string[] | null;
   } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedInitial);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [text, setText] = useState("");
