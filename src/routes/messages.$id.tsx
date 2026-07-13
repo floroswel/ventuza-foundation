@@ -440,13 +440,23 @@ function ThreadPage() {
     e.preventDefault();
     const body = text.trim();
     if (!body || !user) return;
-    // Offline: nu pierdem mesajul din input, arătăm eroare clară.
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      toast.error("Ești offline — mesajul nu a fost trimis. Textul rămâne în casetă.");
+    const replyId = replyTo?.id ?? null;
+    const offline = typeof navigator !== "undefined" && navigator.onLine === false;
+    // Offline: mesajul intră în outbox persistent (Preferences pe nativ /
+    // localStorage pe web). Se afișează instant ca "În așteptare" via
+    // subscribeOutbox și se trimite automat la reconectare.
+    if (offline) {
+      try {
+        await enqueueMessage({ conversation_id: id, body, reply_to_id: replyId });
+        setText("");
+        setReplyTo(null);
+        toast.message("Ești offline — mesajul va pleca la reconectare.");
+      } catch {
+        toast.error("Nu am putut salva mesajul în coada offline.");
+      }
       return;
     }
     const tempId = `tmp-${crypto.randomUUID()}`;
-    const replyId = replyTo?.id ?? null;
     const optimistic: UiMessage = {
       id: tempId,
       conversation_id: id,
@@ -468,9 +478,17 @@ function ThreadPage() {
       });
     } catch (e) {
       await reportSendError(e);
-      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, _status: "failed" } : m)));
+      // Fallback: pune în outbox ca să retry la reconectare (dedup prin client_id).
+      try {
+        await enqueueMessage({ conversation_id: id, body, reply_to_id: replyId });
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      } catch {
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, _status: "failed" } : m)));
+      }
     }
   }
+
+
 
 
   async function confirmUnsend() {
