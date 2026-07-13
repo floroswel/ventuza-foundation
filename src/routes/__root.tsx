@@ -239,6 +239,17 @@ function RootComponent() {
     );
   }, [router]);
 
+  useEffect(() => {
+    // Offline persist pentru TanStack Query (allowlist, 24h, buster = APP_VERSION).
+    let cleanup: (() => void) | null = null;
+    void import("@/lib/query-persister").then(({ setupQueryPersistence }) => {
+      cleanup = setupQueryPersistence(queryClient);
+    });
+    return () => {
+      cleanup?.();
+    };
+  }, [queryClient]);
+
 
   return (
     <QueryClientProvider client={queryClient}>
