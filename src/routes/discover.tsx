@@ -91,6 +91,7 @@ function DiscoverPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const countryGate = useCountryGate();
+  const queryClient = useQueryClient();
   const [tab, setTab] = useState<Tab>("nearby");
   const [view, setView] = useState<"grid" | "swipe">("grid");
   useEffect(() => {
@@ -102,31 +103,48 @@ function DiscoverPage() {
   const [debouncedFilters, setDebouncedFilters] = useState<DiscoverFilters>(DEFAULT_FILTERS);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const filtersHydratedRef = useRef(false);
-  const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
+  // Seed profiluri din cache-ul persister (key ["discover-seen", userId]).
+  // Astfel la re-open offline vezi ultimele profiluri fără net.
+  const cachedProfiles = user
+    ? queryClient.getQueryData<DiscoverProfile[]>(["discover-seen", user.id])
+    : undefined;
+  const [profiles, setProfiles] = useState<DiscoverProfile[]>(cachedProfiles ?? []);
   const [badgesMap, setBadgesMap] = useState<Record<string, string[]>>({});
   const [badgesLoading, setBadgesLoading] = useState(false);
   const [badgesError, setBadgesError] = useState(false);
   const fetchUserBadges = useCachedUserBadges();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedProfiles || cachedProfiles.length === 0);
   const [locStatus, setLocStatus] = useState<"unknown" | "granted" | "denied">("unknown");
   const [match, setMatch] = useState<{ id: string; name: string; photo: string | null } | null>(
     null,
   );
   const [selected, setSelected] = useState<DiscoverProfile | null>(null);
-  const [incognito, setIncognito] = useState(false);
   const [incognitoBusy, setIncognitoBusy] = useState(false);
 
+  // Profilul meu — key ["my-profile", userId] este în allowlist-ul persister-ului.
+  const myProfileQuery = useQuery({
+    queryKey: ["my-profile", user?.id ?? "anon"],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data } = await supabase
+        .from("profiles")
+        .select("incognito")
+        .eq("id", user.id)
+        .maybeSingle();
+      return (data ?? null) as { incognito: boolean | null } | null;
+    },
+    enabled: !!user,
+    staleTime: 60_000,
+  });
+  const incognito = !!myProfileQuery.data?.incognito;
+
+  // Mirror profiluri afișate în cache pentru offline restore.
   useEffect(() => {
-    if (!user) return;
-    supabase
-      .from("profiles")
-      .select("incognito")
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        if (data) setIncognito(!!data.incognito);
-      });
-  }, [user]);
+    if (!user || profiles.length === 0) return;
+    queryClient.setQueryData(["discover-seen", user.id], profiles.slice(0, 50));
+  }, [profiles, user, queryClient]);
+
+
 
   const toggleIncognito = useCallback(async () => {
     if (!user || incognitoBusy) return;
