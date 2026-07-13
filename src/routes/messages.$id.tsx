@@ -457,7 +457,8 @@ function ThreadPage() {
   async function retryFailed(m: UiMessage) {
     setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, _status: "pending" } : x)));
     try {
-      const real = await sendMessage(id, m.body);
+      // Păstrează reply_to_id la retry — altfel răspunsul își pierde legătura silențios.
+      const real = await sendMessage(id, m.body, m.reply_to_id ?? null);
       setMessages((prev) => {
         const without = prev.filter((x) => x.id !== m.id && x.id !== real.id);
         return [...without, real];

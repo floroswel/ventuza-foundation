@@ -95,17 +95,25 @@ export function LocationPermissionPrompt() {
     try {
       const { getCurrentPosition } = await import("@/lib/native-geolocation");
       const pos = await getCurrentPosition({ enableHighAccuracy: true, timeout: 20_000, maximumAge: 10_000 });
-      if (pos) {
-        markSeen();
-        void supabase.rpc("update_my_location", {
-          lng: pos.coords.longitude,
-          lat: pos.coords.latitude,
-        });
-        toast.success("Locația a fost activată");
-      } else {
+      if (!pos) {
         markSeen();
         toast("Poți activa locația mai târziu din Profil → Confidențialitate");
+        return;
       }
+      // Așteaptă rezultatul RPC — nu afișa "succes" dacă serverul respinge.
+      const { error } = await supabase.rpc("update_my_location", {
+        lng: pos.coords.longitude,
+        lat: pos.coords.latitude,
+      });
+      markSeen();
+      if (error) {
+        toast.error("Nu am putut salva locația pe server. Încearcă din nou din Profil.");
+      } else {
+        toast.success("Locația a fost activată");
+      }
+    } catch (e) {
+      markSeen();
+      toast.error(e instanceof Error ? e.message : "Locația nu a putut fi activată");
     } finally {
       setBusy(false);
     }

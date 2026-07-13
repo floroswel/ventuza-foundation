@@ -3,9 +3,11 @@
 // - Nu forțează permisiunea; folosește doar dacă a fost deja acordată.
 // - Interval min 3 min (evită dranarea bateriei).
 // - Prag mișcare: 250 m (Haversine) înainte de update la server + broadcast.
-import { useEffect } from "react";
+// - Respectă `profiles.location_sharing_enabled` + gate-ul de țară.
+import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { useCountryGate } from "@/lib/country-gate";
 import { getCurrentPosition, type Position } from "@/lib/native-geolocation";
 
 const REFRESH_MS = 3 * 60 * 1000;
@@ -25,9 +27,38 @@ function haversine(lat1: number, lng1: number, lat2: number, lng2: number) {
 
 export function useLocationWatcher() {
   const { user } = useAuth();
+  const { forceStealth, hidePreciseLocation, isBlocked } = useCountryGate();
+  const [sharingEnabled, setSharingEnabled] = useState<boolean | null>(null);
+
+  // Fetch inițial + resync la fiecare 60s (evită canal realtime dedicat care
+  // ar cere alt topic în whitelist-ul de authz).
+  useEffect(() => {
+    if (!user) {
+      setSharingEnabled(null);
+      return;
+    }
+    let cancelled = false;
+    async function fetchFlag() {
+      const { data } = await supabase
+        .from("profiles")
+        .select("location_sharing_enabled")
+        .eq("id", user!.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setSharingEnabled(data?.location_sharing_enabled !== false);
+    }
+    void fetchFlag();
+    const t = setInterval(() => void fetchFlag(), 60_000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!user) return;
+    if (forceStealth || hidePreciseLocation || isBlocked) return;
+    if (sharingEnabled !== true) return;
 
     let cancelled = false;
     let timer: ReturnType<typeof setInterval> | null = null;
@@ -75,5 +106,5 @@ export function useLocationWatcher() {
       stop();
       document.removeEventListener("visibilitychange", onVis);
     };
-  }, [user]);
+  }, [user, sharingEnabled, forceStealth, hidePreciseLocation, isBlocked]);
 }
