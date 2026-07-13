@@ -786,7 +786,7 @@ function ThreadPage() {
       <MessagesScroller
         loading={loading}
         loadingMore={loadingMore}
-        messages={messages}
+        messages={renderedMessages}
         otherName={other?.name ?? null}
         otherTyping={otherTyping}
         scrollerRef={scrollerRef}
