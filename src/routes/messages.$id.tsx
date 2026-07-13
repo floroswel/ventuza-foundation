@@ -323,6 +323,27 @@ function ThreadPage() {
     };
   }, [id, user]);
 
+  // Mirror mesajele reale (persistate în DB, nu optimiste/pending) în cache-ul
+  // TanStack Query, sub cheia din allowlist-ul persister-ului. Astfel la
+  // re-open offline, `cachedInitial` mai sus reface instant conversația.
+  useEffect(() => {
+    const clean = messages.filter((m) => !m._status && !m.id.startsWith("tmp-"));
+    if (clean.length > 0) {
+      queryClient.setQueryData(["conversation-messages", id], clean.slice(-50));
+    }
+  }, [messages, id, queryClient]);
+
+  // Outbox — mesaje scrise offline. Se afișează ca "pending" în UI și se trimit
+  // automat la reconectare prin wireOutboxAutoFlush() din __root.
+  useEffect(() => {
+    const unsub = subscribeOutbox((all) => {
+      setOutbox(all.filter((x) => x.conversation_id === id && x.status !== "sent"));
+    });
+    return unsub;
+  }, [id]);
+
+
+
   // Auto scroll to bottom on new messages (only when near bottom)
   useEffect(() => {
     const el = scrollerRef.current;
