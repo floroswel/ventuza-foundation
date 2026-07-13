@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, MessageCircle, Crown, SquarePen } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,48 +20,51 @@ export const Route = createFileRoute("/messages/")({
 function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [items, setItems] = useState<ConversationListItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   // Sursa unică — se hidratează la login și se actualizează în realtime la
   // schimbarea toggle-ului din Settings (fără refresh).
   const { prefs } = useNotificationPrefs();
   const showPreview = prefs.show_preview;
 
-
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
 
+  // Key ["conversations", userId] este în allowlist-ul persister-ului
+  // (src/lib/query-persister.ts) → apare offline la re-open fără net.
+  const conversationsQuery = useQuery({
+    queryKey: ["conversations", user?.id ?? "anon"],
+    queryFn: () => (user ? fetchConversations(user.id) : Promise.resolve<ConversationListItem[]>([])),
+    enabled: !!user,
+    staleTime: 30_000,
+  });
+
+  const items = conversationsQuery.data ?? [];
+  const loading = conversationsQuery.isLoading;
+
   useEffect(() => {
     if (!user) return;
-    let alive = true;
-    async function load() {
-      try {
-        const data = await fetchConversations(user!.id);
-        if (alive) setItems(data);
-      } finally {
-        if (alive) setLoading(false);
-      }
-    }
-    void load();
+    const invalidate = () =>
+      queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
     const ch = supabase
-      .channel(`conv-list:${user!.id}`)
+      .channel(`conv-list:${user.id}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "conversations" },
-        () => void load(),
+        invalidate,
       )
       .on(
         "postgres_changes",
         { event: "INSERT", schema: "public", table: "messages" },
-        () => void load(),
+        invalidate,
       )
       .subscribe();
     return () => {
-      alive = false;
       supabase.removeChannel(ch);
     };
-  }, [user]);
+  }, [user, queryClient]);
+
+
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-24">

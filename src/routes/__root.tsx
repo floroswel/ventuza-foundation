@@ -245,10 +245,15 @@ function RootComponent() {
     void import("@/lib/query-persister").then(({ setupQueryPersistence }) => {
       cleanup = setupQueryPersistence(queryClient);
     });
+    // Outbox mesaje offline — auto-flush la reconectare.
+    void import("@/lib/message-outbox").then(({ wireOutboxAutoFlush }) => {
+      wireOutboxAutoFlush();
+    });
     return () => {
       cleanup?.();
     };
   }, [queryClient]);
+
 
 
   return (

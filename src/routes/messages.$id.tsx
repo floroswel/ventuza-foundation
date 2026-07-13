@@ -1,5 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  enqueueMessage,
+  flushOutbox,
+  removeFromOutbox,
+  retryFailedOutbox,
+  subscribeOutbox,
+  type OutboxItem,
+} from "@/lib/message-outbox";
+
 import {
   AlertCircle,
   BadgeCheck,
@@ -71,7 +81,14 @@ function ThreadPage() {
   const { id } = Route.useParams();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [messages, setMessages] = useState<UiMessage[]>([]);
+  const queryClient = useQueryClient();
+  // Cache key ["conversation-messages", id] este în allowlist-ul persister-ului
+  // → apare offline la re-open. UI-ul folosește `messages` ca sursă de adevăr
+  // (pentru optimistic + realtime), iar la schimbări sincronizează în cache.
+  const cachedInitial = queryClient.getQueryData<MessageRow[]>(["conversation-messages", id]);
+  const [messages, setMessages] = useState<UiMessage[]>(() => cachedInitial ?? []);
+  const [outbox, setOutbox] = useState<OutboxItem[]>([]);
+
   const [other, setOther] = useState<{
     id: string;
     name: string | null;
@@ -81,7 +98,7 @@ function ThreadPage() {
     bio?: string | null;
     interests?: string[] | null;
   } | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cachedInitial);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [text, setText] = useState("");
@@ -306,6 +323,27 @@ function ThreadPage() {
     };
   }, [id, user]);
 
+  // Mirror mesajele reale (persistate în DB, nu optimiste/pending) în cache-ul
+  // TanStack Query, sub cheia din allowlist-ul persister-ului. Astfel la
+  // re-open offline, `cachedInitial` mai sus reface instant conversația.
+  useEffect(() => {
+    const clean = messages.filter((m) => !m._status && !m.id.startsWith("tmp-"));
+    if (clean.length > 0) {
+      queryClient.setQueryData(["conversation-messages", id], clean.slice(-50));
+    }
+  }, [messages, id, queryClient]);
+
+  // Outbox — mesaje scrise offline. Se afișează ca "pending" în UI și se trimit
+  // automat la reconectare prin wireOutboxAutoFlush() din __root.
+  useEffect(() => {
+    const unsub = subscribeOutbox((all) => {
+      setOutbox(all.filter((x) => x.conversation_id === id && x.status !== "sent"));
+    });
+    return unsub;
+  }, [id]);
+
+
+
   // Auto scroll to bottom on new messages (only when near bottom)
   useEffect(() => {
     const el = scrollerRef.current;
@@ -402,13 +440,23 @@ function ThreadPage() {
     e.preventDefault();
     const body = text.trim();
     if (!body || !user) return;
-    // Offline: nu pierdem mesajul din input, arătăm eroare clară.
-    if (typeof navigator !== "undefined" && navigator.onLine === false) {
-      toast.error("Ești offline — mesajul nu a fost trimis. Textul rămâne în casetă.");
+    const replyId = replyTo?.id ?? null;
+    const offline = typeof navigator !== "undefined" && navigator.onLine === false;
+    // Offline: mesajul intră în outbox persistent (Preferences pe nativ /
+    // localStorage pe web). Se afișează instant ca "În așteptare" via
+    // subscribeOutbox și se trimite automat la reconectare.
+    if (offline) {
+      try {
+        await enqueueMessage({ conversation_id: id, body, reply_to_id: replyId });
+        setText("");
+        setReplyTo(null);
+        toast.message("Ești offline — mesajul va pleca la reconectare.");
+      } catch {
+        toast.error("Nu am putut salva mesajul în coada offline.");
+      }
       return;
     }
     const tempId = `tmp-${crypto.randomUUID()}`;
-    const replyId = replyTo?.id ?? null;
     const optimistic: UiMessage = {
       id: tempId,
       conversation_id: id,
@@ -430,9 +478,17 @@ function ThreadPage() {
       });
     } catch (e) {
       await reportSendError(e);
-      setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, _status: "failed" } : m)));
+      // Fallback: pune în outbox ca să retry la reconectare (dedup prin client_id).
+      try {
+        await enqueueMessage({ conversation_id: id, body, reply_to_id: replyId });
+        setMessages((prev) => prev.filter((m) => m.id !== tempId));
+      } catch {
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? { ...m, _status: "failed" } : m)));
+      }
     }
   }
+
+
 
 
   async function confirmUnsend() {
@@ -460,6 +516,12 @@ function ThreadPage() {
   }
 
   async function retryFailed(m: UiMessage) {
+    // Item din outbox (persistat) — retry prin coadă (dedup prin client_id).
+    if (m.id.startsWith("outbox-")) {
+      const clientId = m.id.slice("outbox-".length);
+      await retryFailedOutbox(clientId);
+      return;
+    }
     setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, _status: "pending" } : x)));
     try {
       // Păstrează reply_to_id la retry — altfel răspunsul își pierde legătura silențios.
@@ -473,6 +535,28 @@ function ThreadPage() {
       setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, _status: "failed" } : x)));
     }
   }
+
+  // Curățare outbox item pending când mesajul real apare din realtime (dedup
+  // pe body + sender + timestamp apropiat, best-effort).
+  useEffect(() => {
+    if (outbox.length === 0 || !user) return;
+    const recent = messages.filter(
+      (m) => !m._status && m.sender_id === user.id && Date.now() - new Date(m.created_at).getTime() < 5 * 60_000,
+    );
+    for (const o of outbox) {
+      const match = recent.find((r) => r.body === o.body);
+      if (match) void removeFromOutbox(o.client_id);
+    }
+  }, [messages, outbox, user]);
+
+  // Trigger flush când user-ul deschide conversația online (îl scoate din
+  // starea "pending" salvată de o sesiune anterioară).
+  useEffect(() => {
+    if (typeof navigator !== "undefined" && navigator.onLine !== false) {
+      void flushOutbox({ convId: id });
+    }
+  }, [id]);
+
 
   async function handleWingman() {
     if (wingmanLoading) return;
@@ -545,7 +629,24 @@ function ThreadPage() {
     void runTranslate(m, lang, true);
   }
 
+  // Mesajele din outbox (pending/failed) apar în listă la finalul conversației,
+  // marcate cu _status ca să obțină chip-ul "sending" / "failed · tap to retry".
+  const outboxAsMessages: UiMessage[] = user
+    ? outbox.map((o) => ({
+        id: `outbox-${o.client_id}`,
+        conversation_id: o.conversation_id,
+        sender_id: user.id,
+        body: o.body,
+        read_at: null,
+        created_at: o.created_at,
+        reply_to_id: o.reply_to_id,
+        _status: o.status === "failed" ? "failed" : "pending",
+      }))
+    : [];
+  const renderedMessages: UiMessage[] = [...messages, ...outboxAsMessages];
+
   return (
+
     <div className="mx-auto flex h-[100dvh] max-w-md flex-col bg-background">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
         <Link
@@ -685,7 +786,7 @@ function ThreadPage() {
       <MessagesScroller
         loading={loading}
         loadingMore={loadingMore}
-        messages={messages}
+        messages={renderedMessages}
         otherName={other?.name ?? null}
         otherTyping={otherTyping}
         scrollerRef={scrollerRef}
