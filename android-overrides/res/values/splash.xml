@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Splash screen nativ Android 12+ (core-splashscreen API).
+  Se aplică peste tema plugin-ului Capacitor SplashScreen pentru consistență
+  cu StatusBar dark și backgroundColor Ventuza (#0B0B0F).
+
+  Referință: https://developer.android.com/develop/ui/views/launch/splash-screen
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- Culoare fundal splash (identică cu capacitor.config.ts SplashScreen.backgroundColor) -->
+    <color name="splash_background">#0B0B0F</color>
+
+    <!-- Fundal icon adaptive Android 8+ -->
+    <color name="ic_launcher_background">#0B0B0F</color>
+
+    <!-- Tema splash screen nativă (Android 12+) -->
+    <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="windowSplashScreenAnimationDuration">400</item>
+        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBarLaunch</item>
+    </style>
+</resources>
