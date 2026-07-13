@@ -168,6 +168,8 @@ export const adminUpdateBillingSettings = createServerFn({ method: "POST" })
       _roles: ["admin", "super_admin"],
     });
     if (!isAdmin) throw new Error("forbidden: admin required");
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await (supabaseAdmin as any).rpc("admin_update_setting", {
       _key: "billing_settings",

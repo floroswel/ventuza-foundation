@@ -116,6 +116,7 @@ export const adminAssignModerator = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => AssignInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
+    await assertAdminMfa(context.userId);
     const { error } = await (context.supabase as any).rpc("admin_assign_moderator", {
       _kind: data.kind,
       _item_id: data.itemId,

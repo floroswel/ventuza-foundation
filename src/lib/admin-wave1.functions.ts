@@ -105,6 +105,8 @@ export const adminForceLogout = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertRole(context.supabase, context.userId, ["super_admin", "admin", "moderator"]);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await (supabaseAdmin as any).auth.admin.signOut(data.userId, "global");
     if (error) throw new Error(error.message);
@@ -132,6 +134,8 @@ export const adminTriggerPasswordReset = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertRole(context.supabase, context.userId, ["super_admin", "admin"]);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
     const { data: u, error: e1 } = await sa.auth.admin.getUserById(data.userId);
@@ -338,6 +342,8 @@ export const adminCancelDeletion = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertRole(context.supabase, context.userId, ["super_admin", "admin"]);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
     const { data: before } = await sa

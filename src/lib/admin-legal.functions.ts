@@ -93,6 +93,8 @@ export const adminMarkNcmecFiled = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await (supabaseAdmin as any)
       .from("csam_ncmec_queue")
@@ -192,6 +194,8 @@ export const adminUpdateBreach = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const allowed = [
       "title",
       "description",
@@ -233,6 +237,8 @@ export const adminAddBreachEvent = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { error } = await (context.supabase as any).rpc("breach_add_timeline_event", {
       _breach_id: data.breachId,
       _kind: data.kind,
@@ -300,6 +306,8 @@ export const adminCreateDsaSor = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertStaff(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { data: id, error } = await (context.supabase as any).rpc("dsa_record_sor", {
       _action_type: data.action_type,
       _target_user_id: data.target_user_id ?? null,
@@ -390,6 +398,8 @@ export const adminUpsertCountryRisk = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await (supabaseAdmin as any).from("country_risk_config").upsert({
       ...data,
@@ -415,6 +425,8 @@ export const adminDeleteCountryRisk = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await (supabaseAdmin as any)
       .from("country_risk_config")
@@ -546,6 +558,8 @@ export const adminGenerateEfacturaXml = createServerFn({ method: "POST" })
   .inputValidator((d: { queueId: string }) => z.object({ queueId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data: q, error } = await (supabaseAdmin as any)
       .from("anaf_efactura_queue")
@@ -587,6 +601,8 @@ export const adminMarkEfacturaSubmitted = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertAdmin(context);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await (supabaseAdmin as any)
       .from("anaf_efactura_queue")

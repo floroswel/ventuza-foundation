@@ -1,21 +1,35 @@
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { useEffect, useRef } from "react";
+import { isProductionHost } from "@/lib/age-gate-policy";
 
 /**
  * Cloudflare Turnstile wrapper (GDPR-friendly, cookieless).
  *
  * - Site key citit din `import.meta.env.VITE_TURNSTILE_SITE_KEY`.
- * - Dacă site key lipsește (dev local fără config), componenta randează nimic
- *   și apelantul tratează `token=null` (vezi `isTurnstileConfigured`).
+ * - În PROD: captcha este OBLIGATORIU (fail-closed). Dacă site key lipsește,
+ *   `isCaptchaMandatory()` întoarce true dar `isTurnstileConfigured()` false
+ *   → formularul afișează eroare și blochează submit-ul (nu semnătura tăcută).
+ * - În dev/preview: opt-in; dacă lipsește site key, formularul funcționează
+ *   fără captcha (viteză iterație locală).
  * - Cheia secretă NU trăiește în client — se setează în Supabase Auth Dashboard
- *   (Bot protection → Turnstile). Supabase validează automat `captchaToken`
- *   în `signUp` / `signInWithPassword` / `resetPasswordForEmail`.
+ *   (Bot protection → Turnstile). Supabase validează server-side automat
+ *   `captchaToken` la `signUp` / `signInWithPassword` / `resetPasswordForEmail`.
  */
 
 const SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? "";
 
 export function isTurnstileConfigured(): boolean {
   return SITE_KEY.length > 0;
+}
+
+/** Captcha e obligatoriu (configurat SAU rulăm în producție). Fail-closed în prod. */
+export function isCaptchaMandatory(): boolean {
+  return isTurnstileConfigured() || isProductionHost();
+}
+
+/** Prod fără site key configurat = misconfigurare critică; UI trebuie să blocheze. */
+export function isTurnstileMisconfiguredInProd(): boolean {
+  return isProductionHost() && !isTurnstileConfigured();
 }
 
 type Props = {

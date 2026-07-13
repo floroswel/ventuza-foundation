@@ -104,6 +104,9 @@ export const adminDecideAppeal = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => DecideIn.parse(d))
   .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { error } = await context.supabase.rpc("admin_decide_appeal", {
       _appeal_id: data.appealId,
       _decision: data.decision,

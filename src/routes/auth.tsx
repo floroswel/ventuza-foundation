@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/auth-context";
 import { useCountryGate } from "@/lib/country-gate";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
+import { TurnstileWidget, isCaptchaMandatory, isTurnstileMisconfiguredInProd } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
 import { lovable } from "@/integrations/lovable";
@@ -120,7 +120,8 @@ function AuthPage() {
   const [captchaNonce, setCaptchaNonce] = useState(0);
   const [authError, setAuthError] = useState<FriendlyAuthError | null>(null);
   const [retryCountdown, setRetryCountdown] = useState(0);
-  const captchaRequired = isTurnstileConfigured();
+  const captchaRequired = isCaptchaMandatory();
+  const captchaMisconfigured = isTurnstileMisconfiguredInProd();
   const [googleBusy, setGoogleBusy] = useState(false);
   const [isNative, setIsNative] = useState(false);
   useEffect(() => {
@@ -237,6 +238,10 @@ function AuthPage() {
       return;
     }
 
+    if (captchaMisconfigured) {
+      handleAuthError(new Error("Verificarea anti-bot nu este configurată pentru acest domeniu. Contactează suportul (dpo@ventuza.eu)."));
+      return;
+    }
     if (captchaRequired && !captchaToken) {
       handleAuthError(new Error("captcha required"));
       return;
@@ -349,6 +354,10 @@ function AuthPage() {
     const emailParsed = emailSchema.safeParse(email);
     if (!emailParsed.success) {
       toast.error(t("auth.errors.enterEmailFirst"));
+      return;
+    }
+    if (captchaMisconfigured) {
+      handleAuthError(new Error("Verificarea anti-bot nu este configurată. Contactează suportul (dpo@ventuza.eu)."));
       return;
     }
     if (captchaRequired && !captchaToken) {

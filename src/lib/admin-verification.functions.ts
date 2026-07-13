@@ -181,6 +181,8 @@ export const adminDecideVerification = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => DecideInput.parse(d))
   .handler(async ({ data, context }) => {
     await assertVerificationStaff(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { error } = await context.supabase.rpc("verification_moderator_decide", {
       p_request_id: data.requestId,
       p_decision: data.decision,
