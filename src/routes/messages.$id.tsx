@@ -402,6 +402,11 @@ function ThreadPage() {
     e.preventDefault();
     const body = text.trim();
     if (!body || !user) return;
+    // Offline: nu pierdem mesajul din input, arătăm eroare clară.
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      toast.error("Ești offline — mesajul nu a fost trimis. Textul rămâne în casetă.");
+      return;
+    }
     const tempId = `tmp-${crypto.randomUUID()}`;
     const replyId = replyTo?.id ?? null;
     const optimistic: UiMessage = {
