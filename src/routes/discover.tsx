@@ -150,18 +150,21 @@ function DiscoverPage() {
     if (!user || incognitoBusy) return;
     const next = !incognito;
     setIncognitoBusy(true);
-    setIncognito(next);
+    // Optimistic update în cache-ul my-profile.
+    queryClient.setQueryData(["my-profile", user.id], { incognito: next });
     const { error } = await supabase.from("profiles").update({ incognito: next }).eq("id", user.id);
     setIncognitoBusy(false);
     if (error) {
-      setIncognito(!next);
+      queryClient.setQueryData(["my-profile", user.id], { incognito: !next });
       toast.error(error.message);
     } else {
+      void myProfileQuery.refetch();
       toast.success(
         next ? "Mod incognito activat — profilul tău e ascuns" : "Ești din nou vizibil",
       );
     }
-  }, [user, incognito, incognitoBusy]);
+  }, [user, incognito, incognitoBusy, queryClient, myProfileQuery]);
+
 
   function pickView(next: "grid" | "swipe") {
     setView(next);
