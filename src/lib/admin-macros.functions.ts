@@ -40,6 +40,8 @@ export const adminUpsertMacro = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => UpsertIn.parse(d))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
     const payload = {
@@ -74,6 +76,8 @@ export const adminDeleteMacro = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ id: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
     const { error } = await sa.from("support_macros").delete().eq("id", data.id);

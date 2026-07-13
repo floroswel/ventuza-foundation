@@ -47,6 +47,13 @@ export const policyUpsertRule = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => upsertSchema.parse(d))
   .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await (context.supabase as any).rpc("has_any_role", {
+      _user_id: context.userId,
+      _roles: ["admin", "super_admin"],
+    });
+    if (!isAdmin) throw new Error("Forbidden: admin required");
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { data: id, error } = await (context.supabase.rpc as any)("policy_upsert_rule", {
       p_code: data.code,
       p_category: data.category,
@@ -72,6 +79,13 @@ export const policySetState = createServerFn({ method: "POST" })
       .parse(d),
   )
   .handler(async ({ data, context }) => {
+    const { data: isAdmin } = await (context.supabase as any).rpc("has_any_role", {
+      _user_id: context.userId,
+      _roles: ["admin", "super_admin"],
+    });
+    if (!isAdmin) throw new Error("Forbidden: admin required");
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     const { error } = await (context.supabase.rpc as any)("policy_set_state", {
       p_rule_id: data.ruleId,
       p_new_state: data.state,
