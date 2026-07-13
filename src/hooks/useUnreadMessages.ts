@@ -66,8 +66,10 @@ function ensureChannel(userId: string) {
     channel = null;
   }
   currentUserId = userId;
+  // Reuse `conv-list:<uid>` topic — already whitelisted in realtime authz.
+  // (Ex-name `unread-msgs-<uid>` nu era în whitelist → nu primea evenimente.)
   channel = supabase
-    .channel(`unread-msgs-${userId}`)
+    .channel(`conv-list:${userId}`)
     .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () =>
       scheduleRefresh(userId),
     )
