@@ -261,6 +261,7 @@ function ThreadPage() {
           console.warn("[messages] is_blocked_between failed, defaulting to not blocked:", blockErr);
         }
         if (alive) setIsBlocked(!blockErr && Boolean(blockedRes));
+        await markDelivered(id);
         await markRead(id, user!.id);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't open chat");
