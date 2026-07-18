@@ -192,7 +192,8 @@ type Section =
   | "legaldocs"
   | "alertrules"
   | "macros"
-  | "verifqueue";
+  | "verifqueue"
+  | "crashlog";
 
 type Report = {
   id: string;
