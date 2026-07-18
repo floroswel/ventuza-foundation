@@ -1015,6 +1015,10 @@ function ThreadPage() {
                     <>
                       <CheckCheck className="size-3 text-primary" /> read
                     </>
+                  ) : m.delivered_at ? (
+                    <>
+                      <CheckCheck className="size-3" /> delivered
+                    </>
                   ) : (
                     <>
                       <Check className="size-3" /> sent
