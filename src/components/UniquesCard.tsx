@@ -34,10 +34,18 @@ export function UniquesCard() {
   const [saving, setSaving] = useState(false);
   const [pinSet, setPinSet] = useState(false);
   const [pinDraft, setPinDraft] = useState("");
+  const [bioSupported, setBioSupported] = useState(false);
+  const [bioOn, setBioOn] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     setPinSet(hasPin());
+    void (async () => {
+      const ok = await isBiometricAvailable();
+      setBioSupported(ok);
+      setBioOn(ok && isBiometricEnabled());
+    })();
+
     supabase
       .from("profiles")
       .select("pronouns_custom, friends_only_mode, preferred_language")
