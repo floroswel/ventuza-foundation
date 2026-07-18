@@ -303,6 +303,16 @@ export async function unsendMessage(messageId: string): Promise<void> {
   if (error) throw error;
 }
 
+export async function markDelivered(conversationId: string): Promise<void> {
+  try {
+    await supabase.rpc("mark_messages_delivered" as never, {
+      _conversation_id: conversationId,
+    } as never);
+  } catch (e) {
+    console.warn("[chat] mark_messages_delivered failed", e);
+  }
+}
+
 export async function markRead(conversationId: string, meId: string): Promise<void> {
   // Respect the recipient's "read receipts" preference: if I have it OFF, don't stamp read_at
   const { data: meProf } = await supabase
