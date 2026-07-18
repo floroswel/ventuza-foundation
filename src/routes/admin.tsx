@@ -619,6 +619,7 @@ function AdminDashboard() {
       {section === "security" && <SecurityPanel />}
       
       {section === "health" && <SystemHealthPanel />}
+      {section === "crashlog" && <CrashLogPanel />}
       {section === "ratelimit" && <RateLimitPanel />}
       {section === "signupthrottle" && <SignupThrottlePanel />}
       {section === "settings" && isAdmin && <SettingsAndFlagsPanel />}
