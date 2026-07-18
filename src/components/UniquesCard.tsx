@@ -1,10 +1,17 @@
 import { useEffect, useState } from "react";
-import { Lock, Loader2, Sparkles, Users } from "lucide-react";
+import { Fingerprint, Lock, Loader2, Sparkles, Users } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { clearPin, hasPin, setPin } from "@/lib/pin-lock";
+import {
+  isBiometricAvailable,
+  isBiometricEnabled,
+  setBiometricEnabled,
+  verifyBiometric,
+} from "@/lib/biometric-unlock";
 import { PanicToolsCard } from "./PanicToolsCard";
+
 
 const LANGS = [
   { value: "ro", label: "Română" },
