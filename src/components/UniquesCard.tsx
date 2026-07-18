@@ -188,7 +188,41 @@ export function UniquesCard() {
             Dezactivează PIN-ul
           </button>
         )}
+
+        {pinSet && bioSupported && (
+          <label className="mt-3 flex items-start justify-between gap-3 rounded-xl border border-border bg-background p-3">
+            <div className="min-w-0">
+              <p className="flex items-center gap-1.5 text-sm font-medium">
+                <Fingerprint className="size-3.5 text-primary" /> Deblocare biometrică
+              </p>
+              <p className="mt-0.5 text-[11px] text-muted-foreground">
+                Folosește amprenta sau Face ID în loc de PIN.
+              </p>
+            </div>
+            <input
+              type="checkbox"
+              checked={bioOn}
+              onChange={async (e) => {
+                if (e.target.checked) {
+                  const ok = await verifyBiometric("Confirmă biometria pentru Ventuza");
+                  if (!ok) {
+                    toast.error("Nu am putut verifica biometria.");
+                    return;
+                  }
+                  setBiometricEnabled(true);
+                  setBioOn(true);
+                  toast.success("Deblocare biometrică activată.");
+                } else {
+                  setBiometricEnabled(false);
+                  setBioOn(false);
+                }
+              }}
+              className="mt-1 size-4 accent-primary"
+            />
+          </label>
+        )}
       </section>
+
 
       <PanicToolsCard />
     </>
