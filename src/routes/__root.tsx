@@ -239,6 +239,10 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
+    // Global crash logger (device local, ring buffer 50).
+    void import("@/lib/crash-log").then(({ installGlobalCrashHandlers }) =>
+      installGlobalCrashHandlers(),
+    );
     // Guarded PWA registration (dev/preview/iframe/?sw=off all refuse).
     void import("@/lib/pwa-register").then(({ registerPwa }) => registerPwa());
     // Native Android runtime: back button, keyboard resize, status bar.
