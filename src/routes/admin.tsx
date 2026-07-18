@@ -277,6 +277,7 @@ function AdminDashboard() {
       "alertrules",
       "macros",
       "verifqueue",
+      "crashlog",
     ];
     const applyHash = () => {
       const next = window.location.hash.replace("#", "") as Section;
