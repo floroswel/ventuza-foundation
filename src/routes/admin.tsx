@@ -56,6 +56,7 @@ import {
 } from "@/components/admin/ui/primitives";
 import { DataTable, type Column } from "@/components/admin/ui/DataTable";
 import { SystemHealthPanel } from "@/components/admin/SystemHealthPanel";
+import { CrashLogPanel } from "@/components/admin/CrashLogPanel";
 import { AiCopilotPanel } from "@/components/admin/AiCopilotPanel";
 import {
   adminGetOverview,
@@ -191,7 +192,8 @@ type Section =
   | "legaldocs"
   | "alertrules"
   | "macros"
-  | "verifqueue";
+  | "verifqueue"
+  | "crashlog";
 
 type Report = {
   id: string;
@@ -275,6 +277,7 @@ function AdminDashboard() {
       "alertrules",
       "macros",
       "verifqueue",
+      "crashlog",
     ];
     const applyHash = () => {
       const next = window.location.hash.replace("#", "") as Section;
@@ -542,6 +545,7 @@ function AdminDashboard() {
 
     // System
     { id: "health", label: "System Health", icon: Activity, group: "System" },
+    { id: "crashlog", label: "Crash log (device)", icon: ShieldAlert, group: "System", hint: "Erori JS locale, fără terți" },
     { id: "security", label: "Securitate", icon: KeyRound, group: "System" },
     { id: "ratelimit", label: "Rate limit", icon: Activity, group: "System" },
     { id: "signupthrottle", label: "Signup throttling", icon: ShieldAlert, group: "System" },
@@ -616,6 +620,7 @@ function AdminDashboard() {
       {section === "security" && <SecurityPanel />}
       
       {section === "health" && <SystemHealthPanel />}
+      {section === "crashlog" && <CrashLogPanel />}
       {section === "ratelimit" && <RateLimitPanel />}
       {section === "signupthrottle" && <SignupThrottlePanel />}
       {section === "settings" && isAdmin && <SettingsAndFlagsPanel />}
