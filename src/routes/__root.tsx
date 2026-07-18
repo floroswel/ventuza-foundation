@@ -65,6 +65,14 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    void import("@/lib/crash-log").then(({ logCrash }) =>
+      logCrash({
+        kind: "boundary",
+        boundary: "tanstack_root_error_component",
+        message: error.message,
+        stack: error.stack,
+      }),
+    );
   }, [error]);
 
   return (
