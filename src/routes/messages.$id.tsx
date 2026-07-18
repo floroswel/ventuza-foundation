@@ -37,6 +37,7 @@ import {
   MESSAGES_PAGE,
   fetchMessages,
   fetchOtherProfile,
+  markDelivered,
   markRead,
   sendMessage,
   unsendMessage,
