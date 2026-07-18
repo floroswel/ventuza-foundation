@@ -56,6 +56,7 @@ import {
 } from "@/components/admin/ui/primitives";
 import { DataTable, type Column } from "@/components/admin/ui/DataTable";
 import { SystemHealthPanel } from "@/components/admin/SystemHealthPanel";
+import { CrashLogPanel } from "@/components/admin/CrashLogPanel";
 import { AiCopilotPanel } from "@/components/admin/AiCopilotPanel";
 import {
   adminGetOverview,
