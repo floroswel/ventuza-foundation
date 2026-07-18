@@ -37,6 +37,7 @@ import {
   MESSAGES_PAGE,
   fetchMessages,
   fetchOtherProfile,
+  markDelivered,
   markRead,
   sendMessage,
   unsendMessage,
@@ -260,6 +261,7 @@ function ThreadPage() {
           console.warn("[messages] is_blocked_between failed, defaulting to not blocked:", blockErr);
         }
         if (alive) setIsBlocked(!blockErr && Boolean(blockedRes));
+        await markDelivered(id);
         await markRead(id, user!.id);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't open chat");
@@ -284,6 +286,7 @@ function ThreadPage() {
           setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
           if (m.sender_id !== user!.id) {
             setOtherTyping(false);
+            void markDelivered(id);
             void markRead(id, user!.id);
           }
         },
@@ -1011,6 +1014,10 @@ function ThreadPage() {
                   ) : m.read_at ? (
                     <>
                       <CheckCheck className="size-3 text-primary" /> read
+                    </>
+                  ) : m.delivered_at ? (
+                    <>
+                      <CheckCheck className="size-3" /> delivered
                     </>
                   ) : (
                     <>

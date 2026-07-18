@@ -2129,6 +2129,7 @@ export type Database = {
           conversation_id: string
           created_at: string
           deleted_at: string | null
+          delivered_at: string | null
           expires_at: string | null
           id: string
           is_official: boolean
@@ -2152,6 +2153,7 @@ export type Database = {
           conversation_id: string
           created_at?: string
           deleted_at?: string | null
+          delivered_at?: string | null
           expires_at?: string | null
           id?: string
           is_official?: boolean
@@ -2175,6 +2177,7 @@ export type Database = {
           conversation_id?: string
           created_at?: string
           deleted_at?: string | null
+          delivered_at?: string | null
           expires_at?: string | null
           id?: string
           is_official?: boolean
@@ -5719,6 +5722,10 @@ export type Database = {
       longtransactionsenabled: { Args: never; Returns: boolean }
       mark_inactive_for_deletion: { Args: never; Returns: number }
       mark_message_viewed: { Args: { _msg_id: string }; Returns: undefined }
+      mark_messages_delivered: {
+        Args: { _conversation_id: string }
+        Returns: number
+      }
       moderator_ban_user: {
         Args: { _reason: string; _target: string }
         Returns: undefined

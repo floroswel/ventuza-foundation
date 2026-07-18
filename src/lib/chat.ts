@@ -16,6 +16,7 @@ export type MessageRow = {
   sender_id: string;
   body: string;
   read_at: string | null;
+  delivered_at?: string | null;
   created_at: string;
   reactions?: Record<string, string[]> | null;
   media_type?: MessageMediaType | null;
@@ -48,6 +49,7 @@ const MESSAGE_SELECT = [
   "sender_id",
   "body",
   "read_at",
+  "delivered_at",
   "created_at",
   "reactions",
   "media_type",
@@ -299,6 +301,16 @@ export async function sendMessage(
 export async function unsendMessage(messageId: string): Promise<void> {
   const { error } = await supabase.rpc("unsend_message", { _message_id: messageId } as never);
   if (error) throw error;
+}
+
+export async function markDelivered(conversationId: string): Promise<void> {
+  try {
+    await supabase.rpc("mark_messages_delivered" as never, {
+      _conversation_id: conversationId,
+    } as never);
+  } catch (e) {
+    console.warn("[chat] mark_messages_delivered failed", e);
+  }
 }
 
 export async function markRead(conversationId: string, meId: string): Promise<void> {
