@@ -49,6 +49,7 @@ const MESSAGE_SELECT = [
   "sender_id",
   "body",
   "read_at",
+  "delivered_at",
   "created_at",
   "reactions",
   "media_type",
