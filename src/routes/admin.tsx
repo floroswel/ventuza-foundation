@@ -544,6 +544,7 @@ function AdminDashboard() {
 
     // System
     { id: "health", label: "System Health", icon: Activity, group: "System" },
+    { id: "crashlog", label: "Crash log (device)", icon: ShieldAlert, group: "System", hint: "Erori JS locale, fără terți" },
     { id: "security", label: "Securitate", icon: KeyRound, group: "System" },
     { id: "ratelimit", label: "Rate limit", icon: Activity, group: "System" },
     { id: "signupthrottle", label: "Signup throttling", icon: ShieldAlert, group: "System" },
