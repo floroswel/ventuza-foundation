@@ -16,6 +16,7 @@ export type MessageRow = {
   sender_id: string;
   body: string;
   read_at: string | null;
+  delivered_at?: string | null;
   created_at: string;
   reactions?: Record<string, string[]> | null;
   media_type?: MessageMediaType | null;
