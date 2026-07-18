@@ -1,12 +1,18 @@
 import { useEffect, useState } from "react";
-import { Lock } from "lucide-react";
+import { Fingerprint, Lock } from "lucide-react";
 import { hasPin, isUnlocked, verifyPin } from "@/lib/pin-lock";
+import {
+  isBiometricAvailable,
+  isBiometricEnabled,
+  verifyBiometric,
+} from "@/lib/biometric-unlock";
 
 /** Full-screen PIN overlay. Renders only when a PIN is set AND the session is locked. */
 export function PinLockGate() {
   const [locked, setLocked] = useState(false);
   const [pin, setPin] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [bioAvailable, setBioAvailable] = useState(false);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -14,6 +20,9 @@ export function PinLockGate() {
       setLocked(hasPin() && !isUnlocked());
     }
     refresh();
+    void (async () => {
+      setBioAvailable((await isBiometricAvailable()) && isBiometricEnabled());
+    })();
     const onVis = () => {
       // Re-lock when tab regains focus after being hidden > 30s.
       if (document.visibilityState === "visible") refresh();
@@ -25,6 +34,22 @@ export function PinLockGate() {
       window.removeEventListener("vz:pin-changed", refresh as EventListener);
     };
   }, []);
+
+  // Auto-încearcă biometria când gate-ul se blochează.
+  useEffect(() => {
+    if (!locked || !bioAvailable) return;
+    let cancelled = false;
+    void (async () => {
+      const ok = await verifyBiometric("Deblochează Ventuza");
+      if (!cancelled && ok) {
+        sessionStorage.setItem("vz_pin_unlocked", "1");
+        setLocked(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [locked, bioAvailable]);
 
   if (!locked) return null;
 
@@ -38,6 +63,14 @@ export function PinLockGate() {
     } else {
       setError("PIN incorect");
       setPin("");
+    }
+  }
+
+  async function tryBio() {
+    const ok = await verifyBiometric("Deblochează Ventuza");
+    if (ok) {
+      sessionStorage.setItem("vz_pin_unlocked", "1");
+      setLocked(false);
     }
   }
 
@@ -69,6 +102,16 @@ export function PinLockGate() {
         >
           Deblochează
         </button>
+        {bioAvailable && (
+          <button
+            type="button"
+            onClick={tryBio}
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-transparent py-2.5 text-sm font-medium text-foreground"
+          >
+            <Fingerprint className="size-4" />
+            Folosește biometria
+          </button>
+        )}
       </form>
     </div>
   );
