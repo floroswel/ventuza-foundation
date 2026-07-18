@@ -286,6 +286,7 @@ function ThreadPage() {
           setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
           if (m.sender_id !== user!.id) {
             setOtherTyping(false);
+            void markDelivered(id);
             void markRead(id, user!.id);
           }
         },
