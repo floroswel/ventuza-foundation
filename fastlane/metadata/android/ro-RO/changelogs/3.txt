@@ -1,0 +1,5 @@
+Ventuza 1.0.2
+
+- Îmbunătățiri și corectări de bug-uri.
+
+Completează înainte de upload pe Play Console.

@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.1",
-  "versionCode": 2,
+  "versionName": "1.0.2",
+  "versionCode": 3,
   "track": "internal",
   "notes": "Sursa unică de adevăr pentru versionarea build-ului Android. Modifică DOAR prin scripts/bump-android-version.mjs sau lane-ul Fastlane `bump`."
 }
