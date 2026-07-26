@@ -1,5 +1,9 @@
-Ventuza 1.0.2
+Ventuza 1.0.2 — major improvements
 
-- Improvements and bug fixes.
-
-Completează înainte de upload pe Play Console.
+• Biometric unlock (fingerprint / face) for the app PIN.
+• WhatsApp-style chat receipts: sent → delivered → read + typing indicator.
+• Native camera & gallery on Android (no WebView).
+• Native push notifications (FCM) and deep links.
+• On-device crash log for faster diagnostics.
+• Battery-friendly location updates + offline chat cache.
+• Stability and security fixes.
