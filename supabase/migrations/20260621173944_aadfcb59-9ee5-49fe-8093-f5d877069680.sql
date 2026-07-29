@@ -1,9 +1,9 @@
 
 -- 1. Restrânge politicile realtime: elimină topicurile globale cruise-now / conv-list
-DROP POLICY IF EXISTS ventuza_realtime_authz_select ON realtime.messages;
-DROP POLICY IF EXISTS ventuza_realtime_authz_insert ON realtime.messages;
+DROP POLICY IF EXISTS suzeta_realtime_authz_select ON realtime.messages;
+DROP POLICY IF EXISTS suzeta_realtime_authz_insert ON realtime.messages;
 
-CREATE POLICY ventuza_realtime_authz_select ON realtime.messages
+CREATE POLICY suzeta_realtime_authz_select ON realtime.messages
 FOR SELECT TO authenticated
 USING (
   ((realtime.topic() LIKE 'notifications:%') AND split_part(realtime.topic(), ':', 2) = (auth.uid())::text)
@@ -17,7 +17,7 @@ USING (
           AND gm.user_id = auth.uid()))
 );
 
-CREATE POLICY ventuza_realtime_authz_insert ON realtime.messages
+CREATE POLICY suzeta_realtime_authz_insert ON realtime.messages
 FOR INSERT TO authenticated
 WITH CHECK (
   ((realtime.topic() LIKE 'thread-%') AND public.is_conversation_participant(NULLIF(split_part(realtime.topic(), '-', 2), '')::uuid, auth.uid()))

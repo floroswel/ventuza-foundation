@@ -143,7 +143,7 @@ BEGIN
   INSERT INTO public.messages(conversation_id,sender_id,receiver_id,body,is_official)
   VALUES (v_convo,v_actor,_target,v_full_body,true) RETURNING id INTO v_msg_id;
   INSERT INTO public.notifications(user_id,type,title,body,data)
-  VALUES (_target,'admin_message',COALESCE(_subject,'Mesaj oficial Ventuza'),left(_body,200),
+  VALUES (_target,'admin_message',COALESCE(_subject,'Mesaj oficial Suzeta'),left(_body,200),
           jsonb_build_object('conversation_id',v_convo,'message_id',v_msg_id));
   INSERT INTO public.admin_audit_log(actor_id,action,target_table,target_id,after_data,severity)
   VALUES (v_actor,'admin_send_official_message','messages',v_msg_id,

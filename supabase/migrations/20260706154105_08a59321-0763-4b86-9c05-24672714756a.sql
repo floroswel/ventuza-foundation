@@ -31,7 +31,7 @@ BEGIN
     NEW.swiper_id,
     'like'::public.notification_type,
     'Cuiva îi place de tine 👀',
-    'Deschide Ventuza să vezi cine.',
+    'Deschide Suzeta să vezi cine.',
     '/discover',
     NEW.id
   );

@@ -435,12 +435,12 @@ GRANT EXECUTE ON FUNCTION public.admin_revoke_badge(uuid, text, text) TO authent
 -- ============================================================
 INSERT INTO public.badge_registry(code, target, label_i18n, icon, color_class, priority, criteria_summary, is_manual, effect, default_permanent, is_active)
 VALUES
-  ('founder_ventuza','user','{"ro":"Fondator Ventuza","en":"Ventuza Founder"}'::jsonb,'Crown','text-amber-400',200,
-   'Badge onorific acordat fondatorilor și primilor contributori Ventuza.', true,'shimmer',true,true),
+  ('founder_suzeta','user','{"ro":"Fondator Suzeta","en":"Suzeta Founder"}'::jsonb,'Crown','text-amber-400',200,
+   'Badge onorific acordat fondatorilor și primilor contributori Suzeta.', true,'shimmer',true,true),
   ('ngo_partner','user','{"ro":"Partener ONG","en":"NGO Partner"}'::jsonb,'Heart','text-emerald-500',150,
    'Reprezentant verificat al unui ONG partener (ACCEPT, ARAS etc.).', true,'glow',true,true),
   ('bar_verified','user','{"ro":"Local verificat","en":"Verified Venue"}'::jsonb,'Wine','text-blue-500',140,
-   'Reprezentant verificat al unui local partener Ventuza.', true,'shimmer',true,true),
+   'Reprezentant verificat al unui local partener Suzeta.', true,'shimmer',true,true),
   ('event_organizer','user','{"ro":"Organizator evenimente","en":"Event Organizer"}'::jsonb,'Calendar','text-fuchsia-500',130,
    'Organizator verificat de evenimente comunitare.', true,NULL,false,true),
   ('ally','user','{"ro":"Aliat comunitate","en":"Community Ally"}'::jsonb,'Rainbow','text-pink-400',110,
@@ -448,7 +448,7 @@ VALUES
   ('press','user','{"ro":"Presă / Media","en":"Press / Media"}'::jsonb,'Mic','text-yellow-500',120,
    'Reprezentant media verificat.', true,NULL,false,true),
   ('moderator_public','user','{"ro":"Moderator","en":"Moderator"}'::jsonb,'Shield','text-blue-600',180,
-   'Membru al echipei de moderare Ventuza.', true,'glow',true,true),
+   'Membru al echipei de moderare Suzeta.', true,'glow',true,true),
   ('beta_tester','user','{"ro":"Beta Tester","en":"Beta Tester"}'::jsonb,'Bug','text-lime-500',80,
    'A contribuit la testarea versiunilor beta.', true,NULL,true,true)
 ON CONFLICT (code) DO UPDATE
@@ -505,7 +505,7 @@ BEGIN
 
   INSERT INTO public.notifications(user_id, type, title, body, data)
   VALUES (_target, 'admin_message',
-          COALESCE(_subject, 'Mesaj oficial Ventuza'),
+          COALESCE(_subject, 'Mesaj oficial Suzeta'),
           left(_body, 200),
           jsonb_build_object('conversation_id', v_convo, 'message_id', v_msg_id));
 

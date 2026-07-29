@@ -56,8 +56,8 @@ CREATE POLICY "profile-media scoped read" ON storage.objects
 
 ALTER TABLE realtime.messages ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "ventuza_realtime_authz_select" ON realtime.messages;
-CREATE POLICY "ventuza_realtime_authz_select" ON realtime.messages
+DROP POLICY IF EXISTS "suzeta_realtime_authz_select" ON realtime.messages;
+CREATE POLICY "suzeta_realtime_authz_select" ON realtime.messages
   FOR SELECT TO authenticated
   USING (
     (realtime.topic() IN ('cruise-now', 'conv-list'))
@@ -75,8 +75,8 @@ CREATE POLICY "ventuza_realtime_authz_select" ON realtime.messages
         ))
   );
 
-DROP POLICY IF EXISTS "ventuza_realtime_authz_insert" ON realtime.messages;
-CREATE POLICY "ventuza_realtime_authz_insert" ON realtime.messages
+DROP POLICY IF EXISTS "suzeta_realtime_authz_insert" ON realtime.messages;
+CREATE POLICY "suzeta_realtime_authz_insert" ON realtime.messages
   FOR INSERT TO authenticated
   WITH CHECK (
     (realtime.topic() IN ('cruise-now', 'conv-list'))
