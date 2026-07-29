@@ -135,19 +135,35 @@ html {
 
 @utility wordmark {
   font-family: var(--font-display);
-  background: var(--gradient-gold);
+  background: var(--gradient-brand);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+}
+
+@utility bg-brand-gradient {
+  background: var(--gradient-brand);
+}
+
+@utility text-brand-gradient {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility glow-brand {
+  box-shadow: var(--shadow-brand);
 }
 
 @utility pride-bar {
-  background: var(--gradient-pride);
+  background: var(--gradient-brand);
 }
 
 @utility glow-gold {
-  box-shadow: var(--shadow-gold);
+  box-shadow: var(--shadow-brand);
 }
 
 /* Animated "snake" border for grid tiles with unread messages.
