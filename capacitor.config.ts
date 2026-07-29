@@ -14,7 +14,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const isDev = process.env.CAPACITOR_DEV === "1";
 
 const config: CapacitorConfig = {
-  appId: "com.suzeta.dating",
+  appId: "com.ventuza.dating",
   appName: "Suzeta",
   webDir: "dist/client",
   ...(isDev

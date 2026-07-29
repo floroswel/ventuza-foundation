@@ -1,2 +1,2 @@
 json_key_file(ENV["SUPPLY_JSON_KEY"] || "release/play-store-service-account.json")
-package_name("com.suzeta.dating")
+package_name("com.ventuza.dating")
