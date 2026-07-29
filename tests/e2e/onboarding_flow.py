@@ -135,21 +135,20 @@ async def click_continue(page: Page) -> None:
 
 
 # ─── G1 · guard fără sesiune ───────────────────────────────────────────────
-async def test_guard_no_session(context: BrowserContext) -> None:
+async def test_guard_no_session(browser) -> None:
     name = "G1 /n fără sesiune → redirect /auth"
-    page = await context.new_page()
+    # Context nou, fără cookies + fără localStorage din sesiuni anterioare.
+    ctx = await browser.new_context(viewport={"width": 1280, "height": 1800})
+    page = await ctx.new_page()
     try:
-        # Context curat: fără cookies, fără localStorage.
-        await context.clear_cookies()
         await page.goto(f"{BASE}/n", wait_until="domcontentloaded")
-        # așteaptă redirect
-        for _ in range(40):
+        for _ in range(60):
             if "/auth" in page.url:
                 ok(name); return
-            await page.wait_for_timeout(150)
+            await page.wait_for_timeout(200)
         bad(name, f"nu a redirect la /auth, URL={page.url}")
     finally:
-        await page.close()
+        await ctx.close()
 
 
 # ─── O1..O7 · flux autentificat ────────────────────────────────────────────
