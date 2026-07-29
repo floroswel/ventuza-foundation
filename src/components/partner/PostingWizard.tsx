@@ -264,14 +264,16 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
         Click pe hartă sau trage pin-ul roșu pentru a seta locația{" "}
         {template.kind === "venue" ? "locului" : "evenimentului"}.
       </p>
-      <PinMap
-        lat={lat}
-        lng={lng}
-        onChange={(la, ln) => {
-          setLat(la);
-          setLng(ln);
-        }}
-      />
+      <Suspense fallback={<div className="w-full h-56 rounded border bg-muted animate-pulse" />}>
+        <PinMap
+          lat={lat}
+          lng={lng}
+          onChange={(la, ln) => {
+            setLat(la);
+            setLng(ln);
+          }}
+        />
+      </Suspense>
       <div className="space-y-1">
         <Label className="flex items-center justify-between">
           <span>Rază notificare proximitate</span>
