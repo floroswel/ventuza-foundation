@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNearbyPoints, type NearbyKind, type NearbyPoint } from "@/lib/nearby.functions";
@@ -15,7 +15,9 @@ import {
 } from "@/lib/geo-bucket";
 
 import { NearbyCard } from "@/components/nearby/NearbyCard";
-import { NearbyMap } from "@/components/nearby/NearbyMap";
+const NearbyMap = lazy(() =>
+  import("@/components/nearby/NearbyMap").then((m) => ({ default: m.NearbyMap })),
+);
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
