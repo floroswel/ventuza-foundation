@@ -39,9 +39,14 @@ export const getRouter = () => {
     routeTree,
     context: { queryClient },
     scrollRestoration: true,
+    // Prefetch la hover (desktop) și la touchstart (mobile) — reduce latența
+    // percepută la navigare fără a plăti cost până când userul arată intenția.
+    defaultPreload: "intent",
+    defaultPreloadDelay: 50,
     defaultPreloadStaleTime: 0,
     defaultErrorComponent: DefaultErrorComponent,
   });
 
   return router;
 };
+
