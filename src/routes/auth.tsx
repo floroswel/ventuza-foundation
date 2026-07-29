@@ -600,6 +600,13 @@ function AuthPage() {
             }}
             onExpire={() => setCaptchaToken(null)}
           />
+          {captchaRequired && (
+            <p className="text-center text-xs text-muted-foreground" aria-live="polite">
+              {captchaToken
+                ? "✓ Verificare anti-bot completă"
+                : "Așteaptă verificarea anti-bot…"}
+            </p>
+          )}
 
           {authError && (
             <div
