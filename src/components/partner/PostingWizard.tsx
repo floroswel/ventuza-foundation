@@ -57,8 +57,8 @@ import {
   Lightbulb,
   Image as ImgIcon,
 } from "lucide-react";
-import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
+import { lazy, Suspense } from "react";
+const PinMap = lazy(() => import("@/components/partner/PinMap"));
 
 type Quota = {
   venues: number;
@@ -264,14 +264,16 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
         Click pe hartă sau trage pin-ul roșu pentru a seta locația{" "}
         {template.kind === "venue" ? "locului" : "evenimentului"}.
       </p>
-      <PinMap
-        lat={lat}
-        lng={lng}
-        onChange={(la, ln) => {
-          setLat(la);
-          setLng(ln);
-        }}
-      />
+      <Suspense fallback={<div className="w-full h-56 rounded border bg-muted animate-pulse" />}>
+        <PinMap
+          lat={lat}
+          lng={lng}
+          onChange={(la, ln) => {
+            setLat(la);
+            setLng(ln);
+          }}
+        />
+      </Suspense>
       <div className="space-y-1">
         <Label className="flex items-center justify-between">
           <span>Rază notificare proximitate</span>
@@ -643,68 +645,8 @@ function OfferLocationNote() {
   );
 }
 
-/* ------------------------------- PIN MAP --------------------------------- */
-
-function PinMap({
-  lat,
-  lng,
-  onChange,
-}: {
-  lat: number;
-  lng: number;
-  onChange: (lat: number, lng: number) => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const markerRef = useRef<maplibregl.Marker | null>(null);
-
-  useEffect(() => {
-    if (!ref.current || mapRef.current) return;
-    const map = new maplibregl.Map({
-      container: ref.current,
-      style: {
-        version: 8,
-        sources: {
-          osm: {
-            type: "raster",
-            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-            tileSize: 256,
-            attribution: "© OpenStreetMap",
-          },
-        },
-        layers: [{ id: "osm", type: "raster", source: "osm" }],
-      },
-      center: [lng, lat],
-      zoom: 13,
-    });
-    mapRef.current = map;
-    const marker = new maplibregl.Marker({ color: "#dc2626", draggable: true })
-      .setLngLat([lng, lat])
-      .addTo(map);
-    marker.on("dragend", () => {
-      const p = marker.getLngLat();
-      onChange(p.lat, p.lng);
-    });
-    map.on("click", (e) => {
-      marker.setLngLat([e.lngLat.lng, e.lngLat.lat]);
-      onChange(e.lngLat.lat, e.lngLat.lng);
-    });
-    markerRef.current = marker;
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (markerRef.current) markerRef.current.setLngLat([lng, lat]);
-  }, [lat, lng]);
-
-  return <div ref={ref} className="w-full h-56 rounded border" />;
-}
-
 /* ------------------------------- PREVIEW --------------------------------- */
+
 
 function NearbyPreviewCard({
   template,

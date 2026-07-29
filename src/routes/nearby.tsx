@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { getNearbyPoints, type NearbyKind, type NearbyPoint } from "@/lib/nearby.functions";
@@ -15,7 +15,9 @@ import {
 } from "@/lib/geo-bucket";
 
 import { NearbyCard } from "@/components/nearby/NearbyCard";
-import { NearbyMap } from "@/components/nearby/NearbyMap";
+const NearbyMap = lazy(() =>
+  import("@/components/nearby/NearbyMap").then((m) => ({ default: m.NearbyMap })),
+);
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -315,15 +317,17 @@ function NearbyPage() {
               onBrowseAll={() => navigate({ to: "/events" })}
             />
           ) : view === "map" ? (
-            <NearbyMap
-              user={coords}
-              points={filtered}
-              onSelect={(p) => {
-                if (p.kind === "event") navigate({ to: "/events/$id", params: { id: p.id } });
-                else if (p.kind === "offer") navigate({ to: "/offers/$id", params: { id: p.id } });
-                else navigate({ to: "/venues/$id", params: { id: p.id } });
-              }}
-            />
+            <Suspense fallback={<div className="w-full h-[60vh] rounded-lg border border-border bg-muted animate-pulse" />}>
+              <NearbyMap
+                user={coords}
+                points={filtered}
+                onSelect={(p) => {
+                  if (p.kind === "event") navigate({ to: "/events/$id", params: { id: p.id } });
+                  else if (p.kind === "offer") navigate({ to: "/offers/$id", params: { id: p.id } });
+                  else navigate({ to: "/venues/$id", params: { id: p.id } });
+                }}
+              />
+            </Suspense>
           ) : isLoading || !coords ? (
             <div className="text-center py-12 text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
