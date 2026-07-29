@@ -14,9 +14,9 @@ import { translateProfile } from "@/lib/translate.functions";
 export const Route = createFileRoute("/u/$slug")({
   head: ({ params }) => ({
     meta: [
-      { title: `@${params.slug} · Ventuza` },
-      { name: "description", content: `Vezi profilul ${params.slug} pe Ventuza.` },
-      { property: "og:title", content: `@${params.slug} · Ventuza` },
+      { title: `@${params.slug} · Suzeta` },
+      { name: "description", content: `Vezi profilul ${params.slug} pe Suzeta.` },
+      { property: "og:title", content: `@${params.slug} · Suzeta` },
       { property: "og:type", content: "profile" },
     ],
   }),
@@ -348,7 +348,7 @@ function PublicProfilePage() {
           search={{ mode: "signup" }}
           className="block rounded-full bg-primary py-3 text-center text-sm font-medium text-primary-foreground"
         >
-          Intră în Ventuza ca să te conectezi cu {profile.display_name}
+          Intră în Suzeta ca să te conectezi cu {profile.display_name}
         </Link>
       </div>
     </main>

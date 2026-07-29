@@ -244,7 +244,7 @@ export function QuickProfileDrawer() {
               <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">
                 Choose a plan
               </p>
-              <p className="mt-1 text-base font-semibold">Ventuza Premium</p>
+              <p className="mt-1 text-base font-semibold">Suzeta Premium</p>
               <p className="text-[11px] text-muted-foreground">Vezi mai mulți, fii văzut primul</p>
             </div>
             <Sparkles className="size-5 text-primary" />

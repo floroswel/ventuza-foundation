@@ -133,7 +133,7 @@ export const POSITION_OPTIONS = [
   "Not sure",
 ];
 
-// HIV_STATUS_OPTIONS: eliminat. Ventuza nu procesează statusul HIV (decizie GDPR).
+// HIV_STATUS_OPTIONS: eliminat. Suzeta nu procesează statusul HIV (decizie GDPR).
 
 export const RELATIONSHIP_STATUS_OPTIONS = [
   "Single",

@@ -38,7 +38,7 @@ import { DebugModeCard } from "@/components/settings/DebugModeCard";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Setări — Ventuza" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Setări — Suzeta" }, { name: "robots", content: "noindex" }] }),
   component: SettingsPage,
 });
 
@@ -70,7 +70,7 @@ function SettingsPage() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `ventuza-data-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = `suzeta-data-${new Date().toISOString().split("T")[0]}.json`;
       a.click();
       URL.revokeObjectURL(url);
       toast.success("Datele tale au fost exportate (GDPR)");
@@ -515,7 +515,7 @@ function SettingsPage() {
         {/* Proximity notifications (Strat 1 + Strat 2 opt-in) */}
         <ProximityNotificationsCard />
 
-        {/* Ventuza signature notification sound */}
+        {/* Suzeta signature notification sound */}
         <NotificationSoundCard />
 
         {/* Unique features: pronouns, friends-only, language, PIN, discreet mode */}
@@ -665,13 +665,13 @@ function SettingsPage() {
               <Shield className="size-4" /> Devino partener B2B →
             </Link>
             <a
-              href="mailto:privacy@ventuza.app"
+              href="mailto:privacy@suzeta.app"
               className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
             >
               <Mail className="size-4" /> Contact privacy / DPO
             </a>
             <a
-              href="mailto:support@ventuza.app"
+              href="mailto:support@suzeta.app"
               className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
             >
               <Mail className="size-4" /> Contact suport

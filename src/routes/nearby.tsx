@@ -30,7 +30,7 @@ import { logRpcError } from "@/lib/rpc-error-logger";
 export const Route = createFileRoute("/nearby")({
   head: () => ({
     meta: [
-      { title: "Aproape de tine — Ventuza" },
+      { title: "Aproape de tine — Suzeta" },
       {
         name: "description",
         content:
@@ -215,7 +215,7 @@ function NearbyPage() {
               <ul className="mt-2 list-disc pl-4 text-muted-foreground">
                 <li>Chrome/Edge: iconița 🔒 din bara de adrese → Site settings → Location → Allow</li>
                 <li>Safari iOS: Setări → Safari → Locație → Permite</li>
-                <li>Android app: Setări → Apps → Ventuza → Permisiuni → Locație</li>
+                <li>Android app: Setări → Apps → Suzeta → Permisiuni → Locație</li>
               </ul>
             )}
           </div>

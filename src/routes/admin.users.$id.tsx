@@ -74,7 +74,7 @@ import { Eye, EyeOff } from "lucide-react";
 
 export const Route = createFileRoute("/admin/users/$id")({
   head: () => ({
-    meta: [{ title: "User 360 — Admin Ventuza" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "User 360 — Admin Suzeta" }, { name: "robots", content: "noindex" }],
   }),
   component: User360Page,
 });

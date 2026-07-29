@@ -89,7 +89,7 @@ export function SosCard() {
           window.open(url, "_blank");
           opened++;
         } else if (c.email) {
-          const url = `mailto:${c.email}?subject=${encodeURIComponent("SOS Ventuza")}&body=${encoded}`;
+          const url = `mailto:${c.email}?subject=${encodeURIComponent("SOS Suzeta")}&body=${encoded}`;
           window.open(url, "_blank");
           opened++;
         }

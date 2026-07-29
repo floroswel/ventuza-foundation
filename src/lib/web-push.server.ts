@@ -10,12 +10,12 @@
 // SECURITATE: cheia PRIVATĂ nu are fallback în cod. Dacă `VAPID_PRIVATE_KEY`
 // lipsește din env, trimiterile eșuează cu eroare explicită — NU cădem pe
 // o cheie hardcodată (ar permite oricui cu acces la sursă să trimită push
-// în numele Ventuza). Cheia publică poate rămâne cu fallback (nu e secretă).
+// în numele Suzeta). Cheia publică poate rămâne cu fallback (nu e secretă).
 import webpush from "web-push";
 
 const FALLBACK_PUBLIC =
   "BOO0M7jilN8SYJCuFoiFqzfWYzRdcadEhpZbuhIZG5Iz8fYwGzYLjcqZ1nUGrwX5p4EHDwYNVT5AH5HWfEpABto";
-const FALLBACK_SUBJECT = "mailto:hello@ventuza.app";
+const FALLBACK_SUBJECT = "mailto:hello@suzeta.app";
 
 let _configured = false;
 let _lastKeyId: string | null = null;

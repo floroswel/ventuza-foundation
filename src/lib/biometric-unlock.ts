@@ -44,13 +44,13 @@ export function setBiometricEnabled(enabled: boolean) {
  * Prompt biometric verification. Returns true dacă userul a trecut,
  * false dacă a anulat / a eșuat. Nu aruncă — caller-ul decide fallback.
  */
-export async function verifyBiometric(reason = "Deblochează Ventuza"): Promise<boolean> {
+export async function verifyBiometric(reason = "Deblochează Suzeta"): Promise<boolean> {
   if (!(await isBiometricAvailable())) return false;
   try {
     const { NativeBiometric } = await import("capacitor-native-biometric");
     await NativeBiometric.verifyIdentity({
       reason,
-      title: "Ventuza",
+      title: "Suzeta",
       subtitle: reason,
       description: "Folosește biometria pentru a debloca aplicația.",
     });

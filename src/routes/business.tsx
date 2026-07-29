@@ -28,13 +28,13 @@ import { linkOrphanBusinessApps } from "@/lib/business.functions";
 export const Route = createFileRoute("/business")({
   head: () => ({
     meta: [
-      { title: "Parteneri B2B — Ventuza pentru firme, ONG-uri și branduri" },
+      { title: "Parteneri B2B — Suzeta pentru firme, ONG-uri și branduri" },
       {
         name: "description",
         content:
           "Reclamă targetată, evenimente promovate și parteneriate Pride pentru branduri LGBTQ+ friendly din România și UE.",
       },
-      { property: "og:title", content: "Devino partener Ventuza" },
+      { property: "og:title", content: "Devino partener Suzeta" },
       {
         property: "og:description",
         content: "Acces la cea mai engaged comunitate LGBTQ+ din România.",
@@ -348,7 +348,7 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
       </div>
 
       <p className="mt-4 text-sm text-foreground/80">
-        Ventuza este platforma queer din România. Conectăm brand-uri etice cu o comunitate engaged,
+        Suzeta este platforma queer din România. Conectăm brand-uri etice cu o comunitate engaged,
         verificată și activă în București, Cluj, Timișoara, Iași și restul UE.
       </p>
 
@@ -481,8 +481,8 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
       </button>
       <p className="mt-3 text-center text-xs text-muted-foreground">
         Sau scrie la{" "}
-        <a href="mailto:business@ventuza.app" className="text-primary underline">
-          business@ventuza.app
+        <a href="mailto:business@suzeta.app" className="text-primary underline">
+          business@suzeta.app
         </a>
       </p>
     </section>
@@ -757,7 +757,7 @@ function FormView({
         </Card>
 
         <Card title="Obiectiv parteneriat">
-          <Field label="Ce vrei să faci pe Ventuza? *">
+          <Field label="Ce vrei să faci pe Suzeta? *">
             <textarea
               className="input min-h-[120px]"
               value={form.goals}
@@ -825,7 +825,7 @@ function FormView({
         <div className="flex items-start gap-3 rounded-2xl border border-border bg-surface/50 p-4 text-xs text-muted-foreground">
           <ShieldCheck className="size-5 shrink-0 text-primary" />
           <p>
-            Datele tale sunt stocate în UE, criptate TLS, accesibile doar echipei comercial Ventuza.
+            Datele tale sunt stocate în UE, criptate TLS, accesibile doar echipei comercial Suzeta.
           </p>
         </div>
 
@@ -865,7 +865,7 @@ function DoneScreen({ appId }: { appId: string | null }) {
       <CheckCircle2 className="size-16 text-primary" />
       <h2 className="text-2xl font-semibold">Mulțumim!</h2>
       <p className="text-sm text-muted-foreground">
-        Echipa Ventuza analizează cererea ta. Te contactăm pe email în maximum 3 zile lucrătoare.
+        Echipa Suzeta analizează cererea ta. Te contactăm pe email în maximum 3 zile lucrătoare.
       </p>
       {appId && (
         <div className="w-full rounded-2xl border border-primary/30 bg-primary/5 p-4 text-left space-y-2">
@@ -890,10 +890,10 @@ function DoneScreen({ appId }: { appId: string | null }) {
         </div>
       )}
       <a
-        href={`mailto:business@ventuza.app?subject=${encodeURIComponent(`Cerere partener ${appId ?? ""}`)}`}
+        href={`mailto:business@suzeta.app?subject=${encodeURIComponent(`Cerere partener ${appId ?? ""}`)}`}
         className="mt-2 inline-flex items-center gap-2 text-xs text-primary hover:underline"
       >
-        <Mail className="size-3.5" /> business@ventuza.app
+        <Mail className="size-3.5" /> business@suzeta.app
       </a>
 
       <div className="mt-2 w-full space-y-3">
@@ -928,7 +928,7 @@ function DoneScreen({ appId }: { appId: string | null }) {
             <div className="rounded-lg border border-orange-500/40 bg-orange-500/5 p-3 text-left text-[11px] leading-snug text-orange-700 dark:text-orange-300">
               <strong>Important:</strong> creează contul cu <strong>același email</strong> ca în
               cerere (vom lega aplicația automat). Dacă folosești alt email, salvează ID-ul cererii
-              de mai sus și scrie la business@ventuza.app ca să o legăm manual.
+              de mai sus și scrie la business@suzeta.app ca să o legăm manual.
             </div>
           </>
         )}

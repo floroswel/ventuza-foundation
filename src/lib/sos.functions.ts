@@ -45,7 +45,7 @@ export const triggerSos = createServerFn({ method: "POST" })
         ? `https://maps.google.com/?q=${data.latitude},${data.longitude}`
         : "(locație indisponibilă)";
     const who = profile?.display_name ?? "Un prieten";
-    const body = `${who} a apăsat SOS pe Ventuza.${data.note ? " Mesaj: " + data.note : ""} Locație: ${loc} • Apel-te imediat.`;
+    const body = `${who} a apăsat SOS pe Suzeta.${data.note ? " Mesaj: " + data.note : ""} Locație: ${loc} • Apel-te imediat.`;
 
     return { id: row.id, triggered_at: row.triggered_at, contacts, message: body };
   });

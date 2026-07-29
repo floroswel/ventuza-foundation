@@ -15,7 +15,7 @@
 
 import { sendMessage } from "@/lib/chat";
 
-const STORAGE_KEY = "ventuza:msg-outbox:v1";
+const STORAGE_KEY = "suzeta:msg-outbox:v1";
 const MAX_RETRIES = 3;
 const RATE_LIMIT_MS = 60 * 60 * 1000; // 1h fereastră
 const RATE_LIMIT_MAX = 60; // 60 mesaje / oră (server enforce, dublăm și pe client)

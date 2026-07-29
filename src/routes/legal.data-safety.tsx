@@ -7,16 +7,16 @@ import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/Operat
 export const Route = createFileRoute("/legal/data-safety")({
   head: () => ({
     meta: [
-      { title: "Siguranța datelor — Ventuza" },
+      { title: "Siguranța datelor — Suzeta" },
       {
         name: "description",
         content:
           "Ce date colectăm, de ce, dacă sunt opționale sau obligatorii și cum le poți controla. Sincron cu formularul Data Safety din Google Play.",
       },
-      { property: "og:title", content: "Siguranța datelor — Ventuza" },
+      { property: "og:title", content: "Siguranța datelor — Suzeta" },
       {
         property: "og:description",
-        content: "Transparență completă asupra datelor Ventuza — categorii, scop, control.",
+        content: "Transparență completă asupra datelor Suzeta — categorii, scop, control.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },

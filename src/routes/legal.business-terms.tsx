@@ -7,11 +7,11 @@ import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/Operat
 export const Route = createFileRoute("/legal/business-terms")({
   head: () => ({
     meta: [
-      { title: "Termeni B2B advertiseri — Ventuza" },
+      { title: "Termeni B2B advertiseri — Suzeta" },
       {
         name: "description",
         content:
-          "Contract, facturare TVA, drept de retragere și SAL pentru advertiseri și parteneri pe Ventuza.",
+          "Contract, facturare TVA, drept de retragere și SAL pentru advertiseri și parteneri pe Suzeta.",
       },
     ],
   }),

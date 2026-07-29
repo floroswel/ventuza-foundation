@@ -72,7 +72,7 @@ import {
 } from "@/components/VirtualizedMessages";
 
 export const Route = createFileRoute("/messages/$id")({
-  head: () => ({ meta: [{ title: "Chat — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Chat — Suzeta" }] }),
   component: ThreadPage,
 });
 
@@ -744,7 +744,7 @@ function ThreadPage() {
           onClick={() => {
             if (other?.verified) {
               toast.success("Acest cont este verificat ✓", {
-                description: "Ventuza a confirmat identitatea acestei persoane.",
+                description: "Suzeta a confirmat identitatea acestei persoane.",
               });
             } else {
               toast.message("Cont neverificat", {

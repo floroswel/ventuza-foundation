@@ -71,9 +71,9 @@ function Consent() {
 
   return (
     <main className="mx-auto max-w-md p-6 text-white space-y-4">
-      <h1 className="text-2xl font-semibold">Conectează {clientName} la contul tău Ventuza</h1>
+      <h1 className="text-2xl font-semibold">Conectează {clientName} la contul tău Suzeta</h1>
       <p className="text-white/80">
-        {clientName} va putea folosi aplicația Ventuza ca tine, prin instrumentele
+        {clientName} va putea folosi aplicația Suzeta ca tine, prin instrumentele
         MCP publicate (profil propriu, contor mesaje/notificări necitite, notificări
         recente). Nu se expun date despre alți utilizatori.
       </p>

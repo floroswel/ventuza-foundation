@@ -19,7 +19,7 @@ import { BottomNav } from "@/components/BottomNav";
 import type { NotificationType } from "@/lib/notifications";
 
 export const Route = createFileRoute("/notifications")({
-  head: () => ({ meta: [{ title: "Notifications — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Notifications — Suzeta" }] }),
   component: NotificationsPage,
 });
 

@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/matches")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Potriviri — Ventuza" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Potriviri — Suzeta" }, { name: "robots", content: "noindex" }] }),
   component: MatchesPage,
 });
 

@@ -8,22 +8,22 @@ import { EmailChangeEmail } from '../../dev-server/src/lib/email-templates/email
 import { ReauthenticationEmail } from '../../dev-server/src/lib/email-templates/reauthentication'
 import * as fs from 'fs'
 
-const SITE = 'Ventuza'
-const URL = 'https://ventuza.app'
-const LINK = 'https://ventuza.app/auth/confirm?token=abc123'
+const SITE = 'Suzeta'
+const URL = 'https://suzeta.app'
+const LINK = 'https://suzeta.app/auth/confirm?token=abc123'
 
 async function main() {
   const items = [
-    { label: 'Confirmare cont', subject: 'Confirmă-ți contul Ventuza', html: await render(<SignupEmail siteName={SITE} siteUrl={URL} recipient="andrei@example.com" confirmationUrl={LINK} />) },
-    { label: 'Reset parolă', subject: 'Resetare parolă Ventuza', html: await render(<RecoveryEmail siteName={SITE} confirmationUrl={LINK} />) },
-    { label: 'Magic link', subject: 'Link-ul tău de conectare Ventuza', html: await render(<MagicLinkEmail siteName={SITE} confirmationUrl={LINK} />) },
-    { label: 'Invitație', subject: 'Ești invitat pe Ventuza', html: await render(<InviteEmail siteName={SITE} siteUrl={URL} confirmationUrl={LINK} />) },
+    { label: 'Confirmare cont', subject: 'Confirmă-ți contul Suzeta', html: await render(<SignupEmail siteName={SITE} siteUrl={URL} recipient="andrei@example.com" confirmationUrl={LINK} />) },
+    { label: 'Reset parolă', subject: 'Resetare parolă Suzeta', html: await render(<RecoveryEmail siteName={SITE} confirmationUrl={LINK} />) },
+    { label: 'Magic link', subject: 'Link-ul tău de conectare Suzeta', html: await render(<MagicLinkEmail siteName={SITE} confirmationUrl={LINK} />) },
+    { label: 'Invitație', subject: 'Ești invitat pe Suzeta', html: await render(<InviteEmail siteName={SITE} siteUrl={URL} confirmationUrl={LINK} />) },
     { label: 'Schimbare email', subject: 'Confirmă noua ta adresă de email', html: await render(<EmailChangeEmail siteName={SITE} oldEmail="vechi@example.com" email="vechi@example.com" newEmail="nou@example.com" confirmationUrl={LINK} />) },
-    { label: 'Cod 2FA', subject: 'Codul tău de verificare Ventuza', html: await render(<ReauthenticationEmail token="482 917" />) },
+    { label: 'Cod 2FA', subject: 'Codul tău de verificare Suzeta', html: await render(<ReauthenticationEmail token="482 917" />) },
   ]
 
   const page = `<!DOCTYPE html>
-<html lang="ro"><head><meta charset="utf-8"><title>Ventuza — Preview emailuri</title>
+<html lang="ro"><head><meta charset="utf-8"><title>Suzeta — Preview emailuri</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Inter:wght@400;500;600&display=swap">
 <style>
@@ -44,7 +44,7 @@ async function main() {
 <body>
   <div class="page">
     <div class="head">
-      <h1>VENTUZA</h1>
+      <h1>SUZETA</h1>
       <p>Preview emailuri autentificare</p>
     </div>
     <div class="grid">
@@ -53,7 +53,7 @@ async function main() {
           <div class="meta">
             <div class="tag">${it.label}</div>
             <p class="subj">${it.subject}</p>
-            <div class="from">De la: Ventuza &lt;noreply@ventuza.app&gt;</div>
+            <div class="from">De la: Suzeta &lt;noreply@suzeta.app&gt;</div>
           </div>
           <iframe srcdoc="${it.html.replace(/"/g,'&quot;')}"></iframe>
         </div>`).join('')}
@@ -62,7 +62,7 @@ async function main() {
 </body></html>`
 
   fs.mkdirSync('/mnt/documents', { recursive: true })
-  fs.writeFileSync('/mnt/documents/ventuza-email-preview.html', page)
+  fs.writeFileSync('/mnt/documents/suzeta-email-preview.html', page)
   console.log('OK', page.length, 'bytes')
 }
 main().catch(e => { console.error(e); process.exit(1) })

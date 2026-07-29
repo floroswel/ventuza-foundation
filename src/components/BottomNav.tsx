@@ -4,9 +4,9 @@ import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 
 
-// Custom line-art icons matching the Ventuza brand strip
+// Custom line-art icons matching the Suzeta brand strip
 
-function VentuzaMark({ className }: { className?: string }) {
+function SuzetaMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={className} fill="none" aria-hidden="true">
       {/* crown */}
@@ -96,7 +96,7 @@ export function BottomNav() {
   const { total: unreadTotal } = useUnreadMessages();
 
   const items = [
-    { to: "/discover", label: "Ventuza", Icon: VentuzaMark },
+    { to: "/discover", label: "Suzeta", Icon: SuzetaMark },
     { to: "/nearby", label: "Descoperă", Icon: DiamondIcon },
     { to: "/matches", label: "Potriviri", Icon: HeartIcon },
     { to: "/messages", label: "Mesaje", Icon: ChatBubbleIcon, badge: unreadTotal, filledWhenActive: true },

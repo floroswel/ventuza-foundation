@@ -20,7 +20,7 @@ export const Route = createFileRoute("/verify")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Verificare 18+ — Ventuza" },
+      { title: "Verificare 18+ — Suzeta" },
       {
         name: "description",
         content: "Verificarea vârstei se face prin Didit (procesator UE, imagine tranzitorie).",
@@ -327,7 +327,7 @@ function VerifyPage() {
 
         <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
           <ShieldCheck className="size-4 text-primary" />
-          Didit rulează în UE. Imaginea nu este stocată de Ventuza.
+          Didit rulează în UE. Imaginea nu este stocată de Suzeta.
         </div>
       </div>
     </main>

@@ -28,7 +28,7 @@ function memoryStorage(): SupportedStorage {
 function webStorage(): SupportedStorage {
   // Probe localStorage — Safari Private Mode / cookies-blocked → throw.
   try {
-    const probe = "__ventuza_probe__";
+    const probe = "__suzeta_probe__";
     localStorage.setItem(probe, "1");
     localStorage.removeItem(probe);
     return {

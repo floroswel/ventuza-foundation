@@ -145,7 +145,7 @@ function AgeGateDevBanner() {
 }
 
 export const Route = createFileRoute("/admin")({
-  head: () => ({ meta: [{ title: "Admin — Ventuza" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Admin — Suzeta" }, { name: "robots", content: "noindex" }] }),
   component: AdminDashboard,
 });
 

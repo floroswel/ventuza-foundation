@@ -8,22 +8,22 @@ import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/Operat
 export const Route = createFileRoute("/legal/child-safety")({
   head: () => ({
     meta: [
-      { title: "Child Safety Standards (CSAE) — Ventuza" },
+      { title: "Child Safety Standards (CSAE) — Suzeta" },
       {
         name: "description",
         content:
-          "Ventuza's published standards against child sexual abuse and exploitation (CSAE): zero-tolerance policy, prevention, detection, reporting and contact information. Available in English and Romanian.",
+          "Suzeta's published standards against child sexual abuse and exploitation (CSAE): zero-tolerance policy, prevention, detection, reporting and contact information. Available in English and Romanian.",
       },
-      { property: "og:title", content: "Child Safety Standards (CSAE) — Ventuza" },
+      { property: "og:title", content: "Child Safety Standards (CSAE) — Suzeta" },
       {
         property: "og:description",
         content:
-          "Zero tolerance for child sexual abuse and exploitation. How Ventuza prevents, detects and reports CSAE, and how to contact us.",
+          "Zero tolerance for child sexual abuse and exploitation. How Suzeta prevents, detects and reports CSAE, and how to contact us.",
       },
       { property: "og:type", content: "article" },
-      { property: "og:url", content: "https://ventuza.app/legal/child-safety" },
+      { property: "og:url", content: "https://suzeta.app/legal/child-safety" },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza.app/legal/child-safety" }],
+    links: [{ rel: "canonical", href: "https://suzeta.app/legal/child-safety" }],
   }),
   component: ChildSafetyPage,
 });

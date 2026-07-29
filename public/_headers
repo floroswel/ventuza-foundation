@@ -1,5 +1,5 @@
 # Security headers pentru hosting static (Cloudflare Pages / Netlify).
-# Se aplică la www.ventuza.app + ventuza.app. Pe hosting-ul Lovable, aceste
+# Se aplică la www.suzeta.app + suzeta.app. Pe hosting-ul Lovable, aceste
 # headers sunt best-effort (unele platforme le suprascriu) — HSTS-ul real
 # se setează la nivel de CDN edge.
 

@@ -50,7 +50,7 @@ export async function bootstrapNativeRuntime(router: Router<any, any, any, any, 
       }
     });
 
-    // Deep link handler — https://ventuza.app/... deschide direct în app
+    // Deep link handler — https://suzeta.app/... deschide direct în app
     // (necesită assetlinks.json + intent-filter în AndroidManifest, deja livrat).
     App.addListener("appUrlOpen", ({ url }) => {
       try {

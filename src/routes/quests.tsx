@@ -30,7 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/quests")({
-  head: () => ({ meta: [{ title: "Quests & Leaderboard — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Quests & Leaderboard — Suzeta" }] }),
   component: QuestsPage,
 });
 

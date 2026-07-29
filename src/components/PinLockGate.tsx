@@ -40,7 +40,7 @@ export function PinLockGate() {
     if (!locked || !bioAvailable) return;
     let cancelled = false;
     void (async () => {
-      const ok = await verifyBiometric("Deblochează Ventuza");
+      const ok = await verifyBiometric("Deblochează Suzeta");
       if (!cancelled && ok) {
         sessionStorage.setItem("vz_pin_unlocked", "1");
         setLocked(false);
@@ -67,7 +67,7 @@ export function PinLockGate() {
   }
 
   async function tryBio() {
-    const ok = await verifyBiometric("Deblochează Ventuza");
+    const ok = await verifyBiometric("Deblochează Suzeta");
     if (ok) {
       sessionStorage.setItem("vz_pin_unlocked", "1");
       setLocked(false);

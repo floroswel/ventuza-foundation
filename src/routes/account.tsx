@@ -25,7 +25,7 @@ import { BottomNav } from "@/components/BottomNav";
 export const Route = createFileRoute("/account")({
   ssr: false,
   head: () => ({
-    meta: [{ title: "Cont — Ventuza" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Cont — Suzeta" }, { name: "robots", content: "noindex" }],
   }),
   component: AccountPage,
 });
@@ -237,7 +237,7 @@ function AccountPage() {
         )}
 
 
-        {/* Support CTA — Ventuza e gratuit, o "susține" */}
+        {/* Support CTA — Suzeta e gratuit, o "susține" */}
         <Link
           to="/premium"
           className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-rose-500 to-fuchsia-600 px-5 py-4 text-white shadow-[0_10px_30px_-8px_rgba(244,63,94,0.5)]"
@@ -312,7 +312,7 @@ function AccountPage() {
           </div>
           <div className="grid grid-cols-2 gap-2">
             <a
-              href="https://wa.me/40712345678?text=Salut%20Ventuza%2C%20am%20nevoie%20de%20ajutor%20cu%3A%20"
+              href="https://wa.me/40712345678?text=Salut%20Suzeta%2C%20am%20nevoie%20de%20ajutor%20cu%3A%20"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium hover:bg-surface"
@@ -321,7 +321,7 @@ function AccountPage() {
               Chat direct
             </a>
             <a
-              href={`mailto:support@ventuza.eu?subject=${encodeURIComponent("Suport Ventuza")}&body=${encodeURIComponent(`\n\n---\nUser: ${user.email ?? ""}\nID: ${user.id}`)}`}
+              href={`mailto:support@suzeta.eu?subject=${encodeURIComponent("Suport Suzeta")}&body=${encodeURIComponent(`\n\n---\nUser: ${user.email ?? ""}\nID: ${user.id}`)}`}
               className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium hover:bg-surface"
             >
               <Mail className="size-4 text-rose-500" />
@@ -331,7 +331,7 @@ function AccountPage() {
         </section>
 
 
-        <p className="pb-4 text-center text-[11px] text-muted-foreground">Ventuza · {user.email}</p>
+        <p className="pb-4 text-center text-[11px] text-muted-foreground">Suzeta · {user.email}</p>
       </div>
 
       <BottomNav />

@@ -311,7 +311,7 @@ export function PrivateAlbumViewer({
             <ProtectedImage
               key={p}
               src={signed[p] ?? ""}
-              watermark={`Ventuza · ${currentUserId.slice(0, 8)}`}
+              watermark={`Suzeta · ${currentUserId.slice(0, 8)}`}
               className="aspect-square rounded-lg bg-background"
             />
           ))}

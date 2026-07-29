@@ -12,7 +12,7 @@ import { getCurrentPosition, type Position } from "@/lib/native-geolocation";
 
 const REFRESH_MS = 3 * 60 * 1000;
 const MOVE_THRESHOLD_M = 250;
-export const LOCATION_UPDATED_EVENT = "ventuza:location-updated";
+export const LOCATION_UPDATED_EVENT = "suzeta:location-updated";
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6371000;

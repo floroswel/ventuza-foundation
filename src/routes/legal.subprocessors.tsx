@@ -7,11 +7,11 @@ import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/Operat
 export const Route = createFileRoute("/legal/subprocessors")({
   head: () => ({
     meta: [
-      { title: "Subprocesatori — Ventuza" },
-      { name: "description", content: "Lista terților care procesează date în numele Ventuza." },
+      { title: "Subprocesatori — Suzeta" },
+      { name: "description", content: "Lista terților care procesează date în numele Suzeta." },
     ],
     links: [
-      { rel: "canonical", href: "https://ventuza.app/legal/subprocessors" },
+      { rel: "canonical", href: "https://suzeta.app/legal/subprocessors" },
     ],
   }),
   component: SubsPage,
@@ -247,7 +247,7 @@ function SubsPage() {
             estimarea vârstei din selfie. Trimitem un singur selfie live, Didit ne întoarce doar
             un verdict pass/fail și șterge imaginea imediat. NU trimitem document de identitate,
             NU stocăm o copie a imaginii la noi. Cazurile borderline / raportate ajung într-un
-            bucket privat Ventuza pentru review uman, cu ștergere automată în ≤30 zile.
+            bucket privat Suzeta pentru review uman, cu ștergere automată în ≤30 zile.
           </li>
           <li>
             <strong>RevenueCat</strong> și <strong>Google Play Billing</strong> primesc doar

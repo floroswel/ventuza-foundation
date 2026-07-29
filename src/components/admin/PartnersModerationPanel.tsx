@@ -585,7 +585,7 @@ function ModerationDetail({
                     onChange={(e) => setIsOfficial(e.target.checked)}
                   />
                   <span>
-                    Marchează ca <b>oficial Ventuza</b> (declanșează <i>priority_access</i> pentru
+                    Marchează ca <b>oficial Suzeta</b> (declanșează <i>priority_access</i> pentru
                     Fondatori).
                   </span>
                 </label>

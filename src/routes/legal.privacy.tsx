@@ -12,10 +12,10 @@ import {
 export const Route = createFileRoute("/legal/privacy")({
   head: () => ({
     meta: [
-      { title: "Politica de confidențialitate — Ventuza" },
+      { title: "Politica de confidențialitate — Suzeta" },
       {
         name: "description",
-        content: "Cum colectăm, folosim și protejăm datele tale personale în Ventuza.",
+        content: "Cum colectăm, folosim și protejăm datele tale personale în Suzeta.",
       },
     ],
   }),
@@ -185,9 +185,9 @@ function PrivacyPage() {
             </h2>
             <p className="mt-2 text-foreground/85">
               Punct unic de contact pentru autorități și utilizatori conform DSA Art. 11-12:
-              <a className="text-primary" href="mailto:dsa@ventuza.app">
+              <a className="text-primary" href="mailto:dsa@suzeta.app">
                 {" "}
-                dsa@ventuza.app
+                dsa@suzeta.app
               </a>
               . Răspundem în limba română și engleză. Vezi și{" "}
               <Link className="text-primary" to="/legal/dsa">
@@ -199,7 +199,7 @@ function PrivacyPage() {
             <h2 className="mt-6 text-base font-semibold">5. Drepturile tale GDPR</h2>
             <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
               <li>
-                <strong>Acces</strong> — copie a datelor tale (cerere la support@ventuza.app,
+                <strong>Acces</strong> — copie a datelor tale (cerere la support@suzeta.app,
                 răspuns în 30 de zile).
               </li>
               <li>
@@ -246,8 +246,8 @@ function PrivacyPage() {
               Aplicația este interzisă sub 18 ani. Verificăm vârsta prin data nașterii la
               onboarding. Dacă descoperim un cont minor, îl ștergem imediat. Raportează suspiciuni
               la{" "}
-              <a className="text-primary" href="mailto:abuse@ventuza.app">
-                abuse@ventuza.app
+              <a className="text-primary" href="mailto:abuse@suzeta.app">
+                abuse@suzeta.app
               </a>
               .
             </p>

@@ -24,9 +24,9 @@ function canvasSignal(): string {
     ctx.fillStyle = "#f60";
     ctx.fillRect(0, 0, 60, 20);
     ctx.fillStyle = "#069";
-    ctx.fillText("ventuza-fp-😀", 2, 2);
+    ctx.fillText("suzeta-fp-😀", 2, 2);
     ctx.fillStyle = "rgba(102,204,0,0.7)";
-    ctx.fillText("ventuza-fp-😀", 4, 4);
+    ctx.fillText("suzeta-fp-😀", 4, 4);
     return canvas.toDataURL();
   } catch {
     return "no-canvas";

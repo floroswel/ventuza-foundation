@@ -1,5 +1,5 @@
 """
-E2E — Editare profil via EditDrawer (Ventuza).
+E2E — Editare profil via EditDrawer (Suzeta).
 
 Acoperire:
   G1  /profile fără sesiune → redirect /auth (guard).

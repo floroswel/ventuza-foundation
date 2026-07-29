@@ -19,4 +19,4 @@ Disallow: /quests
 Disallow: /api/
 Disallow: /u/
 
-Sitemap: https://ventuza-foundation.lovable.app/sitemap.xml
+Sitemap: https://suzeta.app/sitemap.xml

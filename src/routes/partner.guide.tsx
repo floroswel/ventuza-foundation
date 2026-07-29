@@ -15,7 +15,7 @@ import { StatusNotificationsBell } from "@/components/partner/StatusNotification
 
 export const Route = createFileRoute("/partner/guide")({
   head: () => ({
-    meta: [{ title: "Ghid pentru parteneri — Ventuza" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Ghid pentru parteneri — Suzeta" }, { name: "robots", content: "noindex" }],
   }),
   component: PartnerGuide,
 });
@@ -177,7 +177,7 @@ function PartnerGuide() {
         <ol className="list-decimal pl-4 space-y-1">
           <li>Vezi motivul exact în portal, la postarea respectivă.</li>
           <li>Editează și corectează — la salvare retrimitem automat la moderare.</li>
-          <li>Pentru ajutor: scrie la support@ventuza.app.</li>
+          <li>Pentru ajutor: scrie la support@suzeta.app.</li>
         </ol>
       </Section>
 

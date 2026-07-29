@@ -19,7 +19,7 @@ export const Route = createFileRoute("/verify/status")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Status verificare Didit — Ventuza" },
+      { title: "Status verificare Didit — Suzeta" },
       { name: "description", content: "Urmărește statusul verificării 18+ inițiate prin Didit." },
       { name: "robots", content: "noindex" },
     ],

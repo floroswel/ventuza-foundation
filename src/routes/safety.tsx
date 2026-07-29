@@ -20,13 +20,13 @@ export const Route = createFileRoute("/safety")({
   ssr: true,
   head: () => ({
     meta: [
-      { title: "Cum te protejăm — Centrul de siguranță Ventuza" },
+      { title: "Cum te protejăm — Centrul de siguranță Suzeta" },
       {
         name: "description",
         content:
-          "Cum te protejează Ventuza: verificare 18+, anti-screenshot, locație aproximativă, Quick Exit, moderare AI și resurse de urgență.",
+          "Cum te protejează Suzeta: verificare 18+, anti-screenshot, locație aproximativă, Quick Exit, moderare AI și resurse de urgență.",
       },
-      { property: "og:title", content: "Cum te protejăm — Ventuza" },
+      { property: "og:title", content: "Cum te protejăm — Suzeta" },
       {
         property: "og:description",
         content:
@@ -114,7 +114,7 @@ function SafetyCenter() {
         />
         <Tip
           icon={<MessageCircle />}
-          title="Rămâi în Ventuza"
+          title="Rămâi în Suzeta"
           body="Nu trece pe alte aplicații imediat. Aici comunicarea e protejată; raportarea funcționează rapid."
         />
         <Tip

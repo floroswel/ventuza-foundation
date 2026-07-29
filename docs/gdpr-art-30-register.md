@@ -1,4 +1,4 @@
-# Registru al activităților de prelucrare — Ventuza (Art. 30 GDPR)
+# Registru al activităților de prelucrare — Suzeta (Art. 30 GDPR)
 
 > **Document intern, conform Art. 30 GDPR (Regulamentul (UE) 2016/679).**
 > NU se depune la ANSPDCP (obligația de notificare prealabilă a fost
@@ -9,7 +9,7 @@
 - **Versiune:** 2.1
 - **Data:** 2026-06-27
 - **Generat din:** schema reală DB (`src/integrations/supabase/types.ts`) + inventar procesatori (`src/routes/legal.subprocessors.tsx`) + cod server (`src/lib/*.functions.ts`, `*.server.ts`).
-- **Responsabil:** _de completat — administrator Ventuza_
+- **Responsabil:** _de completat — administrator Suzeta_
 - **DPO:** _de completat (obligatoriu — Art. 37(1)(b)(c): date sănătate + orientare + monitorizare sistematică)_
 
 ---
@@ -18,11 +18,11 @@
 
 | Câmp | Valoare |
 |---|---|
-| Denumire operator | _de completat (PFA / SRL care exploatează Ventuza)_ |
+| Denumire operator | _de completat (PFA / SRL care exploatează Suzeta)_ |
 | Sediu | _de completat_ |
 | CUI / nr. reg. | _de completat_ |
 | Reprezentant legal | _de completat_ |
-| Contact DPO | dpo@ventuza.app |
+| Contact DPO | dpo@suzeta.app |
 
 ---
 
@@ -327,7 +327,7 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 | **Scop** | Moderare automată texte; asistență la scrierea bio. |
 | **Persoane vizate** | Utilizatori care folosesc feature-urile. |
 | **Categorii date — normale** | Doar textul trimis explicit (bio draft, mesaj raportat). |
-| **🟥 Categorii Art. 9** | **NU se trimit câmpuri Art. 9 codificate** (orientare). Ventuza nu mai procesează date HIV. Dacă userul scrie liber un text care conține date sensibile → temei consimțământ explicit prin folosirea feature-ului. |
+| **🟥 Categorii Art. 9** | **NU se trimit câmpuri Art. 9 codificate** (orientare). Suzeta nu mai procesează date HIV. Dacă userul scrie liber un text care conține date sensibile → temei consimțământ explicit prin folosirea feature-ului. |
 | **Temei Art. 6** | 6(1)(b) (asistent bio — feature opt-in) + 6(1)(f) (moderare). |
 | **Temei Art. 9** | 9(2)(a) consimțământ implicit prin trimiterea voluntară a textului — **DE REZOLVAT: adaugă disclosure explicit în UI înainte de trimiterea bio-ului la AI**. |
 | **Destinatari** | P7 Lovable AI Gateway, P8. |

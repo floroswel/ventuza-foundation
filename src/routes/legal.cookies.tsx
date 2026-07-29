@@ -7,13 +7,13 @@ import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/Operat
 export const Route = createFileRoute("/legal/cookies")({
   head: () => ({
     meta: [
-      { title: "Politica de cookie-uri — Ventuza" },
+      { title: "Politica de cookie-uri — Suzeta" },
       {
         name: "description",
         content: "Ce cookie-uri folosim, de ce și cum îți poți retrage consimțământul.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza.app/legal/cookies" }],
+    links: [{ rel: "canonical", href: "https://suzeta.app/legal/cookies" }],
   }),
   component: CookiesPage,
 });
@@ -37,7 +37,7 @@ const COOKIES: CookieRow[] = [
     purpose: "Sesiune de autentificare Supabase (JWT). Fără el nu poți fi logat.",
   },
   {
-    name: "ventuza_cookie_consent_v2",
+    name: "suzeta_cookie_consent_v2",
     category: "Esențial",
     party: "First-party",
     storage: "localStorage",
@@ -89,7 +89,7 @@ const COOKIES: CookieRow[] = [
 function CookiesPage() {
   function reopen() {
     try {
-      localStorage.removeItem("ventuza_cookie_consent_v2");
+      localStorage.removeItem("suzeta_cookie_consent_v2");
       location.reload();
     } catch {}
   }

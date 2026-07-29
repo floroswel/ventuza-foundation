@@ -1,4 +1,4 @@
-# Play Console Submission Checklist — Ventuza
+# Play Console Submission Checklist — Suzeta
 
 Checklist final de urcat prima versiune la Google Play (track: internal → alpha
 → production). Ordine identică cu meniul Play Console. Bifează pas cu pas.
@@ -7,13 +7,13 @@ Checklist final de urcat prima versiune la Google Play (track: internal → alph
 
 ## 1. App content → Privacy policy
 
-- [ ] URL: `https://www.ventuza.app/legal/privacy`
+- [ ] URL: `https://www.suzeta.app/legal/privacy`
 - Verifică accesibil FĂRĂ login (test din incognito).
 
 ## 2. App content → Ads
 
 - [ ] **Does your app contain ads? → No**
-- **Justificare (nu se cere Play, dar documentat aici):** Ventuza nu difuzează
+- **Justificare (nu se cere Play, dar documentat aici):** Suzeta nu difuzează
   ads third-party (Google Ads, AdMob, etc.). Sponsored banners in-app sunt
   conținut editorial B2B, nu ad network. Advertising ID (`AD_ID`) permission
   este REMOVED explicit din merged manifest (vezi `android-overrides/`).
@@ -22,10 +22,10 @@ Checklist final de urcat prima versiune la Google Play (track: internal → alph
 
 - [ ] **All or some functionality restricted → Provide test credentials**
 - Cont test dedicat pentru reviewer Play:
-  - Email: `play-review@ventuza.eu` (creat pre-submisie)
+  - Email: `play-review@suzeta.eu` (creat pre-submisie)
   - Parola: (doar în submisie, nu în repo)
   - Instrucțiuni: "Login cu email/parolă. Age verification: reviewer poate cere
-    override — contactează dev@ventuza.eu pentru cont pre-verificat."
+    override — contactează dev@suzeta.eu pentru cont pre-verificat."
 
 ## 4. App content → Content ratings (IARC)
 
@@ -94,7 +94,7 @@ Chestionar IARC standard. Răspunsuri recomandate pentru dating LGBTQ+ 18+:
 
 ## 12. Store listing → App name / short description / full description
 
-- [ ] Titlu: `Ventuza — Dating` (max 30 caractere)
+- [ ] Titlu: `Suzeta — Dating` (max 30 caractere)
 - [ ] Short description: max 80 caractere — vezi
       `fastlane/metadata/android/en-US/short_description.txt`
 - [ ] Full description: max 4000 caractere — vezi
@@ -117,10 +117,10 @@ Chestionar IARC standard. Răspunsuri recomandate pentru dating LGBTQ+ 18+:
 
 ## 15. Store listing → Contact details
 
-- [ ] Website: `https://www.ventuza.app`
-- [ ] Email: `contact@ventuza.eu`
+- [ ] Website: `https://www.suzeta.app`
+- [ ] Email: `contact@suzeta.eu`
 - [ ] Phone: opțional (recomandat gol dacă nu ai număr business dedicat).
-- [ ] Privacy policy: `https://www.ventuza.app/legal/privacy`
+- [ ] Privacy policy: `https://www.suzeta.app/legal/privacy`
 
 ## 16. App releases → Countries and regions
 
@@ -132,7 +132,7 @@ Chestionar IARC standard. Răspunsuri recomandate pentru dating LGBTQ+ 18+:
 ## 17. App releases → Internal testing → First upload
 
 - [ ] AAB build via GitHub Actions (`Android Release` workflow).
-- [ ] Adaugă cont test `play-review@ventuza.eu` la testeri interni.
+- [ ] Adaugă cont test `play-review@suzeta.eu` la testeri interni.
 - [ ] Rollout la 100% internal.
 - [ ] Verifică review reviewer intern (Florin + max 5 useri de încredere) 3-7
       zile.
@@ -162,7 +162,7 @@ face:
 - [ ] Firebase Console → creare proiect + descărcare `google-services.json`
       → upload ca `GOOGLE_SERVICES_JSON_BASE64` în GitHub Secrets.
 - [ ] Didit dashboard → configurare API key + webhook secret.
-- [ ] Cont Resend → domeniu verificat + DKIM/SPF pe `ventuza.app`.
+- [ ] Cont Resend → domeniu verificat + DKIM/SPF pe `suzeta.app`.
 - [ ] Cloudflare R2 → bucket privat pentru backup + rclone config.
 - [ ] Semnătură DPIA + IR plan de către consultant GDPR extern.
 - [ ] Publicare app: buton "Publish" în Lovable + submit Play Console.

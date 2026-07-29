@@ -1,4 +1,4 @@
-Ventuza 1.0.2 — îmbunătățiri majore
+Suzeta 1.0.2 — îmbunătățiri majore
 
 • Deblocare biometrică (amprentă / face unlock) pentru PIN.
 • Chat cu confirmări stil WhatsApp: trimis → livrat → citit + typing indicator.

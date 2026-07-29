@@ -39,7 +39,7 @@ export function applyDiscreetMode(skin: DiscreetSkin) {
   if (typeof document === "undefined") return;
   localStorage.setItem(KEY, skin);
   if (skin === "off") {
-    document.title = "Ventuza";
+    document.title = "Suzeta";
     setFavicon("/favicon.ico");
     return;
   }

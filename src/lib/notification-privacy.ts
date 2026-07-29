@@ -569,7 +569,7 @@ export function sanitizeNotificationPayloadWithReport(
     (category ?? "").toLowerCase() === "messages" ||
     (type ?? "").toLowerCase().includes("message");
 
-  const rawTitle = (input.title ?? "").toString().trim() || "Ventuza";
+  const rawTitle = (input.title ?? "").toString().trim() || "Suzeta";
   const rawBody = (input.body ?? "").toString().trim() || GENERIC_MESSAGE_BODY;
 
   const scrubbedTitle = scrubStringTracked(rawTitle, "/title", report);

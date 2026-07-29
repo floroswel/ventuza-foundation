@@ -7,7 +7,7 @@ describe("/legal/badges", () => {
   const html = renderToStaticMarkup(<BadgesCatalog />);
 
   it("randează titlul catalogului", () => {
-    expect(html).toContain("Catalog Badge-uri Ventuza");
+    expect(html).toContain("Catalog Badge-uri Suzeta");
   });
 
   it("randează toate badge-urile din registry (label RO + criteriu RO)", () => {

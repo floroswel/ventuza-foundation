@@ -29,7 +29,7 @@ export function getPrivacyScreenStatus(): PrivacyScreenStatus {
 async function notify(status: PrivacyScreenStatus) {
   lastStatus = status;
   try {
-    window.dispatchEvent(new CustomEvent("ventuza:privacy-screen", { detail: status }));
+    window.dispatchEvent(new CustomEvent("suzeta:privacy-screen", { detail: status }));
   } catch {
     /* ignore */
   }
@@ -122,7 +122,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
                 description: "Sistemul iOS ne-a notificat. Fii atent la ce partajezi.",
                 duration: 5000,
               });
-              window.dispatchEvent(new CustomEvent("ventuza:screenshot-detected"));
+              window.dispatchEvent(new CustomEvent("suzeta:screenshot-detected"));
             });
             mod.PrivacyScreen.addListener("screenRecordingStarted", async () => {
               console.warn("[privacy-screen] iOS screen recording pornit");
@@ -257,7 +257,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
       const target = describe(el);
       console.warn(`[privacy-screen] 🚫 ${action} blocat pe ${target}`);
       window.dispatchEvent(
-        new CustomEvent("ventuza:privacy-blocked", {
+        new CustomEvent("suzeta:privacy-blocked", {
           detail: { action, target, at: new Date().toISOString() },
         }),
       );

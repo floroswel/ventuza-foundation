@@ -25,8 +25,8 @@ export function DebugModeCard() {
   useEffect(() => {
     const refresh = () => setEnabled(isDebugEnabled());
     refresh();
-    window.addEventListener("ventuza:debug-toggle", refresh);
-    return () => window.removeEventListener("ventuza:debug-toggle", refresh);
+    window.addEventListener("suzeta:debug-toggle", refresh);
+    return () => window.removeEventListener("suzeta:debug-toggle", refresh);
   }, []);
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export function DebugModeCard() {
           <div className="flex flex-wrap gap-2">
             <button
               type="button"
-              onClick={() => downloadBlob(exportAsJson(), `ventuza-log-${stamp}.json`)}
+              onClick={() => downloadBlob(exportAsJson(), `suzeta-log-${stamp}.json`)}
               className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs hover:bg-accent"
               disabled={count === 0}
             >
@@ -87,7 +87,7 @@ export function DebugModeCard() {
             </button>
             <button
               type="button"
-              onClick={() => downloadBlob(exportAsText(), `ventuza-log-${stamp}.txt`)}
+              onClick={() => downloadBlob(exportAsText(), `suzeta-log-${stamp}.txt`)}
               className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs hover:bg-accent"
               disabled={count === 0}
             >

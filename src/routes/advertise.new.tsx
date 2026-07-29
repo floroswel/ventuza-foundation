@@ -10,7 +10,7 @@ import { BottomNav } from "@/components/BottomNav";
 export const Route = createFileRoute("/advertise/new")({
   ssr: false,
   head: () => ({
-    meta: [{ title: "Campanie nouă — Ventuza Ads" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Campanie nouă — Suzeta Ads" }, { name: "robots", content: "noindex" }],
   }),
   component: NewCampaignPage,
 });

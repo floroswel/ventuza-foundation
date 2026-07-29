@@ -1,4 +1,4 @@
-// Localizare emailuri Ventuza. Sursa autoritativă pentru toate șirurile
+// Localizare emailuri Suzeta. Sursa autoritativă pentru toate șirurile
 // afișate în emailurile auth. Dacă adaugi un template nou, adaugă și
 // blocul corespunzător aici pentru fiecare limbă suportată.
 
@@ -141,12 +141,12 @@ const ro: EmailStrings = {
       'Codul expiră în scurt timp. Dacă nu ai cerut această verificare, ignoră emailul și schimbă-ți parola.',
   },
   subjects: {
-    signup: 'Confirmă-ți contul Ventuza',
-    invite: 'Ești invitat pe Ventuza',
-    magiclink: 'Link-ul tău de conectare Ventuza',
-    recovery: 'Resetare parolă Ventuza',
+    signup: 'Confirmă-ți contul Suzeta',
+    invite: 'Ești invitat pe Suzeta',
+    magiclink: 'Link-ul tău de conectare Suzeta',
+    recovery: 'Resetare parolă Suzeta',
     email_change: 'Confirmă noua ta adresă de email',
-    reauthentication: 'Codul tău de verificare Ventuza',
+    reauthentication: 'Codul tău de verificare Suzeta',
   },
 }
 
@@ -209,12 +209,12 @@ const en: EmailStrings = {
       "This code expires shortly. If you didn't request this verification, ignore this email and change your password.",
   },
   subjects: {
-    signup: 'Confirm your Ventuza account',
-    invite: "You're invited to Ventuza",
-    magiclink: 'Your Ventuza sign-in link',
-    recovery: 'Reset your Ventuza password',
+    signup: 'Confirm your Suzeta account',
+    invite: "You're invited to Suzeta",
+    magiclink: 'Your Suzeta sign-in link',
+    recovery: 'Reset your Suzeta password',
     email_change: 'Confirm your new email',
-    reauthentication: 'Your Ventuza verification code',
+    reauthentication: 'Your Suzeta verification code',
   },
 }
 

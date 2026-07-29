@@ -12,7 +12,7 @@ import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/groups")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Squads — Ventuza" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Squads — Suzeta" }, { name: "robots", content: "noindex" }] }),
   component: GroupsPage,
 });
 

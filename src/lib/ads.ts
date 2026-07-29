@@ -97,7 +97,7 @@ export async function sendWoof(receiverId: string) {
         data: {
           toUserId: receiverId,
           title: "Cineva ți-a dat woof! 🐺",
-          body: "Deschide Ventuza să vezi cine.",
+          body: "Deschide Suzeta să vezi cine.",
           url: "/notifications",
           tag: `woof:${u.user.id}:${receiverId}`,
           category: "taps",

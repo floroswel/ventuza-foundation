@@ -1,7 +1,7 @@
 // Durable local crash log — ring buffer în localStorage, fără terți.
 // Folosit ca fallback de observability când Sentry nu e disponibil.
 
-const KEY = "ventuza_crash_log_v1";
+const KEY = "suzeta_crash_log_v1";
 const MAX = 50;
 
 export type CrashEntry = {

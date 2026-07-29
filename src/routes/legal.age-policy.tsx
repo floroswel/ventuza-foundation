@@ -8,14 +8,14 @@ import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/Operat
 export const Route = createFileRoute("/legal/age-policy")({
   head: () => ({
     meta: [
-      { title: "Politica 18+ — Ventuza" },
+      { title: "Politica 18+ — Suzeta" },
       {
         name: "description",
         content:
-          "Ventuza este o platformă exclusiv pentru adulți. Cum verificăm vârsta și ce facem dacă găsim un cont minor.",
+          "Suzeta este o platformă exclusiv pentru adulți. Cum verificăm vârsta și ce facem dacă găsim un cont minor.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza.app/legal/age-policy" }],
+    links: [{ rel: "canonical", href: "https://suzeta.app/legal/age-policy" }],
   }),
   component: AgePolicyPage,
 });
@@ -124,21 +124,21 @@ function AgePolicyPage() {
             <p className="mt-2 text-foreground/85">
               Folosește butonul <strong>„Raportează → Minor (sub 18 ani)"</strong> din orice profil
               sau mesaj. Pentru cazuri urgente:{" "}
-              <a className="text-primary" href="mailto:abuse@ventuza.app">
-                abuse@ventuza.app
+              <a className="text-primary" href="mailto:abuse@suzeta.app">
+                abuse@suzeta.app
               </a>
               . Răspuns garantat în 24h. Pentru materiale CSAM:{" "}
-              <a className="text-primary" href="mailto:csam@ventuza.app">
-                csam@ventuza.app
+              <a className="text-primary" href="mailto:csam@suzeta.app">
+                csam@suzeta.app
               </a>{" "}
               — monitorizat 24/7.
             </p>
 
             <h2 className="mt-6 text-base font-semibold">5. Părinți și tutori</h2>
             <p className="mt-2 text-foreground/85">
-              Dacă suspectezi că un minor folosește Ventuza, scrie-ne la{" "}
-              <a className="text-primary" href="mailto:parents@ventuza.app">
-                parents@ventuza.app
+              Dacă suspectezi că un minor folosește Suzeta, scrie-ne la{" "}
+              <a className="text-primary" href="mailto:parents@suzeta.app">
+                parents@suzeta.app
               </a>{" "}
               cu dovezi minime (capturi, ID dispozitiv, email cont). Suspendăm contul în 24h și
               ștergem datele conform Art. 8 GDPR (consimțământ minor invalid).

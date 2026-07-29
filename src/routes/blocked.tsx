@@ -9,7 +9,7 @@ import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/blocked")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Blocați — Ventuza" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Blocați — Suzeta" }, { name: "robots", content: "noindex" }] }),
   component: BlockedPage,
 });
 

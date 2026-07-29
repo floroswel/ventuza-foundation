@@ -50,7 +50,7 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
     art9: false,
     label: "Termeni și condiții",
     description:
-      "Acord cu termenii de utilizare Ventuza, inclusiv confirmarea că am cel puțin 18 ani.",
+      "Acord cu termenii de utilizare Suzeta, inclusiv confirmarea că am cel puțin 18 ani.",
     gates: ["account_creation"],
   },
   privacy: {
@@ -76,7 +76,7 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
   // internal_verification: retras în iulie 2026. Verificarea vârstei se face
   // exclusiv prin Didit (vezi age_verification). Fluxul intern rămâne ca
   // schelet dormant în DB (verification_requests) dar NU e sursa de adevăr.
-  // health_data: eliminat complet (decizie GDPR — Ventuza nu procesează date HIV).
+  // health_data: eliminat complet (decizie GDPR — Suzeta nu procesează date HIV).
 
 
 

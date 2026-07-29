@@ -8,7 +8,7 @@ type Props = { slug: string | null; displayName: string | null };
 export function ShareProfileCard({ slug, displayName }: Props) {
   const [copied, setCopied] = useState(false);
   if (!slug) return null;
-  const url = `${typeof window !== "undefined" ? window.location.origin : "https://ventuza.com"}/u/${slug}`;
+  const url = `${typeof window !== "undefined" ? window.location.origin : "https://suzeta.com"}/u/${slug}`;
 
   async function copy() {
     try {
@@ -24,7 +24,7 @@ export function ShareProfileCard({ slug, displayName }: Props) {
   async function share() {
     if (navigator.share) {
       try {
-        await navigator.share({ title: `${displayName ?? "Profilul meu"} · Ventuza`, url });
+        await navigator.share({ title: `${displayName ?? "Profilul meu"} · Suzeta`, url });
       } catch {
         /* user cancelled */
       }

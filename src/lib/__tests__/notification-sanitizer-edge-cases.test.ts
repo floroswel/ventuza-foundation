@@ -242,7 +242,7 @@ describe("sanitizer edge cases — PII smuggled via allowed keys / strings", () 
   it("drops query string from url (may contain token/PII) and keeps only path", () => {
     const out = sanitizeNotificationPayload({
       title: "t", body: "b",
-      url: "https://ventuza.app/m/42?email=leak@x.io&phone=%2B40712000000&token=SECRET",
+      url: "https://suzeta.app/m/42?email=leak@x.io&phone=%2B40712000000&token=SECRET",
     });
     expect(out.url).toBe("/m/42");
     assertNoPii(out.url ?? "", "url");
@@ -271,7 +271,7 @@ describe("sanitizer edge cases — PII smuggled via allowed keys / strings", () 
 describe("sanitizer edge cases — primitives, invariants", () => {
   it("null/undefined body → generic fallback, no crash", () => {
     const out = sanitizeNotificationPayload({ title: null, body: null });
-    expect(out.title).toBe("Ventuza");
+    expect(out.title).toBe("Suzeta");
     expect(out.body).toBe(GENERIC_MESSAGE_BODY);
   });
 

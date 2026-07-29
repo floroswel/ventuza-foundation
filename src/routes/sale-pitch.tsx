@@ -1,5 +1,5 @@
 /**
- * One-pager de vânzare pentru Ventuza.
+ * One-pager de vânzare pentru Suzeta.
  * Rută publică, doar lectură. Acces: /sale-pitch
  * Conține: tech stack, features, compliance posture, intervale preț,
  * plan 30 de zile pentru cumpărător.
@@ -21,11 +21,11 @@ export const Route = createFileRoute("/sale-pitch")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Ventuza — Acquisition One-Pager" },
+      { title: "Suzeta — Acquisition One-Pager" },
       {
         name: "description",
         content:
-          "Sumar executiv pentru achiziția platformei Ventuza: tech stack, compliance GDPR Art. 9, monetizare B2B RO și interval de preț.",
+          "Sumar executiv pentru achiziția platformei Suzeta: tech stack, compliance GDPR Art. 9, monetizare B2B RO și interval de preț.",
       },
       { name: "robots", content: "noindex,nofollow" },
     ],
@@ -98,7 +98,7 @@ const PRICE_RANGES = [
   {
     label: "Asset sale + handover 3 luni",
     range: "60.000 – 120.000 €",
-    desc: "Brand Ventuza + 1k useri activi + 3 luni suport. Competitor RO/regional care vrea shortcut la GDPR + B2B RO.",
+    desc: "Brand Suzeta + 1k useri activi + 3 luni suport. Competitor RO/regional care vrea shortcut la GDPR + B2B RO.",
   },
   {
     label: "Acquihire (6–12 luni)",
@@ -115,7 +115,7 @@ const PRICE_RANGES = [
 const DAY_30 = [
   "Semnare .aab + publicare Google Play (asset deja pregătit, lipsește signing key)",
   "Completare Data Safety form Play Store",
-  "Migrare DNS ventuza.eu pe cumpărător",
+  "Migrare DNS suzeta.eu pe cumpărător",
   "Handover credențiale: Supabase, Cloudflare, Lovable Cloud, Google Play Console",
   "Onboarding 3-5 venues plătitoare în București prin outreach direct",
   "Setup billing real cu prima emitere facturi recurente prin pg_cron (cod live)",
@@ -169,11 +169,11 @@ function SalePitch() {
             <Pill>2026</Pill>
           </div>
           <h1 className="text-3xl font-bold tracking-tight">
-            Ventuza — platformă dating LGBTQ+ cu monetizare B2B RO
+            Suzeta — platformă dating LGBTQ+ cu monetizare B2B RO
           </h1>
           <p className="mt-2 text-muted-foreground text-sm leading-relaxed">
             Operată de <span className="font-medium text-foreground">VOMIX GENIUS S.R.L.</span> ·
-            ventuza.eu · TanStack Start + Supabase + Capacitor. Construită GDPR-first cu enforcement
+            suzeta.eu · TanStack Start + Supabase + Capacitor. Construită GDPR-first cu enforcement
             la nivel DB pentru date Art. 9 (orientare, sănătate, biometrice). Singura platformă
             dating din RO cu billing B2B prin ordin de plată complet automatizat.
           </p>
@@ -339,7 +339,7 @@ function SalePitch() {
         <section className="rounded-xl border border-primary/40 bg-primary/5 p-5">
           <div className="text-sm font-semibold mb-1">Contact LOI / due diligence</div>
           <div className="text-xs text-muted-foreground">
-            VOMIX GENIUS S.R.L. · contact@ventuza.eu · NDA + data room disponibile la cerere (cod
+            VOMIX GENIUS S.R.L. · contact@suzeta.eu · NDA + data room disponibile la cerere (cod
             sursă, registru Art. 30, DPIA, RLS audit, demo flow B2B end-to-end).
           </div>
         </section>

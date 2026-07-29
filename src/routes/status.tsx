@@ -8,11 +8,11 @@ export const Route = createFileRoute("/status")({
   component: StatusPage,
   head: () => ({
     meta: [
-      { title: "Status sistem · Ventuza" },
+      { title: "Status sistem · Suzeta" },
       {
         name: "description",
         content:
-          "Stare în timp real a serviciilor Ventuza: API, mesagerie, autentificare, stocare.",
+          "Stare în timp real a serviciilor Suzeta: API, mesagerie, autentificare, stocare.",
       },
     ],
   }),
@@ -178,8 +178,8 @@ function StatusPage() {
 
       <p className="mt-8 text-xs text-muted-foreground">
         Pentru raportarea unui incident de securitate scrie la{" "}
-        <a href="mailto:security@ventuza.app" className="text-primary underline">
-          security@ventuza.app
+        <a href="mailto:security@suzeta.app" className="text-primary underline">
+          security@suzeta.app
         </a>{" "}
         sau consultă{" "}
         <a href="/.well-known/security.txt" className="text-primary underline">

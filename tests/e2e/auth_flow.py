@@ -1,5 +1,5 @@
 """
-E2E — Flux Signup / Login pe /auth (Ventuza).
+E2E — Flux Signup / Login pe /auth (Suzeta).
 
 Acoperire:
   L1  /auth login mode: email invalid → toast "auth.errors.invalidEmail",

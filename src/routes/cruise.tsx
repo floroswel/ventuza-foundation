@@ -15,7 +15,7 @@ import { getOrCreateConversation } from "@/lib/chat";
 import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/cruise")({
-  head: () => ({ meta: [{ title: "Cruise · Right Now — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Cruise · Right Now — Suzeta" }] }),
   component: CruisePage,
 });
 

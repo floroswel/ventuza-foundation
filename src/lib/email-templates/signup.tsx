@@ -46,7 +46,7 @@ export const SignupEmail = ({
           Confirmă emailul
         </Button>
         <Text style={footer}>
-          Dacă nu ai creat un cont pe Ventuza, poți ignora acest mesaj — nu se
+          Dacă nu ai creat un cont pe Suzeta, poți ignora acest mesaj — nu se
           va întâmpla nimic.
         </Text>
       </Container>

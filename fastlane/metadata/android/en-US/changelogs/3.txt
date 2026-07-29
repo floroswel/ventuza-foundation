@@ -1,4 +1,4 @@
-Ventuza 1.0.2 — major improvements
+Suzeta 1.0.2 — major improvements
 
 • Biometric unlock (fingerprint / face) for the app PIN.
 • WhatsApp-style chat receipts: sent → delivered → read + typing indicator.

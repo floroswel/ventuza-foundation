@@ -1,4 +1,4 @@
-# Backup & Restore Procedure — Ventuza (Supabase)
+# Backup & Restore Procedure — Suzeta (Supabase)
 
 **Versiune:** 1.0.0
 **Data:** 2026-07-13
@@ -17,7 +17,7 @@ Supabase Cloud oferă două paliere de backup, în funcție de plan:
 | Team | Daily snapshot | ✅ (14 zile) | 14 zile snapshot + 14 zile PITR |
 | Enterprise | Daily + custom | ✅ (28 zile+) | negociabil |
 
-**Recomandare Ventuza:** minimum Pro (25$/mo) pentru PITR — la un breach sau
+**Recomandare Suzeta:** minimum Pro (25$/mo) pentru PITR — la un breach sau
 o migrare greșită, PITR permite restore la secundă exactă.
 
 **Plus:** backup OFFLINE săptămânal cu `pg_dump` stocat în storage third-party
@@ -62,7 +62,7 @@ Stochează parola în password manager, NU în repo.
 # Variabile (setează local, NU în repo)
 export PGPASSWORD='<parola-backup_ro>'
 export SUPABASE_HOST='db.szzxhvvmwqvfyoldcuyz.supabase.co'
-export BACKUP_DIR="$HOME/ventuza-backups"
+export BACKUP_DIR="$HOME/suzeta-backups"
 mkdir -p "$BACKUP_DIR"
 TS=$(date -u +%Y%m%d-%H%M%S)
 
@@ -76,26 +76,26 @@ pg_dump \
   --no-privileges \
   --format=custom \
   --compress=9 \
-  --file="$BACKUP_DIR/ventuza-$TS.dump"
+  --file="$BACKUP_DIR/suzeta-$TS.dump"
 
 # Verifică dimensiunea (>1MB pentru bază populată)
-ls -lh "$BACKUP_DIR/ventuza-$TS.dump"
+ls -lh "$BACKUP_DIR/suzeta-$TS.dump"
 
 # Cifrare cu age (installează cu: brew install age / apt install age)
 age -r 'age1<public-key>' \
-    -o "$BACKUP_DIR/ventuza-$TS.dump.age" \
-    "$BACKUP_DIR/ventuza-$TS.dump"
+    -o "$BACKUP_DIR/suzeta-$TS.dump.age" \
+    "$BACKUP_DIR/suzeta-$TS.dump"
 
 # Șterge originalul necifrat
-rm "$BACKUP_DIR/ventuza-$TS.dump"
+rm "$BACKUP_DIR/suzeta-$TS.dump"
 
 # Upload la Cloudflare R2 (sau alt storage)
-rclone copy "$BACKUP_DIR/ventuza-$TS.dump.age" r2:ventuza-backups/
+rclone copy "$BACKUP_DIR/suzeta-$TS.dump.age" r2:suzeta-backups/
 ```
 
 ### 3.3 Storage backup
 
-- **Cloudflare R2**: bucket privat `ventuza-backups`, retenție 90 zile, lifecycle
+- **Cloudflare R2**: bucket privat `suzeta-backups`, retenție 90 zile, lifecycle
   policy → Standard 30d, Infrequent Access 60d, delete la 90d.
 - **Cheia age** (publică — pentru cifrare) în repo la `docs/backup-public-key.txt`.
 - **Cheia age privată** (pentru decriptare) în password manager Florin + copie
@@ -106,7 +106,7 @@ rclone copy "$BACKUP_DIR/ventuza-$TS.dump.age" r2:ventuza-backups/
 Cron pe machine personal Florin (rulează săptămânal duminică 3AM UTC):
 
 ```bash
-0 3 * * 0 /home/florin/scripts/ventuza-backup.sh >> /var/log/ventuza-backup.log 2>&1
+0 3 * * 0 /home/florin/scripts/suzeta-backup.sh >> /var/log/suzeta-backup.log 2>&1
 ```
 
 Script complet: vezi Appendix A la finalul acestui doc.
@@ -138,9 +138,9 @@ Script complet: vezi Appendix A la finalul acestui doc.
 
 ```bash
 # Decifrează
-age -d -i ~/.age/ventuza-backup-key.txt \
-    -o /tmp/ventuza-restore.dump \
-    /path/to/ventuza-YYYYMMDD-HHMMSS.dump.age
+age -d -i ~/.age/suzeta-backup-key.txt \
+    -o /tmp/suzeta-restore.dump \
+    /path/to/suzeta-YYYYMMDD-HHMMSS.dump.age
 
 # Restore doar o tabelă (ex: profiles)
 pg_restore \
@@ -151,10 +151,10 @@ pg_restore \
   --table=profiles \
   --data-only \
   --disable-triggers \
-  /tmp/ventuza-restore.dump
+  /tmp/suzeta-restore.dump
 
 # Curățare
-shred -u /tmp/ventuza-restore.dump
+shred -u /tmp/suzeta-restore.dump
 ```
 
 ⚠️ `--data-only` presupune schema există. Pentru schema recuperare, folosește
@@ -216,7 +216,7 @@ shred -u /tmp/ventuza-restore.dump
 
 ## Appendix A: Script backup complet
 
-Salvează ca `~/scripts/ventuza-backup.sh` + `chmod +x`:
+Salvează ca `~/scripts/suzeta-backup.sh` + `chmod +x`:
 
 ```bash
 #!/usr/bin/env bash
@@ -225,14 +225,14 @@ set -euo pipefail
 # Config — completează
 export PGPASSWORD='<parola-backup_ro>'
 SUPABASE_HOST='db.szzxhvvmwqvfyoldcuyz.supabase.co'
-BACKUP_DIR="$HOME/ventuza-backups"
+BACKUP_DIR="$HOME/suzeta-backups"
 AGE_RECIPIENT='age1<public-key>'
-R2_REMOTE='r2:ventuza-backups'
+R2_REMOTE='r2:suzeta-backups'
 RETENTION_LOCAL_DAYS=14
 
 mkdir -p "$BACKUP_DIR"
 TS=$(date -u +%Y%m%d-%H%M%S)
-DUMP="$BACKUP_DIR/ventuza-$TS.dump"
+DUMP="$BACKUP_DIR/suzeta-$TS.dump"
 ENC="$DUMP.age"
 
 echo "[$(date -u -Iseconds)] Backup started"

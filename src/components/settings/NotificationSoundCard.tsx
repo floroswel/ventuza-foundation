@@ -1,5 +1,5 @@
 /**
- * Toggle pentru semnătura sonoră Ventuza redată la notificări noi.
+ * Toggle pentru semnătura sonoră Suzeta redată la notificări noi.
  * Sunetul este generat 100% în cod (Web Audio API), fără fișiere externe.
  * Preferința se persistă în localStorage — nu pleacă la server.
  */
@@ -37,7 +37,7 @@ export function NotificationSoundCard() {
           <div>
             <p className="font-medium">Sunet notificare</p>
             <p className="text-sm text-muted-foreground">
-              Semnătura sonoră Ventuza — două note discrete, redate la mesaje și
+              Semnătura sonoră Suzeta — două note discrete, redate la mesaje și
               activitate nouă.
             </p>
           </div>

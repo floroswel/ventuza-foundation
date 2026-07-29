@@ -58,7 +58,7 @@ export async function getCurrentCoords(opts?: { maxAgeMs?: number }): Promise<Co
   if (!pos) {
     throw new GeoError(
       "denied",
-      "Locația nu e disponibilă. Verifică permisiunile aplicației (Setări → Aplicații → Ventuza → Permisiuni → Locație).",
+      "Locația nu e disponibilă. Verifică permisiunile aplicației (Setări → Aplicații → Suzeta → Permisiuni → Locație).",
     );
   }
   const coords = { lat: pos.coords.latitude, lng: pos.coords.longitude };

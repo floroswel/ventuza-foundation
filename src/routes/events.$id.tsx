@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/events/$id")({
-  head: () => ({ meta: [{ title: "Event — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Event — Suzeta" }] }),
   component: EventDetailPage,
 });
 

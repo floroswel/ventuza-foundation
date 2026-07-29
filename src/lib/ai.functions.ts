@@ -70,7 +70,7 @@ export const generateBio = createServerFn({ method: "POST" })
       vibe: data.vibe,
     });
     const sys =
-      "Ești un copywriter pentru o app gay de dating (Ventuza). Scrii bio-uri scurte, autentice, fără clișee, fără emoji excesive, fără hashtag-uri. Max 280 caractere. Răspunzi DOAR cu bio-ul, fără ghilimele.";
+      "Ești un copywriter pentru o app gay de dating (Suzeta). Scrii bio-uri scurte, autentice, fără clișee, fără emoji excesive, fără hashtag-uri. Max 280 caractere. Răspunzi DOAR cu bio-ul, fără ghilimele.";
     const facts = [
       data.name && `Nume: ${data.name}`,
       data.age && `Vârstă: ${data.age}`,

@@ -22,7 +22,7 @@ import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persist
 
 import { APP_VERSION } from "./app-version";
 
-const STORAGE_KEY = "ventuza:rq-cache:v1";
+const STORAGE_KEY = "suzeta:rq-cache:v1";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24h
 
 /**
@@ -113,7 +113,7 @@ function buildPersister(): Persister | null {
 
   // Web: localStorage cu probe (Safari private mode → skip persist).
   try {
-    const probe = "__ventuza_rq_probe__";
+    const probe = "__suzeta_rq_probe__";
     localStorage.setItem(probe, "1");
     localStorage.removeItem(probe);
   } catch {
