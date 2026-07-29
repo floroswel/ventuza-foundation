@@ -67,7 +67,7 @@ import { Route as LegalAgePolicyRouteImport } from './routes/legal.age-policy'
 import { Route as GroupsIdRouteImport } from './routes/groups.$id'
 import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as BusinessDashboardRouteImport } from './routes/business.dashboard'
-import { Route as AuthCheckEmailRouteImport } from './routes/auth.check-email'
+import { Route as AuthCheckEmailRouteImport } from './routes/auth_.check-email'
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -376,9 +376,9 @@ const BusinessDashboardRoute = BusinessDashboardRouteImport.update({
   getParentRoute: () => BusinessRoute,
 } as any)
 const AuthCheckEmailRoute = AuthCheckEmailRouteImport.update({
-  id: '/check-email',
-  path: '/check-email',
-  getParentRoute: () => AuthRoute,
+  id: '/auth_/check-email',
+  path: '/auth/check-email',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AdvertiseNewRoute = AdvertiseNewRouteImport.update({
   id: '/new',
@@ -468,7 +468,7 @@ export interface FileRoutesByFullPath {
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRouteWithChildren
   '/advertise': typeof AdvertiseRouteWithChildren
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
   '/blocked-region': typeof BlockedRegionRoute
   '/business': typeof BusinessRouteWithChildren
@@ -544,7 +544,7 @@ export interface FileRoutesByTo {
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRouteWithChildren
   '/advertise': typeof AdvertiseRouteWithChildren
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
   '/blocked-region': typeof BlockedRegionRoute
   '/business': typeof BusinessRouteWithChildren
@@ -621,7 +621,7 @@ export interface FileRoutesById {
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRouteWithChildren
   '/advertise': typeof AdvertiseRouteWithChildren
-  '/auth': typeof AuthRouteWithChildren
+  '/auth': typeof AuthRoute
   '/blocked': typeof BlockedRoute
   '/blocked-region': typeof BlockedRegionRoute
   '/business': typeof BusinessRouteWithChildren
@@ -651,7 +651,7 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/advertise/new': typeof AdvertiseNewRoute
-  '/auth/check-email': typeof AuthCheckEmailRoute
+  '/auth_/check-email': typeof AuthCheckEmailRoute
   '/business/dashboard': typeof BusinessDashboardRoute
   '/events/$id': typeof EventsIdRoute
   '/groups/$id': typeof GroupsIdRoute
@@ -881,7 +881,7 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/advertise/new'
-    | '/auth/check-email'
+    | '/auth_/check-email'
     | '/business/dashboard'
     | '/events/$id'
     | '/groups/$id'
@@ -928,7 +928,7 @@ export interface RootRouteChildren {
   AccountDeletionRoute: typeof AccountDeletionRoute
   AdminRoute: typeof AdminRouteWithChildren
   AdvertiseRoute: typeof AdvertiseRouteWithChildren
-  AuthRoute: typeof AuthRouteWithChildren
+  AuthRoute: typeof AuthRoute
   BlockedRoute: typeof BlockedRoute
   BlockedRegionRoute: typeof BlockedRegionRoute
   BusinessRoute: typeof BusinessRouteWithChildren
@@ -957,6 +957,7 @@ export interface RootRouteChildren {
   VisitorsRoute: typeof VisitorsRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  AuthCheckEmailRoute: typeof AuthCheckEmailRoute
   LegalAgePolicyRoute: typeof LegalAgePolicyRoute
   LegalBadgesRoute: typeof LegalBadgesRoute
   LegalBusinessTermsRoute: typeof LegalBusinessTermsRoute
@@ -1396,12 +1397,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessDashboardRouteImport
       parentRoute: typeof BusinessRoute
     }
-    '/auth/check-email': {
-      id: '/auth/check-email'
-      path: '/check-email'
+    '/auth_/check-email': {
+      id: '/auth_/check-email'
+      path: '/auth/check-email'
       fullPath: '/auth/check-email'
       preLoaderRoute: typeof AuthCheckEmailRouteImport
-      parentRoute: typeof AuthRoute
+      parentRoute: typeof rootRouteImport
     }
     '/advertise/new': {
       id: '/advertise/new'
@@ -1545,16 +1546,6 @@ const AdvertiseRouteWithChildren = AdvertiseRoute._addFileChildren(
   AdvertiseRouteChildren,
 )
 
-interface AuthRouteChildren {
-  AuthCheckEmailRoute: typeof AuthCheckEmailRoute
-}
-
-const AuthRouteChildren: AuthRouteChildren = {
-  AuthCheckEmailRoute: AuthCheckEmailRoute,
-}
-
-const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
-
 interface BusinessRouteChildren {
   BusinessDashboardRoute: typeof BusinessDashboardRoute
 }
@@ -1621,7 +1612,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountDeletionRoute: AccountDeletionRoute,
   AdminRoute: AdminRouteWithChildren,
   AdvertiseRoute: AdvertiseRouteWithChildren,
-  AuthRoute: AuthRouteWithChildren,
+  AuthRoute: AuthRoute,
   BlockedRoute: BlockedRoute,
   BlockedRegionRoute: BlockedRegionRoute,
   BusinessRoute: BusinessRouteWithChildren,
@@ -1651,6 +1642,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  AuthCheckEmailRoute: AuthCheckEmailRoute,
   LegalAgePolicyRoute: LegalAgePolicyRoute,
   LegalBadgesRoute: LegalBadgesRoute,
   LegalBusinessTermsRoute: LegalBusinessTermsRoute,
