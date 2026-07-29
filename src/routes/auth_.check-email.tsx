@@ -11,7 +11,7 @@ import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
 
 const searchSchema = z.object({ email: z.string().email().optional() });
 
-export const Route = createFileRoute("/auth/check-email")({
+export const Route = createFileRoute("/auth_/check-email")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [{ title: "Confirmă emailul — Ventuza" }, { name: "robots", content: "noindex" }],
