@@ -317,15 +317,17 @@ function NearbyPage() {
               onBrowseAll={() => navigate({ to: "/events" })}
             />
           ) : view === "map" ? (
-            <NearbyMap
-              user={coords}
-              points={filtered}
-              onSelect={(p) => {
-                if (p.kind === "event") navigate({ to: "/events/$id", params: { id: p.id } });
-                else if (p.kind === "offer") navigate({ to: "/offers/$id", params: { id: p.id } });
-                else navigate({ to: "/venues/$id", params: { id: p.id } });
-              }}
-            />
+            <Suspense fallback={<div className="w-full h-[60vh] rounded-lg border border-border bg-muted animate-pulse" />}>
+              <NearbyMap
+                user={coords}
+                points={filtered}
+                onSelect={(p) => {
+                  if (p.kind === "event") navigate({ to: "/events/$id", params: { id: p.id } });
+                  else if (p.kind === "offer") navigate({ to: "/offers/$id", params: { id: p.id } });
+                  else navigate({ to: "/venues/$id", params: { id: p.id } });
+                }}
+              />
+            </Suspense>
           ) : isLoading || !coords ? (
             <div className="text-center py-12 text-muted-foreground">
               <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
