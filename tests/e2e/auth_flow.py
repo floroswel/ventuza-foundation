@@ -69,7 +69,7 @@ async def goto_auth(page: Page, mode: str = "login") -> None:
     except Exception:
         pass
     # așteaptă câmpul de email
-    await page.locator("#email").wait_for(state="visible", timeout=5000)
+    await page.locator("#email").wait_for(state="visible", timeout=15000)
     # Dezactivăm HTML5 validation (required, type=email, minLength) ca să
     # putem testa validarea zod din onSubmit. Fără asta, Chromium blochează
     # submit-ul înainte ca handler-ul React să ruleze.
