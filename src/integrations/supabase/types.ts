@@ -5166,8 +5166,8 @@ export type Database = {
         Returns: Json
       }
       admin_send_official_message: {
-        Args: { _body: string; _subject?: string; _target: string }
-        Returns: string
+        Args: { _body: string; _subject: string; _target: string }
+        Returns: undefined
       }
       admin_set_legal_hold: {
         Args: { _enable: boolean; _reason: string; _target: string }
