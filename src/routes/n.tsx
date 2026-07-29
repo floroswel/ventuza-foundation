@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ArrowLeft, ArrowRight, Bell, Loader2, Upload, X } from "lucide-react";
+import { AlertCircle, ArrowLeft, ArrowRight, Bell, ImagePlus, Loader2, Sparkles, Upload, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
@@ -139,6 +139,7 @@ function Onboarding() {
   const [hydrated, setHydrated] = useState(false);
   const [donePush, setDonePush] = useState(false);
   const [birthdateLocked, setBirthdateLocked] = useState(false);
+  const [attempted, setAttempted] = useState(false);
 
   // Hydrate din Supabase (draft) + prefill din profil. Fallback: dacă există un
   // draft legacy în localStorage și DB-ul e gol, îl migrăm o dată.
@@ -245,26 +246,52 @@ function Onboarding() {
   const progress = ((step + 1) / STEPS.length) * 100;
   const current = STEPS[step];
 
-  const canContinue = useMemo(() => {
+  const stepErrors = useMemo<string[]>(() => {
+    const errs: string[] = [];
     switch (current) {
-      case "basics":
-        return (
-          data.display_name.trim().length >= 2 &&
-          validateBirthdate(data.birthdate, t) === null
-        );
-      case "identity":
-        return (
-          (data.gender.length > 0 || data.gender_custom.trim().length > 0) &&
-          (data.pronouns.length > 0 || data.pronouns_custom.trim().length > 0) &&
-          data.orientation.length > 0 &&
-          data.looking_for.length > 0
-        );
-      case "personality":
-        return data.interests.length >= 3;
-      case "photos":
-        return data.photos.length >= 1 && data.terms_accepted;
+      case "basics": {
+        if (data.display_name.trim().length < 2) errs.push(t("onboarding.basics.nameRequired"));
+        const be = validateBirthdate(data.birthdate, t);
+        if (be) errs.push(be);
+        break;
+      }
+      case "identity": {
+        if (data.gender.length === 0 && data.gender_custom.trim().length === 0)
+          errs.push(t("onboarding.validation.genderRequired"));
+        if (data.pronouns.length === 0 && data.pronouns_custom.trim().length === 0)
+          errs.push(t("onboarding.validation.pronounsRequired"));
+        if (data.orientation.length === 0) errs.push(t("onboarding.validation.orientationRequired"));
+        if (data.looking_for.length === 0) errs.push(t("onboarding.validation.lookingRequired"));
+        break;
+      }
+      case "personality": {
+        if (data.interests.length < 3) {
+          errs.push(
+            t("onboarding.validation.interestsNeedMore", { count: 3 - data.interests.length }),
+          );
+        }
+        break;
+      }
+      case "photos": {
+        if (data.photos.length < 1) errs.push(t("onboarding.validation.photosRequired"));
+        if (!data.terms_accepted) errs.push(t("onboarding.validation.termsRequired"));
+        break;
+      }
     }
-  }, [current, data]);
+    return errs;
+  }, [current, data, t]);
+
+  const canContinue = stepErrors.length === 0;
+
+  // Când pasul curent devine valid, ascunde bannerul de erori (curăța state-ul).
+  useEffect(() => {
+    if (canContinue && attempted) setAttempted(false);
+  }, [canContinue, attempted]);
+
+  // Reset "attempted" la schimbarea pasului ca să nu arate erori dintr-un pas anterior.
+  useEffect(() => {
+    setAttempted(false);
+  }, [step]);
 
   function buildStepPatch(s: (typeof STEPS)[number]): Record<string, any> {
     switch (s) {
@@ -318,6 +345,15 @@ function Onboarding() {
 
   async function next() {
     if (!user) return;
+    // Nu mai bloca silent butonul: dacă lipsesc câmpuri, marchează "attempted"
+    // ca să apară bannerul cu erori inline și un toast cu primul mesaj.
+    if (stepErrors.length > 0) {
+      setAttempted(true);
+      toast.error(stepErrors[0]);
+      const el = document.getElementById("ob-errors");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     setSaving(true);
 
     // Persistă imediat pasul curent în Supabase (nu doar în localStorage).
@@ -436,12 +472,33 @@ function Onboarding() {
       </section>
 
       <footer className="sticky bottom-0 border-t border-border/50 bg-background/80 px-6 py-4 backdrop-blur">
+        {attempted && stepErrors.length > 0 && (
+          <div
+            id="ob-errors"
+            role="alert"
+            aria-live="polite"
+            className="mx-auto mb-3 w-full max-w-lg rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm"
+          >
+            <div className="flex items-start gap-2 text-destructive">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              <div className="space-y-1">
+                <p className="font-medium">{t("onboarding.validation.title")}</p>
+                <ul className="ml-4 list-disc space-y-0.5 text-destructive/90">
+                  {stepErrors.map((e, i) => (
+                    <li key={i}>{e}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
         <Button
           onClick={next}
-          disabled={!canContinue || saving}
+          disabled={saving}
           variant="hero"
           size="lg"
-          className="w-full"
+          className="mx-auto flex w-full max-w-lg"
+          aria-disabled={!canContinue || undefined}
         >
           {saving && <Loader2 className="size-4 animate-spin" />}
           {step === STEPS.length - 1 ? t("onboarding.finish") : t("onboarding.continue")}
@@ -611,17 +668,35 @@ function StepView({
             <p className="mt-2 text-muted-foreground">{t("onboarding.personality.hint")}</p>
           </div>
           <div className="space-y-3">
-            <Label>
-              {t("onboarding.personality.interests")}{" "}
-              <span className="text-muted-foreground font-normal">
-                {t("onboarding.personality.min3")}
+            <div className="flex items-center justify-between">
+              <Label>
+                {t("onboarding.personality.interests")}{" "}
+                <span className="text-muted-foreground font-normal">
+                  {t("onboarding.personality.min3")}
+                </span>
+              </Label>
+              <span
+                className={
+                  "rounded-full border px-2 py-0.5 text-xs tabular-nums transition-colors " +
+                  (data.interests.length >= 3
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-border bg-surface text-muted-foreground")
+                }
+              >
+                {t("onboarding.validation.interestsCount", { count: data.interests.length })}
               </span>
-            </Label>
+            </div>
             <ChipGrid
               options={INTEREST_OPTIONS}
               selected={data.interests}
               onToggle={(v) => setData({ ...data, interests: toggle(data.interests, v) })}
             />
+            {data.interests.length === 0 && (
+              <div className="rounded-xl border border-dashed border-border bg-surface/50 p-4 text-center">
+                <Sparkles className="mx-auto mb-2 size-5 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">{t("onboarding.empty.interests")}</p>
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label>
@@ -882,7 +957,14 @@ function PhotosStep({
 
   return (
     <Field title={t("onboarding.photos.title")} hint={t("onboarding.photos.hint")}>
+      {data.photos.length === 0 && (
+        <div className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-surface/50 p-3 text-sm text-muted-foreground">
+          <ImagePlus className="size-5 shrink-0 text-primary/70" />
+          <span>{t("onboarding.empty.photos")}</span>
+        </div>
+      )}
       <div className="grid grid-cols-3 gap-3">
+
         {data.photos.map((p, i) => (
           <div
             key={p}
