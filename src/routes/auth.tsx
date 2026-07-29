@@ -400,7 +400,14 @@ function AuthPage() {
           {t("auth.back")}
         </Link>
 
-        <div className="mt-10 text-center">
+        <div className="mt-10 flex flex-col items-center text-center">
+          <img
+            src="/favicon.png"
+            alt=""
+            width={72}
+            height={72}
+            className="mb-4 size-[72px] rounded-2xl shadow-lg shadow-primary/20"
+          />
           <h1 className="wordmark text-5xl font-medium leading-none">Ventuza</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             {mode === "signup" ? t("auth.createAccount") : t("auth.welcomeBack")}
