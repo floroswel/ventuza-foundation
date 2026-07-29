@@ -13,7 +13,7 @@ BEGIN
   SET LOCAL session_replication_role = 'replica';
 
   DELETE FROM public.admin_audit_log
-   WHERE actor_email = 'seed@ventuza.local';
+   WHERE actor_email = 'seed@suzeta.local';
   GET DIAGNOSTICS v_audit = ROW_COUNT;
 
   DELETE FROM public.admin_sensitive_access_log

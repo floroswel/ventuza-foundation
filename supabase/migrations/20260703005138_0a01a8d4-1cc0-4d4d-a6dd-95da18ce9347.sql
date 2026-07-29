@@ -29,7 +29,7 @@ INSERT INTO public.badge_registry (code, target, label_i18n, icon, color_class, 
   ('explorer',        'user',  '{"ro":"Explorator","en":"Explorer"}',          'Compass',     'text-teal-400',     40, 'Activitate în cel puțin 5 orașe diferite.'),
   ('partner_premium', 'venue', '{"ro":"Premium","en":"Premium"}',              'Crown',       'text-amber-500',   100, 'Partener cu plan Premium/Pro activ.'),
   ('partner_boost',   'venue', '{"ro":"Boost","en":"Boost"}',                  'Rocket',      'text-rose-500',     95, 'Boost activ pentru vizibilitate crescută.'),
-  ('official',        'venue', '{"ro":"Oficial","en":"Official"}',             'ShieldCheck', 'text-blue-500',     90, 'Local oficial verificat de echipa Ventuza.');
+  ('official',        'venue', '{"ro":"Oficial","en":"Official"}',             'ShieldCheck', 'text-blue-500',     90, 'Local oficial verificat de echipa Suzeta.');
 
 -- 3) RPC user badges
 CREATE OR REPLACE FUNCTION public.get_user_badges(_user_id uuid)

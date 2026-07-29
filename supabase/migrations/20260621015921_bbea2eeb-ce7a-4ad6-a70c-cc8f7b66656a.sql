@@ -7,7 +7,7 @@ SET search_path = public
 AS $function$
 BEGIN
   IF NEW.birthdate IS NOT NULL AND NEW.birthdate > (CURRENT_DATE - INTERVAL '18 years')::date THEN
-    RAISE EXCEPTION 'Trebuie să ai cel puțin 18 ani pentru a folosi Ventuza.';
+    RAISE EXCEPTION 'Trebuie să ai cel puțin 18 ani pentru a folosi Suzeta.';
   END IF;
   RETURN NEW;
 END;

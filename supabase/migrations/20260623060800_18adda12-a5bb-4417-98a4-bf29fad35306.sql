@@ -1,6 +1,6 @@
-DROP POLICY IF EXISTS ventuza_realtime_authz_select ON realtime.messages;
+DROP POLICY IF EXISTS suzeta_realtime_authz_select ON realtime.messages;
 
-CREATE POLICY ventuza_realtime_authz_select ON realtime.messages
+CREATE POLICY suzeta_realtime_authz_select ON realtime.messages
 FOR SELECT TO authenticated
 USING (
   ((realtime.topic() LIKE 'notifications:%') AND split_part(realtime.topic(), ':', 2) = (auth.uid())::text)

@@ -23,7 +23,7 @@ BEGIN
     uid := gen_random_uuid();
     INSERT INTO auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, created_at, updated_at, raw_app_meta_data, raw_user_meta_data, is_super_admin, is_sso_user, is_anonymous)
     VALUES (uid, '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated',
-            'demo-' || uid || '@ventuza.local', crypt(uid::text, gen_salt('bf')), now(), now(), now(),
+            'demo-' || uid || '@suzeta.local', crypt(uid::text, gen_salt('bf')), now(), now(), now(),
             '{"provider":"demo","providers":["demo"]}'::jsonb,
             jsonb_build_object('demo', true, 'display_name', d->>'name'),
             false, false, false);
