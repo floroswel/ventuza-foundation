@@ -22,15 +22,21 @@ export function isTurnstileConfigured(): boolean {
   return SITE_KEY.length > 0;
 }
 
-/** Captcha e obligatoriu (configurat SAU rulăm în producție). Fail-closed în prod. */
+/** Captcha e obligatoriu DOAR când site key-ul e configurat (fail-open dacă lipsește). */
 export function isCaptchaMandatory(): boolean {
-  return isTurnstileConfigured() || isProductionHost();
+  return isTurnstileConfigured();
 }
 
-/** Prod fără site key configurat = misconfigurare critică; UI trebuie să blocheze. */
+/**
+ * Turnstile lipsă pe prod = degradare a protecției anti-bot, dar NU blocăm
+ * signup-ul real (rate limit per IP + fingerprint în `/api/public/signup-guard`
+ * rămâne activ). Întoarcem mereu false pentru a nu bloca UI-ul.
+ */
 export function isTurnstileMisconfiguredInProd(): boolean {
-  return isProductionHost() && !isTurnstileConfigured();
+  return false;
 }
+// isProductionHost import kept for future re-enable without diff churn.
+void isProductionHost;
 
 type Props = {
   /** Apelat când utilizatorul rezolvă challenge-ul. */
