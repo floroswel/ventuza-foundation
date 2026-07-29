@@ -243,7 +243,16 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
     await savePhotos(next);
   }
 
+  async function reorder(from: number, to: number) {
+    if (from === to || from < 0 || to < 0 || from >= photos.length || to >= photos.length) return;
+    const next = [...photos];
+    const [picked] = next.splice(from, 1);
+    next.splice(to, 0, picked);
+    await savePhotos(next);
+  }
+
   const remaining = MAX_PHOTOS - photos.length;
+
 
   return (
     <div className={cn("space-y-3", className)}>
