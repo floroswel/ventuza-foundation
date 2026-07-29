@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { AlertCircle, ArrowLeft, ArrowRight, Bell, ImagePlus, Loader2, Sparkles, Upload, X } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
@@ -221,8 +221,14 @@ function Onboarding() {
   }, [user?.id, navigate]);
 
   // Auto-save draft server-side, debounced 600 ms, doar după hydrate.
+  // `draftStatus` alimentează indicatorul vizibil "Se salvează…/Salvat".
+  const [draftStatus, setDraftStatus] = useState<"idle" | "saving" | "saved">("idle");
+  const pendingSnapshotRef = useRef<{ step: number; data: Data } | null>(null);
+
   useEffect(() => {
     if (!hydrated || !user) return;
+    pendingSnapshotRef.current = { step, data };
+    setDraftStatus("saving");
     const handle = setTimeout(() => {
       supabase
         .from("onboarding_drafts")
@@ -231,11 +237,74 @@ function Onboarding() {
           { onConflict: "user_id" },
         )
         .then(({ error }) => {
-          if (error) console.warn("[onboarding] draft save failed", error.message);
+          if (error) {
+            console.warn("[onboarding] draft save failed", error.message);
+            setDraftStatus("idle");
+            return;
+          }
+          pendingSnapshotRef.current = null;
+          setDraftStatus("saved");
         });
     }, 600);
     return () => clearTimeout(handle);
   }, [step, data, hydrated, user?.id]);
+
+  // Flush sincron când tab-ul devine invizibil / se descarcă, ca să nu
+  // pierdem ultima fereastră de debounce (600 ms). `keepalive: true` permite
+  // requestului să continue după unload; browserele îl mențin până la ~64 KB.
+  useEffect(() => {
+    if (!hydrated || !user) return;
+    const flush = () => {
+      const pending = pendingSnapshotRef.current;
+      if (!pending) return;
+      try {
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/rest/v1/onboarding_drafts?on_conflict=user_id`;
+        const body = JSON.stringify({
+          user_id: user.id,
+          step: pending.step,
+          data: pending.data,
+        });
+        const token =
+          (typeof localStorage !== "undefined" &&
+            Object.keys(localStorage)
+              .filter((k) => k.startsWith("sb-") && k.endsWith("-auth-token"))
+              .map((k) => {
+                try {
+                  return JSON.parse(localStorage.getItem(k) || "null")?.access_token as
+                    | string
+                    | undefined;
+                } catch {
+                  return undefined;
+                }
+              })
+              .find(Boolean)) || import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+        fetch(url, {
+          method: "POST",
+          keepalive: true,
+          headers: {
+            "content-type": "application/json",
+            apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string,
+            authorization: `Bearer ${token}`,
+            prefer: "resolution=merge-duplicates,return=minimal",
+          },
+          body,
+        }).catch(() => {
+          /* best-effort; debounced save-ul obișnuit va prinde la următoarea sesiune */
+        });
+      } catch {
+        /* noop */
+      }
+    };
+    const onVis = () => {
+      if (document.visibilityState === "hidden") flush();
+    };
+    window.addEventListener("visibilitychange", onVis);
+    window.addEventListener("pagehide", flush);
+    return () => {
+      window.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("pagehide", flush);
+    };
+  }, [hydrated, user?.id]);
 
 
 
@@ -455,8 +524,18 @@ function Onboarding() {
           >
             <ArrowLeft className="size-4" /> {t("onboarding.back")}
           </button>
-          <span className="text-xs text-muted-foreground">
-            {t(STEP_KEYS[current])} · {step + 1}/{STEPS.length}
+          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+            {draftStatus === "saving" && (
+              <span className="inline-flex items-center gap-1 text-muted-foreground/80">
+                <Loader2 className="size-3 animate-spin" /> {t("onboarding.autosave.saving")}
+              </span>
+            )}
+            {draftStatus === "saved" && (
+              <span className="text-emerald-500/90">{t("onboarding.autosave.saved")}</span>
+            )}
+            <span>
+              {t(STEP_KEYS[current])} · {step + 1}/{STEPS.length}
+            </span>
           </span>
         </div>
         <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-surface">
