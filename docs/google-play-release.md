@@ -26,7 +26,7 @@ npx cap sync android    # copiază dist/ + pluginii în android/
 ```
 
 Config-ul relevant e în `capacitor.config.ts`:
-- `appId = "com.suzeta.dating"` (locked — nu schimba după prima urcare Play).
+- `appId = "com.ventuza.dating"` (locked — nu schimba după prima urcare Play).
 - `appName = "Suzeta"`.
 - `webDir = "dist"`.
 - `android.allowMixedContent = false` (obligatoriu Play).
@@ -39,7 +39,7 @@ Editează `android/app/build.gradle`:
 ```gradle
 android {
   defaultConfig {
-    applicationId "com.suzeta.dating"
+    applicationId "com.ventuza.dating"
     minSdkVersion 24            // Android 7.0 — cerință Play 2026 pentru dating
     targetSdkVersion 35          // Android 15 — cerință Play din august 2026
     versionCode 1                // INCREMENTĂ manual la fiecare urcare (număr întreg strict crescător)
@@ -221,7 +221,7 @@ Toate există în cod (`src/routes/legal.*`).
 
 - [ ] `versionCode` incrementat + `versionName` bumped.
 - [ ] AAB semnat cu keystore-ul de release (nu debug).
-- [ ] `applicationId = com.suzeta.dating` neschimbat.
+- [ ] `applicationId = com.ventuza.dating` neschimbat.
 - [ ] `targetSdkVersion = 35`.
 - [ ] `android.allowMixedContent = false` în capacitor.config.ts.
 - [ ] Data safety form completat + salvat.
@@ -254,7 +254,7 @@ tabelă `push_subscriptions` (`kind='fcm'` vs `kind='webpush'`).
 
 ### One-time — proiect Firebase
 
-1. Creează proiect Firebase (același `applicationId`: `com.suzeta.dating`).
+1. Creează proiect Firebase (același `applicationId`: `com.ventuza.dating`).
 2. Descarcă `google-services.json` și pune-l în `android/app/`
    (NU comita în repo — adaugă în `.gitignore`).
 3. În `android/build.gradle` (top-level), adaugă la `buildscript.dependencies`:
