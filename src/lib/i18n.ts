@@ -604,6 +604,21 @@ const en: typeof ro = {
     toast: {
       ready: "Your profile is ready.",
     },
+    validation: {
+      title: "A few things to complete before continuing",
+      genderRequired: "Pick at least one gender option or write a custom one.",
+      pronounsRequired: "Pick at least one pronoun or write a custom one.",
+      orientationRequired: "Pick at least one orientation.",
+      lookingRequired: "Tell us what you're looking for (pick at least one).",
+      interestsCount: "{{count}}/3 selected",
+      interestsNeedMore: "Pick {{count}} more to continue.",
+      photosRequired: "Add at least one photo.",
+      termsRequired: "Confirm you've read the Terms, Privacy and Community Rules.",
+    },
+    empty: {
+      photos: "No photos yet. Add the first one to get started.",
+      interests: "Nothing picked yet — pick at least 3 interests so we can match you.",
+    },
   },
 };
 
