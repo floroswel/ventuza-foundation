@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState, type ReactNode } from "react";
 import {
   Crown,
   Search,
@@ -11,8 +11,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { CommandPaletteV2 } from "./CommandPaletteV2";
-import { UndoRedoToolbar } from "./queue/UndoRedoToolbar";
-import { useAdminUndoShortcuts } from "./queue/useActionJournal";
+import { useAdminUndoShortcuts } from "./queue/useAdminUndoShortcuts";
+
+// Toolbar-ul afișează starea journal-ului → încărcat lenevos ca journal-ul să
+// nu intre în chunk-ul inițial al /admin. Fallback = null (footer discret).
+const UndoRedoToolbar = lazy(() =>
+  import("./queue/UndoRedoToolbar").then((m) => ({ default: m.UndoRedoToolbar })),
+);
+
 
 export type NavItem = {
   id: string;
@@ -193,7 +199,7 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
               </button>
 
               <div className="ml-auto hidden items-center gap-2 lg:flex">
-                <UndoRedoToolbar />
+                <Suspense fallback={null}><UndoRedoToolbar /></Suspense>
                 <button
                   onClick={() => setDensity((d) => (d === "compact" ? "comfortable" : "compact"))}
                   title={
