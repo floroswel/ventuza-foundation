@@ -16,17 +16,25 @@ const SelectTrigger = React.forwardRef<
   React.ElementRef<typeof SelectPrimitive.Trigger>,
   React.ComponentPropsWithoutRef<typeof SelectPrimitive.Trigger>
 >(({ className, children, ...props }, ref) => (
-  <SelectPrimitive.Trigger
+<SelectPrimitive.Trigger
     ref={ref}
     className={cn(
-      "flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm ring-offset-background cursor-pointer data-[placeholder]:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
+      "flex h-10 w-full items-center justify-between whitespace-nowrap rounded-xl border border-input bg-surface/60 px-3.5 py-2 text-sm text-foreground shadow-sm ring-offset-background cursor-pointer",
+      "transition-[border-color,box-shadow,background-color] duration-200 ease-out",
+      "data-[placeholder]:text-muted-foreground",
+      "hover:border-primary/40 hover:bg-surface/80",
+      "outline-none focus:border-[color:oklch(0.72_0.24_320)] focus:bg-surface",
+      "focus:ring-2 focus:ring-[color:oklch(0.72_0.24_320)] focus:ring-offset-2 focus:ring-offset-background",
+      "focus:shadow-[0_0_0_1px_color-mix(in_oklab,var(--primary)_55%,transparent),0_10px_28px_-12px_color-mix(in_oklab,var(--primary)_50%,transparent)]",
+      "aria-invalid:border-destructive aria-invalid:focus:ring-[color:var(--destructive)]",
+      "disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1",
       className,
     )}
     {...props}
   >
     {children}
     <SelectPrimitive.Icon asChild>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="size-4 opacity-60" />
     </SelectPrimitive.Icon>
   </SelectPrimitive.Trigger>
 ));
