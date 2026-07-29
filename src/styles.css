@@ -131,6 +131,54 @@ html {
     font-family: var(--font-display);
     letter-spacing: -0.01em;
   }
+
+  /* Focus-visible global cu accent brand pentru orice element interactiv
+     care nu-și definește propriul focus. Button/Input custom îl vor
+     suprascrie (ambele au focus-visible dedicat). */
+  a:focus-visible,
+  [role="button"]:focus-visible,
+  [role="tab"]:focus-visible,
+  [role="menuitem"]:focus-visible,
+  [role="option"]:focus-visible,
+  [tabindex]:not([tabindex="-1"]):focus-visible,
+  summary:focus-visible {
+    outline: 2px solid oklch(0.72 0.24 320);
+    outline-offset: 2px;
+    border-radius: max(0.5rem, var(--radius, 0.5rem));
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--primary) 55%, transparent),
+      0 8px 28px -8px color-mix(in oklab, var(--primary) 55%, transparent);
+  }
+}
+
+@utility brand-focus {
+  &:focus-visible {
+    outline: 2px solid oklch(0.72 0.24 320);
+    outline-offset: 2px;
+    box-shadow:
+      0 0 0 1px color-mix(in oklab, var(--primary) 55%, transparent),
+      0 8px 28px -8px color-mix(in oklab, var(--primary) 55%, transparent);
+  }
+}
+
+@utility brand-interactive {
+  transition: transform 200ms ease-out, box-shadow 200ms ease-out,
+    background 200ms ease-out, color 200ms ease-out, opacity 200ms ease-out;
+  &:hover:not(:disabled):not([aria-disabled="true"]) {
+    filter: brightness(1.08);
+    box-shadow: 0 10px 28px -14px color-mix(in oklab, var(--primary) 55%, transparent);
+  }
+  &:active:not(:disabled):not([aria-disabled="true"]) {
+    transform: scale(0.97);
+    filter: brightness(0.94);
+  }
+  &:disabled,
+  &[aria-disabled="true"] {
+    opacity: 0.55;
+    filter: saturate(0.5);
+    cursor: not-allowed;
+    pointer-events: none;
+  }
 }
 
 @utility wordmark {
