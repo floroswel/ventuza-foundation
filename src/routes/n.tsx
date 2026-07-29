@@ -524,8 +524,18 @@ function Onboarding() {
           >
             <ArrowLeft className="size-4" /> {t("onboarding.back")}
           </button>
-          <span className="text-xs text-muted-foreground">
-            {t(STEP_KEYS[current])} · {step + 1}/{STEPS.length}
+          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+            {draftStatus === "saving" && (
+              <span className="inline-flex items-center gap-1 text-muted-foreground/80">
+                <Loader2 className="size-3 animate-spin" /> {t("onboarding.autosave.saving")}
+              </span>
+            )}
+            {draftStatus === "saved" && (
+              <span className="text-emerald-500/90">{t("onboarding.autosave.saved")}</span>
+            )}
+            <span>
+              {t(STEP_KEYS[current])} · {step + 1}/{STEPS.length}
+            </span>
           </span>
         </div>
         <div className="mt-4 h-1 w-full overflow-hidden rounded-full bg-surface">
