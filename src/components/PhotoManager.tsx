@@ -261,7 +261,7 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           Poze · {photos.length}/{MAX_PHOTOS}
         </p>
         <p className="text-[10px] text-muted-foreground">
-          Tap ★ pentru principală · ◂ ▸ pentru reordonare
+          Trage pentru reordonare · Tap ★ pentru principală
         </p>
       </div>
       <p className="text-[11px] text-muted-foreground">
@@ -270,16 +270,47 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
       </p>
 
       <div className="grid grid-cols-3 gap-2">
-        {photos.map((p, i) => (
+        {photos.map((p, i) => {
+          const isDragging = dragIndex === i;
+          const isOver = overIndex === i && dragIndex !== null && dragIndex !== i;
+          return (
           <div
             key={p}
+            draggable
+            onDragStart={(e) => {
+              setDragIndex(i);
+              e.dataTransfer.effectAllowed = "move";
+              e.dataTransfer.setData("text/plain", String(i));
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = "move";
+              if (overIndex !== i) setOverIndex(i);
+            }}
+            onDragLeave={() => {
+              if (overIndex === i) setOverIndex(null);
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              const from = Number(e.dataTransfer.getData("text/plain"));
+              setDragIndex(null);
+              setOverIndex(null);
+              if (!Number.isNaN(from)) void reorder(from, i);
+            }}
+            onDragEnd={() => {
+              setDragIndex(null);
+              setOverIndex(null);
+            }}
+            aria-grabbed={isDragging}
             className={cn(
-              "group relative aspect-[3/4] overflow-hidden rounded-xl border bg-muted",
+              "group relative aspect-[3/4] cursor-grab overflow-hidden rounded-xl border bg-muted transition-all active:cursor-grabbing",
               i === 0 ? "border-primary/60" : "border-border",
+              isDragging && "opacity-40 scale-95",
+              isOver && "ring-2 ring-primary ring-offset-2 ring-offset-background",
             )}
           >
             {signed[p] ? (
-              <img src={signed[p]} alt="" className="size-full object-cover" />
+              <img src={signed[p]} alt="" draggable={false} className="size-full object-cover pointer-events-none" />
             ) : (
               <div className="flex size-full items-center justify-center">
                 <Loader2 className="size-4 animate-spin text-muted-foreground" />
@@ -290,6 +321,12 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
                 Main
               </span>
             )}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute right-1.5 bottom-8 rounded-full bg-background/70 p-1 text-foreground/70 backdrop-blur opacity-0 group-hover:opacity-100"
+            >
+              <GripVertical className="size-3" />
+            </span>
             <button
               onClick={() => remove(p)}
               aria-label="Șterge poza"
@@ -326,7 +363,9 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
               </button>
             </div>
           </div>
-        ))}
+        );
+        })}
+
 
         {photos.length < MAX_PHOTOS && (
           <button
