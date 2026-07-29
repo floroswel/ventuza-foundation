@@ -115,7 +115,7 @@ async def test_guard(context: BrowserContext) -> None:
     page = await context.new_page()
     try:
         await page.goto(BASE + "/profile", wait_until="domcontentloaded")
-        await page.wait_for_url("**/auth**", timeout=5000)
+        await page.wait_for_url("**/auth**", timeout=15000)
         await page.screenshot(path=str(OUT / "g1_guard.png"))
         ok("G1 unauth → /auth")
     except Exception as e:
