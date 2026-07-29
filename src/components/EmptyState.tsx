@@ -27,7 +27,7 @@ export function EmptyState({
         {/* Gradient ring with dark inner disc */}
         <span className="relative inline-flex size-20 items-center justify-center rounded-full p-[1.5px] bg-brand-gradient">
           <span className="flex size-full items-center justify-center rounded-full bg-card">
-            <Icon className="size-8 text-brand-gradient" strokeWidth={1.75} />
+            <Icon className="size-8 text-foreground" strokeWidth={1.75} />
           </span>
         </span>
       </div>
