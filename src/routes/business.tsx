@@ -370,14 +370,14 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
         />
       </div>
 
-      {/* PRICING */}
+      {/* COMING SOON — fără prețuri */}
       <h3 className="mt-10 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Pachete orientative
+        Ce pregătim
       </h3>
       <div className="mt-3 space-y-3">
         <Tier
           name="Community"
-          price="GRATUIT"
+          price="În curând"
           desc="Pentru ONG-uri LGBTQ+, asociații Pride, clinici de testare HIV/ITS, linii de criză."
           perks={["Profil verificat", "Listare evenimente", "Badge ONG", "Suport email"]}
         />
@@ -388,7 +388,7 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
           desc="Pentru baruri, cluburi, branduri locale gay-friendly."
           perks={[
             "Banner Discover (city-targeted)",
-            "1 eveniment promovat / lună",
+            "Evenimente promovate lunar",
             "Statistici impresii",
             "Factură cu TVA",
           ]}
@@ -399,14 +399,14 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
           desc="Pentru branduri naționale și organizatori Pride."
           perks={[
             "Banner național + city",
-            "5 evenimente boost",
+            "Evenimente boost multiple",
             "Stories sponsorizate",
             "Account manager dedicat",
           ]}
         />
         <Tier
           name="Custom"
-          price="La cerere"
+          price="În curând"
           desc="Campanii Pride Month, lansări produs, parteneriate UE."
           perks={[
             "Briefing comun",
@@ -416,6 +416,9 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
           ]}
         />
       </div>
+      <p className="mt-3 text-[11px] text-muted-foreground">
+        Prețurile finale se comunică la lansare. Momentan poți doar lăsa o cerere de interes.
+      </p>
 
       {/* WHAT YOU NEED */}
       <h3 className="mt-10 text-sm font-semibold uppercase tracking-wide text-muted-foreground">

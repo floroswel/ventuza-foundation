@@ -393,13 +393,11 @@ function AdvertiserDashboard({ adv, campaigns }: { adv: Advertiser; campaigns: A
         )}
       </section>
 
-      <section className="rounded-2xl border border-border bg-surface p-4">
-        <p className="text-xs font-semibold">Cum funcționează plata?</p>
-        <p className="mt-1 text-xs text-muted-foreground">
-          După ce trimiți campania, echipa Ventuza o aprobă în 24h și îți comunică pe email factura
-          proforma. Plata e prin transfer bancar sau Stripe. Tarife:{" "}
-          <span className="font-medium text-foreground">de la 99 RON / săptămână</span> pentru un
-          banner local.
+      <section className="rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4">
+        <p className="text-xs font-semibold text-amber-200">Prețuri — în curând</p>
+        <p className="mt-1 text-xs text-amber-100/80">
+          Grila de tarife pentru bannere Discover, Events și Map se comunică la lansarea programului
+          B2B. Momentan echipa Ventuza îți răspunde pe email cu ofertă personalizată.
         </p>
         <a
           href="mailto:ads@ventuza.app"
