@@ -204,6 +204,7 @@ const ro = {
     continue: "Continuă",
     finish: "Termină",
     stepLabel: "{{name}} · {{n}}/{{total}}",
+    autosave: { saving: "Se salvează…", saved: "Salvat" },
     step: {
       basics: "Despre tine",
       identity: "Identitate",
