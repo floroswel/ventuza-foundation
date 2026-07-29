@@ -57,7 +57,7 @@ export type DiscoverProfile = {
   weight_kg: number | null;
   ethnicity: string | null;
   position: string | null;
-  // Ventuza nu mai procesează statutul HIV — nici stocare, nici filtre, nici RPC.
+  // Suzeta nu mai procesează statutul HIV — nici stocare, nici filtre, nici RPC.
   relationship_status: string | null;
   verified: boolean;
   distance_m: number | null;
@@ -136,7 +136,7 @@ export async function requestAndStoreLocation(): Promise<{ ok: boolean; error?: 
     return {
       ok: false,
       error:
-        "Nu am putut obține locația. Verifică permisiunea aplicației (Setări → Aplicații → Ventuza → Permisiuni → Locație) și că Location Services este activ.",
+        "Nu am putut obține locația. Verifică permisiunea aplicației (Setări → Aplicații → Suzeta → Permisiuni → Locație) și că Location Services este activ.",
     };
   }
   const { error } = await supabase.rpc("update_my_location", {

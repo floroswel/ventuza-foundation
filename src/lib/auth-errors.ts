@@ -456,7 +456,7 @@ export function showAuthErrorToast(t: TFunction, err: unknown): FriendlyAuthErro
   if (typeof window !== "undefined") {
     try {
       window.dispatchEvent(
-        new CustomEvent("ventuza:auth-error", {
+        new CustomEvent("suzeta:auth-error", {
           detail: {
             code: mapped.code,
             message: mapped.message,

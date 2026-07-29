@@ -13,7 +13,7 @@ import { StoriesStrip } from "@/components/StoriesStrip";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/messages/")({
-  head: () => ({ meta: [{ title: "Mesaje — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Mesaje — Suzeta" }] }),
   component: MessagesPage,
 });
 

@@ -38,7 +38,7 @@ import {
 export const Route = createFileRoute("/partner/broadcasts")({
   head: () => ({
     meta: [
-      { title: "Anunțuri — Partener Ventuza" },
+      { title: "Anunțuri — Partener Suzeta" },
       {
         name: "description",
         content:

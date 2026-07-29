@@ -8,7 +8,7 @@ import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/Operat
 export const Route = createFileRoute("/legal/security-incidents")({
   head: () => ({
     meta: [
-      { title: "Procedură incidente de securitate — Ventuza" },
+      { title: "Procedură incidente de securitate — Suzeta" },
       {
         name: "description",
         content: "Cum gestionăm și notificăm breșele de securitate conform GDPR Art. 33-34.",
@@ -53,8 +53,8 @@ function Page() {
               <li>Alerte automate pentru queries anormale și escaladări de privilegii.</li>
               <li>
                 Raportare comunitate la{" "}
-                <a className="text-primary" href="mailto:security@ventuza.app">
-                  security@ventuza.app
+                <a className="text-primary" href="mailto:security@suzeta.app">
+                  security@suzeta.app
                 </a>
                 .
               </li>

@@ -23,7 +23,7 @@ const LANGS = [
 
 type Prefs = { pronouns: string; friends_only_mode: boolean; preferred_language: string };
 
-/** Card grupând diferențiatorii unici Ventuza: pronume, mod prieteni, traducere, PIN, mod discret. */
+/** Card grupând diferențiatorii unici Suzeta: pronume, mod prieteni, traducere, PIN, mod discret. */
 export function UniquesCard() {
   const { user } = useAuth();
   const [prefs, setPrefs] = useState<Prefs>({
@@ -204,7 +204,7 @@ export function UniquesCard() {
               checked={bioOn}
               onChange={async (e) => {
                 if (e.target.checked) {
-                  const ok = await verifyBiometric("Confirmă biometria pentru Ventuza");
+                  const ok = await verifyBiometric("Confirmă biometria pentru Suzeta");
                   if (!ok) {
                     toast.error("Nu am putut verifica biometria.");
                     return;

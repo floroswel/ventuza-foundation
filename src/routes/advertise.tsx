@@ -21,7 +21,7 @@ export const Route = createFileRoute("/advertise")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Promovează businessul tău — Ventuza Ads" },
+      { title: "Promovează businessul tău — Suzeta Ads" },
       {
         name: "description",
         content:
@@ -104,7 +104,7 @@ function AdvertisePage() {
           <ChevronLeft className="size-4" />
         </Link>
         <h1 className="flex items-center gap-2 text-base font-semibold">
-          <Megaphone className="size-4 text-primary" /> Ventuza Ads
+          <Megaphone className="size-4 text-primary" /> Suzeta Ads
         </h1>
       </header>
 
@@ -126,8 +126,8 @@ function AdvertisePage() {
 function BusinessGate({ pendingApp }: { pendingApp: { status: string } | null }) {
   const statusLabel: Record<string, string> = {
     pending: "În așteptare — evaluăm cererea ta",
-    reviewing: "În analiză de echipa Ventuza",
-    rejected: "Respinsă — contactează business@ventuza.app",
+    reviewing: "În analiză de echipa Suzeta",
+    rejected: "Respinsă — contactează business@suzeta.app",
   };
   return (
     <section className="rounded-2xl border border-border bg-gradient-to-br from-primary/15 via-surface to-surface p-5">
@@ -160,8 +160,8 @@ function BusinessGate({ pendingApp }: { pendingApp: { status: string } | null })
 
       <p className="mt-3 text-center text-[10px] text-muted-foreground">
         Sau scrie la{" "}
-        <a href="mailto:business@ventuza.app" className="text-primary">
-          business@ventuza.app
+        <a href="mailto:business@suzeta.app" className="text-primary">
+          business@suzeta.app
         </a>
       </p>
     </section>
@@ -211,7 +211,7 @@ function OnboardAdvertiser({ onCreated }: { onCreated: (a: Advertiser) => void }
         <Megaphone className="size-7 text-primary" />
         <h2 className="mt-2 text-lg font-semibold">Promovează-ți businessul</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Ventuza e <span className="font-semibold text-foreground">100% gratuit</span> pentru
+          Suzeta e <span className="font-semibold text-foreground">100% gratuit</span> pentru
           utilizatori. Ne susținem prin parteneriate cu cluburi, baruri, evenimente și branduri
           LGBTQ-friendly din România.
         </p>
@@ -397,13 +397,13 @@ function AdvertiserDashboard({ adv, campaigns }: { adv: Advertiser; campaigns: A
         <p className="text-xs font-semibold text-amber-200">Prețuri — în curând</p>
         <p className="mt-1 text-xs text-amber-100/80">
           Grila de tarife pentru bannere Discover, Events și Map se comunică la lansarea programului
-          B2B. Momentan echipa Ventuza îți răspunde pe email cu ofertă personalizată.
+          B2B. Momentan echipa Suzeta îți răspunde pe email cu ofertă personalizată.
         </p>
         <a
-          href="mailto:ads@ventuza.app"
+          href="mailto:ads@suzeta.app"
           className="mt-2 inline-flex items-center gap-1 text-xs text-primary"
         >
-          Contact direct: ads@ventuza.app
+          Contact direct: ads@suzeta.app
         </a>
       </section>
     </>

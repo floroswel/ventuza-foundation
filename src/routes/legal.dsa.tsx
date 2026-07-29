@@ -8,13 +8,13 @@ import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/Operat
 export const Route = createFileRoute("/legal/dsa")({
   head: () => ({
     meta: [
-      { title: "Transparență DSA — Ventuza" },
+      { title: "Transparență DSA — Suzeta" },
       {
         name: "description",
         content: "Raport de transparență și punct unic de contact conform Digital Services Act.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza.app/legal/dsa" }],
+    links: [{ rel: "canonical", href: "https://suzeta.app/legal/dsa" }],
   }),
   component: DsaPage,
 });
@@ -66,8 +66,8 @@ function DsaPage() {
             <p>
               Orice utilizator sau autoritate poate raporta conținut presupus ilegal prin butonul
               "Raportează" din aplicație sau prin email la{" "}
-              <a className="text-primary" href="mailto:trust@ventuza.app">
-                trust@ventuza.app
+              <a className="text-primary" href="mailto:trust@suzeta.app">
+                trust@suzeta.app
               </a>
               . Confirmăm primirea în 24h și luăm decizia în maximum 7 zile.
             </p>
@@ -75,8 +75,8 @@ function DsaPage() {
             <h2 className="mt-6 text-base font-semibold">Drept de contestare (Art. 20)</h2>
             <p>
               Deciziile de moderare pot fi contestate gratuit, intern, în termen de 14 zile, la{" "}
-              <a className="text-primary" href="mailto:appeals@ventuza.app">
-                appeals@ventuza.app
+              <a className="text-primary" href="mailto:appeals@suzeta.app">
+                appeals@suzeta.app
               </a>
               . Răspuns uman în maximum 7 zile.
             </p>

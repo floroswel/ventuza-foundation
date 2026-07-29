@@ -1,5 +1,5 @@
-Ventuza 1.0.0 — internal preview
+Suzeta 1.0.0 — internal preview
 
 - First internal track release for closed testing.
 - LGBTQ+ 18+ dating with age verification, safety-first location bucketing, and moderated venues.
-- Feedback: hello@ventuza.app
+- Feedback: hello@suzeta.app

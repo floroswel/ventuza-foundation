@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { showAuthErrorToast } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Reset password — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Reset password — Suzeta" }] }),
   component: ResetPasswordPage,
 });
 
@@ -61,7 +61,7 @@ function ResetPasswordPage() {
   return (
     <main className="relative min-h-dvh bg-background px-6 py-10">
       <div className="mx-auto max-w-md">
-        <h1 className="wordmark text-4xl font-medium">Ventuza</h1>
+        <h1 className="wordmark text-4xl font-medium">Suzeta</h1>
         <h2 className="mt-6 text-xl font-medium">{t("auth.resetPassword.title")}</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           {ready ? t("auth.resetPassword.subtitle") : t("auth.resetPassword.validating")}

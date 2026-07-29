@@ -21,7 +21,7 @@ type MinVersion = {
 
 const STORE_URL: Record<"ios" | "android", string> = {
   ios: "https://apps.apple.com/",
-  android: "https://play.google.com/store/apps/details?id=app.ventuza",
+  android: "https://play.google.com/store/apps/details?id=app.suzeta",
 };
 
 export function VersionGate() {

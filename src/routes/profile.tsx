@@ -58,7 +58,7 @@ import {
 
 
 export const Route = createFileRoute("/profile")({
-  head: () => ({ meta: [{ title: "Your profile — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Your profile — Suzeta" }] }),
   component: ProfilePage,
 });
 

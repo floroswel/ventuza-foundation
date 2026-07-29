@@ -11,9 +11,9 @@
   },
   "mcp": {
     "server": {
-      "name": "ventuza-mcp",
+      "name": "suzeta-mcp",
       "version": "0.1.0",
-      "title": "Ventuza"
+      "title": "Suzeta"
     },
     "tools": [
       {
@@ -102,7 +102,7 @@
       {
         "name": "send_tap",
         "title": "Trimite tap",
-        "description": "Trimite un tap (emoji reaction) către un alt utilizator Ventuza. Respectă blocările și preferințele destinatarului la nivel de DB.",
+        "description": "Trimite un tap (emoji reaction) către un alt utilizator Suzeta. Respectă blocările și preferințele destinatarului la nivel de DB.",
         "annotations": {
           "readOnlyHint": false,
           "destructiveHint": false,

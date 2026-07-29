@@ -12,10 +12,10 @@ import {
 export const Route = createFileRoute("/legal/terms")({
   head: () => ({
     meta: [
-      { title: "Termeni și condiții — Ventuza" },
+      { title: "Termeni și condiții — Suzeta" },
       {
         name: "description",
-        content: "Termenii de utilizare a aplicației Ventuza pentru întâlniri.",
+        content: "Termenii de utilizare a aplicației Suzeta pentru întâlniri.",
       },
     ],
   }),
@@ -79,7 +79,7 @@ function TermsPage() {
 
             <h2 className="mt-6 text-base font-semibold">4. Conținutul tău</h2>
             <p className="mt-2 text-foreground/85">
-              Tu ești proprietarul fotografiilor și textelor pe care le încarci. Acordi Ventuza o
+              Tu ești proprietarul fotografiilor și textelor pe care le încarci. Acordi Suzeta o
               licență neexclusivă, mondială, gratuită, pentru a stoca, afișa și transmite acest
               conținut în scopul funcționării serviciului. Folosim moderare automată (AI) pentru a
               detecta conținut nepermis înainte de publicare.
@@ -92,7 +92,7 @@ function TermsPage() {
               oricând din <em>Setări → Consimțăminte</em>.
             </p>
             <p className="mt-2 text-foreground/85">
-              <strong>Ventuza nu procesează date despre statutul HIV.</strong> Nu colectăm, nu
+              <strong>Suzeta nu procesează date despre statutul HIV.</strong> Nu colectăm, nu
               stocăm și nu afișăm statutul HIV sau data testării. Pentru testare gratuită și
               consiliere te încurajăm să folosești resursele publice (ARAS, Sensiblu Testing)
               accesibile din centrul de siguranță.
@@ -102,7 +102,7 @@ function TermsPage() {
               5.1. Non-discriminare și protecția identității LGBTQ+
             </h2>
             <p className="mt-2 text-foreground/85">
-              Ventuza este construită pentru comunitatea LGBTQ+. Discriminarea pe criterii de
+              Suzeta este construită pentru comunitatea LGBTQ+. Discriminarea pe criterii de
               orientare sexuală, identitate sau exprimare de gen, etnie, religie, dizabilitate,
               vârstă sau stare de sănătate este strict interzisă — inclusiv în descrieri de profil,
               filtre publice sau mesaje. Încălcările duc la suspendare imediată.
@@ -138,7 +138,7 @@ function TermsPage() {
 
             <h2 className="mt-6 text-base font-semibold">8. Limitarea răspunderii</h2>
             <p className="mt-2 text-foreground/85">
-              Ventuza nu verifică identitatea reală a utilizatorilor dincolo de moderarea
+              Suzeta nu verifică identitatea reală a utilizatorilor dincolo de moderarea
               fotografiilor și verificarea selfie opțională. Întâlnirile fizice au loc pe propria
               răspundere. Recomandăm folosirea practicilor de siguranță (loc public, prieten
               informat, transport propriu) și a prevenției medicale (testare periodică, PrEP).

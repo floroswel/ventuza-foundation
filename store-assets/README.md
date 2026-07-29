@@ -1,4 +1,4 @@
-# Store Assets — Ventuza (Google Play)
+# Store Assets — Suzeta (Google Play)
 
 Assets pentru Play Console. Toate imaginile aici sunt pentru submisia oficială,
 nu pentru bundle-ul aplicației.
@@ -7,7 +7,7 @@ nu pentru bundle-ul aplicației.
 
 - **feature-graphic.png** — 1024×500 PNG, obligatoriu pentru toate listing-urile.
   Fără text mărunt (Play îl comprimă), safe pentru dating 18+, fără conținut
-  explicit. Branding: wordmark Ventuza + tagline "Dating, elevated." + logo
+  explicit. Branding: wordmark Suzeta + tagline "Dating, elevated." + logo
   heart (crescents auriu/rose pe fundal amber/purple).
 
 ## App Icon (deja livrat separat)

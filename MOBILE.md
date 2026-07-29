@@ -1,4 +1,4 @@
-# Ventuza — Build mobil (Android, Google Play)
+# Suzeta — Build mobil (Android, Google Play)
 
 Aplicația este împachetată cu **Capacitor**. Asta înseamnă că aceeași bază de cod web rulează și ca APK/AAB nativ pentru Google Play, iar plățile Premium se vor face prin **Google Play Billing** (obligatoriu pentru produse digitale în Play Store).
 
@@ -62,10 +62,10 @@ Cod-ul backend este pregătit:
 
 ### Ce trebuie să faci tu în Play Console:
 
-1. **Creează aplicația** în Play Console (package: `com.ventuza.dating`).
+1. **Creează aplicația** în Play Console (package: `com.suzeta.dating`).
 2. **Monetizare → Produse → Abonamente** → adaugă SKU-urile:
-   - `ventuza_premium_monthly`
-   - `ventuza_premium_yearly`
+   - `suzeta_premium_monthly`
+   - `suzeta_premium_yearly`
 3. **Setup → Acces API** → leagă un proiect Google Cloud → creează un **Service Account** cu rol "Pub/Sub Admin" + acces Play Developer API.
 4. Descarcă cheia JSON a service account-ului.
 5. În Lovable, adaugă-o ca secret cu numele `GOOGLE_PLAY_SERVICE_ACCOUNT_JSON` (Settings → Backend → Secrets).
@@ -97,7 +97,7 @@ Sau Google Play Billing direct prin `@capacitor-community/in-app-purchases`. Spu
 - [ ] Icon 512×512 PNG
 - [ ] Descriere lungă + scurtă (RO + EN recomandat)
 - [ ] Politica privind conținutul sexual / dating respectată (NO nudity, NO escort)
-- [ ] Email suport activ: `support@ventuza.app`
+- [ ] Email suport activ: `support@suzeta.app`
 
 ---
 
@@ -105,7 +105,7 @@ Sau Google Play Billing direct prin `@capacitor-community/in-app-purchases`. Spu
 
 - **Camera / Galerie pentru poze profil**: dacă vrei selector nativ în loc de `<input type="file">`, adaugă `@capacitor/camera`.
 - **Push notifications native**: necesită `@capacitor/push-notifications` + Firebase Cloud Messaging.
-- **Deep links** (ex: `ventuza://match/123`): config în `AndroidManifest.xml` + handler în root route.
+- **Deep links** (ex: `suzeta://match/123`): config în `AndroidManifest.xml` + handler în root route.
 
 Toate sunt opționale pentru lansarea v1 — îmi spui când vrei să le adăugăm.
 
@@ -151,7 +151,7 @@ UI-ul (`EnablePushButton`) alege automat platforma.
 ### Pași manuali (o singură dată)
 
 1. **Firebase project**: creează un proiect cu același `applicationId`
-   (`com.ventuza.dating`).
+   (`com.suzeta.dating`).
 2. **`google-services.json`**: descarcă și pune în `android/app/`. NU
    comita — `android/` e generat local cu `npx cap add android`.
 3. **Gradle**: în `android/build.gradle` (top-level) adaugă în

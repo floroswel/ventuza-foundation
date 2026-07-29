@@ -4,16 +4,16 @@ import { Trash2, Mail, Shield, Clock } from "lucide-react";
 export const Route = createFileRoute("/account-deletion")({
   head: () => ({
     meta: [
-      { title: "Ștergere cont — Ventuza" },
+      { title: "Ștergere cont — Suzeta" },
       {
         name: "description",
         content:
-          "Cum îți ștergi contul Ventuza și ce date sunt eliminate sau păstrate, conform GDPR. Cerere prin aplicație sau email la dpo@ventuza.eu.",
+          "Cum îți ștergi contul Suzeta și ce date sunt eliminate sau păstrate, conform GDPR. Cerere prin aplicație sau email la dpo@suzeta.eu.",
       },
-      { property: "og:title", content: "Ștergere cont — Ventuza" },
+      { property: "og:title", content: "Ștergere cont — Suzeta" },
       {
         property: "og:description",
-        content: "Procedura completă de ștergere a contului și a datelor personale în Ventuza.",
+        content: "Procedura completă de ștergere a contului și a datelor personale în Suzeta.",
       },
       { property: "og:type", content: "website" },
       { name: "robots", content: "index,follow" },
@@ -30,7 +30,7 @@ function AccountDeletionPage() {
           <div className="inline-flex items-center gap-2 rounded-full bg-destructive/10 px-3 py-1 text-xs font-medium text-destructive">
             <Trash2 className="size-3.5" /> GDPR Art. 17 — Dreptul la ștergere
           </div>
-          <h1 className="text-3xl font-bold tracking-tight">Ștergere cont Ventuza</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Ștergere cont Suzeta</h1>
           <p className="text-muted-foreground">
             Îți poți șterge contul oricând, gratuit, fără justificare. Mai jos găsești cele două
             metode disponibile, ce date eliminăm imediat și ce date păstrăm pentru obligații legale.
@@ -64,10 +64,10 @@ function AccountDeletionPage() {
             Trimite o cerere de la adresa de email asociată contului tău la:
           </p>
           <a
-            href="mailto:dpo@ventuza.eu?subject=Cerere%20%C8%99tergere%20cont%20Ventuza"
+            href="mailto:dpo@suzeta.eu?subject=Cerere%20%C8%99tergere%20cont%20Suzeta"
             className="inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
           >
-            dpo@ventuza.eu
+            dpo@suzeta.eu
           </a>
           <p className="text-xs text-muted-foreground">
             Răspundem în maximum 30 de zile (Art. 12 GDPR). Pentru verificarea identității putem
@@ -117,8 +117,8 @@ function AccountDeletionPage() {
             VOMIX GENIUS S.R.L. · CUI RO43025661 · Str. Constructorilor 39, Voievoda, Teleorman
             <br />
             DPO:{" "}
-            <a className="text-primary underline" href="mailto:dpo@ventuza.eu">
-              dpo@ventuza.eu
+            <a className="text-primary underline" href="mailto:dpo@suzeta.eu">
+              dpo@suzeta.eu
             </a>
             {" · "}
             Privacy:{" "}
@@ -130,7 +130,7 @@ function AccountDeletionPage() {
 
         <footer className="text-center text-xs text-muted-foreground pt-4">
           <Link to="/" className="underline">
-            Înapoi la Ventuza
+            Înapoi la Suzeta
           </Link>
         </footer>
       </div>

@@ -1,5 +1,5 @@
 """
-E2E — Onboarding /n (Ventuza).
+E2E — Onboarding /n (Suzeta).
 
 Acoperă parcurgerea completă a wizard-ului /n cu accent pe:
   G1  /n fără sesiune → redirect la /auth?mode=login (guard).

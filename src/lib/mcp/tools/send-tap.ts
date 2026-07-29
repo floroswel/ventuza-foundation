@@ -15,7 +15,7 @@ export default defineTool({
   name: "send_tap",
   title: "Trimite tap",
   description:
-    "Trimite un tap (emoji reaction) către un alt utilizator Ventuza. Respectă blocările și preferințele destinatarului la nivel de DB.",
+    "Trimite un tap (emoji reaction) către un alt utilizator Suzeta. Respectă blocările și preferințele destinatarului la nivel de DB.",
   inputSchema: {
     receiver_id: z.string().uuid().describe("UUID-ul userului destinatar."),
     emoji: z.enum(TAP_EMOJIS).describe("Emoji tap: 👋 🔥 😈 👀 💋 🍆"),

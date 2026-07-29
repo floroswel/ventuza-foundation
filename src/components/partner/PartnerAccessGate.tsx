@@ -118,7 +118,7 @@ export function PartnerAccessGate({
         actions={
           <>
             <Button asChild>
-              <a href="mailto:business@ventuza.eu?subject=Cont%20partener%20suspendat">
+              <a href="mailto:business@suzeta.eu?subject=Cont%20partener%20suspendat">
                 <Mail className="size-4 mr-1" /> Contactează moderarea
               </a>
             </Button>
@@ -143,7 +143,7 @@ export function PartnerAccessGate({
       pending: {
         icon: <Clock className="size-6 text-yellow-500" />,
         headline: "Cererea ta e în așteptare",
-        body: "Echipa Ventuza analizează cererea în maximum 3 zile lucrătoare. Sub-paginile de partener (facturare, campanii, statistici) se deblochează automat după aprobare.",
+        body: "Echipa Suzeta analizează cererea în maximum 3 zile lucrătoare. Sub-paginile de partener (facturare, campanii, statistici) se deblochează automat după aprobare.",
       },
       reviewing: {
         icon: <Clock className="size-6 text-blue-500" />,
@@ -158,7 +158,7 @@ export function PartnerAccessGate({
       rejected: {
         icon: <XCircle className="size-6 text-red-500" />,
         headline: "Cererea a fost respinsă",
-        body: "Momentan contul de partener nu e activ, așa că nu putem încărca această pagină. Pentru clarificări scrie-ne la business@ventuza.eu.",
+        body: "Momentan contul de partener nu e activ, așa că nu putem încărca această pagină. Pentru clarificări scrie-ne la business@suzeta.eu.",
       },
     };
     const s = map[app.status ?? "pending"] ?? map.pending;
@@ -176,7 +176,7 @@ export function PartnerAccessGate({
             </Button>
             {app.status === "rejected" && (
               <Button variant="outline" asChild>
-                <a href="mailto:business@ventuza.eu">
+                <a href="mailto:business@suzeta.eu">
                   <Mail className="size-4 mr-1" /> Contactează echipa
                 </a>
               </Button>
@@ -194,7 +194,7 @@ export function PartnerAccessGate({
       title={pageLabel}
       icon={<ShieldAlert className="size-6 text-primary" />}
       headline="Ai nevoie de un cont partener aprobat"
-      body="Această pagină arată detalii disponibile doar partenerilor Ventuza. Aplică pentru un cont business — durează câteva minute și primești răspuns în maximum 3 zile lucrătoare."
+      body="Această pagină arată detalii disponibile doar partenerilor Suzeta. Aplică pentru un cont business — durează câteva minute și primești răspuns în maximum 3 zile lucrătoare."
       actions={
         <>
           <Button asChild>

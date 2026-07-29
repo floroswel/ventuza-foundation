@@ -126,7 +126,7 @@ export const adminGenerateArt33Draft = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error || !b) throw new Error("breach not found");
     const art33 = `NOTIFICARE ANSPDCP — Art. 33 GDPR
-Operator: VOMIX GENIUS S.R.L. (Ventuza)
+Operator: VOMIX GENIUS S.R.L. (Suzeta)
 Data descoperirii: ${new Date(b.discovered_at).toLocaleString("ro-RO")}
 Termen 72h: ${new Date(b.notify_deadline).toLocaleString("ro-RO")}
 Severitate: ${b.severity}
@@ -150,14 +150,14 @@ ${b.containment_actions ?? "(de completat)"}
 ${b.root_cause ?? "(în investigație)"}
 
 7. DPO / PUNCT CONTACT
-${b.dpo_contact ?? "dpo@ventuza.eu"}
+${b.dpo_contact ?? "dpo@suzeta.eu"}
 
 8. NOTIFICARE PERSOANE VIZATE (Art. 34)
 [Da / Nu — motiv]
 
 Semnătură reprezentant legal: __________________
 Data: ${new Date().toLocaleDateString("ro-RO")}`;
-    const art34 = `Subiect: Notificare importantă privind securitatea contului tău Ventuza
+    const art34 = `Subiect: Notificare importantă privind securitatea contului tău Suzeta
 
 Bună,
 
@@ -178,7 +178,7 @@ CE POȚI FACE TU
 - Fii vigilent la mesaje de phishing
 
 Ne pare rău pentru neplăceri și îți mulțumim pentru încrederea acordată.
-Echipa Ventuza | dpo@ventuza.eu`;
+Echipa Suzeta | dpo@suzeta.eu`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await (supabaseAdmin as any)
       .from("breach_incidents")

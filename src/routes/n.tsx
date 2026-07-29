@@ -33,7 +33,7 @@ import {
 
 
 export const Route = createFileRoute("/n")({
-  head: () => ({ meta: [{ title: "Build your profile — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Build your profile — Suzeta" }] }),
   component: Onboarding,
 });
 

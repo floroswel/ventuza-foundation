@@ -26,9 +26,9 @@ Toate sub environment-ul `production` (protejat cu review manual):
 ### Signing Android
 | Secret | Cum îl obții |
 |---|---|
-| `ANDROID_KEYSTORE_BASE64` | `base64 -w 0 ventuza-release.keystore \| pbcopy` |
+| `ANDROID_KEYSTORE_BASE64` | `base64 -w 0 suzeta-release.keystore \| pbcopy` |
 | `ANDROID_KEYSTORE_PASSWORD` | parola din pasul de generare `keytool` |
-| `ANDROID_KEY_ALIAS` | ex: `ventuza` |
+| `ANDROID_KEY_ALIAS` | ex: `suzeta` |
 | `ANDROID_KEY_PASSWORD` | parola alias-ului |
 
 ### Google Play API
@@ -49,7 +49,7 @@ Toate sub environment-ul `production` (protejat cu review manual):
    - **Releases → Manage production and testing tracks**: ✅
    - **App access → View app information**: ✅
    - Restul: nu.
-5. **Aplicație Play**: adaugă contul la app-ul `com.ventuza.dating` (dacă nu e
+5. **Aplicație Play**: adaugă contul la app-ul `com.suzeta.dating` (dacă nu e
    automat prin org).
 6. Salvează conținutul integral al `key.json` (inclusiv acolade) în secretul
    GitHub `PLAY_SERVICE_ACCOUNT_JSON`.
@@ -57,15 +57,15 @@ Toate sub environment-ul `production` (protejat cu review manual):
 ## Setup keystore (o singură dată)
 
 ```bash
-keytool -genkey -v -keystore ventuza-release.keystore \
-  -alias ventuza -keyalg RSA -keysize 4096 -validity 10000
+keytool -genkey -v -keystore suzeta-release.keystore \
+  -alias suzeta -keyalg RSA -keysize 4096 -validity 10000
 # Salvează keystore-ul și parolele în 1Password / Bitwarden (backup permanent).
-base64 -w 0 ventuza-release.keystore > keystore.b64
+base64 -w 0 suzeta-release.keystore > keystore.b64
 # Copiază conținutul în secretul GitHub ANDROID_KEYSTORE_BASE64.
 ```
 
 ⚠️ **Nu pierde keystore-ul.** Fără el nu mai poți urca update-uri sub
-`com.ventuza.dating`. Google Play App Signing (recomandat la prima urcare
+`com.suzeta.dating`. Google Play App Signing (recomandat la prima urcare
 manuală în Console) reduce riscul: cheia de upload poate fi rotită dacă e
 compromisă.
 

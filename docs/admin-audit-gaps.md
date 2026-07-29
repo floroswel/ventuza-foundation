@@ -1,4 +1,4 @@
-# Audit ADMIN Ventuza — ce lipsește, fără politically correct
+# Audit ADMIN Suzeta — ce lipsește, fără politically correct
 
 Ultima trecere: 2026-07-01. Scop: listăm brutal ce e gol, ce e "UI fără spate",
 ce e "spate fără UI", ce lipsește complet față de admin-urile din top (Grindr,
@@ -275,7 +275,7 @@ Cu ✅ = există și e conectat. Cu ⚠️ = există parțial. Cu ❌ = lipseșt
 ## 23. Public transparency
 
 - ❌ **Trust page publică** — /trust cu: număr rapoarte tratate luna trecută, mediană răspuns, appeals reversed rate. Bumble/Hinge au. 🟠 P1.
-- ❌ **Status page** (uptime.ventuza.eu). 🟠 P1.
+- ❌ **Status page** (uptime.suzeta.eu). 🟠 P1.
 
 ---
 
@@ -303,7 +303,7 @@ Cu ✅ = există și e conectat. Cu ⚠️ = există parțial. Cu ❌ = lipseșt
 
 ## 26. Ce fac ceilalți și noi NU
 
-| Feature | Grindr | Tinder | Bumble | Hinge | Feeld | Scruff | Ventuza |
+| Feature | Grindr | Tinder | Bumble | Hinge | Feeld | Scruff | Suzeta |
 |---|---|---|---|---|---|---|---|
 | Trusted flagger channel | ✅ | ✅ | ✅ | ✅ | ⚠️ | ⚠️ | ❌ |
 | Country-risk stealth auto | ✅ | ⚠️ | ⚠️ | ❌ | ❌ | ✅ | ❌ |

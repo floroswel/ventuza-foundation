@@ -8,7 +8,7 @@
  *
  * Secrete necesare (deja documentate pentru utilizator):
  *  - GOOGLE_PLAY_SERVICE_ACCOUNT_JSON  → JSON-ul cheii service account
- *  - GOOGLE_PLAY_PACKAGE_NAME          → ex. "com.ventuza.dating"
+ *  - GOOGLE_PLAY_PACKAGE_NAME          → ex. "com.suzeta.dating"
  */
 
 type ServiceAccount = {

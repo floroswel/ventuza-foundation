@@ -11,7 +11,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
  *  - `location`    → DOAR super_admin (returnează coordonate proprii)
  *  - `messages`    → admin sau super_admin
  *
- * Notă: kind='health' și kind='selfie' au fost eliminate. Ventuza nu mai
+ * Notă: kind='health' și kind='selfie' au fost eliminate. Suzeta nu mai
  * procesează date HIV, iar imaginile de verificare identitate se accesează
  * exclusiv prin panoul intern (`/admin/verification`) cu signed URL de 30s.
  */

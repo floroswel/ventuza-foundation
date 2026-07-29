@@ -14,7 +14,7 @@ const searchSchema = z.object({ email: z.string().email().optional() });
 export const Route = createFileRoute("/auth_/check-email")({
   validateSearch: searchSchema,
   head: () => ({
-    meta: [{ title: "Confirmă emailul — Ventuza" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Confirmă emailul — Suzeta" }, { name: "robots", content: "noindex" }],
   }),
   component: CheckEmailPage,
 });

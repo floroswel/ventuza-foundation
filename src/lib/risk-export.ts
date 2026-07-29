@@ -99,7 +99,7 @@ function fmtStatus(u: { banned_at: string | null; suspended_until: string | null
 
 export function exportRiskCsv(input: RiskExportInput): void {
   const lines: Row[] = [];
-  lines.push(["Ventuza · Risk dashboard export"]);
+  lines.push(["Suzeta · Risk dashboard export"]);
   lines.push(["Generat", input.generatedAt]);
   lines.push(["Interval", `${input.windowHours}h`]);
   lines.push(["Filtre", filtersLine(input.filters)]);
@@ -149,7 +149,7 @@ export function exportRiskCsv(input: RiskExportInput): void {
   }
 
   const csv = rowsToCsv(lines);
-  download(new Blob([csv], { type: "text/csv;charset=utf-8" }), `ventuza-risk-${ts()}.csv`);
+  download(new Blob([csv], { type: "text/csv;charset=utf-8" }), `suzeta-risk-${ts()}.csv`);
 }
 
 export function exportRiskPdf(input: RiskExportInput): void {
@@ -196,7 +196,7 @@ export function exportRiskPdf(input: RiskExportInput): void {
 
   const html = `<!doctype html>
 <html lang="ro"><head><meta charset="utf-8"/>
-<title>Ventuza · Risk dashboard ${esc(input.generatedAt)}</title>
+<title>Suzeta · Risk dashboard ${esc(input.generatedAt)}</title>
 <style>
   @page { size: A4; margin: 14mm; }
   * { box-sizing: border-box; }
@@ -216,7 +216,7 @@ export function exportRiskPdf(input: RiskExportInput): void {
   @media print { .actions { display: none; } }
 </style></head><body>
 <div class="actions"><button onclick="window.print()">Print / Save as PDF</button></div>
-<h1>Ventuza · Risk scoring dashboard</h1>
+<h1>Suzeta · Risk scoring dashboard</h1>
 <div class="meta">
   Generat: <b>${esc(input.generatedAt)}</b> · Interval: <b>${input.windowHours}h</b><br/>
   Filtre: ${esc(filtersLine(input.filters))}
@@ -253,7 +253,7 @@ export function exportRiskPdf(input: RiskExportInput): void {
   const w = window.open("", "_blank", "noopener,noreferrer,width=1024,height=768");
   if (!w) {
     // Popup blocked → fallback: download as .html
-    download(new Blob([html], { type: "text/html;charset=utf-8" }), `ventuza-risk-${ts()}.html`);
+    download(new Blob([html], { type: "text/html;charset=utf-8" }), `suzeta-risk-${ts()}.html`);
     return;
   }
   w.document.open();

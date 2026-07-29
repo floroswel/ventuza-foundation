@@ -59,7 +59,7 @@ import { BackButton } from "@/components/BackButton";
 
 export const Route = createFileRoute("/partner")({
   head: () => ({
-    meta: [{ title: "Portal Partener — Ventuza" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Portal Partener — Suzeta" }, { name: "robots", content: "noindex" }],
   }),
   component: PartnerPortal,
 });
@@ -249,12 +249,12 @@ function PartnerPortal() {
     }
     if (pendingApp) {
       const fullId = pendingApp.id;
-      const mailto = `mailto:business@ventuza.app?subject=${encodeURIComponent(`Cerere partener ${fullId}`)}&body=${encodeURIComponent(`Bună,\n\nID cerere: ${fullId}\nDenumire: ${pendingApp.legal_name ?? "—"}\n\n[descrie aici clarificarea]\n\nMulțumesc.`)}`;
+      const mailto = `mailto:business@suzeta.app?subject=${encodeURIComponent(`Cerere partener ${fullId}`)}&body=${encodeURIComponent(`Bună,\n\nID cerere: ${fullId}\nDenumire: ${pendingApp.legal_name ?? "—"}\n\n[descrie aici clarificarea]\n\nMulțumesc.`)}`;
       const statusLabels: Record<string, { label: string; cls: string; desc: string }> = {
         pending: {
           label: "În așteptare",
           cls: "border-yellow-500/40 bg-yellow-500/5",
-          desc: "Cererea ta a fost primită. Echipa Ventuza o analizează în maximum 3 zile lucrătoare.",
+          desc: "Cererea ta a fost primită. Echipa Suzeta o analizează în maximum 3 zile lucrătoare.",
         },
         reviewing: {
           label: "În analiză",
@@ -269,7 +269,7 @@ function PartnerPortal() {
         rejected: {
           label: "Respinsă",
           cls: "border-red-500/40 bg-red-500/5",
-          desc: "Cererea a fost respinsă. Pentru clarificări scrie la business@ventuza.app.",
+          desc: "Cererea a fost respinsă. Pentru clarificări scrie la business@suzeta.app.",
         },
         approved: {
           label: "Aprobată",

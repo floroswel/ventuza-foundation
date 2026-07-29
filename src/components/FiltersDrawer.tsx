@@ -202,7 +202,7 @@ export function FiltersDrawer({
           value={draft.positions}
           onChange={(v) => setDraft({ ...draft, positions: v })}
         />
-        {/* Filtru HIV status: eliminat — Ventuza nu procesează datele HIV. */}
+        {/* Filtru HIV status: eliminat — Suzeta nu procesează datele HIV. */}
         <ChipSection
           label="Looking for"
           options={LOOKING_FOR_OPTIONS}

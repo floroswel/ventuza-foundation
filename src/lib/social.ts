@@ -23,7 +23,7 @@ export async function sendTap(receiverId: string, emoji: TapEmoji) {
         data: {
           toUserId: receiverId,
           title: `Cineva ți-a trimis ${emoji}`,
-          body: "Deschide Ventuza să răspunzi.",
+          body: "Deschide Suzeta să răspunzi.",
           url: "/notifications",
           tag: `tap:${u.user.id}:${receiverId}`,
           category: "taps",

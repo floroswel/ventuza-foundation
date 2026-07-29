@@ -7,7 +7,7 @@ import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/Operat
 export const Route = createFileRoute("/legal/records-of-processing")({
   head: () => ({
     meta: [
-      { title: "Registru Art. 30 GDPR — Ventuza" },
+      { title: "Registru Art. 30 GDPR — Suzeta" },
       {
         name: "description",
         content:
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/legal/records-of-processing")({
     links: [
       {
         rel: "canonical",
-        href: "https://ventuza.app/legal/records-of-processing",
+        href: "https://suzeta.app/legal/records-of-processing",
       },
     ],
   }),
@@ -76,7 +76,7 @@ const ACTIVITIES: Activity[] = [
     legalBasis: "6(1)(c) obligație legală (DSA) + 6(1)(f)",
     art9Basis: "9(2)(a) consimțământ explicit (biometric)",
     processors: "P1 Supabase, P8 Cloudflare, P10 Didit (age estimation, UE — imagine tranzitorie)",
-    retention: "Didit: 0 (ștergere imediată). Ventuza stochează doar decizia + sessionId pe cont.",
+    retention: "Didit: 0 (ștergere imediată). Suzeta stochează doar decizia + sessionId pe cont.",
   },
 
   {

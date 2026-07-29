@@ -1,5 +1,5 @@
 """
-E2E — Storage cross-user isolation pentru bucket-ul `profile-photos` (Ventuza).
+E2E — Storage cross-user isolation pentru bucket-ul `profile-photos` (Suzeta).
 
 Bucket-ul e privat. Politicile RLS pe storage.objects:
   - "Users can view/update/delete their own photos" — restricționează la

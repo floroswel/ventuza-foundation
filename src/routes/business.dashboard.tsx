@@ -31,7 +31,7 @@ import { toast } from "sonner";
 
 export const Route = createFileRoute("/business/dashboard")({
   head: () => ({
-    meta: [{ title: "Panou Business — Ventuza" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Panou Business — Suzeta" }, { name: "robots", content: "noindex" }],
   }),
   component: BusinessDashboard,
 });
@@ -205,7 +205,7 @@ function BusinessDashboard() {
           <section className="rounded-2xl border border-border/60 bg-card p-4">
             <h2 className="mb-1 text-base font-semibold">Configurează brand-ul</h2>
             <p className="mb-3 text-sm text-muted-foreground">
-              Datele apar pe campaniile tale și pot fi verificate de echipa Ventuza.
+              Datele apar pe campaniile tale și pot fi verificate de echipa Suzeta.
             </p>
             <form
               className="flex flex-col gap-3"
@@ -450,7 +450,7 @@ function BusinessDashboard() {
             </section>
 
             <p className="px-1 text-xs text-muted-foreground">
-              Toate campaniile sunt revizuite manual de echipa Ventuza pentru conformitate cu
+              Toate campaniile sunt revizuite manual de echipa Suzeta pentru conformitate cu
               Charter-ul LGBTQ+ și DSA.
             </p>
           </>

@@ -1,4 +1,4 @@
-// Ventuza — Android SDK & version pins (Google Play compliance).
+// Suzeta — Android SDK & version pins (Google Play compliance).
 //
 // Copiază DUPĂ `npx cap add android` în `android/variables.gradle` (peste
 // fișierul generat de Capacitor). Google Play cere `targetSdk >= 34`

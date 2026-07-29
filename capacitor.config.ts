@@ -1,7 +1,7 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 /**
- * Capacitor config pentru Ventuza (Android wrapper).
+ * Capacitor config pentru Suzeta (Android wrapper).
  *
  * MOD DEV / hot-reload:
  *   CAPACITOR_DEV=1 npx cap sync
@@ -14,8 +14,8 @@ import type { CapacitorConfig } from "@capacitor/cli";
 const isDev = process.env.CAPACITOR_DEV === "1";
 
 const config: CapacitorConfig = {
-  appId: "com.ventuza.dating",
-  appName: "Ventuza",
+  appId: "com.suzeta.dating",
+  appName: "Suzeta",
   webDir: "dist/client",
   ...(isDev
     ? {

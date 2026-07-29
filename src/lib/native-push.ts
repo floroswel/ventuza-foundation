@@ -23,7 +23,7 @@ import { playNotificationSound } from "@/lib/notification-sound";
 
 type NavigateFn = (path: string) => void;
 
-const FCM_TOKEN_STORAGE_KEY = "ventuza.fcm_token";
+const FCM_TOKEN_STORAGE_KEY = "suzeta.fcm_token";
 
 let _initialized = false;
 let _pendingUrl: string | null = null;
@@ -174,7 +174,7 @@ export async function initNativePush(opts: {
   // Foreground: don't display a system notification; show toast + play sound.
   await PushNotifications.addListener("pushNotificationReceived", (notif) => {
     const data = (notif.data ?? {}) as Record<string, string>;
-    const title = notif.title || data.title || "Ventuza";
+    const title = notif.title || data.title || "Suzeta";
     const body = notif.body || data.body || "";
     try {
       playNotificationSound();

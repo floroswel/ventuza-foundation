@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/groups/$id")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Squad — Ventuza" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Squad — Suzeta" }, { name: "robots", content: "noindex" }] }),
   component: GroupChatPage,
 });
 

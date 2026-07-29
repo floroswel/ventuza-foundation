@@ -232,7 +232,7 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     // ȘI NU este în mod discret. Orice altă valoare (undefined, false, mod
     // discret) → generic. Fail-closed pe preview.
     const showPreview = prefs.show_preview === true && profile.discrete_mode !== true;
-    const rawTitle = showPreview ? data.title : "Ventuza";
+    const rawTitle = showPreview ? data.title : "Suzeta";
     const rawBody = showPreview ? data.body : "Ai o notificare nouă";
 
     const { data: subs } = await supabaseAdmin

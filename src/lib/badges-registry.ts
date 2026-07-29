@@ -26,7 +26,7 @@ export type BadgeCode =
   | "partner_boost"
   | "official"
   // Manual admin-granted:
-  | "founder_ventuza"
+  | "founder_suzeta"
   | "ngo_partner"
   | "bar_verified"
   | "event_organizer"
@@ -166,14 +166,14 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     colorClass: "text-blue-500",
     priority: 90,
     criteria: {
-      ro: "Local oficial verificat de echipa Ventuza.",
-      en: "Official venue verified by the Ventuza team.",
+      ro: "Local oficial verificat de echipa Suzeta.",
+      en: "Official venue verified by the Suzeta team.",
     },
     expiry: null,
   },
-  founder_ventuza: {
-    code: "founder_ventuza", target: "user", isManual: true, effect: "shimmer",
-    label: { ro: "Fondator Ventuza", en: "Ventuza Founder" },
+  founder_suzeta: {
+    code: "founder_suzeta", target: "user", isManual: true, effect: "shimmer",
+    label: { ro: "Fondator Suzeta", en: "Suzeta Founder" },
     icon: Crown, colorClass: "text-amber-400", priority: 200,
     criteria: { ro: "Badge onorific acordat manual fondatorilor și primilor contributori.",
                 en: "Honorary badge granted manually to founders and early contributors." },
@@ -191,8 +191,8 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     code: "bar_verified", target: "user", isManual: true, effect: "shimmer",
     label: { ro: "Local verificat", en: "Verified Venue" },
     icon: Wine, colorClass: "text-blue-500", priority: 140,
-    criteria: { ro: "Reprezentant verificat al unui local partener Ventuza.",
-                en: "Verified representative of a Ventuza partner venue." },
+    criteria: { ro: "Reprezentant verificat al unui local partener Suzeta.",
+                en: "Verified representative of a Suzeta partner venue." },
     expiry: null,
   },
   event_organizer: {
@@ -223,8 +223,8 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
     code: "moderator_public", target: "user", isManual: true, effect: "glow",
     label: { ro: "Moderator", en: "Moderator" },
     icon: Shield, colorClass: "text-blue-600", priority: 180,
-    criteria: { ro: "Membru al echipei de moderare Ventuza.",
-                en: "Member of the Ventuza moderation team." },
+    criteria: { ro: "Membru al echipei de moderare Suzeta.",
+                en: "Member of the Suzeta moderation team." },
     expiry: null,
   },
   beta_tester: {

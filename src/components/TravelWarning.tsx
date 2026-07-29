@@ -63,7 +63,7 @@ const HOSTILE_COUNTRIES = new Set([
   "ST",
 ]);
 
-const DISMISS_KEY = "ventuza_travel_warning_dismissed";
+const DISMISS_KEY = "suzeta_travel_warning_dismissed";
 
 export function TravelWarning() {
   const [country, setCountry] = useState<string | null>(null);

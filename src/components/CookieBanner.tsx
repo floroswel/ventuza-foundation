@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
-const KEY = "ventuza_cookie_consent_v2";
+const KEY = "suzeta_cookie_consent_v2";
 
 type Consent = {
   essential: true; // always on
@@ -55,7 +55,7 @@ export function CookieBanner() {
     try {
       const payload: Consent = { essential: true, ...c, ts: Date.now(), v: 2 };
       localStorage.setItem(KEY, JSON.stringify(payload));
-      window.dispatchEvent(new CustomEvent("ventuza:consent", { detail: payload }));
+      window.dispatchEvent(new CustomEvent("suzeta:consent", { detail: payload }));
     } catch {
       /* ignore */
     }

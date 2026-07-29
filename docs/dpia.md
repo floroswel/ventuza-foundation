@@ -1,10 +1,10 @@
-# DPIA — Ventuza (Data Protection Impact Assessment)
+# DPIA — Suzeta (Data Protection Impact Assessment)
 
 **Status:** DRAFT — necesită validare de consultant GDPR extern înainte de publicare.
 **Versiune:** 1.0.0
 **Data:** 2026-07-13
 **Operator:** VOMIX GENIUS S.R.L., CUI 43025661, România
-**DPO:** dpo@ventuza.eu
+**DPO:** dpo@suzeta.eu
 **Bază legală DPIA:** GDPR Art. 35 (prelucrare la scară largă de date Art. 9 —
 orientare sexuală + date sănătate opționale).
 
@@ -14,7 +14,7 @@ orientare sexuală + date sănătate opționale).
 
 ### 1.1 Natura prelucrării
 
-Ventuza este o aplicație de dating pentru comunitatea LGBTQ+, disponibilă pe web
+Suzeta este o aplicație de dating pentru comunitatea LGBTQ+, disponibilă pe web
 (PWA) și Android nativ (Capacitor). Fluxul principal:
 
 1. Utilizator adult (18+) se înregistrează cu email + parolă sau Google OAuth.
@@ -215,7 +215,7 @@ cu consimțământ explicit.
 
 ### 4.2 Organizatorice
 
-- DPO desemnat (dpo@ventuza.eu).
+- DPO desemnat (dpo@suzeta.eu).
 - Registru Art. 30 actualizat la fiecare feature nou (`docs/gdpr-art-30-register.md`).
 - Plan incident response (`docs/incident-response-plan.md`).
 - Testare backup-restore documentată (`docs/backup-restore-procedure.md`).

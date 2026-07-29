@@ -87,7 +87,7 @@ describe("sendFcmOne — no-op fără service account", () => {
     expect(isFcmConfigured()).toBe(false);
     const r = await sendFcmOne(
       { id: "x", endpoint: "fake-token" },
-      { title: "Ventuza", body: GENERIC_MESSAGE_BODY, type: "messages" },
+      { title: "Suzeta", body: GENERIC_MESSAGE_BODY, type: "messages" },
     );
     expect(r).toEqual({ ok: false, gone: false });
     expect(fetchSpy).not.toHaveBeenCalled();

@@ -18,7 +18,7 @@ import { toast } from "sonner";
  * nu pierdem permisiunea printr-un „Block" reflex. Dacă userul refuză aici,
  * marcăm ca văzut și nu mai insistăm — poate reactiva din Profil.
  */
-const STORAGE_PREFIX = "ventuza_loc_prompt_seen_v1:";
+const STORAGE_PREFIX = "suzeta_loc_prompt_seen_v1:";
 
 function routeNeedsLocationPrimer(pathname: string) {
   return (

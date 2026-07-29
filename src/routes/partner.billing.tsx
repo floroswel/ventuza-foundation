@@ -36,7 +36,7 @@ import { PartnerAccessGate } from "@/components/partner/PartnerAccessGate";
 
 export const Route = createFileRoute("/partner/billing")({
   head: () => ({
-    meta: [{ title: "Facturare — Ventuza Partners" }, { name: "robots", content: "noindex" }],
+    meta: [{ title: "Facturare — Suzeta Partners" }, { name: "robots", content: "noindex" }],
   }),
   component: PartnerBillingRoute,
 });

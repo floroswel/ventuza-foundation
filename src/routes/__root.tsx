@@ -112,25 +112,25 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#0E0D0B" },
-      { title: "Ventuza — Dating, elevated." },
+      { title: "Suzeta — Dating, elevated." },
       {
         name: "description",
         content:
-          "Ventuza is a premium, inclusive dating experience. Meet people who match your depth.",
+          "Suzeta is a premium, inclusive dating experience. Meet people who match your depth.",
       },
-      { property: "og:title", content: "Ventuza — Dating, elevated." },
+      { property: "og:title", content: "Suzeta — Dating, elevated." },
       {
         property: "og:description",
         content:
-          "Ventuza is a premium, inclusive dating experience. Meet people who match your depth.",
+          "Suzeta is a premium, inclusive dating experience. Meet people who match your depth.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:title", content: "Ventuza — Dating, elevated." },
+      { name: "twitter:title", content: "Suzeta — Dating, elevated." },
       {
         name: "twitter:description",
         content:
-          "Ventuza is a premium, inclusive dating experience. Meet people who match your depth.",
+          "Suzeta is a premium, inclusive dating experience. Meet people who match your depth.",
       },
       {
         property: "og:image",
@@ -214,7 +214,7 @@ function RootComponent() {
     // Web Vitals → DB — only after analytics consent
     const maybeInitVitals = () => {
       try {
-        const raw = localStorage.getItem("ventuza_cookie_consent_v2");
+        const raw = localStorage.getItem("suzeta_cookie_consent_v2");
         if (!raw) return;
         const c = JSON.parse(raw);
         if (c?.analytics) {
@@ -226,7 +226,7 @@ function RootComponent() {
     };
     maybeInitVitals();
     const onConsent = () => maybeInitVitals();
-    window.addEventListener("ventuza:consent", onConsent);
+    window.addEventListener("suzeta:consent", onConsent);
     // Capture ?ref=CODE on first load for later redemption after sign-up
     try {
       const url = new URL(window.location.href);
@@ -237,7 +237,7 @@ function RootComponent() {
     } catch {
       /* ignore */
     }
-    return () => window.removeEventListener("ventuza:consent", onConsent);
+    return () => window.removeEventListener("suzeta:consent", onConsent);
   }, []);
 
   useEffect(() => {

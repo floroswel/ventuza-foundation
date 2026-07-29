@@ -1,13 +1,13 @@
 # Play Console — upload pe track-ul Internal
 
-Ghid complet, fără pași lipsă, pentru a publica un build Ventuza pe trackul
+Ghid complet, fără pași lipsă, pentru a publica un build Suzeta pe trackul
 `internal` din Google Play Console. Sursa unică de versiune este
 `release/version.json`; changelogs-urile stau la
 `fastlane/metadata/android/<locale>/changelogs/<versionCode>.txt`.
 
 ## Prerequisite (o singură dată)
 
-1. **Cont Play Console** cu aplicația `com.ventuza.dating` creată.
+1. **Cont Play Console** cu aplicația `com.suzeta.dating` creată.
 2. **Service account** cu rol "Release manager":
    - Google Cloud Console → IAM → Service accounts → cheie JSON.
    - Salvează cheia la `release/play-store-service-account.json` (deja în
@@ -22,8 +22,8 @@ Ghid complet, fără pași lipsă, pentru a publica un build Ventuza pe trackul
    apply from: "../../release/android-version.gradle"
    android {
      defaultConfig {
-       versionCode project.ext.ventuzaVersionCode
-       versionName project.ext.ventuzaVersionName
+       versionCode project.ext.suzetaVersionCode
+       versionName project.ext.suzetaVersionName
      }
    }
    ```

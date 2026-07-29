@@ -19,11 +19,11 @@ export const Route = createFileRoute("/premium")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Totul e gratuit — Ventuza" },
+      { title: "Totul e gratuit — Suzeta" },
       {
         name: "description",
         content:
-          "Toate funcțiile Ventuza sunt 100% gratuite pentru utilizatori. Susține-ne prin Ventuza Ads.",
+          "Toate funcțiile Suzeta sunt 100% gratuite pentru utilizatori. Susține-ne prin Suzeta Ads.",
       },
     ],
   }),
@@ -65,7 +65,7 @@ function PremiumPage() {
       <div className="mx-auto max-w-md space-y-6 px-4 py-6">
         <section className="rounded-2xl border border-primary/40 bg-gradient-to-br from-primary/15 via-surface to-surface p-5 glow-gold">
           <Gift className="size-7 text-primary" />
-          <h2 className="mt-2 text-lg font-semibold">Ventuza e 100% gratuit ✨</h2>
+          <h2 className="mt-2 text-lg font-semibold">Suzeta e 100% gratuit ✨</h2>
           <p className="mt-1 text-sm text-muted-foreground">
             Nimic plătit, nicio funcție blocată. Toate uneltele pe care alte aplicații le pun după
             paywall — la tine sunt deschise din prima zi.
@@ -93,7 +93,7 @@ function PremiumPage() {
           <Megaphone className="size-6 text-primary" />
           <h3 className="mt-2 text-base font-semibold">Cum ne susținem?</h3>
           <p className="mt-1 text-sm text-muted-foreground">
-            Prin <span className="font-semibold text-foreground">Ventuza Ads</span> — parteneriate
+            Prin <span className="font-semibold text-foreground">Suzeta Ads</span> — parteneriate
             cu cluburi, baruri, evenimente și branduri LGBTQ-friendly din România. Plătesc ei, tu
             folosești app-ul gratuit.
           </p>
@@ -106,7 +106,7 @@ function PremiumPage() {
         </section>
 
         <p className="text-center text-[10px] text-muted-foreground">
-          Vrei să ne susții personal? Spune-le prietenilor despre Ventuza. Asta contează mai mult
+          Vrei să ne susții personal? Spune-le prietenilor despre Suzeta. Asta contează mai mult
           decât orice donație.
         </p>
       </div>

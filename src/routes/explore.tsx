@@ -11,11 +11,11 @@ export const Route = createFileRoute("/explore")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Explore — Ventuza" },
+      { title: "Explore — Suzeta" },
       {
         name: "description",
         content:
-          "Descoperă evenimente queer-friendly și orașe unde comunitatea Ventuza e activă. Călătorești? Găsești imediat unde să te conectezi.",
+          "Descoperă evenimente queer-friendly și orașe unde comunitatea Suzeta e activă. Călătorești? Găsești imediat unde să te conectezi.",
       },
     ],
   }),

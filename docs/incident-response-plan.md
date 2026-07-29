@@ -1,8 +1,8 @@
-# Incident Response Plan — Ventuza
+# Incident Response Plan — Suzeta
 
 **Operator:** VOMIX GENIUS S.R.L. (CUI 43025661)
 **Persoană responsabilă (primă linie):** Florin, Administrator
-**DPO:** dpo@ventuza.eu
+**DPO:** dpo@suzeta.eu
 **Escaladare externă:** consultant GDPR (contract pe retainer)
 **Versiune:** 1.0.0
 **Data:** 2026-07-13
@@ -92,7 +92,7 @@ Operator: VOMIX GENIUS S.R.L.
 CUI: 43025661
 Sediu: [adresa completă]
 Reprezentant: Florin [nume], Administrator
-DPO: dpo@ventuza.eu
+DPO: dpo@suzeta.eu
 
 1. Natura încălcării:
    [Descriere concisă: ce s-a întâmplat, când, cum a fost descoperit]
@@ -133,12 +133,12 @@ in-app la primul login post-breach.
 ### Template email
 
 ```
-Subiect: Ventuza — Notificare importantă privind securitatea contului tău
+Subiect: Suzeta — Notificare importantă privind securitatea contului tău
 
 Salut,
 
 Îți scriem pentru a te informa despre un incident de securitate care a afectat
-contul tău Ventuza pe data de [YYYY-MM-DD].
+contul tău Suzeta pe data de [YYYY-MM-DD].
 
 CE S-A ÎNTÂMPLAT
 [Descriere clară, fără jargon tehnic]
@@ -163,11 +163,11 @@ Am notificat Autoritatea Națională de Supraveghere a Prelucrării Datelor
 (ANSPDCP) conform GDPR Art. 33.
 
 Îți poți exercita oricând drepturile GDPR (Art. 15-22) contactând-ne la
-dpo@ventuza.eu.
+dpo@suzeta.eu.
 
 Îmi pare rău că s-a întâmplat. Ne asumăm răspunderea și îmbunătățim procesele.
 
-Florin, Administrator Ventuza / VOMIX GENIUS S.R.L.
+Florin, Administrator Suzeta / VOMIX GENIUS S.R.L.
 ```
 
 ---

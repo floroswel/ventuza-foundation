@@ -1,4 +1,4 @@
-/* Ventuza Web Push service worker */
+/* Suzeta Web Push service worker */
 self.addEventListener("install", (e) => {
   self.skipWaiting();
 });
@@ -11,9 +11,9 @@ self.addEventListener("push", (event) => {
   try {
     data = event.data ? event.data.json() : {};
   } catch {
-    data = { title: "Ventuza", body: event.data ? event.data.text() : "" };
+    data = { title: "Suzeta", body: event.data ? event.data.text() : "" };
   }
-  const title = data.title || "Ventuza";
+  const title = data.title || "Suzeta";
   const options = {
     body: data.body || "",
     icon: data.icon || "/icon-192.png",

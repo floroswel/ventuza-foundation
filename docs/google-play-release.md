@@ -1,6 +1,6 @@
-# Ventuza — Google Play Release Guide
+# Suzeta — Google Play Release Guide
 
-Ghid complet pentru împachetarea și publicarea Ventuza pe Google Play.
+Ghid complet pentru împachetarea și publicarea Suzeta pe Google Play.
 Toate constrângerile de conținut și legale de mai jos sunt condiții
 obligatorii pentru aprobare, nu recomandări.
 
@@ -26,8 +26,8 @@ npx cap sync android    # copiază dist/ + pluginii în android/
 ```
 
 Config-ul relevant e în `capacitor.config.ts`:
-- `appId = "com.ventuza.dating"` (locked — nu schimba după prima urcare Play).
-- `appName = "Ventuza"`.
+- `appId = "com.suzeta.dating"` (locked — nu schimba după prima urcare Play).
+- `appName = "Suzeta"`.
 - `webDir = "dist"`.
 - `android.allowMixedContent = false` (obligatoriu Play).
 - Plugin PrivacyScreen activ (blochează screenshots + task switcher).
@@ -39,7 +39,7 @@ Editează `android/app/build.gradle`:
 ```gradle
 android {
   defaultConfig {
-    applicationId "com.ventuza.dating"
+    applicationId "com.suzeta.dating"
     minSdkVersion 24            // Android 7.0 — cerință Play 2026 pentru dating
     targetSdkVersion 35          // Android 15 — cerință Play din august 2026
     versionCode 1                // INCREMENTĂ manual la fiecare urcare (număr întreg strict crescător)
@@ -57,15 +57,15 @@ La minor (1.1.0) → +10. La major (2.0.0) → +100. Sari niciodată înapoi.
 îl pierzi, nu mai poți urca update-uri sub același package.
 
 ```bash
-keytool -genkey -v -keystore ventuza-release.keystore \
-  -alias ventuza -keyalg RSA -keysize 4096 -validity 10000
+keytool -genkey -v -keystore suzeta-release.keystore \
+  -alias suzeta -keyalg RSA -keysize 4096 -validity 10000
 ```
 
 Adaugă în `android/keystore.properties` (NU comita fișierul):
 ```
-storeFile=../../ventuza-release.keystore
+storeFile=../../suzeta-release.keystore
 storePassword=***
-keyAlias=ventuza
+keyAlias=suzeta
 keyPassword=***
 ```
 
@@ -182,17 +182,17 @@ Trebuie declarate în `android/app/src/main/AndroidManifest.xml`:
 - **Full description**: max 4000 chars, RO + EN, cu highlight 18+.
 
 Sample short description:
-> Ventuza — comunitate LGBTQ+ 18+ pentru întâlniri, prieteni, evenimente.
+> Suzeta — comunitate LGBTQ+ 18+ pentru întâlniri, prieteni, evenimente.
 
 ## 11. Legal — linkuri OBLIGATORII în Play listing
 
 Setate în Play Console → App content:
 
-- Privacy Policy: `https://ventuza.app/legal/privacy`
-- Terms: `https://ventuza.app/legal/terms`
-- Age policy: `https://ventuza.app/legal/age-policy`
-- DMCA/DSA contact: `https://ventuza.app/legal/dsa`
-- Community: `https://ventuza.app/legal/community`
+- Privacy Policy: `https://suzeta.app/legal/privacy`
+- Terms: `https://suzeta.app/legal/terms`
+- Age policy: `https://suzeta.app/legal/age-policy`
+- DMCA/DSA contact: `https://suzeta.app/legal/dsa`
+- Community: `https://suzeta.app/legal/community`
 
 Toate există în cod (`src/routes/legal.*`).
 
@@ -221,12 +221,12 @@ Toate există în cod (`src/routes/legal.*`).
 
 - [ ] `versionCode` incrementat + `versionName` bumped.
 - [ ] AAB semnat cu keystore-ul de release (nu debug).
-- [ ] `applicationId = com.ventuza.dating` neschimbat.
+- [ ] `applicationId = com.suzeta.dating` neschimbat.
 - [ ] `targetSdkVersion = 35`.
 - [ ] `android.allowMixedContent = false` în capacitor.config.ts.
 - [ ] Data safety form completat + salvat.
 - [ ] Content rating IARC 18+ obținut.
-- [ ] Toate cele 5 linkuri legale live pe `ventuza.app`.
+- [ ] Toate cele 5 linkuri legale live pe `suzeta.app`.
 - [ ] Screenshots + feature graphic uploadate.
 - [ ] Testat pe device fizic (min Android 10 + Android 14).
 - [ ] Age gate (Didit) verificat live pe production URL.
@@ -254,7 +254,7 @@ tabelă `push_subscriptions` (`kind='fcm'` vs `kind='webpush'`).
 
 ### One-time — proiect Firebase
 
-1. Creează proiect Firebase (același `applicationId`: `com.ventuza.dating`).
+1. Creează proiect Firebase (același `applicationId`: `com.suzeta.dating`).
 2. Descarcă `google-services.json` și pune-l în `android/app/`
    (NU comita în repo — adaugă în `.gitignore`).
 3. În `android/build.gradle` (top-level), adaugă la `buildscript.dependencies`:

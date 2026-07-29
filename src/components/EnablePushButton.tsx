@@ -106,7 +106,7 @@ export function EnablePushButton({
       if (Notification.permission === "denied") {
         setPermission("denied");
         toast.error("Notificările sunt blocate pe acest dispozitiv", {
-          description: "Deblochează permisiunea Ventuza din setările telefonului/browserului, apoi revino aici.",
+          description: "Deblochează permisiunea Suzeta din setările telefonului/browserului, apoi revino aici.",
           duration: 8000,
         });
         return;

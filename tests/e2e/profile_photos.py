@@ -1,5 +1,5 @@
 """
-E2E — Upload poze profil via PhotoManager (Ventuza).
+E2E — Upload poze profil via PhotoManager (Suzeta).
 
 Acoperire:
   G1  /profile fără sesiune → redirect /auth (guard).

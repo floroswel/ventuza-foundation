@@ -3,10 +3,10 @@
 // Captează într-un ring buffer (max 500 intrări) evenimente relevante pentru
 // diagnostic: erori JS, promise rejections, console.error / console.warn,
 // erori de rețea (fetch/XHR non-2xx), toast-uri de eroare, evenimente custom
-// „ventuza:*" emise de PrivacyScreen și showAuthErrorToast, plus navigări.
+// „suzeta:*" emise de PrivacyScreen și showAuthErrorToast, plus navigări.
 //
 // Se activează manual — nu culege nimic dacă modul e OFF.
-// Toggle: localStorage["ventuza_debug_mode"] = "1" | "0"
+// Toggle: localStorage["suzeta_debug_mode"] = "1" | "0"
 //         sau URL: ?debug=1  /  ?debug=0
 //
 // Export: JSON structurat sau text plain, gata de trimis la suport.
@@ -16,12 +16,12 @@ export type DebugEntryLevel = "error" | "warn" | "info" | "network" | "event" | 
 export interface DebugEntry {
   ts: string;            // ISO timestamp
   level: DebugEntryLevel;
-  source: string;        // ex: "console", "window.error", "fetch", "toast", "ventuza:privacy-blocked"
+  source: string;        // ex: "console", "window.error", "fetch", "toast", "suzeta:privacy-blocked"
   message: string;
   details?: unknown;     // stack, status, url, target, etc.
 }
 
-const STORAGE_KEY = "ventuza_debug_mode";
+const STORAGE_KEY = "suzeta_debug_mode";
 const MAX_ENTRIES = 500;
 const LISTENERS = new Set<(entries: DebugEntry[]) => void>();
 const buffer: DebugEntry[] = [];
@@ -62,7 +62,7 @@ export function setDebugEnabled(on: boolean) {
   } else {
     log({ level: "info", source: "debug", message: "Debug mode dezactivat." });
   }
-  window.dispatchEvent(new CustomEvent("ventuza:debug-toggle", { detail: { on } }));
+  window.dispatchEvent(new CustomEvent("suzeta:debug-toggle", { detail: { on } }));
 }
 
 // ————————————————— buffer API —————————————————
@@ -123,7 +123,7 @@ export function exportAsJson(): Blob {
 export function exportAsText(): Blob {
   const snap = buildSnapshot();
   const header = [
-    `# Ventuza debug log`,
+    `# Suzeta debug log`,
     `Generated: ${snap.generated_at}`,
     `URL:       ${snap.url ?? "-"}`,
     `UA:        ${snap.user_agent ?? "-"}`,
@@ -276,7 +276,7 @@ export function installOnce() {
     };
   }
 
-  // ventuza:* custom events (privacy-blocked, screenshot-detected, consent, debug-toggle etc.)
+  // suzeta:* custom events (privacy-blocked, screenshot-detected, consent, debug-toggle etc.)
   const forward = (name: string) => {
     window.addEventListener(name, (ev) => {
       const detail = (ev as CustomEvent).detail;
@@ -289,11 +289,11 @@ export function installOnce() {
     });
   };
   [
-    "ventuza:privacy-blocked",
-    "ventuza:screenshot-detected",
-    "ventuza:consent",
-    "ventuza:auth-error",
-    "ventuza:version-blocked",
+    "suzeta:privacy-blocked",
+    "suzeta:screenshot-detected",
+    "suzeta:consent",
+    "suzeta:auth-error",
+    "suzeta:version-blocked",
   ].forEach(forward);
 }
 

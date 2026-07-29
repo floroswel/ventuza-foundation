@@ -81,7 +81,7 @@ import { DailyRewardCard } from "@/components/DailyRewardCard";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 
 export const Route = createFileRoute("/discover")({
-  head: () => ({ meta: [{ title: "Discover — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Discover — Suzeta" }] }),
   component: DiscoverPage,
 });
 
@@ -402,8 +402,8 @@ function DiscoverPage() {
   useEffect(() => {
     if (!user) return;
     const onMoved = () => void load();
-    window.addEventListener("ventuza:location-updated", onMoved);
-    return () => window.removeEventListener("ventuza:location-updated", onMoved);
+    window.addEventListener("suzeta:location-updated", onMoved);
+    return () => window.removeEventListener("suzeta:location-updated", onMoved);
   }, [user, load]);
 
   // Realtime: new match notifications (when someone else likes me back)
@@ -507,7 +507,7 @@ function DiscoverPage() {
               await sendPushToUser({
                 data: {
                   toUserId: target.id,
-                  title: "Match nou pe Ventuza! 💫",
+                  title: "Match nou pe Suzeta! 💫",
                   body: `Ai făcut match cu ${target.display_name ?? "cineva"}.`,
                   url: "/messages",
                   tag: `match:${m.id}`,
@@ -528,7 +528,7 @@ function DiscoverPage() {
                 data: {
                   toUserId: target.id,
                   title: "Cuiva îi place de tine 👀",
-                  body: "Deschide Ventuza să vezi cine.",
+                  body: "Deschide Suzeta să vezi cine.",
                   url: "/discover",
                   tag: `like:${user.id}:${target.id}`,
                   category: "likes",
@@ -1747,7 +1747,7 @@ function EmptyState({
     <CenterMessage
       icon={<Compass className="size-8 text-primary" />}
       title="Nimeni nou prin zonă acum"
-      desc="Comunitatea Ventuza crește. Extinde raza ca să vezi cine e mai departe — sau revino în câteva ore."
+      desc="Comunitatea Suzeta crește. Extinde raza ca să vezi cine e mai departe — sau revino în câteva ore."
       action={
         <div className="flex flex-wrap justify-center gap-2">
           {onExpandDistance && (

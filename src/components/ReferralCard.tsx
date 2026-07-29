@@ -28,8 +28,8 @@ export function ReferralCard() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "Ventuza",
-          text: "Hai pe Ventuza — primești 100 XP",
+          title: "Suzeta",
+          text: "Hai pe Suzeta — primești 100 XP",
           url: link,
         });
       } catch {

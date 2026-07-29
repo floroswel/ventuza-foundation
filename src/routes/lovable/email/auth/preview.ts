@@ -18,8 +18,8 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 }
 
 // Configuration
-const SITE_NAME = "Ventuza"
-const ROOT_DOMAIN = "ventuza.app"
+const SITE_NAME = "Suzeta"
+const ROOT_DOMAIN = "suzeta.app"
 
 // Sample data for preview mode ONLY (not used in actual email sending).
 // URLs are baked in at scaffold time from the project's real data.

@@ -316,7 +316,7 @@ export function PostingWizard({ open, onClose, onCreated, quota, myVenues }: Pro
             <div className="font-medium">
               {String(values.title || values.name || "Titlu...").slice(0, 60)}
             </div>
-            <div className="text-xs text-muted-foreground">450m • Ventuza</div>
+            <div className="text-xs text-muted-foreground">450m • Suzeta</div>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-# Android overrides — Ventuza
+# Android overrides — Suzeta
 
 Folderul `android/` NU este versionat (îl generezi local cu
 `npx cap add android`). Overrides-urile de compliance stau aici și se copiază

@@ -31,7 +31,7 @@ export function isProductionHost(
   if (h.endsWith(".lovableproject.com")) return false; // Lovable sandbox preview (editor iframe)
   if (h.endsWith(".lovable.dev")) return false; // Lovable dev preview
   // Orice altceva = PROD. Exemple recunoscute ca PROD:
-  //   ventuza.eu, www.ventuza.eu (custom domain),
+  //   suzeta.eu, www.suzeta.eu (custom domain),
   //   ventuza-foundation.lovable.app (Lovable published URL).
   return true;
 }

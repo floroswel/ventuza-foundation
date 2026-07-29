@@ -27,10 +27,10 @@ export function DebugPanel() {
   useEffect(() => {
     const refresh = () => setEnabled(isDebugEnabled());
     refresh();
-    window.addEventListener("ventuza:debug-toggle", refresh);
+    window.addEventListener("suzeta:debug-toggle", refresh);
     window.addEventListener("storage", refresh);
     return () => {
-      window.removeEventListener("ventuza:debug-toggle", refresh);
+      window.removeEventListener("suzeta:debug-toggle", refresh);
       window.removeEventListener("storage", refresh);
     };
   }, []);
@@ -64,7 +64,7 @@ export function DebugPanel() {
           <div className="flex flex-wrap items-center gap-1 border-b border-border p-2">
             <button
               type="button"
-              onClick={() => downloadBlob(exportAsJson(), `ventuza-log-${stamp}.json`)}
+              onClick={() => downloadBlob(exportAsJson(), `suzeta-log-${stamp}.json`)}
               className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] hover:bg-accent"
               title="Export JSON"
             >
@@ -72,7 +72,7 @@ export function DebugPanel() {
             </button>
             <button
               type="button"
-              onClick={() => downloadBlob(exportAsText(), `ventuza-log-${stamp}.txt`)}
+              onClick={() => downloadBlob(exportAsText(), `suzeta-log-${stamp}.txt`)}
               className="inline-flex items-center gap-1 rounded border border-border px-2 py-1 text-[11px] hover:bg-accent"
               title="Export text"
             >

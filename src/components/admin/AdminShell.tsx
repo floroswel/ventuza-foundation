@@ -113,7 +113,7 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
             </div>
             {!collapsed && (
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold tracking-tight">Ventuza Control</p>
+                <p className="truncate text-sm font-semibold tracking-tight">Suzeta Control</p>
                 <p className="text-[10px] uppercase tracking-[0.18em] text-primary/80">
                   Command Deck
                 </p>

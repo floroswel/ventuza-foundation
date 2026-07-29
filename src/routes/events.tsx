@@ -48,7 +48,7 @@ export const Route = createFileRoute("/events")({
   },
   head: () => ({
     meta: [
-      { title: "Events — Ventuza" },
+      { title: "Events — Suzeta" },
       { name: "description", content: "Find gay-friendly parties, bars and meetups near you." },
     ],
   }),

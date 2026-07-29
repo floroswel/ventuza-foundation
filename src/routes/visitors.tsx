@@ -9,7 +9,7 @@ import { getOrCreateConversation } from "@/lib/chat";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/visitors")({
-  head: () => ({ meta: [{ title: "Visitors — Ventuza" }] }),
+  head: () => ({ meta: [{ title: "Visitors — Suzeta" }] }),
   component: VisitorsPage,
 });
 

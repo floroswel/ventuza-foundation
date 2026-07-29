@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/favorites")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Favorite — Ventuza" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({ meta: [{ title: "Favorite — Suzeta" }, { name: "robots", content: "noindex" }] }),
   component: FavoritesPage,
 });
 

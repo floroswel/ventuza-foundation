@@ -8,14 +8,14 @@ import { OPERATOR, OPERATOR_INTRO, OperatorIdentificationBlock } from "@/compone
 export const Route = createFileRoute("/legal/dmca")({
   head: () => ({
     meta: [
-      { title: "DMCA / Drepturi de autor — Ventuza" },
+      { title: "DMCA / Drepturi de autor — Suzeta" },
       {
         name: "description",
         content:
-          "Procedura de notificare și retragere a conținutului care încalcă drepturile de autor pe Ventuza.",
+          "Procedura de notificare și retragere a conținutului care încalcă drepturile de autor pe Suzeta.",
       },
     ],
-    links: [{ rel: "canonical", href: "https://ventuza.app/legal/dmca" }],
+    links: [{ rel: "canonical", href: "https://suzeta.app/legal/dmca" }],
   }),
   component: DmcaPage,
 });
@@ -53,15 +53,15 @@ function DmcaPage() {
             </h2>
             <p className="mt-2 text-foreground/85">
               Trimite o cerere semnată la{" "}
-              <a className="text-primary" href="mailto:copyright@ventuza.app">
-                copyright@ventuza.app
+              <a className="text-primary" href="mailto:copyright@suzeta.app">
+                copyright@suzeta.app
               </a>{" "}
               care să conțină OBLIGATORIU:
             </p>
             <ol className="mt-2 list-decimal space-y-1 pl-5 text-foreground/85">
               <li>Identificarea operei protejate (titlu, autor, URL original dacă există).</li>
               <li>
-                Identificarea exactă a conținutului de pe Ventuza (link profil, ID poză/mesaj,
+                Identificarea exactă a conținutului de pe Suzeta (link profil, ID poză/mesaj,
                 capturi).
               </li>
               <li>Datele tale de contact: nume complet, adresă, telefon, email.</li>

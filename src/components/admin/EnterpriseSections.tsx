@@ -1448,7 +1448,7 @@ export function SecurityPanel() {
     try {
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: "totp",
-        friendlyName: "Ventuza Admin",
+        friendlyName: "Suzeta Admin",
       });
       if (error) throw error;
       setQr(data.totp.qr_code);

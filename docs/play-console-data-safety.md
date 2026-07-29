@@ -12,7 +12,7 @@ Ultima actualizare: 2026-07-13. Sursa de adevăr pentru procesatori:
 - **Is all of the user data collected by your app encrypted in transit?** → **Yes** (HTTPS/TLS 1.2+ end-to-end; storage cifrată la coloană pentru date sănătate — vezi `HEALTH_COL_KEY`).
 - **Do you provide a way for users to request that their data be deleted?** → **Yes**
   - In-app: `/account-deletion` (declanșează `deletion_requests` → purge automat).
-  - Email: `dpo@ventuza.eu` (răspuns ≤ 30 zile, GDPR Art. 17).
+  - Email: `dpo@suzeta.eu` (răspuns ≤ 30 zile, GDPR Art. 17).
 - **Has your app been independently validated against a global security standard?** → **No** (planificat: audit extern Q4 2026).
 
 ---
@@ -53,7 +53,7 @@ utilizatori — RPC-urile server-side returnează doar distanță bucketizată
 
 | Type | Collected | Shared | Optional | Purpose | Encrypted in transit | Deletable | Procesator |
 | ---- | --------- | ------ | -------- | ------- | -------------------- | --------- | ---------- |
-| User payment info | No (partenerii B2B plătesc prin transfer bancar direct la Ventuza) | — | — | — | — | — | — |
+| User payment info | No (partenerii B2B plătesc prin transfer bancar direct la Suzeta) | — | — | — | — | — | — |
 | Purchase history | Yes (parteneri B2B — facturi) | No | No | Account management, Compliance (ANAF e-Factura) | Yes | Restricționat (retenție 10 ani — legislație fiscală RO) | Supabase, ANAF (autoritate publică) |
 | Credit info / other financial | No | — | — | — | — | — | — |
 

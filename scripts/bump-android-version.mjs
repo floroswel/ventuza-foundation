@@ -74,8 +74,8 @@ const locales = readdirSync(METADATA_DIR, { withFileTypes: true })
   .map((d) => d.name);
 
 const placeholders = {
-  "en-US": `Ventuza ${nextName}\n\n- Improvements and bug fixes.\n\nCompletează înainte de upload pe Play Console.`,
-  "ro-RO": `Ventuza ${nextName}\n\n- Îmbunătățiri și corectări de bug-uri.\n\nCompletează înainte de upload pe Play Console.`,
+  "en-US": `Suzeta ${nextName}\n\n- Improvements and bug fixes.\n\nCompletează înainte de upload pe Play Console.`,
+  "ro-RO": `Suzeta ${nextName}\n\n- Îmbunătățiri și corectări de bug-uri.\n\nCompletează înainte de upload pe Play Console.`,
 };
 
 for (const locale of locales) {

@@ -4,11 +4,11 @@ import { ShieldAlert } from "lucide-react";
 export const Route = createFileRoute("/blocked-region")({
   head: () => ({
     meta: [
-      { title: "Service unavailable in your region — Ventuza" },
+      { title: "Service unavailable in your region — Suzeta" },
       {
         name: "description",
         content:
-          "Ventuza is not currently available in your region. Your safety matters — please explore local LGBTQ+ resources listed here.",
+          "Suzeta is not currently available in your region. Your safety matters — please explore local LGBTQ+ resources listed here.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -23,7 +23,7 @@ function BlockedRegionPage() {
         <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted">
           <ShieldAlert className="h-7 w-7 text-primary" aria-hidden />
         </div>
-        <h1 className="font-serif text-3xl">Ventuza is not available in your region</h1>
+        <h1 className="font-serif text-3xl">Suzeta is not available in your region</h1>
         <p className="text-base leading-relaxed text-muted-foreground">
           We are unable to safely operate our service where you are right now. This decision is
           about protecting the people who would use our app — not about you personally.

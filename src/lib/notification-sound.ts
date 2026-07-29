@@ -1,5 +1,5 @@
 /**
- * Ventuza signature notification sound.
+ * Suzeta signature notification sound.
  *
  * Generated 100% în cod (Web Audio API) — nu descarcă fișiere audio, nu depinde
  * de assets externe. Sunetul e o "semnătură" scurtă (~450 ms) a brandului:
@@ -8,12 +8,12 @@
  *   - envelope soft (attack rapid, release lung), fără click,
  *   - filtru low-pass care se deschide → senzație "sparkle" fuchsia/rose.
  *
- * Mut / activ prin `localStorage['ventuza:notification-sound']` (default: on).
+ * Mut / activ prin `localStorage['suzeta:notification-sound']` (default: on).
  * Respectă `prefers-reduced-motion` NU — sunetul e la fel pentru toți; există
  * override per-user din UI (setting dedicat, cf. `isNotificationSoundEnabled`).
  */
 
-const STORAGE_KEY = "ventuza:notification-sound";
+const STORAGE_KEY = "suzeta:notification-sound";
 
 let ctx: AudioContext | null = null;
 let unlocked = false;
@@ -91,7 +91,7 @@ const SIGNATURE: Note[] = [
 ];
 
 /**
- * Redă sunetul de notificare Ventuza. Sigur să fie apelat oricând — se auto-mut
+ * Redă sunetul de notificare Suzeta. Sigur să fie apelat oricând — se auto-mut
  * dacă userul a dezactivat sau dacă AudioContext nu poate porni.
  */
 export function playNotificationSound() {

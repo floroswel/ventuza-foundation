@@ -28,7 +28,7 @@ function extractIp(request: Request): string | null {
 
 function hashIp(ip: string): string {
   // Salt with project ref so the hash isn't a stable cross-deploy identifier.
-  const salt = process.env.SUPABASE_PROJECT_ID ?? "ventuza";
+  const salt = process.env.SUPABASE_PROJECT_ID ?? "suzeta";
   return createHash("sha256").update(`${salt}:${ip}`).digest("hex");
 }
 

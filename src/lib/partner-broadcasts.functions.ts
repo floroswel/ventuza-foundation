@@ -167,7 +167,7 @@ async function deliverBroadcast(params: {
     let deliveredForUser = false;
 
     if (canPush && userSubs.length > 0) {
-      const title = profile.discrete_mode ? "Ventuza" : broadcast.title;
+      const title = profile.discrete_mode ? "Suzeta" : broadcast.title;
       const body = profile.discrete_mode ? "Ai o notificare nouă" : broadcast.body;
       for (const s of userSubs) {
         const r = await sendOne(
@@ -212,14 +212,14 @@ async function deliverBroadcast(params: {
       if (u.id && u.email) emailByUser.set(u.id, u.email);
     }
 
-    const SENDER_DOMAIN = "notify.ventuza.app";
-    const FROM = "Ventuza <noreply@ventuza.app>";
-    const subject = `Ventuza: ${broadcast.title}`;
+    const SENDER_DOMAIN = "notify.suzeta.app";
+    const FROM = "Suzeta <noreply@suzeta.app>";
+    const subject = `Suzeta: ${broadcast.title}`;
     const safeTitle = escapeHtml(broadcast.title);
     const safeBody = escapeHtml(broadcast.body).replace(/\n/g, "<br/>");
     const linkAbs = link.startsWith("http")
       ? link
-      : `https://ventuza.app${link.startsWith("/") ? "" : "/"}${link}`;
+      : `https://suzeta.app${link.startsWith("/") ? "" : "/"}${link}`;
 
     for (const uid of emailFallbackTargets) {
       const to = emailByUser.get(uid);
@@ -238,11 +238,11 @@ async function deliverBroadcast(params: {
 <div style="max-width:560px;margin:0 auto;background:#17171f;border-radius:12px;padding:24px">
   <h2 style="margin:0 0 12px;color:#fff">${safeTitle}</h2>
   <p style="margin:0 0 20px;color:#d4d4d8;line-height:1.5">${safeBody}</p>
-  <p><a href="${linkAbs}" style="display:inline-block;background:#e11d48;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Deschide în Ventuza</a></p>
+  <p><a href="${linkAbs}" style="display:inline-block;background:#e11d48;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Deschide în Suzeta</a></p>
   <hr style="border:0;border-top:1px solid #27272a;margin:24px 0"/>
   <p style="font-size:12px;color:#a1a1aa">
-    Primești acest email pentru că ai activat comunicări marketing în Ventuza.
-    <a href="https://ventuza.app/settings" style="color:#a1a1aa">Dezactivează</a>
+    Primești acest email pentru că ai activat comunicări marketing în Suzeta.
+    <a href="https://suzeta.app/settings" style="color:#a1a1aa">Dezactivează</a>
   </p>
 </div></body></html>`;
 

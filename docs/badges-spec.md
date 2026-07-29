@@ -1,4 +1,4 @@
-# Ventuza — Badge System (spec complet)
+# Suzeta — Badge System (spec complet)
 
 Data: 2026-07-03
 Status: aprobat — Wave 1 în execuție

@@ -1,12 +1,12 @@
 /**
  * Sursă unică pentru datele operatorului legal și pentru referirea consecventă
- * la marca "Ventuza". Orice pagină legală trebuie să folosească aceste constante
+ * la marca "Suzeta". Orice pagină legală trebuie să folosească aceste constante
  * ȘI/SAU componentele expuse aici, ca datele să rămână identice în toate locurile.
  */
 
 export const OPERATOR = {
   legalName: "VOMIX GENIUS S.R.L.",
-  brand: "Ventuza",
+  brand: "Suzeta",
   cui: "43025661",
   regCom: "J2020000459343",
   address: "Str. Constructorilor 39, Voievoda, Teleorman, 147148, România",
@@ -14,18 +14,18 @@ export const OPERATOR = {
   bank: "Banca Transilvania S.A.",
   iban: "RO50BTRLRONCRT0566231601",
   emails: {
-    dpo: "dpo@ventuza.app",
-    privacy: "privacy@ventuza.app",
-    support: "support@ventuza.app",
-    business: "business@ventuza.app",
-    dsa: "dsa@ventuza.app",
-    trust: "trust@ventuza.app",
-    appeals: "appeals@ventuza.app",
-    abuse: "abuse@ventuza.app",
-    csam: "csam@ventuza.app",
-    parents: "parents@ventuza.app",
-    copyright: "copyright@ventuza.app",
-    security: "security@ventuza.app",
+    dpo: "dpo@suzeta.app",
+    privacy: "privacy@suzeta.app",
+    support: "support@suzeta.app",
+    business: "business@suzeta.app",
+    dsa: "dsa@suzeta.app",
+    trust: "trust@suzeta.app",
+    appeals: "appeals@suzeta.app",
+    abuse: "abuse@suzeta.app",
+    csam: "csam@suzeta.app",
+    parents: "parents@suzeta.app",
+    copyright: "copyright@suzeta.app",
+    security: "security@suzeta.app",
   },
 } as const;
 

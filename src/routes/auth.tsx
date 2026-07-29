@@ -30,8 +30,8 @@ export const Route = createFileRoute("/auth")({
   validateSearch: searchSchema,
   head: () => ({
     meta: [
-      { title: "Sign in — Ventuza" },
-      { name: "description", content: "Sign in or create your Ventuza account." },
+      { title: "Sign in — Suzeta" },
+      { name: "description", content: "Sign in or create your Suzeta account." },
     ],
   }),
   component: AuthPage,
@@ -239,7 +239,7 @@ function AuthPage() {
     }
 
     if (captchaMisconfigured) {
-      handleAuthError(new Error("Verificarea anti-bot nu este configurată pentru acest domeniu. Contactează suportul (dpo@ventuza.eu)."));
+      handleAuthError(new Error("Verificarea anti-bot nu este configurată pentru acest domeniu. Contactează suportul (dpo@suzeta.eu)."));
       return;
     }
     if (captchaRequired && !captchaToken) {
@@ -357,7 +357,7 @@ function AuthPage() {
       return;
     }
     if (captchaMisconfigured) {
-      handleAuthError(new Error("Verificarea anti-bot nu este configurată. Contactează suportul (dpo@ventuza.eu)."));
+      handleAuthError(new Error("Verificarea anti-bot nu este configurată. Contactează suportul (dpo@suzeta.eu)."));
       return;
     }
     if (captchaRequired && !captchaToken) {
@@ -408,7 +408,7 @@ function AuthPage() {
             height={72}
             className="mb-4 size-[72px] rounded-2xl shadow-lg shadow-primary/20"
           />
-          <h1 className="wordmark text-5xl font-medium leading-none">Ventuza</h1>
+          <h1 className="wordmark text-5xl font-medium leading-none">Suzeta</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             {mode === "signup" ? t("auth.createAccount") : t("auth.welcomeBack")}
           </p>
