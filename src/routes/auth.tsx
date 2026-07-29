@@ -19,7 +19,6 @@ import {
   hasNativeGoogleConfig,
 } from "@/lib/native-google-auth";
 import suzetaIcon from "@/assets/suzeta-icon.png.asset.json";
-import suzetaWordmark from "@/assets/suzeta-wordmark-light.png.asset.json";
 
 
 
@@ -410,8 +409,7 @@ function AuthPage() {
             height={72}
             className="mb-4 size-[72px] rounded-2xl shadow-lg shadow-primary/20"
           />
-          <h1 className="sr-only">Suzeta</h1>
-          <img src={suzetaWordmark.url} alt="Suzeta" className="h-10 w-auto" />
+          <h1 className="wordmark text-5xl font-medium leading-none">Suzeta</h1>
           <p className="mt-3 text-sm text-muted-foreground">
             {mode === "signup" ? t("auth.createAccount") : t("auth.welcomeBack")}
           </p>
