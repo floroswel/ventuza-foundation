@@ -72,13 +72,15 @@ def _viewer_uid() -> str | None:
 
 async def http(page: Page, method: str, url: str, headers: dict | None = None) -> dict:
     js = f"""
-    const res = await fetch({json.dumps(url)}, {{
-      method: {json.dumps(method)},
-      headers: {json.dumps(headers or {{}})},
-    }});
-    let body = '';
-    try {{ body = (await res.text()).slice(0, 400); }} catch (_) {{}}
-    return {{ status: res.status, body }};
+    (async () => {{
+      const res = await fetch({json.dumps(url)}, {{
+        method: {json.dumps(method)},
+        headers: {json.dumps(headers or {})},
+      }});
+      let body = '';
+      try {{ body = (await res.text()).slice(0, 400); }} catch (_) {{}}
+      return {{ status: res.status, body }};
+    }})()
     """
     return await page.evaluate(js)
 
