@@ -515,6 +515,7 @@ const en: typeof ro = {
     continue: "Continue",
     finish: "Finish",
     stepLabel: "{{name}} · {{n}}/{{total}}",
+    autosave: { saving: "Saving…", saved: "Saved" },
     step: {
       basics: "About you",
       identity: "Identity",
