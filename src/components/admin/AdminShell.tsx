@@ -199,7 +199,7 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
               </button>
 
               <div className="ml-auto hidden items-center gap-2 lg:flex">
-                <UndoRedoToolbar />
+                <Suspense fallback={null}><UndoRedoToolbar /></Suspense>
                 <button
                   onClick={() => setDensity((d) => (d === "compact" ? "comfortable" : "compact"))}
                   title={
