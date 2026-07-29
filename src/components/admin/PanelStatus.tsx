@@ -190,7 +190,7 @@ export function PanelStatus({
   if (isEmpty) {
     return (
       <div className="rounded-2xl border border-border bg-surface/60 p-10 text-center">
-        <span className="mx-auto mb-3 inline-flex size-10 items-center justify-center rounded-full bg-brand-gradient/20 p-[1px]">
+        <span className="mx-auto mb-3 inline-flex size-10 items-center justify-center rounded-full bg-brand-gradient p-[1px] opacity-70">
           <span className="flex size-full items-center justify-center rounded-full bg-card">
             <Inbox className="size-4 text-muted-foreground" />
           </span>
