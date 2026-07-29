@@ -375,7 +375,7 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
         />
         <Tier
           name="Starter"
-          price="749 RON / lună"
+          price="În curând"
           highlight
           desc="Pentru baruri, cluburi, branduri locale gay-friendly."
           perks={[
@@ -387,7 +387,7 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
         />
         <Tier
           name="Growth"
-          price="2.490 RON / lună"
+          price="În curând"
           desc="Pentru branduri naționale și organizatori Pride."
           perks={[
             "Banner național + city",

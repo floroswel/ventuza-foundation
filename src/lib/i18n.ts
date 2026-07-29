@@ -195,7 +195,7 @@ const ro = {
     privacy: "Politica de confidențialitate",
     footer: "Continuând, ești de acord cu <1>Termenii</1> și <3>Politica de confidențialitate</3>.",
     b2bTitle: "Pentru parteneri B2B",
-    b2bSubtitle: "Locuri · evenimente · oferte",
+    b2bSubtitle: "În curând · locuri · evenimente · oferte",
     safety: "Siguranță & resurse",
   },
 
@@ -505,7 +505,7 @@ const en: typeof ro = {
     privacy: "Privacy Policy",
     footer: "By continuing you agree to our <1>Terms</1> and <3>Privacy Policy</3>.",
     b2bTitle: "For B2B partners",
-    b2bSubtitle: "Venues · events · offers",
+    b2bSubtitle: "Coming soon · venues · events · offers",
     safety: "Safety & resources",
   },
 
