@@ -56,9 +56,9 @@ PASS: list[str] = []
 FAIL: list[tuple[str, str]] = []
 SKIP: list[tuple[str, str]] = []
 
-def ok(n): PASS.append(n); print(f"  ✓ {n}")
-def bad(n, w): FAIL.append((n, w)); print(f"  ✗ {n}: {w}")
-def skip(n, w): SKIP.append((n, w)); print(f"  ⊘ {n}: {w}")
+def ok(n, *_): PASS.append(n); print(f"  ✓ {n}")
+def bad(n, w=""): FAIL.append((n, w)); print(f"  ✗ {n}: {w}")
+def skip(n, w=""): SKIP.append((n, w)); print(f"  ⊘ {n}: {w}")
 
 
 def _viewer_uid() -> str | None:
