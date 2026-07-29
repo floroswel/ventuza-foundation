@@ -55,9 +55,6 @@ import {
   SectionTitle,
 } from "@/components/admin/ui/primitives";
 import { DataTable, type Column } from "@/components/admin/ui/DataTable";
-import { SystemHealthPanel } from "@/components/admin/SystemHealthPanel";
-import { CrashLogPanel } from "@/components/admin/CrashLogPanel";
-import { AiCopilotPanel } from "@/components/admin/AiCopilotPanel";
 import {
   adminGetOverview,
   adminListTables,
@@ -72,7 +69,49 @@ import {
   adminDeleteUser,
   ADMIN_TABLES,
 } from "@/lib/admin.functions";
+// UserDetailDrawer se afișează sync într-un dialog — rămâne eager.
+import { UserDetailDrawer } from "@/components/admin/Wave1Sections";
+import { useIdleLogout } from "@/hooks/useIdleLogout";
 import {
+  isProductionHost,
+  shouldEnforceAgeGate,
+  clearAgeGatePolicyCache,
+} from "@/lib/age-gate-policy";
+// Toate panourile tab-based sunt lazy — reduce chunk-ul /admin de la ~430 KB
+// la un core + panouri on-demand. Vezi src/components/admin/lazy-panels.tsx.
+import {
+  SystemHealthPanel,
+  CrashLogPanel,
+  AiCopilotPanel,
+  PartnersModerationPanel,
+  BillingAdminPanel,
+  ExperimentsPanel,
+  RateLimitPanel,
+  SecuritySignalsPanel,
+  RiskDashboardPanel,
+  RiskReviewQueuePanel,
+  SignupThrottlePanel,
+  SettingsAndFlagsPanel,
+  StaffManagementPanel,
+  AdminToolsPanel,
+  SupportTicketsPanel,
+  AppealsPanel,
+  OperationsUserOpsPanel,
+  BroadcastV2Panel,
+  IntelligenceDashboardPanel,
+  KillSwitchesPanel,
+  PushHealthPanel,
+  PartnerBoostCalendarPanel,
+  FraudClusterPanel,
+  LegalP0Panel,
+  PolicyEnginePanel,
+  EnterpriseUsersPanel,
+  LegalDocsAdminPanel,
+  OverviewPanelRich,
+  AlertRulesPanel,
+  SupportMacrosPanel,
+  VerificationQueuePanel,
+  AnalyticsPanel,
   AuditLogPanel,
   AlertsPanel,
   DsaPanel,
@@ -80,49 +119,9 @@ import {
   BreachPanel,
   PoliciesPanel,
   SecurityPanel,
-} from "@/components/admin/EnterpriseSections";
-import {
-  UserDetailDrawer,
   GdprOpsPanel,
   BreakGlassLogPanel,
-} from "@/components/admin/Wave1Sections";
-import { PartnersModerationPanel } from "@/components/admin/PartnersModerationPanel";
-import { BillingAdminPanel } from "@/components/admin/BillingAdminPanel";
-import { useIdleLogout } from "@/hooks/useIdleLogout";
-import { AnalyticsPanel } from "@/components/AnalyticsPanel";
-
-import { ExperimentsPanel } from "@/components/admin/ExperimentsPanel";
-import {
-  isProductionHost,
-  shouldEnforceAgeGate,
-  clearAgeGatePolicyCache,
-} from "@/lib/age-gate-policy";
-
-import { RateLimitPanel } from "@/components/admin/RateLimitPanel";
-import { SecuritySignalsPanel } from "@/components/admin/SecuritySignalsPanel";
-import { RiskDashboardPanel } from "@/components/admin/RiskDashboardPanel";
-import { RiskReviewQueuePanel } from "@/components/admin/RiskReviewQueuePanel";
-import { SignupThrottlePanel } from "@/components/admin/SignupThrottlePanel";
-import { SettingsAndFlagsPanel } from "@/components/admin/SettingsAndFlagsPanel";
-import { StaffManagementPanel } from "@/components/admin/StaffManagementPanel";
-import { AdminToolsPanel } from "@/components/admin/AdminToolsPanel";
-import { SupportTicketsPanel } from "@/components/admin/SupportTicketsPanel";
-import { AppealsPanel } from "@/components/admin/AppealsPanel";
-import { OperationsUserOpsPanel } from "@/components/admin/OperationsUserOpsPanel";
-import { BroadcastV2Panel } from "@/components/admin/BroadcastV2Panel";
-import { IntelligenceDashboardPanel } from "@/components/admin/IntelligenceDashboardPanel";
-import { KillSwitchesPanel } from "@/components/admin/KillSwitchesPanel";
-import { PushHealthPanel } from "@/components/admin/PushHealthPanel";
-import { PartnerBoostCalendarPanel } from "@/components/admin/PartnerBoostCalendarPanel";
-import { FraudClusterPanel } from "@/components/admin/FraudClusterPanel";
-import { LegalP0Panel } from "@/components/admin/LegalP0Panel";
-import { PolicyEnginePanel } from "@/components/admin/PolicyEnginePanel";
-import { EnterpriseUsersPanel } from "@/components/admin/EnterpriseUsersPanel";
-import { LegalDocsAdminPanel } from "@/components/admin/LegalDocsAdminPanel";
-import { OverviewPanelRich } from "@/components/admin/OverviewPanelRich";
-import { AlertRulesPanel } from "@/components/admin/AlertRulesPanel";
-import { SupportMacrosPanel } from "@/components/admin/SupportMacrosPanel";
-import { VerificationQueuePanel } from "@/components/admin/VerificationQueuePanel";
+} from "@/components/admin/lazy-panels";
 import { adminVerificationStats } from "@/lib/admin-verification.functions";
 
 function AgeGateDevBanner() {
