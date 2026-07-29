@@ -21,7 +21,8 @@ const BUDGETS = [
   { pattern: /^discover-[^.]+\.js$/, maxGzipKB: 30, label: "/discover" },
   { pattern: /^nearby-[^.]+\.js$/, maxGzipKB: 15, label: "/nearby (list)" },
   { pattern: /^partner-[^.]+\.js$/, maxGzipKB: 12, label: "/partner" },
-  { pattern: /^messages-[^.]+\.js$/, maxGzipKB: 20, label: "/messages" },
+  { pattern: /^messages\.index-[^.]+\.js$/, maxGzipKB: 20, label: "/messages (list)" },
+  { pattern: /^messages\._id-[^.]+\.js$/, maxGzipKB: 40, label: "/messages/$id (thread)" },
   { pattern: /^profile-[^.]+\.js$/, maxGzipKB: 20, label: "/profile" },
 
   // Lazy-loaded heavy libs — must stay lazy (not merged into main).
