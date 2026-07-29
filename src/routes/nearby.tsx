@@ -301,6 +301,15 @@ function NearbyPage() {
         </div>
       </header>
 
+      <Card className="border-primary/30 bg-primary/5 p-4">
+        <p className="text-sm font-semibold text-primary">În curând</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Aici vei vedea localurile queer-friendly aproape de tine, evenimentele Pride și
+          ofertele exclusive de la partenerii noștri. Lucrăm cu baruri, cluburi, ONG-uri și
+          organizatori din România și UE ca să deschidem harta cât mai curând.
+        </p>
+      </Card>
+
       <Tabs value={kind} onValueChange={(v) => setKind(v as NearbyKind)}>
         <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="event">Evenimente</TabsTrigger>

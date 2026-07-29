@@ -298,6 +298,14 @@ function BusinessPage() {
 function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart: () => void }) {
   return (
     <section className="mx-auto max-w-2xl px-4 py-8">
+      <div className="mb-6 rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4">
+        <p className="text-sm font-semibold text-amber-200">În curând</p>
+        <p className="mt-1 text-xs text-amber-100/80">
+          Programul pentru parteneri B2B (localuri, evenimente, oferte, reclamă) este în pregătire.
+          Pachetele și prețurile de mai jos sunt orientative și se pot schimba până la lansare.
+          Poți lăsa o cerere de interes ca să te contactăm primul când deschidem înscrierile.
+        </p>
+      </div>
       {savedStatus && (
         <div className="mb-6 flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
           <Clock className="size-5 shrink-0 text-primary" />
@@ -375,7 +383,7 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
         />
         <Tier
           name="Starter"
-          price="749 RON / lună"
+          price="În curând"
           highlight
           desc="Pentru baruri, cluburi, branduri locale gay-friendly."
           perks={[
@@ -387,7 +395,7 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
         />
         <Tier
           name="Growth"
-          price="2.490 RON / lună"
+          price="În curând"
           desc="Pentru branduri naționale și organizatori Pride."
           perks={[
             "Banner național + city",
