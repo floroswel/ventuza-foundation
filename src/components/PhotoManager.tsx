@@ -60,8 +60,11 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [dragIndex, setDragIndex] = useState<number | null>(null);
+  const [overIndex, setOverIndex] = useState<number | null>(null);
   const moderate = useServerFn(moderatePhoto);
   const fileRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     let cancelled = false;
