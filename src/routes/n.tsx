@@ -668,17 +668,35 @@ function StepView({
             <p className="mt-2 text-muted-foreground">{t("onboarding.personality.hint")}</p>
           </div>
           <div className="space-y-3">
-            <Label>
-              {t("onboarding.personality.interests")}{" "}
-              <span className="text-muted-foreground font-normal">
-                {t("onboarding.personality.min3")}
+            <div className="flex items-center justify-between">
+              <Label>
+                {t("onboarding.personality.interests")}{" "}
+                <span className="text-muted-foreground font-normal">
+                  {t("onboarding.personality.min3")}
+                </span>
+              </Label>
+              <span
+                className={
+                  "rounded-full border px-2 py-0.5 text-xs tabular-nums transition-colors " +
+                  (data.interests.length >= 3
+                    ? "border-primary/40 bg-primary/10 text-primary"
+                    : "border-border bg-surface text-muted-foreground")
+                }
+              >
+                {t("onboarding.validation.interestsCount", { count: data.interests.length })}
               </span>
-            </Label>
+            </div>
             <ChipGrid
               options={INTEREST_OPTIONS}
               selected={data.interests}
               onToggle={(v) => setData({ ...data, interests: toggle(data.interests, v) })}
             />
+            {data.interests.length === 0 && (
+              <div className="rounded-xl border border-dashed border-border bg-surface/50 p-4 text-center">
+                <Sparkles className="mx-auto mb-2 size-5 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">{t("onboarding.empty.interests")}</p>
+              </div>
+            )}
           </div>
           <div className="space-y-2">
             <Label>
