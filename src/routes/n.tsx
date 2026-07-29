@@ -472,12 +472,33 @@ function Onboarding() {
       </section>
 
       <footer className="sticky bottom-0 border-t border-border/50 bg-background/80 px-6 py-4 backdrop-blur">
+        {attempted && stepErrors.length > 0 && (
+          <div
+            id="ob-errors"
+            role="alert"
+            aria-live="polite"
+            className="mx-auto mb-3 w-full max-w-lg rounded-xl border border-destructive/40 bg-destructive/10 p-3 text-sm"
+          >
+            <div className="flex items-start gap-2 text-destructive">
+              <AlertCircle className="mt-0.5 size-4 shrink-0" />
+              <div className="space-y-1">
+                <p className="font-medium">{t("onboarding.validation.title")}</p>
+                <ul className="ml-4 list-disc space-y-0.5 text-destructive/90">
+                  {stepErrors.map((e, i) => (
+                    <li key={i}>{e}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
         <Button
           onClick={next}
-          disabled={!canContinue || saving}
+          disabled={saving}
           variant="hero"
           size="lg"
-          className="w-full"
+          className="mx-auto flex w-full max-w-lg"
+          aria-disabled={!canContinue || undefined}
         >
           {saving && <Loader2 className="size-4 animate-spin" />}
           {step === STEPS.length - 1 ? t("onboarding.finish") : t("onboarding.continue")}
