@@ -294,6 +294,21 @@ const ro = {
     toast: {
       ready: "Profilul tău e gata.",
     },
+    validation: {
+      title: "Câteva lucruri de completat înainte de a continua",
+      genderRequired: "Alege cel puțin o opțiune de gen sau scrie una personalizată.",
+      pronounsRequired: "Alege cel puțin un pronume sau scrie unul personalizat.",
+      orientationRequired: "Alege cel puțin o orientare.",
+      lookingRequired: "Spune-ne ce cauți (bifează cel puțin o opțiune).",
+      interestsCount: "{{count}}/3 selectate",
+      interestsNeedMore: "Mai selectează încă {{count}} pentru a continua.",
+      photosRequired: "Adaugă cel puțin o poză.",
+      termsRequired: "Confirmă că ai citit Termenii, Confidențialitatea și Regulile Comunității.",
+    },
+    empty: {
+      photos: "Fără poze încă. Adaugă prima ca să pornim.",
+      interests: "Nimic ales încă — alege minim 3 interese ca să te potrivim.",
+    },
   },
 };
 
