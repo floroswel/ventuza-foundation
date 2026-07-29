@@ -114,23 +114,6 @@ export function useActionJournal() {
   };
 }
 
-/** Hook global — se montează o singură dată în AdminShell ca să prindă Cmd/Ctrl+Z. */
-export function useAdminUndoShortcuts() {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      const mod = e.metaKey || e.ctrlKey;
-      if (!mod || e.key.toLowerCase() !== "z") return;
-      const tag = (e.target as HTMLElement | null)?.tagName;
-      const editable =
-        tag === "INPUT" ||
-        tag === "TEXTAREA" ||
-        (e.target as HTMLElement | null)?.isContentEditable;
-      if (editable) return; // lasă editarea nativă în form-uri
-      e.preventDefault();
-      if (e.shiftKey) void redoLast();
-      else void undoLast();
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-}
+// Notă: `useAdminUndoShortcuts` a fost mutat în `./useAdminUndoShortcuts.ts`
+// ca AdminShell să nu tragă journal-ul în bundle-ul inițial al /admin.
+
