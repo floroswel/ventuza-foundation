@@ -957,7 +957,14 @@ function PhotosStep({
 
   return (
     <Field title={t("onboarding.photos.title")} hint={t("onboarding.photos.hint")}>
+      {data.photos.length === 0 && (
+        <div className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-surface/50 p-3 text-sm text-muted-foreground">
+          <ImagePlus className="size-5 shrink-0 text-primary/70" />
+          <span>{t("onboarding.empty.photos")}</span>
+        </div>
+      )}
       <div className="grid grid-cols-3 gap-3">
+
         {data.photos.map((p, i) => (
           <div
             key={p}
