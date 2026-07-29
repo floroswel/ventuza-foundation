@@ -51,14 +51,21 @@ export function AdminErrorBanner({
 
   if (variant === "warning") {
     return (
-      <div className="rounded-xl border border-amber-500/40 bg-amber-500/5 px-3 py-2 text-[11px] text-amber-200">
+      <div
+        className="rounded-xl border px-3 py-2 text-[11px]"
+        style={{
+          borderColor: "color-mix(in oklab, var(--warning) 40%, transparent)",
+          background: "color-mix(in oklab, var(--warning) 8%, transparent)",
+          color: "color-mix(in oklab, var(--warning) 85%, white)",
+        }}
+      >
         <AlertTriangle className="mr-1 inline size-3.5" />
         {softLead ?? "Avertisment"} ({error})
         {onRetry && (
           <button
             onClick={onRetry}
             disabled={busy}
-            className="ml-2 underline hover:text-amber-100 disabled:opacity-50"
+            className="ml-2 underline hover:opacity-90 disabled:opacity-50"
           >
             {busy ? "…" : "Reîncearcă"}
           </button>
@@ -69,19 +76,19 @@ export function AdminErrorBanner({
 
   if (variant === "soft") {
     return (
-      <div className="rounded-xl border border-red-500/40 bg-red-500/5 px-3 py-2 text-xs text-red-200">
+      <div className="rounded-xl border border-destructive/40 bg-destructive/5 px-3 py-2 text-xs text-destructive">
         <AlertTriangle className="mr-1 inline size-3.5" />
         {softLead ?? "Refresh eșuat — se afișează ultimele date reușite."}
         {onRetry && (
           <button
             onClick={onRetry}
             disabled={busy}
-            className="ml-1 underline hover:text-red-100 disabled:opacity-50"
+            className="ml-1 underline hover:opacity-90 disabled:opacity-50"
           >
             {busy ? "Se reîncearcă…" : "Reîncearcă"}
           </button>
         )}
-        <span className="ml-2 text-red-200/70">({error})</span>
+        <span className="ml-2 text-destructive/70">({error})</span>
       </div>
     );
   }
@@ -90,20 +97,22 @@ export function AdminErrorBanner({
   const Icon = forbidden ? ShieldAlert : AlertTriangle;
   const heading = title ?? (forbidden ? "Acces refuzat" : "Eroare la încărcare");
   return (
-    <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm">
-      <div className="flex items-start gap-2">
-        <Icon className="mt-0.5 size-4 shrink-0 text-red-400" />
+    <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
+      <div className="flex items-start gap-3">
+        <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-destructive/15 text-destructive">
+          <Icon className="size-4" />
+        </span>
         <div className="flex-1">
-          <p className="font-semibold text-red-300">{heading}</p>
-          <p className="mt-1 break-words text-xs text-red-200/90">{error}</p>
+          <p className="font-display font-semibold tracking-tight text-destructive">{heading}</p>
+          <p className="mt-1 break-words text-xs leading-relaxed text-destructive/85">{error}</p>
           {forbidden && forbiddenHint && (
-            <p className="mt-2 text-[11px] text-red-200/70">{forbiddenHint}</p>
+            <p className="mt-2 text-[11px] text-destructive/70">{forbiddenHint}</p>
           )}
           {onRetry && (
             <button
               onClick={onRetry}
               disabled={busy}
-              className="mt-2 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/10 disabled:opacity-50"
+              className="mt-3 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
             >
               {busy ? "Se reîncearcă…" : "Reîncearcă"}
             </button>

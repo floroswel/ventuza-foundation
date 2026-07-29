@@ -140,33 +140,44 @@ export function PanelStatus({
 }) {
   if (state.status === "loading") {
     return (
-      <div className="flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface p-8 text-sm text-muted-foreground">
-        <Loader2 className="size-4 animate-spin" />
-        Se încarcă…
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-surface/70 p-8">
+        <div className="flex items-center justify-center gap-2.5 text-sm text-muted-foreground">
+          <Loader2 className="size-4 animate-spin text-foreground" />
+          <span className="font-medium">Se încarcă…</span>
+        </div>
+        <span
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[2px] bg-brand-gradient opacity-70"
+        />
       </div>
     );
   }
   if (state.status === "error") {
     const Icon = state.forbidden ? ShieldAlert : AlertTriangle;
     return (
-      <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-4 text-sm">
-        <div className="flex items-start gap-2">
-          <Icon className="mt-0.5 size-4 shrink-0 text-red-400" />
+      <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm">
+        <div className="flex items-start gap-3">
+          <span className="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full bg-destructive/15 text-destructive">
+            <Icon className="size-4" />
+          </span>
           <div className="flex-1">
-            <p className="font-semibold text-red-300">
+            <p className="font-display font-semibold tracking-tight text-destructive">
               {state.forbidden ? "Acces refuzat" : "Eroare la încărcare"}
             </p>
-            <p className="mt-1 break-words text-xs text-red-200/90">{state.error}</p>
+            <p className="mt-1 break-words text-xs leading-relaxed text-destructive/85">
+              {state.error}
+            </p>
             {state.forbidden && (
-              <p className="mt-2 text-[11px] text-red-200/70">
+              <p className="mt-2 text-[11px] text-destructive/70">
                 Acest panou necesită un rol pe care contul tău nu îl are (ex:{" "}
-                <code>super_admin</code> sau <code>auditor</code>).
+                <code className="rounded bg-destructive/10 px-1 py-0.5">super_admin</code> sau{" "}
+                <code className="rounded bg-destructive/10 px-1 py-0.5">auditor</code>).
               </p>
             )}
             {retry && (
               <button
                 onClick={retry}
-                className="mt-2 rounded-full border border-red-500/40 px-3 py-1.5 text-xs text-red-200 hover:bg-red-500/10"
+                className="mt-3 rounded-full border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-xs font-medium text-destructive transition-colors hover:bg-destructive/20"
               >
                 Reîncearcă
               </button>
@@ -178,9 +189,15 @@ export function PanelStatus({
   }
   if (isEmpty) {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
-        <Inbox className="mx-auto mb-2 size-5 opacity-60" />
-        {emptyHint ?? "Niciun rând. Datele apar aici când există."}
+      <div className="rounded-2xl border border-border bg-surface/60 p-10 text-center">
+        <span className="mx-auto mb-3 inline-flex size-10 items-center justify-center rounded-full bg-brand-gradient p-[1px] opacity-70">
+          <span className="flex size-full items-center justify-center rounded-full bg-card">
+            <Inbox className="size-4 text-muted-foreground" />
+          </span>
+        </span>
+        <p className="text-sm text-muted-foreground">
+          {emptyHint ?? "Niciun rând. Datele apar aici când există."}
+        </p>
       </div>
     );
   }

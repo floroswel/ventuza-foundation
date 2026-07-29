@@ -1,7 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 
-/** Consistent gold-on-dark empty state with icon halo + optional CTA. */
+/**
+ * SUZETA empty state — brand gradient halo, refined typography and spacing.
+ * Consistent across every screen (Discover, Chats, Matches, Admin, etc.).
+ */
 export function EmptyState({
   icon: Icon,
   title,
@@ -14,16 +17,29 @@ export function EmptyState({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center justify-center px-6 py-20 text-center">
-      <div className="relative mb-4">
-        <span className="absolute inset-0 -m-3 rounded-full bg-primary/10 blur-xl" aria-hidden />
-        <span className="relative inline-flex size-16 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-primary/5 ring-1 ring-primary/30">
-          <Icon className="size-7 text-primary" />
+    <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+      <div className="relative mb-5">
+        {/* Soft brand halo */}
+        <span
+          className="pointer-events-none absolute inset-0 -m-6 rounded-full opacity-70 blur-2xl bg-brand-gradient"
+          aria-hidden
+        />
+        {/* Gradient ring with dark inner disc */}
+        <span className="relative inline-flex size-20 items-center justify-center rounded-full p-[1.5px] bg-brand-gradient">
+          <span className="flex size-full items-center justify-center rounded-full bg-card">
+            <Icon className="size-8 text-foreground" strokeWidth={1.75} />
+          </span>
         </span>
       </div>
-      <h3 className="text-base font-semibold tracking-tight">{title}</h3>
-      {body && <p className="mt-1 max-w-xs text-sm text-muted-foreground">{body}</p>}
-      {action && <div className="mt-4">{action}</div>}
+      <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
+        {title}
+      </h3>
+      {body && (
+        <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+          {body}
+        </p>
+      )}
+      {action && <div className="mt-5">{action}</div>}
     </div>
   );
 }
