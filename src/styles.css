@@ -33,56 +33,76 @@
   --color-ring: var(--ring);
   --color-surface: var(--surface);
   --color-surface-elevated: var(--surface-elevated);
-  --font-display: "Cormorant Garamond", "Times New Roman", serif;
+  --font-display: "Space Grotesk", "Inter", system-ui, sans-serif;
   --font-sans: "Inter", system-ui, sans-serif;
 }
 
 :root {
-  --radius: 1rem;
+  --radius: 1.125rem;
 
-  /* Warm near-black */
-  --background: oklch(0.16 0.012 70);
-  --foreground: oklch(0.95 0.015 85);
+  /* SUZETA — Deep near-black with cool violet undertone (#0B0B10) */
+  --background: oklch(0.13 0.012 275);
+  --foreground: oklch(1 0 0);
 
-  --surface: oklch(0.205 0.013 70);
-  --surface-elevated: oklch(0.235 0.014 72);
+  --surface: oklch(0.20 0.012 275);
+  --surface-elevated: oklch(0.24 0.014 275);
 
-  --card: oklch(0.205 0.013 70);
-  --card-foreground: oklch(0.95 0.015 85);
+  --card: oklch(0.19 0.011 275);
+  --card-foreground: oklch(1 0 0);
 
-  --popover: oklch(0.205 0.013 70);
-  --popover-foreground: oklch(0.95 0.015 85);
+  --popover: oklch(0.19 0.011 275);
+  --popover-foreground: oklch(1 0 0);
 
-  /* Champagne gold */
-  --primary: oklch(0.82 0.115 85);
-  --primary-foreground: oklch(0.16 0.012 70);
-  --primary-glow: oklch(0.89 0.105 90);
+  /* SUZETA brand primary — vibrant magenta/violet from the logo gradient */
+  --primary: oklch(0.68 0.28 320);
+  --primary-foreground: oklch(1 0 0);
+  --primary-glow: oklch(0.76 0.24 315);
 
-  --secondary: oklch(0.25 0.013 72);
-  --secondary-foreground: oklch(0.95 0.015 85);
+  --secondary: oklch(0.24 0.014 275);
+  --secondary-foreground: oklch(1 0 0);
 
-  --muted: oklch(0.235 0.013 72);
-  --muted-foreground: oklch(0.68 0.018 80);
+  --muted: oklch(0.22 0.013 275);
+  --muted-foreground: oklch(0.66 0.020 260);
 
-  --accent: oklch(0.82 0.115 85);
-  --accent-foreground: oklch(0.16 0.012 70);
+  --accent: oklch(0.72 0.22 210);
+  --accent-foreground: oklch(1 0 0);
 
-  --destructive: oklch(0.62 0.19 25);
-  --destructive-foreground: oklch(0.98 0.01 80);
+  --destructive: oklch(0.68 0.24 15);
+  --destructive-foreground: oklch(1 0 0);
 
-  --border: oklch(0.3 0.015 75 / 60%);
-  --input: oklch(0.25 0.013 72);
-  --ring: oklch(0.82 0.115 85);
+  --border: oklch(1 0 0 / 8%);
+  --input: oklch(1 0 0 / 10%);
+  --ring: oklch(0.68 0.28 320);
 
-  --shadow-soft: 0 10px 40px -10px oklch(0 0 0 / 0.5);
-  --shadow-gold: 0 0 32px -8px oklch(0.82 0.115 85 / 0.35);
-  --gradient-gold: linear-gradient(135deg, oklch(0.82 0.115 85), oklch(0.89 0.105 90));
-  --gradient-pride: linear-gradient(90deg, #e8716b, #e8c66b, #b8d96b, #6bb8d9, #9a6bd9);
+  --success: oklch(0.76 0.17 150);
+  --warning: oklch(0.82 0.16 80);
+
+  --shadow-soft: 0 12px 40px -12px oklch(0 0 0 / 0.6);
+  --shadow-brand: 0 10px 40px -10px oklch(0.68 0.28 320 / 0.45);
+  --shadow-gold: 0 10px 40px -10px oklch(0.68 0.28 320 / 0.45);
+
+  /* SUZETA signature gradient — logo palette */
+  --gradient-brand: linear-gradient(
+    135deg,
+    #ff2d95 0%,
+    #e548ff 25%,
+    #8b5cf6 50%,
+    #3b82f6 75%,
+    #06d6d6 100%
+  );
+  --gradient-brand-soft: linear-gradient(
+    135deg,
+    rgba(255, 45, 149, 0.18),
+    rgba(139, 92, 246, 0.18),
+    rgba(6, 214, 214, 0.18)
+  );
+  --gradient-gold: var(--gradient-brand);
+  --gradient-pride: var(--gradient-brand);
 }
 
 .dark {
-  --background: oklch(0.16 0.012 70);
-  --foreground: oklch(0.95 0.015 85);
+  --background: oklch(0.13 0.012 275);
+  --foreground: oklch(1 0 0);
 }
 
 html {
@@ -115,19 +135,35 @@ html {
 
 @utility wordmark {
   font-family: var(--font-display);
-  background: var(--gradient-gold);
+  background: var(--gradient-brand);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  letter-spacing: 0.02em;
+  letter-spacing: -0.01em;
+  font-weight: 700;
+}
+
+@utility bg-brand-gradient {
+  background: var(--gradient-brand);
+}
+
+@utility text-brand-gradient {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@utility glow-brand {
+  box-shadow: var(--shadow-brand);
 }
 
 @utility pride-bar {
-  background: var(--gradient-pride);
+  background: var(--gradient-brand);
 }
 
 @utility glow-gold {
-  box-shadow: var(--shadow-gold);
+  box-shadow: var(--shadow-brand);
 }
 
 /* Animated "snake" border for grid tiles with unread messages.
