@@ -18,6 +18,8 @@ import {
   isNativeAndroid,
   hasNativeGoogleConfig,
 } from "@/lib/native-google-auth";
+import suzetaIcon from "@/assets/suzeta-icon.png.asset.json";
+import suzetaWordmark from "@/assets/suzeta-wordmark-light.png.asset.json";
 
 
 
