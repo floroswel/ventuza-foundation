@@ -345,6 +345,15 @@ function Onboarding() {
 
   async function next() {
     if (!user) return;
+    // Nu mai bloca silent butonul: dacă lipsesc câmpuri, marchează "attempted"
+    // ca să apară bannerul cu erori inline și un toast cu primul mesaj.
+    if (stepErrors.length > 0) {
+      setAttempted(true);
+      toast.error(stepErrors[0]);
+      const el = document.getElementById("ob-errors");
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
     setSaving(true);
 
     // Persistă imediat pasul curent în Supabase (nu doar în localStorage).
