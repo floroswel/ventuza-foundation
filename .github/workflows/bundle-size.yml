@@ -1,0 +1,43 @@
+name: bundle-size
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "package.json"
+      - "bun.lockb"
+      - "vite.config.ts"
+      - "scripts/check-bundle-size.mjs"
+      - ".github/workflows/bundle-size.yml"
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Build (production)
+        run: bun run build
+        env:
+          NODE_ENV: production
+
+      - name: Check bundle size budgets
+        run: node scripts/check-bundle-size.mjs
+
+      - name: Upload bundle report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist-assets
+          path: dist/client/assets/*.js
+          retention-days: 7
