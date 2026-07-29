@@ -354,7 +354,7 @@ async def main() -> int:
         context = await browser.new_context(viewport={"width": 1280, "height": 1800})
 
         try:
-            await test_guard_no_session(context)
+            await test_guard_no_session(browser)
         except Exception as ex:
             bad("G1", f"exception: {ex!r}")
 
