@@ -92,6 +92,7 @@ function PersonIcon({ className }: { className?: string }) {
 
 export function BottomNav() {
   const { pathname } = useLocation();
+  const router = useRouter();
   const { total: unreadTotal } = useUnreadMessages();
 
   const items = [
@@ -101,6 +102,29 @@ export function BottomNav() {
     { to: "/messages", label: "Mesaje", Icon: ChatBubbleIcon, badge: unreadTotal, filledWhenActive: true },
     { to: "/profile", label: "Profil", Icon: PersonIcon },
   ] as const;
+
+  // Preîncarcă chunk-urile rutelor din tab-bar când browserul e idle.
+  // Prima navigare de pe orice tab devine ~instant, fără cost pentru render.
+  useEffect(() => {
+    const w = window as typeof window & {
+      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
+    };
+    const schedule = w.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 800));
+    const handle = schedule(() => {
+      for (const item of items) {
+        if (item.to === pathname) continue;
+        void router.preloadRoute({ to: item.to }).catch(() => {});
+      }
+    }, { timeout: 2500 });
+    return () => {
+      const cancel = (window as typeof window & {
+        cancelIdleCallback?: (h: number) => void;
+      }).cancelIdleCallback;
+      if (cancel && typeof handle === "number") cancel(handle);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
+
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-primary/20 bg-background/95 backdrop-blur">
