@@ -246,26 +246,52 @@ function Onboarding() {
   const progress = ((step + 1) / STEPS.length) * 100;
   const current = STEPS[step];
 
-  const canContinue = useMemo(() => {
+  const stepErrors = useMemo<string[]>(() => {
+    const errs: string[] = [];
     switch (current) {
-      case "basics":
-        return (
-          data.display_name.trim().length >= 2 &&
-          validateBirthdate(data.birthdate, t) === null
-        );
-      case "identity":
-        return (
-          (data.gender.length > 0 || data.gender_custom.trim().length > 0) &&
-          (data.pronouns.length > 0 || data.pronouns_custom.trim().length > 0) &&
-          data.orientation.length > 0 &&
-          data.looking_for.length > 0
-        );
-      case "personality":
-        return data.interests.length >= 3;
-      case "photos":
-        return data.photos.length >= 1 && data.terms_accepted;
+      case "basics": {
+        if (data.display_name.trim().length < 2) errs.push(t("onboarding.basics.nameRequired"));
+        const be = validateBirthdate(data.birthdate, t);
+        if (be) errs.push(be);
+        break;
+      }
+      case "identity": {
+        if (data.gender.length === 0 && data.gender_custom.trim().length === 0)
+          errs.push(t("onboarding.validation.genderRequired"));
+        if (data.pronouns.length === 0 && data.pronouns_custom.trim().length === 0)
+          errs.push(t("onboarding.validation.pronounsRequired"));
+        if (data.orientation.length === 0) errs.push(t("onboarding.validation.orientationRequired"));
+        if (data.looking_for.length === 0) errs.push(t("onboarding.validation.lookingRequired"));
+        break;
+      }
+      case "personality": {
+        if (data.interests.length < 3) {
+          errs.push(
+            t("onboarding.validation.interestsNeedMore", { count: 3 - data.interests.length }),
+          );
+        }
+        break;
+      }
+      case "photos": {
+        if (data.photos.length < 1) errs.push(t("onboarding.validation.photosRequired"));
+        if (!data.terms_accepted) errs.push(t("onboarding.validation.termsRequired"));
+        break;
+      }
     }
-  }, [current, data]);
+    return errs;
+  }, [current, data, t]);
+
+  const canContinue = stepErrors.length === 0;
+
+  // Când pasul curent devine valid, ascunde bannerul de erori (curăța state-ul).
+  useEffect(() => {
+    if (canContinue && attempted) setAttempted(false);
+  }, [canContinue, attempted]);
+
+  // Reset "attempted" la schimbarea pasului ca să nu arate erori dintr-un pas anterior.
+  useEffect(() => {
+    setAttempted(false);
+  }, [step]);
 
   function buildStepPatch(s: (typeof STEPS)[number]): Record<string, any> {
     switch (s) {
