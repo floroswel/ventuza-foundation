@@ -600,6 +600,13 @@ function AuthPage() {
             }}
             onExpire={() => setCaptchaToken(null)}
           />
+          {captchaRequired && (
+            <p className="text-center text-xs text-muted-foreground" aria-live="polite">
+              {captchaToken
+                ? "✓ Verificare anti-bot completă"
+                : "Așteaptă verificarea anti-bot…"}
+            </p>
+          )}
 
           {authError && (
             <div
@@ -634,6 +641,13 @@ function AuthPage() {
               (captchaRequired && !captchaToken) ||
               retryCountdown > 0
             }
+            title={
+              mode === "signup" && signupDisabled
+                ? "Bifează 18+ și acceptarea termenilor, apoi introdu data nașterii."
+                : captchaRequired && !captchaToken
+                  ? "Așteaptă finalizarea verificării anti-bot."
+                  : undefined
+            }
             className="h-12 w-full rounded-full text-sm uppercase tracking-[0.18em]"
           >
             {submitting ? (
@@ -646,6 +660,11 @@ function AuthPage() {
               t("auth.submitLogin")
             )}
           </Button>
+          {mode === "signup" && signupDisabled && (
+            <p className="text-center text-xs text-muted-foreground" aria-live="polite">
+              Bifează „am 18+" și „accept termenii", apoi introdu data nașterii pentru a activa butonul.
+            </p>
+          )}
 
           {mode === "login" ? (
             <p className="text-center text-xs text-muted-foreground">
