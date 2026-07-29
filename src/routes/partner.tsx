@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "@/lib/auth-context";
 import { useUserRoles } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
@@ -49,9 +49,10 @@ import {
   BookOpen,
 } from "lucide-react";
 import { toast } from "sonner";
-import maplibregl from "maplibre-gl";
-import "maplibre-gl/dist/maplibre-gl.css";
-import { PostingWizard } from "@/components/partner/PostingWizard";
+const PinMap = lazy(() => import("@/components/partner/PinMap"));
+const PostingWizard = lazy(() =>
+  import("@/components/partner/PostingWizard").then((m) => ({ default: m.PostingWizard })),
+);
 import { StatusNotificationsBell } from "@/components/partner/StatusNotificationsBell";
 import { StatusTiles } from "@/components/partner/StatusTiles";
 import { BackButton } from "@/components/BackButton";
@@ -537,13 +538,17 @@ function PartnerPortal() {
         />
       )}
 
-      <PostingWizard
-        open={wizardOpen}
-        onClose={() => setWizardOpen(false)}
-        onCreated={() => refresh()}
-        quota={quota as any}
-        myVenues={items.venues as any}
-      />
+      {wizardOpen && (
+        <Suspense fallback={null}>
+          <PostingWizard
+            open={wizardOpen}
+            onClose={() => setWizardOpen(false)}
+            onCreated={() => refresh()}
+            quota={quota as any}
+            myVenues={items.venues as any}
+          />
+        </Suspense>
+      )}
     </div>
   );
 }
@@ -650,71 +655,6 @@ function ItemRow(props: {
 
 /* ----------------------------- VENUE DIALOG ------------------------------ */
 
-function PinMap({
-  lat,
-  lng,
-  onChange,
-}: {
-  lat: number;
-  lng: number;
-  onChange: (lat: number, lng: number) => void;
-}) {
-  const ref = useRef<HTMLDivElement>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
-  const markerRef = useRef<maplibregl.Marker | null>(null);
-
-  useEffect(() => {
-    if (!ref.current || mapRef.current) return;
-    const map = new maplibregl.Map({
-      container: ref.current,
-      style: {
-        version: 8,
-        sources: {
-          osm: {
-            type: "raster",
-            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-            tileSize: 256,
-            attribution: "© OpenStreetMap",
-          },
-        },
-        layers: [{ id: "osm", type: "raster", source: "osm" }],
-      },
-      center: [lng, lat],
-      zoom: 13,
-    });
-    mapRef.current = map;
-    const marker = new maplibregl.Marker({ color: "#dc2626", draggable: true })
-      .setLngLat([lng, lat])
-      .addTo(map);
-    marker.on("dragend", () => {
-      const p = marker.getLngLat();
-      onChange(p.lat, p.lng);
-    });
-    map.on("click", (e) => {
-      marker.setLngLat([e.lngLat.lng, e.lngLat.lat]);
-      onChange(e.lngLat.lat, e.lngLat.lng);
-    });
-    markerRef.current = marker;
-    return () => {
-      map.remove();
-      mapRef.current = null;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (markerRef.current) markerRef.current.setLngLat([lng, lat]);
-  }, [lat, lng]);
-
-  return (
-    <div className="space-y-1">
-      <div ref={ref} className="w-full h-56 rounded border" />
-      <div className="text-xs text-muted-foreground">
-        Click pe hartă sau trage pin-ul pentru a seta locația.
-      </div>
-    </div>
-  );
-}
 
 async function uploadCover(userId: string, file: File): Promise<string> {
   if (!file.type.startsWith("image/")) throw new Error("Doar imagini sunt acceptate.");
@@ -866,11 +806,14 @@ function VenueDialog({
             <Label className="flex items-center gap-1">
               <MapPin className="w-4 h-4" /> Locație pe hartă *
             </Label>
-            <PinMap
-              lat={form.lat}
-              lng={form.lng}
-              onChange={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
-            />
+            <Suspense fallback={<div className="w-full h-56 rounded border bg-muted animate-pulse" />}>
+              <PinMap
+                lat={form.lat}
+                lng={form.lng}
+                onChange={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
+                helper
+              />
+            </Suspense>
           </div>
 
           <div>
@@ -1049,11 +992,14 @@ function EventDialog({
             <Label className="flex items-center gap-1">
               <MapPin className="w-4 h-4" /> Locație *
             </Label>
-            <PinMap
-              lat={form.lat}
-              lng={form.lng}
-              onChange={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
-            />
+            <Suspense fallback={<div className="w-full h-56 rounded border bg-muted animate-pulse" />}>
+              <PinMap
+                lat={form.lat}
+                lng={form.lng}
+                onChange={(lat, lng) => setForm((f) => ({ ...f, lat, lng }))}
+                helper
+              />
+            </Suspense>
           </div>
           <div>
             <Label>Imagine de copertă</Label>
