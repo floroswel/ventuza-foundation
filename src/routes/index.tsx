@@ -6,7 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { setLanguage } from "@/lib/i18n";
 import suzetaIcon from "@/assets/suzeta-icon.png.asset.json";
-import suzetaWordmark from "@/assets/suzeta-wordmark-light.png.asset.json";
+import suzetaWordmark from "@/assets/suzeta-wordmark-dark.png.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({
