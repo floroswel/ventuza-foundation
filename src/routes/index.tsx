@@ -93,16 +93,11 @@ function Welcome() {
         <img
           src={suzetaIcon.url}
           alt=""
-          width={88}
-          height={88}
-          className="mb-5 size-[88px] rounded-3xl shadow-xl shadow-primary/20"
+          width={96}
+          height={96}
+          className="mb-5 size-24 rounded-3xl shadow-xl shadow-primary/20"
         />
-        <h1 className="sr-only">Suzeta</h1>
-        <img
-          src={suzetaWordmark.url}
-          alt="Suzeta"
-          className="h-14 w-auto sm:h-16"
-        />
+        <h1 className="wordmark text-6xl font-medium leading-[0.95] sm:text-7xl">Suzeta</h1>
         <p className="mt-5 max-w-sm text-base leading-relaxed text-muted-foreground">
           {t("landing.tagline")}
         </p>
