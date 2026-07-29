@@ -139,6 +139,7 @@ function Onboarding() {
   const [hydrated, setHydrated] = useState(false);
   const [donePush, setDonePush] = useState(false);
   const [birthdateLocked, setBirthdateLocked] = useState(false);
+  const [attempted, setAttempted] = useState(false);
 
   // Hydrate din Supabase (draft) + prefill din profil. Fallback: dacă există un
   // draft legacy în localStorage și DB-ul e gol, îl migrăm o dată.
