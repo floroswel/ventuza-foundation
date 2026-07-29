@@ -1,6 +1,8 @@
-import { Link, useLocation } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { Link, useLocation, useRouter } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+
 
 // Custom line-art icons matching the Ventuza brand strip
 
