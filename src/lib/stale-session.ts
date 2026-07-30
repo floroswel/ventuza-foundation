@@ -1,0 +1,79 @@
+// Stale-session reaper.
+//
+// Dacă userul a fost șters server-side (sau tokenul de refresh a fost revocat),
+// clientul rămâne cu o sesiune „fantomă" în localStorage: fiecare cerere
+// întoarce 403 `user_not_found` / 400 `refresh_token_not_found`, iar UI-ul se
+// blochează (onboarding dă 409 pe FK, Guardian se umple de incidente).
+//
+// Soluția: verificăm identitatea la server; dacă userul nu mai există, curățăm
+// local sesiunea și trimitem userul la /auth. Fără pași manuali.
+
+import { supabase } from "@/integrations/supabase/client";
+
+const STALE_CODES = new Set([
+  "user_not_found",
+  "refresh_token_not_found",
+  "session_not_found",
+  "user_banned_missing", // defensive
+]);
+
+function isStale(err: unknown): boolean {
+  if (!err) return false;
+  const e = err as { code?: string; message?: string; status?: number };
+  if (e.code && STALE_CODES.has(e.code)) return true;
+  const m = (e.message ?? "").toLowerCase();
+  return (
+    m.includes("user from sub claim in jwt does not exist") ||
+    m.includes("refresh token not found") ||
+    m.includes("session from session_id claim in jwt does not exist")
+  );
+}
+
+let purging = false;
+
+/** Curăță sesiunea locală și duce userul la ecranul de autentificare. */
+export async function purgeStaleSession(reason: string) {
+  if (purging || typeof window === "undefined") return;
+  purging = true;
+  try {
+    console.warn("[auth] sesiune invalidă, se curăță local:", reason);
+    try {
+      await supabase.auth.signOut({ scope: "local" });
+    } catch {
+      /* ignore */
+    }
+    try {
+      for (const k of Object.keys(window.localStorage)) {
+        if (k.startsWith("sb-") && k.includes("auth-token")) window.localStorage.removeItem(k);
+      }
+    } catch {
+      /* ignore */
+    }
+    const path = window.location.pathname;
+    if (!path.startsWith("/auth") && path !== "/") {
+      window.location.replace("/auth");
+    } else {
+      window.location.reload();
+    }
+  } finally {
+    // lăsăm flagul setat: pagina oricum se reîncarcă
+  }
+}
+
+/**
+ * Verifică o singură dată identitatea la server. Întoarce `true` dacă sesiunea
+ * era invalidă și a fost curățată.
+ */
+export async function reapStaleSession(): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  const { data: sessionData } = await supabase.auth.getSession();
+  if (!sessionData.session) return false;
+  const { error } = await supabase.auth.getUser();
+  if (isStale(error)) {
+    await purgeStaleSession(String((error as { code?: string })?.code ?? error?.message));
+    return true;
+  }
+  return false;
+}
+
+export { isStale as isStaleSessionError };
