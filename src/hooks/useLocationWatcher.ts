@@ -58,9 +58,17 @@ export function useLocationWatcher() {
     }
     void fetchFlag();
     const t = setInterval(() => void fetchFlag(), 60_000);
+    // Reacție imediată la toggle-ul din UI — nu așteptăm poll-ul de 60s.
+    const onChanged = (e: Event) => {
+      const enabled = (e as CustomEvent<{ enabled?: boolean }>).detail?.enabled;
+      if (typeof enabled === "boolean") setSharingEnabled(enabled);
+      else void fetchFlag();
+    };
+    window.addEventListener(LOCATION_SHARING_CHANGED_EVENT, onChanged);
     return () => {
       cancelled = true;
       clearInterval(t);
+      window.removeEventListener(LOCATION_SHARING_CHANGED_EVENT, onChanged);
     };
   }, [user]);
 
