@@ -20,39 +20,8 @@
     "prompt-answers"
   ],
   "checks": 48,
-  "issueCount": 30,
-  "issues": [
-    "[gender-360-light] țintă tactilă mică: 38px",
-    "[pronouns-360-light] țintă tactilă mică: 38px",
-    "[orientation-360-light] țintă tactilă mică: 38px",
-    "[looking-for-360-light] țintă tactilă mică: 38px",
-    "[interests-360-light] țintă tactilă mică: 38px",
-    "[gender-360-dark] țintă tactilă mică: 38px",
-    "[pronouns-360-dark] țintă tactilă mică: 38px",
-    "[orientation-360-dark] țintă tactilă mică: 38px",
-    "[looking-for-360-dark] țintă tactilă mică: 38px",
-    "[interests-360-dark] țintă tactilă mică: 38px",
-    "[gender-390-light] țintă tactilă mică: 38px",
-    "[pronouns-390-light] țintă tactilă mică: 38px",
-    "[orientation-390-light] țintă tactilă mică: 38px",
-    "[looking-for-390-light] țintă tactilă mică: 38px",
-    "[interests-390-light] țintă tactilă mică: 38px",
-    "[gender-390-dark] țintă tactilă mică: 38px",
-    "[pronouns-390-dark] țintă tactilă mică: 38px",
-    "[orientation-390-dark] țintă tactilă mică: 38px",
-    "[looking-for-390-dark] țintă tactilă mică: 38px",
-    "[interests-390-dark] țintă tactilă mică: 38px",
-    "[gender-430-light] țintă tactilă mică: 38px",
-    "[pronouns-430-light] țintă tactilă mică: 38px",
-    "[orientation-430-light] țintă tactilă mică: 38px",
-    "[looking-for-430-light] țintă tactilă mică: 38px",
-    "[interests-430-light] țintă tactilă mică: 38px",
-    "[gender-430-dark] țintă tactilă mică: 38px",
-    "[pronouns-430-dark] țintă tactilă mică: 38px",
-    "[orientation-430-dark] țintă tactilă mică: 38px",
-    "[looking-for-430-dark] țintă tactilă mică: 38px",
-    "[interests-430-dark] țintă tactilă mică: 38px"
-  ],
+  "issueCount": 0,
+  "issues": [],
   "results": [
     {
       "field": "display-name",
@@ -85,9 +54,7 @@
       "label": "Gender",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/gender-360-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "pronouns",
@@ -98,9 +65,7 @@
       "label": "Pronouns",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/pronouns-360-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "orientation",
@@ -111,9 +76,7 @@
       "label": "Orientation",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/orientation-360-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "looking-for",
@@ -124,9 +87,7 @@
       "label": "Looking for",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/looking-for-360-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "interests",
@@ -137,9 +98,7 @@
       "label": "Interests (min. 3)",
       "sectionsInStep": 2,
       "screenshot": "screenshots-onboarding/interests-360-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "prompt-answers",
@@ -183,9 +142,7 @@
       "label": "Gender",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/gender-360-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "pronouns",
@@ -196,9 +153,7 @@
       "label": "Pronouns",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/pronouns-360-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "orientation",
@@ -209,9 +164,7 @@
       "label": "Orientation",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/orientation-360-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "looking-for",
@@ -222,9 +175,7 @@
       "label": "Looking for",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/looking-for-360-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "interests",
@@ -235,9 +186,7 @@
       "label": "Interests (min. 3)",
       "sectionsInStep": 2,
       "screenshot": "screenshots-onboarding/interests-360-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "prompt-answers",
@@ -281,9 +230,7 @@
       "label": "Gender",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/gender-390-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "pronouns",
@@ -294,9 +241,7 @@
       "label": "Pronouns",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/pronouns-390-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "orientation",
@@ -307,9 +252,7 @@
       "label": "Orientation",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/orientation-390-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "looking-for",
@@ -320,9 +263,7 @@
       "label": "Looking for",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/looking-for-390-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "interests",
@@ -333,9 +274,7 @@
       "label": "Interests (min. 3)",
       "sectionsInStep": 2,
       "screenshot": "screenshots-onboarding/interests-390-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "prompt-answers",
@@ -379,9 +318,7 @@
       "label": "Gender",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/gender-390-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "pronouns",
@@ -392,9 +329,7 @@
       "label": "Pronouns",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/pronouns-390-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "orientation",
@@ -405,9 +340,7 @@
       "label": "Orientation",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/orientation-390-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "looking-for",
@@ -418,9 +351,7 @@
       "label": "Looking for",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/looking-for-390-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "interests",
@@ -431,9 +362,7 @@
       "label": "Interests (min. 3)",
       "sectionsInStep": 2,
       "screenshot": "screenshots-onboarding/interests-390-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "prompt-answers",
@@ -477,9 +406,7 @@
       "label": "Gender",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/gender-430-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "pronouns",
@@ -490,9 +417,7 @@
       "label": "Pronouns",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/pronouns-430-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "orientation",
@@ -503,9 +428,7 @@
       "label": "Orientation",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/orientation-430-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "looking-for",
@@ -516,9 +439,7 @@
       "label": "Looking for",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/looking-for-430-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "interests",
@@ -529,9 +450,7 @@
       "label": "Interests (min. 3)",
       "sectionsInStep": 2,
       "screenshot": "screenshots-onboarding/interests-430-light.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "prompt-answers",
@@ -575,9 +494,7 @@
       "label": "Gender",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/gender-430-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "pronouns",
@@ -588,9 +505,7 @@
       "label": "Pronouns",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/pronouns-430-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "orientation",
@@ -601,9 +516,7 @@
       "label": "Orientation",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/orientation-430-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "looking-for",
@@ -614,9 +527,7 @@
       "label": "Looking for",
       "sectionsInStep": 5,
       "screenshot": "screenshots-onboarding/looking-for-430-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "interests",
@@ -627,9 +538,7 @@
       "label": "Interests (min. 3)",
       "sectionsInStep": 2,
       "screenshot": "screenshots-onboarding/interests-430-dark.png",
-      "issues": [
-        "țintă tactilă mică: 38px"
-      ]
+      "issues": []
     },
     {
       "field": "prompt-answers",
