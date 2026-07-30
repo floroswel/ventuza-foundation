@@ -250,6 +250,8 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
+    // Forțează domeniul canonic (suzeta.app) — altfel OAuth pleacă cu ventuza.app.
+    enforceCanonicalHost();
     // Recuperare automată din chunk-uri vechi după o publicare nouă.
     installChunkRecovery();
     // Global crash logger (device local, ring buffer 50).
