@@ -59,7 +59,8 @@ switch (mode) {
     console.error(`Mod necunoscut: ${mode}`);
     process.exit(1);
 }
-if (flags.code && mode !== "set") nextCode = parseInt(String(flags.code), 10);
+nextCode = codeFor(nextName);
+if (flags.code) nextCode = parseInt(String(flags.code), 10);
 
 if (!/^\d+\.\d+\.\d+$/.test(nextName)) {
   console.error(`versionName invalid: ${nextName}`);
