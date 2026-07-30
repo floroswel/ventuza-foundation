@@ -29,6 +29,17 @@ export function SessionGuards() {
 
   useDeviceFingerprint();
 
+  // Sesiune fantomă (user șters server-side / refresh token revocat) → curățăm
+  // local și trimitem la /auth, altfel app-ul rămâne blocat în 403/409.
+  useEffect(() => {
+    void (async () => {
+      const { reapStaleSession } = await import("@/lib/stale-session");
+      await reapStaleSession();
+    })();
+  }, []);
+
+
+
   // Email-confirmation guard. OAuth providers (Google/Apple) auto-confirm so
   // this affects only email/password signups that bypass the check-email step.
   useEffect(() => {
