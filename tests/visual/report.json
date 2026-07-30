@@ -1,0 +1,360 @@
+{
+  "baseUrl": "http://localhost:8080",
+  "viewports": [
+    360,
+    390,
+    430
+  ],
+  "themes": [
+    "light",
+    "dark"
+  ],
+  "screens": [
+    "welcome",
+    "auth",
+    "onboarding",
+    "profile"
+  ],
+  "checks": 24,
+  "issueCount": 24,
+  "issues": [
+    "[welcome-360-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[auth-360-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[onboarding-360-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[profile-360-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[welcome-360-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[auth-360-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[onboarding-360-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[profile-360-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[welcome-390-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[auth-390-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[onboarding-390-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[profile-390-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[welcome-390-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[auth-390-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[onboarding-390-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[profile-390-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[welcome-430-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[auth-430-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[onboarding-430-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[profile-430-light] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[welcome-430-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[auth-430-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[onboarding-430-dark] font de bază neașteptat: Inter, system-ui, sans-serif",
+    "[profile-430-dark] font de bază neașteptat: Inter, system-ui, sans-serif"
+  ],
+  "results": [
+    {
+      "screen": "welcome",
+      "path": "/",
+      "width": 360,
+      "theme": "light",
+      "screenshot": "screenshots/welcome-360-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "auth",
+      "path": "/auth",
+      "width": 360,
+      "theme": "light",
+      "screenshot": "screenshots/auth-360-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "onboarding",
+      "path": "/n",
+      "width": 360,
+      "theme": "light",
+      "screenshot": "screenshots/onboarding-360-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "profile",
+      "path": "/profile",
+      "width": 360,
+      "theme": "light",
+      "screenshot": "screenshots/profile-360-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "welcome",
+      "path": "/",
+      "width": 360,
+      "theme": "dark",
+      "screenshot": "screenshots/welcome-360-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "auth",
+      "path": "/auth",
+      "width": 360,
+      "theme": "dark",
+      "screenshot": "screenshots/auth-360-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "onboarding",
+      "path": "/n",
+      "width": 360,
+      "theme": "dark",
+      "screenshot": "screenshots/onboarding-360-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "profile",
+      "path": "/profile",
+      "width": 360,
+      "theme": "dark",
+      "screenshot": "screenshots/profile-360-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "welcome",
+      "path": "/",
+      "width": 390,
+      "theme": "light",
+      "screenshot": "screenshots/welcome-390-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "auth",
+      "path": "/auth",
+      "width": 390,
+      "theme": "light",
+      "screenshot": "screenshots/auth-390-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "onboarding",
+      "path": "/n",
+      "width": 390,
+      "theme": "light",
+      "screenshot": "screenshots/onboarding-390-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "profile",
+      "path": "/profile",
+      "width": 390,
+      "theme": "light",
+      "screenshot": "screenshots/profile-390-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "welcome",
+      "path": "/",
+      "width": 390,
+      "theme": "dark",
+      "screenshot": "screenshots/welcome-390-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "auth",
+      "path": "/auth",
+      "width": 390,
+      "theme": "dark",
+      "screenshot": "screenshots/auth-390-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "onboarding",
+      "path": "/n",
+      "width": 390,
+      "theme": "dark",
+      "screenshot": "screenshots/onboarding-390-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "profile",
+      "path": "/profile",
+      "width": 390,
+      "theme": "dark",
+      "screenshot": "screenshots/profile-390-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "welcome",
+      "path": "/",
+      "width": 430,
+      "theme": "light",
+      "screenshot": "screenshots/welcome-430-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "auth",
+      "path": "/auth",
+      "width": 430,
+      "theme": "light",
+      "screenshot": "screenshots/auth-430-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "onboarding",
+      "path": "/n",
+      "width": 430,
+      "theme": "light",
+      "screenshot": "screenshots/onboarding-430-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "profile",
+      "path": "/profile",
+      "width": 430,
+      "theme": "light",
+      "screenshot": "screenshots/profile-430-light.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "welcome",
+      "path": "/",
+      "width": 430,
+      "theme": "dark",
+      "screenshot": "screenshots/welcome-430-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "auth",
+      "path": "/auth",
+      "width": 430,
+      "theme": "dark",
+      "screenshot": "screenshots/auth-430-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "onboarding",
+      "path": "/n",
+      "width": 430,
+      "theme": "dark",
+      "screenshot": "screenshots/onboarding-430-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    },
+    {
+      "screen": "profile",
+      "path": "/profile",
+      "width": 430,
+      "theme": "dark",
+      "screenshot": "screenshots/profile-430-dark.png",
+      "fontFamily": "Inter, system-ui, sans-serif",
+      "bodyBg": "oklch(0.13 0.012 275)",
+      "hasBrandGradient": true,
+      "issues": [
+        "font de bază neașteptat: Inter, system-ui, sans-serif"
+      ]
+    }
+  ]
+}
