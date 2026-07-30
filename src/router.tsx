@@ -32,8 +32,30 @@ function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => vo
   );
 }
 
+/**
+ * Preload-ul rutelor protejate (redirect în beforeLoad) poate produce în
+ * router-core o respingere internă `Cannot read properties of undefined
+ * (reading '_nonReactive')`. Nu afectează navigarea reală, dar ajungea la
+ * error boundary și afișa „This page didn't load" (ex. pe /messages).
+ */
+function installPreloadRejectionGuard() {
+  if (typeof window === "undefined") return;
+  const w = window as typeof window & { __suzetaPreloadGuard?: boolean };
+  if (w.__suzetaPreloadGuard) return;
+  w.__suzetaPreloadGuard = true;
+  window.addEventListener("unhandledrejection", (event) => {
+    const reason = event.reason as { message?: string; stack?: string } | undefined;
+    const text = `${reason?.message ?? ""} ${reason?.stack ?? ""}`;
+    if (text.includes("_nonReactive") || text.includes("preloadRoute")) {
+      event.preventDefault();
+    }
+  });
+}
+
 export const getRouter = () => {
+  installPreloadRejectionGuard();
   const queryClient = new QueryClient();
+
 
   const router = createRouter({
     routeTree,
