@@ -125,13 +125,16 @@ function AuthPage() {
   const captchaMisconfigured = isTurnstileMisconfiguredInProd();
   const [googleBusy, setGoogleBusy] = useState(false);
   const [isNative, setIsNative] = useState(false);
+  const [nativeGoogleReady, setNativeGoogleReady] = useState(hasNativeGoogleConfig());
   useEffect(() => {
     void isNativeAndroid().then(setIsNative);
+    void hasNativeGoogleConfigAsync().then(setNativeGoogleReady);
   }, []);
   // Butonul Google apare doar dacă avem cale funcțională:
-  //  - pe Android nativ: doar dacă VITE_GOOGLE_WEB_CLIENT_ID e setat (altfel WebView Google → 403)
+  //  - pe Android nativ: doar dacă avem Web Client ID (env sau secret server)
   //  - pe web: mereu (broker Lovable managed OAuth)
-  const googleAvailable = isNative ? hasNativeGoogleConfig() : true;
+  const googleAvailable = isNative ? nativeGoogleReady : true;
+
 
   async function onGoogleSignIn() {
     if (googleBusy) return;
