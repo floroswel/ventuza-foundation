@@ -16,8 +16,10 @@ import {
   markAllRead as markAllReadApi,
   markRead as markReadApi,
   deleteNotification as deleteNotificationApi,
+  BELL_TYPES,
   type NotificationRow,
 } from "@/lib/notifications";
+import { conversationIdFromLink, isViewingConversation } from "@/lib/active-conversation";
 import { toast } from "sonner";
 import {
   playNotificationSound,
