@@ -302,7 +302,10 @@ function RootComponent() {
             <CountryRiskGuard />
             <ProximityWatcherMount />
             <NativePushNavigatorMount />
-            <Outlet />
+            <GuardianBoundary area="app" category="react">
+              <Outlet />
+            </GuardianBoundary>
+
             <OfflineBanner />
             <LocationPermissionPromptMount />
             <AgeGate />
