@@ -1,5 +1,9 @@
-Suzeta 1.0.3
+Suzeta 1.0.3 — release ready
 
-- Improvements and bug fixes.
-
-Completează înainte de upload pe Play Console.
+• Full Discover grid: see every member, with a green dot for people online and live distance updates.
+• Messaging fixed and faster: reliable send/receive, sound only (no duplicate banner) while you are inside a chat.
+• The notification bell now shows profile visitors only.
+• New Suzeta branding: logo, colors and typography refreshed across the app.
+• More reliable Google Sign-In on Android.
+• Automatic recovery after updates (no more blank screens).
+• Security and stability fixes.
