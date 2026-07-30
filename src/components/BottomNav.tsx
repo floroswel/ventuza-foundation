@@ -43,8 +43,18 @@ export function BottomNav() {
       () => {
         for (const item of items) {
           if (item.to === pathname) continue;
-          void router.preloadRoute({ to: item.to }).catch(() => {});
+          // Rutele protejate redirecționează în beforeLoad; preload-ul poate
+          // arunca intern (unhandled rejection) → prindem TOT, sincron + async.
+          try {
+            const p = router.preloadRoute({ to: item.to }) as unknown;
+            if (p && typeof (p as Promise<unknown>).catch === "function") {
+              void (p as Promise<unknown>).catch(() => {});
+            }
+          } catch {
+            /* ignore */
+          }
         }
+
       },
       { timeout: 2500 },
     );
