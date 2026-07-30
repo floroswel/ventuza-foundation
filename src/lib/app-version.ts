@@ -4,7 +4,8 @@
  * la fiecare release (semver). Nu se cita hardcode în altă parte — importă
  * din acest modul.
  */
-export const APP_VERSION = "1.0.0";
+// Sincronizat automat cu release/version.json de scripts/bump-android-version.mjs.
+export const APP_VERSION = "1.0.3";
 
 export function detectPlatform(): "web" | "ios" | "android" {
   if (typeof navigator === "undefined") return "web";

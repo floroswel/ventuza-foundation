@@ -39,6 +39,12 @@ const flags = Object.fromEntries(
 const current = JSON.parse(readFileSync(VERSION_FILE, "utf8"));
 let [maj, min, pat] = current.versionName.split(".").map((n) => parseInt(n, 10));
 let nextName = current.versionName;
+// Formula identică cu .github/workflows/android-release.yml, ca upload-ul CI și
+// Fastlane să folosească exact același versionCode.
+const codeFor = (name) => {
+  const [a, b, c] = name.split(".").map((n) => parseInt(n, 10) || 0);
+  return a * 10000 + b * 100 + c;
+};
 let nextCode = current.versionCode + 1;
 
 switch (mode) {
@@ -53,7 +59,8 @@ switch (mode) {
     console.error(`Mod necunoscut: ${mode}`);
     process.exit(1);
 }
-if (flags.code && mode !== "set") nextCode = parseInt(String(flags.code), 10);
+nextCode = codeFor(nextName);
+if (flags.code) nextCode = parseInt(String(flags.code), 10);
 
 if (!/^\d+\.\d+\.\d+$/.test(nextName)) {
   console.error(`versionName invalid: ${nextName}`);
@@ -67,6 +74,20 @@ if (!Number.isInteger(nextCode) || nextCode <= current.versionCode) {
 const next = { ...current, versionName: nextName, versionCode: nextCode };
 writeFileSync(VERSION_FILE, JSON.stringify(next, null, 2) + "\n");
 console.log(`✓ release/version.json → ${nextName} (code ${nextCode})`);
+
+// Menține APP_VERSION (folosit de VersionGate) sincron cu versionName-ul de release.
+const APP_VERSION_FILE = resolve(ROOT, "src/lib/app-version.ts");
+if (existsSync(APP_VERSION_FILE)) {
+  const src = readFileSync(APP_VERSION_FILE, "utf8");
+  const patched = src.replace(
+    /export const APP_VERSION = "[^"]*";/,
+    `export const APP_VERSION = "${nextName}";`,
+  );
+  if (patched !== src) {
+    writeFileSync(APP_VERSION_FILE, patched);
+    console.log(`✓ src/lib/app-version.ts → APP_VERSION="${nextName}"`);
+  }
+}
 
 // Pre-generare changelog pentru fiecare locale (max 500 chars conform Play Store).
 const locales = readdirSync(METADATA_DIR, { withFileTypes: true })

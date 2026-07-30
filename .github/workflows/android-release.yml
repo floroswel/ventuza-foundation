@@ -462,6 +462,22 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+      - name: Pregătește release notes (din fastlane/metadata)
+        id: whatsnew
+        run: |
+          CODE="${{ steps.version.outputs.code }}"
+          OUT=distribution/whatsnew
+          mkdir -p "$OUT"
+          for LOC in ro-RO en-US; do
+            SRC="fastlane/metadata/android/$LOC/changelogs/$CODE.txt"
+            [ -f "$SRC" ] || SRC="fastlane/metadata/android/$LOC/changelogs/default.txt"
+            if [ -f "$SRC" ]; then
+              head -c 490 "$SRC" > "$OUT/whatsnew-$LOC"
+              echo "✓ $OUT/whatsnew-$LOC (din $SRC)"
+            fi
+          done
+          ls -la "$OUT"
+
       - name: Publish în Google Play
         if: ${{ github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true' }}
         uses: r0adkll/upload-google-play@v1.1.5
@@ -471,6 +487,7 @@ jobs:
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
           track: ${{ github.event.inputs.track || 'internal' }}
           status: ${{ github.event.inputs.release_status || 'draft' }}
+          whatsNewDirectory: distribution/whatsnew
           mappingFile: android/app/build/outputs/mapping/release/mapping.txt
           changesNotSentForReview: false
 

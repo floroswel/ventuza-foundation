@@ -1,0 +1,9 @@
+Suzeta 1.0.3 — pregătit pentru lansare
+
+• Grilă Descoperă completă: vezi toți membrii, cu bulină verde pentru cei online și distanță actualizată în timp real.
+• Mesagerie reparată și mai rapidă: trimitere/primire stabilă, sunet fără notificare dublă când ești deja în conversație.
+• Clopoțelul de notificări arată doar vizitatorii profilului tău.
+• Brand nou Suzeta: logo, culori și tipografie actualizate în toată aplicația.
+• Autentificare Google mai stabilă pe Android.
+• Recuperare automată după actualizări (fără ecrane albe).
+• Corecții de securitate și stabilitate.
