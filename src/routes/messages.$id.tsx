@@ -1,3 +1,4 @@
+import { setActiveConversation } from "@/lib/active-conversation";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -132,7 +133,15 @@ function ThreadPage() {
   const tr = useServerFn(translateText);
   const verifyFn = useServerFn(verifySelfie);
 
+  // Marchează conversația ca „deschisă" — suprimă toast-ul de mesaj nou
+  // pentru acest thread (rămâne doar sunetul).
+  useEffect(() => {
+    setActiveConversation(id);
+    return () => setActiveConversation(null);
+  }, [id]);
+
   // Load my verification status + main photo path once
+
   useEffect(() => {
     if (!user) return;
     void supabase

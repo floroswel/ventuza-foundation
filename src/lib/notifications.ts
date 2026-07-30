@@ -23,10 +23,17 @@ export type NotificationRow = {
   created_at: string;
 };
 
+/**
+ * Clopoțelul afișează EXCLUSIV vizitele de profil.
+ * Mesajele trăiesc în tab-ul Mesaje, nu în clopoțel — regulă permanentă.
+ */
+export const BELL_TYPES: NotificationType[] = ["profile_view"];
+
 export async function listNotifications(limit = 50): Promise<NotificationRow[]> {
   const { data, error } = await supabase
     .from("notifications")
     .select("*")
+    .in("type", BELL_TYPES)
     .order("created_at", { ascending: false })
     .limit(limit);
   if (error) throw error;
@@ -37,6 +44,7 @@ export async function unreadCount(): Promise<number> {
   const { count, error } = await supabase
     .from("notifications")
     .select("id", { count: "exact", head: true })
+    .in("type", BELL_TYPES)
     .is("read_at", null);
   if (error) throw error;
   return count ?? 0;
@@ -59,9 +67,11 @@ export async function markAllRead() {
     .from("notifications")
     .update({ read_at: new Date().toISOString() })
     .eq("user_id", uid)
+    .in("type", BELL_TYPES)
     .is("read_at", null);
   if (error) throw error;
 }
+
 
 export async function deleteNotification(id: string) {
   const { error } = await supabase.from("notifications").delete().eq("id", id);
