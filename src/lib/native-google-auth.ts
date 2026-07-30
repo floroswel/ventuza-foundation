@@ -31,22 +31,45 @@ export async function isNativePlatform(): Promise<boolean> {
   }
 }
 
-function webClientId(): string | null {
-  // Client-side env (public — audience pentru id_token). Trebuie să fie tipul
-  // "Web application" din Google Cloud Console și să fie și în lista de
-  // audiențe acceptate ale providerului Google din Supabase Auth.
+let cachedClientId: string | null = null;
+let clientIdProbe: Promise<string | null> | null = null;
+
+function webClientIdSync(): string | null {
+  // Build-time env (opțional). Sursa primară e secretul server-side
+  // GOOGLE_OAUTH_CLIENT_ID, citit prin `getGoogleWebClientId`.
   const id = (import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID as string | undefined) ?? "";
-  return id.trim() ? id.trim() : null;
+  return id.trim() ? id.trim() : cachedClientId;
+}
+
+/** Rezolvă Client ID-ul: env build-time → cache → secret server-side. */
+export async function resolveWebClientId(): Promise<string | null> {
+  const local = webClientIdSync();
+  if (local) return local;
+  if (!clientIdProbe) {
+    clientIdProbe = import("@/lib/google-config.functions")
+      .then(({ getGoogleWebClientId }) => getGoogleWebClientId())
+      .then((r) => {
+        cachedClientId = r?.clientId ?? null;
+        return cachedClientId;
+      })
+      .catch(() => null);
+  }
+  return clientIdProbe;
 }
 
 export function hasNativeGoogleConfig(): boolean {
-  return webClientId() !== null;
+  return webClientIdSync() !== null;
 }
 
-export function nativeGoogleSupported(): Promise<boolean> {
-  if (!webClientId()) return Promise.resolve(false);
+export async function hasNativeGoogleConfigAsync(): Promise<boolean> {
+  return (await resolveWebClientId()) !== null;
+}
+
+export async function nativeGoogleSupported(): Promise<boolean> {
+  if (!(await resolveWebClientId())) return false;
   return isNativeAndroid();
 }
+
 
 
 async function ensureInit(clientId: string): Promise<void> {
