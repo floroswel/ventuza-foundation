@@ -13,6 +13,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { installChunkRecovery, isStaleChunkError, recoverFromStaleChunk } from "@/lib/chunk-recovery";
+import { enforceCanonicalHost } from "@/lib/canonical-origin";
 
 import { AuthProvider } from "@/lib/auth-context";
 import { NotificationsProvider } from "@/lib/notifications-context";
@@ -250,6 +251,8 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
+    // Forțează domeniul canonic (suzeta.app) — altfel OAuth pleacă cu ventuza.app.
+    enforceCanonicalHost();
     // Recuperare automată din chunk-uri vechi după o publicare nouă.
     installChunkRecovery();
     // Global crash logger (device local, ring buffer 50).
