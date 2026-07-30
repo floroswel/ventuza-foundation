@@ -9,7 +9,7 @@ Rulează fără dependențe externe (doar Playwright). Pentru fiecare
      - niciun text „Ventuza" în DOM,
      - nicio culoare din paleta veche purple/indigo folosită ca
        background/color/border pe elemente vizibile,
-     - fontul de bază este Space Grotesk,
+     - fontul body este tokenul sans (Inter), titlurile Space Grotesk,
      - fundalul body este tokenul dark #0B0B10 (în temă dark),
      - butonul primar folosește gradientul de brand (nu culoare plată),
   3. detectează overflow orizontal (scroll lateral pe mobil).
@@ -92,6 +92,8 @@ PROBE_JS = r"""
   }
 
   const body = getComputedStyle(document.body);
+  const heading = document.querySelector("h1, h2, .font-display, [class*=font-display]");
+  const headingFont = heading ? getComputedStyle(heading).fontFamily : null;
   const primary = document.querySelector("button, [role=button], a[class*=bg-brand]");
   const primaryStyle = primary ? getComputedStyle(primary) : null;
 
@@ -99,6 +101,7 @@ PROBE_JS = r"""
     text: (document.body.innerText || "").slice(0, 200000),
     legacyHits: hits.slice(0, 20),
     fontFamily: body.fontFamily,
+    headingFont: headingFont,
     bodyBg: body.backgroundColor,
     hasBrandGradient: Array.from(document.querySelectorAll("body *")).some(
       (el) => (getComputedStyle(el).backgroundImage || "").includes("gradient")
@@ -153,8 +156,10 @@ async def run() -> int:
                         local.append(
                             f"culori din paleta veche: {json.dumps(probe['legacyHits'][:3], ensure_ascii=False)}"
                         )
-                    if "Space Grotesk" not in (probe["fontFamily"] or ""):
-                        local.append(f"font de bază neașteptat: {probe['fontFamily']}")
+                    if "Inter" not in (probe["fontFamily"] or ""):
+                        local.append(f"font body neașteptat: {probe['fontFamily']}")
+                    if probe["headingFont"] and "Space Grotesk" not in probe["headingFont"]:
+                        local.append(f"font titlu neașteptat: {probe['headingFont']}")
                     if probe["overflowX"] > 1:
                         local.append(f"overflow orizontal: {probe['overflowX']}px")
 
@@ -166,6 +171,7 @@ async def run() -> int:
                             "theme": theme,
                             "screenshot": str(shot.relative_to(OUT_DIR)),
                             "fontFamily": probe["fontFamily"],
+                            "headingFont": probe["headingFont"],
                             "bodyBg": probe["bodyBg"],
                             "hasBrandGradient": probe["hasBrandGradient"],
                             "issues": local,
