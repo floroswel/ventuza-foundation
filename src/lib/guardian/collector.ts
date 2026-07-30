@@ -140,7 +140,7 @@ export function capture(input: CaptureInput) {
       _app_version: appVersion(),
       _platform: platform(),
       _client_info: clientInfo(),
-      _request_id: REQUEST_ID,
+      _request_id: requestId(),
       _breadcrumbs: BREADCRUMBS.slice(-MAX_BREADCRUMBS),
       _context: {
         ...(input.context ?? {}),
