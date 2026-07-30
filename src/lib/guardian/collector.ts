@@ -33,10 +33,18 @@ let installed = false;
 let queue: Array<Record<string, unknown>> = [];
 let flushTimer: ReturnType<typeof setTimeout> | undefined;
 
-export const REQUEST_ID =
-  typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID()
-    : `sess-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+// Lazy: workerd interzice crypto.randomUUID() / Math.random() în global scope,
+// iar bundle-ul SSR importă acest modul → crash la orice request.
+let _requestId: string | undefined;
+export function requestId(): string {
+  if (!_requestId) {
+    _requestId =
+      typeof crypto !== "undefined" && "randomUUID" in crypto
+        ? crypto.randomUUID()
+        : `sess-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+  return _requestId;
+}
 
 export function breadcrumb(type: string, label: string) {
   BREADCRUMBS.push({ t: new Date().toISOString(), type, label: redact(label, 160) });
