@@ -1,43 +1,76 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
-import { Loader2 } from "lucide-react";
-import { Trans, useTranslation } from "react-i18next";
+import { useEffect, useState } from "react";
+import {
+  Heart,
+  MapPin,
+  MessageCircle,
+  ShieldBan,
+  EyeOff,
+  Trash2,
+  ShieldCheck,
+} from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { setLanguage } from "@/lib/i18n";
+import { lovable } from "@/integrations/lovable";
+import { oauthOrigin } from "@/lib/canonical-origin";
 import suzetaIcon from "@/assets/suzeta-icon.png.asset.json";
+
+const APP_DESCRIPTION =
+  "Suzeta is a dating and social connection application for gay, bisexual, queer and other LGBTQ+ adults. Users can create profiles, discover nearby people, match, chat privately and build meaningful connections in a moderated community.";
+
+const SUPPORT_EMAIL = "support@suzeta.app";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Suzeta — Dating, elevated." },
-      {
-        name: "description",
-        content: "A premium, inclusive dating experience for people who want more than a swipe.",
-      },
-      { property: "og:title", content: "Suzeta — Dating, elevated." },
-      {
-        property: "og:description",
-        content: "Meet people who match your depth — not just your swipe.",
-      },
+      { title: "Suzeta — Gay Dating & LGBTQ+ Community" },
+      { name: "description", content: APP_DESCRIPTION },
+      { name: "robots", content: "index, follow" },
+      { property: "og:title", content: "Suzeta — Gay Dating & LGBTQ+ Community" },
+      { property: "og:description", content: APP_DESCRIPTION },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://suzeta.app/" },
+      { property: "og:site_name", content: "Suzeta" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Suzeta — Dating, elevated." },
+      { name: "twitter:title", content: "Suzeta — Gay Dating & LGBTQ+ Community" },
+      { name: "twitter:description", content: APP_DESCRIPTION },
+    ],
+    links: [{ rel: "canonical", href: "https://suzeta.app/" }],
+    scripts: [
       {
-        name: "twitter:description",
-        content: "Meet people who match your depth — not just your swipe.",
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebApplication",
+          name: "Suzeta",
+          url: "https://suzeta.app",
+          applicationCategory: "SocialNetworkingApplication",
+          operatingSystem: "Web, Android",
+          description: APP_DESCRIPTION,
+          offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+        }),
       },
     ],
   }),
-  component: Welcome,
+  component: Landing,
 });
 
-function Welcome() {
+const FEATURES = [
+  { icon: Heart, label: "Create a personal dating profile" },
+  { icon: MapPin, label: "Discover LGBTQ+ people" },
+  { icon: MessageCircle, label: "Match and chat privately" },
+  { icon: ShieldBan, label: "Block and report users" },
+  { icon: EyeOff, label: "Control profile visibility and privacy" },
+  { icon: Trash2, label: "Delete your account and personal data" },
+];
+
+function Landing() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const current = (i18n.resolvedLanguage || i18n.language || "en").startsWith("ro") ? "ro" : "en";
+  const [googleBusy, setGoogleBusy] = useState(false);
 
+  // Signed-in users are sent into the app; logged-out visitors and crawlers
+  // always get the full public landing page rendered server-side.
   useEffect(() => {
     if (loading || !user) return;
     void (async () => {
@@ -46,109 +79,152 @@ function Welcome() {
         .select("onboarding_completed")
         .eq("id", user.id)
         .maybeSingle();
-      navigate({
-        to: data?.onboarding_completed ? "/discover" : "/n",
-        replace: true,
-      });
+      navigate({ to: data?.onboarding_completed ? "/discover" : "/n", replace: true });
     })();
   }, [user, loading, navigate]);
 
-  if (loading || user) {
-    return (
-      <main className="flex min-h-dvh items-center justify-center bg-background">
-        <Loader2 className="size-6 animate-spin text-primary" />
-      </main>
-    );
+  async function handleGoogle() {
+    setGoogleBusy(true);
+    try {
+      await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: `${oauthOrigin()}/auth`,
+      });
+    } finally {
+      setGoogleBusy(false);
+    }
   }
 
   return (
-    <main className="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-background px-6 py-10 text-center">
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-32 left-1/2 h-[520px] w-[520px] -translate-x-1/2 rounded-full opacity-30 blur-3xl"
-        style={{ background: "radial-gradient(circle, var(--primary), transparent 65%)" }}
-      />
-
-      <div className="absolute right-4 top-4 z-20 inline-flex rounded-full border border-border bg-surface/80 p-0.5 text-[11px] backdrop-blur">
-        {(["ro", "en"] as const).map((lng) => (
-          <button
-            key={lng}
-            type="button"
-            onClick={() => void setLanguage(lng)}
-            className={`rounded-full px-3 py-1 uppercase tracking-wider transition-colors ${
-              current === lng ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {lng}
-          </button>
-        ))}
-      </div>
-
-      <section className="relative z-10 flex flex-col items-center">
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-surface px-4 py-1.5 text-xs uppercase tracking-[0.2em] text-primary">
-          <span className="inline-block size-1.5 rounded-full bg-primary" />
-          {t("landing.badge")}
-        </div>
-        <img
-          src={suzetaIcon.url}
-          alt=""
-          width={96}
-          height={96}
-          className="mb-5 size-24 rounded-3xl shadow-xl shadow-primary/20"
-        />
-        <h1 className="wordmark text-6xl font-medium leading-[0.95] sm:text-7xl">Suzeta</h1>
-        <p className="mt-5 max-w-sm text-base leading-relaxed text-muted-foreground">
-          {t("landing.tagline")}
-        </p>
-
-        <div className="mt-10 flex w-full max-w-xs flex-col gap-3">
-          <Link
-            to="/auth"
-            search={{ mode: "signup" }}
-            className="inline-flex h-12 items-center justify-center rounded-full bg-primary text-sm uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            {t("landing.createAccount")}
-          </Link>
-          <Link
-            to="/auth"
-            search={{ mode: "login" }}
-            className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 bg-surface text-sm uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary/10"
-          >
-            {t("landing.login")}
-          </Link>
-        </div>
-
-        <p className="mt-8 max-w-xs text-[11px] leading-relaxed text-muted-foreground">
-          <Trans
-            i18nKey="landing.footer"
-            components={{
-              1: <Link to="/legal/terms" className="text-primary hover:underline" />,
-              3: <Link to="/legal/privacy" className="text-primary hover:underline" />,
-            }}
+    <div className="min-h-dvh bg-background text-foreground">
+      <main className="mx-auto w-full max-w-3xl px-6 py-12">
+        {/* Hero */}
+        <section className="flex flex-col items-center text-center">
+          <img
+            src={suzetaIcon.url}
+            alt="Suzeta logo"
+            width={88}
+            height={88}
+            className="mb-5 size-22 rounded-3xl shadow-xl shadow-primary/20"
           />
-        </p>
+          <h1 className="wordmark text-5xl font-medium leading-none sm:text-6xl">Suzeta</h1>
+          <p className="mt-3 text-lg font-medium text-primary">
+            Gay Dating &amp; LGBTQ+ Community
+          </p>
+          <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground">
+            {APP_DESCRIPTION}
+          </p>
 
-        <div className="mt-12 flex w-full max-w-xs flex-col items-stretch gap-3">
-          <Link
-            to="/business"
-            className="group inline-flex items-center justify-between rounded-2xl border border-primary/30 bg-surface/60 px-4 py-3 text-left text-xs text-foreground transition-colors hover:border-primary/60 hover:bg-primary/5"
-          >
-            <span>
-              <span className="block text-sm font-medium">{t("landing.b2bTitle")}</span>
-              <span className="block text-[10px] uppercase tracking-[0.18em] text-muted-foreground">
-                {t("landing.b2bSubtitle")}
-              </span>
-            </span>
-            <span className="text-primary transition-transform group-hover:translate-x-0.5">→</span>
-          </Link>
-          <Link
-            to="/safety"
-            className="text-center text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary"
-          >
-            {t("landing.safety")}
-          </Link>
+          <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
+            <Link
+              to="/auth"
+              search={{ mode: "signup" }}
+              className="inline-flex h-12 items-center justify-center rounded-full bg-primary text-sm font-medium uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              Create account
+            </Link>
+            <Link
+              to="/auth"
+              search={{ mode: "login" }}
+              className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 bg-surface text-sm font-medium uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary/10"
+            >
+              Sign in
+            </Link>
+            <button
+              type="button"
+              onClick={() => void handleGoogle()}
+              disabled={googleBusy}
+              className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-surface text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-60"
+            >
+              Continue with Google
+            </button>
+          </div>
+        </section>
+
+        {/* Features */}
+        <section className="mt-14">
+          <h2 className="text-2xl font-semibold tracking-tight">What you can do on Suzeta</h2>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+            {FEATURES.map(({ icon: Icon, label }) => (
+              <li
+                key={label}
+                className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-4"
+              >
+                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                  <Icon className="size-4" />
+                </span>
+                <span className="text-sm leading-relaxed">{label}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* Safety */}
+        <section className="mt-14">
+          <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
+            <ShieldCheck className="size-5 text-primary" /> Safety and privacy
+          </h2>
+          <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              Suzeta is a moderated community. Any member can block another account at any time and
+              report profiles, photos or messages that break our community rules. Reports are
+              reviewed by our moderation team and abusive accounts are removed.
+            </p>
+            <p>
+              You stay in control of your privacy: you decide what appears on your profile, you can
+              hide your distance and your age, and you can make your profile invisible in discovery
+              at any moment. Suzeta never shows your exact location to other users — only an
+              approximate distance range.
+            </p>
+            <p>
+              You can request deletion of your account and all associated personal data directly
+              from the app, in Settings, or by writing to{" "}
+              <a className="text-primary hover:underline" href={`mailto:${SUPPORT_EMAIL}`}>
+                {SUPPORT_EMAIL}
+              </a>
+              . Deletion removes your profile, photos, messages and personal data.
+            </p>
+            <p>
+              <Link to="/safety" className="text-primary hover:underline">
+                Read our full safety guide
+              </Link>
+            </p>
+          </div>
+        </section>
+      </main>
+
+      <footer className="border-t border-border bg-surface/40">
+        <div className="mx-auto w-full max-w-3xl px-6 py-10 text-sm text-muted-foreground">
+          <p className="text-base font-semibold text-foreground">Suzeta</p>
+          <p className="mt-1">
+            Support:{" "}
+            <a className="text-primary hover:underline" href={`mailto:${SUPPORT_EMAIL}`}>
+              {SUPPORT_EMAIL}
+            </a>
+          </p>
+          <ul className="mt-4 space-y-2">
+            <li>
+              <a className="text-primary hover:underline" href="https://suzeta.app/legal/privacy">
+                Privacy Policy
+              </a>
+            </li>
+            <li>
+              <a className="text-primary hover:underline" href="https://suzeta.app/legal/terms">
+                Terms of Service
+              </a>
+            </li>
+            <li>
+              <Link className="text-primary hover:underline" to="/account-deletion">
+                Account deletion
+              </Link>
+              {" — "}
+              request deletion of your account and personal data from Settings in the app or by
+              emailing {SUPPORT_EMAIL}.
+            </li>
+          </ul>
+          <p className="mt-6">Suzeta is intended only for adults aged 18 and over.</p>
+          <p className="mt-2">© {new Date().getFullYear()} Suzeta</p>
         </div>
-      </section>
-    </main>
+      </footer>
+    </div>
   );
 }
