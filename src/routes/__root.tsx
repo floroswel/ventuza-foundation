@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { installChunkRecovery, isStaleChunkError, recoverFromStaleChunk } from "@/lib/chunk-recovery";
+
 import { AuthProvider } from "@/lib/auth-context";
 import { NotificationsProvider } from "@/lib/notifications-context";
 import { NotificationPrefsProvider } from "@/lib/notification-prefs-context";
