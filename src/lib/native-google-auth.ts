@@ -41,15 +41,41 @@ function webClientIdSync(): string | null {
   return id.trim() ? id.trim() : cachedClientId;
 }
 
+/**
+ * Origin de producție folosit ca fallback în build-ul nativ, unde aplicația
+ * rulează de pe `capacitor://localhost` și rutele relative nu există.
+ */
+const PROD_ORIGIN = "https://suzeta.app";
+
+async function fetchClientIdFromNetwork(): Promise<string | null> {
+  // 1) Nativ (sau orice context fără server fn relativ): endpoint public absolut.
+  if (await isNativePlatform()) {
+    try {
+      const res = await fetch(`${PROD_ORIGIN}/api/public/google-client-id`);
+      if (res.ok) {
+        const json = (await res.json()) as { clientId?: string | null };
+        if (json?.clientId) return json.clientId;
+      }
+    } catch { /* ignore, cădem pe server fn */ }
+  }
+  // 2) Web: server fn (același origin).
+  try {
+    const { getGoogleWebClientId } = await import("@/lib/google-config.functions");
+    const r = await getGoogleWebClientId();
+    return r?.clientId ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /** Rezolvă Client ID-ul: env build-time → cache → secret server-side. */
 export async function resolveWebClientId(): Promise<string | null> {
   const local = webClientIdSync();
   if (local) return local;
   if (!clientIdProbe) {
-    clientIdProbe = import("@/lib/google-config.functions")
-      .then(({ getGoogleWebClientId }) => getGoogleWebClientId())
-      .then((r) => {
-        cachedClientId = r?.clientId ?? null;
+    clientIdProbe = fetchClientIdFromNetwork()
+      .then((id) => {
+        cachedClientId = id;
         return cachedClientId;
       })
       .catch(() => null);

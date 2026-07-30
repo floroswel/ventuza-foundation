@@ -76,7 +76,7 @@ jobs:
 
       - name: Validează secretele obligatorii pentru release Android
         env:
-          VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID }}
+          VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID || secrets.GOOGLE_OAUTH_CLIENT_ID }}
         run: |
           MISSING=0
           if [ -z "$VITE_GOOGLE_WEB_CLIENT_ID" ]; then
@@ -107,7 +107,7 @@ jobs:
           # Necesar pentru Google Sign-In nativ (Capacitor) — pasat la
           # `supabase.auth.signInWithIdToken` ca `audience`. Fără el, butonul
           # Google din Android nativ nu funcționează (cade back la web OAuth).
-          VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID }}
+          VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID || secrets.GOOGLE_OAUTH_CLIENT_ID }}
         run: bun run build:mobile
 
 
