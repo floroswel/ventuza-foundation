@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { withGuardian } from "@/components/with-guardian";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -51,7 +52,6 @@ import {
   ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
 import {
-import { withGuardian } from "@/components/with-guardian";
   useOptionLabel,
   canonicalizeOptionValue,
   canonicalizeOptionValues,

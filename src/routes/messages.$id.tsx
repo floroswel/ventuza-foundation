@@ -1,4 +1,5 @@
 import { setActiveConversation } from "@/lib/active-conversation";
+import { withGuardian } from "@/components/with-guardian";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -68,7 +69,6 @@ import {
 import { cn } from "@/lib/utils";
 import { SwipeToReply } from "@/components/SwipeToReply";
 import {
-import { withGuardian } from "@/components/with-guardian";
   VirtualizedMessages,
   type VirtualizedMessagesHandle,
 } from "@/components/VirtualizedMessages";
