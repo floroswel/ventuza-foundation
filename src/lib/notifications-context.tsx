@@ -107,20 +107,27 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
         },
         (payload) => {
           const n = payload.new as NotificationRow;
-          setNotifications((prev) => [n, ...prev].slice(0, 100));
-          setUnread((c) => c + 1);
-          // Toast preview + signature sound, dedupe
-          if (!lastToastIdRef.current.has(n.id)) {
-            lastToastIdRef.current.add(n.id);
-            // Body-ul din DB este deja sanitizat de trigger; în plus, când
-            // userul are `show_preview=false`, forțăm „Previzualizare
-            // dezactivată" ca UI să fie explicit despre setare.
+          const isMessage = n.type === "message";
+          // Clopoțelul = doar vizite de profil. Mesajele nu intră în listă
+          // și nu cresc badge-ul — ele trăiesc în tab-ul Mesaje.
+          if (BELL_TYPES.includes(n.type)) {
+            setNotifications((prev) => [n, ...prev].slice(0, 100));
+            setUnread((c) => c + 1);
+          }
+          if (lastToastIdRef.current.has(n.id)) return;
+          lastToastIdRef.current.add(n.id);
+          // Dacă userul este deja în conversația respectivă: doar sunet,
+          // fără toast (mesajul apare oricum în thread).
+          const inThisChat =
+            isMessage && isViewingConversation(conversationIdFromLink(n.link));
+          if (!inThisChat) {
             toast(n.title, {
               description: buildToastBody(showPreviewRef.current, n.body, n.type),
             });
-            playNotificationSound();
           }
+          playNotificationSound();
         },
+
       )
       .on(
         "postgres_changes",
