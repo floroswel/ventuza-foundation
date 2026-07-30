@@ -263,6 +263,10 @@ function RootComponent() {
     void import("@/lib/crash-log").then(({ installGlobalCrashHandlers }) =>
       installGlobalCrashHandlers(),
     );
+    // SUZETA AUTONOMOUS APP GUARDIAN — monitorizare permanentă + auto-reparare
+    // sigură (erori JS/React/promise, rețea, sesiune, media, rute).
+    void import("@/lib/guardian/collector").then(({ installGuardian }) => installGuardian());
+
 
     // Guarded PWA registration (dev/preview/iframe/?sw=off all refuse).
     void import("@/lib/pwa-register").then(({ registerPwa }) => registerPwa());
