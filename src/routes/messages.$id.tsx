@@ -1,3 +1,4 @@
+import { setActiveConversation } from "@/lib/active-conversation";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
