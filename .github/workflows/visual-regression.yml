@@ -31,6 +31,10 @@ jobs:
       VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID }}
       VITE_TURNSTILE_SITE_KEY: ${{ vars.E2E_TURNSTILE_SITE_KEY || '1x00000000000000000000AA' }}
       VR_BASE_URL: http://localhost:8080
+      # Sesiune de test opțională: fără ea, suita de onboarding se omite.
+      LOVABLE_BROWSER_SUPABASE_SESSION_JSON: ${{ secrets.E2E_SUPABASE_SESSION_JSON }}
+      LOVABLE_BROWSER_SUPABASE_STORAGE_KEY: ${{ secrets.E2E_SUPABASE_STORAGE_KEY }}
+      LOVABLE_BROWSER_SUPABASE_COOKIES_JSON: ${{ secrets.E2E_SUPABASE_COOKIES_JSON }}
 
     steps:
       - uses: actions/checkout@v4
@@ -84,6 +88,10 @@ jobs:
       - name: Run visual regression (360 / 390 / 430, light + dark)
         run: python tests/visual/visual_regression.py
 
+      - name: Run onboarding field-by-field visual regression
+        if: env.LOVABLE_BROWSER_SUPABASE_SESSION_JSON != ''
+        run: python tests/visual/onboarding_steps_visual.py
+
       - name: Stop dev server
         if: always()
         run: |
@@ -112,7 +120,9 @@ jobs:
           name: visual-regression-${{ github.run_number }}
           path: |
             tests/visual/screenshots
+            tests/visual/screenshots-onboarding
             tests/visual/report.json
+            tests/visual/report-onboarding.json
           if-no-files-found: ignore
           retention-days: 14
 
