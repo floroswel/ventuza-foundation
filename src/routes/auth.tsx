@@ -13,6 +13,7 @@ import { TurnstileWidget, isCaptchaMandatory, isTurnstileMisconfiguredInProd } f
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
 import { lovable } from "@/integrations/lovable";
+import { oauthOrigin } from "@/lib/canonical-origin";
 import {
   nativeGoogleSignIn,
   isNativeAndroid,
