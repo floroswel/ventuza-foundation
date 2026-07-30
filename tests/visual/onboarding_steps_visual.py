@@ -123,7 +123,9 @@ async def mock_writes(route):
         )
 
     if req.method in ("POST", "PATCH", "PUT", "DELETE"):
-        await ok("[]")
+        # RPC-urile trebuie să întoarcă `null` (nu `[]`, care e truthy și ar
+        # declanșa, de ex., fluxul „fingerprint banned").
+        await ok("null" if "/rest/v1/rpc/" in url else "[]")
         return
 
     # Profilul: pretindem că onboarding-ul NU e terminat, ca să putem
