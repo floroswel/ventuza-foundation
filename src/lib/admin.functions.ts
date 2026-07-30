@@ -515,11 +515,14 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     if (data.userId === context.userId) throw new Error("Nu te poți șterge pe tine.");
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
-    const supabaseAdmin = _sa as any;
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
-    if (error) throw new Error(error.message);
+    const { purgeUserAccount } = await import("./account.server");
+    await purgeUserAccount(data.userId, "admin_gdpr", {
+      actorId: context.userId,
+      justification: "admin panel: ștergere cont",
+    });
     return { ok: true };
   });
 
