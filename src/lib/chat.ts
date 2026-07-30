@@ -43,6 +43,38 @@ export type ConversationListItem = {
   other_online: boolean;
 };
 
+/**
+ * Cache-ul offline poate supraviețui mai multor versiuni ale aplicației.
+ * Normalizăm fail-closed fiecare rând înainte să ajungă în React, astfel încât
+ * un payload vechi/incomplet să nu poată dărâma întreaga rută Mesaje.
+ */
+export function normalizeConversationList(value: unknown): ConversationListItem[] {
+  if (!Array.isArray(value)) return [];
+
+  return value.flatMap((candidate) => {
+    if (!candidate || typeof candidate !== "object") return [];
+    const row = candidate as Record<string, unknown>;
+    if (typeof row.id !== "string" || !row.id) return [];
+    if (typeof row.other_id !== "string" || !row.other_id) return [];
+
+    return [{
+      id: row.id,
+      other_id: row.other_id,
+      other_name: typeof row.other_name === "string" ? row.other_name : null,
+      other_photo: typeof row.other_photo === "string" ? row.other_photo : null,
+      last_message_preview:
+        typeof row.last_message_preview === "string" ? row.last_message_preview : null,
+      last_message_at: typeof row.last_message_at === "string" ? row.last_message_at : "",
+      unread: row.unread === true,
+      unread_count:
+        typeof row.unread_count === "number" && Number.isFinite(row.unread_count)
+          ? Math.max(0, Math.floor(row.unread_count))
+          : 0,
+      other_online: row.other_online === true,
+    }];
+  });
+}
+
 const MESSAGE_SELECT = [
   "id",
   "conversation_id",
@@ -206,7 +238,7 @@ export async function fetchConversations(meId: string): Promise<ConversationList
     unreadCounts.set(u.conversation_id, (unreadCounts.get(u.conversation_id) ?? 0) + 1);
   }
 
-  return rows.map((r) => {
+  return normalizeConversationList(rows.map((r) => {
     const oid = r.user_a === meId ? r.user_b : r.user_a;
     const info = profMap.get(oid);
     const count = unreadCounts.get(r.id) ?? 0;
@@ -222,7 +254,7 @@ export async function fetchConversations(meId: string): Promise<ConversationList
       other_online: info?.online ?? false,
     };
 
-  });
+  }));
 }
 
 export const MESSAGES_PAGE = 30;

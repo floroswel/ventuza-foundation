@@ -22,7 +22,9 @@ import { createSyncStoragePersister } from "@tanstack/query-sync-storage-persist
 
 import { APP_VERSION } from "./app-version";
 
-const STORAGE_KEY = "suzeta:rq-cache:v1";
+// v2 invalidează definitiv payload-urile v1 cu forme vechi de conversații.
+// Nu refolosim un cache incompatibil după deploy; datele se reîncarcă din DB.
+const STORAGE_KEY = "suzeta:rq-cache:v2";
 const MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24h
 
 /**

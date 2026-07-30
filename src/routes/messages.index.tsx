@@ -7,7 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { Button } from "@/components/ui/button";
-import { fetchConversations, type ConversationListItem } from "@/lib/chat";
+import {
+  fetchConversations,
+  normalizeConversationList,
+  type ConversationListItem,
+} from "@/lib/chat";
 import { buildInboxPreview } from "@/lib/notification-privacy";
 import { useNotificationPrefs } from "@/lib/notification-prefs-context";
 import { StoriesStrip } from "@/components/StoriesStrip";
@@ -21,6 +25,18 @@ export const Route = createFileRoute("/messages/")({
 
 function MessagesRouteError({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    console.error("[messages] route render failed", error);
+    void import("@/lib/crash-log").then(({ logCrash }) =>
+      logCrash({
+        kind: "boundary",
+        boundary: "messages_index",
+        message: error.message,
+        stack: error.stack,
+      }),
+    );
+  }, [error]);
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center bg-background px-6 text-center">
       <MessageCircle className="size-10 text-primary" aria-hidden />
@@ -33,6 +49,7 @@ function MessagesRouteError({ error, reset }: { error: Error; reset: () => void 
         <Button
           type="button"
           onClick={() => {
+            queryClient.removeQueries({ queryKey: ["conversations"] });
             router.invalidate();
             reset();
           }}
@@ -67,11 +84,12 @@ function MessagesPage() {
     queryFn: () => (user ? fetchConversations(user.id) : Promise.resolve<ConversationListItem[]>([])),
     enabled: !!user,
     staleTime: 30_000,
+    select: normalizeConversationList,
   });
 
   // Cache-ul offline poate proveni dintr-o versiune veche. Nu permitem unui
   // payload invalid să ajungă la `.map()` și să dărâme ruta.
-  const items = Array.isArray(conversationsQuery.data) ? conversationsQuery.data : [];
+  const items = normalizeConversationList(conversationsQuery.data);
   const loading = conversationsQuery.isLoading;
   const loadError = conversationsQuery.error;
 
