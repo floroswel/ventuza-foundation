@@ -68,13 +68,14 @@ import {
 import { cn } from "@/lib/utils";
 import { SwipeToReply } from "@/components/SwipeToReply";
 import {
+import { withGuardian } from "@/components/with-guardian";
   VirtualizedMessages,
   type VirtualizedMessagesHandle,
 } from "@/components/VirtualizedMessages";
 
 export const Route = createFileRoute("/messages/$id")({
   head: () => ({ meta: [{ title: "Chat — Suzeta" }] }),
-  component: ThreadPage,
+  component: withGuardian("chat", ThreadPage, "chat"),
 });
 
 type UiMessage = MessageRow & { _status?: "pending" | "failed" };

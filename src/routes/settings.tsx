@@ -35,11 +35,12 @@ import { ConsentsHistoryCard } from "@/components/settings/ConsentsHistoryCard";
 import { ProximityNotificationsCard } from "@/components/settings/ProximityNotificationsCard";
 import { NotificationSoundCard } from "@/components/settings/NotificationSoundCard";
 import { DebugModeCard } from "@/components/settings/DebugModeCard";
+import { withGuardian } from "@/components/with-guardian";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
   head: () => ({ meta: [{ title: "Setări — Suzeta" }, { name: "robots", content: "noindex" }] }),
-  component: SettingsPage,
+  component: withGuardian("settings", SettingsPage),
 });
 
 // Structura preferințelor este definită canonic în notification-prefs-context.

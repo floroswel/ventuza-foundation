@@ -51,6 +51,7 @@ import {
   ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
 import {
+import { withGuardian } from "@/components/with-guardian";
   useOptionLabel,
   canonicalizeOptionValue,
   canonicalizeOptionValues,
@@ -59,7 +60,7 @@ import {
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Your profile — Suzeta" }] }),
-  component: ProfilePage,
+  component: withGuardian("profile", ProfilePage),
 });
 
 type Profile = {

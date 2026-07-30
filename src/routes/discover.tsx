@@ -79,10 +79,11 @@ import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
+import { withGuardian } from "@/components/with-guardian";
 
 export const Route = createFileRoute("/discover")({
   head: () => ({ meta: [{ title: "Discover — Suzeta" }] }),
-  component: DiscoverPage,
+  component: withGuardian("discover", DiscoverPage, "matching"),
 });
 
 type Tab = "nearby" | "fresh";

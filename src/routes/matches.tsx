@@ -9,11 +9,12 @@ import { fetchPublicProfiles, getOrCreateConversation, type PublicProfileMini } 
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { cn } from "@/lib/utils";
+import { withGuardian } from "@/components/with-guardian";
 
 export const Route = createFileRoute("/matches")({
   ssr: false,
   head: () => ({ meta: [{ title: "Potriviri — Suzeta" }, { name: "robots", content: "noindex" }] }),
-  component: MatchesPage,
+  component: withGuardian("matching", MatchesPage, "matching"),
 });
 
 type MatchRow = {
