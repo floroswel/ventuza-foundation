@@ -69,8 +69,11 @@ function MessagesPage() {
     staleTime: 30_000,
   });
 
-  const items = conversationsQuery.data ?? [];
+  // Cache-ul offline poate proveni dintr-o versiune veche. Nu permitem unui
+  // payload invalid să ajungă la `.map()` și să dărâme ruta.
+  const items = Array.isArray(conversationsQuery.data) ? conversationsQuery.data : [];
   const loading = conversationsQuery.isLoading;
+  const loadError = conversationsQuery.error;
 
   useEffect(() => {
     if (!user?.id) return;
@@ -127,6 +130,21 @@ function MessagesPage() {
         {loading ? (
           <div className="flex items-center justify-center py-24 text-muted-foreground">
             <Loader2 className="size-5 animate-spin" />
+          </div>
+        ) : loadError ? (
+          <div className="mx-4 my-8 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-5 text-center">
+            <p className="text-sm font-medium text-foreground">Conversațiile nu s-au putut încărca.</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Conexiunea sau sesiunea poate fi temporar indisponibilă.
+            </p>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-4"
+              onClick={() => void conversationsQuery.refetch()}
+            >
+              Reîncearcă
+            </Button>
           </div>
         ) : items.length === 0 ? (
           <EmptyState

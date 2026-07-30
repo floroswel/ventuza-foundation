@@ -1,9 +1,7 @@
-import { useEffect } from "react";
-import { Link, useLocation, useRouter } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { Compass, Sparkles, Heart, MessageCircle, User, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
-import { useAuth } from "@/lib/auth-context";
 
 // Tokeni unificați pentru iconițele de navigație — rounded, aceeași mărime,
 // aceleași culori pentru activ / inactiv. Folosiți și în alte bare cheie
@@ -23,8 +21,6 @@ type NavItem = {
 
 export function BottomNav() {
   const { pathname } = useLocation();
-  const router = useRouter();
-  const { user, loading: authLoading } = useAuth();
   const { total: unreadTotal } = useUnreadMessages();
 
   const items: NavItem[] = [
@@ -34,41 +30,6 @@ export function BottomNav() {
     { to: "/messages", label: "Mesaje", Icon: MessageCircle, badge: unreadTotal, fillWhenActive: true },
     { to: "/profile", label: "Profil", Icon: User },
   ];
-
-  // Preîncarcă chunk-urile rutelor din tab-bar când browserul e idle.
-  useEffect(() => {
-    if (authLoading || !user) return;
-    const w = window as typeof window & {
-      requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
-    };
-    const schedule = w.requestIdleCallback ?? ((cb: () => void) => setTimeout(cb, 800));
-    const handle = schedule(
-      () => {
-        for (const item of items) {
-          if (item.to === pathname) continue;
-          // Rutele protejate redirecționează în beforeLoad; preload-ul poate
-          // arunca intern (unhandled rejection) → prindem TOT, sincron + async.
-          try {
-            const p = router.preloadRoute({ to: item.to }) as unknown;
-            if (p && typeof (p as Promise<unknown>).catch === "function") {
-              void (p as Promise<unknown>).catch(() => {});
-            }
-          } catch {
-            /* ignore */
-          }
-        }
-
-      },
-      { timeout: 2500 },
-    );
-    return () => {
-      const cancel = (window as typeof window & {
-        cancelIdleCallback?: (h: number) => void;
-      }).cancelIdleCallback;
-      if (cancel && typeof handle === "number") cancel(handle);
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, pathname, user, router]);
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-xl">
