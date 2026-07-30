@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { installChunkRecovery, isStaleChunkError, recoverFromStaleChunk } from "@/lib/chunk-recovery";
+
 import { AuthProvider } from "@/lib/auth-context";
 import { NotificationsProvider } from "@/lib/notifications-context";
 import { NotificationPrefsProvider } from "@/lib/notification-prefs-context";
@@ -64,6 +66,12 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
+    // Chunk vechi după o publicare nouă → curățăm cache-ul și reîncărcăm
+    // automat (o singură dată), fără să mai afișăm eroarea utilizatorului.
+    if (isStaleChunkError(error)) {
+      void recoverFromStaleChunk();
+      return;
+    }
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
     void import("@/lib/crash-log").then(({ logCrash }) =>
       logCrash({
@@ -74,6 +82,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       }),
     );
   }, [error]);
+
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
@@ -241,10 +250,13 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
+    // Recuperare automată din chunk-uri vechi după o publicare nouă.
+    installChunkRecovery();
     // Global crash logger (device local, ring buffer 50).
     void import("@/lib/crash-log").then(({ installGlobalCrashHandlers }) =>
       installGlobalCrashHandlers(),
     );
+
     // Guarded PWA registration (dev/preview/iframe/?sw=off all refuse).
     void import("@/lib/pwa-register").then(({ registerPwa }) => registerPwa());
     // Native Android runtime: back button, keyboard resize, status bar.
