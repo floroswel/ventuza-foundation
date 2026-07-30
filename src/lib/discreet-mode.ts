@@ -40,7 +40,7 @@ export function applyDiscreetMode(skin: DiscreetSkin) {
   localStorage.setItem(KEY, skin);
   if (skin === "off") {
     document.title = "Suzeta";
-    setFavicon("/favicon.ico");
+    setFavicon("/favicon.png");
     return;
   }
   const { title, favicon } = SKINS[skin];
