@@ -110,16 +110,38 @@ PROBE_JS = r"""
 
 
 async def mock_writes(route):
+    """Blochează scrierile + forțează starea „onboarding neterminat"."""
     req = route.request
-    if req.method in ("POST", "PATCH", "PUT", "DELETE"):
-        await route.fulfill(
+    url = req.url
+
+    def ok(body: str):
+        return route.fulfill(
             status=200,
             content_type="application/json",
             headers={"access-control-allow-origin": "*"},
-            body="[]",
+            body=body,
         )
-    else:
-        await route.continue_()
+
+    if req.method in ("POST", "PATCH", "PUT", "DELETE"):
+        await ok("[]")
+        return
+
+    # Profilul: pretindem că onboarding-ul NU e terminat, ca să putem
+    # parcurge pașii fără să atingem contul real.
+    if "/rest/v1/profiles" in url and "onboarding_completed" in url:
+        await ok(json.dumps({
+            "onboarding_completed": False,
+            "birthdate": None,
+            "display_name": None,
+        }))
+        return
+
+    # Draftul: pornim mereu de la pasul 0, gol.
+    if "/rest/v1/onboarding_drafts" in url:
+        await ok(json.dumps({"step": 0, "data": {}}))
+        return
+
+    await route.continue_()
 
 
 async def restore_session(context, page) -> bool:
