@@ -73,6 +73,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
+import { Route as ApiPublicGoogleClientIdRouteImport } from './routes/api/public/google-client-id'
 import { Route as ApiPublicDiditWebhookRouteImport } from './routes/api/public/didit-webhook'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
 import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
@@ -407,6 +408,11 @@ const ApiPublicGooglePlayRtdnRoute = ApiPublicGooglePlayRtdnRouteImport.update({
   path: '/api/public/google-play-rtdn',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicGoogleClientIdRoute = ApiPublicGoogleClientIdRouteImport.update({
+  id: '/api/public/google-client-id',
+  path: '/api/public/google-client-id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDiditWebhookRoute = ApiPublicDiditWebhookRouteImport.update({
   id: '/api/public/didit-webhook',
   path: '/api/public/didit-webhook',
@@ -530,6 +536,7 @@ export interface FileRoutesByFullPath {
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
+  '/api/public/google-client-id': typeof ApiPublicGoogleClientIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/admin/users/$id/notifications': typeof AdminUsersIdNotificationsRoute
@@ -606,6 +613,7 @@ export interface FileRoutesByTo {
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
+  '/api/public/google-client-id': typeof ApiPublicGoogleClientIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/admin/users/$id/notifications': typeof AdminUsersIdNotificationsRoute
@@ -683,6 +691,7 @@ export interface FileRoutesById {
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
+  '/api/public/google-client-id': typeof ApiPublicGoogleClientIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/admin/users/$id/notifications': typeof AdminUsersIdNotificationsRoute
@@ -761,6 +770,7 @@ export interface FileRouteTypes {
     | '/admin/users/$id'
     | '/api/public/age-webhook'
     | '/api/public/didit-webhook'
+    | '/api/public/google-client-id'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
     | '/admin/users/$id/notifications'
@@ -837,6 +847,7 @@ export interface FileRouteTypes {
     | '/admin/users/$id'
     | '/api/public/age-webhook'
     | '/api/public/didit-webhook'
+    | '/api/public/google-client-id'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
     | '/admin/users/$id/notifications'
@@ -913,6 +924,7 @@ export interface FileRouteTypes {
     | '/admin/users/$id'
     | '/api/public/age-webhook'
     | '/api/public/didit-webhook'
+    | '/api/public/google-client-id'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
     | '/admin/users/$id/notifications'
@@ -981,6 +993,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicDiditWebhookRoute: typeof ApiPublicDiditWebhookRoute
+  ApiPublicGoogleClientIdRoute: typeof ApiPublicGoogleClientIdRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
   ApiPublicSignupGuardRoute: typeof ApiPublicSignupGuardRoute
   ApiPublicHooksBillingTickRoute: typeof ApiPublicHooksBillingTickRoute
@@ -1439,6 +1452,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicGooglePlayRtdnRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/google-client-id': {
+      id: '/api/public/google-client-id'
+      path: '/api/public/google-client-id'
+      fullPath: '/api/public/google-client-id'
+      preLoaderRoute: typeof ApiPublicGoogleClientIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/didit-webhook': {
       id: '/api/public/didit-webhook'
       path: '/api/public/didit-webhook'
@@ -1666,6 +1686,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicDiditWebhookRoute: ApiPublicDiditWebhookRoute,
+  ApiPublicGoogleClientIdRoute: ApiPublicGoogleClientIdRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
   ApiPublicSignupGuardRoute: ApiPublicSignupGuardRoute,
   ApiPublicHooksBillingTickRoute: ApiPublicHooksBillingTickRoute,
