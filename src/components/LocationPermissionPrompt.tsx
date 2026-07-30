@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useCountryGate } from "@/lib/country-gate";
 import { toast } from "sonner";
+import { notifyLocationSharingChanged } from "@/hooks/useLocationWatcher";
 
 /**
  * First-run location primer.

@@ -39,6 +39,7 @@ import { ShareProfileCard } from "@/components/ShareProfileCard";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { BackButton } from "@/components/BackButton";
 import { formatHeight } from "@/lib/discover";
+import { notifyLocationSharingChanged } from "@/hooks/useLocationWatcher";
 import {
   GENDER_OPTIONS,
   PRONOUN_OPTIONS,
