@@ -23,6 +23,8 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
 import { SessionGuards } from "@/components/SessionGuards";
+import { GuardianBoundary } from "@/components/GuardianBoundary";
+
 import { CountryRiskGuard } from "@/components/CountryRiskGuard";
 import { AgeGate } from "@/components/AgeGate";
 import { useProximityForegroundWatcher } from "@/lib/proximity-watcher";
