@@ -69,6 +69,7 @@ import { Route as EventsIdRouteImport } from './routes/events.$id'
 import { Route as BusinessDashboardRouteImport } from './routes/business.dashboard'
 import { Route as AuthCheckEmailRouteImport } from './routes/auth_.check-email'
 import { Route as AdvertiseNewRouteImport } from './routes/advertise.new'
+import { Route as AdminGuardianRouteImport } from './routes/admin.guardian'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
@@ -386,6 +387,11 @@ const AdvertiseNewRoute = AdvertiseNewRouteImport.update({
   path: '/new',
   getParentRoute: () => AdvertiseRoute,
 } as any)
+const AdminGuardianRoute = AdminGuardianRouteImport.update({
+  id: '/guardian',
+  path: '/guardian',
+  getParentRoute: () => AdminRoute,
+} as any)
 const Char91DotwellKnownChar93OauthProtectedResourceRoute =
   Char91DotwellKnownChar93OauthProtectedResourceRouteImport.update({
     id: '/.well-known/oauth-protected-resource',
@@ -503,6 +509,7 @@ export interface FileRoutesByFullPath {
   '/visitors': typeof VisitorsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/admin/guardian': typeof AdminGuardianRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
   '/business/dashboard': typeof BusinessDashboardRoute
@@ -580,6 +587,7 @@ export interface FileRoutesByTo {
   '/visitors': typeof VisitorsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/admin/guardian': typeof AdminGuardianRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth/check-email': typeof AuthCheckEmailRoute
   '/business/dashboard': typeof BusinessDashboardRoute
@@ -658,6 +666,7 @@ export interface FileRoutesById {
   '/visitors': typeof VisitorsRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  '/admin/guardian': typeof AdminGuardianRoute
   '/advertise/new': typeof AdvertiseNewRoute
   '/auth_/check-email': typeof AuthCheckEmailRoute
   '/business/dashboard': typeof BusinessDashboardRoute
@@ -737,6 +746,7 @@ export interface FileRouteTypes {
     | '/visitors'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/admin/guardian'
     | '/advertise/new'
     | '/auth/check-email'
     | '/business/dashboard'
@@ -814,6 +824,7 @@ export interface FileRouteTypes {
     | '/visitors'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/admin/guardian'
     | '/advertise/new'
     | '/auth/check-email'
     | '/business/dashboard'
@@ -891,6 +902,7 @@ export interface FileRouteTypes {
     | '/visitors'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
+    | '/admin/guardian'
     | '/advertise/new'
     | '/auth_/check-email'
     | '/business/dashboard'
@@ -1424,6 +1436,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdvertiseNewRouteImport
       parentRoute: typeof AdvertiseRoute
     }
+    '/admin/guardian': {
+      id: '/admin/guardian'
+      path: '/guardian'
+      fullPath: '/admin/guardian'
+      preLoaderRoute: typeof AdminGuardianRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/.well-known/oauth-protected-resource': {
       id: '/.well-known/oauth-protected-resource'
       path: '/.well-known/oauth-protected-resource'
@@ -1545,10 +1564,12 @@ const AdminUsersIdRouteWithChildren = AdminUsersIdRoute._addFileChildren(
 )
 
 interface AdminRouteChildren {
+  AdminGuardianRoute: typeof AdminGuardianRoute
   AdminUsersIdRoute: typeof AdminUsersIdRouteWithChildren
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminGuardianRoute: AdminGuardianRoute,
   AdminUsersIdRoute: AdminUsersIdRouteWithChildren,
 }
 

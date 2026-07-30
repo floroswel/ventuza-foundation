@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { withGuardian } from "@/components/with-guardian";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
@@ -59,7 +60,7 @@ import {
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Your profile — Suzeta" }] }),
-  component: ProfilePage,
+  component: withGuardian("profile", ProfilePage),
 });
 
 type Profile = {

@@ -23,6 +23,8 @@ import { CookieBanner } from "@/components/CookieBanner";
 import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
 import { SessionGuards } from "@/components/SessionGuards";
+import { GuardianBoundary } from "@/components/GuardianBoundary";
+
 import { CountryRiskGuard } from "@/components/CountryRiskGuard";
 import { AgeGate } from "@/components/AgeGate";
 import { useProximityForegroundWatcher } from "@/lib/proximity-watcher";
@@ -263,6 +265,10 @@ function RootComponent() {
     void import("@/lib/crash-log").then(({ installGlobalCrashHandlers }) =>
       installGlobalCrashHandlers(),
     );
+    // SUZETA AUTONOMOUS APP GUARDIAN — monitorizare permanentă + auto-reparare
+    // sigură (erori JS/React/promise, rețea, sesiune, media, rute).
+    void import("@/lib/guardian/collector").then(({ installGuardian }) => installGuardian());
+
 
     // Guarded PWA registration (dev/preview/iframe/?sw=off all refuse).
     void import("@/lib/pwa-register").then(({ registerPwa }) => registerPwa());
@@ -298,7 +304,10 @@ function RootComponent() {
             <CountryRiskGuard />
             <ProximityWatcherMount />
             <NativePushNavigatorMount />
-            <Outlet />
+            <GuardianBoundary area="app" category="react">
+              <Outlet />
+            </GuardianBoundary>
+
             <OfflineBanner />
             <LocationPermissionPromptMount />
             <AgeGate />

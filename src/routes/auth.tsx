@@ -22,6 +22,7 @@ import {
 } from "@/lib/native-google-auth";
 
 import suzetaIcon from "@/assets/suzeta-icon.png.asset.json";
+import { withGuardian } from "@/components/with-guardian";
 
 
 
@@ -38,7 +39,7 @@ export const Route = createFileRoute("/auth")({
       { name: "description", content: "Sign in or create your Suzeta account." },
     ],
   }),
-  component: AuthPage,
+  component: withGuardian("auth", AuthPage, "auth"),
 });
 
 const emailSchema = z.string().trim().email("invalid_email").max(255);

@@ -1,4 +1,5 @@
 import { setActiveConversation } from "@/lib/active-conversation";
+import { withGuardian } from "@/components/with-guardian";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -74,7 +75,7 @@ import {
 
 export const Route = createFileRoute("/messages/$id")({
   head: () => ({ meta: [{ title: "Chat — Suzeta" }] }),
-  component: ThreadPage,
+  component: withGuardian("chat", ThreadPage, "chat"),
 });
 
 type UiMessage = MessageRow & { _status?: "pending" | "failed" };

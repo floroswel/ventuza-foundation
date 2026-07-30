@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { BottomNav } from "@/components/BottomNav";
+import { withGuardian } from "@/components/with-guardian";
 
 export const Route = createFileRoute("/premium")({
   ssr: false,
@@ -27,7 +28,7 @@ export const Route = createFileRoute("/premium")({
       },
     ],
   }),
-  component: PremiumPage,
+  component: withGuardian("premium", PremiumPage, "payments"),
 });
 
 const FREE_FOR_ALL = [
