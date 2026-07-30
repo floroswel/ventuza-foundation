@@ -25,7 +25,8 @@ export type GuardianIncident = {
   risk: string | null;
   impact: string | null;
   affected_files: string[];
-  sample: Record<string, unknown>;
+  // jsonb – shape liber, serializat ca JSON
+  sample: any;
 };
 
 export type GuardianAction = {
@@ -37,8 +38,8 @@ export type GuardianAction = {
   risk: string;
   reversible: boolean;
   summary: string;
-  payload: Record<string, unknown>;
-  result: Record<string, unknown>;
+  payload: any;
+  result: any;
   decided_by: string | null;
   decided_at: string | null;
   decision_reason: string | null;
@@ -83,12 +84,12 @@ export const guardianGetDashboard = createServerFn({ method: "POST" })
 export const guardianGetReport = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => z.object({ period: z.enum(["daily", "weekly"]) }).parse(d))
-  .handler(async ({ data, context }) => {
+  .handler(async ({ data, context }): Promise<any> => {
     const { data: res, error } = await (context.supabase as any).rpc("guardian_report", {
       _period: data.period,
     });
     if (error) throw new Error(error.message);
-    return res as Record<string, unknown>;
+    return res as any;
   });
 
 export const guardianDecideAction = createServerFn({ method: "POST" })
@@ -144,7 +145,7 @@ export const guardianProposeAction = createServerFn({ method: "POST" })
         risk: z.enum(["low", "medium", "high"]),
         reversible: z.boolean(),
         summary: z.string().min(3).max(500),
-        payload: z.record(z.string(), z.unknown()).optional(),
+        payload: z.record(z.string(), z.any()).optional(),
       })
       .parse(d),
   )
