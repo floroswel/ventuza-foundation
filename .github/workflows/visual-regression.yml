@@ -1,0 +1,126 @@
+name: visual-regression
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "tests/visual/**"
+      - "package.json"
+      - "bun.lockb"
+      - ".github/workflows/visual-regression.yml"
+  pull_request:
+    paths:
+      - "src/**"
+      - "tests/visual/**"
+      - "package.json"
+      - ".github/workflows/visual-regression.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: vr-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  visual:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID }}
+      VITE_TURNSTILE_SITE_KEY: ${{ vars.E2E_TURNSTILE_SITE_KEY || '1x00000000000000000000AA' }}
+      VR_BASE_URL: http://localhost:8080
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+
+      - name: Install deps
+        run: bun install --frozen-lockfile
+
+      - name: Install Playwright + Chromium
+        run: |
+          python -m pip install --upgrade pip
+          pip install "playwright==1.47.*"
+          python -m playwright install --with-deps chromium
+
+      - name: Write .env for Vite
+        run: |
+          cat > .env <<EOF
+          VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+          VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
+          VITE_SUPABASE_PROJECT_ID=${VITE_SUPABASE_PROJECT_ID}
+          VITE_TURNSTILE_SITE_KEY=${VITE_TURNSTILE_SITE_KEY}
+          EOF
+
+      - name: Start dev server
+        run: |
+          nohup bun run dev > /tmp/dev.log 2>&1 &
+          echo $! > /tmp/dev.pid
+          for i in $(seq 1 90); do
+            if curl -sf -o /dev/null http://localhost:8080/; then
+              echo "dev server up after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "dev server didn't start"; tail -100 /tmp/dev.log; exit 1
+
+      - name: Run visual regression (360 / 390 / 430, light + dark)
+        run: python tests/visual/visual_regression.py
+
+      - name: Stop dev server
+        if: always()
+        run: |
+          if [ -f /tmp/dev.pid ]; then kill -9 "$(cat /tmp/dev.pid)" 2>/dev/null || true; fi
+
+      - name: PR summary
+        if: always()
+        run: |
+          if [ -f tests/visual/report.json ]; then
+            python - <<'PY' >> $GITHUB_STEP_SUMMARY
+          import json
+          r = json.load(open("tests/visual/report.json"))
+          print(f"## Visual regression — {r['checks']} verificări, {r['issueCount']} probleme\n")
+          print("| ecran | lățime | temă | status |")
+          print("|---|---|---|---|")
+          for x in r["results"]:
+              st = "OK" if not x["issues"] else "; ".join(x["issues"])[:120]
+              print(f"| {x['screen']} | {x['width']} | {x['theme']} | {st} |")
+          PY
+          fi
+
+      - name: Upload screenshots + report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-${{ github.run_number }}
+          path: |
+            tests/visual/screenshots
+            tests/visual/report.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Upload dev server log
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vr-dev-server-log
+          path: /tmp/dev.log
+          if-no-files-found: ignore
+          retention-days: 7
