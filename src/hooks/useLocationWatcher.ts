@@ -13,6 +13,15 @@ import { getCurrentPosition, type Position } from "@/lib/native-geolocation";
 const REFRESH_MS = 3 * 60 * 1000;
 const MOVE_THRESHOLD_M = 250;
 export const LOCATION_UPDATED_EVENT = "suzeta:location-updated";
+export const LOCATION_SHARING_CHANGED_EVENT = "suzeta:location-sharing-changed";
+
+/** Anunță imediat watcher-ul că flag-ul de partajare s-a schimbat (fără a aștepta poll-ul). */
+export function notifyLocationSharingChanged(enabled: boolean) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent(LOCATION_SHARING_CHANGED_EVENT, { detail: { enabled } }),
+  );
+}
 
 function haversine(lat1: number, lng1: number, lat2: number, lng2: number) {
   const R = 6371000;
@@ -49,9 +58,17 @@ export function useLocationWatcher() {
     }
     void fetchFlag();
     const t = setInterval(() => void fetchFlag(), 60_000);
+    // Reacție imediată la toggle-ul din UI — nu așteptăm poll-ul de 60s.
+    const onChanged = (e: Event) => {
+      const enabled = (e as CustomEvent<{ enabled?: boolean }>).detail?.enabled;
+      if (typeof enabled === "boolean") setSharingEnabled(enabled);
+      else void fetchFlag();
+    };
+    window.addEventListener(LOCATION_SHARING_CHANGED_EVENT, onChanged);
     return () => {
       cancelled = true;
       clearInterval(t);
+      window.removeEventListener(LOCATION_SHARING_CHANGED_EVENT, onChanged);
     };
   }, [user]);
 

@@ -5,6 +5,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { useCountryGate } from "@/lib/country-gate";
 import { toast } from "sonner";
+import { notifyLocationSharingChanged } from "@/hooks/useLocationWatcher";
 
 /**
  * First-run location primer.
@@ -127,6 +128,7 @@ export function LocationPermissionPrompt() {
         .from("profiles")
         .update({ location_sharing_enabled: false })
         .eq("id", user.id);
+      notifyLocationSharingChanged(false);
       toast("Partajarea locației e dezactivată. O poți reporni din Profil.");
     } finally {
       setBusy(false);

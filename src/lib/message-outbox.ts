@@ -88,8 +88,21 @@ let hydrated = false;
 
 async function ensureHydrated() {
   if (hydrated) return;
-  cached = await readAll();
+  const items = await readAll();
+  // Recuperare: un item rămas "sending" pe disc înseamnă că procesul a fost
+  // omorât în timpul trimiterii (tipic pe Android, app în background).
+  // Îl readucem în "pending" ca să fie re-încercat la următorul flush,
+  // sau în "failed" dacă a depășit numărul maxim de încercări.
+  let dirty = false;
+  cached = items.map((x) => {
+    if (x.status !== "sending") return x;
+    dirty = true;
+    return x.attempts >= MAX_RETRIES
+      ? { ...x, status: "failed" as const, last_error: x.last_error ?? "interrupted" }
+      : { ...x, status: "pending" as const };
+  });
   hydrated = true;
+  if (dirty) await writeAll(cached);
 }
 
 function emit() {
