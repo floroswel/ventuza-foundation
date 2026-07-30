@@ -24,6 +24,8 @@ import {
   guardianSetIncidentStatus,
   guardianGetReport,
   type GuardianDashboard,
+  type GuardianAction,
+  type GuardianIncident,
 } from "@/lib/guardian.functions";
 
 const WINDOWS = [
@@ -66,9 +68,15 @@ export function GuardianPanel() {
     { autoRefreshMs: 60_000 },
   );
 
-  const d = state.data;
-  const pending = useMemo(() => (d?.actions ?? []).filter((a) => a.status === "pending"), [d]);
-  const executed = useMemo(() => (d?.actions ?? []).filter((a) => a.status !== "pending"), [d]);
+  const d = state.status === "ready" ? state.data : null;
+  const pending = useMemo(
+    () => (d?.actions ?? []).filter((a: GuardianAction) => a.status === "pending"),
+    [d],
+  );
+  const executed = useMemo(
+    () => (d?.actions ?? []).filter((a: GuardianAction) => a.status !== "pending"),
+    [d],
+  );
 
   async function onDecide(actionId: string, decision: "approve" | "reject" | "rollback") {
     const reason = window.prompt(
@@ -134,7 +142,7 @@ export function GuardianPanel() {
         </div>
       </div>
 
-      <PanelStatus state={state} onRetry={reload} emptyLabel="Niciun eveniment înregistrat (empty legitim)." />
+      <PanelStatus state={state} retry={reload} />
 
       {d && (
         <>
@@ -166,7 +174,7 @@ export function GuardianPanel() {
               </p>
             ) : (
               <ul className="space-y-2">
-                {pending.map((a) => (
+                {pending.map((a: GuardianAction) => (
                   <li key={a.id} className="rounded-xl border border-border p-3">
                     <div className="flex flex-wrap items-center gap-2 text-sm">
                       <span className={`rounded-full px-2 py-0.5 text-xs ${SEV_STYLE[a.risk] ?? SEV_STYLE.low}`}>
@@ -206,7 +214,7 @@ export function GuardianPanel() {
               <p className="text-sm text-muted-foreground">Niciun incident (empty legitim).</p>
             ) : (
               <ul className="space-y-2">
-                {d.incidents.map((i) => (
+                {d.incidents.map((i: GuardianIncident) => (
                   <li key={i.id} className="rounded-xl border border-border p-3">
                     <div className="flex flex-wrap items-center gap-2">
                       <span className={`rounded-full px-2 py-0.5 text-xs ${SEV_STYLE[i.severity]}`}>
@@ -254,7 +262,7 @@ export function GuardianPanel() {
               <p className="text-sm text-muted-foreground">Nicio acțiune (empty legitim).</p>
             ) : (
               <ul className="space-y-1 text-sm">
-                {executed.map((a) => (
+                {executed.map((a: GuardianAction) => (
                   <li key={a.id} className="flex flex-wrap gap-2 border-b border-border/50 py-1">
                     <span className="font-medium">{a.action_type}</span>
                     <span className="text-xs text-muted-foreground">{a.status}</span>
@@ -299,7 +307,7 @@ export function GuardianPanel() {
               <p className="text-sm text-muted-foreground">Niciun eveniment (empty legitim).</p>
             ) : (
               <ul className="space-y-1 text-xs">
-                {d.recent_events.map((e) => (
+                {d.recent_events.map((e: GuardianDashboard["recent_events"][number]) => (
                   <li key={e.id} className="flex flex-wrap gap-2 border-b border-border/50 py-1">
                     <span className={`rounded px-1.5 ${SEV_STYLE[e.severity] ?? ""}`}>{e.severity}</span>
                     <span className="text-muted-foreground">{e.category}</span>
