@@ -122,6 +122,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
       { name: "theme-color", content: "#0E0D0B" },
+      {
+        name: "google-site-verification",
+        content: "n4fIK6zXH2jNBMKgucU2XEu_tNEE5JpPxNdfDyEIFR4",
+      },
       { title: "Suzeta — Dating, elevated." },
       {
         name: "description",
