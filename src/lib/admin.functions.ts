@@ -49,7 +49,7 @@ const ALLOWED_TABLES = [
 export type AdminTable = (typeof ALLOWED_TABLES)[number];
 
 async function assertAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+  const { data, error } = await supabase.rpc("is_admin_or_above", { _user_id: userId });
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Forbidden: admin role required");
 }
