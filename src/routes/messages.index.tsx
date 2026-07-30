@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Loader2, MessageCircle, Crown, SquarePen } from "lucide-react";
@@ -6,6 +6,7 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
+import { Button } from "@/components/ui/button";
 import { fetchConversations, type ConversationListItem } from "@/lib/chat";
 import { buildInboxPreview } from "@/lib/notification-privacy";
 import { useNotificationPrefs } from "@/lib/notification-prefs-context";
@@ -14,8 +15,37 @@ import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/messages/")({
   head: () => ({ meta: [{ title: "Mesaje — Suzeta" }] }),
+  errorComponent: MessagesRouteError,
   component: MessagesPage,
 });
+
+function MessagesRouteError({ error, reset }: { error: Error; reset: () => void }) {
+  const router = useRouter();
+  return (
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center bg-background px-6 text-center">
+      <MessageCircle className="size-10 text-primary" aria-hidden />
+      <h1 className="mt-4 text-xl font-semibold text-foreground">Mesajele se reîncarcă</h1>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Am prins eroarea local, fără să mai cadă toată aplicația.
+      </p>
+      <p className="sr-only">{error.message}</p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <Button
+          type="button"
+          onClick={() => {
+            router.invalidate();
+            reset();
+          }}
+        >
+          Reîncearcă
+        </Button>
+        <Button type="button" variant="outline" onClick={() => window.location.assign("/auth?mode=login")}>
+          Login
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
@@ -43,7 +73,7 @@ function MessagesPage() {
   const loading = conversationsQuery.isLoading;
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     const invalidate = () =>
       queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
     const ch = supabase
@@ -62,9 +92,17 @@ function MessagesPage() {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [user, queryClient]);
+  }, [user?.id, queryClient]);
 
 
+
+  if (authLoading || !user) {
+    return (
+      <div className="mx-auto flex min-h-dvh max-w-md items-center justify-center bg-background px-6 text-muted-foreground">
+        <Loader2 className="size-5 animate-spin" aria-label="Se verifică sesiunea" />
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-24">
@@ -152,7 +190,7 @@ function MessagesPage() {
                           c.unread ? "text-primary" : "text-muted-foreground",
                         )}
                       >
-                        {formatWhen(c.last_message_at)}
+                          {formatWhen(c.last_message_at)}
                       </span>
                     </div>
                     <div className="mt-0.5 flex items-center gap-2">
@@ -183,8 +221,10 @@ function MessagesPage() {
   );
 }
 
-function formatWhen(iso: string): string {
+function formatWhen(iso: string | null | undefined): string {
+  if (!iso) return "";
   const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
   const now = new Date();
   const diff = Math.max(0, now.getTime() - d.getTime());
   const day = 24 * 60 * 60 * 1000;

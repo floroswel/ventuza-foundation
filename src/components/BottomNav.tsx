@@ -3,6 +3,7 @@ import { Link, useLocation, useRouter } from "@tanstack/react-router";
 import { Compass, Sparkles, Heart, MessageCircle, User, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
+import { useAuth } from "@/lib/auth-context";
 
 // Tokeni unificați pentru iconițele de navigație — rounded, aceeași mărime,
 // aceleași culori pentru activ / inactiv. Folosiți și în alte bare cheie
@@ -23,6 +24,7 @@ type NavItem = {
 export function BottomNav() {
   const { pathname } = useLocation();
   const router = useRouter();
+  const { user, loading: authLoading } = useAuth();
   const { total: unreadTotal } = useUnreadMessages();
 
   const items: NavItem[] = [
@@ -35,6 +37,7 @@ export function BottomNav() {
 
   // Preîncarcă chunk-urile rutelor din tab-bar când browserul e idle.
   useEffect(() => {
+    if (authLoading || !user) return;
     const w = window as typeof window & {
       requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number;
     };
@@ -65,7 +68,7 @@ export function BottomNav() {
       if (cancel && typeof handle === "number") cancel(handle);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [authLoading, pathname, user, router]);
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-xl">
@@ -76,6 +79,7 @@ export function BottomNav() {
             <Link
               key={to}
               to={to}
+              preload={false}
               className={cn(
                 "group relative flex flex-1 flex-col items-center gap-1 px-1 py-1.5 transition-colors",
                 active ? NAV_ICON_ACTIVE : cn(NAV_ICON_INACTIVE, "hover:text-foreground/80"),

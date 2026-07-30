@@ -26,6 +26,7 @@ import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as MessagesRouteImport } from './routes/messages'
 import { Route as NRouteImport } from './routes/n'
 import { Route as NearbyRouteImport } from './routes/nearby'
 import { Route as NotificationsRouteImport } from './routes/notifications'
@@ -169,6 +170,11 @@ const MatchesRoute = MatchesRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MessagesRoute = MessagesRouteImport.update({
+  id: '/messages',
+  path: '/messages',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NRoute = NRouteImport.update({
@@ -360,14 +366,14 @@ const LegalTermsRoute = LegalTermsRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const MessagesIndexRoute = MessagesIndexRouteImport.update({
-  id: '/messages/',
-  path: '/messages/',
-  getParentRoute: () => rootRouteImport,
+  id: '/',
+  path: '/',
+  getParentRoute: () => MessagesRoute,
 } as any)
 const MessagesIdRoute = MessagesIdRouteImport.update({
-  id: '/messages/$id',
-  path: '/messages/$id',
-  getParentRoute: () => rootRouteImport,
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => MessagesRoute,
 } as any)
 const OffersIdRoute = OffersIdRouteImport.update({
   id: '/offers/$id',
@@ -492,6 +498,7 @@ export interface FileRoutesByFullPath {
   '/groups': typeof GroupsRouteWithChildren
   '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
@@ -649,6 +656,7 @@ export interface FileRoutesById {
   '/groups': typeof GroupsRouteWithChildren
   '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
+  '/messages': typeof MessagesRouteWithChildren
   '/n': typeof NRoute
   '/nearby': typeof NearbyRoute
   '/notifications': typeof NotificationsRoute
@@ -729,6 +737,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/matches'
     | '/mcp'
+    | '/messages'
     | '/n'
     | '/nearby'
     | '/notifications'
@@ -885,6 +894,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/matches'
     | '/mcp'
+    | '/messages'
     | '/n'
     | '/nearby'
     | '/notifications'
@@ -964,6 +974,7 @@ export interface RootRouteChildren {
   GroupsRoute: typeof GroupsRouteWithChildren
   MatchesRoute: typeof MatchesRoute
   McpRoute: typeof McpRoute
+  MessagesRoute: typeof MessagesRouteWithChildren
   NRoute: typeof NRoute
   NearbyRoute: typeof NearbyRoute
   NotificationsRoute: typeof NotificationsRoute
@@ -996,11 +1007,9 @@ export interface RootRouteChildren {
   LegalSecurityIncidentsRoute: typeof LegalSecurityIncidentsRoute
   LegalSubprocessorsRoute: typeof LegalSubprocessorsRoute
   LegalTermsRoute: typeof LegalTermsRoute
-  MessagesIdRoute: typeof MessagesIdRoute
   OffersIdRoute: typeof OffersIdRoute
   USlugRoute: typeof USlugRoute
   VenuesIdRoute: typeof VenuesIdRoute
-  MessagesIndexRoute: typeof MessagesIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
@@ -1133,6 +1142,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/messages': {
+      id: '/messages'
+      path: '/messages'
+      fullPath: '/messages'
+      preLoaderRoute: typeof MessagesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/n': {
@@ -1396,17 +1412,17 @@ declare module '@tanstack/react-router' {
     }
     '/messages/': {
       id: '/messages/'
-      path: '/messages'
+      path: '/'
       fullPath: '/messages/'
       preLoaderRoute: typeof MessagesIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof MessagesRoute
     }
     '/messages/$id': {
       id: '/messages/$id'
-      path: '/messages/$id'
+      path: '/$id'
       fullPath: '/messages/$id'
       preLoaderRoute: typeof MessagesIdRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof MessagesRoute
     }
     '/offers/$id': {
       id: '/offers/$id'
@@ -1621,6 +1637,20 @@ const GroupsRouteChildren: GroupsRouteChildren = {
 const GroupsRouteWithChildren =
   GroupsRoute._addFileChildren(GroupsRouteChildren)
 
+interface MessagesRouteChildren {
+  MessagesIdRoute: typeof MessagesIdRoute
+  MessagesIndexRoute: typeof MessagesIndexRoute
+}
+
+const MessagesRouteChildren: MessagesRouteChildren = {
+  MessagesIdRoute: MessagesIdRoute,
+  MessagesIndexRoute: MessagesIndexRoute,
+}
+
+const MessagesRouteWithChildren = MessagesRoute._addFileChildren(
+  MessagesRouteChildren,
+)
+
 interface PartnerRouteChildren {
   PartnerBillingRoute: typeof PartnerBillingRoute
   PartnerBroadcastsRoute: typeof PartnerBroadcastsRoute
@@ -1665,6 +1695,7 @@ const rootRouteChildren: RootRouteChildren = {
   GroupsRoute: GroupsRouteWithChildren,
   MatchesRoute: MatchesRoute,
   McpRoute: McpRoute,
+  MessagesRoute: MessagesRouteWithChildren,
   NRoute: NRoute,
   NearbyRoute: NearbyRoute,
   NotificationsRoute: NotificationsRoute,
@@ -1698,11 +1729,9 @@ const rootRouteChildren: RootRouteChildren = {
   LegalSecurityIncidentsRoute: LegalSecurityIncidentsRoute,
   LegalSubprocessorsRoute: LegalSubprocessorsRoute,
   LegalTermsRoute: LegalTermsRoute,
-  MessagesIdRoute: MessagesIdRoute,
   OffersIdRoute: OffersIdRoute,
   USlugRoute: USlugRoute,
   VenuesIdRoute: VenuesIdRoute,
-  MessagesIndexRoute: MessagesIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
