@@ -1,6 +1,6 @@
 {
   "versionName": "1.0.3",
-  "versionCode": 4,
+  "versionCode": 10003,
   "track": "internal",
-  "notes": "Sursa unică de adevăr pentru versionarea build-ului Android. Modifică DOAR prin scripts/bump-android-version.mjs sau lane-ul Fastlane `bump`."
+  "notes": "Sursa unic\u0103 de adev\u0103r pentru versionarea build-ului Android. versionCode = MAJOR*10000 + MINOR*100 + PATCH (identic cu formula din .github/workflows/android-release.yml). Modific\u0103 DOAR prin scripts/bump-android-version.mjs."
 }
