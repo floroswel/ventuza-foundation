@@ -24,10 +24,18 @@ export type NotificationRow = {
 };
 
 /**
- * Clopoțelul afișează EXCLUSIV vizitele de profil.
- * Mesajele trăiesc în tab-ul Mesaje, nu în clopoțel — regulă permanentă.
+ * Clopoțelul afișează TOT (tap, match, vizite, albume, evenimente…),
+ * mai puțin mesajele — acelea trăiesc în tab-ul Mesaje. Regulă permanentă.
  */
-export const BELL_TYPES: NotificationType[] = ["profile_view"];
+export const BELL_TYPES: NotificationType[] = [
+  "match",
+  "profile_view",
+  "album_request",
+  "album_granted",
+  "event_rsvp",
+  "event_reminder",
+  "tap",
+];
 
 export async function listNotifications(limit = 50): Promise<NotificationRow[]> {
   const { data, error } = await supabase
