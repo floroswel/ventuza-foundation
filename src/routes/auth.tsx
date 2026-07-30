@@ -17,7 +17,9 @@ import {
   nativeGoogleSignIn,
   isNativeAndroid,
   hasNativeGoogleConfig,
+  hasNativeGoogleConfigAsync,
 } from "@/lib/native-google-auth";
+
 import suzetaIcon from "@/assets/suzeta-icon.png.asset.json";
 
 
