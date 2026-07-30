@@ -1,0 +1,43 @@
+name: Quality gate (blochează publicarea)
+
+# Rulează la fiecare push/PR ȘI înainte de release Android.
+# Blochează dacă: erori TypeScript, build eșuat, teste critice picate,
+# vulnerabilități critice în dependențe.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install
+        run: bun install --frozen-lockfile
+
+      - name: TypeScript (blocking)
+        run: bunx tsgo --noEmit
+
+      - name: Unit + critical tests (blocking)
+        run: bunx vitest run
+
+      - name: Build (blocking)
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
+        run: bun run build:mobile
+
+      - name: Critical vulnerabilities (blocking)
+        run: |
+          set -o pipefail
+          bun audit --audit-level=critical || {
+            echo "::error::Vulnerabilități critice în dependențe — publicarea este blocată."
+            exit 1
+          }
