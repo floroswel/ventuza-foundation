@@ -66,6 +66,12 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
+    // Chunk vechi după o publicare nouă → curățăm cache-ul și reîncărcăm
+    // automat (o singură dată), fără să mai afișăm eroarea utilizatorului.
+    if (isStaleChunkError(error)) {
+      void recoverFromStaleChunk();
+      return;
+    }
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
     void import("@/lib/crash-log").then(({ logCrash }) =>
       logCrash({
@@ -76,6 +82,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
       }),
     );
   }, [error]);
+
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-background px-4">
