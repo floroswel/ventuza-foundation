@@ -68,6 +68,20 @@ const next = { ...current, versionName: nextName, versionCode: nextCode };
 writeFileSync(VERSION_FILE, JSON.stringify(next, null, 2) + "\n");
 console.log(`✓ release/version.json → ${nextName} (code ${nextCode})`);
 
+// Menține APP_VERSION (folosit de VersionGate) sincron cu versionName-ul de release.
+const APP_VERSION_FILE = resolve(ROOT, "src/lib/app-version.ts");
+if (existsSync(APP_VERSION_FILE)) {
+  const src = readFileSync(APP_VERSION_FILE, "utf8");
+  const patched = src.replace(
+    /export const APP_VERSION = "[^"]*";/,
+    `export const APP_VERSION = "${nextName}";`,
+  );
+  if (patched !== src) {
+    writeFileSync(APP_VERSION_FILE, patched);
+    console.log(`✓ src/lib/app-version.ts → APP_VERSION="${nextName}"`);
+  }
+}
+
 // Pre-generare changelog pentru fiecare locale (max 500 chars conform Play Store).
 const locales = readdirSync(METADATA_DIR, { withFileTypes: true })
   .filter((d) => d.isDirectory())
