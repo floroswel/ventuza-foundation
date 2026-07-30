@@ -39,6 +39,12 @@ const flags = Object.fromEntries(
 const current = JSON.parse(readFileSync(VERSION_FILE, "utf8"));
 let [maj, min, pat] = current.versionName.split(".").map((n) => parseInt(n, 10));
 let nextName = current.versionName;
+// Formula identică cu .github/workflows/android-release.yml, ca upload-ul CI și
+// Fastlane să folosească exact același versionCode.
+const codeFor = (name) => {
+  const [a, b, c] = name.split(".").map((n) => parseInt(n, 10) || 0);
+  return a * 10000 + b * 100 + c;
+};
 let nextCode = current.versionCode + 1;
 
 switch (mode) {
