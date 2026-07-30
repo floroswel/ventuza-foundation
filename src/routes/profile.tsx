@@ -555,6 +555,7 @@ function ProfilePage() {
                 .update({ location_sharing_enabled: next })
                 .eq("id", profile.id);
               if (error) return toast.error(error.message);
+              notifyLocationSharingChanged(next);
               setProfile({ ...profile, location_sharing_enabled: next });
               toast.success(
                 next
