@@ -49,7 +49,7 @@ const ALLOWED_TABLES = [
 export type AdminTable = (typeof ALLOWED_TABLES)[number];
 
 async function assertAdmin(supabase: any, userId: string) {
-  const { data, error } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
+  const { data, error } = await supabase.rpc("is_admin_or_above", { _user_id: userId });
   if (error) throw new Error(error.message);
   if (!data) throw new Error("Forbidden: admin role required");
 }
@@ -515,11 +515,14 @@ export const adminDeleteUser = createServerFn({ method: "POST" })
   .inputValidator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
   .handler(async ({ data, context }) => {
     await assertAdmin(context.supabase, context.userId);
+    const { assertAdminMfa } = await import("./admin-mfa-guard");
+    await assertAdminMfa(context.userId);
     if (data.userId === context.userId) throw new Error("Nu te poți șterge pe tine.");
-    const { supabaseAdmin: _sa } = await import("@/integrations/supabase/client.server");
-    const supabaseAdmin = _sa as any;
-    const { error } = await supabaseAdmin.auth.admin.deleteUser(data.userId);
-    if (error) throw new Error(error.message);
+    const { purgeUserAccount } = await import("./account.server");
+    await purgeUserAccount(data.userId, "admin_gdpr", {
+      actorId: context.userId,
+      justification: "admin panel: ștergere cont",
+    });
     return { ok: true };
   });
 
