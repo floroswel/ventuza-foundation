@@ -206,8 +206,16 @@ async def run() -> int:
                 for key, step_idx, section_idx in FIELDS:
                     tag = f"{key}-{width}-{theme}"
                     if step_idx != current_step:
-                        await page.goto(f"{BASE_URL}/n", wait_until="domcontentloaded")
-                        await page.wait_for_timeout(1200)
+                        try:
+                            await page.goto(f"{BASE_URL}/n", wait_until="commit", timeout=30000)
+                        except Exception as e:
+                            print(f"   goto /n: {e.__class__.__name__} — reîncerc")
+                            await page.wait_for_timeout(1000)
+                            try:
+                                await page.goto(f"{BASE_URL}/n", wait_until="commit", timeout=30000)
+                            except Exception:
+                                pass
+                        await page.wait_for_timeout(2000)
                         if not page.url.rstrip("/").endswith("/n"):
                             issues.append(f"[{tag}] redirect din /n → {page.url}")
                             break
