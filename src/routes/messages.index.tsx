@@ -73,7 +73,7 @@ function MessagesPage() {
   const loading = conversationsQuery.isLoading;
 
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
     const invalidate = () =>
       queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
     const ch = supabase
@@ -92,7 +92,7 @@ function MessagesPage() {
     return () => {
       supabase.removeChannel(ch);
     };
-  }, [user, queryClient]);
+  }, [user?.id, queryClient]);
 
 
 
@@ -190,7 +190,7 @@ function MessagesPage() {
                           c.unread ? "text-primary" : "text-muted-foreground",
                         )}
                       >
-                        {formatWhen(c.last_message_at)}
+                          {formatWhen(c.last_message_at)}
                       </span>
                     </div>
                     <div className="mt-0.5 flex items-center gap-2">
@@ -221,8 +221,10 @@ function MessagesPage() {
   );
 }
 
-function formatWhen(iso: string): string {
+function formatWhen(iso: string | null | undefined): string {
+  if (!iso) return "";
   const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
   const now = new Date();
   const diff = Math.max(0, now.getTime() - d.getTime());
   const day = 24 * 60 * 60 * 1000;
