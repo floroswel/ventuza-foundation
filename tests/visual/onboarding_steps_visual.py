@@ -159,6 +159,12 @@ async def restore_session(context, page) -> bool:
         except Exception:
             pass
     await page.goto(BASE_URL, wait_until="domcontentloaded")
+    # Ascunde bannerul de cookie-uri ca să nu acopere secțiunile capturate.
+    await page.evaluate(
+        "() => localStorage.setItem('suzeta_cookie_consent_v2',"
+        " JSON.stringify({ essential: true, analytics: false, marketing: false,"
+        " ts: Date.now(), v: 2 }))"
+    )
     if key and session:
         await page.evaluate(
             "([k, v]) => window.localStorage.setItem(k, v)", [key, session]
