@@ -164,7 +164,7 @@ function AuthPage() {
         // Session set by supabase.auth.signInWithIdToken; SessionGuards redirects.
       } else {
         const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: `${window.location.origin}/auth`,
+          redirect_uri: `${oauthOrigin()}/auth`,
         });
         if (result?.error) {
           handleAuthError(result.error);
@@ -308,7 +308,7 @@ function AuthPage() {
           email: emailParsed.data,
           password: passParsed.data,
           options: {
-            emailRedirectTo: `${window.location.origin}/n`,
+            emailRedirectTo: `${oauthOrigin()}/n`,
             captchaToken: captchaToken ?? undefined,
           },
         });
@@ -372,7 +372,7 @@ function AuthPage() {
     }
     setAuthError(null);
     const { error } = await supabase.auth.resetPasswordForEmail(emailParsed.data, {
-      redirectTo: `${window.location.origin}/reset-password`,
+      redirectTo: `${oauthOrigin()}/reset-password`,
       captchaToken: captchaToken ?? undefined,
     });
     if (error) {
