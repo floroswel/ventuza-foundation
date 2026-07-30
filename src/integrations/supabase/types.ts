@@ -1949,6 +1949,211 @@ export type Database = {
         }
         Relationships: []
       }
+      guardian_actions: {
+        Row: {
+          action_type: string
+          created_at: string
+          decided_at: string | null
+          decided_by: string | null
+          decision: string
+          decision_reason: string | null
+          executed_at: string | null
+          id: string
+          incident_id: string | null
+          payload: Json
+          requested_by: string | null
+          result: Json
+          reversible: boolean
+          risk: string
+          status: string
+          summary: string
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision: string
+          decision_reason?: string | null
+          executed_at?: string | null
+          id?: string
+          incident_id?: string | null
+          payload?: Json
+          requested_by?: string | null
+          result?: Json
+          reversible?: boolean
+          risk?: string
+          status?: string
+          summary: string
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          created_at?: string
+          decided_at?: string | null
+          decided_by?: string | null
+          decision?: string
+          decision_reason?: string | null
+          executed_at?: string | null
+          id?: string
+          incident_id?: string | null
+          payload?: Json
+          requested_by?: string | null
+          result?: Json
+          reversible?: boolean
+          risk?: string
+          status?: string
+          summary?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardian_actions_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "guardian_incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guardian_events: {
+        Row: {
+          app_version: string | null
+          breadcrumbs: Json
+          category: string
+          client_info: string | null
+          context: Json
+          created_at: string
+          environment: string
+          fingerprint: string
+          id: string
+          incident_id: string | null
+          message: string
+          platform: string | null
+          request_id: string | null
+          route: string | null
+          severity: string
+          stack: string | null
+          user_id: string | null
+        }
+        Insert: {
+          app_version?: string | null
+          breadcrumbs?: Json
+          category?: string
+          client_info?: string | null
+          context?: Json
+          created_at?: string
+          environment?: string
+          fingerprint: string
+          id?: string
+          incident_id?: string | null
+          message: string
+          platform?: string | null
+          request_id?: string | null
+          route?: string | null
+          severity?: string
+          stack?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          app_version?: string | null
+          breadcrumbs?: Json
+          category?: string
+          client_info?: string | null
+          context?: Json
+          created_at?: string
+          environment?: string
+          fingerprint?: string
+          id?: string
+          incident_id?: string | null
+          message?: string
+          platform?: string | null
+          request_id?: string | null
+          route?: string | null
+          severity?: string
+          stack?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "guardian_events_incident_id_fkey"
+            columns: ["incident_id"]
+            isOneToOne: false
+            referencedRelation: "guardian_incidents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      guardian_incidents: {
+        Row: {
+          affected_files: Json
+          category: string
+          created_at: string
+          event_count: number
+          fingerprint: string
+          first_seen: string
+          id: string
+          impact: string | null
+          last_seen: string
+          probable_cause: string | null
+          proposed_fix: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          risk: string | null
+          sample: Json
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+          users_affected: number
+        }
+        Insert: {
+          affected_files?: Json
+          category?: string
+          created_at?: string
+          event_count?: number
+          fingerprint: string
+          first_seen?: string
+          id?: string
+          impact?: string | null
+          last_seen?: string
+          probable_cause?: string | null
+          proposed_fix?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          risk?: string | null
+          sample?: Json
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+          users_affected?: number
+        }
+        Update: {
+          affected_files?: Json
+          category?: string
+          created_at?: string
+          event_count?: number
+          fingerprint?: string
+          first_seen?: string
+          id?: string
+          impact?: string | null
+          last_seen?: string
+          probable_cause?: string | null
+          proposed_fix?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          risk?: string | null
+          sample?: Json
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+          users_affected?: number
+        }
+        Relationships: []
+      }
       illegal_content_reports: {
         Row: {
           category: string
@@ -5651,6 +5856,48 @@ export type Database = {
         }[]
       }
       gettransactionid: { Args: never; Returns: unknown }
+      guardian_cleanup: { Args: never; Returns: number }
+      guardian_dashboard: { Args: { _hours?: number }; Returns: Json }
+      guardian_decide_action: {
+        Args: { _action_id: string; _decision: string; _reason: string }
+        Returns: Json
+      }
+      guardian_ingest: {
+        Args: {
+          _app_version?: string
+          _breadcrumbs?: Json
+          _category: string
+          _client_info?: string
+          _context?: Json
+          _environment?: string
+          _fingerprint: string
+          _message: string
+          _platform?: string
+          _request_id?: string
+          _route?: string
+          _severity: string
+          _stack?: string
+        }
+        Returns: Json
+      }
+      guardian_propose_action: {
+        Args: {
+          _action_type: string
+          _auto_executed?: boolean
+          _decision: string
+          _incident_id: string
+          _payload?: Json
+          _reversible: boolean
+          _risk: string
+          _summary: string
+        }
+        Returns: string
+      }
+      guardian_report: { Args: { _period?: string }; Returns: Json }
+      guardian_set_incident_status: {
+        Args: { _incident_id: string; _note?: string; _status: string }
+        Returns: Json
+      }
       has_active_consent: {
         Args: { _kind: string; _user_id: string }
         Returns: boolean
