@@ -60,8 +60,9 @@ export const Route = createFileRoute("/api/public/google-play-rtdn")({
           const { verifyGooglePlayPurchase } = await import("@/lib/google-play.server");
           let status: "active" | "inactive";
           try {
-            const verified = await verifyGooglePlayPurchase(productId, purchaseToken);
-            status = verified?.active ? "active" : "inactive";
+            const verified = await verifyGooglePlayPurchase({ productId, purchaseToken });
+            status = verified.valid ? "active" : "inactive";
+
           } catch (e) {
             console.error("[RTDN] purchase re-verification failed:", e);
             return new Response("ok", { status: 200 });
