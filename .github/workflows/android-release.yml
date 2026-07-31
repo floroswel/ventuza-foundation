@@ -412,52 +412,80 @@ jobs:
             exit 1
           }
 
-      - name: Verifică parolele keystore (fail-fast)
+      - name: Diagnostic + verificare secrete keystore (fail-fast)
         env:
-          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          STORE_PASSWORD_RAW: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS_RAW: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD_RAW: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           set -e
+          # Curăță CR/LF și spații de la început/sfârșit (cauza #1 de "wrong password"
+          # când secretul a fost lipit cu newline la final).
+          trim() { printf '%s' "$1" | tr -d '\r\n' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'; }
+          STORE_PASSWORD="$(trim "$STORE_PASSWORD_RAW")"
+          KEY_ALIAS="$(trim "$KEY_ALIAS_RAW")"
+          KEY_PASSWORD="$(trim "$KEY_PASSWORD_RAW")"
+
+          for v in STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            eval "val=\$$v"
+            if [ -z "$val" ]; then echo "::error::Secretul ANDROID_${v/STORE_PASSWORD/KEYSTORE_PASSWORD} este gol."; exit 1; fi
+          done
+          echo "Lungimi (după trim) — storePass: ${#STORE_PASSWORD}, keyAlias: ${#KEY_ALIAS}, keyPass: ${#KEY_PASSWORD}"
+          if [ "${#STORE_PASSWORD_RAW}" -ne "${#STORE_PASSWORD}" ] || [ "${#KEY_PASSWORD_RAW}" -ne "${#KEY_PASSWORD}" ] || [ "${#KEY_ALIAS_RAW}" -ne "${#KEY_ALIAS}" ]; then
+            echo "::warning::Unul dintre secrete conținea spații/newline la capete — au fost eliminate automat."
+          fi
+
           echo "→ Test 1: parola keystore-ului (ANDROID_KEYSTORE_PASSWORD)"
-          if ! keytool -list -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" > /tmp/kt.out 2>&1; then
+          if ! keytool -list -v -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" > /tmp/kt.out 2>&1; then
             echo "::error::ANDROID_KEYSTORE_PASSWORD este GREȘITĂ pentru keystore-ul din ANDROID_KEYSTORE_BASE64."
             cat /tmp/kt.out
             exit 1
           fi
+          echo "Alias-uri găsite în keystore:"
+          grep -i "^Alias name:" /tmp/kt.out || true
+          grep -i "Keystore type:" /tmp/kt.out || true
+
           echo "→ Test 2: aliasul (ANDROID_KEY_ALIAS='$KEY_ALIAS') există în keystore"
           if ! keytool -list -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" > /tmp/kt.out 2>&1; then
-            echo "::error::Aliasul '$KEY_ALIAS' NU există în keystore. Aliasuri disponibile:"
-            keytool -list -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" | grep -i "alias name" || true
+            echo "::error::Aliasul '$KEY_ALIAS' NU există în keystore. Aliasuri disponibile mai sus (case-insensitive la keytool, dar Gradle cere potrivire exactă)."
+            cat /tmp/kt.out
             exit 1
           fi
+
           echo "→ Test 3: parola cheii (ANDROID_KEY_PASSWORD) descifrează cheia privată"
-          # `-certreq` cere descifrarea cheii private — funcționează atât pe JKS cât și pe PKCS12
-          # (spre deosebire de `-keypasswd`, care nu e suportat pe PKCS12).
+          EFFECTIVE_KEY_PASSWORD="$KEY_PASSWORD"
           if ! keytool -certreq -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" \
                 -alias "$KEY_ALIAS" -keypass "$KEY_PASSWORD" > /tmp/kt.out 2>&1; then
-            echo "::error::ANDROID_KEY_PASSWORD este GREȘITĂ pentru aliasul '$KEY_ALIAS'."
-            cat /tmp/kt.out
-            echo ""
-            echo "Fix: în GitHub → Settings → Secrets → Actions, actualizează ANDROID_KEY_PASSWORD"
-            echo "cu parola reală a cheii din keystore. Pe PKCS12 (default modern),"
-            echo "keyPassword TREBUIE să fie identic cu storePassword."
-            exit 1
+            echo "ANDROID_KEY_PASSWORD nu deschide cheia; încerc fallback cu storePassword (PKCS12 cere key==store)..."
+            if keytool -certreq -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" \
+                  -alias "$KEY_ALIAS" -keypass "$STORE_PASSWORD" > /tmp/kt2.out 2>&1; then
+              echo "::warning::ANDROID_KEY_PASSWORD e greșit, dar cheia se deschide cu ANDROID_KEYSTORE_PASSWORD (keystore PKCS12). Folosesc storePassword pentru semnare. Actualizează secretul ANDROID_KEY_PASSWORD ca să fie identic cu ANDROID_KEYSTORE_PASSWORD."
+              EFFECTIVE_KEY_PASSWORD="$STORE_PASSWORD"
+            else
+              echo "::error::ANDROID_KEY_PASSWORD este GREȘITĂ pentru aliasul '$KEY_ALIAS' (și nici storePassword nu o deschide)."
+              cat /tmp/kt.out
+              echo ""
+              echo "Fix: GitHub → Settings → Secrets and variables → Actions → actualizează"
+              echo "ANDROID_KEY_PASSWORD (și, dacă e cazul, ANDROID_KEYSTORE_PASSWORD)."
+              echo "Pe keystore PKCS12 (default modern) keyPassword TREBUIE să fie identic cu storePassword."
+              echo "Dacă nu mai știi parolele și aplicația NU e încă publicată, rulează workflow-ul"
+              echo "'Bootstrap Android Upload Key' pentru un keystore nou cu parole fără caractere speciale."
+              exit 1
+            fi
           fi
-          echo "✓ Toate cele 3 secrete potrivesc keystore-ul."
+          echo "✓ Secretele potrivesc keystore-ul."
 
-      - name: Scrie keystore.properties
-        env:
-          STORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          cat > android/keystore.properties <<EOF
-          storeFile=release.keystore
-          storePassword=${STORE_PASSWORD}
-          keyAlias=${KEY_ALIAS}
-          keyPassword=${KEY_PASSWORD}
-          EOF
+          # Scrie keystore.properties cu escaping corect pentru formatul .properties
+          # (backslash, :, =, #, ! și spații trebuie escapate, altfel parola ajunge trunchiată).
+          esc() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/:/\\:/g' -e 's/=/\\=/g' -e 's/#/\\#/g' -e 's/!/\\!/g' -e 's/ /\\ /g'; }
+          {
+            echo "storeFile=release.keystore"
+            echo "storePassword=$(esc "$STORE_PASSWORD")"
+            echo "keyAlias=$(esc "$KEY_ALIAS")"
+            echo "keyPassword=$(esc "$EFFECTIVE_KEY_PASSWORD")"
+          } > android/keystore.properties
+          echo "keystore.properties scris (valori mascate)."
+
 
       - name: Injectează signing config în build.gradle (dacă lipsește)
         run: |
