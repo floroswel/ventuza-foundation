@@ -125,6 +125,19 @@ html {
     padding-top: env(safe-area-inset-top);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    /* Fără scroll orizontal pe ecrane înguste (360–380px) sau tablete. */
+    max-width: 100%;
+    overflow-x: hidden;
+    overscroll-behavior-x: none;
+    /* Android WebView nu mai umflă textul în layout-uri late. */
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* Media și tabele nu pot depăși niciodată lățimea ecranului. */
+  img, video, canvas, svg, iframe {
+    max-width: 100%;
+    height: auto;
   }
 
   h1, h2, h3, .font-display {
