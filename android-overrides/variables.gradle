@@ -8,7 +8,9 @@
 // Sursa autoritativă pentru bump: `release/version.json` +
 // `scripts/bump-android-version.mjs`.
 ext {
-    minSdkVersion = 23
+    // 24 = Android 7.0. Obligatoriu: io.ionic.libs:ioncamera-android cere minSdk 24.
+    // NU folosi tools:overrideLibrary — duce la crash-uri la runtime.
+    minSdkVersion = 24
     compileSdkVersion = 35
     targetSdkVersion = 35
     androidxActivityVersion = '1.9.3'
