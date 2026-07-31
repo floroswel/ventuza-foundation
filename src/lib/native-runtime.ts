@@ -25,6 +25,15 @@ export async function bootstrapNativeRuntime(router: Router<any, any, any, any, 
   if (!cap?.isNativePlatform?.()) return;
   bootstrapped = true;
 
+  // 0) Limba telefonului (RO pentru utilizatorii români, EN pentru restul).
+  try {
+    const { syncNativeDeviceLanguage } = await import("@/lib/i18n");
+    await syncNativeDeviceLanguage();
+  } catch {
+    /* fallback: detecția din navigator */
+  }
+
+
   // 1) Hardware Back Button Android
   try {
     const { App } = await import("@capacitor/app");
