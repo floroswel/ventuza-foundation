@@ -147,6 +147,21 @@ jobs:
       - name: Sync Capacitor
         run: bunx cap sync android
 
+      - name: Generează iconițe + splash nativ (@capacitor/assets)
+        run: |
+          set -e
+          if [ ! -f assets/logo.png ]; then
+            echo "::error::assets/logo.png lipsește — iconița ar rămâne cea default Capacitor."
+            exit 1
+          fi
+          bunx @capacitor/assets@3 generate --android \
+            --iconBackgroundColor '#0B0B10' \
+            --iconBackgroundColorDark '#0B0B10' \
+            --splashBackgroundColor '#0B0B10' \
+            --splashBackgroundColorDark '#0B0B10'
+          echo "✓ Iconițe + splash generate din assets/"
+
+
       - name: Aplică android-overrides (compliance Google Play targetSdk 35 + no AD_ID + no background location)
         run: |
           set -e
