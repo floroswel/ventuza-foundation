@@ -17,7 +17,9 @@ export const Route = createFileRoute("/account-deletion")({
       },
       { property: "og:type", content: "website" },
       { name: "robots", content: "index,follow" },
+      { property: "og:url", content: "https://suzeta.app/account-deletion" },
     ],
+    links: [{ rel: "canonical", href: "https://suzeta.app/account-deletion" }],
   }),
   component: AccountDeletionPage,
 });

@@ -50,7 +50,9 @@ export const Route = createFileRoute("/events")({
     meta: [
       { title: "Events — Suzeta" },
       { name: "description", content: "Find gay-friendly parties, bars and meetups near you." },
+      { property: "og:url", content: "https://suzeta.app/events" },
     ],
+    links: [{ rel: "canonical", href: "https://suzeta.app/events" }],
   }),
   component: EventsPage,
 });
