@@ -16,6 +16,7 @@ import { buildInboxPreview } from "@/lib/notification-privacy";
 import { useNotificationPrefs } from "@/lib/notification-prefs-context";
 import { StoriesStrip } from "@/components/StoriesStrip";
 import { cn } from "@/lib/utils";
+import { subscribeConversationChanges } from "@/hooks/useUnreadMessages";
 
 export const Route = createFileRoute("/messages/")({
   head: () => ({ meta: [{ title: "Mesaje — Suzeta" }] }),
@@ -94,25 +95,13 @@ function MessagesPage() {
   const loadError = conversationsQuery.error;
 
   useEffect(() => {
-    if (!user?.id) return;
+    const userId = user?.id;
+    if (!userId) return;
     const invalidate = () =>
-      queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
-    const ch = supabase
-      .channel(`conv-list:${user.id}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "conversations" },
-        invalidate,
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        invalidate,
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
+      queryClient.invalidateQueries({ queryKey: ["conversations", userId] });
+    // BottomNav deține unicul canal Realtime `conv-list:<uid>`. Pagina
+    // ascultă evenimentele lui, fără să creeze încă un canal cu același topic.
+    return subscribeConversationChanges(invalidate);
   }, [user?.id, queryClient]);
 
 

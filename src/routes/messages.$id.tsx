@@ -236,7 +236,8 @@ function ThreadPage() {
 
   // Initial load + realtime channel
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
+    const userId: string = user.id;
     let alive = true;
 
     async function load() {
@@ -248,7 +249,7 @@ function ThreadPage() {
           .maybeSingle();
         if (error) throw error;
         if (!conv) throw new Error("Conversation not found");
-        const oid = conv.user_a === user!.id ? conv.user_b : conv.user_a;
+        const oid = conv.user_a === userId ? conv.user_b : conv.user_a;
         const [msgs, prof, extraRes] = await Promise.all([
           fetchMessages(id),
           fetchOtherProfile(oid),
@@ -265,14 +266,14 @@ function ThreadPage() {
         // Default to NOT blocked on any error, so a transient RPC failure never disables the composer.
         const { data: blockedRes, error: blockErr } = await supabase.rpc(
           "is_blocked_between" as never,
-          { a: user!.id, b: oid } as never,
+          { a: userId, b: oid } as never,
         );
         if (blockErr) {
           console.warn("[messages] is_blocked_between failed, defaulting to not blocked:", blockErr);
         }
         if (alive) setIsBlocked(!blockErr && Boolean(blockedRes));
         await markDelivered(id);
-        await markRead(id, user!.id);
+        await markRead(id, userId);
       } catch (e) {
         toast.error(e instanceof Error ? e.message : "Couldn't open chat");
       } finally {
@@ -294,10 +295,10 @@ function ThreadPage() {
         (payload) => {
           const m = payload.new as MessageRow;
           setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
-          if (m.sender_id !== user!.id) {
+          if (m.sender_id !== userId) {
             setOtherTyping(false);
             void markDelivered(id);
-            void markRead(id, user!.id);
+            void markRead(id, userId);
           }
         },
       )
@@ -316,7 +317,7 @@ function ThreadPage() {
       )
       .on("broadcast", { event: "typing" }, (payload) => {
         const p = payload.payload as { userId: string };
-        if (p.userId !== user!.id) {
+        if (p.userId !== userId) {
           setOtherTyping(true);
           if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
           typingTimerRef.current = setTimeout(() => setOtherTyping(false), 3000);
@@ -334,7 +335,7 @@ function ThreadPage() {
       supabase.removeChannel(ch);
       channelRef.current = null;
     };
-  }, [id, user]);
+  }, [id, user?.id]);
 
   // Mirror mesajele reale (persistate în DB, nu optimiste/pending) în cache-ul
   // TanStack Query, sub cheia din allowlist-ul persister-ului. Astfel la
