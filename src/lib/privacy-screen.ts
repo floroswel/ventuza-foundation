@@ -22,6 +22,21 @@ let lastStatus: PrivacyScreenStatus = {
 
 let webFallbackInstalled = false;
 
+// Debug flag: toate log-urile și toast-urile de privacy sunt TĂCUTE implicit.
+// Activare manuală: localStorage.setItem("vz_privacy_debug", "1")
+function privacyDebug(): boolean {
+  try {
+    return typeof localStorage !== "undefined" && localStorage.getItem("vz_privacy_debug") === "1";
+  } catch {
+    return false;
+  }
+}
+const plog = {
+  info: (...a: unknown[]) => { if (privacyDebug()) console.info(...a); },
+  warn: (...a: unknown[]) => { if (privacyDebug()) console.warn(...a); },
+  error: (...a: unknown[]) => { if (privacyDebug()) console.error(...a); },
+};
+
 export function getPrivacyScreenStatus(): PrivacyScreenStatus {
   return lastStatus;
 }
@@ -33,7 +48,8 @@ async function notify(status: PrivacyScreenStatus) {
   } catch {
     /* ignore */
   }
-  // Toast doar pe nativ (pe web e zgomot — nu putem bloca screenshot-uri oricum).
+  // Tăcut implicit: fără toast-uri de status privacy la boot/navigare.
+  if (!privacyDebug()) return;
   if (!status.native) return;
   try {
     const { toast } = await import("sonner");
@@ -79,7 +95,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
         await mod.PrivacyScreen.enable();
         pluginOk = true;
         const ms = Math.round(performance.now() - t0);
-        console.info(
+        plog.info(
           `[privacy-screen] ✅ plugin activ pe ${platform} în ${ms}ms (FLAG_SECURE / preventScreenshots)`,
         );
 
@@ -87,8 +103,8 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
         // primul enable() se pierde dacă Activity/Scene este încă în bootstrap.
         const reenable = (reason: string) => {
           void mod.PrivacyScreen.enable()
-            .then(() => console.info(`[privacy-screen] re-arm ${reason} OK`))
-            .catch((e) => console.warn(`[privacy-screen] re-arm ${reason} eșuat`, e));
+            .then(() => plog.info(`[privacy-screen] re-arm ${reason} OK`))
+            .catch((e) => plog.warn(`[privacy-screen] re-arm ${reason} eșuat`, e));
         };
         window.setTimeout(() => reenable("post-boot 500ms"), 500);
         window.setTimeout(() => reenable("post-boot 2000ms"), 2000);
@@ -101,10 +117,10 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
             if (isActive) {
               try {
                 await mod.PrivacyScreen.enable();
-                console.info("[privacy-screen] re-armat la resume");
+                plog.info("[privacy-screen] re-armat la resume");
                 window.setTimeout(() => reenable("resume delayed"), 350);
               } catch (e) {
-                console.warn("[privacy-screen] re-arm eșuat", e);
+                plog.warn("[privacy-screen] re-arm eșuat", e);
               }
             }
           });
@@ -116,7 +132,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
         if (platform === "ios") {
           try {
             mod.PrivacyScreen.addListener("screenshotTaken", async () => {
-              console.warn("[privacy-screen] iOS a semnalat screenshotTaken");
+              plog.warn("[privacy-screen] iOS a semnalat screenshotTaken");
               const { toast } = await import("sonner");
               toast.warning("Cineva a făcut o captură de ecran", {
                 description: "Sistemul iOS ne-a notificat. Fii atent la ce partajezi.",
@@ -125,7 +141,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
               window.dispatchEvent(new CustomEvent("suzeta:screenshot-detected"));
             });
             mod.PrivacyScreen.addListener("screenRecordingStarted", async () => {
-              console.warn("[privacy-screen] iOS screen recording pornit");
+              plog.warn("[privacy-screen] iOS screen recording pornit");
               const { toast } = await import("sonner");
               toast.error("Înregistrare de ecran detectată", {
                 description: "Conținutul sensibil e ascuns până se oprește.",
@@ -134,11 +150,11 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
               document.documentElement.classList.add("__privacy_defocused");
             });
             mod.PrivacyScreen.addListener("screenRecordingStopped", () => {
-              console.info("[privacy-screen] iOS screen recording oprit");
+              plog.info("[privacy-screen] iOS screen recording oprit");
               document.documentElement.classList.remove("__privacy_defocused");
             });
           } catch (e) {
-            console.warn("[privacy-screen] listeners iOS indisponibili", e);
+            plog.warn("[privacy-screen] listeners iOS indisponibili", e);
           }
         }
 
@@ -150,7 +166,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
         });
       } catch (err) {
         pluginErr = err instanceof Error ? err.message : String(err);
-        console.error(`[privacy-screen] ❌ plugin indisponibil pe ${platform}:`, pluginErr);
+        plog.error(`[privacy-screen] ❌ plugin indisponibil pe ${platform}:`, pluginErr);
       }
 
       // 1b) Fallback nativ fără plugin — cel puțin mascăm ecranul la background
@@ -164,7 +180,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
             if (el) el.style.display = active ? "none" : "block";
           };
           App.addListener("appStateChange", ({ isActive }) => applyMask(isActive));
-          console.info(
+          plog.info(
             `[privacy-screen] ⚠ fallback nativ activ pe ${platform} (mascare background, FĂRĂ blocare capturi)`,
           );
           await notify({
@@ -176,7 +192,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
           });
         } catch (e) {
           const emsg = e instanceof Error ? e.message : String(e);
-          console.error(`[privacy-screen] fallback nativ eșuat pe ${platform}:`, emsg);
+          plog.error(`[privacy-screen] fallback nativ eșuat pe ${platform}:`, emsg);
           await notify({
             platform,
             native: true,
@@ -187,7 +203,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
         }
       }
     } else {
-      console.info("[privacy-screen] web — FLAG_SECURE indisponibil, aplicăm best-effort");
+      plog.info("[privacy-screen] web — FLAG_SECURE indisponibil, aplicăm best-effort");
       await notify({
         platform: "web",
         native: false,
@@ -196,7 +212,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
       });
     }
   } catch (err) {
-    console.info("[privacy-screen] native init skipped", err);
+    plog.info("[privacy-screen] native init skipped", err);
     await notify({
       ...lastStatus,
       error: err instanceof Error ? err.message : String(err),
@@ -242,6 +258,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     // Throttle notificări (evită spam când user-ul insistă).
     let lastToastAt = 0;
     const maybeToast = async (action: string, detail: string) => {
+      if (!privacyDebug()) return;
       const now = Date.now();
       if (now - lastToastAt < 2500) return;
       lastToastAt = now;
@@ -255,7 +272,7 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
 
     const emit = (action: "contextmenu" | "drag" | "copy" | "cut" | "select" | "capture-key" | "window-leave", el: HTMLElement | null) => {
       const target = describe(el);
-      console.warn(`[privacy-screen] 🚫 ${action} blocat pe ${target}`);
+      plog.warn(`[privacy-screen] 🚫 ${action} blocat pe ${target}`);
       window.dispatchEvent(
         new CustomEvent("suzeta:privacy-blocked", {
           detail: { action, target, at: new Date().toISOString() },
@@ -522,9 +539,9 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     }, { capture: true });
 
 
-    console.info("[privacy-screen] fallback web întărit: blur/overlay la blur, print, capture keys, pointer leave, copy/cut/drag/select pe media");
+    plog.info("[privacy-screen] fallback web întărit: blur/overlay la blur, print, capture keys, pointer leave, copy/cut/drag/select pe media");
   } catch (err) {
-    console.info("[privacy-screen] web init failed", err);
+    plog.info("[privacy-screen] web init failed", err);
   }
 
   return lastStatus;
