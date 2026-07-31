@@ -11,7 +11,7 @@ Canonical site: https://suzeta.app/
 
 - Name: Suzeta
 - Category: LGBTQ+ dating and social networking
-- Platforms: Web (https://suzeta.app) and Android (Google Play, package `com.ventuza.dating`)
+- Platforms: Web (https://suzeta.app) and Android
 - Audience: adults 18+ only; age verification is mandatory
 - Price: free, no subscriptions, no paywalls
 - Languages: Romanian and English
@@ -29,6 +29,10 @@ Canonical site: https://suzeta.app/
 ## Public pages
 
 - [Home](https://suzeta.app/): product overview, features, safety summary, FAQ.
+- [About Suzeta](https://suzeta.app/about): what the app is, who it is for, features, contact details.
+- [FAQ](https://suzeta.app/faq): short factual answers about Suzeta.
+- [Community guidelines](https://suzeta.app/community-guidelines): rules and moderation.
+- [Contact & support](https://suzeta.app/contact): support and privacy contacts.
 - [Safety center](https://suzeta.app/safety): dating safety guidance, Romanian LGBTQ+ helplines, emergency contacts.
 - [Pricing](https://suzeta.app/premium): explains that Suzeta is fully free.
 - [For businesses](https://suzeta.app/business): B2B partner information (venues, events, offers).
