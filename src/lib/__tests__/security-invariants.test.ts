@@ -15,6 +15,17 @@ import { createClient } from "@supabase/supabase-js";
 
 const url = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
 const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY;
+// Introspecția (`security_invariants_snapshot`) e rezervată `service_role` —
+// EXECUTE a fost revocat de la anon/authenticated. Rulăm doar când cheia
+// privilegiată e disponibilă (CI intern), altfel sărim testul.
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+function adminClient() {
+  if (!url || !serviceKey) throw new Error("Lipsește SUPABASE_SERVICE_ROLE_KEY");
+  return createClient(url, serviceKey, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+}
 
 function client() {
   if (!url || !key) {
@@ -26,8 +37,8 @@ function client() {
 }
 
 describe("Security invariants — introspecție RPC", () => {
-  it("snapshot-ul confirmă toate gate-urile critice", async () => {
-    const supabase = client();
+  it.skipIf(!serviceKey)("snapshot-ul confirmă toate gate-urile critice", async () => {
+    const supabase = adminClient();
     const { data, error } = await supabase.rpc("security_invariants_snapshot");
     expect(error).toBeNull();
     expect(data).toBeTruthy();

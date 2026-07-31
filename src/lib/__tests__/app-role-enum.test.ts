@@ -13,12 +13,15 @@ import { createClient } from "@supabase/supabase-js";
 const url = process.env.VITE_SUPABASE_URL ?? process.env.SUPABASE_URL;
 const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY ?? process.env.SUPABASE_PUBLISHABLE_KEY;
 
+// `app_role_values` e introspecție internă: EXECUTE doar pentru service_role.
+const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
 describe("public.app_role enum", () => {
-  it("conține valoarea 'partner' (regresie admin-partners)", async () => {
-    if (!url || !key) {
-      throw new Error("Lipsesc VITE_SUPABASE_URL / VITE_SUPABASE_PUBLISHABLE_KEY");
+  it.skipIf(!serviceKey)("conține valoarea 'partner' (regresie admin-partners)", async () => {
+    if (!url || !serviceKey) {
+      throw new Error("Lipsesc VITE_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY");
     }
-    const supabase = createClient(url, key, {
+    const supabase = createClient(url, serviceKey, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
