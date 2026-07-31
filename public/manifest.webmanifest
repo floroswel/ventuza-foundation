@@ -1,15 +1,31 @@
 {
   "name": "Suzeta",
   "short_name": "Suzeta",
-  "description": "Dating, elevated.",
-  "start_url": "/discover",
+  "description": "Suzeta is a gay dating and LGBTQ+ chat app for adults. Meet new people, match and chat privately.",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0B0B10",
   "theme_color": "#0B0B10",
   "orientation": "portrait",
-  "categories": ["social", "lifestyle", "dating"],
+  "categories": [
+    "social",
+    "lifestyle",
+    "dating"
+  ],
   "icons": [
-    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
-  ]
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "scope": "/",
+  "lang": "ro"
 }
