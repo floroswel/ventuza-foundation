@@ -276,7 +276,21 @@ function Landing() {
             </p>
           </div>
         </section>
+
+        {/* FAQ — răspunsuri scurte, citabile de motoarele de căutare și AI */}
+        <section className="mt-14">
+          <h2 className="text-2xl font-semibold tracking-tight">Frequently asked questions</h2>
+          <dl className="mt-5 space-y-4">
+            {FAQ.map((item) => (
+              <div key={item.q} className="rounded-2xl border border-border bg-surface p-5">
+                <dt className="text-base font-semibold text-foreground">{item.q}</dt>
+                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
       </main>
+
 
       <footer className="border-t border-border bg-surface/40">
         <div className="mx-auto w-full max-w-3xl px-6 py-10 text-sm text-muted-foreground">
