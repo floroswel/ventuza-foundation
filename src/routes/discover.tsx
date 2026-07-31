@@ -474,7 +474,7 @@ function DiscoverPage() {
           target_id: target.id,
           action,
         },
-        { onConflict: "swiper_id,target_id" },
+        { onConflict: "swiper_id,target_id", ignoreDuplicates: true },
       );
       if (error) {
         toast.error(error.message);
