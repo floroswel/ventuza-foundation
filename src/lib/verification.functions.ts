@@ -73,18 +73,19 @@ export const verifySelfie = createServerFn({ method: "POST" })
     }
 
     const ok = parsed.same_person && parsed.gesture_visible && parsed.real_selfie;
+    // NU se scrie `verified` / `verified_at` — badge-ul de încredere „Verified 18+"
+    // se acordă exclusiv prin fluxul Didit. Aici salvăm doar rezultatul potrivirii foto.
     const { error } = await context.supabase
       .from("profiles")
       .update({
-        verification_status: ok ? "verified" : "rejected",
+        verification_status: ok ? "photo_matched" : "rejected",
         verification_reason: parsed.reason ?? null,
-        verified_at: ok ? new Date().toISOString() : null,
-        verified: ok,
       })
       .eq("id", context.userId);
     if (error) throw error;
 
-    return { verified: ok, reason: parsed.reason };
+    return { verified: false, photoMatched: ok, reason: parsed.reason };
+
   });
 
 // ---------- Moderate photo on upload ----------
