@@ -236,8 +236,8 @@ function ThreadPage() {
 
   // Initial load + realtime channel
   useEffect(() => {
-    const userId = user?.id;
-    if (!userId) return;
+    if (!user?.id) return;
+    const userId: string = user.id;
     let alive = true;
 
     async function load() {
@@ -295,10 +295,10 @@ function ThreadPage() {
         (payload) => {
           const m = payload.new as MessageRow;
           setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
-           if (m.sender_id !== userId) {
+          if (m.sender_id !== userId) {
             setOtherTyping(false);
             void markDelivered(id);
-             void markRead(id, userId);
+            void markRead(id, userId);
           }
         },
       )
@@ -317,7 +317,7 @@ function ThreadPage() {
       )
       .on("broadcast", { event: "typing" }, (payload) => {
         const p = payload.payload as { userId: string };
-         if (p.userId !== userId) {
+        if (p.userId !== userId) {
           setOtherTyping(true);
           if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
           typingTimerRef.current = setTimeout(() => setOtherTyping(false), 3000);
