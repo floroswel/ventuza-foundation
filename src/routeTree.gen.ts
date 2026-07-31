@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AccountDeletionRouteImport } from './routes/account-deletion'
 import { Route as AdminRouteImport } from './routes/admin'
@@ -18,10 +19,13 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as BlockedRegionRouteImport } from './routes/blocked-region'
 import { Route as BusinessRouteImport } from './routes/business'
+import { Route as CommunityGuidelinesRouteImport } from './routes/community-guidelines'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CruiseRouteImport } from './routes/cruise'
 import { Route as DiscoverRouteImport } from './routes/discover'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as ExploreRouteImport } from './routes/explore'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as GroupsRouteImport } from './routes/groups'
 import { Route as MatchesRouteImport } from './routes/matches'
@@ -92,6 +96,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AccountRoute = AccountRouteImport.update({
   id: '/account',
   path: '/account',
@@ -132,6 +141,16 @@ const BusinessRoute = BusinessRouteImport.update({
   path: '/business',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CommunityGuidelinesRoute = CommunityGuidelinesRouteImport.update({
+  id: '/community-guidelines',
+  path: '/community-guidelines',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CruiseRoute = CruiseRouteImport.update({
   id: '/cruise',
   path: '/cruise',
@@ -150,6 +169,11 @@ const EventsRoute = EventsRouteImport.update({
 const ExploreRoute = ExploreRouteImport.update({
   id: '/explore',
   path: '/explore',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FavoritesRoute = FavoritesRouteImport.update({
@@ -482,6 +506,7 @@ const LovableEmailQueueProcessRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRouteWithChildren
@@ -490,10 +515,13 @@ export interface FileRoutesByFullPath {
   '/blocked': typeof BlockedRoute
   '/blocked-region': typeof BlockedRegionRoute
   '/business': typeof BusinessRouteWithChildren
+  '/community-guidelines': typeof CommunityGuidelinesRoute
+  '/contact': typeof ContactRoute
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
+  '/faq': typeof FaqRoute
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/matches': typeof MatchesRoute
@@ -561,6 +589,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRouteWithChildren
@@ -569,10 +598,13 @@ export interface FileRoutesByTo {
   '/blocked': typeof BlockedRoute
   '/blocked-region': typeof BlockedRegionRoute
   '/business': typeof BusinessRouteWithChildren
+  '/community-guidelines': typeof CommunityGuidelinesRoute
+  '/contact': typeof ContactRoute
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
+  '/faq': typeof FaqRoute
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/matches': typeof MatchesRoute
@@ -640,6 +672,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/account': typeof AccountRoute
   '/account-deletion': typeof AccountDeletionRoute
   '/admin': typeof AdminRouteWithChildren
@@ -648,10 +681,13 @@ export interface FileRoutesById {
   '/blocked': typeof BlockedRoute
   '/blocked-region': typeof BlockedRegionRoute
   '/business': typeof BusinessRouteWithChildren
+  '/community-guidelines': typeof CommunityGuidelinesRoute
+  '/contact': typeof ContactRoute
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
+  '/faq': typeof FaqRoute
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
   '/matches': typeof MatchesRoute
@@ -721,6 +757,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/account'
     | '/account-deletion'
     | '/admin'
@@ -729,10 +766,13 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/blocked-region'
     | '/business'
+    | '/community-guidelines'
+    | '/contact'
     | '/cruise'
     | '/discover'
     | '/events'
     | '/explore'
+    | '/faq'
     | '/favorites'
     | '/groups'
     | '/matches'
@@ -800,6 +840,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/account'
     | '/account-deletion'
     | '/admin'
@@ -808,10 +849,13 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/blocked-region'
     | '/business'
+    | '/community-guidelines'
+    | '/contact'
     | '/cruise'
     | '/discover'
     | '/events'
     | '/explore'
+    | '/faq'
     | '/favorites'
     | '/groups'
     | '/matches'
@@ -878,6 +922,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/account'
     | '/account-deletion'
     | '/admin'
@@ -886,10 +931,13 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/blocked-region'
     | '/business'
+    | '/community-guidelines'
+    | '/contact'
     | '/cruise'
     | '/discover'
     | '/events'
     | '/explore'
+    | '/faq'
     | '/favorites'
     | '/groups'
     | '/matches'
@@ -958,6 +1006,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   AccountRoute: typeof AccountRoute
   AccountDeletionRoute: typeof AccountDeletionRoute
   AdminRoute: typeof AdminRouteWithChildren
@@ -966,10 +1015,13 @@ export interface RootRouteChildren {
   BlockedRoute: typeof BlockedRoute
   BlockedRegionRoute: typeof BlockedRegionRoute
   BusinessRoute: typeof BusinessRouteWithChildren
+  CommunityGuidelinesRoute: typeof CommunityGuidelinesRoute
+  ContactRoute: typeof ContactRoute
   CruiseRoute: typeof CruiseRoute
   DiscoverRoute: typeof DiscoverRoute
   EventsRoute: typeof EventsRouteWithChildren
   ExploreRoute: typeof ExploreRoute
+  FaqRoute: typeof FaqRoute
   FavoritesRoute: typeof FavoritesRoute
   GroupsRoute: typeof GroupsRouteWithChildren
   MatchesRoute: typeof MatchesRoute
@@ -1032,6 +1084,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/account': {
       id: '/account'
       path: '/account'
@@ -1088,6 +1147,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BusinessRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/community-guidelines': {
+      id: '/community-guidelines'
+      path: '/community-guidelines'
+      fullPath: '/community-guidelines'
+      preLoaderRoute: typeof CommunityGuidelinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/cruise': {
       id: '/cruise'
       path: '/cruise'
@@ -1114,6 +1187,13 @@ declare module '@tanstack/react-router' {
       path: '/explore'
       fullPath: '/explore'
       preLoaderRoute: typeof ExploreRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/favorites': {
@@ -1679,6 +1759,7 @@ const VerifyRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   AccountRoute: AccountRoute,
   AccountDeletionRoute: AccountDeletionRoute,
   AdminRoute: AdminRouteWithChildren,
@@ -1687,10 +1768,13 @@ const rootRouteChildren: RootRouteChildren = {
   BlockedRoute: BlockedRoute,
   BlockedRegionRoute: BlockedRegionRoute,
   BusinessRoute: BusinessRouteWithChildren,
+  CommunityGuidelinesRoute: CommunityGuidelinesRoute,
+  ContactRoute: ContactRoute,
   CruiseRoute: CruiseRoute,
   DiscoverRoute: DiscoverRoute,
   EventsRoute: EventsRouteWithChildren,
   ExploreRoute: ExploreRoute,
+  FaqRoute: FaqRoute,
   FavoritesRoute: FavoritesRoute,
   GroupsRoute: GroupsRouteWithChildren,
   MatchesRoute: MatchesRoute,

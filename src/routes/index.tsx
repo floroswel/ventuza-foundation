@@ -13,68 +13,41 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { oauthOrigin } from "@/lib/canonical-origin";
+import { PublicFooter } from "@/components/PublicFooter";
 import suzetaIcon from "@/assets/suzeta-icon.png.asset.json";
-
-const APP_DESCRIPTION =
-  "Suzeta is a dating and social connection application for gay, bisexual, queer and other LGBTQ+ adults. Users can create profiles, discover nearby people, match, chat privately and build meaningful connections in a moderated community.";
-
-const SUPPORT_EMAIL = "support@suzeta.app";
-
-const OG_IMAGE = "https://suzeta.app/og-image.png";
-
-/**
- * Întrebări frecvente — sursă unică pentru secțiunea vizibilă (AEO) și pentru
- * schema FAQPage (SEO/GEO). Motoarele generative citează răspunsuri scurte,
- * factuale, deci le păstrăm sub ~350 caractere fiecare.
- */
-const FAQ: { q: string; a: string }[] = [
-  {
-    q: "What is Suzeta?",
-    a: "Suzeta is a free dating and social app for gay, bisexual, queer and other LGBTQ+ adults aged 18 and over. You create a profile, discover people nearby, match and chat privately inside a moderated community. It works on the web at suzeta.app and as an Android app.",
-  },
-  {
-    q: "Is Suzeta free?",
-    a: "Yes. Suzeta is completely free. There are no subscriptions, no paywalls and no premium tiers — every feature, including chat, discovery and events, is available to all verified members at no cost.",
-  },
-  {
-    q: "Does Suzeta share my exact location?",
-    a: "No. Your precise GPS coordinates never leave the server and are never sent to other members. Other users only see an approximate distance range, and you can hide distance entirely from your privacy settings.",
-  },
-  {
-    q: "How does Suzeta verify that users are 18+?",
-    a: "Age verification is mandatory. Suzeta uses an EU-based age-estimation provider that analyses a live selfie and immediately deletes it. No identity document is requested or stored, and accounts stay locked until verification passes.",
-  },
-  {
-    q: "How do I delete my Suzeta account and data?",
-    a: "Open Settings in the app and choose Delete account, or visit suzeta.app/account-deletion. Deletion removes your profile, photos, messages and personal data. You can also email support@suzeta.app.",
-  },
-  {
-    q: "Is Suzeta available in Romania?",
-    a: "Yes. Suzeta is built in Romania for the Romanian and wider EU LGBTQ+ community, with a Romanian and English interface, GDPR-compliant EU data processing and local safety resources such as ACCEPT and ARAS.",
-  },
-];
+import {
+  FAQ,
+  HOME_DESCRIPTION,
+  HOME_TITLE,
+  INTRO_PARAGRAPH,
+  LOGO_512,
+  OG_IMAGE,
+  SITE_URL,
+  SUPPORT_EMAIL,
+  faqPageSchema,
+} from "@/lib/seo-content";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Suzeta — Gay Dating & LGBTQ+ Community" },
-      { name: "description", content: APP_DESCRIPTION },
+      { title: HOME_TITLE },
+      { name: "description", content: HOME_DESCRIPTION },
       { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
-      { property: "og:title", content: "Suzeta — Gay Dating & LGBTQ+ Community" },
-      { property: "og:description", content: APP_DESCRIPTION },
+      { property: "og:title", content: HOME_TITLE },
+      { property: "og:description", content: HOME_DESCRIPTION },
       { property: "og:type", content: "website" },
-      { property: "og:url", content: "https://suzeta.app/" },
+      { property: "og:url", content: `${SITE_URL}/` },
       { property: "og:site_name", content: "Suzeta" },
       { property: "og:image", content: OG_IMAGE },
       { property: "og:image:width", content: "1200" },
       { property: "og:image:height", content: "630" },
-      { property: "og:image:alt", content: "Suzeta — Gay Dating & LGBTQ+ Community" },
+      { property: "og:image:alt", content: HOME_TITLE },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "Suzeta — Gay Dating & LGBTQ+ Community" },
-      { name: "twitter:description", content: APP_DESCRIPTION },
+      { name: "twitter:title", content: HOME_TITLE },
+      { name: "twitter:description", content: HOME_DESCRIPTION },
       { name: "twitter:image", content: OG_IMAGE },
     ],
-    links: [{ rel: "canonical", href: "https://suzeta.app/" }],
+    links: [{ rel: "canonical", href: `${SITE_URL}/` }],
     scripts: [
       {
         type: "application/ld+json",
@@ -83,12 +56,12 @@ export const Route = createFileRoute("/")({
           "@graph": [
             {
               "@type": "Organization",
-              "@id": "https://suzeta.app/#organization",
+              "@id": `${SITE_URL}/#organization`,
               name: "Suzeta",
-              url: "https://suzeta.app/",
-              logo: "https://suzeta.app/icon-512.png",
+              url: `${SITE_URL}/`,
+              logo: LOGO_512,
               image: OG_IMAGE,
-              description: APP_DESCRIPTION,
+              description: INTRO_PARAGRAPH,
               email: SUPPORT_EMAIL,
               areaServed: ["RO", "EU"],
               knowsLanguage: ["ro", "en"],
@@ -103,35 +76,28 @@ export const Route = createFileRoute("/")({
             },
             {
               "@type": "WebSite",
-              "@id": "https://suzeta.app/#website",
-              url: "https://suzeta.app/",
+              "@id": `${SITE_URL}/#website`,
+              url: `${SITE_URL}/`,
               name: "Suzeta",
+              alternateName: ["Suzeta App", "Suzeta Dating"],
               inLanguage: ["ro", "en"],
-              publisher: { "@id": "https://suzeta.app/#organization" },
+              publisher: { "@id": `${SITE_URL}/#organization` },
             },
             {
-              "@type": "MobileApplication",
-              "@id": "https://suzeta.app/#app",
+              "@type": "SoftwareApplication",
+              "@id": `${SITE_URL}/#app`,
               name: "Suzeta",
-              url: "https://suzeta.app/",
+              url: `${SITE_URL}/`,
               applicationCategory: "SocialNetworkingApplication",
-              operatingSystem: "Web, Android 7.0+",
-              description: APP_DESCRIPTION,
-              image: OG_IMAGE,
+              operatingSystem: "Web, Android",
+              description: INTRO_PARAGRAPH,
+              image: LOGO_512,
               contentRating: "Mature 17+",
               inLanguage: ["ro", "en"],
-              publisher: { "@id": "https://suzeta.app/#organization" },
-              offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+              publisher: { "@id": `${SITE_URL}/#organization` },
+              audience: { "@type": "Audience", suggestedMinAge: 18 },
             },
-            {
-              "@type": "FAQPage",
-              "@id": "https://suzeta.app/#faq",
-              mainEntity: FAQ.map((item) => ({
-                "@type": "Question",
-                name: item.q,
-                acceptedAnswer: { "@type": "Answer", text: item.a },
-              })),
-            },
+            faqPageSchema(`${SITE_URL}/#faq`),
           ],
         }),
       },
@@ -140,14 +106,32 @@ export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-
 const FEATURES = [
-  { icon: Heart, label: "Create a personal dating profile" },
-  { icon: MapPin, label: "Discover LGBTQ+ people" },
-  { icon: MessageCircle, label: "Match and chat privately" },
-  { icon: ShieldBan, label: "Block and report users" },
-  { icon: EyeOff, label: "Control profile visibility and privacy" },
-  { icon: Trash2, label: "Delete your account and personal data" },
+  { icon: Heart, label: "Create a personal dating profile with photos, pronouns and interests" },
+  { icon: MapPin, label: "Discover gay, bisexual and queer people around you" },
+  { icon: MessageCircle, label: "Match and chat privately with text, photos and voice messages" },
+  { icon: ShieldBan, label: "Block and report any account, at any time" },
+  { icon: EyeOff, label: "Control profile visibility, hide your age and your distance" },
+  { icon: Trash2, label: "Delete your account and personal data whenever you want" },
+];
+
+const STEPS = [
+  {
+    title: "1. Create your account",
+    body: "Sign up with email or Google, confirm you are 18 or over and complete age verification.",
+  },
+  {
+    title: "2. Build your profile",
+    body: "Add photos, pronouns, what you are looking for and the details you want other members to see.",
+  },
+  {
+    title: "3. Discover people",
+    body: "Browse LGBTQ+ people nearby or use filters to find members who match what you are looking for.",
+  },
+  {
+    title: "4. Match and chat",
+    body: "Show interest, get a match and start a private conversation. Block or report anyone who makes you uncomfortable.",
+  },
 ];
 
 function Landing() {
@@ -192,12 +176,11 @@ function Landing() {
             height={88}
             className="mb-5 size-22 rounded-3xl shadow-xl shadow-primary/20"
           />
-          <h1 className="wordmark text-5xl font-medium leading-none sm:text-6xl">Suzeta</h1>
-          <p className="mt-3 text-lg font-medium text-primary">
-            Gay Dating &amp; LGBTQ+ Community
-          </p>
+          <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
+            Suzeta – Gay Dating &amp; LGBTQ+ Chat App
+          </h1>
           <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            {APP_DESCRIPTION}
+            {INTRO_PARAGRAPH}
           </p>
 
           <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
@@ -226,9 +209,53 @@ function Landing() {
           </div>
         </section>
 
+        {/* What is Suzeta */}
+        <section className="mt-14" id="what-is-suzeta">
+          <h2 className="text-2xl font-semibold tracking-tight">What is Suzeta?</h2>
+          <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              Suzeta is a gay dating and LGBTQ+ chat app for adults. You create a profile, discover
+              people around you, match with the members you like and chat privately. It runs in any
+              modern browser at suzeta.app and as a native Android app.
+            </p>
+            <p>
+              Suzeta is built in Romania for the Romanian and wider European LGBTQ+ community, with
+              a Romanian and English interface and data processed in the EU under GDPR.{" "}
+              <Link to="/about" className="text-primary hover:underline">
+                Read more about Suzeta
+              </Link>
+              .
+            </p>
+          </div>
+        </section>
+
+        {/* Who is it for */}
+        <section className="mt-12" id="who-is-suzeta-for">
+          <h2 className="text-2xl font-semibold tracking-tight">Who is Suzeta for?</h2>
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+            Suzeta is for gay, bisexual, queer and other LGBTQ+ adults aged 18 and over who want to
+            meet new people — for dating, for private chat, for friendship or for community events.
+            Accounts must pass age verification before they can be used, and Suzeta is never
+            available to minors.
+          </p>
+        </section>
+
+        {/* How it works */}
+        <section className="mt-12" id="how-suzeta-works">
+          <h2 className="text-2xl font-semibold tracking-tight">How Suzeta works</h2>
+          <ol className="mt-5 grid gap-3 sm:grid-cols-2">
+            {STEPS.map((s) => (
+              <li key={s.title} className="rounded-2xl border border-border bg-surface p-4">
+                <h3 className="text-sm font-semibold text-foreground">{s.title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
         {/* Features */}
-        <section className="mt-14">
-          <h2 className="text-2xl font-semibold tracking-tight">What you can do on Suzeta</h2>
+        <section className="mt-12" id="features">
+          <h2 className="text-2xl font-semibold tracking-tight">Key features</h2>
           <ul className="mt-5 grid gap-3 sm:grid-cols-2">
             {FEATURES.map(({ icon: Icon, label }) => (
               <li
@@ -244,87 +271,124 @@ function Landing() {
           </ul>
         </section>
 
+        {/* Dating & chat */}
+        <section className="mt-12" id="gay-dating-and-private-chat">
+          <h2 className="text-2xl font-semibold tracking-tight">Gay dating and private chat</h2>
+          <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+            <p>
+              Dating on Suzeta starts in Discover: you browse LGBTQ+ profiles and show interest in
+              the people you like. When the interest is mutual, a match opens a private
+              conversation.
+            </p>
+            <p>
+              Private chat supports text, photos and voice messages, with delivery and read
+              receipts. Conversations stay between the two members, and blocking a member stops
+              messaging in both directions immediately.
+            </p>
+          </div>
+        </section>
+
         {/* Safety */}
-        <section className="mt-14">
+        <section className="mt-12" id="safety-and-privacy">
           <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
             <ShieldCheck className="size-5 text-primary" /> Safety and privacy
           </h2>
           <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
             <p>
               Suzeta is a moderated community. Any member can block another account at any time and
-              report profiles, photos or messages that break our community rules. Reports are
-              reviewed by our moderation team and abusive accounts are removed.
+              report profiles, photos or messages that break the community rules. Reports are
+              reviewed by the moderation team and abusive accounts are removed.
             </p>
             <p>
-              You stay in control of your privacy: you decide what appears on your profile, you can
-              hide your distance and your age, and you can make your profile invisible in discovery
-              at any moment. Suzeta never shows your exact location to other users — only an
-              approximate distance range.
-            </p>
-            <p>
-              You can request deletion of your account and all associated personal data directly
-              from the app, in Settings, or by writing to{" "}
-              <a className="text-primary hover:underline" href={`mailto:${SUPPORT_EMAIL}`}>
-                {SUPPORT_EMAIL}
-              </a>
-              . Deletion removes your profile, photos, messages and personal data.
+              Suzeta never shows your exact location to other users — only an approximate distance
+              range. You decide what appears on your profile, you can hide your distance and your
+              age, and you can make your profile invisible in Discover at any moment. Sensitive data
+              is encrypted and processed in the EU under GDPR.
             </p>
             <p>
               <Link to="/safety" className="text-primary hover:underline">
-                Read our full safety guide
+                Read the full safety guide
+              </Link>{" "}
+              or the{" "}
+              <Link to="/legal/privacy" className="text-primary hover:underline">
+                Privacy Policy
               </Link>
+              .
             </p>
           </div>
         </section>
 
+        {/* Community guidelines */}
+        <section className="mt-12" id="community-guidelines">
+          <h2 className="text-2xl font-semibold tracking-tight">Community guidelines</h2>
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+            Suzeta has clear rules: no minors, no harassment, no hate speech, no racism, no
+            homophobia or transphobia, no outing another person without consent, no non-consensual
+            sharing of images and no illegal content. Breaking the rules leads to content removal,
+            suspension or a permanent ban.{" "}
+            <Link to="/community-guidelines" className="text-primary hover:underline">
+              Read the community guidelines
+            </Link>
+            .
+          </p>
+        </section>
+
+        {/* Account deletion */}
+        <section className="mt-12" id="account-deletion">
+          <h2 className="text-2xl font-semibold tracking-tight">Account deletion</h2>
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+            You can delete your Suzeta account at any time from Settings in the app, or from the
+            public{" "}
+            <Link to="/account-deletion" className="text-primary hover:underline">
+              account deletion page
+            </Link>
+            . Deletion removes your profile, photos, messages and personal data. You can also write
+            to{" "}
+            <a className="text-primary hover:underline" href={`mailto:${SUPPORT_EMAIL}`}>
+              {SUPPORT_EMAIL}
+            </a>
+            .
+          </p>
+        </section>
+
         {/* FAQ — răspunsuri scurte, citabile de motoarele de căutare și AI */}
-        <section className="mt-14">
+        <section className="mt-12" id="faq">
           <h2 className="text-2xl font-semibold tracking-tight">Frequently asked questions</h2>
           <dl className="mt-5 space-y-4">
             {FAQ.map((item) => (
               <div key={item.q} className="rounded-2xl border border-border bg-surface p-5">
-                <dt className="text-base font-semibold text-foreground">{item.q}</dt>
+                <dt className="text-base font-semibold text-foreground">
+                  <h3>{item.q}</h3>
+                </dt>
                 <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</dd>
               </div>
             ))}
           </dl>
+          <p className="mt-4 text-sm">
+            <Link to="/faq" className="text-primary hover:underline">
+              See the full FAQ page
+            </Link>
+          </p>
         </section>
-      </main>
 
-
-      <footer className="border-t border-border bg-surface/40">
-        <div className="mx-auto w-full max-w-3xl px-6 py-10 text-sm text-muted-foreground">
-          <p className="text-base font-semibold text-foreground">Suzeta</p>
-          <p className="mt-1">
+        {/* Contact */}
+        <section className="mt-12" id="contact">
+          <h2 className="text-2xl font-semibold tracking-tight">Contact and support</h2>
+          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
             Support:{" "}
             <a className="text-primary hover:underline" href={`mailto:${SUPPORT_EMAIL}`}>
               {SUPPORT_EMAIL}
             </a>
+            . More options on the{" "}
+            <Link to="/contact" className="text-primary hover:underline">
+              contact page
+            </Link>
+            .
           </p>
-          <ul className="mt-4 space-y-2">
-            <li>
-              <a className="text-primary hover:underline" href="https://suzeta.app/legal/privacy">
-                Privacy Policy
-              </a>
-            </li>
-            <li>
-              <a className="text-primary hover:underline" href="https://suzeta.app/legal/terms">
-                Terms of Service
-              </a>
-            </li>
-            <li>
-              <Link className="text-primary hover:underline" to="/account-deletion">
-                Account deletion
-              </Link>
-              {" — "}
-              request deletion of your account and personal data from Settings in the app or by
-              emailing {SUPPORT_EMAIL}.
-            </li>
-          </ul>
-          <p className="mt-6">Suzeta is intended only for adults aged 18 and over.</p>
-          <p className="mt-2">© {new Date().getFullYear()} Suzeta</p>
-        </div>
-      </footer>
+        </section>
+      </main>
+
+      <PublicFooter />
     </div>
   );
 }
