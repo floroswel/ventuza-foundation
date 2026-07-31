@@ -20,20 +20,59 @@ const APP_DESCRIPTION =
 
 const SUPPORT_EMAIL = "support@suzeta.app";
 
+const OG_IMAGE = "https://suzeta.app/og-image.png";
+
+/**
+ * Întrebări frecvente — sursă unică pentru secțiunea vizibilă (AEO) și pentru
+ * schema FAQPage (SEO/GEO). Motoarele generative citează răspunsuri scurte,
+ * factuale, deci le păstrăm sub ~350 caractere fiecare.
+ */
+const FAQ: { q: string; a: string }[] = [
+  {
+    q: "What is Suzeta?",
+    a: "Suzeta is a free dating and social app for gay, bisexual, queer and other LGBTQ+ adults aged 18 and over. You create a profile, discover people nearby, match and chat privately inside a moderated community. It works on the web at suzeta.app and as an Android app.",
+  },
+  {
+    q: "Is Suzeta free?",
+    a: "Yes. Suzeta is completely free. There are no subscriptions, no paywalls and no premium tiers — every feature, including chat, discovery and events, is available to all verified members at no cost.",
+  },
+  {
+    q: "Does Suzeta share my exact location?",
+    a: "No. Your precise GPS coordinates never leave the server and are never sent to other members. Other users only see an approximate distance range, and you can hide distance entirely from your privacy settings.",
+  },
+  {
+    q: "How does Suzeta verify that users are 18+?",
+    a: "Age verification is mandatory. Suzeta uses an EU-based age-estimation provider that analyses a live selfie and immediately deletes it. No identity document is requested or stored, and accounts stay locked until verification passes.",
+  },
+  {
+    q: "How do I delete my Suzeta account and data?",
+    a: "Open Settings in the app and choose Delete account, or visit suzeta.app/account-deletion. Deletion removes your profile, photos, messages and personal data. You can also email support@suzeta.app.",
+  },
+  {
+    q: "Is Suzeta available in Romania?",
+    a: "Yes. Suzeta is built in Romania for the Romanian and wider EU LGBTQ+ community, with a Romanian and English interface, GDPR-compliant EU data processing and local safety resources such as ACCEPT and ARAS.",
+  },
+];
+
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "Suzeta — Gay Dating & LGBTQ+ Community" },
       { name: "description", content: APP_DESCRIPTION },
-      { name: "robots", content: "index, follow" },
+      { name: "robots", content: "index, follow, max-image-preview:large, max-snippet:-1" },
       { property: "og:title", content: "Suzeta — Gay Dating & LGBTQ+ Community" },
       { property: "og:description", content: APP_DESCRIPTION },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "https://suzeta.app/" },
       { property: "og:site_name", content: "Suzeta" },
+      { property: "og:image", content: OG_IMAGE },
+      { property: "og:image:width", content: "1200" },
+      { property: "og:image:height", content: "630" },
+      { property: "og:image:alt", content: "Suzeta — Gay Dating & LGBTQ+ Community" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:title", content: "Suzeta — Gay Dating & LGBTQ+ Community" },
       { name: "twitter:description", content: APP_DESCRIPTION },
+      { name: "twitter:image", content: OG_IMAGE },
     ],
     links: [{ rel: "canonical", href: "https://suzeta.app/" }],
     scripts: [
@@ -41,19 +80,66 @@ export const Route = createFileRoute("/")({
         type: "application/ld+json",
         children: JSON.stringify({
           "@context": "https://schema.org",
-          "@type": "WebApplication",
-          name: "Suzeta",
-          url: "https://suzeta.app",
-          applicationCategory: "SocialNetworkingApplication",
-          operatingSystem: "Web, Android",
-          description: APP_DESCRIPTION,
-          offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://suzeta.app/#organization",
+              name: "Suzeta",
+              url: "https://suzeta.app/",
+              logo: "https://suzeta.app/icon-512.png",
+              image: OG_IMAGE,
+              description: APP_DESCRIPTION,
+              email: SUPPORT_EMAIL,
+              areaServed: ["RO", "EU"],
+              knowsLanguage: ["ro", "en"],
+              contactPoint: [
+                {
+                  "@type": "ContactPoint",
+                  contactType: "customer support",
+                  email: SUPPORT_EMAIL,
+                  availableLanguage: ["Romanian", "English"],
+                },
+              ],
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://suzeta.app/#website",
+              url: "https://suzeta.app/",
+              name: "Suzeta",
+              inLanguage: ["ro", "en"],
+              publisher: { "@id": "https://suzeta.app/#organization" },
+            },
+            {
+              "@type": "MobileApplication",
+              "@id": "https://suzeta.app/#app",
+              name: "Suzeta",
+              url: "https://suzeta.app/",
+              applicationCategory: "SocialNetworkingApplication",
+              operatingSystem: "Web, Android 7.0+",
+              description: APP_DESCRIPTION,
+              image: OG_IMAGE,
+              contentRating: "Mature 17+",
+              inLanguage: ["ro", "en"],
+              publisher: { "@id": "https://suzeta.app/#organization" },
+              offers: { "@type": "Offer", price: "0", priceCurrency: "EUR" },
+            },
+            {
+              "@type": "FAQPage",
+              "@id": "https://suzeta.app/#faq",
+              mainEntity: FAQ.map((item) => ({
+                "@type": "Question",
+                name: item.q,
+                acceptedAnswer: { "@type": "Answer", text: item.a },
+              })),
+            },
+          ],
         }),
       },
     ],
   }),
   component: Landing,
 });
+
 
 const FEATURES = [
   { icon: Heart, label: "Create a personal dating profile" },
