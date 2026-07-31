@@ -147,6 +147,21 @@ jobs:
       - name: Sync Capacitor
         run: bunx cap sync android
 
+      - name: Generează iconițe + splash nativ (@capacitor/assets)
+        run: |
+          set -e
+          if [ ! -f assets/logo.png ]; then
+            echo "::error::assets/logo.png lipsește — iconița ar rămâne cea default Capacitor."
+            exit 1
+          fi
+          bunx @capacitor/assets@3 generate --android \
+            --iconBackgroundColor '#0B0B10' \
+            --iconBackgroundColorDark '#0B0B10' \
+            --splashBackgroundColor '#0B0B10' \
+            --splashBackgroundColorDark '#0B0B10'
+          echo "✓ Iconițe + splash generate din assets/"
+
+
       - name: Aplică android-overrides (compliance Google Play targetSdk 35 + no AD_ID + no background location)
         run: |
           set -e
@@ -193,6 +208,87 @@ jobs:
             cp -rv android-overrides/res/* android/app/src/main/res/
             echo "✓ Resurse override copiate din android-overrides/res/"
           fi
+
+      - name: Validează resursele Android (PNG/XML/duplicate/referințe lipsă)
+        run: |
+          python3 <<'PY'
+          import os, re, sys, glob, struct
+          import xml.etree.ElementTree as ET
+          RES = "android/app/src/main/res"
+          errors, warns = [], []
+
+          # 1) Fișiere imagine valide (AAPT compilează doar PNG/JPEG/WEBP reale)
+          MAGIC = {b'\x89PNG': 'png', b'\xff\xd8': 'jpg', b'RIFF': 'webp'}
+          for p in glob.glob(f"{RES}/**/*", recursive=True):
+              if not os.path.isfile(p):
+                  continue
+              ext = p.rsplit('.', 1)[-1].lower()
+              if ext not in ('png', 'jpg', 'jpeg', 'webp', '9.png'):
+                  continue
+              head = open(p, 'rb').read(4)
+              kind = next((v for k, v in MAGIC.items() if head.startswith(k)), None)
+              if kind is None:
+                  errors.append(f"{p}: nu este imagine validă (magic={head!r})")
+              elif kind == 'png' and ext != 'png':
+                  warns.append(f"{p}: conținut PNG cu extensie .{ext}")
+              elif kind == 'jpg' and ext == 'png':
+                  errors.append(f"{p}: JPEG deghizat în .png — AAPT eșuează")
+
+          # 2) XML parsabil
+          xmls = glob.glob(f"{RES}/**/*.xml", recursive=True)
+          for p in xmls:
+              try:
+                  ET.parse(p)
+              except Exception as e:
+                  errors.append(f"{p}: XML invalid ({e})")
+
+          # 3) Duplicate în values/ (același type+name în același config)
+          seen = {}
+          for p in glob.glob(f"{RES}/values*/**/*.xml", recursive=True) + glob.glob(f"{RES}/values*/*.xml"):
+              try:
+                  root = ET.parse(p).getroot()
+              except Exception:
+                  continue
+              cfg = os.path.basename(os.path.dirname(p))
+              for el in root:
+                  if not isinstance(el.tag, str):
+                      continue
+                  name = el.get('name')
+                  if not name:
+                      continue
+                  typ = el.get('type') if el.tag == 'item' else el.tag
+                  key = (cfg, typ, name)
+                  if key in seen and seen[key] != p:
+                      errors.append(f"Duplicate resource {typ}/{name} în {cfg}: {seen[key]} + {p}")
+                  seen[key] = p
+
+          # 4) Referințe @drawable/@mipmap/@color/@style lipsă din XML-urile proprii
+          defined_files = set()
+          for p in glob.glob(f"{RES}/**/*", recursive=True):
+              if os.path.isfile(p) and '/values' not in p:
+                  typ = os.path.basename(os.path.dirname(p)).split('-')[0]
+                  nm = os.path.basename(p).split('.')[0]
+                  defined_files.add((typ, nm))
+          defined_values = {(t, n) for (_c, t, n) in seen}
+          for p in xmls:
+              src = open(p, encoding='utf-8', errors='ignore').read()
+              for typ, nm in re.findall(r'"@(drawable|mipmap|color|style|string)/([A-Za-z0-9_]+)"', src):
+                  if (typ, nm) in defined_files or (typ, nm) in defined_values:
+                      continue
+                  # aliasuri color/drawable pot fi definite cross-type
+                  if any((t, nm) in defined_values or (t, nm) in defined_files for t in ('color', 'drawable', 'mipmap', 'style', 'string')):
+                      continue
+                  errors.append(f"{p}: referință lipsă @{typ}/{nm}")
+
+          for w in warns:
+              print(f"::warning::{w}")
+          if errors:
+              for e in errors:
+                  print(f"::error::{e}")
+              sys.exit(1)
+          print(f"✓ Resurse Android validate: {len(xmls)} XML, {len(seen)} valori, 0 probleme")
+          PY
+
 
 
 
