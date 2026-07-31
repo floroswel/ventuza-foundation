@@ -187,12 +187,12 @@ function ThreadPage() {
         .update({ verification_status: "pending" })
         .eq("id", user.id);
       const res = await verifyFn({ data: { selfieUrl: sa.signedUrl, mainPhotoUrl: sb.signedUrl } });
-      if (res.verified) {
-        setMeVerified(true);
-        toast.success("Verificat ✓ — ai badge-ul oficial.");
+      if (res.photoMatched) {
+        toast.success("Poza ta corespunde selfie-ului. Badge-ul 18+ se obține din verificarea de vârstă.");
       } else {
-        toast.error(`Verificare eșuată: ${res.reason ?? "încearcă din nou"}`);
+        toast.error(`Potrivire eșuată: ${res.reason ?? "încearcă din nou"}`);
       }
+
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Verificare eșuată");
     } finally {
