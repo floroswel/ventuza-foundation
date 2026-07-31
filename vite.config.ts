@@ -17,7 +17,7 @@ export default defineConfig({
   vite: {
     plugins: [
       mcpPlugin(),
-      ...(process.env.NO_PWA ? [] : [VitePWA({
+      VitePWA({
         registerType: "autoUpdate",
         injectRegister: null, // registration handled explicitly in src/lib/pwa-register.ts
         devOptions: { enabled: false },
@@ -89,8 +89,8 @@ export default defineConfig({
             },
           ],
         },
-        manifest: false,
-      })]),
+        manifest: false, // we already ship public/manifest.webmanifest
+      }),
     ],
   },
 });
