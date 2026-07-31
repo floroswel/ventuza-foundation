@@ -1,5 +1,6 @@
-Suzeta 1.0.0 — internal preview
+Suzeta 1.0.0 — first release
 
-- First internal track release for closed testing.
-- LGBTQ+ 18+ dating with age verification, safety-first location bucketing, and moderated venues.
-- Feedback: hello@suzeta.app
+• Profiles, Discover and real-time messaging
+• 18+ verification and safety tools
+• Fully native experience: safe area, Back button, keyboard, persistent session
+• Romanian and English UI, adapted to every screen size

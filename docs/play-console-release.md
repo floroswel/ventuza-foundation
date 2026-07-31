@@ -7,7 +7,7 @@ Ghid complet, fără pași lipsă, pentru a publica un build Suzeta pe trackul
 
 ## Prerequisite (o singură dată)
 
-1. **Cont Play Console** cu aplicația `com.ventuza.dating` creată.
+1. **Cont Play Console** cu aplicația `app.suzeta` creată.
 2. **Service account** cu rol "Release manager":
    - Google Cloud Console → IAM → Service accounts → cheie JSON.
    - Salvează cheia la `release/play-store-service-account.json` (deja în

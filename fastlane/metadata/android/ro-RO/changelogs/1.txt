@@ -1,5 +1,6 @@
-Suzeta 1.0.0 — preview intern
+Suzeta 1.0.0 — prima versiune
 
-- Primul release pe trackul intern pentru testare închisă.
-- Dating LGBTQ+ 18+ cu verificare de vârstă, distanțe bucketizate pentru siguranță și venues moderate.
-- Feedback: hello@suzeta.app
+• Profiluri, Descoperă și mesagerie în timp real
+• Verificare 18+ și instrumente de siguranță
+• Experiență 100% nativă: safe area, buton Back, tastatură, sesiune persistentă
+• Interfață în română și engleză, adaptată tuturor ecranelor

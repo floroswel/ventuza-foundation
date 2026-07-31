@@ -31,9 +31,14 @@ on:
         default: true
         type: boolean
       version:
-        description: "Versiune SemVer (ex: 9.74.12). Gol = derivat automat din tag/timestamp."
+        description: "Versiune SemVer (ex: 1.0.0). Gol = derivat automat din tag/timestamp."
         required: false
-        default: ""
+        default: "1.0.0"
+        type: string
+      version_code:
+        description: "versionCode explicit (ex: 1 pentru prima urcare a app.suzeta). Gol = derivat din SemVer."
+        required: false
+        default: "1"
         type: string
 
 concurrency:
@@ -261,6 +266,7 @@ jobs:
         id: version
         env:
           MANUAL_VERSION: ${{ inputs.version }}
+          MANUAL_CODE: ${{ inputs.version_code }}
         run: |
           if [[ -n "$MANUAL_VERSION" ]]; then
             RAW="$MANUAL_VERSION"
@@ -270,7 +276,11 @@ jobs:
             RAW="0.0.$(date +%s | tail -c 6)"
           fi
           IFS='.' read -r MAJ MIN PAT <<< "$RAW"
-          CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
+          if [[ -n "${MANUAL_CODE}" ]]; then
+            CODE="${MANUAL_CODE}"
+          else
+            CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
+          fi
           echo "name=${RAW}" >> "$GITHUB_OUTPUT"
           echo "code=${CODE}" >> "$GITHUB_OUTPUT"
           echo "Version: ${RAW} (code=${CODE})"

@@ -3,7 +3,7 @@
     "relation": ["delegate_permission/common.handle_all_urls"],
     "target": {
       "namespace": "android_app",
-      "package_name": "com.ventuza.dating",
+      "package_name": "app.suzeta",
       "sha256_cert_fingerprints": [
         "1D:6B:63:41:DE:C1:A3:EB:A2:6B:5F:81:21:C8:68:85:84:A1:06:E7:6C:EC:4A:9E:01:32:E4:12:04:E1:34:31"
       ]
