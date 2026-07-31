@@ -50,6 +50,9 @@ jobs:
     name: Build AAB & Upload to Play
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    # Secretele de release sunt citite din environment-ul GitHub "production".
+    # Environment secrets au prioritate față de repository secrets cu același nume.
+    environment: production
 
     steps:
       - name: Checkout
@@ -172,7 +175,6 @@ jobs:
           fi
 
           # 2) AndroidManifest — adaugă xmlns:tools + node="remove" pentru AD_ID + ACCESS_BACKGROUND_LOCATION
-          MANIFEST=android/app/src/main/AndroidManifest.xml
           python3 <<'PY'
           import re
           p = "android/app/src/main/AndroidManifest.xml"
@@ -392,10 +394,13 @@ jobs:
         env:
           KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
+          set -euo pipefail
           if [ -z "$KEYSTORE_B64" ]; then
-            echo "::error::Secretul ANDROID_KEYSTORE_BASE64 lipsește sau e gol."
+            echo "::error::ANDROID_KEYSTORE_BASE64 nu este vizibil în environment-ul GitHub 'production' sau este gol."
             exit 1
           fi
+          echo "Scope activ: GitHub Actions environment = production"
+          echo "Lungime ANDROID_KEYSTORE_BASE64: ${#KEYSTORE_B64}"
           # Strip whitespace/newlines/CR și eventuale ghilimele din secret,
           # apoi decodează tolerant (base64 -d e strict la caractere non-alfabet).
           printf '%s' "$KEYSTORE_B64" | tr -d '\r\n\t "'"'" | base64 -d -i > android/app/release.keystore 2>/tmp/b64.err || {
@@ -406,6 +411,10 @@ jobs:
           test -s android/app/release.keystore
           SIZE=$(stat -c%s android/app/release.keystore)
           echo "Keystore size: $SIZE bytes"
+          KEYSTORE_SHA256="$(sha256sum android/app/release.keystore | awk '{print $1}')"
+          echo "SHA-256 keystore decodat: $KEYSTORE_SHA256"
+          echo "Compară-l cu fișierul NOU: sha256sum release.keystore"
+          echo "Dacă diferă, ANDROID_KEYSTORE_BASE64 din environment-ul 'production' este încă cel vechi."
           # PKCS12 începe cu 0x30 0x82 (SEQUENCE) — verificare sanity fără a expune conținut.
           head -c 2 android/app/release.keystore | od -An -tx1 | tr -d ' \n' | grep -qi '^3082' || {
             echo "::error::Fișierul decodat NU pare a fi un keystore valid (header greșit)."
@@ -418,7 +427,7 @@ jobs:
           KEY_ALIAS_RAW: ${{ secrets.ANDROID_KEY_ALIAS }}
           KEY_PASSWORD_RAW: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          set -e
+          set -euo pipefail
           # Curăță CR/LF și spații de la început/sfârșit (cauza #1 de "wrong password"
           # când secretul a fost lipit cu newline la final).
           trim() { printf '%s' "$1" | tr -d '\r\n' | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//'; }
@@ -426,31 +435,36 @@ jobs:
           KEY_ALIAS="$(trim "$KEY_ALIAS_RAW")"
           KEY_PASSWORD="$(trim "$KEY_PASSWORD_RAW")"
 
-          for v in STORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
-            eval "val=\$$v"
-            if [ -z "$val" ]; then echo "::error::Secretul ANDROID_${v/STORE_PASSWORD/KEYSTORE_PASSWORD} este gol."; exit 1; fi
-          done
-          echo "Lungimi (după trim) — storePass: ${#STORE_PASSWORD}, keyAlias: ${#KEY_ALIAS}, keyPass: ${#KEY_PASSWORD}"
+          echo "Scope activ: GitHub Actions environment = production"
+          echo "Lungimi secrete (raw → după trim; valorile NU sunt afișate):"
+          echo "- ANDROID_KEYSTORE_PASSWORD: ${#STORE_PASSWORD_RAW} → ${#STORE_PASSWORD}"
+          echo "- ANDROID_KEY_ALIAS: ${#KEY_ALIAS_RAW} → ${#KEY_ALIAS}"
+          echo "- ANDROID_KEY_PASSWORD: ${#KEY_PASSWORD_RAW} → ${#KEY_PASSWORD}"
+          if [ -z "$STORE_PASSWORD" ]; then echo "::error::ANDROID_KEYSTORE_PASSWORD are lungimea 0 în environment-ul 'production'."; exit 1; fi
+          if [ -z "$KEY_ALIAS" ]; then echo "::error::ANDROID_KEY_ALIAS are lungimea 0 în environment-ul 'production'."; exit 1; fi
+          if [ -z "$KEY_PASSWORD" ]; then echo "::error::ANDROID_KEY_PASSWORD are lungimea 0 în environment-ul 'production'."; exit 1; fi
           if [ "${#STORE_PASSWORD_RAW}" -ne "${#STORE_PASSWORD}" ] || [ "${#KEY_PASSWORD_RAW}" -ne "${#KEY_PASSWORD}" ] || [ "${#KEY_ALIAS_RAW}" -ne "${#KEY_ALIAS}" ]; then
             echo "::warning::Unul dintre secrete conținea spații/newline la capete — au fost eliminate automat."
           fi
 
           echo "→ Test 1: parola keystore-ului (ANDROID_KEYSTORE_PASSWORD)"
           if ! keytool -list -v -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" > /tmp/kt.out 2>&1; then
-            echo "::error::ANDROID_KEYSTORE_PASSWORD este GREȘITĂ pentru keystore-ul din ANDROID_KEYSTORE_BASE64."
+            echo "::error::FAIL Test 1 — ANDROID_KEYSTORE_PASSWORD nu deschide ANDROID_KEYSTORE_BASE64. Base64-ul poate fi vechi sau parola poate aparține altui keystore."
             cat /tmp/kt.out
             exit 1
           fi
+          echo "✓ PASS Test 1 — keytool -list reușește cu ANDROID_KEYSTORE_PASSWORD"
           echo "Alias-uri găsite în keystore:"
           grep -i "^Alias name:" /tmp/kt.out || true
           grep -i "Keystore type:" /tmp/kt.out || true
 
           echo "→ Test 2: aliasul (ANDROID_KEY_ALIAS='$KEY_ALIAS') există în keystore"
           if ! keytool -list -keystore android/app/release.keystore -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" > /tmp/kt.out 2>&1; then
-            echo "::error::Aliasul '$KEY_ALIAS' NU există în keystore. Aliasuri disponibile mai sus (case-insensitive la keytool, dar Gradle cere potrivire exactă)."
+            echo "::error::FAIL Test 2 — ANDROID_KEY_ALIAS nu există în keystore."
             cat /tmp/kt.out
             exit 1
           fi
+          echo "✓ PASS Test 2 — ANDROID_KEY_ALIAS există"
 
           echo "→ Test 3: parola cheii (ANDROID_KEY_PASSWORD) descifrează cheia privată"
           EFFECTIVE_KEY_PASSWORD="$KEY_PASSWORD"
@@ -473,7 +487,8 @@ jobs:
               exit 1
             fi
           fi
-          echo "✓ Secretele potrivesc keystore-ul."
+          echo "✓ PASS Test 3 — cheia privată se descifrează cu parola efectivă de semnare"
+          echo "✓ Toate cele 4 secrete sunt coerente cu același keystore."
 
           # Scrie keystore.properties cu escaping corect pentru formatul .properties
           # (backslash, :, =, #, ! și spații trebuie escapate, altfel parola ajunge trunchiată).
