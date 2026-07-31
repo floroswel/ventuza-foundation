@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -12,10 +12,17 @@ export type LegalLang = "ro" | "en";
  */
 export function useLegalLang(): [LegalLang, (l: LegalLang) => void] {
   const { i18n } = useTranslation();
-  const initial: LegalLang = (i18n.resolvedLanguage || i18n.language || "en").startsWith("ro")
-    ? "ro"
-    : "en";
-  const [lang, setLang] = useState<LegalLang>(initial);
+  // Pornim mereu din "ro" (identic pe server și la prima randare client) ca să
+  // evităm hydration mismatch; sincronizăm cu i18n după montare.
+  const [lang, setLang] = useState<LegalLang>("ro");
+
+  useEffect(() => {
+    const resolved: LegalLang = (i18n.resolvedLanguage || i18n.language || "ro").startsWith("ro")
+      ? "ro"
+      : "en";
+    setLang(resolved);
+  }, [i18n.resolvedLanguage, i18n.language]);
+
   return [
     lang,
     (l: LegalLang) => {
