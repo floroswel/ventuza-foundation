@@ -62,6 +62,7 @@ export function CookieBanner() {
       /* ignore */
     }
     try {
+      migrateLegacyCookieConsent();
       if (!localStorage.getItem(KEY)) setVisible(true);
     } catch {
       /* ignore */
