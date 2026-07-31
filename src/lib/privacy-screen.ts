@@ -149,6 +149,9 @@ export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
     const { Capacitor } = await import("@capacitor/core");
     const isNative = Capacitor.isNativePlatform();
     const platform = (Capacitor.getPlatform?.() ?? "web") as PrivacyScreenStatus["platform"];
+    installUnlockGuard(isNative);
+
+
 
     if (isNative) {
       const t0 = performance.now();
