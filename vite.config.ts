@@ -27,6 +27,10 @@ export default defineConfig({
         workbox: {
           globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2,webmanifest}"],
           globIgnores: ["**/push-sw.js"],
+          // Bundle-ul principal depășește 2 MiB; ridicăm limita ca precache-ul
+          // să nu eșueze buildul (fallback runtime CacheFirst rămâne activ).
+          maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+
           navigateFallback: "/",
           navigateFallbackDenylist: [
             /^\/api\//,
