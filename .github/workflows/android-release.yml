@@ -175,7 +175,6 @@ jobs:
           fi
 
           # 2) AndroidManifest — adaugă xmlns:tools + node="remove" pentru AD_ID + ACCESS_BACKGROUND_LOCATION
-          MANIFEST=android/app/src/main/AndroidManifest.xml
           python3 <<'PY'
           import re
           p = "android/app/src/main/AndroidManifest.xml"
