@@ -1,5 +1,4 @@
-Suzeta 1.0.4
-
-- Îmbunătățiri și corectări de bug-uri.
-
-Completează înainte de upload pe Play Console.
+• Interfață complet adaptată la toate ecranele (fără derulare laterală, notch și bara gestuală respectate)
+• Butoanele nu se mai blochează după revenirea în aplicație
+• Buton Back Android mai predictibil: închide întâi ferestrele deschise
+• Stabilitate și performanță îmbunătățite
