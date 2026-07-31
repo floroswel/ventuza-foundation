@@ -74,8 +74,75 @@ async function notify(status: PrivacyScreenStatus) {
   }
 }
 
+/**
+ * Deblochează necondiționat ecranul: scoate clasa de blur/defocus și ascunde
+ * overlay-ul negru. Folosit ca plasă de siguranță — în Capacitor WebView
+ * `blur`/`pointerleave` pot rămâne „lipite" și butoanele devin moarte.
+ */
+export function clearPrivacyDefocus(): void {
+  if (typeof document === "undefined") return;
+  try {
+    document.documentElement.classList.remove("__privacy_defocused");
+    const el = document.getElementById("__privacy_hide_overlay");
+    if (el) el.style.display = "none";
+  } catch {
+    /* ignore */
+  }
+}
+
+let unlockGuardInstalled = false;
+
+/** Instalează watchdog-ul care deblochează UI-ul când app-ul redevine activ. */
+function installUnlockGuard(native: boolean) {
+  if (unlockGuardInstalled || typeof window === "undefined") return;
+  unlockGuardInstalled = true;
+
+  const unlockIfVisible = () => {
+    if (document.visibilityState !== "visible") return;
+    // Pe nativ nu ne bazăm pe document.hasFocus() — WebView-ul Android
+    // raportează frecvent fals negativ după tap-uri sau dialoguri de sistem.
+    if (native || document.hasFocus()) clearPrivacyDefocus();
+  };
+
+  document.addEventListener("visibilitychange", unlockIfVisible);
+  window.addEventListener("focus", unlockIfVisible);
+  window.addEventListener("pageshow", unlockIfVisible);
+  window.addEventListener("resume", unlockIfVisible as EventListener);
+  document.addEventListener("pointerdown", unlockIfVisible, { capture: true });
+  document.addEventListener("touchstart", unlockIfVisible, { capture: true, passive: true });
+
+  if (native) {
+    void import("@capacitor/app")
+      .then(({ App }) => {
+        App.addListener("appStateChange", ({ isActive }) => {
+          if (isActive) {
+            clearPrivacyDefocus();
+            window.setTimeout(clearPrivacyDefocus, 250);
+          }
+        });
+        App.addListener("resume", () => clearPrivacyDefocus());
+      })
+      .catch(() => {
+        /* plugin absent */
+      });
+
+    // Ultima plasă: dacă totuși rămâne blocat > 1.5s cât pagina e vizibilă,
+    // deblocăm automat ca butoanele să nu moară niciodată în producție.
+    window.setInterval(() => {
+      if (
+        document.visibilityState === "visible" &&
+        document.documentElement.classList.contains("__privacy_defocused")
+      ) {
+        clearPrivacyDefocus();
+      }
+    }, 1500);
+  }
+}
+
 export async function initPrivacyScreen(): Promise<PrivacyScreenStatus> {
   if (typeof window === "undefined") return lastStatus;
+
+
 
   // 1) Native (Android/iOS): FLAG_SECURE / preventScreenshots
   try {
