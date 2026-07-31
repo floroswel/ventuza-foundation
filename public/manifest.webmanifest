@@ -4,8 +4,8 @@
   "description": "Dating, elevated.",
   "start_url": "/discover",
   "display": "standalone",
-  "background_color": "#0E0D0B",
-  "theme_color": "#0E0D0B",
+  "background_color": "#0B0B10",
+  "theme_color": "#0B0B10",
   "orientation": "portrait",
   "categories": ["social", "lifestyle", "dating"],
   "icons": [
