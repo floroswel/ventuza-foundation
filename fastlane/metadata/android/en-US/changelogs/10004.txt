@@ -1,0 +1,4 @@
+• Fully adaptive layout on every screen size (no horizontal scroll, notch and gesture bar safe)
+• Buttons no longer freeze after returning to the app
+• Smarter Android Back button: closes open sheets first
+• Stability and performance improvements

@@ -121,14 +121,23 @@ describe("Trigger SQL — tg_notify_new_message", () => {
     expect(bodyMatch, "nu am extras corpul funcției").not.toBeNull();
     const fnBody = bodyMatch![1];
 
-    // Body-ul generic e singurul acceptat
+    // Fallback-ul fără opt-in e mereu generic
     expect(fnBody).toMatch(/'Ai un mesaj nou'/);
 
-    // Nicăieri în funcție nu apar câmpurile de conținut
-    expect(fnBody).not.toMatch(/NEW\.body/i);
-    expect(fnBody).not.toMatch(/NEW\.media_type/i);
-    expect(fnBody).not.toMatch(/NEW\.media_url/i);
-    expect(fnBody).not.toMatch(/caption/i);
+    // Preview-ul e permis DOAR în ramura `IF show_preview THEN`.
+    const previewBranch = fnBody.match(/IF\s+show_preview\s+THEN([\s\S]*?)END IF;/i);
+    expect(previewBranch, "lipsește gate-ul show_preview").not.toBeNull();
+    const outsideGate = fnBody.replace(previewBranch![0], "");
+
+    // În afara gate-ului nu apare niciun câmp de conținut.
+    expect(outsideGate).not.toMatch(/NEW\.body/i);
+    expect(outsideGate).not.toMatch(/NEW\.media_type/i);
+    expect(outsideGate).not.toMatch(/NEW\.media_url/i);
+    expect(outsideGate).not.toMatch(/caption/i);
+
+    // Nici în interiorul gate-ului nu trimitem URL-uri media sau caption brut.
+    expect(previewBranch![1]).not.toMatch(/NEW\.media_url/i);
+    expect(previewBranch![1]).not.toMatch(/caption/i);
   });
 });
 
