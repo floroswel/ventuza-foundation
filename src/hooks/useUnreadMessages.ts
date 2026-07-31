@@ -1,6 +1,7 @@
 import { useEffect, useSyncExternalStore, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { uniqueRealtimeTopic } from "@/lib/realtime-topic";
 
 type UnreadState = {
   total: number;
@@ -71,10 +72,11 @@ function ensureChannel(userId: string) {
     channel = null;
   }
   currentUserId = userId;
-  // Reuse `conv-list:<uid>` topic — already whitelisted in realtime authz.
-  // (Ex-name `unread-msgs-<uid>` nu era în whitelist → nu primea evenimente.)
-  channel = supabase
-    .channel(`conv-list:${userId}`)
+  // Topic unic per ciclu de viață: clientul Realtime reutilizează obiectul
+  // pentru un topic identic, inclusiv cât removeChannel() încă se finalizează.
+  // Reutilizarea unui canal deja subscribed făcea primul .on() să arunce.
+  const nextChannel = supabase
+    .channel(uniqueRealtimeTopic(`conv-list:${userId}`))
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: "conversations" },
@@ -97,6 +99,7 @@ function ensureChannel(userId: string) {
       },
     )
     .subscribe();
+  channel = nextChannel;
 }
 
 export function subscribeConversationChanges(listener: () => void) {

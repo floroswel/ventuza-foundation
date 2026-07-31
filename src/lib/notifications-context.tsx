@@ -28,6 +28,7 @@ import {
 import { setNativePushNavigator } from "@/lib/native-push";
 import { buildToastBody } from "@/lib/notification-privacy";
 import { useNotificationPrefs } from "@/lib/notification-prefs-context";
+import { uniqueRealtimeTopic } from "@/lib/realtime-topic";
 
 type Ctx = {
   notifications: NotificationRow[];
@@ -98,7 +99,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel(`notifications:${user.id}`)
+      .channel(uniqueRealtimeTopic(`notifications:${user.id}`))
       .on(
         "postgres_changes",
         {

@@ -466,11 +466,16 @@ function DiscoverPage() {
       if (!user) return;
       setSelected(null);
 
-      const { error } = await supabase.from("swipes").insert({
-        swiper_id: user.id,
-        target_id: target.id,
-        action,
-      });
+      // O relație swiper/target este unică în DB. Repetarea unei decizii în
+      // grid trebuie să actualizeze alegerea, nu să producă HTTP 409.
+      const { error } = await supabase.from("swipes").upsert(
+        {
+          swiper_id: user.id,
+          target_id: target.id,
+          action,
+        },
+        { onConflict: "swiper_id,target_id", ignoreDuplicates: true },
+      );
       if (error) {
         toast.error(error.message);
         return;
