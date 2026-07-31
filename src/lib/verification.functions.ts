@@ -3,18 +3,41 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { aiComplete } from "./ai.server";
 
-// ---------- Verify selfie ----------
-// Compare a freshly uploaded selfie against the user's main profile photo.
-// If AI determines they are the same person → mark verified.
+// ---------- Photo-match check (NU este verificare de vârstă/identitate) ----------
+// Compară un selfie proaspăt cu poza principală a userului. Rezultatul este un
+// semnal AI de potrivire foto: NU acordă badge-ul „Verified 18+", care rămâne
+// exclusiv în sarcina fluxului Didit (`didit_apply_result`).
 const VerifyInput = z.object({
   selfieUrl: z.string().url(),
   mainPhotoUrl: z.string().url(),
 });
 
+/** Acceptă doar URL-uri semnate din bucket-ul propriu al userului. */
+function assertOwnStorageUrl(raw: string, userId: string) {
+  let url: URL;
+  try {
+    url = new URL(raw);
+  } catch {
+    throw new Error("URL invalid.");
+  }
+  const supaHost = new URL(process.env.SUPABASE_URL ?? "https://invalid.local").host;
+  const okHost = url.protocol === "https:" && url.host === supaHost;
+  const okPath =
+    url.pathname.includes("/storage/v1/object/sign/profile-photos/") &&
+    url.pathname.includes(`/profile-photos/${userId}/`);
+  const okToken = url.searchParams.has("token");
+  if (!okHost || !okPath || !okToken) {
+    throw new Error("Pozele trebuie să fie ale tale, încărcate în aplicație.");
+  }
+}
+
 export const verifySelfie = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => VerifyInput.parse(d))
   .handler(async ({ data, context }) => {
+    assertOwnStorageUrl(data.selfieUrl, context.userId);
+    assertOwnStorageUrl(data.mainPhotoUrl, context.userId);
+
     const sys =
       'Ești un sistem de verificare identitate pentru o app de dating. Primești 2 poze: (1) selfie live cu un gest cerut (ex: degetul mare ridicat), (2) poza principală de profil. Răspunzi DOAR JSON valid: {"same_person": <true|false>, "gesture_visible": <true|false>, "real_selfie": <true|false>, "reason": "<scurt, în română>"}. real_selfie=false dacă pare poză copiată de pe internet sau editată. Fii strict — în caz de dubiu, false.';
     const raw = await aiComplete({
@@ -50,18 +73,19 @@ export const verifySelfie = createServerFn({ method: "POST" })
     }
 
     const ok = parsed.same_person && parsed.gesture_visible && parsed.real_selfie;
+    // NU se scrie `verified` / `verified_at` — badge-ul de încredere „Verified 18+"
+    // se acordă exclusiv prin fluxul Didit. Aici salvăm doar rezultatul potrivirii foto.
     const { error } = await context.supabase
       .from("profiles")
       .update({
-        verification_status: ok ? "verified" : "rejected",
+        verification_status: ok ? "photo_matched" : "rejected",
         verification_reason: parsed.reason ?? null,
-        verified_at: ok ? new Date().toISOString() : null,
-        verified: ok,
       })
       .eq("id", context.userId);
     if (error) throw error;
 
-    return { verified: ok, reason: parsed.reason };
+    return { verified: false, photoMatched: ok, reason: parsed.reason };
+
   });
 
 // ---------- Moderate photo on upload ----------

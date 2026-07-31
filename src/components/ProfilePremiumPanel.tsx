@@ -56,8 +56,10 @@ function VerificationCard({ userId, mainPhotoPath, verificationStatus, onUpdate 
         .eq("id", userId);
 
       const res = await verify({ data: { selfieUrl: sa.signedUrl, mainPhotoUrl: sb.signedUrl } });
-      if (res.verified) toast.success("Verificat ✓ — ai badge-ul oficial.");
-      else toast.error(`Verificare eșuată: ${res.reason}`);
+      if (res.photoMatched)
+        toast.success("Poza corespunde ✓ — badge-ul 18+ vine din verificarea de vârstă.");
+      else toast.error(`Potrivire eșuată: ${res.reason}`);
+
       onUpdate();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Verificare eșuată");
