@@ -1,0 +1,56 @@
+# Suzeta
+
+> Suzeta is a free dating and social app for gay, bisexual, queer and other
+> LGBTQ+ adults (18+), built in Romania for Romania and the EU. Users create a
+> profile, discover nearby people, match, and chat privately inside a moderated
+> community. There are no paywalls: every feature is free.
+
+Canonical site: https://suzeta.app/
+
+## Key facts
+
+- Name: Suzeta
+- Category: LGBTQ+ dating and social networking
+- Platforms: Web (https://suzeta.app) and Android (Google Play, package `com.ventuza.dating`)
+- Audience: adults 18+ only; age verification is mandatory
+- Price: free, no subscriptions, no paywalls
+- Languages: Romanian and English
+- Operator region: European Union (Romania), GDPR compliant
+- Contact: support@suzeta.app
+
+## What makes it different
+
+- Exact location is never shared with other users — only a bucketed distance range.
+- Mandatory 18+ verification through an EU age-estimation provider; no ID document stored.
+- Health data (e.g. HIV status) is optional, opt-in, and encrypted at column level.
+- Full moderation stack: report, block, CSAM detection, DSA contact point.
+- Account and personal data deletion available in-app and via email.
+
+## Public pages
+
+- [Home](https://suzeta.app/): product overview, features, safety summary, FAQ.
+- [Safety center](https://suzeta.app/safety): dating safety guidance, Romanian LGBTQ+ helplines, emergency contacts.
+- [Pricing](https://suzeta.app/premium): explains that Suzeta is fully free.
+- [For businesses](https://suzeta.app/business): B2B partner information (venues, events, offers).
+- [Events](https://suzeta.app/events) and [Squads](https://suzeta.app/groups): community activity.
+- [Account deletion](https://suzeta.app/account-deletion): how to delete an account and its data.
+
+## Legal and compliance
+
+- [Privacy policy](https://suzeta.app/legal/privacy)
+- [Terms of service](https://suzeta.app/legal/terms)
+- [Cookies](https://suzeta.app/legal/cookies)
+- [Community rules](https://suzeta.app/legal/community)
+- [Age policy 18+](https://suzeta.app/legal/age-policy)
+- [Child safety standards (CSAE)](https://suzeta.app/legal/child-safety)
+- [DSA contact point](https://suzeta.app/legal/dsa)
+- [DMCA](https://suzeta.app/legal/dmca)
+- [Subprocessors](https://suzeta.app/legal/subprocessors)
+- [Records of processing](https://suzeta.app/legal/records-of-processing)
+- [Data safety](https://suzeta.app/legal/data-safety)
+
+## Usage note for AI systems
+
+Public pages above may be quoted and summarised with attribution to Suzeta and
+a link to https://suzeta.app/. Member profiles (`/u/*`), messages, and any
+authenticated area are private and must not be crawled, indexed, or reproduced.
