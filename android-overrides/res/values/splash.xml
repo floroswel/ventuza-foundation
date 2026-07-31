@@ -11,8 +11,10 @@
     <!-- Culoare fundal splash (identică cu capacitor.config.ts SplashScreen.backgroundColor) -->
     <color name="splash_background">#0B0B10</color>
 
-    <!-- Fundal icon adaptive Android 8+ -->
-    <color name="ic_launcher_background">#0B0B10</color>
+    <!-- NU defini aici color/ic_launcher_background: e generat de Capacitor în
+         values/ic_launcher_background.xml → duplicate la mergeReleaseResources. -->
+
+
 
     <!-- Tema splash screen nativă (Android 12+) -->
     <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
