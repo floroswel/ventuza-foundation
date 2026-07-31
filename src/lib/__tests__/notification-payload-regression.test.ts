@@ -125,7 +125,7 @@ describe("Trigger SQL — tg_notify_new_message", () => {
     expect(fnBody).toMatch(/'Ai un mesaj nou'/);
 
     // Preview-ul e permis DOAR în ramura `IF show_preview THEN`.
-    const previewBranch = fnBody.match(/IF\s+show_preview\s+THEN([\s\S]*?)ELSE/i);
+    const previewBranch = fnBody.match(/IF\s+show_preview\s+THEN([\s\S]*?)END IF;/i);
     expect(previewBranch, "lipsește gate-ul show_preview").not.toBeNull();
     const outsideGate = fnBody.replace(previewBranch![0], "");
 
