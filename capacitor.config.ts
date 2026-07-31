@@ -27,18 +27,18 @@ const config: CapacitorConfig = {
     : {}),
   android: {
     allowMixedContent: false,
-    backgroundColor: "#0B0B0F",
+    backgroundColor: "#0B0B10",
   },
   plugins: {
     SplashScreen: {
       launchShowDuration: 1200,
-      backgroundColor: "#0B0B0F",
+      backgroundColor: "#0B0B10",
       androidSplashResourceName: "splash",
       showSpinner: false,
     },
     StatusBar: {
       style: "DARK",
-      backgroundColor: "#0B0B0F",
+      backgroundColor: "#0B0B10",
     },
     Keyboard: {
       resize: "native",

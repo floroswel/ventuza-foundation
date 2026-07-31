@@ -84,7 +84,7 @@ export async function bootstrapNativeRuntime(router: Router<any, any, any, any, 
   try {
     const { StatusBar, Style } = await import("@capacitor/status-bar");
     await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: "#0B0B0F" });
+    await StatusBar.setBackgroundColor({ color: "#0B0B10" });
   } catch {
     /* status bar poate fi indisponibil pe unele device-uri; ignore */
   }
