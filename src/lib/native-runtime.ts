@@ -38,6 +38,9 @@ export async function bootstrapNativeRuntime(router: Router<any, any, any, any, 
   try {
     const { App } = await import("@capacitor/app");
     App.addListener("backButton", ({ canGoBack }) => {
+      // Failsafe: butonul back nu trebuie să găsească UI-ul „înghețat" de
+      // privacy-screen (clasa __privacy_defocused rămasă lipită).
+      void import("@/lib/privacy-screen").then((m) => m.clearPrivacyDefocus()).catch(() => {});
       // Închide modaluri deschise cu [data-native-back-close] înainte de a naviga.
       const closer = document.querySelector<HTMLElement>("[data-native-back-close]");
       if (closer) {

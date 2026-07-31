@@ -135,8 +135,10 @@ html {
   }
 
   /* Media și tabele nu pot depăși niciodată lățimea ecranului. */
-  img, video, canvas, svg, iframe {
+  img, video, canvas, iframe {
     max-width: 100%;
+  }
+  img, video {
     height: auto;
   }
 
