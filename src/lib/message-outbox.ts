@@ -16,6 +16,7 @@
 import { sendMessage } from "@/lib/chat";
 
 const STORAGE_KEY = "suzeta:msg-outbox:v1";
+const LEGACY_STORAGE_KEY = "ventuza:msg-outbox:v1";
 const MAX_RETRIES = 3;
 const RATE_LIMIT_MS = 60 * 60 * 1000; // 1h fereastră
 const RATE_LIMIT_MAX = 60; // 60 mesaje / oră (server enforce, dublăm și pe client)
@@ -56,8 +57,25 @@ async function readAll(): Promise<OutboxItem[]> {
     if (isCapacitorNative()) {
       const { Preferences } = (await import("@capacitor/preferences")) as unknown as Native;
       raw = (await Preferences.get({ key: STORAGE_KEY })).value;
+      if (!raw) {
+        // Migrare one-shot din cheia veche (rebranding Ventuza → Suzeta).
+        const legacy = (await Preferences.get({ key: LEGACY_STORAGE_KEY })).value;
+        if (legacy) {
+          await Preferences.set({ key: STORAGE_KEY, value: legacy });
+          await Preferences.remove({ key: LEGACY_STORAGE_KEY });
+          raw = legacy;
+        }
+      }
     } else if (typeof window !== "undefined") {
       raw = window.localStorage.getItem(STORAGE_KEY);
+      if (!raw) {
+        const legacy = window.localStorage.getItem(LEGACY_STORAGE_KEY);
+        if (legacy) {
+          window.localStorage.setItem(STORAGE_KEY, legacy);
+          window.localStorage.removeItem(LEGACY_STORAGE_KEY);
+          raw = legacy;
+        }
+      }
     }
     if (!raw) return [];
     const arr = JSON.parse(raw);
@@ -66,6 +84,7 @@ async function readAll(): Promise<OutboxItem[]> {
     return [];
   }
 }
+
 
 async function writeAll(items: OutboxItem[]): Promise<void> {
   const raw = JSON.stringify(items);

@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
 const KEY = "suzeta_cookie_consent_v2";
+const LEGACY_KEY = "ventuza_cookie_consent_v2";
 
 type Consent = {
   essential: true; // always on
@@ -12,9 +13,25 @@ type Consent = {
   v: 2;
 };
 
+/** Migrare one-shot a consimțământului salvat sub brandul vechi. */
+export function migrateLegacyCookieConsent(): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (localStorage.getItem(KEY)) return;
+    const legacy = localStorage.getItem(LEGACY_KEY);
+    if (legacy) {
+      localStorage.setItem(KEY, legacy);
+      localStorage.removeItem(LEGACY_KEY);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
 export function getCookieConsent(): Consent | null {
   if (typeof window === "undefined") return null;
   try {
+    migrateLegacyCookieConsent();
     const raw = localStorage.getItem(KEY);
     if (!raw) return null;
     return JSON.parse(raw) as Consent;
@@ -45,6 +62,7 @@ export function CookieBanner() {
       /* ignore */
     }
     try {
+      migrateLegacyCookieConsent();
       if (!localStorage.getItem(KEY)) setVisible(true);
     } catch {
       /* ignore */

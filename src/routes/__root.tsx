@@ -230,7 +230,15 @@ function RootComponent() {
     // Web Vitals → DB — only after analytics consent
     const maybeInitVitals = () => {
       try {
-        const raw = localStorage.getItem("suzeta_cookie_consent_v2");
+        let raw = localStorage.getItem("suzeta_cookie_consent_v2");
+        if (!raw) {
+          const legacy = localStorage.getItem("ventuza_cookie_consent_v2");
+          if (legacy) {
+            localStorage.setItem("suzeta_cookie_consent_v2", legacy);
+            localStorage.removeItem("ventuza_cookie_consent_v2");
+            raw = legacy;
+          }
+        }
         if (!raw) return;
         const c = JSON.parse(raw);
         if (c?.analytics) {
