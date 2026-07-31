@@ -42,3 +42,18 @@ cd android
 
 Documentul `docs/play-console-data-safety.md` declară `AD_ID = No`. Workflow-ul
 eșuează build-ul dacă permisiunea reapare accidental în merged manifest.
+
+## Iconițe & splash (generate în CI)
+
+Sursa de brand: `assets/logo.png`, `assets/logo-dark.png`, `assets/splash.png`,
+`assets/splash-dark.png` (1024×1024 / 2732×2732, PNG valid).
+
+Workflow-ul `android-release.yml` rulează `@capacitor/assets generate --android`
+DUPĂ `cap sync` și ÎNAINTE de copierea `android-overrides/res/*`, ca override-urile
+(monochrome icon, splash theme) să rămână ultimele.
+
+## Gate de validare resurse
+
+Pasul „Validează resursele Android" oprește build-ul înainte de Gradle dacă:
+PNG/JPEG/WEBP invalid sau deghizat, XML neparsabil, resurse duplicate în `values*/`,
+sau referințe `@drawable/@mipmap/@color/@style/@string` inexistente.
