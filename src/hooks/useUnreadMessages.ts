@@ -17,9 +17,14 @@ let channel: ReturnType<typeof supabase.channel> | null = null;
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 let inflight: Promise<void> | null = null;
 const listeners = new Set<() => void>();
+const conversationListeners = new Set<() => void>();
 
 function emit() {
   for (const l of listeners) l();
+}
+
+function emitConversationChange() {
+  for (const listener of conversationListeners) listener();
 }
 
 async function doRefresh(userId: string) {
@@ -70,13 +75,35 @@ function ensureChannel(userId: string) {
   // (Ex-name `unread-msgs-<uid>` nu era în whitelist → nu primea evenimente.)
   channel = supabase
     .channel(`conv-list:${userId}`)
-    .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, () =>
-      scheduleRefresh(userId),
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "conversations" },
+      () => emitConversationChange(),
     )
-    .on("postgres_changes", { event: "UPDATE", schema: "public", table: "messages" }, () =>
-      scheduleRefresh(userId),
+    .on(
+      "postgres_changes",
+      { event: "INSERT", schema: "public", table: "messages" },
+      () => {
+        scheduleRefresh(userId);
+        emitConversationChange();
+      },
+    )
+    .on(
+      "postgres_changes",
+      { event: "UPDATE", schema: "public", table: "messages" },
+      () => {
+        scheduleRefresh(userId);
+        emitConversationChange();
+      },
     )
     .subscribe();
+}
+
+export function subscribeConversationChanges(listener: () => void) {
+  conversationListeners.add(listener);
+  return () => {
+    conversationListeners.delete(listener);
+  };
 }
 
 function subscribe(listener: () => void) {

@@ -16,6 +16,7 @@ import { buildInboxPreview } from "@/lib/notification-privacy";
 import { useNotificationPrefs } from "@/lib/notification-prefs-context";
 import { StoriesStrip } from "@/components/StoriesStrip";
 import { cn } from "@/lib/utils";
+import { subscribeConversationChanges } from "@/hooks/useUnreadMessages";
 
 export const Route = createFileRoute("/messages/")({
   head: () => ({ meta: [{ title: "Mesaje — Suzeta" }] }),
@@ -98,27 +99,9 @@ function MessagesPage() {
     if (!userId) return;
     const invalidate = () =>
       queryClient.invalidateQueries({ queryKey: ["conversations", userId] });
-    // BottomNav menține separat canalul singleton `conv-list:<uid>` pentru
-    // badge-ul global. Un al doilea channel cu același topic poate reutiliza
-    // instanța deja subscribed și Supabase refuză apoi noile callbacks.
-    // Pagina are propriul topic și își înregistrează toate callback-urile
-    // înainte de unicul subscribe().
-    const ch = supabase
-      .channel(`messages-list:${userId}`)
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "conversations" },
-        invalidate,
-      )
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "messages" },
-        invalidate,
-      )
-      .subscribe();
-    return () => {
-      supabase.removeChannel(ch);
-    };
+    // BottomNav deține unicul canal Realtime `conv-list:<uid>`. Pagina
+    // ascultă evenimentele lui, fără să creeze încă un canal cu același topic.
+    return subscribeConversationChanges(invalidate);
   }, [user?.id, queryClient]);
 
 
