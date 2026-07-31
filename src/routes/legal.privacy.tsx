@@ -17,7 +17,9 @@ export const Route = createFileRoute("/legal/privacy")({
         name: "description",
         content: "Cum colectăm, folosim și protejăm datele tale personale în Suzeta.",
       },
+      { property: "og:url", content: "https://suzeta.app/legal/privacy" },
     ],
+    links: [{ rel: "canonical", href: "https://suzeta.app/legal/privacy" }],
   }),
   component: PrivacyPage,
 });

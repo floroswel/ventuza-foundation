@@ -39,7 +39,9 @@ export const Route = createFileRoute("/business")({
         property: "og:description",
         content: "Acces la cea mai engaged comunitate LGBTQ+ din România.",
       },
+      { property: "og:url", content: "https://suzeta.app/business" },
     ],
+    links: [{ rel: "canonical", href: "https://suzeta.app/business" }],
   }),
   component: BusinessPage,
 });

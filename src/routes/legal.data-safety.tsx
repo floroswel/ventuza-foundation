@@ -20,7 +20,9 @@ export const Route = createFileRoute("/legal/data-safety")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { property: "og:url", content: "https://suzeta.app/legal/data-safety" },
     ],
+    links: [{ rel: "canonical", href: "https://suzeta.app/legal/data-safety" }],
   }),
   component: DataSafetyPage,
 });

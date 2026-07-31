@@ -19,4 +19,68 @@ Disallow: /quests
 Disallow: /api/
 Disallow: /u/
 
+# --- AI / answer engines (AEO + GEO) ---
+# Le permitem explicit conținutul public, ca răspunsurile generate să citeze
+# Suzeta corect. Zonele private rămân blocate pentru toți (regula * de mai sus).
+User-agent: GPTBot
+Allow: /
+Disallow: /auth
+Disallow: /messages
+Disallow: /settings
+Disallow: /admin
+Disallow: /u/
+Disallow: /api/
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Perplexity-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-User
+Allow: /
+
+User-agent: Claude-SearchBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: DuckAssistBot
+Allow: /
+
+User-agent: cohere-ai
+Allow: /
+
+User-agent: MistralAI-User
+Allow: /
+
+# Scrapere de dataset fără valoare de referral
+User-agent: CCBot
+Disallow: /
+
+User-agent: Bytespider
+Disallow: /
+
 Sitemap: https://suzeta.app/sitemap.xml

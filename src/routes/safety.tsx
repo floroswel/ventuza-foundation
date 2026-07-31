@@ -33,7 +33,9 @@ export const Route = createFileRoute("/safety")({
           "Verificare 18+, anti-triangulare locație, blur reciproc, Quick Exit, raportare rapidă. Siguranța ta pe primul loc.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://suzeta.app/safety" },
     ],
+    links: [{ rel: "canonical", href: "https://suzeta.app/safety" }],
   }),
   component: SafetyCenter,
 });

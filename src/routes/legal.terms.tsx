@@ -17,7 +17,9 @@ export const Route = createFileRoute("/legal/terms")({
         name: "description",
         content: "Termenii de utilizare a aplicației Suzeta pentru întâlniri.",
       },
+      { property: "og:url", content: "https://suzeta.app/legal/terms" },
     ],
+    links: [{ rel: "canonical", href: "https://suzeta.app/legal/terms" }],
   }),
   component: TermsPage,
 });

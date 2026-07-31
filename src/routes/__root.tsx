@@ -148,16 +148,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         content:
           "Suzeta is a premium, inclusive dating experience. Meet people who match your depth.",
       },
-      {
-        property: "og:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/14c4abb2-308d-4a85-8862-ba47e7f22abd/id-preview-e4594ec3--31f90140-a9a7-481a-b09d-ae4df6103241.lovable.app-1781988056548.png",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/14c4abb2-308d-4a85-8862-ba47e7f22abd/id-preview-e4594ec3--31f90140-a9a7-481a-b09d-ae4df6103241.lovable.app-1781988056548.png",
-      },
+      { property: "og:site_name", content: "Suzeta" },
+      { property: "og:locale", content: "ro_RO" },
+      { property: "og:locale:alternate", content: "en_US" },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
@@ -166,7 +159,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", type: "image/png", sizes: "48x48", href: "/favicon.png" },
       { rel: "shortcut icon", type: "image/png", href: "/favicon.png" },
       { rel: "apple-touch-icon", sizes: "180x180", href: "/icon-192.png" },
-      { rel: "canonical", href: "https://suzeta.app/" },
+
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {

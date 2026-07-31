@@ -26,7 +26,9 @@ export const Route = createFileRoute("/premium")({
         content:
           "Toate funcțiile Suzeta sunt 100% gratuite pentru utilizatori. Susține-ne prin Suzeta Ads.",
       },
+      { property: "og:url", content: "https://suzeta.app/premium" },
     ],
+    links: [{ rel: "canonical", href: "https://suzeta.app/premium" }],
   }),
   component: withGuardian("premium", PremiumPage, "payments"),
 });
