@@ -67,6 +67,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { uniqueRealtimeTopic } from "@/lib/realtime-topic";
 import { SwipeToReply } from "@/components/SwipeToReply";
 import {
   VirtualizedMessages,
@@ -283,7 +284,7 @@ function ThreadPage() {
     void load();
 
     const ch = supabase
-      .channel(`thread-${id}`, { config: { broadcast: { self: false } } })
+      .channel(uniqueRealtimeTopic(`thread-${id}`), { config: { broadcast: { self: false } } })
       .on(
         "postgres_changes",
         {
