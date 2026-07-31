@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.3",
-  "versionCode": 10003,
+  "versionName": "1.0.4",
+  "versionCode": 10004,
   "track": "internal",
   "notes": "Sursa unică de adevăr pentru versionarea build-ului Android. versionCode = MAJOR*10000 + MINOR*100 + PATCH (identic cu formula din .github/workflows/android-release.yml). Modifică DOAR prin scripts/bump-android-version.mjs."
 }
