@@ -94,11 +94,17 @@ function MessagesPage() {
   const loadError = conversationsQuery.error;
 
   useEffect(() => {
-    if (!user?.id) return;
+    const userId = user?.id;
+    if (!userId) return;
     const invalidate = () =>
-      queryClient.invalidateQueries({ queryKey: ["conversations", user.id] });
+      queryClient.invalidateQueries({ queryKey: ["conversations", userId] });
+    // BottomNav menține separat canalul singleton `conv-list:<uid>` pentru
+    // badge-ul global. Un al doilea channel cu același topic poate reutiliza
+    // instanța deja subscribed și Supabase refuză apoi noile callbacks.
+    // Pagina are propriul topic și își înregistrează toate callback-urile
+    // înainte de unicul subscribe().
     const ch = supabase
-      .channel(`conv-list:${user.id}`)
+      .channel(`messages-list:${userId}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "conversations" },
