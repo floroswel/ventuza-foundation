@@ -714,3 +714,26 @@ export async function setLanguage(lng: "ro" | "en") {
   }
 }
 
+
+/**
+ * Pe Capacitor nativ, `navigator.language` din WebView poate rămâne blocat pe
+ * locale-ul default al WebView-ului, nu al telefonului. Citim limba reală a
+ * device-ului și o aplicăm o singură dată, doar dacă userul NU a ales manual.
+ */
+export async function syncNativeDeviceLanguage(): Promise<void> {
+  if (typeof window === "undefined") return;
+  try {
+    const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+      .Capacitor;
+    if (!cap?.isNativePlatform?.()) return;
+    if (window.localStorage.getItem("vz-lang")) return; // alegere manuală
+    const { Device } = await import("@capacitor/device");
+    const { value } = await Device.getLanguageCode();
+    const code = (value || "").toLowerCase();
+    const target = code.startsWith("ro") || code.startsWith("md") ? "ro" : "en";
+    if (i18n.resolvedLanguage !== target) await i18n.changeLanguage(target);
+    if (typeof document !== "undefined") document.documentElement.lang = target;
+  } catch {
+    /* plugin absent / offline — rămâne detecția din navigator */
+  }
+}
