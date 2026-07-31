@@ -8,7 +8,7 @@ AUTOMAT de workflow-ul `.github/workflows/android-release.yml` după `cap sync`.
 
 | Fișier | Destinație | De ce |
 | ------ | ---------- | ----- |
-| `variables.gradle` | `android/variables.gradle` (overwrite) | Forțează `compileSdk=35`, `targetSdk=35`, `minSdk=23`. Google Play cere targetSdk ≥ 34 de la 31.08.2025. |
+| `variables.gradle` | `android/variables.gradle` (overwrite) | Forțează `compileSdk=35`, `targetSdk=35`, `minSdk=24` (cerut de pluginul de cameră). Google Play cere targetSdk ≥ 34 de la 31.08.2025. |
 | `AndroidManifest.additions.xml` | Fragmente injectate în `android/app/src/main/AndroidManifest.xml` | Scoate `com.google.android.gms.permission.AD_ID` (nu tracking) și `ACCESS_BACKGROUND_LOCATION` (geofencing dormant). |
 | `res/mipmap-anydpi-v26/ic_launcher.xml` | `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` | Icon adaptiv Android 8+ cu layer `monochrome` Android 13+. |
 | `res/mipmap-anydpi-v26/ic_launcher_round.xml` | idem | Varianta round. |
