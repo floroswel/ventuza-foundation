@@ -34,6 +34,10 @@ export const OPERATOR = {
 export const OPERATOR_INTRO =
   `${OPERATOR.legalName} (operatorul care deține și operează aplicația ${OPERATOR.brand})`;
 
+/** English counterpart of OPERATOR_INTRO, for the English versions of the legal pages. */
+export const OPERATOR_INTRO_EN =
+  `${OPERATOR.legalName} (the operator that owns and runs the ${OPERATOR.brand} app)`;
+
 /**
  * Bloc detaliat de identificare a operatorului (nume, CUI, J40, sediu,
  * reprezentant legal, DPO). Se folosește într-o secțiune dedicată la finalul
