@@ -30,6 +30,7 @@ import {
   shortBuildSha,
 } from "@/lib/build-info";
 import { withGuardian } from "@/components/with-guardian";
+import { withAuthTimeout } from "@/lib/auth-timeout";
 
 
 
@@ -96,11 +97,15 @@ async function routeAfterAuth(
     navigate({ to: redirectTo, replace: true });
     return;
   }
-  const { data } = await supabase
-    .from("profiles")
-    .select("onboarding_completed, birthdate")
-    .eq("id", userId)
-    .maybeSingle();
+  const { data } = await withAuthTimeout(
+    "profile_route",
+    supabase
+      .from("profiles")
+      .select("onboarding_completed, birthdate")
+      .eq("id", userId)
+      .maybeSingle(),
+    10_000,
+  );
   // OAuth signups may not have a birthdate yet — SessionGuards also enforces
   // this, but we route directly to /n to avoid a flash of /discover.
   if (!data?.birthdate) {
@@ -303,9 +308,10 @@ function AuthPage() {
 
         // Server-side disposable email preflight (enforced again by DB trigger
         // public.enforce_disposable_email_on_profile).
-        const { error: disposableErr } = await supabase.rpc("assert_email_allowed", {
-          _email: emailParsed.data,
-        });
+        const { error: disposableErr } = await withAuthTimeout(
+          "email_preflight",
+          supabase.rpc("assert_email_allowed", { _email: emailParsed.data }),
+        );
         if (disposableErr) {
           handleAuthError(disposableErr);
           return;
@@ -314,10 +320,14 @@ function AuthPage() {
         try {
           const { computeDeviceFingerprint } = await import("@/lib/fingerprint");
           const fp = await computeDeviceFingerprint().catch(() => null);
-          const guardRes = await fetch("/api/public/signup-guard", {
+          const guardUrl = (await isNativePlatform())
+            ? "https://suzeta.app/api/public/signup-guard"
+            : "/api/public/signup-guard";
+          const guardRes = await fetch(guardUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ fingerprint: fp ?? undefined }),
+            signal: AbortSignal.timeout(8_000),
           });
           if (guardRes.status === 429) {
             const payload = (await guardRes.json().catch(() => ({}))) as {
@@ -334,14 +344,17 @@ function AuthPage() {
         } catch {
           // Network failure: fail-open so real users aren't locked out.
         }
-        const { data, error } = await supabase.auth.signUp({
-          email: emailParsed.data,
-          password: passParsed.data,
-          options: {
-            emailRedirectTo: `${oauthOrigin()}/n`,
-            captchaToken: captchaToken ?? undefined,
-          },
-        });
+        const { data, error } = await withAuthTimeout(
+          "email_signup",
+          supabase.auth.signUp({
+            email: emailParsed.data,
+            password: passParsed.data,
+            options: {
+              emailRedirectTo: `${oauthOrigin()}/n`,
+              captchaToken: captchaToken ?? undefined,
+            },
+          }),
+        );
         if (error) {
           handleAuthError(error);
           return;
@@ -351,10 +364,14 @@ function AuthPage() {
         // Capture browser language as fallback for transactional emails (ro/en only).
         if (data.user) {
           const browserLang = (navigator.language || "ro").toLowerCase().startsWith("ro") ? "ro" : "en";
-          await supabase
-            .from("profiles")
-            .update({ birthdate: birthDate, preferred_language: browserLang })
-            .eq("id", data.user.id);
+          await withAuthTimeout(
+            "profile_signup_update",
+            supabase
+              .from("profiles")
+              .update({ birthdate: birthDate, preferred_language: browserLang })
+              .eq("id", data.user.id),
+            10_000,
+          );
         }
         if (data.session) {
           toast.success(t("auth.errors.welcome"));
@@ -365,16 +382,28 @@ function AuthPage() {
           navigate({ to: "/auth/check-email", search: { email: emailParsed.data }, replace: true });
         }
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: emailParsed.data,
-          password: passParsed.data,
-          options: { captchaToken: captchaToken ?? undefined },
-        });
+        const { data, error } = await withAuthTimeout(
+          "email_login",
+          supabase.auth.signInWithPassword({
+            email: emailParsed.data,
+            password: passParsed.data,
+            options: { captchaToken: captchaToken ?? undefined },
+          }),
+        );
         if (error) {
           handleAuthError(error);
           return;
         }
         if (data.user) await routeAfterAuth(data.user.id, navigate, search.redirect);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === "AuthTimeoutError") {
+        handleAuthError(error, {
+          message: "Conexiunea de autentificare a expirat. Verifică internetul și încearcă din nou.",
+          action: "Butonul a fost reactivat; poți reîncerca imediat.",
+        });
+      } else {
+        handleAuthError(error);
       }
     } finally {
       setSubmitting(false);

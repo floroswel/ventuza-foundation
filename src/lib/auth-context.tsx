@@ -30,23 +30,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!uid || linkedRef.current === uid) return;
       linkedRef.current = uid;
       // Fire-and-forget; safe if no orphan apps exist.
-      linkOrphanBusinessApps().catch(() => {});
+      // Never start another authenticated request synchronously inside
+      // onAuthStateChange. The auth client still owns its internal lock there;
+      // a nested getSession() can deadlock sign-in in a native WebView.
+      window.setTimeout(() => {
+        void linkOrphanBusinessApps().catch(() => {});
+      }, 0);
       // Auto-redeem pending referral captured before sign-up
       try {
         const pending = localStorage.getItem("pending_ref");
         if (pending) {
           localStorage.removeItem("pending_ref");
-          import("@/lib/referrals").then(({ redeemReferral }) =>
-            redeemReferral(pending)
-              .then((res) => {
-                if (res.ok) {
-                  import("sonner").then(({ toast }) =>
-                    toast.success(`+${res.reward_xp ?? 100} XP de la prietenul tău!`),
-                  );
-                }
-              })
-              .catch(() => {}),
-          );
+          window.setTimeout(() => {
+            void import("@/lib/referrals").then(({ redeemReferral }) =>
+              redeemReferral(pending)
+                .then((res) => {
+                  if (res.ok) {
+                    void import("sonner").then(({ toast }) =>
+                      toast.success(`+${res.reward_xp ?? 100} XP de la prietenul tău!`),
+                    );
+                  }
+                })
+                .catch(() => {}),
+            );
+          }, 0);
         }
       } catch {
         /* ignore */
