@@ -69,7 +69,29 @@ jobs:
             echo "::error::Checkout-ul nu corespunde commitului workflow-ului."
             exit 1
           }
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            echo "::error::Release-ul manual trebuie pornit cu branch-ul main selectat; ref curent: $GITHUB_REF"
+            exit 1
+          fi
           git show -s --format='Commit time: %cI%nSubject: %s' HEAD
+
+      - name: Calculează metadatele vizibile ale buildului
+        id: buildmeta
+        env:
+          MANUAL_CODE: ${{ inputs.version_code }}
+        run: |
+          if [ -n "$MANUAL_CODE" ]; then
+            CODE="$MANUAL_CODE"
+          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            RAW="${GITHUB_REF#refs/tags/v}"
+            IFS='.' read -r MAJ MIN PAT <<< "$RAW"
+            CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
+          else
+            echo "::error::versionCode lipsește pentru buildul manual."
+            exit 1
+          fi
+          echo "code=$CODE" >> "$GITHUB_OUTPUT"
+          echo "Marker UI: Android build $CODE · ${GITHUB_SHA:0:7}"
 
       - name: Setup JDK 21 (Temurin)
         uses: actions/setup-java@v4
@@ -130,7 +152,7 @@ jobs:
           # Google din Android nativ nu funcționează (cade back la web OAuth).
           VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID || secrets.GOOGLE_OAUTH_CLIENT_ID }}
           VITE_BUILD_SHA: ${{ github.sha }}
-          VITE_BUILD_VERSION_CODE: ${{ inputs.version_code || 'tag' }}
+          VITE_BUILD_VERSION_CODE: ${{ steps.buildmeta.outputs.code }}
         run: bun run build:mobile
 
 
