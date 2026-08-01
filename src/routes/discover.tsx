@@ -74,6 +74,7 @@ import {
 import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
 import { useOptionLabel } from "@/lib/i18n/option-labels";
+import { PositionTag } from "@/components/PositionTag";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
@@ -1141,11 +1142,7 @@ function Cascade({
                     {age ? <span className="text-white/70">, {age}</span> : null}
                   </span>
                 </p>
-                {p.position && (
-                  <p className="truncate text-[9px] uppercase tracking-wider text-primary/90">
-                    {label(p.position)}
-                  </p>
-                )}
+                <PositionTag value={p.position} size="sm" />
               </div>
               {p.distance_m != null && (
                 <span className="shrink-0 text-[10px] text-white/70">
@@ -1388,11 +1385,7 @@ function ProfileSheet({
                   {age ? <span className="text-white/70">, {age}</span> : null}
                   {profile.verified && <BadgeCheck className="size-5 text-primary" />}
                 </h2>
-                {profile.position && (
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                    {sheetLabel(profile.position)}
-                  </p>
-                )}
+                <PositionTag value={profile.position} />
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85">
                   <span className="inline-flex items-center gap-1.5">
                     <span
