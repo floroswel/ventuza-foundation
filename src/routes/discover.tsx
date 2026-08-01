@@ -1543,14 +1543,10 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
   const [fav, setFav] = useState(false);
   const [busy, setBusy] = useState(false);
   const [tapped, setTapped] = useState<TapEmoji | null>(null);
-  const [woofed, setWoofed] = useState(false);
 
   useEffect(() => {
     isFavorite(targetId)
       .then(setFav)
-      .catch(() => {});
-    hasWoofed(targetId)
-      .then(setWoofed)
       .catch(() => {});
     setTapped(null);
   }, [targetId]);
