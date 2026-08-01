@@ -1141,11 +1141,7 @@ function Cascade({
                     {age ? <span className="text-white/70">, {age}</span> : null}
                   </span>
                 </p>
-                {p.position && (
-                  <p className="truncate text-[9px] uppercase tracking-wider text-primary/90">
-                    {label(p.position)}
-                  </p>
-                )}
+                <PositionTag value={p.position} size="sm" />
               </div>
               {p.distance_m != null && (
                 <span className="shrink-0 text-[10px] text-white/70">
