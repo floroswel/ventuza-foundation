@@ -1503,14 +1503,6 @@ function ProfileSheet({
 
           <TapFavoriteRow targetId={profile.id} targetName={profile.display_name ?? "Anonim"} />
 
-          <button
-            type="button"
-            onClick={() => onViewFull(profile)}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-primary/40 bg-primary/5 py-3 text-sm font-medium text-primary transition hover:bg-primary/10"
-          >
-            <ExternalLink className="size-4" />
-            Vezi profil complet
-          </button>
         </div>
         </div>
 
