@@ -58,6 +58,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Trasabilitate sursă release
+        run: |
+          set -euo pipefail
+          echo "Workflow event: $GITHUB_EVENT_NAME"
+          echo "Git ref: $GITHUB_REF"
+          echo "Commit împachetat: $GITHUB_SHA"
+          echo "Commit checkout: $(git rev-parse HEAD)"
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA" || {
+            echo "::error::Checkout-ul nu corespunde commitului workflow-ului."
+            exit 1
+          }
+          git show -s --format='Commit time: %cI%nSubject: %s' HEAD
+
       - name: Setup JDK 21 (Temurin)
         uses: actions/setup-java@v4
         with:
@@ -116,6 +129,8 @@ jobs:
           # `supabase.auth.signInWithIdToken` ca `audience`. Fără el, butonul
           # Google din Android nativ nu funcționează (cade back la web OAuth).
           VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID || secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          VITE_BUILD_SHA: ${{ github.sha }}
+          VITE_BUILD_VERSION_CODE: ${{ inputs.version_code || 'tag' }}
         run: bun run build:mobile
 
 
@@ -140,6 +155,23 @@ jobs:
             exit 1
           fi
           echo "✓ $INDEX OK ($SIZE bytes)"
+          test -s dist/client/brand/suzeta-icon.png || {
+            echo "::error::Logo-ul local lipsește din dist/client/brand/."
+            exit 1
+          }
+          grep -Rqs "SUZETA_NATIVE_FIX_V3" dist/client || {
+            echo "::error::Markerul reparațiilor native lipsește din bundle."
+            exit 1
+          }
+          grep -Rqs "signInWithIdToken" dist/client || {
+            echo "::error::Fluxul Google signInWithIdToken lipsește din bundle."
+            exit 1
+          }
+          grep -Rqs "${GITHUB_SHA}" dist/client || {
+            echo "::error::SHA-ul workflow-ului nu a fost injectat în bundle."
+            exit 1
+          }
+          echo "✓ Bundle verificat: logo local + Google nativ + marker + SHA $GITHUB_SHA"
 
       - name: Add Android platform (dacă lipsește)
         run: |
@@ -149,6 +181,24 @@ jobs:
 
       - name: Sync Capacitor
         run: bunx cap sync android
+
+      - name: Verifică bundle-ul copiat în proiectul Android
+        run: |
+          set -euo pipefail
+          NATIVE_ASSETS=android/app/src/main/assets/public
+          test -s "$NATIVE_ASSETS/brand/suzeta-icon.png" || {
+            echo "::error::Logo-ul local nu a ajuns în assets/public din Android."
+            exit 1
+          }
+          grep -Rqs "SUZETA_NATIVE_FIX_V3" "$NATIVE_ASSETS" || {
+            echo "::error::Capacitor a copiat un bundle fără reparațiile native."
+            exit 1
+          }
+          grep -Rqs "$GITHUB_SHA" "$NATIVE_ASSETS" || {
+            echo "::error::Bundle-ul Android nu corespunde commitului $GITHUB_SHA."
+            exit 1
+          }
+          echo "✓ Assets Android provin din $GITHUB_SHA și conțin reparațiile native."
 
       - name: Generează iconițe + splash nativ (@capacitor/assets)
         run: |
@@ -602,6 +652,31 @@ jobs:
         working-directory: android
         run: |
           ./gradlew bundleRelease --no-daemon --stacktrace
+
+      - name: Verifică reparațiile direct în AAB
+        run: |
+          set -euo pipefail
+          AAB=android/app/build/outputs/bundle/release/app-release.aab
+          TMP="$(mktemp -d)"
+          unzip -q "$AAB" -d "$TMP"
+          test -s "$TMP/base/assets/public/brand/suzeta-icon.png" || {
+            echo "::error::AAB-ul final nu conține logo-ul Suzeta local."
+            exit 1
+          }
+          grep -Rqs "SUZETA_NATIVE_FIX_V3" "$TMP/base/assets/public" || {
+            echo "::error::AAB-ul final nu conține markerul reparațiilor native."
+            exit 1
+          }
+          grep -Rqs "$GITHUB_SHA" "$TMP/base/assets/public" || {
+            echo "::error::AAB-ul final nu conține SHA-ul $GITHUB_SHA."
+            exit 1
+          }
+          grep -Rqs "signInWithIdToken" "$TMP/base/assets/public" || {
+            echo "::error::AAB-ul final nu conține Google Sign-In nativ."
+            exit 1
+          }
+          echo "✓ AAB verificat: versionCode=${{ steps.version.outputs.code }}, commit=$GITHUB_SHA, marker=SUZETA_NATIVE_FIX_V3"
+          rm -rf "$TMP"
 
       - name: Upload artefact AAB (pentru inspecție)
         uses: actions/upload-artifact@v4

@@ -61,16 +61,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       maybeLinkBiz(s);
     });
 
-    // Then hydrate the current session.
+    // Then hydrate the current session. Native Preferences can occasionally be
+    // slow on a cold WebView start; never keep the auth screen behind an
+    // indefinite spinner while storage wakes up.
+    const loadingGuard = window.setTimeout(() => {
+      if (!cancelled) setLoading(false);
+    }, 1500);
     void supabase.auth.getSession().then(({ data }) => {
       if (cancelled) return;
+      window.clearTimeout(loadingGuard);
       setSession(data.session ?? null);
       setLoading(false);
       maybeLinkBiz(data.session);
+    }).catch(() => {
+      if (cancelled) return;
+      window.clearTimeout(loadingGuard);
+      setLoading(false);
     });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(loadingGuard);
       sub.subscription.unsubscribe();
     };
   }, []);

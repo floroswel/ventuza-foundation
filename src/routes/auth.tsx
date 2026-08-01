@@ -23,6 +23,12 @@ import {
 } from "@/lib/native-google-auth";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
+import {
+  MOBILE_BUILD_SHA,
+  MOBILE_VERSION_CODE,
+  NATIVE_REPAIR_MARKER,
+  shortBuildSha,
+} from "@/lib/build-info";
 import { withGuardian } from "@/components/with-guardian";
 
 
@@ -737,6 +743,16 @@ function AuthPage() {
             }}
           />
         </p>
+
+        {isNative && (
+          <p
+            className="mt-2 text-center text-[10px] text-muted-foreground"
+            data-native-repair={NATIVE_REPAIR_MARKER}
+            title={MOBILE_BUILD_SHA}
+          >
+            Android build {MOBILE_VERSION_CODE} · {shortBuildSha}
+          </p>
+        )}
 
       </div>
     </main>
