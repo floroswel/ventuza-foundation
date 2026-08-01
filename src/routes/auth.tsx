@@ -21,7 +21,7 @@ import {
   hasNativeGoogleConfigAsync,
 } from "@/lib/native-google-auth";
 
-import suzetaIcon from "@/assets/suzeta-icon.png.asset.json";
+import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import { withGuardian } from "@/components/with-guardian";
 
 
@@ -410,7 +410,7 @@ function AuthPage() {
 
         <div className="mt-10 flex flex-col items-center text-center">
           <img
-            src={suzetaIcon.url}
+            src={SUZETA_ICON_URL}
             alt=""
             width={72}
             height={72}
