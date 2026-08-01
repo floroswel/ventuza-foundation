@@ -9,6 +9,7 @@ import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { formatHeight } from "@/lib/discover";
 import { useOptionLabel } from "@/lib/i18n/option-labels";
+import { PositionTag } from "@/components/PositionTag";
 import { translateProfile } from "@/lib/translate.functions";
 
 
