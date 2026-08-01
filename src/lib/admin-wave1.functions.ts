@@ -218,6 +218,8 @@ export const adminGetUserView = createServerFn({ method: "POST" })
     // Ultima activitate = `last_seen` (aliasat ca `last_active_at` pentru UI).
     const SAFE_PROFILE = [
       "id",
+      "account_no",
+
       "display_name",
       "profile_slug",
       "bio",

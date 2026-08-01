@@ -206,8 +206,15 @@ type Report = {
     display_name: string | null;
     report_count: number;
     suspended_until: string | null;
+    account_no?: number | null;
+    profile_slug?: string | null;
+  } | null;
+  reporter_profile?: {
+    display_name: string | null;
+    account_no?: number | null;
   } | null;
 };
+
 type RiskRow = {
   user_id: string;
   display_name: string | null;
@@ -1257,21 +1264,28 @@ function ReportsPanel({ meId }: { meId: string }) {
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
-      const ids = Array.from(new Set((data ?? []).map((r) => r.reported_id)));
+      const ids = Array.from(
+        new Set([
+          ...(data ?? []).map((r) => r.reported_id),
+          ...(data ?? []).map((r: any) => r.reporter_id).filter(Boolean),
+        ]),
+      );
       const profilesMap = new Map<string, any>();
       if (ids.length) {
         const { data: profs } = await supabase
           .from("profiles")
-          .select("id, display_name, report_count, suspended_until")
+          .select("id, display_name, report_count, suspended_until, account_no, profile_slug")
           .in("id", ids);
         profs?.forEach((p) => profilesMap.set(p.id, p));
       }
       setReports(
-        (data ?? []).map((r) => ({
+        (data ?? []).map((r: any) => ({
           ...r,
           reported_profile: profilesMap.get(r.reported_id) ?? null,
+          reporter_profile: r.reporter_id ? (profilesMap.get(r.reporter_id) ?? null) : null,
         })) as Report[],
       );
+
     } catch (e: any) {
       const m = e?.message ?? String(e);
       setError(m);
@@ -1358,15 +1372,46 @@ function ReportsPanel({ meId }: { meId: string }) {
       header: "Țintă",
       cell: (r) => (
         <div className="min-w-0">
-          <div className="truncate font-medium">{r.reported_profile?.display_name ?? "—"}</div>
+          <div className="truncate font-medium">
+            {r.reported_profile?.display_name ?? "—"}
+            {r.reported_profile?.account_no != null && (
+              <span className="admin-mono ml-1 text-[10px] text-[var(--admin-text-faint)]">
+                #{r.reported_profile.account_no}
+              </span>
+            )}
+          </div>
           <div className="admin-mono truncate text-[10px] text-[var(--admin-text-faint)]">
             {r.reported_id}
           </div>
         </div>
       ),
       sortValue: (r) => r.reported_profile?.display_name ?? "",
-      searchValue: (r) => `${r.reported_profile?.display_name ?? ""} ${r.reported_id}`,
+      searchValue: (r) =>
+        `${r.reported_profile?.display_name ?? ""} ${r.reported_id} ${r.reported_profile?.account_no ?? ""}`,
     },
+    {
+      key: "reporter",
+      header: "Reclamant",
+      priority: 2,
+      cell: (r) => (
+        <div className="min-w-0">
+          <div className="truncate text-[11px]">
+            {r.reporter_profile?.display_name ?? "—"}
+            {r.reporter_profile?.account_no != null && (
+              <span className="admin-mono ml-1 text-[10px] text-[var(--admin-text-faint)]">
+                #{r.reporter_profile.account_no}
+              </span>
+            )}
+          </div>
+          <div className="admin-mono truncate text-[10px] text-[var(--admin-text-faint)]">
+            {r.reporter_id}
+          </div>
+        </div>
+      ),
+      sortValue: (r) => r.reporter_profile?.display_name ?? "",
+      searchValue: (r) => `${r.reporter_profile?.display_name ?? ""} ${r.reporter_id}`,
+    },
+
     {
       key: "count",
       header: "#Rap",

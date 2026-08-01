@@ -222,7 +222,13 @@ function User360Page() {
         <TabsContent value="overview" className="space-y-3 mt-4">
           <Card className="p-4">
             <div className="text-sm font-semibold mb-2">Profil (mascat)</div>
+            <KV
+              label="Număr cont"
+              value={profile.account_no != null ? `#${profile.account_no}` : "—"}
+            />
+            <KV label="ID intern" value={profile.id} />
             <KV label="Display name" value={profile.display_name} />
+
             <KV label="Slug public" value={profile.profile_slug ?? "—"} />
             <KV label="Bio" value={profile.bio ?? "—"} />
             <KV label="Vârstă (din birthdate)" value={profile.age != null ? `${profile.age}` : "—"} />

@@ -3330,6 +3330,7 @@ export type Database = {
       profiles: {
         Row: {
           accept_nsfw_photos: boolean | null
+          account_no: number | null
           age_pending_at: string | null
           age_provider: string | null
           age_status: Database["public"]["Enums"]["age_status"]
@@ -3461,6 +3462,7 @@ export type Database = {
         }
         Insert: {
           accept_nsfw_photos?: boolean | null
+          account_no?: number | null
           age_pending_at?: string | null
           age_provider?: string | null
           age_status?: Database["public"]["Enums"]["age_status"]
@@ -3592,6 +3594,7 @@ export type Database = {
         }
         Update: {
           accept_nsfw_photos?: boolean | null
+          account_no?: number | null
           age_pending_at?: string | null
           age_provider?: string | null
           age_status?: Database["public"]["Enums"]["age_status"]
@@ -7029,6 +7032,7 @@ export type Database = {
         | "admin_message"
         | "partner_broadcast"
         | "like"
+        | "favorite"
       policy_rule_state: "draft" | "shadow" | "enforcing" | "archived"
       rsvp_status: "going" | "interested"
     }
@@ -7211,6 +7215,7 @@ export const Constants = {
         "admin_message",
         "partner_broadcast",
         "like",
+        "favorite",
       ],
       policy_rule_state: ["draft", "shadow", "enforcing", "archived"],
       rsvp_status: ["going", "interested"],

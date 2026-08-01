@@ -8,7 +8,9 @@ export type NotificationType =
   | "album_granted"
   | "event_rsvp"
   | "event_reminder"
-  | "tap";
+  | "tap"
+  | "like"
+  | "favorite";
 
 export type NotificationRow = {
   id: string;
@@ -24,8 +26,9 @@ export type NotificationRow = {
 };
 
 /**
- * Clopoțelul afișează TOT (tap, match, vizite, albume, evenimente…),
- * mai puțin mesajele — acelea trăiesc în tab-ul Mesaje. Regulă permanentă.
+ * Clopoțelul afișează TOT (tap, like, favorite, match, vizite, albume,
+ * evenimente…), mai puțin mesajele — acelea trăiesc în tab-ul Mesaje.
+ * Regulă permanentă.
  */
 export const BELL_TYPES: NotificationType[] = [
   "match",
@@ -35,7 +38,10 @@ export const BELL_TYPES: NotificationType[] = [
   "event_rsvp",
   "event_reminder",
   "tap",
+  "like",
+  "favorite",
 ];
+
 
 export async function listNotifications(limit = 50): Promise<NotificationRow[]> {
   const { data, error } = await supabase
