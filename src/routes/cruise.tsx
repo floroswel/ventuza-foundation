@@ -131,7 +131,33 @@ function CruisePage() {
               {profiles.length} disponibili acum
             </p>
           </div>
+          {myActive ? (
+            <button
+              type="button"
+              disabled={busyNow}
+              onClick={() => toggleMine(0)}
+              className="rounded-full border border-rose-500/50 bg-rose-500/15 px-3 py-2 text-xs font-semibold text-rose-200 disabled:opacity-50"
+            >
+              Ieși din Cruise
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={busyNow}
+              onClick={() => toggleMine(2)}
+              className="rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50"
+            >
+              Intră în Cruise
+            </button>
+          )}
         </div>
+        {myActive && myUntil && (
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Ești vizibil până la{" "}
+            {new Date(myUntil).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" })} ·
+            poți ieși oricând.
+          </p>
+        )}
       </header>
 
       {loading ? (
