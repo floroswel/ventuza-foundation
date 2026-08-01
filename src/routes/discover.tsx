@@ -1385,11 +1385,7 @@ function ProfileSheet({
                   {age ? <span className="text-white/70">, {age}</span> : null}
                   {profile.verified && <BadgeCheck className="size-5 text-primary" />}
                 </h2>
-                {profile.position && (
-                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-                    {sheetLabel(profile.position)}
-                  </p>
-                )}
+                <PositionTag value={profile.position} />
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85">
                   <span className="inline-flex items-center gap-1.5">
                     <span
