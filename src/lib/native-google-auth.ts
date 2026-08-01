@@ -51,7 +51,9 @@ async function fetchClientIdFromNetwork(): Promise<string | null> {
   // 1) Nativ (sau orice context fără server fn relativ): endpoint public absolut.
   if (await isNativePlatform()) {
     try {
-      const res = await fetch(`${PROD_ORIGIN}/api/public/google-client-id`);
+      const res = await fetch(`${PROD_ORIGIN}/api/public/google-client-id`, {
+        signal: AbortSignal.timeout(5000),
+      });
       if (res.ok) {
         const json = (await res.json()) as { clientId?: string | null };
         if (json?.clientId) return json.clientId;
