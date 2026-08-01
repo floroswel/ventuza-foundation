@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { oauthOrigin } from "@/lib/canonical-origin";
 import { PublicFooter } from "@/components/PublicFooter";
-import suzetaIcon from "@/assets/suzeta-icon.png.asset.json";
+import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import {
   FAQ,
   HOME_DESCRIPTION,
@@ -170,7 +170,7 @@ function Landing() {
         {/* Hero */}
         <section className="flex flex-col items-center text-center">
           <img
-            src={suzetaIcon.url}
+            src={SUZETA_ICON_URL}
             alt="Suzeta logo"
             width={88}
             height={88}

@@ -17,11 +17,12 @@ import { oauthOrigin } from "@/lib/canonical-origin";
 import {
   nativeGoogleSignIn,
   isNativeAndroid,
+  isNativePlatform,
   hasNativeGoogleConfig,
   hasNativeGoogleConfigAsync,
 } from "@/lib/native-google-auth";
 
-import suzetaIcon from "@/assets/suzeta-icon.png.asset.json";
+import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import { withGuardian } from "@/components/with-guardian";
 
 
@@ -129,15 +130,31 @@ function AuthPage() {
   const captchaMisconfigured = isTurnstileMisconfiguredInProd();
   const [googleBusy, setGoogleBusy] = useState(false);
   const [isNative, setIsNative] = useState(false);
+  const [nativeChecked, setNativeChecked] = useState(false);
   const [nativeGoogleReady, setNativeGoogleReady] = useState(hasNativeGoogleConfig());
   useEffect(() => {
-    void isNativeAndroid().then(setIsNative);
-    void hasNativeGoogleConfigAsync().then(setNativeGoogleReady);
+    let cancelled = false;
+    void (async () => {
+      const native = await isNativeAndroid();
+      if (cancelled) return;
+      setIsNative(native);
+      // Sondăm Client ID-ul DOAR pe nativ. Pe web nu e nevoie (folosim brokerul
+      // managed) și fetch-ul suplimentar întârzia inutil randarea formularului.
+      if (native) {
+        const ready = await hasNativeGoogleConfigAsync();
+        if (!cancelled) setNativeGoogleReady(ready);
+      }
+      if (!cancelled) setNativeChecked(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
   // Butonul Google apare doar dacă avem cale funcțională:
   //  - pe Android nativ: doar dacă avem Web Client ID (env sau secret server)
   //  - pe web: mereu (broker Lovable managed OAuth)
-  const googleAvailable = isNative ? nativeGoogleReady : true;
+  const googleAvailable = isNative ? nativeGoogleReady : nativeChecked || !isNative;
+
 
 
   async function onGoogleSignIn() {
@@ -156,7 +173,11 @@ function AuthPage() {
     setAuthError(null);
     setGoogleBusy(true);
     try {
-      if (isNative) {
+      // În Capacitor (WebView) fluxul web de OAuth prin redirect dă 404 —
+      // Google blochează sign-in-ul din WebView-uri. Pe nativ mergem EXCLUSIV
+      // pe SDK-ul nativ + supabase.auth.signInWithIdToken; nu facem niciodată
+      // fallback pe redirect web.
+      if (await isNativePlatform()) {
         const res = await nativeGoogleSignIn();
         if (!res.ok) {
           if (res.code === "cancelled") return;
@@ -174,6 +195,7 @@ function AuthPage() {
         }
         // if redirected, browser leaves this page
       }
+
     } finally {
       setGoogleBusy(false);
     }
@@ -410,7 +432,7 @@ function AuthPage() {
 
         <div className="mt-10 flex flex-col items-center text-center">
           <img
-            src={suzetaIcon.url}
+            src={SUZETA_ICON_URL}
             alt=""
             width={72}
             height={72}

@@ -51,7 +51,9 @@ async function fetchClientIdFromNetwork(): Promise<string | null> {
   // 1) Nativ (sau orice context fără server fn relativ): endpoint public absolut.
   if (await isNativePlatform()) {
     try {
-      const res = await fetch(`${PROD_ORIGIN}/api/public/google-client-id`);
+      const res = await fetch(`${PROD_ORIGIN}/api/public/google-client-id`, {
+        signal: AbortSignal.timeout(5000),
+      });
       if (res.ok) {
         const json = (await res.json()) as { clientId?: string | null };
         if (json?.clientId) return json.clientId;
@@ -119,7 +121,7 @@ export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
   const clientId = await resolveWebClientId();
   if (!clientId) return { ok: false, code: "unsupported", message: "missing GOOGLE_OAUTH_CLIENT_ID" };
 
-  if (!(await isNativeAndroid())) return { ok: false, code: "unsupported" };
+  if (!(await isNativePlatform())) return { ok: false, code: "unsupported" };
 
   try {
     await ensureInit(clientId);
