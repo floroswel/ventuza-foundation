@@ -72,7 +72,6 @@ import {
   TAP_EMOJIS,
   type TapEmoji,
 } from "@/lib/social";
-import { sendWoof, hasWoofed } from "@/lib/ads";
 import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
