@@ -168,7 +168,19 @@ function CruisePage() {
         <EmptyCruise />
       ) : (
         <>
-          <Radar profiles={profiles} maxM={maxM} urls={urls} />
+          <Radar
+            profiles={profiles}
+            maxM={maxM}
+            urls={urls}
+            onSelect={async (p) => {
+              try {
+                const cid = await getOrCreateConversation(p.id);
+                navigate({ to: "/messages/$id", params: { id: cid } });
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Couldn't open chat");
+              }
+            }}
+          />
           <ul className="divide-y divide-border/40">
             {profiles.map((p) => (
               <CruiseRow
@@ -198,10 +210,12 @@ function Radar({
   profiles,
   maxM,
   urls,
+  onSelect,
 }: {
   profiles: DiscoverProfile[];
   maxM: number;
   urls: Record<string, string>;
+  onSelect: (p: DiscoverProfile) => void;
 }) {
   // Place dots on concentric rings; angle is hashed from id for stability
   function angleFor(id: string) {
@@ -211,11 +225,16 @@ function Radar({
   }
   return (
     <div className="relative mx-auto my-4 aspect-square w-[88%] max-w-sm overflow-hidden rounded-full border border-primary/20 bg-[radial-gradient(circle_at_center,rgba(218,165,32,0.08),transparent_70%)]">
-      {[0.33, 0.66, 1].map((r) => (
+      {[0.33, 0.66, 1].map((r, i) => (
         <span
           key={r}
-          className="absolute left-1/2 top-1/2 rounded-full border border-primary/15"
-          style={{ width: `${r * 100}%`, height: `${r * 100}%`, transform: "translate(-50%,-50%)" }}
+          className="radar-ring absolute left-1/2 top-1/2 rounded-full border border-primary/25"
+          style={{
+            width: `${r * 100}%`,
+            height: `${r * 100}%`,
+            transform: "translate(-50%,-50%)",
+            animationDelay: `${i * 0.9}s`,
+          }}
         />
       ))}
       <span className="absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_12px_var(--primary)]" />
@@ -227,11 +246,14 @@ function Radar({
         const y = 50 + Math.sin(a) * r * 48;
         const url = p.photos?.[0] ? urls[p.photos[0]] : null;
         return (
-          <span
+          <button
+            type="button"
             key={p.id}
-            className="absolute size-7 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border border-rose-400/80 shadow-[0_0_8px_rgba(244,63,94,0.6)]"
+            onClick={() => onSelect(p)}
+            className="absolute size-7 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border border-rose-400/80 shadow-[0_0_8px_rgba(244,63,94,0.6)] transition-transform active:scale-90 hover:scale-110"
             style={{ left: `${x}%`, top: `${y}%` }}
             title={p.display_name ?? ""}
+            aria-label={`Scrie-i lui ${p.display_name ?? "utilizator"}`}
           >
             {url ? (
               <img src={url} alt="" className="size-full object-cover" />
