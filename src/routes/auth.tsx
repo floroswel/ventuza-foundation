@@ -397,12 +397,14 @@ function AuthPage() {
         if (data.user) await routeAfterAuth(data.user.id, navigate, search.redirect);
       }
     } catch (error) {
-      handleAuthError(error, {
-        message: error instanceof Error && error.name === "AuthTimeoutError"
-          ? "Conexiunea de autentificare a expirat. Verifică internetul și încearcă din nou."
-          : undefined,
-        action: "Butonul a fost reactivat; poți reîncerca imediat.",
-      });
+      if (error instanceof Error && error.name === "AuthTimeoutError") {
+        handleAuthError(error, {
+          message: "Conexiunea de autentificare a expirat. Verifică internetul și încearcă din nou.",
+          action: "Butonul a fost reactivat; poți reîncerca imediat.",
+        });
+      } else {
+        handleAuthError(error);
+      }
     } finally {
       setSubmitting(false);
     }
