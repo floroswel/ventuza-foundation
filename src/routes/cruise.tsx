@@ -12,6 +12,7 @@ import {
   type DiscoverProfile,
 } from "@/lib/discover";
 import { getOrCreateConversation } from "@/lib/chat";
+import { setLookingNow } from "@/lib/social";
 import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/cruise")({
