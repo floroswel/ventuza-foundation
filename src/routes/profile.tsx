@@ -52,6 +52,8 @@ import {
   RELATIONSHIP_STATUS_OPTIONS,
   ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
+import { positionHint } from "@/components/PositionTag";
+import { useUiLocale } from "@/lib/i18n/locale";
 import {
   useOptionLabel,
   canonicalizeOptionValue,
@@ -146,6 +148,7 @@ function age(iso?: string | null) {
 
 function ProfilePage() {
   const optLabel = useOptionLabel();
+  const uiLocale = useUiLocale();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -278,6 +281,11 @@ function ProfilePage() {
               {profile.position ? optLabel(profile.position) : "Adaugă poziția"}
               <Pencil className="size-3" />
             </button>
+            {profile.position && positionHint(profile.position, uiLocale) && (
+              <p className="mt-1 text-[11px] leading-snug text-white/60">
+                {positionHint(profile.position, uiLocale)}
+              </p>
+            )}
             {posOpen && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {POSITION_OPTIONS.map((o) => (
