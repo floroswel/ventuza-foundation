@@ -10,6 +10,8 @@ import {
   Loader2,
   Lock,
   MessageCircle,
+  Star,
+
   Trash2,
   Unlock,
 } from "lucide-react";
