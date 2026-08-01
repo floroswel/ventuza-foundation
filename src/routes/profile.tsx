@@ -152,6 +152,19 @@ function ProfilePage() {
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [posOpen, setPosOpen] = useState(false);
+  const [savingPos, setSavingPos] = useState(false);
+
+  async function savePosition(next: string | null) {
+    if (!user) return;
+    setSavingPos(true);
+    const { error } = await supabase.from("profiles").update({ position: next }).eq("id", user.id);
+    setSavingPos(false);
+    if (error) return toast.error(error.message);
+    setProfile((p) => (p ? { ...p, position: next } : p));
+    setPosOpen(false);
+    toast.success(next ? "Poziție actualizată." : "Poziție eliminată.");
+  }
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
