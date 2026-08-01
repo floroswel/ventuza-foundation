@@ -73,6 +73,7 @@ import {
 } from "@/lib/social";
 import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
@@ -1045,6 +1046,7 @@ function Cascade({
   badgesError: boolean;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const label = useOptionLabel();
   const { bySender } = useUnreadMessages();
   useEffect(() => {
     const paths = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
@@ -1139,9 +1141,9 @@ function Cascade({
                     {age ? <span className="text-white/70">, {age}</span> : null}
                   </span>
                 </p>
-                {p.tribes && p.tribes.length > 0 && (
+                {p.position && (
                   <p className="truncate text-[9px] uppercase tracking-wider text-primary/90">
-                    {p.tribes.slice(0, 2).join(" · ")}
+                    {label(p.position)}
                   </p>
                 )}
               </div>
@@ -1275,6 +1277,7 @@ function ProfileSheet({
   onMessage: (p: DiscoverProfile) => void;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const sheetLabel = useOptionLabel();
 
   useEffect(() => {
     if (!profile?.photos?.length) {
@@ -1385,6 +1388,11 @@ function ProfileSheet({
                   {age ? <span className="text-white/70">, {age}</span> : null}
                   {profile.verified && <BadgeCheck className="size-5 text-primary" />}
                 </h2>
+                {profile.position && (
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                    {sheetLabel(profile.position)}
+                  </p>
+                )}
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85">
                   <span className="inline-flex items-center gap-1.5">
                     <span

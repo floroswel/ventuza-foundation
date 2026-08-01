@@ -145,6 +145,7 @@ function age(iso?: string | null) {
 }
 
 function ProfilePage() {
+  const optLabel = useOptionLabel();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
@@ -254,6 +255,11 @@ function ProfilePage() {
               )}
             </h1>
           </div>
+          {profile.position && (
+            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+              {optLabel(profile.position)}
+            </p>
+          )}
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {profile.verified_at ? (
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur">
