@@ -262,7 +262,7 @@ function Radar({
                 {p.display_name?.[0]?.toUpperCase() ?? "?"}
               </span>
             )}
-          </span>
+          </button>
         );
       })}
     </div>
