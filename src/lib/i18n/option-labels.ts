@@ -125,11 +125,11 @@ const DICT: Record<string, LocaleMap> = {
   Large: { ro: "Corpolent", en: "Large", de: "Stämmig", fr: "Grand", es: "Grande", it: "Corporatura grande" },
 
   // ----- Position -----
-  Top: { ro: "Top", en: "Top" },
-  "Vers Top": { ro: "Vers Top", en: "Vers Top" },
-  Versatile: { ro: "Versatil", en: "Versatile", de: "Vielseitig", fr: "Versatile", es: "Versátil", it: "Versatile" },
-  "Vers Bottom": { ro: "Vers Bottom", en: "Vers Bottom" },
-  Bottom: { ro: "Bottom", en: "Bottom" },
+  Top: { ro: "Activ", en: "Top" },
+  "Vers Top": { ro: "Vers activ", en: "Vers Top" },
+  Versatile: { ro: "Vers", en: "Versatile", de: "Vielseitig", fr: "Versatile", es: "Versátil", it: "Versatile" },
+  "Vers Bottom": { ro: "Vers pasiv", en: "Vers Bottom" },
+  Bottom: { ro: "Pasiv", en: "Bottom" },
   Side: { ro: "Side", en: "Side" },
   Oral: { ro: "Oral", en: "Oral" },
   "Not sure": { ro: "Nu sunt sigur", en: "Not sure", de: "Unsicher", fr: "Pas sûr", es: "No estoy seguro", it: "Non sono sicuro" },
