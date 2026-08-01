@@ -106,8 +106,10 @@ async function ensureInit(clientId: string): Promise<void> {
   await SocialLogin.initialize({
     google: {
       webClientId: clientId,
-      // forceCodeForRefreshToken doar dacă avem nevoie de refresh — nu în cazul
-      // nostru, Supabase gestionează sesiunea după signInWithIdToken.
+      // Online mode uses Android Credential Manager and returns an ID token.
+      // Offline mode requests a server auth code and can open a browser flow,
+      // which is both unnecessary here and the source of WebView 404s.
+      mode: "online",
     },
   });
   initialized = true;
@@ -130,17 +132,21 @@ export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
       provider: "google",
       options: {
         scopes: ["email", "profile", "openid"],
-        forceRefreshToken: true,
+        forceRefreshToken: false,
       },
     })) as { result?: { idToken?: string | null } };
 
     const idToken = result?.result?.idToken ?? null;
     if (!idToken) return { ok: false, code: "no_id_token" };
 
-    const { error } = await supabase.auth.signInWithIdToken({
-      provider: "google",
-      token: idToken,
-    });
+    const { withAuthTimeout } = await import("@/lib/auth-timeout");
+    const { error } = await withAuthTimeout(
+      "google_token_exchange",
+      supabase.auth.signInWithIdToken({
+        provider: "google",
+        token: idToken,
+      }),
+    );
     if (error) return { ok: false, code: "error", message: error.message };
     return { ok: true };
   } catch (e) {
