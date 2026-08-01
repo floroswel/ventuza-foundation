@@ -7,6 +7,7 @@ const LINKS: { to: string; label: string }[] = [
   { to: "/faq", label: "FAQ" },
   { to: "/safety", label: "Safety" },
   { to: "/community-guidelines", label: "Community guidelines" },
+  { to: "/child-safety", label: "Child safety standards" },
   { to: "/contact", label: "Contact & support" },
   { to: "/legal/privacy", label: "Privacy Policy" },
   { to: "/legal/terms", label: "Terms of Service" },
