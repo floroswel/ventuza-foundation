@@ -2,7 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Loader2, Mail, Lock, Eye, EyeOff, Bug, Copy, Trash2 } from "lucide-react";
 import { Trans, useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -20,6 +20,8 @@ import {
   isNativePlatform,
   hasNativeGoogleConfig,
   hasNativeGoogleConfigAsync,
+  resolveWebClientId,
+  type NativeGoogleDiagnostic,
 } from "@/lib/native-google-auth";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
@@ -31,6 +33,7 @@ import {
 } from "@/lib/build-info";
 import { withGuardian } from "@/components/with-guardian";
 import { withAuthTimeout } from "@/lib/auth-timeout";
+import { clearEntries, getEntries, installOnce, isDebugEnabled, log as debugLog, setDebugEnabled } from "@/lib/debug-logger";
 
 
 
@@ -52,6 +55,13 @@ export const Route = createFileRoute("/auth")({
 
 const emailSchema = z.string().trim().email("invalid_email").max(255);
 const passwordSchema = z.string().min(8, "password_min").max(72, "password_max");
+
+type AuthDiagnosticLine = {
+  at: string;
+  flow: "sistem" | "google" | "email";
+  status: string;
+  detail?: string;
+};
 
 async function persistPendingBirthdate(userId: string) {
   if (typeof window === "undefined") return;
@@ -143,8 +153,32 @@ function AuthPage() {
   const [isNative, setIsNative] = useState(false);
   const [nativeChecked, setNativeChecked] = useState(false);
   const [nativeGoogleReady, setNativeGoogleReady] = useState(hasNativeGoogleConfig());
+  const [diagnosticEnabled, setDiagnosticEnabled] = useState(false);
+  const [runtimeClientId, setRuntimeClientId] = useState<string | null>(null);
+  const [diagnosticLines, setDiagnosticLines] = useState<AuthDiagnosticLine[]>([]);
+
+  function addDiagnostic(flow: AuthDiagnosticLine["flow"], status: string, detail?: string) {
+    const line = { at: new Date().toISOString(), flow, status, detail };
+    setDiagnosticLines((current) => [...current.slice(-29), line]);
+    debugLog({ level: status.includes("ERROR") || status.includes("TIMEOUT") ? "error" : "event", source: `auth.${flow}`, message: status, details: detail });
+  }
+
+  function formatGoogleDiagnostic(diagnostic?: NativeGoogleDiagnostic): string {
+    if (!diagnostic) return "SDK-ul nu a furnizat detalii suplimentare.";
+    return [
+      `pas=${diagnostic.stage}`,
+      `cod=${diagnostic.code ?? "necomunicat"}`,
+      `HTTP=${diagnostic.httpStatus ?? "necomunicat"}`,
+      `URL=${diagnostic.url ?? "necomunicat de Google SDK"}`,
+      diagnostic.message ? `mesaj=${diagnostic.message}` : null,
+    ].filter(Boolean).join(" · ");
+  }
+
   useEffect(() => {
     let cancelled = false;
+    const debugOn = isDebugEnabled();
+    setDiagnosticEnabled(debugOn);
+    if (debugOn) installOnce();
     void (async () => {
       const native = await isNativeAndroid();
       if (cancelled) return;
@@ -152,7 +186,11 @@ function AuthPage() {
       // Sondăm Client ID-ul DOAR pe nativ. Pe web nu e nevoie (folosim brokerul
       // managed) și fetch-ul suplimentar întârzia inutil randarea formularului.
       if (native) {
-        const ready = await hasNativeGoogleConfigAsync();
+        const [ready, clientId] = await Promise.all([
+          hasNativeGoogleConfigAsync(),
+          resolveWebClientId(),
+        ]);
+        if (!cancelled) setRuntimeClientId(clientId);
         if (!cancelled) setNativeGoogleReady(ready);
       }
       if (!cancelled) setNativeChecked(true);
@@ -183,32 +221,44 @@ function AuthPage() {
     }
     setAuthError(null);
     setGoogleBusy(true);
+    addDiagnostic("google", "REQUEST_STARTED", `platform=${isNative ? "android-native" : "web"}`);
     try {
       // În Capacitor (WebView) fluxul web de OAuth prin redirect dă 404 —
       // Google blochează sign-in-ul din WebView-uri. Pe nativ mergem EXCLUSIV
       // pe SDK-ul nativ + supabase.auth.signInWithIdToken; nu facem niciodată
       // fallback pe redirect web.
       if (await isNativePlatform()) {
+        addDiagnostic("google", "SDK_LOGIN_STARTED", `clientId=${runtimeClientId ?? "în curs de rezolvare"}`);
         const res = await nativeGoogleSignIn();
         if (!res.ok) {
+          addDiagnostic(
+            "google",
+            res.code === "cancelled" ? "CANCELLED" : "ERROR",
+            formatGoogleDiagnostic(res.diagnostic),
+          );
           if (res.code === "cancelled") return;
           handleAuthError(new Error(res.message ?? "Google sign-in failed"));
           return;
         }
+        addDiagnostic("google", "RESPONSE_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
         // Session set by supabase.auth.signInWithIdToken; SessionGuards redirects.
       } else {
+        addDiagnostic("google", "OAUTH_BROKER_STARTED", `redirect=${oauthOrigin()}/auth`);
         const result = await lovable.auth.signInWithOAuth("google", {
           redirect_uri: `${oauthOrigin()}/auth`,
         });
         if (result?.error) {
+          addDiagnostic("google", "ERROR", result.error.message);
           handleAuthError(result.error);
           return;
         }
+        addDiagnostic("google", result.redirected ? "REDIRECT_STARTED" : "RESPONSE_RECEIVED");
         // if redirected, browser leaves this page
       }
 
     } finally {
       setGoogleBusy(false);
+      addDiagnostic("google", "REQUEST_FINISHED");
     }
   }
 
@@ -290,6 +340,7 @@ function AuthPage() {
     setAuthError(null);
 
     setSubmitting(true);
+    addDiagnostic("email", "REQUEST_STARTED", `operație=${mode}`);
     try {
       if (mode === "signup") {
         if (!over18 || !acceptTerms) {
@@ -308,14 +359,17 @@ function AuthPage() {
 
         // Server-side disposable email preflight (enforced again by DB trigger
         // public.enforce_disposable_email_on_profile).
+        addDiagnostic("email", "PREFLIGHT_STARTED", "assert_email_allowed");
         const { error: disposableErr } = await withAuthTimeout(
           "email_preflight",
           supabase.rpc("assert_email_allowed", { _email: emailParsed.data }),
         );
         if (disposableErr) {
+          addDiagnostic("email", "PREFLIGHT_ERROR", disposableErr.message);
           handleAuthError(disposableErr);
           return;
         }
+        addDiagnostic("email", "PREFLIGHT_RESPONSE_RECEIVED");
         // Anti-bot throttle per IP + device fingerprint (caps at /api/public/signup-guard).
         try {
           const { computeDeviceFingerprint } = await import("@/lib/fingerprint");
@@ -323,12 +377,14 @@ function AuthPage() {
           const guardUrl = (await isNativePlatform())
             ? "https://suzeta.app/api/public/signup-guard"
             : "/api/public/signup-guard";
+          addDiagnostic("email", "SIGNUP_GUARD_STARTED", guardUrl);
           const guardRes = await fetch(guardUrl, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ fingerprint: fp ?? undefined }),
             signal: AbortSignal.timeout(8_000),
           });
+          addDiagnostic("email", "SIGNUP_GUARD_RESPONSE_RECEIVED", `HTTP ${guardRes.status} · ${guardUrl}`);
           if (guardRes.status === 429) {
             const payload = (await guardRes.json().catch(() => ({}))) as {
               error?: string;
@@ -341,9 +397,11 @@ function AuthPage() {
             handleAuthError(new Error(payload.error ?? "signup_throttled"), { retryAfterSec });
             return;
           }
-        } catch {
+        } catch (guardError) {
+          addDiagnostic("email", "SIGNUP_GUARD_ERROR_FAIL_OPEN", guardError instanceof Error ? guardError.message : String(guardError));
           // Network failure: fail-open so real users aren't locked out.
         }
+        addDiagnostic("email", "AUTH_REQUEST_STARTED", "signUp");
         const { data, error } = await withAuthTimeout(
           "email_signup",
           supabase.auth.signUp({
@@ -356,9 +414,11 @@ function AuthPage() {
           }),
         );
         if (error) {
+          addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
           handleAuthError(error);
           return;
         }
+        addDiagnostic("email", "AUTH_RESPONSE_RECEIVED", `user=${data.user ? "da" : "nu"} · session=${data.session ? "da" : "nu"}`);
         // Persist birthdate on profile (trigger `enforce_min_age` enforces 18+ server-side).
         // Canonical column is `birthdate` — used by age gate, discover, /n onboarding.
         // Capture browser language as fallback for transactional emails (ro/en only).
@@ -372,6 +432,7 @@ function AuthPage() {
               .eq("id", data.user.id),
             10_000,
           );
+          addDiagnostic("email", "PROFILE_UPDATE_RESPONSE_RECEIVED");
         }
         if (data.session) {
           toast.success(t("auth.errors.welcome"));
@@ -382,6 +443,7 @@ function AuthPage() {
           navigate({ to: "/auth/check-email", search: { email: emailParsed.data }, replace: true });
         }
       } else {
+        addDiagnostic("email", "AUTH_REQUEST_STARTED", "signInWithPassword");
         const { data, error } = await withAuthTimeout(
           "email_login",
           supabase.auth.signInWithPassword({
@@ -391,22 +453,27 @@ function AuthPage() {
           }),
         );
         if (error) {
+          addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
           handleAuthError(error);
           return;
         }
+        addDiagnostic("email", "AUTH_RESPONSE_RECEIVED", `user=${data.user ? "da" : "nu"} · session=${data.session ? "da" : "nu"}`);
         if (data.user) await routeAfterAuth(data.user.id, navigate, search.redirect);
       }
     } catch (error) {
       if (error instanceof Error && error.name === "AuthTimeoutError") {
+        addDiagnostic("email", "TIMEOUT", error.message);
         handleAuthError(error, {
           message: "Conexiunea de autentificare a expirat. Verifică internetul și încearcă din nou.",
           action: "Butonul a fost reactivat; poți reîncerca imediat.",
         });
       } else {
+        addDiagnostic("email", "ERROR", error instanceof Error ? error.message : String(error));
         handleAuthError(error);
       }
     } finally {
       setSubmitting(false);
+      addDiagnostic("email", "REQUEST_FINISHED");
     }
   }
 
@@ -529,6 +596,75 @@ function AuthPage() {
             </div>
           </div>
         )}
+
+        <section className="mt-4 rounded-lg border border-border bg-surface/60 p-3">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+              <Bug className="size-4" /> Diagnostic autentificare
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant={diagnosticEnabled ? "default" : "outline"}
+              onClick={() => {
+                const next = !diagnosticEnabled;
+                setDebugEnabled(next);
+                setDiagnosticEnabled(next);
+                addDiagnostic("sistem", next ? "DIAGNOSTIC_ENABLED" : "DIAGNOSTIC_DISABLED");
+              }}
+            >
+              {diagnosticEnabled ? "Activ" : "Activează"}
+            </Button>
+          </div>
+          {diagnosticEnabled && (
+            <div className="mt-3 space-y-2 text-xs">
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">Client ID runtime:</strong>{" "}
+                {runtimeClientId ?? (isNative ? "se încarcă…" : "OAuth web managed")}
+              </p>
+              <div className="max-h-48 overflow-y-auto rounded border border-border bg-background p-2 font-mono" aria-live="polite">
+                {diagnosticLines.length === 0 ? (
+                  <p className="text-muted-foreground">Apasă Google sau autentificarea cu email. Pașii apar aici.</p>
+                ) : diagnosticLines.map((line, index) => (
+                  <p key={`${line.at}-${index}`} className="mb-1 break-words">
+                    [{line.at.slice(11, 19)}] {line.flow.toUpperCase()} · {line.status}
+                    {line.detail ? ` · ${line.detail}` : ""}
+                  </p>
+                ))}
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={async () => {
+                    const payload = {
+                      build: `${MOBILE_VERSION_CODE} · ${shortBuildSha}`,
+                      clientId: runtimeClientId,
+                      diagnostics: diagnosticLines,
+                      network: getEntries().filter((entry) => entry.source.startsWith("auth.") || entry.source === "fetch"),
+                    };
+                    await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+                    toast.success("Diagnosticul a fost copiat");
+                  }}
+                >
+                  <Copy className="size-3.5" /> Copiază
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setDiagnosticLines([]);
+                    clearEntries();
+                  }}
+                >
+                  <Trash2 className="size-3.5" /> Golește
+                </Button>
+              </div>
+            </div>
+          )}
+        </section>
 
 
         {/* Email form */}

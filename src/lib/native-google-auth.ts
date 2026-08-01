@@ -116,31 +116,98 @@ async function ensureInit(clientId: string): Promise<void> {
 }
 
 export type NativeGoogleResult =
-  | { ok: true }
-  | { ok: false; code: "unsupported" | "no_id_token" | "cancelled" | "error"; message?: string };
+  | { ok: true; diagnostic?: NativeGoogleDiagnostic }
+  | {
+      ok: false;
+      code: "unsupported" | "no_id_token" | "cancelled" | "error";
+      message?: string;
+      diagnostic?: NativeGoogleDiagnostic;
+    };
+
+export type NativeGoogleDiagnostic = {
+  stage: "configuration" | "sdk_initialize" | "google_login" | "token_exchange" | "complete";
+  code?: string;
+  message?: string;
+  url?: string;
+  httpStatus?: number;
+};
+
+function diagnosticFromError(error: unknown, stage: NativeGoogleDiagnostic["stage"]): NativeGoogleDiagnostic {
+  const record = typeof error === "object" && error !== null
+    ? (error as Record<string, unknown>)
+    : {};
+  const message = error instanceof Error ? error.message : String(error);
+  const urlMatch = message.match(/https?:\/\/[^\s"'<>]+/i);
+  const statusMatch = message.match(/(?:status|http|error)[\s:=-]*(\d{3})/i) ?? message.match(/\b(4\d{2}|5\d{2})\b/);
+  const rawCode = record.code ?? record.errorCode ?? record.status;
+  const rawUrl = record.url ?? record.uri ?? record.endpoint;
+  const rawStatus = record.status ?? record.statusCode ?? record.httpStatus;
+  return {
+    stage,
+    code: rawCode === undefined ? undefined : String(rawCode),
+    message,
+    url: typeof rawUrl === "string" ? rawUrl : urlMatch?.[0],
+    httpStatus: typeof rawStatus === "number"
+      ? rawStatus
+      : statusMatch?.[1]
+        ? Number(statusMatch[1])
+        : undefined,
+  };
+}
 
 export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
   const clientId = await resolveWebClientId();
-  if (!clientId) return { ok: false, code: "unsupported", message: "missing GOOGLE_OAUTH_CLIENT_ID" };
+  if (!clientId) return {
+    ok: false,
+    code: "unsupported",
+    message: "missing GOOGLE_OAUTH_CLIENT_ID",
+    diagnostic: { stage: "configuration", code: "missing_client_id" },
+  };
 
-  if (!(await isNativePlatform())) return { ok: false, code: "unsupported" };
+  if (!(await isNativePlatform())) return {
+    ok: false,
+    code: "unsupported",
+    diagnostic: { stage: "configuration", code: "not_native" },
+  };
 
   try {
-    await ensureInit(clientId);
+    try {
+      await ensureInit(clientId);
+    } catch (error) {
+      return {
+        ok: false,
+        code: "error",
+        message: error instanceof Error ? error.message : String(error),
+        diagnostic: diagnosticFromError(error, "sdk_initialize"),
+      };
+    }
     const { SocialLogin } = await import("@capgo/capacitor-social-login");
-    const result = (await SocialLogin.login({
-      provider: "google",
-      options: {
-        // Nu trimitem `scopes`: pluginul include deja email/profile/openid, iar
-        // pe Android respinge explicit orice listă custom dacă MainActivity nu
-        // implementează callback-ul său opțional. Fluxul online standard nu are
-        // nevoie de acel callback și rămâne complet nativ (Credential Manager).
-        forceRefreshToken: false,
-      },
-    })) as { result?: { idToken?: string | null } };
+    let result: { result?: { idToken?: string | null } };
+    try {
+      result = (await SocialLogin.login({
+        provider: "google",
+        options: {
+          // Nu trimitem `scopes`: pluginul include deja email/profile/openid, iar
+          // pe Android respinge explicit orice listă custom dacă MainActivity nu
+          // implementează callback-ul său opțional. Fluxul online standard nu are
+          // nevoie de acel callback și rămâne complet nativ (Credential Manager).
+          forceRefreshToken: false,
+        },
+      })) as { result?: { idToken?: string | null } };
+    } catch (error) {
+      const diagnostic = diagnosticFromError(error, "google_login");
+      if (/cancel/i.test(diagnostic.message ?? "")) {
+        return { ok: false, code: "cancelled", message: diagnostic.message, diagnostic };
+      }
+      return { ok: false, code: "error", message: diagnostic.message, diagnostic };
+    }
 
     const idToken = result?.result?.idToken ?? null;
-    if (!idToken) return { ok: false, code: "no_id_token" };
+    if (!idToken) return {
+      ok: false,
+      code: "no_id_token",
+      diagnostic: { stage: "google_login", code: "no_id_token", message: "Google SDK nu a returnat idToken" },
+    };
 
     const { withAuthTimeout } = await import("@/lib/auth-timeout");
     const { error } = await withAuthTimeout(
@@ -150,11 +217,17 @@ export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
         token: idToken,
       }),
     );
-    if (error) return { ok: false, code: "error", message: error.message };
-    return { ok: true };
+    if (error) return {
+      ok: false,
+      code: "error",
+      message: error.message,
+      diagnostic: diagnosticFromError(error, "token_exchange"),
+    };
+    return { ok: true, diagnostic: { stage: "complete" } };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    if (/cancel/i.test(msg)) return { ok: false, code: "cancelled", message: msg };
-    return { ok: false, code: "error", message: msg };
+    const diagnostic = diagnosticFromError(e, "token_exchange");
+    if (/cancel/i.test(msg)) return { ok: false, code: "cancelled", message: msg, diagnostic };
+    return { ok: false, code: "error", message: msg, diagnostic };
   }
 }

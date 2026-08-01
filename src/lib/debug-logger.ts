@@ -253,8 +253,24 @@ export function installOnce() {
           ? (args[0] as Request).method
           : (args[1] as RequestInit | undefined)?.method ?? "GET";
       const started = performance.now();
+      const isAuthRequest = /\/auth\/v1\//i.test(url);
+      if (isAuthRequest) {
+        log({
+          level: "network",
+          source: "auth.fetch",
+          message: `${method} ${sanitizeUrl(url)} → REQUEST_STARTED`,
+        });
+      }
       try {
         const res = await origFetch(...args);
+        if (isAuthRequest) {
+          log({
+            level: "network",
+            source: "auth.fetch",
+            message: `${method} ${sanitizeUrl(url)} → ${res.status}`,
+            details: { ms: Math.round(performance.now() - started), statusText: res.statusText },
+          });
+        }
         if (!res.ok) {
           log({
             level: "network",
