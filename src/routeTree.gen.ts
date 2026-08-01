@@ -19,6 +19,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as BlockedRouteImport } from './routes/blocked'
 import { Route as BlockedRegionRouteImport } from './routes/blocked-region'
 import { Route as BusinessRouteImport } from './routes/business'
+import { Route as ChildSafetyRouteImport } from './routes/child-safety'
 import { Route as CommunityGuidelinesRouteImport } from './routes/community-guidelines'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CruiseRouteImport } from './routes/cruise'
@@ -139,6 +140,11 @@ const BlockedRegionRoute = BlockedRegionRouteImport.update({
 const BusinessRoute = BusinessRouteImport.update({
   id: '/business',
   path: '/business',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChildSafetyRoute = ChildSafetyRouteImport.update({
+  id: '/child-safety',
+  path: '/child-safety',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CommunityGuidelinesRoute = CommunityGuidelinesRouteImport.update({
@@ -515,6 +521,7 @@ export interface FileRoutesByFullPath {
   '/blocked': typeof BlockedRoute
   '/blocked-region': typeof BlockedRegionRoute
   '/business': typeof BusinessRouteWithChildren
+  '/child-safety': typeof ChildSafetyRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/contact': typeof ContactRoute
   '/cruise': typeof CruiseRoute
@@ -598,6 +605,7 @@ export interface FileRoutesByTo {
   '/blocked': typeof BlockedRoute
   '/blocked-region': typeof BlockedRegionRoute
   '/business': typeof BusinessRouteWithChildren
+  '/child-safety': typeof ChildSafetyRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/contact': typeof ContactRoute
   '/cruise': typeof CruiseRoute
@@ -681,6 +689,7 @@ export interface FileRoutesById {
   '/blocked': typeof BlockedRoute
   '/blocked-region': typeof BlockedRegionRoute
   '/business': typeof BusinessRouteWithChildren
+  '/child-safety': typeof ChildSafetyRoute
   '/community-guidelines': typeof CommunityGuidelinesRoute
   '/contact': typeof ContactRoute
   '/cruise': typeof CruiseRoute
@@ -766,6 +775,7 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/blocked-region'
     | '/business'
+    | '/child-safety'
     | '/community-guidelines'
     | '/contact'
     | '/cruise'
@@ -849,6 +859,7 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/blocked-region'
     | '/business'
+    | '/child-safety'
     | '/community-guidelines'
     | '/contact'
     | '/cruise'
@@ -931,6 +942,7 @@ export interface FileRouteTypes {
     | '/blocked'
     | '/blocked-region'
     | '/business'
+    | '/child-safety'
     | '/community-guidelines'
     | '/contact'
     | '/cruise'
@@ -1015,6 +1027,7 @@ export interface RootRouteChildren {
   BlockedRoute: typeof BlockedRoute
   BlockedRegionRoute: typeof BlockedRegionRoute
   BusinessRoute: typeof BusinessRouteWithChildren
+  ChildSafetyRoute: typeof ChildSafetyRoute
   CommunityGuidelinesRoute: typeof CommunityGuidelinesRoute
   ContactRoute: typeof ContactRoute
   CruiseRoute: typeof CruiseRoute
@@ -1145,6 +1158,13 @@ declare module '@tanstack/react-router' {
       path: '/business'
       fullPath: '/business'
       preLoaderRoute: typeof BusinessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/child-safety': {
+      id: '/child-safety'
+      path: '/child-safety'
+      fullPath: '/child-safety'
+      preLoaderRoute: typeof ChildSafetyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/community-guidelines': {
@@ -1768,6 +1788,7 @@ const rootRouteChildren: RootRouteChildren = {
   BlockedRoute: BlockedRoute,
   BlockedRegionRoute: BlockedRegionRoute,
   BusinessRoute: BusinessRouteWithChildren,
+  ChildSafetyRoute: ChildSafetyRoute,
   CommunityGuidelinesRoute: CommunityGuidelinesRoute,
   ContactRoute: ContactRoute,
   CruiseRoute: CruiseRoute,
