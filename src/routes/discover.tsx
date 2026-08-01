@@ -1108,12 +1108,6 @@ function Cascade({
                 {unread > 9 ? "9+" : unread}
               </span>
             )}
-            {online && (
-              <span
-                aria-label="online"
-                className="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgb(52,211,153)] ring-2 ring-black/50"
-              />
-            )}
             {p.boost_until && new Date(p.boost_until) > new Date() && (
               <span
                 aria-label="boosted"
