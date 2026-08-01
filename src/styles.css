@@ -439,3 +439,16 @@ html {
 @utility mb-keyboard {
   margin-bottom: var(--keyboard-height);
 }
+
+/* Cruise radar: pulsing concentric rings */
+@keyframes radar-pulse {
+  0% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.92); }
+  70% { opacity: 0.12; transform: translate(-50%, -50%) scale(1.06); }
+  100% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.92); }
+}
+.radar-ring {
+  animation: radar-pulse 2.8s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .radar-ring { animation: none; }
+}

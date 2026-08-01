@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
-  ExternalLink,
   Eye,
   EyeOff,
   Flame,
@@ -72,7 +71,6 @@ import {
   TAP_EMOJIS,
   type TapEmoji,
 } from "@/lib/social";
-import { sendWoof, hasWoofed } from "@/lib/ads";
 import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
@@ -856,25 +854,6 @@ function DiscoverPage() {
             toast.error(e instanceof Error ? e.message : "Couldn't open chat");
           }
         }}
-        onViewFull={async (p) => {
-          try {
-            const { data, error } = await supabase
-              .from("profiles")
-              .select("profile_slug")
-              .eq("id", p.id)
-              .maybeSingle();
-            if (error) throw error;
-            const slug = (data as { profile_slug?: string | null } | null)?.profile_slug;
-            if (!slug) {
-              toast.error("Acest profil nu are un link public încă.");
-              return;
-            }
-            setSelected(null);
-            navigate({ to: "/u/$slug", params: { slug } });
-          } catch (e) {
-            toast.error(e instanceof Error ? e.message : "Nu am putut deschide profilul.");
-          }
-        }}
       />
       <BottomNav />
     </main>
@@ -1108,12 +1087,6 @@ function Cascade({
                 {unread > 9 ? "9+" : unread}
               </span>
             )}
-            {online && (
-              <span
-                aria-label="online"
-                className="absolute right-1.5 top-1.5 size-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgb(52,211,153)] ring-2 ring-black/50"
-              />
-            )}
             {p.boost_until && new Date(p.boost_until) > new Date() && (
               <span
                 aria-label="boosted"
@@ -1154,9 +1127,17 @@ function Cascade({
             )}
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 p-1.5 text-left">
               <div className="min-w-0">
-                <p className="truncate text-[11px] font-medium leading-tight text-white">
-                  {p.display_name}
-                  {age ? <span className="text-white/70">, {age}</span> : null}
+                <p className="flex items-center gap-1 truncate text-[11px] font-medium leading-tight text-white">
+                  {online && (
+                    <span
+                      aria-label="online"
+                      className="inline-block size-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]"
+                    />
+                  )}
+                  <span className="truncate">
+                    {p.display_name}
+                    {age ? <span className="text-white/70">, {age}</span> : null}
+                  </span>
                 </p>
                 {p.tribes && p.tribes.length > 0 && (
                   <p className="truncate text-[9px] uppercase tracking-wider text-primary/90">
@@ -1284,7 +1265,6 @@ function ProfileSheet({
   onNavigate,
   onDecision,
   onMessage,
-  onViewFull,
 }: {
   profile: DiscoverProfile | null;
   allProfiles: DiscoverProfile[];
@@ -1293,7 +1273,6 @@ function ProfileSheet({
   onNavigate: (p: DiscoverProfile) => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
   onMessage: (p: DiscoverProfile) => void;
-  onViewFull: (p: DiscoverProfile) => void;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
 
@@ -1501,14 +1480,6 @@ function ProfileSheet({
 
           <TapFavoriteRow targetId={profile.id} targetName={profile.display_name ?? "Anonim"} />
 
-          <button
-            type="button"
-            onClick={() => onViewFull(profile)}
-            className="flex w-full items-center justify-center gap-2 rounded-full border border-primary/40 bg-primary/5 py-3 text-sm font-medium text-primary transition hover:bg-primary/10"
-          >
-            <ExternalLink className="size-4" />
-            Vezi profil complet
-          </button>
         </div>
         </div>
 
@@ -1549,14 +1520,10 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
   const [fav, setFav] = useState(false);
   const [busy, setBusy] = useState(false);
   const [tapped, setTapped] = useState<TapEmoji | null>(null);
-  const [woofed, setWoofed] = useState(false);
 
   useEffect(() => {
     isFavorite(targetId)
       .then(setFav)
-      .catch(() => {});
-    hasWoofed(targetId)
-      .then(setWoofed)
       .catch(() => {});
     setTapped(null);
   }, [targetId]);
@@ -1580,17 +1547,6 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
     }
   }
 
-  async function woof() {
-    if (woofed) return;
-    setWoofed(true);
-    try {
-      await sendWoof(targetId);
-      toast.success(`🐻 Woof trimis lui ${targetName}`);
-    } catch (e) {
-      setWoofed(false);
-      toast.error((e as Error).message);
-    }
-  }
 
   async function tap(emoji: TapEmoji) {
     if (tapped) return;
@@ -1611,20 +1567,6 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
           <Hand className="mr-1 inline size-3" /> Trimite un Tap
         </p>
         <div className="flex items-center gap-1.5">
-          <button
-            onClick={woof}
-            disabled={woofed}
-            aria-label="Woof"
-            title="Woof — un salut prietenos, fără presiune"
-            className={cn(
-              "flex h-8 items-center gap-1 rounded-full border px-2.5 text-xs transition-colors",
-              woofed
-                ? "border-primary bg-primary/15 text-primary"
-                : "border-border text-muted-foreground hover:text-primary",
-            )}
-          >
-            🐻 <span>Woof</span>
-          </button>
           <button
             onClick={toggleFav}
             disabled={busy}

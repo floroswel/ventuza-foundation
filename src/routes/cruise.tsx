@@ -12,6 +12,7 @@ import {
   type DiscoverProfile,
 } from "@/lib/discover";
 import { getOrCreateConversation } from "@/lib/chat";
+import { setLookingNow } from "@/lib/social";
 import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/cruise")({
@@ -25,10 +26,47 @@ function CruisePage() {
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [myUntil, setMyUntil] = useState<string | null>(null);
+  const [busyNow, setBusyNow] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
+
+  const loadMine = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("looking_now_until")
+      .eq("id", user.id)
+      .maybeSingle();
+    setMyUntil((data as { looking_now_until?: string | null } | null)?.looking_now_until ?? null);
+  }, [user]);
+
+  useEffect(() => {
+    void loadMine();
+  }, [loadMine]);
+
+  const myActive = !!(myUntil && new Date(myUntil) > new Date());
+
+  async function toggleMine(hours: number) {
+    setBusyNow(true);
+    try {
+      await setLookingNow(hours);
+      if (hours > 0) {
+        setMyUntil(new Date(Date.now() + hours * 3600_000).toISOString());
+        toast.success(`Ești vizibil pe Cruise ${hours}h`);
+      } else {
+        setMyUntil(null);
+        toast.success("Ai ieșit din Cruise");
+      }
+      void loadMine();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Nu am putut schimba starea");
+    } finally {
+      setBusyNow(false);
+    }
+  }
 
   const load = useCallback(async () => {
     if (!user) return;
@@ -93,7 +131,33 @@ function CruisePage() {
               {profiles.length} disponibili acum
             </p>
           </div>
+          {myActive ? (
+            <button
+              type="button"
+              disabled={busyNow}
+              onClick={() => toggleMine(0)}
+              className="rounded-full border border-rose-500/50 bg-rose-500/15 px-3 py-2 text-xs font-semibold text-rose-200 disabled:opacity-50"
+            >
+              Ieși din Cruise
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={busyNow}
+              onClick={() => toggleMine(2)}
+              className="rounded-full bg-primary px-3 py-2 text-xs font-semibold text-primary-foreground disabled:opacity-50"
+            >
+              Intră în Cruise
+            </button>
+          )}
         </div>
+        {myActive && myUntil && (
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Ești vizibil până la{" "}
+            {new Date(myUntil).toLocaleTimeString("ro-RO", { hour: "2-digit", minute: "2-digit" })} ·
+            poți ieși oricând.
+          </p>
+        )}
       </header>
 
       {loading ? (
@@ -104,7 +168,19 @@ function CruisePage() {
         <EmptyCruise />
       ) : (
         <>
-          <Radar profiles={profiles} maxM={maxM} urls={urls} />
+          <Radar
+            profiles={profiles}
+            maxM={maxM}
+            urls={urls}
+            onSelect={async (p) => {
+              try {
+                const cid = await getOrCreateConversation(p.id);
+                navigate({ to: "/messages/$id", params: { id: cid } });
+              } catch (e) {
+                toast.error(e instanceof Error ? e.message : "Couldn't open chat");
+              }
+            }}
+          />
           <ul className="divide-y divide-border/40">
             {profiles.map((p) => (
               <CruiseRow
@@ -134,10 +210,12 @@ function Radar({
   profiles,
   maxM,
   urls,
+  onSelect,
 }: {
   profiles: DiscoverProfile[];
   maxM: number;
   urls: Record<string, string>;
+  onSelect: (p: DiscoverProfile) => void;
 }) {
   // Place dots on concentric rings; angle is hashed from id for stability
   function angleFor(id: string) {
@@ -147,11 +225,16 @@ function Radar({
   }
   return (
     <div className="relative mx-auto my-4 aspect-square w-[88%] max-w-sm overflow-hidden rounded-full border border-primary/20 bg-[radial-gradient(circle_at_center,rgba(218,165,32,0.08),transparent_70%)]">
-      {[0.33, 0.66, 1].map((r) => (
+      {[0.33, 0.66, 1].map((r, i) => (
         <span
           key={r}
-          className="absolute left-1/2 top-1/2 rounded-full border border-primary/15"
-          style={{ width: `${r * 100}%`, height: `${r * 100}%`, transform: "translate(-50%,-50%)" }}
+          className="radar-ring absolute left-1/2 top-1/2 rounded-full border border-primary/25"
+          style={{
+            width: `${r * 100}%`,
+            height: `${r * 100}%`,
+            transform: "translate(-50%,-50%)",
+            animationDelay: `${i * 0.9}s`,
+          }}
         />
       ))}
       <span className="absolute left-1/2 top-1/2 size-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary shadow-[0_0_12px_var(--primary)]" />
@@ -163,11 +246,14 @@ function Radar({
         const y = 50 + Math.sin(a) * r * 48;
         const url = p.photos?.[0] ? urls[p.photos[0]] : null;
         return (
-          <span
+          <button
+            type="button"
             key={p.id}
-            className="absolute size-7 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border border-rose-400/80 shadow-[0_0_8px_rgba(244,63,94,0.6)]"
+            onClick={() => onSelect(p)}
+            className="absolute size-7 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-full border border-rose-400/80 shadow-[0_0_8px_rgba(244,63,94,0.6)] transition-transform active:scale-90 hover:scale-110"
             style={{ left: `${x}%`, top: `${y}%` }}
             title={p.display_name ?? ""}
+            aria-label={`Scrie-i lui ${p.display_name ?? "utilizator"}`}
           >
             {url ? (
               <img src={url} alt="" className="size-full object-cover" />
@@ -176,7 +262,7 @@ function Radar({
                 {p.display_name?.[0]?.toUpperCase() ?? "?"}
               </span>
             )}
-          </span>
+          </button>
         );
       })}
     </div>
