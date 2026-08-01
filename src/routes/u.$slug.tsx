@@ -62,12 +62,9 @@ function PublicProfilePage() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("profile_slug", slug)
-        .maybeSingle();
-      setProfile(data);
+      const { data: rows } = await supabase.rpc("get_profile_by_slug", { _slug: slug });
+      const data = Array.isArray(rows) ? (rows[0] as any) : (rows as any);
+      setProfile(data ?? null);
       setLoading(false);
       const paths: string[] = Array.isArray(data?.photos) ? data.photos : [];
       if (paths.length) {
