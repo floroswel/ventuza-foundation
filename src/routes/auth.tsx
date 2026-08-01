@@ -33,7 +33,7 @@ import {
 } from "@/lib/build-info";
 import { withGuardian } from "@/components/with-guardian";
 import { withAuthTimeout } from "@/lib/auth-timeout";
-import { clearEntries, getEntries, isDebugEnabled, log as debugLog, setDebugEnabled } from "@/lib/debug-logger";
+import { clearEntries, getEntries, installOnce, isDebugEnabled, log as debugLog, setDebugEnabled } from "@/lib/debug-logger";
 
 
 
@@ -178,6 +178,7 @@ function AuthPage() {
     let cancelled = false;
     const debugOn = isDebugEnabled();
     setDiagnosticEnabled(debugOn);
+    if (debugOn) installOnce();
     void (async () => {
       const native = await isNativeAndroid();
       if (cancelled) return;
