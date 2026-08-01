@@ -17,6 +17,7 @@ import { oauthOrigin } from "@/lib/canonical-origin";
 import {
   nativeGoogleSignIn,
   isNativeAndroid,
+  isNativePlatform,
   hasNativeGoogleConfig,
   hasNativeGoogleConfigAsync,
 } from "@/lib/native-google-auth";

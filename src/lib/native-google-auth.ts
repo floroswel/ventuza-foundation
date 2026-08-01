@@ -119,7 +119,7 @@ export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
   const clientId = await resolveWebClientId();
   if (!clientId) return { ok: false, code: "unsupported", message: "missing GOOGLE_OAUTH_CLIENT_ID" };
 
-  if (!(await isNativeAndroid())) return { ok: false, code: "unsupported" };
+  if (!(await isNativePlatform())) return { ok: false, code: "unsupported" };
 
   try {
     await ensureInit(clientId);
