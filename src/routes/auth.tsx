@@ -172,7 +172,11 @@ function AuthPage() {
     setAuthError(null);
     setGoogleBusy(true);
     try {
-      if (isNative) {
+      // În Capacitor (WebView) fluxul web de OAuth prin redirect dă 404 —
+      // Google blochează sign-in-ul din WebView-uri. Pe nativ mergem EXCLUSIV
+      // pe SDK-ul nativ + supabase.auth.signInWithIdToken; nu facem niciodată
+      // fallback pe redirect web.
+      if (await isNativePlatform()) {
         const res = await nativeGoogleSignIn();
         if (!res.ok) {
           if (res.code === "cancelled") return;
@@ -190,6 +194,7 @@ function AuthPage() {
         }
         // if redirected, browser leaves this page
       }
+
     } finally {
       setGoogleBusy(false);
     }
