@@ -25,10 +25,47 @@ function CruisePage() {
   const [profiles, setProfiles] = useState<DiscoverProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const [myUntil, setMyUntil] = useState<string | null>(null);
+  const [busyNow, setBusyNow] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
+
+  const loadMine = useCallback(async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("profiles")
+      .select("looking_now_until")
+      .eq("id", user.id)
+      .maybeSingle();
+    setMyUntil((data as { looking_now_until?: string | null } | null)?.looking_now_until ?? null);
+  }, [user]);
+
+  useEffect(() => {
+    void loadMine();
+  }, [loadMine]);
+
+  const myActive = !!(myUntil && new Date(myUntil) > new Date());
+
+  async function toggleMine(hours: number) {
+    setBusyNow(true);
+    try {
+      await setLookingNow(hours);
+      if (hours > 0) {
+        setMyUntil(new Date(Date.now() + hours * 3600_000).toISOString());
+        toast.success(`Ești vizibil pe Cruise ${hours}h`);
+      } else {
+        setMyUntil(null);
+        toast.success("Ai ieșit din Cruise");
+      }
+      void loadMine();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Nu am putut schimba starea");
+    } finally {
+      setBusyNow(false);
+    }
+  }
 
   const load = useCallback(async () => {
     if (!user) return;
