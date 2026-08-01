@@ -1277,6 +1277,7 @@ function ProfileSheet({
   onMessage: (p: DiscoverProfile) => void;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const sheetLabel = useOptionLabel();
 
   useEffect(() => {
     if (!profile?.photos?.length) {
