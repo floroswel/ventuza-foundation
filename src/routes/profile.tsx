@@ -52,6 +52,8 @@ import {
   RELATIONSHIP_STATUS_OPTIONS,
   ETHNICITY_OPTIONS,
 } from "@/lib/profile-options";
+import { positionHint } from "@/components/PositionTag";
+import { useUiLocale } from "@/lib/i18n/locale";
 import {
   useOptionLabel,
   canonicalizeOptionValue,
