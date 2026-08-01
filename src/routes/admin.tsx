@@ -1257,21 +1257,28 @@ function ReportsPanel({ meId }: { meId: string }) {
         .order("created_at", { ascending: false })
         .limit(100);
       if (error) throw error;
-      const ids = Array.from(new Set((data ?? []).map((r) => r.reported_id)));
+      const ids = Array.from(
+        new Set([
+          ...(data ?? []).map((r) => r.reported_id),
+          ...(data ?? []).map((r: any) => r.reporter_id).filter(Boolean),
+        ]),
+      );
       const profilesMap = new Map<string, any>();
       if (ids.length) {
         const { data: profs } = await supabase
           .from("profiles")
-          .select("id, display_name, report_count, suspended_until")
+          .select("id, display_name, report_count, suspended_until, account_no, profile_slug")
           .in("id", ids);
         profs?.forEach((p) => profilesMap.set(p.id, p));
       }
       setReports(
-        (data ?? []).map((r) => ({
+        (data ?? []).map((r: any) => ({
           ...r,
           reported_profile: profilesMap.get(r.reported_id) ?? null,
+          reporter_profile: r.reporter_id ? (profilesMap.get(r.reporter_id) ?? null) : null,
         })) as Report[],
       );
+
     } catch (e: any) {
       const m = e?.message ?? String(e);
       setError(m);
