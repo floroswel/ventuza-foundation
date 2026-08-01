@@ -148,6 +148,7 @@ function age(iso?: string | null) {
 
 function ProfilePage() {
   const optLabel = useOptionLabel();
+  const uiLocale = useUiLocale();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
