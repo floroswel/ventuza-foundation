@@ -8,6 +8,7 @@ import { Chip } from "@/components/Chip";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { formatHeight } from "@/lib/discover";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 import { translateProfile } from "@/lib/translate.functions";
 
 
@@ -169,6 +170,11 @@ function PublicProfilePage() {
                     <span className="ml-2 text-white/80">{age(profile.birthdate)}</span>
                   )}
                 </h1>
+                {profile.position && (
+                  <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                    {optLabel(profile.position)}
+                  </p>
+                )}
                 {profile.verified_at && (
                   <span className="mt-2 inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur">
                     <BadgeCheck className="size-3" /> Verified
