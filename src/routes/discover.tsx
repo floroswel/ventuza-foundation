@@ -1148,9 +1148,17 @@ function Cascade({
             )}
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 p-1.5 text-left">
               <div className="min-w-0">
-                <p className="truncate text-[11px] font-medium leading-tight text-white">
-                  {p.display_name}
-                  {age ? <span className="text-white/70">, {age}</span> : null}
+                <p className="flex items-center gap-1 truncate text-[11px] font-medium leading-tight text-white">
+                  {online && (
+                    <span
+                      aria-label="online"
+                      className="inline-block size-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]"
+                    />
+                  )}
+                  <span className="truncate">
+                    {p.display_name}
+                    {age ? <span className="text-white/70">, {age}</span> : null}
+                  </span>
                 </p>
                 {p.tribes && p.tribes.length > 0 && (
                   <p className="truncate text-[9px] uppercase tracking-wider text-primary/90">
