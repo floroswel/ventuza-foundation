@@ -32,6 +32,9 @@ const ICONS: Record<NotificationType, React.ComponentType<{ className?: string }
   event_rsvp: CalendarHeart,
   event_reminder: CalendarHeart,
   tap: Hand,
+  like: Heart,
+  favorite: Star,
+
 };
 
 function timeAgo(iso: string) {
