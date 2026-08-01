@@ -129,15 +129,31 @@ function AuthPage() {
   const captchaMisconfigured = isTurnstileMisconfiguredInProd();
   const [googleBusy, setGoogleBusy] = useState(false);
   const [isNative, setIsNative] = useState(false);
+  const [nativeChecked, setNativeChecked] = useState(false);
   const [nativeGoogleReady, setNativeGoogleReady] = useState(hasNativeGoogleConfig());
   useEffect(() => {
-    void isNativeAndroid().then(setIsNative);
-    void hasNativeGoogleConfigAsync().then(setNativeGoogleReady);
+    let cancelled = false;
+    void (async () => {
+      const native = await isNativeAndroid();
+      if (cancelled) return;
+      setIsNative(native);
+      // Sondăm Client ID-ul DOAR pe nativ. Pe web nu e nevoie (folosim brokerul
+      // managed) și fetch-ul suplimentar întârzia inutil randarea formularului.
+      if (native) {
+        const ready = await hasNativeGoogleConfigAsync();
+        if (!cancelled) setNativeGoogleReady(ready);
+      }
+      if (!cancelled) setNativeChecked(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
   // Butonul Google apare doar dacă avem cale funcțională:
   //  - pe Android nativ: doar dacă avem Web Client ID (env sau secret server)
   //  - pe web: mereu (broker Lovable managed OAuth)
-  const googleAvailable = isNative ? nativeGoogleReady : true;
+  const googleAvailable = isNative ? nativeGoogleReady : nativeChecked || !isNative;
+
 
 
   async function onGoogleSignIn() {
