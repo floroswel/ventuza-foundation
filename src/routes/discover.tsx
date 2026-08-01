@@ -74,6 +74,7 @@ import {
 import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
 import { useOptionLabel } from "@/lib/i18n/option-labels";
+import { PositionTag } from "@/components/PositionTag";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
