@@ -974,7 +974,6 @@ function OnlineRow({
   onOpen: (p: DiscoverProfile) => void;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
-  const label = useOptionLabel();
   const { bySender } = useUnreadMessages();
   useEffect(() => {
     const paths = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
@@ -1047,6 +1046,7 @@ function Cascade({
   badgesError: boolean;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const label = useOptionLabel();
   const { bySender } = useUnreadMessages();
   useEffect(() => {
     const paths = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
