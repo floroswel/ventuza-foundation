@@ -139,6 +139,23 @@ jobs:
           fi
           echo "✓ VITE_GOOGLE_WEB_CLIENT_ID prezent și cu format valid."
 
+      - name: Validează implementarea Google Sign-In nativ
+        run: |
+          set -euo pipefail
+          grep -q 'mode: "online"' src/lib/native-google-auth.ts || {
+            echo "::error::Google Sign-In trebuie să folosească modul online nativ, nu redirect browser/WebView."
+            exit 1
+          }
+          if grep -A12 'SocialLogin.login' src/lib/native-google-auth.ts | grep -q 'scopes:'; then
+            echo "::error::Nu trimite scopes custom pe Android: pluginul le respinge fără callback MainActivity; scope-urile standard sunt incluse automat."
+            exit 1
+          fi
+          grep -q 'signInWithIdToken' src/lib/native-google-auth.ts || {
+            echo "::error::Schimbul tokenului Google în sesiune lipsește din fluxul nativ."
+            exit 1
+          }
+          echo "✓ Google nativ: online Credential Manager + ID token, fără redirect WebView sau scopes custom."
+
       - name: Build web bundle
         env:
           # Publishable keys (safe în bundle). Fallback la valorile din .env dacă lipsesc secretele repo.

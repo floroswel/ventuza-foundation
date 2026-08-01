@@ -131,7 +131,10 @@ export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
     const result = (await SocialLogin.login({
       provider: "google",
       options: {
-        scopes: ["email", "profile", "openid"],
+        // Nu trimitem `scopes`: pluginul include deja email/profile/openid, iar
+        // pe Android respinge explicit orice listă custom dacă MainActivity nu
+        // implementează callback-ul său opțional. Fluxul online standard nu are
+        // nevoie de acel callback și rămâne complet nativ (Credential Manager).
         forceRefreshToken: false,
       },
     })) as { result?: { idToken?: string | null } };
