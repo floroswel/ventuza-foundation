@@ -531,11 +531,13 @@ function Onboarding() {
       <header className="px-6 pt-6">
         <div className="flex items-center justify-between">
           <button
-            onClick={back}
+            type="button"
+            onClick={() => void back()}
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
           >
-            <ArrowLeft className="size-4" /> {t("onboarding.back")}
+            <ArrowLeft className="size-4" /> {step === 0 ? t("auth.signIn", "Mă conectez") : t("onboarding.back")}
           </button>
+
           <span className="flex items-center gap-2 text-xs text-muted-foreground">
             {draftStatus === "saving" && (
               <span className="inline-flex items-center gap-1 text-muted-foreground/80">
