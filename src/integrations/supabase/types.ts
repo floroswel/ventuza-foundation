@@ -5814,6 +5814,37 @@ export type Database = {
         }[]
       }
       get_or_create_conversation: { Args: { _other: string }; Returns: string }
+      get_profile_by_slug: {
+        Args: { _slug: string }
+        Returns: {
+          anthem: Json
+          ask_me_about: string[]
+          bio: string
+          birthdate: string
+          body_type: string
+          display_name: string
+          gender: string
+          height_cm: number
+          hide_age: boolean
+          id: string
+          ideal_match: string
+          interests: string[]
+          job_title: string
+          photos: string[]
+          position: string
+          preferred_language: string
+          profile_slug: string
+          prompts: Json
+          pronouns: string
+          tribes: string[]
+          verified: boolean
+          verified_at: string
+          video_clip_path: string
+          voice_prompt_path: string
+          voice_prompt_question: string
+          zodiac: string
+        }[]
+      }
       get_public_profiles: {
         Args: { _ids: string[] }
         Returns: {
