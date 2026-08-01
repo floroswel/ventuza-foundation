@@ -268,11 +268,48 @@ function ProfilePage() {
               )}
             </h1>
           </div>
-          {profile.position && (
-            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
-              {optLabel(profile.position)}
-            </p>
-          )}
+          <div className="mt-1">
+            <button
+              type="button"
+              onClick={() => setPosOpen((v) => !v)}
+              className="inline-flex items-center gap-1 rounded-full border border-primary/30 bg-primary/5 px-2.5 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary backdrop-blur transition-colors hover:bg-primary/15"
+              aria-expanded={posOpen}
+            >
+              {profile.position ? optLabel(profile.position) : "Adaugă poziția"}
+              <Pencil className="size-3" />
+            </button>
+            {posOpen && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {POSITION_OPTIONS.map((o) => (
+                  <button
+                    key={o}
+                    type="button"
+                    disabled={savingPos}
+                    onClick={() => savePosition(o)}
+                    className={
+                      "rounded-full border px-3 py-1 text-xs transition-colors disabled:opacity-50 " +
+                      (profile.position === o
+                        ? "border-primary bg-primary/20 text-primary"
+                        : "border-border bg-surface/70 text-muted-foreground hover:text-foreground")
+                    }
+                  >
+                    {optLabel(o)}
+                  </button>
+                ))}
+                {profile.position && (
+                  <button
+                    type="button"
+                    disabled={savingPos}
+                    onClick={() => savePosition(null)}
+                    className="rounded-full border border-border bg-surface/70 px-3 py-1 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"
+                  >
+                    Șterge
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             {profile.verified_at ? (
               <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur">
