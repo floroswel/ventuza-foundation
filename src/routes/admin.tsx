@@ -206,8 +206,15 @@ type Report = {
     display_name: string | null;
     report_count: number;
     suspended_until: string | null;
+    account_no?: number | null;
+    profile_slug?: string | null;
+  } | null;
+  reporter_profile?: {
+    display_name: string | null;
+    account_no?: number | null;
   } | null;
 };
+
 type RiskRow = {
   user_id: string;
   display_name: string | null;
