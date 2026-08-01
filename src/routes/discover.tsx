@@ -8,7 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Compass,
-  ExternalLink,
   Eye,
   EyeOff,
   Flame,
@@ -855,25 +854,6 @@ function DiscoverPage() {
             toast.error(e instanceof Error ? e.message : "Couldn't open chat");
           }
         }}
-        onViewFull={async (p) => {
-          try {
-            const { data, error } = await supabase
-              .from("profiles")
-              .select("profile_slug")
-              .eq("id", p.id)
-              .maybeSingle();
-            if (error) throw error;
-            const slug = (data as { profile_slug?: string | null } | null)?.profile_slug;
-            if (!slug) {
-              toast.error("Acest profil nu are un link public încă.");
-              return;
-            }
-            setSelected(null);
-            navigate({ to: "/u/$slug", params: { slug } });
-          } catch (e) {
-            toast.error(e instanceof Error ? e.message : "Nu am putut deschide profilul.");
-          }
-        }}
       />
       <BottomNav />
     </main>
@@ -1285,7 +1265,6 @@ function ProfileSheet({
   onNavigate,
   onDecision,
   onMessage,
-  onViewFull,
 }: {
   profile: DiscoverProfile | null;
   allProfiles: DiscoverProfile[];
@@ -1294,7 +1273,6 @@ function ProfileSheet({
   onNavigate: (p: DiscoverProfile) => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
   onMessage: (p: DiscoverProfile) => void;
-  onViewFull: (p: DiscoverProfile) => void;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
 
