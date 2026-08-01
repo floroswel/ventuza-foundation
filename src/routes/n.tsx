@@ -486,10 +486,22 @@ function Onboarding() {
   }
 
 
-  function back() {
-    if (step === 0) navigate({ to: "/" });
-    else setStep(step - 1);
+  // La pasul 0 nu există "pas anterior": userul e deja autentificat, dar fără
+  // birthdate SessionGuards l-ar trimite instant înapoi în /n dacă am naviga la
+  // "/". Deci ieșim din cont și îl ducem la ecranul de login.
+  async function back() {
+    if (step > 0) {
+      setStep(step - 1);
+      return;
+    }
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      /* ignorăm — oricum plecăm la /auth */
+    }
+    navigate({ to: "/auth", search: { mode: "login" }, replace: true });
   }
+
 
   if (donePush) {
     return (
@@ -519,11 +531,13 @@ function Onboarding() {
       <header className="px-6 pt-6">
         <div className="flex items-center justify-between">
           <button
-            onClick={back}
+            type="button"
+            onClick={() => void back()}
             className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary"
           >
-            <ArrowLeft className="size-4" /> {t("onboarding.back")}
+            <ArrowLeft className="size-4" /> {step === 0 ? t("auth.signIn", "Mă conectez") : t("onboarding.back")}
           </button>
+
           <span className="flex items-center gap-2 text-xs text-muted-foreground">
             {draftStatus === "saving" && (
               <span className="inline-flex items-center gap-1 text-muted-foreground/80">
