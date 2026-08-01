@@ -182,25 +182,64 @@ export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
       };
     }
     const { SocialLogin } = await import("@capgo/capacitor-social-login");
-    let result: { result?: { idToken?: string | null } };
-    try {
-      result = (await SocialLogin.login({
-        provider: "google",
-        options: {
-          // Nu trimitem `scopes`: pluginul include deja email/profile/openid, iar
-          // pe Android respinge explicit orice listă custom dacă MainActivity nu
-          // implementează callback-ul său opțional. Fluxul online standard nu are
-          // nevoie de acel callback și rămâne complet nativ (Credential Manager).
-          forceRefreshToken: false,
-        },
-      })) as { result?: { idToken?: string | null } };
-    } catch (error) {
-      const diagnostic = diagnosticFromError(error, "google_login");
-      if (/cancel/i.test(diagnostic.message ?? "")) {
-        return { ok: false, code: "cancelled", message: diagnostic.message, diagnostic };
+    // Android Credential Manager raportează "USER_CANCELLED" și când NU există
+    // niciun credential eligibil (bottom sheet nu apare deloc, ~1s). De aceea
+    // încercăm în cascadă: mai întâi bottom sheet cu TOATE conturile de pe
+    // device, apoi dialogul standard cu select_account.
+    type Attempt = {
+      label: string;
+      options: Record<string, unknown>;
+    };
+    const attempts: Attempt[] = [
+      {
+        label: "bottom_all_accounts",
+        options: { forceRefreshToken: false, style: "bottom", filterByAuthorizedAccounts: false, autoSelectEnabled: false },
+      },
+      {
+        label: "standard_select_account",
+        options: { forceRefreshToken: false, style: "standard", prompt: "select_account" },
+      },
+    ];
+
+    let result: { result?: { idToken?: string | null } } | null = null;
+    let lastDiagnostic: NativeGoogleDiagnostic | undefined;
+    for (const attempt of attempts) {
+      try {
+        result = (await SocialLogin.login({
+          provider: "google",
+          options: attempt.options,
+        })) as { result?: { idToken?: string | null } };
+        break;
+      } catch (error) {
+        const diagnostic = diagnosticFromError(error, "google_login");
+        diagnostic.code = `${diagnostic.code ?? "unknown"}@${attempt.label}`;
+        lastDiagnostic = diagnostic;
+        // Dacă e o anulare/absență de credential, mai încercăm varianta următoare.
+        const cancelLike = /cancel|no credential|NoCredential|16:|activity is cancelled/i.test(
+          diagnostic.message ?? "",
+        );
+        if (!cancelLike) {
+          return { ok: false, code: "error", message: diagnostic.message, diagnostic };
+        }
       }
-      return { ok: false, code: "error", message: diagnostic.message, diagnostic };
     }
+
+    if (!result) {
+      const diagnostic = lastDiagnostic ?? {
+        stage: "google_login" as const,
+        code: "cancelled",
+        message: "Google Sign-In cancelled",
+      };
+      return {
+        ok: false,
+        code: "cancelled",
+        message:
+          "Google nu a returnat niciun cont. Verifică: (1) ai un cont Google adăugat în Setări → Conturi pe telefon, (2) SHA-1 al build-ului instalat este în clientul OAuth Android (app.suzeta). Detaliu: " +
+          (diagnostic.message ?? ""),
+        diagnostic,
+      };
+    }
+
 
     const idToken = result?.result?.idToken ?? null;
     if (!idToken) return {
