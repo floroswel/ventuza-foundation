@@ -73,6 +73,7 @@ import {
 } from "@/lib/social";
 import { SponsoredBanner } from "@/components/SponsoredBanner";
 import { cn } from "@/lib/utils";
+import { useOptionLabel } from "@/lib/i18n/option-labels";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
@@ -973,6 +974,7 @@ function OnlineRow({
   onOpen: (p: DiscoverProfile) => void;
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
+  const label = useOptionLabel();
   const { bySender } = useUnreadMessages();
   useEffect(() => {
     const paths = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
@@ -1139,9 +1141,9 @@ function Cascade({
                     {age ? <span className="text-white/70">, {age}</span> : null}
                   </span>
                 </p>
-                {p.tribes && p.tribes.length > 0 && (
+                {p.position && (
                   <p className="truncate text-[9px] uppercase tracking-wider text-primary/90">
-                    {p.tribes.slice(0, 2).join(" · ")}
+                    {label(p.position)}
                   </p>
                 )}
               </div>
