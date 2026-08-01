@@ -27,20 +27,30 @@ self.addEventListener("push", (event) => {
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const target = (event.notification.data && event.notification.data.url) || "/";
+  const raw = (event.notification.data && event.notification.data.url) || "/";
+  const absolute = new URL(raw, self.location.origin).href;
   event.waitUntil(
     (async () => {
       const all = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
-      for (const c of all) {
-        if ("focus" in c) {
-          try {
-            await c.focus();
-            c.navigate(target);
-            return;
-          } catch {}
-        }
+      const client = all.find((c) => c.url.startsWith(self.location.origin)) || all[0];
+      if (client) {
+        try {
+          await client.focus();
+        } catch {}
+        // SPA-friendly: cere aplicației să navigheze (client.navigate poate
+        // eșua când fereastra nu e controlată de acest service worker).
+        try {
+          client.postMessage({ type: "SUZETA_NAVIGATE", url: raw });
+        } catch {}
+        try {
+          if (typeof client.navigate === "function" && !client.url.endsWith(raw)) {
+            await client.navigate(absolute);
+          }
+        } catch {}
+        return;
       }
-      await self.clients.openWindow(target);
+      await self.clients.openWindow(absolute);
     })(),
   );
 });
+
