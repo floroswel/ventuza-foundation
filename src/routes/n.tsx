@@ -486,10 +486,22 @@ function Onboarding() {
   }
 
 
-  function back() {
-    if (step === 0) navigate({ to: "/" });
-    else setStep(step - 1);
+  // La pasul 0 nu există "pas anterior": userul e deja autentificat, dar fără
+  // birthdate SessionGuards l-ar trimite instant înapoi în /n dacă am naviga la
+  // "/". Deci ieșim din cont și îl ducem la ecranul de login.
+  async function back() {
+    if (step > 0) {
+      setStep(step - 1);
+      return;
+    }
+    try {
+      await supabase.auth.signOut();
+    } catch {
+      /* ignorăm — oricum plecăm la /auth */
+    }
+    navigate({ to: "/auth", search: { mode: "login" }, replace: true });
   }
+
 
   if (donePush) {
     return (
