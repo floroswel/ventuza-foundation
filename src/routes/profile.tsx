@@ -278,6 +278,11 @@ function ProfilePage() {
               {profile.position ? optLabel(profile.position) : "Adaugă poziția"}
               <Pencil className="size-3" />
             </button>
+            {profile.position && positionHint(profile.position, uiLocale) && (
+              <p className="mt-1 text-[11px] leading-snug text-white/60">
+                {positionHint(profile.position, uiLocale)}
+              </p>
+            )}
             {posOpen && (
               <div className="mt-2 flex flex-wrap gap-2">
                 {POSITION_OPTIONS.map((o) => (
