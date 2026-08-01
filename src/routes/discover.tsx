@@ -1574,17 +1574,6 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
     }
   }
 
-  async function woof() {
-    if (woofed) return;
-    setWoofed(true);
-    try {
-      await sendWoof(targetId);
-      toast.success(`🐻 Woof trimis lui ${targetName}`);
-    } catch (e) {
-      setWoofed(false);
-      toast.error((e as Error).message);
-    }
-  }
 
   async function tap(emoji: TapEmoji) {
     if (tapped) return;
