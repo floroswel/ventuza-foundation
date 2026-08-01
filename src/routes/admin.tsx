@@ -1372,15 +1372,46 @@ function ReportsPanel({ meId }: { meId: string }) {
       header: "Țintă",
       cell: (r) => (
         <div className="min-w-0">
-          <div className="truncate font-medium">{r.reported_profile?.display_name ?? "—"}</div>
+          <div className="truncate font-medium">
+            {r.reported_profile?.display_name ?? "—"}
+            {r.reported_profile?.account_no != null && (
+              <span className="admin-mono ml-1 text-[10px] text-[var(--admin-text-faint)]">
+                #{r.reported_profile.account_no}
+              </span>
+            )}
+          </div>
           <div className="admin-mono truncate text-[10px] text-[var(--admin-text-faint)]">
             {r.reported_id}
           </div>
         </div>
       ),
       sortValue: (r) => r.reported_profile?.display_name ?? "",
-      searchValue: (r) => `${r.reported_profile?.display_name ?? ""} ${r.reported_id}`,
+      searchValue: (r) =>
+        `${r.reported_profile?.display_name ?? ""} ${r.reported_id} ${r.reported_profile?.account_no ?? ""}`,
     },
+    {
+      key: "reporter",
+      header: "Reclamant",
+      priority: 2,
+      cell: (r) => (
+        <div className="min-w-0">
+          <div className="truncate text-[11px]">
+            {r.reporter_profile?.display_name ?? "—"}
+            {r.reporter_profile?.account_no != null && (
+              <span className="admin-mono ml-1 text-[10px] text-[var(--admin-text-faint)]">
+                #{r.reporter_profile.account_no}
+              </span>
+            )}
+          </div>
+          <div className="admin-mono truncate text-[10px] text-[var(--admin-text-faint)]">
+            {r.reporter_id}
+          </div>
+        </div>
+      ),
+      sortValue: (r) => r.reporter_profile?.display_name ?? "",
+      searchValue: (r) => `${r.reporter_profile?.display_name ?? ""} ${r.reporter_id}`,
+    },
+
     {
       key: "count",
       header: "#Rap",
