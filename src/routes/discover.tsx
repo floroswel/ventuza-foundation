@@ -1606,20 +1606,6 @@ function TapFavoriteRow({ targetId, targetName }: { targetId: string; targetName
         </p>
         <div className="flex items-center gap-1.5">
           <button
-            onClick={woof}
-            disabled={woofed}
-            aria-label="Woof"
-            title="Woof — un salut prietenos, fără presiune"
-            className={cn(
-              "flex h-8 items-center gap-1 rounded-full border px-2.5 text-xs transition-colors",
-              woofed
-                ? "border-primary bg-primary/15 text-primary"
-                : "border-border text-muted-foreground hover:text-primary",
-            )}
-          >
-            🐻 <span>Woof</span>
-          </button>
-          <button
             onClick={toggleFav}
             disabled={busy}
             aria-label={fav ? "Elimină de la favorite" : "Adaugă la favorite"}
