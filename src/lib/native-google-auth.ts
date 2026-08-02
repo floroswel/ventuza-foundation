@@ -12,6 +12,8 @@
 import { supabase } from "@/integrations/supabase/client";
 
 let initialized = false;
+let initializationPromise: Promise<void> | null = null;
+let activeLogin: Promise<NativeGoogleResult> | null = null;
 
 export async function isNativeAndroid(): Promise<boolean> {
   try {
@@ -102,17 +104,24 @@ export async function nativeGoogleSupported(): Promise<boolean> {
 
 async function ensureInit(clientId: string): Promise<void> {
   if (initialized) return;
-  const { SocialLogin } = await import("@capgo/capacitor-social-login");
-  await SocialLogin.initialize({
-    google: {
-      webClientId: clientId,
-      // Online mode uses Android Credential Manager and returns an ID token.
-      // Offline mode requests a server auth code and can open a browser flow,
-      // which is both unnecessary here and the source of WebView 404s.
-      mode: "online",
-    },
-  });
-  initialized = true;
+  if (!initializationPromise) {
+    initializationPromise = (async () => {
+      const { SocialLogin } = await import("@capgo/capacitor-social-login");
+      await SocialLogin.initialize({
+        google: {
+          // Pluginul numește proprietatea webClientId; Android o folosește drept
+          // server client ID / audience. Trebuie să fie clientul OAuth Web.
+          webClientId: clientId,
+          mode: "online",
+        },
+      });
+      initialized = true;
+    })().catch((error) => {
+      initializationPromise = null;
+      throw error;
+    });
+  }
+  await initializationPromise;
 }
 
 export type NativeGoogleResult =
@@ -156,6 +165,16 @@ function diagnosticFromError(error: unknown, stage: NativeGoogleDiagnostic["stag
 }
 
 export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
+  if (activeLogin) return activeLogin;
+  activeLogin = runNativeGoogleSignIn();
+  try {
+    return await activeLogin;
+  } finally {
+    activeLogin = null;
+  }
+}
+
+async function runNativeGoogleSignIn(): Promise<NativeGoogleResult> {
   const clientId = await resolveWebClientId();
   if (!clientId) return {
     ok: false,

@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, Eye, EyeOff, Bug, Copy, Trash2 } from "lucide-react";
@@ -23,7 +23,7 @@ import {
   resolveWebClientId,
   type NativeGoogleDiagnostic,
 } from "@/lib/native-google-auth";
-import { readAndroidSignature, type AndroidSignatureInfo } from "@/lib/android-signature";
+import { classifySigningCertificate, readAndroidSignature, readNativeGoogleLogs, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import {
@@ -157,7 +157,9 @@ function AuthPage() {
   const [diagnosticEnabled, setDiagnosticEnabled] = useState(false);
   const [runtimeClientId, setRuntimeClientId] = useState<string | null>(null);
   const [signatureInfo, setSignatureInfo] = useState<AndroidSignatureInfo | null>(null);
+  const [nativeGoogleLogs, setNativeGoogleLogs] = useState<NativeGoogleLog[]>([]);
   const [diagnosticLines, setDiagnosticLines] = useState<AuthDiagnosticLine[]>([]);
+  const googleRequestActive = useRef(false);
 
   function addDiagnostic(flow: AuthDiagnosticLine["flow"], status: string, detail?: string) {
     const line = { at: new Date().toISOString(), flow, status, detail };
@@ -206,11 +208,12 @@ function AuthPage() {
   //  - pe Android nativ: doar dacă avem Web Client ID (env sau secret server)
   //  - pe web: mereu (broker Lovable managed OAuth)
   const googleAvailable = isNative ? nativeGoogleReady : nativeChecked || !isNative;
+  const certificateMatch = classifySigningCertificate(signatureInfo?.sha1);
 
 
 
   async function onGoogleSignIn() {
-    if (googleBusy) return;
+    if (googleRequestActive.current) return;
     if (countryGate.isBlocked) {
       navigate({ to: "/blocked-region", replace: true });
       return;
@@ -222,6 +225,7 @@ function AuthPage() {
         localStorage.setItem("vz_pending_birthdate", birthDate);
       } catch { /* ignore */ }
     }
+    googleRequestActive.current = true;
     setAuthError(null);
     setGoogleBusy(true);
     addDiagnostic("google", "REQUEST_STARTED", `platform=${isNative ? "android-native" : "web"}`);
@@ -233,6 +237,7 @@ function AuthPage() {
       if (await isNativePlatform()) {
         addDiagnostic("google", "SDK_LOGIN_STARTED", `clientId=${runtimeClientId ?? "în curs de rezolvare"}`);
         const res = await nativeGoogleSignIn();
+        setNativeGoogleLogs(readNativeGoogleLogs());
         if (!res.ok) {
           addDiagnostic(
             "google",
@@ -260,6 +265,7 @@ function AuthPage() {
       }
 
     } finally {
+      googleRequestActive.current = false;
       setGoogleBusy(false);
       addDiagnostic("google", "REQUEST_FINISHED");
     }
@@ -630,6 +636,14 @@ function AuthPage() {
                 {signatureInfo?.packageName ?? (isNative ? "necomunicat" : "n/a (web)")}
               </p>
               <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">Sursă instalare:</strong>{" "}
+                {signatureInfo?.installSource ?? (isNative ? "necomunicată" : "n/a (web)")}
+              </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">Installer package:</strong>{" "}
+                {signatureInfo?.installerPackage ?? (isNative ? "necomunicat" : "n/a (web)")}
+              </p>
+              <p className="break-all text-muted-foreground">
                 <strong className="text-foreground">SHA-1 semnătură build:</strong>{" "}
                 {signatureInfo?.sha1 ?? signatureInfo?.note ?? "indisponibil"}
               </p>
@@ -637,12 +651,27 @@ function AuthPage() {
                 <strong className="text-foreground">SHA-256 semnătură build:</strong>{" "}
                 {signatureInfo?.sha256 ?? "indisponibil"}
               </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">Certificat identificat:</strong>{" "}
+                {certificateMatch.label}
+              </p>
               {signatureInfo?.sha1 && (
                 <p className="text-muted-foreground">
                   Acest SHA-1 trebuie să existe în clientul OAuth <strong>Android</strong> pentru
-                  package <code>app.suzeta</code>. Dacă ai instalat din Play, este amprenta cheii
-                  Play App Signing; la instalare locală, cea a cheii de upload.
+                  package <code>app.suzeta</code>. Internal App Sharing resemnează cu certificatul
+                  său separat; installer-ul Play singur nu diferențiază track-ul, certificatul o face.
                 </p>
+              )}
+
+              {nativeGoogleLogs.length > 0 && (
+                <div className="rounded border border-border bg-background p-2 font-mono">
+                  <p className="mb-1 font-semibold">Log nativ Google (echivalentul liniilor relevante logcat)</p>
+                  {nativeGoogleLogs.map((entry, index) => (
+                    <p key={`${entry.at ?? 0}-${index}`} className="break-words">
+                      {entry.stage ?? "unknown"} · {entry.exception ?? "fără excepție"} · numeric={entry.numericCode ?? "neemis de API"} · {entry.message ?? ""}
+                    </p>
+                  ))}
+                </div>
               )}
 
               <div className="max-h-48 overflow-y-auto rounded border border-border bg-background p-2 font-mono" aria-live="polite">
@@ -665,6 +694,8 @@ function AuthPage() {
                       build: `${MOBILE_VERSION_CODE} · ${shortBuildSha}`,
                       clientId: runtimeClientId,
                       signature: signatureInfo,
+                      certificateMatch,
+                      nativeGoogleLogs,
                       diagnostics: diagnosticLines,
                       network: getEntries().filter((entry) => entry.source.startsWith("auth.") || entry.source === "fetch"),
                     };

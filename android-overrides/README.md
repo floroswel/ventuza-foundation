@@ -14,6 +14,7 @@ AUTOMAT de workflow-ul `.github/workflows/android-release.yml` după `cap sync`.
 | `res/mipmap-anydpi-v26/ic_launcher_round.xml` | idem | Varianta round. |
 | `res/drawable/ic_launcher_monochrome.png` | `android/app/src/main/res/drawable/ic_launcher_monochrome.png` | Layer monochrome (heart alb pe negru) pentru themed icons Android 13+. |
 | `res/values/splash.xml` | `android/app/src/main/res/values/splash.xml` | `Theme.App.SplashScreen` bazat pe core-splashscreen API (Android 12+). |
+| `MainActivity.java` | `android/app/src/main/java/app/suzeta/MainActivity.java` | Expune diagnosticul local: installer, sursa instalării, SHA-1/SHA-256 real și excepția Google fără token-uri. |
 
 ## Procedură manuală (dacă rulezi local fără workflow)
 
