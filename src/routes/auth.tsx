@@ -185,6 +185,7 @@ function AuthPage() {
       const native = await isNativeAndroid();
       if (cancelled) return;
       setIsNative(native);
+      setSignatureInfo(readAndroidSignature());
       // Sondăm Client ID-ul DOAR pe nativ. Pe web nu e nevoie (folosim brokerul
       // managed) și fetch-ul suplimentar întârzia inutil randarea formularului.
       if (native) {
