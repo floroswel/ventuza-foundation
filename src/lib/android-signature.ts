@@ -13,6 +13,9 @@ type SignatureBridge = {
   getInstallerPackage?: () => string;
   getInstallSource?: () => string;
   getGoogleDiagnosticLogs?: () => string;
+  getVersionName?: () => string;
+  getVersionCode?: () => string;
+  getLogcat?: () => string;
 };
 
 export type NativeGoogleLog = {
@@ -22,6 +25,8 @@ export type NativeGoogleLog = {
   message?: string;
   numericCode?: number;
   credentialType?: string;
+  cause?: string;
+  stack?: string;
 };
 
 export type AndroidSignatureInfo = {
@@ -31,6 +36,8 @@ export type AndroidSignatureInfo = {
   sha256: string | null;
   installerPackage: string | null;
   installSource: string | null;
+  versionName: string | null;
+  versionCode: string | null;
   note?: string;
 };
 
@@ -74,6 +81,8 @@ export function readAndroidSignature(): AndroidSignatureInfo {
       sha256: null,
       installerPackage: null,
       installSource: null,
+      versionName: null,
+      versionCode: null,
       note: "Disponibil doar în build-ul Android nativ (de la Build 7 în sus).",
     };
   }
@@ -92,7 +101,32 @@ export function readAndroidSignature(): AndroidSignatureInfo {
     sha256: safe(bridge.getSha256),
     installerPackage: safe(bridge.getInstallerPackage),
     installSource: safe(bridge.getInstallSource),
+    versionName: safe(bridge.getVersionName),
+    versionCode: safe(bridge.getVersionCode),
   };
+}
+
+/** Etichetă lizibilă pentru sursa instalării. */
+export function describeInstallSource(info: AndroidSignatureInfo | null): string {
+  if (!info?.available) return "n/a (web)";
+  const installer = info.installerPackage ?? "";
+  if (installer === "com.android.vending") return "Google Play (com.android.vending)";
+  if (installer === "com.google.android.apps.internal.appsharing" || installer.includes("appsharing")) {
+    return `Internal App Sharing (${installer})`;
+  }
+  if (!installer) return "Instalare locală (adb / sideload)";
+  return `Altă sursă (${installer})`;
+}
+
+/** Linii logcat relevante ale propriului proces, deja filtrate/redactate nativ. */
+export function readNativeLogcat(): string[] {
+  const bridge = (globalThis as unknown as { SuzetaSignature?: SignatureBridge }).SuzetaSignature;
+  try {
+    const raw = bridge?.getLogcat?.() ?? "";
+    return raw.split("\n").map((l) => l.trim()).filter(Boolean).slice(-120);
+  } catch {
+    return [];
+  }
 }
 
 export function readNativeGoogleLogs(): NativeGoogleLog[] {
