@@ -21,10 +21,11 @@ import {
   hasNativeGoogleConfig,
   hasNativeGoogleConfigAsync,
   resolveWebClientId,
+  getNativeGoogleRuntimeState,
+  type NativeGoogleRuntimeState,
   type NativeGoogleDiagnostic,
 } from "@/lib/native-google-auth";
 import { classifySigningCertificate, describeInstallSource, readAndroidSignature, readNativeGoogleLogs, readNativeLogcat, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
-import { getNativeGoogleRuntimeState, type NativeGoogleRuntimeState } from "@/lib/native-google-auth";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import {
