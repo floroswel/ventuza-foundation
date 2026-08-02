@@ -15,6 +15,25 @@ let initialized = false;
 let initializationPromise: Promise<void> | null = null;
 let activeLogin: Promise<NativeGoogleResult> | null = null;
 
+/** Telemetrie de diagnostic (build 7): confirmă init unic + o singură cerere activă. */
+const runtimeState = {
+  initializeCalls: 0,
+  initialized: false,
+  activeRequest: false,
+  concurrentRequestsBlocked: 0,
+  lastRequestStartedAt: null as number | null,
+  lastRequestEndedAt: null as number | null,
+  lastElapsedMs: null as number | null,
+  lastOutcome: null as string | null,
+  attempts: [] as Array<{ label: string; elapsedMs: number; outcome: string }>,
+};
+
+export type NativeGoogleRuntimeState = typeof runtimeState;
+
+export function getNativeGoogleRuntimeState(): NativeGoogleRuntimeState {
+  return { ...runtimeState, attempts: [...runtimeState.attempts] };
+}
+
 export async function isNativeAndroid(): Promise<boolean> {
   try {
     const { Capacitor } = await import("@capacitor/core");
@@ -107,6 +126,7 @@ async function ensureInit(clientId: string): Promise<void> {
   if (!initializationPromise) {
     initializationPromise = (async () => {
       const { SocialLogin } = await import("@capgo/capacitor-social-login");
+      runtimeState.initializeCalls += 1;
       await SocialLogin.initialize({
         google: {
           // Pluginul numește proprietatea webClientId; Android o folosește drept
@@ -116,6 +136,7 @@ async function ensureInit(clientId: string): Promise<void> {
         },
       });
       initialized = true;
+      runtimeState.initialized = true;
     })().catch((error) => {
       initializationPromise = null;
       throw error;
@@ -139,6 +160,7 @@ export type NativeGoogleDiagnostic = {
   message?: string;
   url?: string;
   httpStatus?: number;
+  elapsedMs?: number;
 };
 
 function diagnosticFromError(error: unknown, stage: NativeGoogleDiagnostic["stage"]): NativeGoogleDiagnostic {
@@ -165,12 +187,27 @@ function diagnosticFromError(error: unknown, stage: NativeGoogleDiagnostic["stag
 }
 
 export async function nativeGoogleSignIn(): Promise<NativeGoogleResult> {
-  if (activeLogin) return activeLogin;
+  if (activeLogin) {
+    runtimeState.concurrentRequestsBlocked += 1;
+    return activeLogin;
+  }
+  runtimeState.activeRequest = true;
+  runtimeState.lastRequestStartedAt = Date.now();
+  runtimeState.lastRequestEndedAt = null;
+  runtimeState.lastElapsedMs = null;
+  runtimeState.attempts = [];
   activeLogin = runNativeGoogleSignIn();
   try {
-    return await activeLogin;
+    const result = await activeLogin;
+    runtimeState.lastOutcome = result.ok ? "ok" : result.code;
+    return result;
   } finally {
     activeLogin = null;
+    runtimeState.activeRequest = false;
+    runtimeState.lastRequestEndedAt = Date.now();
+    runtimeState.lastElapsedMs = runtimeState.lastRequestStartedAt
+      ? runtimeState.lastRequestEndedAt - runtimeState.lastRequestStartedAt
+      : null;
   }
 }
 
@@ -223,14 +260,22 @@ async function runNativeGoogleSignIn(): Promise<NativeGoogleResult> {
     let result: { result?: { idToken?: string | null } } | null = null;
     let lastDiagnostic: NativeGoogleDiagnostic | undefined;
     for (const attempt of attempts) {
+      const attemptStart = Date.now();
       try {
         result = (await SocialLogin.login({
           provider: "google",
           options: attempt.options,
         })) as { result?: { idToken?: string | null } };
+        runtimeState.attempts.push({ label: attempt.label, elapsedMs: Date.now() - attemptStart, outcome: "success" });
         break;
       } catch (error) {
         const diagnostic = diagnosticFromError(error, "google_login");
+        diagnostic.elapsedMs = Date.now() - attemptStart;
+        runtimeState.attempts.push({
+          label: attempt.label,
+          elapsedMs: diagnostic.elapsedMs,
+          outcome: error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120),
+        });
         diagnostic.code = `${diagnostic.code ?? "unknown"}@${attempt.label}`;
         lastDiagnostic = diagnostic;
         // Dacă e o anulare/absență de credential, mai încercăm varianta următoare.
