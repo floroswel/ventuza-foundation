@@ -165,14 +165,30 @@ jobs:
           p = "node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java"
           s = open(p, encoding="utf-8").read()
           needle = 'Log.e(LOG_TAG, "Google Sign-In failed", e);'
-          replacement = needle + '\n        app.suzeta.MainActivity.recordGoogleDiagnostic("credential_error", e);'
+          replacement = needle + '\n        recordSuzetaDiagnostic(e);'
           if replacement not in s:
               if needle not in s:
                   raise SystemExit("GoogleProvider s-a schimbat: punctul de instrumentare lipsește")
               s = s.replace(needle, replacement, 1)
+          helper_anchor = '    private void handleSignInError(GetCredentialException e, PluginCall call, JSONObject config) {'
+          helper = '''    private void recordSuzetaDiagnostic(Throwable error) {
+        try {
+            Class<?> activityClass = Class.forName("app.suzeta.MainActivity");
+            java.lang.reflect.Method method = activityClass.getMethod("recordGoogleDiagnostic", String.class, Throwable.class);
+            method.invoke(null, "credential_error", error);
+        } catch (Throwable ignored) {
+            // Diagnosticul nu trebuie să afecteze autentificarea.
+        }
+    }
+
+'''
+          if helper not in s:
+              if helper_anchor not in s:
+                  raise SystemExit("GoogleProvider s-a schimbat: ancora helper-ului lipsește")
+              s = s.replace(helper_anchor, helper + helper_anchor, 1)
           open(p, "w", encoding="utf-8").write(s)
           PY
-          grep -q 'recordGoogleDiagnostic("credential_error"' "$PROVIDER"
+          grep -q 'recordSuzetaDiagnostic(e)' "$PROVIDER"
           echo "✓ Excepția Credential Manager va fi capturată în diagnosticul din aplicație."
 
       - name: Build web bundle
@@ -187,6 +203,11 @@ jobs:
           # `supabase.auth.signInWithIdToken` ca `audience`. Fără el, butonul
           # Google din Android nativ nu funcționează (cade back la web OAuth).
           VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID || secrets.GOOGLE_OAUTH_CLIENT_ID }}
+          # Fingerprint-urile sunt publice; setează-le ca GitHub Environment variables.
+          # Diagnosticul compară SHA-1-ul APK-ului instalat cu toate trei, fără presupuneri.
+          VITE_ANDROID_APP_SIGNING_SHA1: ${{ vars.ANDROID_APP_SIGNING_SHA1 }}
+          VITE_ANDROID_UPLOAD_SHA1: ${{ vars.ANDROID_UPLOAD_SHA1 }}
+          VITE_ANDROID_IAS_SHA1: ${{ vars.ANDROID_IAS_SHA1 }}
           VITE_BUILD_SHA: ${{ github.sha }}
           VITE_BUILD_VERSION_CODE: ${{ steps.buildmeta.outputs.code }}
         run: bun run build:mobile

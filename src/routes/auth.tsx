@@ -23,7 +23,7 @@ import {
   resolveWebClientId,
   type NativeGoogleDiagnostic,
 } from "@/lib/native-google-auth";
-import { readAndroidSignature, readNativeGoogleLogs, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
+import { classifySigningCertificate, readAndroidSignature, readNativeGoogleLogs, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import {
@@ -208,6 +208,7 @@ function AuthPage() {
   //  - pe Android nativ: doar dacă avem Web Client ID (env sau secret server)
   //  - pe web: mereu (broker Lovable managed OAuth)
   const googleAvailable = isNative ? nativeGoogleReady : nativeChecked || !isNative;
+  const certificateMatch = classifySigningCertificate(signatureInfo?.sha1);
 
 
 
@@ -650,6 +651,10 @@ function AuthPage() {
                 <strong className="text-foreground">SHA-256 semnătură build:</strong>{" "}
                 {signatureInfo?.sha256 ?? "indisponibil"}
               </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">Certificat identificat:</strong>{" "}
+                {certificateMatch.label}
+              </p>
               {signatureInfo?.sha1 && (
                 <p className="text-muted-foreground">
                   Acest SHA-1 trebuie să existe în clientul OAuth <strong>Android</strong> pentru
@@ -689,6 +694,7 @@ function AuthPage() {
                       build: `${MOBILE_VERSION_CODE} · ${shortBuildSha}`,
                       clientId: runtimeClientId,
                       signature: signatureInfo,
+                      certificateMatch,
                       nativeGoogleLogs,
                       diagnostics: diagnosticLines,
                       network: getEntries().filter((entry) => entry.source.startsWith("auth.") || entry.source === "fetch"),

@@ -34,6 +34,36 @@ export type AndroidSignatureInfo = {
   note?: string;
 };
 
+export type SigningCertificateMatch =
+  | "app_signing"
+  | "upload"
+  | "internal_app_sharing"
+  | "unmatched"
+  | "reference_fingerprints_missing";
+
+function normalizeSha1(value?: string | null): string {
+  return (value ?? "").replace(/[^a-fA-F0-9]/g, "").toUpperCase();
+}
+
+export function classifySigningCertificate(actualSha1?: string | null): {
+  match: SigningCertificateMatch;
+  label: string;
+} {
+  const actual = normalizeSha1(actualSha1);
+  const candidates = [
+    ["app_signing", "App signing key certificate", import.meta.env.VITE_ANDROID_APP_SIGNING_SHA1],
+    ["upload", "Upload key certificate", import.meta.env.VITE_ANDROID_UPLOAD_SHA1],
+    ["internal_app_sharing", "Internal App Sharing certificate", import.meta.env.VITE_ANDROID_IAS_SHA1],
+  ] as const;
+  const configured = candidates.filter(([, , value]) => normalizeSha1(value));
+  if (!actual || configured.length === 0) {
+    return { match: "reference_fingerprints_missing", label: "Amprentele de referință nu sunt injectate în build" };
+  }
+  const found = configured.find(([, , value]) => normalizeSha1(value) === actual);
+  if (found) return { match: found[0], label: found[1] };
+  return { match: "unmatched", label: "Niciun certificat de referință nu corespunde" };
+}
+
 export function readAndroidSignature(): AndroidSignatureInfo {
   const bridge = (globalThis as unknown as { SuzetaSignature?: SignatureBridge }).SuzetaSignature;
   if (!bridge) {
