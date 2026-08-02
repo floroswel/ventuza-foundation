@@ -10,6 +10,18 @@ type SignatureBridge = {
   getPackageName?: () => string;
   getSha1?: () => string;
   getSha256?: () => string;
+  getInstallerPackage?: () => string;
+  getInstallSource?: () => string;
+  getGoogleDiagnosticLogs?: () => string;
+};
+
+export type NativeGoogleLog = {
+  at?: number;
+  stage?: string;
+  exception?: string;
+  message?: string;
+  numericCode?: number;
+  credentialType?: string;
 };
 
 export type AndroidSignatureInfo = {
@@ -17,6 +29,8 @@ export type AndroidSignatureInfo = {
   packageName: string | null;
   sha1: string | null;
   sha256: string | null;
+  installerPackage: string | null;
+  installSource: string | null;
   note?: string;
 };
 
@@ -28,6 +42,8 @@ export function readAndroidSignature(): AndroidSignatureInfo {
       packageName: null,
       sha1: null,
       sha256: null,
+      installerPackage: null,
+      installSource: null,
       note: "Disponibil doar în build-ul Android nativ (de la Build 7 în sus).",
     };
   }
@@ -44,5 +60,18 @@ export function readAndroidSignature(): AndroidSignatureInfo {
     packageName: safe(bridge.getPackageName),
     sha1: safe(bridge.getSha1),
     sha256: safe(bridge.getSha256),
+    installerPackage: safe(bridge.getInstallerPackage),
+    installSource: safe(bridge.getInstallSource),
   };
+}
+
+export function readNativeGoogleLogs(): NativeGoogleLog[] {
+  const bridge = (globalThis as unknown as { SuzetaSignature?: SignatureBridge }).SuzetaSignature;
+  try {
+    const raw = bridge?.getGoogleDiagnosticLogs?.();
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? (parsed as NativeGoogleLog[]) : [];
+  } catch {
+    return [];
+  }
 }
