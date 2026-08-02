@@ -21,9 +21,11 @@ import {
   hasNativeGoogleConfig,
   hasNativeGoogleConfigAsync,
   resolveWebClientId,
+  getNativeGoogleRuntimeState,
+  type NativeGoogleRuntimeState,
   type NativeGoogleDiagnostic,
 } from "@/lib/native-google-auth";
-import { classifySigningCertificate, readAndroidSignature, readNativeGoogleLogs, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
+import { classifySigningCertificate, describeInstallSource, readAndroidSignature, readNativeGoogleLogs, readNativeLogcat, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import {
@@ -158,6 +160,8 @@ function AuthPage() {
   const [runtimeClientId, setRuntimeClientId] = useState<string | null>(null);
   const [signatureInfo, setSignatureInfo] = useState<AndroidSignatureInfo | null>(null);
   const [nativeGoogleLogs, setNativeGoogleLogs] = useState<NativeGoogleLog[]>([]);
+  const [nativeLogcat, setNativeLogcat] = useState<string[]>([]);
+  const [googleRuntime, setGoogleRuntime] = useState<NativeGoogleRuntimeState | null>(null);
   const [diagnosticLines, setDiagnosticLines] = useState<AuthDiagnosticLine[]>([]);
   const googleRequestActive = useRef(false);
 
@@ -174,6 +178,7 @@ function AuthPage() {
       `cod=${diagnostic.code ?? "necomunicat"}`,
       `HTTP=${diagnostic.httpStatus ?? "necomunicat"}`,
       `URL=${diagnostic.url ?? "necomunicat de Google SDK"}`,
+      `durată=${diagnostic.elapsedMs !== undefined ? `${diagnostic.elapsedMs} ms` : "necronometrat"}`,
       diagnostic.message ? `mesaj=${diagnostic.message}` : null,
     ].filter(Boolean).join(" · ");
   }
@@ -236,8 +241,12 @@ function AuthPage() {
       // fallback pe redirect web.
       if (await isNativePlatform()) {
         addDiagnostic("google", "SDK_LOGIN_STARTED", `clientId=${runtimeClientId ?? "în curs de rezolvare"}`);
+        const pressedAt = Date.now();
         const res = await nativeGoogleSignIn();
         setNativeGoogleLogs(readNativeGoogleLogs());
+        setNativeLogcat(readNativeLogcat());
+        setGoogleRuntime(getNativeGoogleRuntimeState());
+        addDiagnostic("google", "SDK_LOGIN_FINISHED", `durată buton→răspuns=${Date.now() - pressedAt} ms`);
         if (!res.ok) {
           addDiagnostic(
             "google",
@@ -636,8 +645,13 @@ function AuthPage() {
                 {signatureInfo?.packageName ?? (isNative ? "necomunicat" : "n/a (web)")}
               </p>
               <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">Versiune instalată:</strong>{" "}
+                {signatureInfo?.versionName ?? "necomunicată"} (versionCode{" "}
+                {signatureInfo?.versionCode ?? "necomunicat"})
+              </p>
+              <p className="break-all text-muted-foreground">
                 <strong className="text-foreground">Sursă instalare:</strong>{" "}
-                {signatureInfo?.installSource ?? (isNative ? "necomunicată" : "n/a (web)")}
+                {describeInstallSource(signatureInfo)}
               </p>
               <p className="break-all text-muted-foreground">
                 <strong className="text-foreground">Installer package:</strong>{" "}
@@ -663,13 +677,57 @@ function AuthPage() {
                 </p>
               )}
 
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">serverClientId (Web Client ID):</strong>{" "}
+                {runtimeClientId ?? (isNative ? "nerezolvat" : "OAuth web managed")}
+              </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">Plugin inițializat o singură dată:</strong>{" "}
+                {googleRuntime
+                  ? `${googleRuntime.initializeCalls === 1 ? "DA" : "NU"} (apeluri initialize=${googleRuntime.initializeCalls})`
+                  : "necunoscut până la prima încercare"}
+              </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">O singură cerere Google activă:</strong>{" "}
+                {googleRuntime
+                  ? `${googleRuntime.concurrentRequestsBlocked === 0 ? "DA" : "NU"} (cereri concurente blocate=${googleRuntime.concurrentRequestsBlocked})`
+                  : "necunoscut până la prima încercare"}
+              </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">Timp buton → anulare/răspuns:</strong>{" "}
+                {googleRuntime?.lastElapsedMs !== null && googleRuntime?.lastElapsedMs !== undefined
+                  ? `${googleRuntime.lastElapsedMs} ms (rezultat: ${googleRuntime.lastOutcome ?? "-"})`
+                  : "nemăsurat încă"}
+              </p>
+              {googleRuntime?.attempts?.length ? (
+                <div className="rounded border border-border bg-background p-2 font-mono">
+                  <p className="mb-1 font-semibold">Încercări SDK</p>
+                  {googleRuntime.attempts.map((a, i) => (
+                    <p key={`${a.label}-${i}`} className="break-words">
+                      {a.label} · {a.elapsedMs} ms · {a.outcome}
+                    </p>
+                  ))}
+                </div>
+              ) : null}
+
               {nativeGoogleLogs.length > 0 && (
                 <div className="rounded border border-border bg-background p-2 font-mono">
                   <p className="mb-1 font-semibold">Log nativ Google (echivalentul liniilor relevante logcat)</p>
                   {nativeGoogleLogs.map((entry, index) => (
                     <p key={`${entry.at ?? 0}-${index}`} className="break-words">
                       {entry.stage ?? "unknown"} · {entry.exception ?? "fără excepție"} · numeric={entry.numericCode ?? "neemis de API"} · {entry.message ?? ""}
+                      {entry.cause ? ` · cauză=${entry.cause}` : ""}
+                      {entry.stack ? `\n${entry.stack}` : ""}
                     </p>
+                  ))}
+                </div>
+              )}
+
+              {nativeLogcat.length > 0 && (
+                <div className="max-h-48 overflow-y-auto rounded border border-border bg-background p-2 font-mono">
+                  <p className="mb-1 font-semibold">Logcat filtrat (CredentialManager / GoogleAuth / Identity / SocialLogin / Supabase Auth)</p>
+                  {nativeLogcat.map((line, index) => (
+                    <p key={`${index}-${line.slice(0, 20)}`} className="break-words">{line}</p>
                   ))}
                 </div>
               )}
@@ -692,9 +750,16 @@ function AuthPage() {
                   onClick={async () => {
                     const payload = {
                       build: `${MOBILE_VERSION_CODE} · ${shortBuildSha}`,
+                      packageName: signatureInfo?.packageName ?? "app.suzeta (necomunicat de runtime)",
+                      versionName: signatureInfo?.versionName,
+                      versionCode: signatureInfo?.versionCode,
+                      installSource: describeInstallSource(signatureInfo),
+                      serverClientId: runtimeClientId,
                       clientId: runtimeClientId,
                       signature: signatureInfo,
                       certificateMatch,
+                      googleRuntime,
+                      logcat: nativeLogcat,
                       nativeGoogleLogs,
                       diagnostics: diagnosticLines,
                       network: getEntries().filter((entry) => entry.source.startsWith("auth.") || entry.source === "fetch"),
@@ -703,7 +768,7 @@ function AuthPage() {
                     toast.success("Diagnosticul a fost copiat");
                   }}
                 >
-                  <Copy className="size-3.5" /> Copiază
+                  <Copy className="size-3.5" /> Copy diagnostics
                 </Button>
                 <Button
                   type="button"

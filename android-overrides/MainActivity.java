@@ -45,10 +45,28 @@ public class MainActivity extends BridgeActivity {
           Object type = typeMethod.invoke(error);
           if (type != null) row.put("credentialType", String.valueOf(type));
         } catch (Throwable ignored) { /* API dependent */ }
+        Throwable cause = error.getCause();
+        if (cause != null) {
+          row.put("cause", cause.getClass().getName()
+            + (cause.getMessage() == null ? "" : (": " + cause.getMessage())));
+        }
+        row.put("stack", stackTrace(error));
       }
       GOOGLE_LOGS.addLast(row.toString());
       while (GOOGLE_LOGS.size() > MAX_GOOGLE_LOGS) GOOGLE_LOGS.removeFirst();
     } catch (Throwable ignored) { /* diagnostic only */ }
+  }
+
+  /** Primele 12 frame-uri, fără token-uri (stack trace-ul nu conține date sensibile). */
+  private static String stackTrace(Throwable error) {
+    StringBuilder sb = new StringBuilder();
+    StackTraceElement[] frames = error.getStackTrace();
+    int limit = Math.min(frames == null ? 0 : frames.length, 12);
+    for (int i = 0; i < limit; i++) {
+      if (i > 0) sb.append('\n');
+      sb.append("at ").append(frames[i].toString());
+    }
+    return sb.toString();
   }
 
   private static Integer numericCode(Throwable error) {
@@ -123,6 +141,68 @@ public class MainActivity extends BridgeActivity {
         return "other_store";
       } catch (Throwable t) {
         return "unknown";
+      }
+    }
+
+    @JavascriptInterface
+    public String getVersionName() {
+      try {
+        return MainActivity.this.getPackageManager()
+          .getPackageInfo(MainActivity.this.getPackageName(), 0).versionName;
+      } catch (Throwable t) {
+        return "";
+      }
+    }
+
+    @JavascriptInterface
+    public String getVersionCode() {
+      try {
+        PackageInfo info = MainActivity.this.getPackageManager()
+          .getPackageInfo(MainActivity.this.getPackageName(), 0);
+        long code = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+          ? info.getLongVersionCode()
+          : (long) info.versionCode;
+        return String.valueOf(code);
+      } catch (Throwable t) {
+        return "";
+      }
+    }
+
+    /**
+     * Logcat-ul PROPRIULUI proces (Android permite fiecărei aplicații să-și
+     * citească propriile linii), filtrat pe tag-urile relevante pentru
+     * Credential Manager / Google Sign-In / Supabase Auth.
+     */
+    @JavascriptInterface
+    public String getLogcat() {
+      try {
+        Process process = Runtime.getRuntime().exec(
+          new String[] { "logcat", "-d", "-v", "time", "-t", "400" });
+        java.io.BufferedReader reader = new java.io.BufferedReader(
+          new java.io.InputStreamReader(process.getInputStream()));
+        StringBuilder sb = new StringBuilder();
+        String line;
+        int kept = 0;
+        while ((line = reader.readLine()) != null && kept < 120) {
+          String lower = line.toLowerCase();
+          if (lower.contains("credentialmanager")
+            || lower.contains("credential")
+            || lower.contains("googleauth")
+            || lower.contains("identity")
+            || lower.contains("sociallogin")
+            || lower.contains("suzeta")
+            || lower.contains("gotrue")
+            || lower.contains("supabase")) {
+            // Fără token-uri: tăiem orice valoare lungă base64/JWT.
+            String safe = line.replaceAll("[A-Za-z0-9_-]{40,}", "[redacted]");
+            sb.append(safe).append('\n');
+            kept++;
+          }
+        }
+        reader.close();
+        return sb.toString();
+      } catch (Throwable t) {
+        return "";
       }
     }
 
