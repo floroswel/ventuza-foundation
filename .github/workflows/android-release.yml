@@ -300,6 +300,15 @@ jobs:
             echo "✓ Resurse override copiate din android-overrides/res/"
           fi
 
+          # 4) MainActivity override — expune SHA-1/SHA-256 al semnăturii instalate
+          #    către WebView pentru panoul de diagnostic din /auth.
+          if [ -f android-overrides/MainActivity.java ]; then
+            DEST=$(dirname "$(find android/app/src/main/java -name MainActivity.java | head -1)")
+            if [ -z "$DEST" ]; then DEST=android/app/src/main/java/app/suzeta; mkdir -p "$DEST"; fi
+            cp android-overrides/MainActivity.java "$DEST/MainActivity.java"
+            echo "✓ MainActivity override aplicat în $DEST"
+          fi
+
       - name: Validează resursele Android (PNG/XML/duplicate/referințe lipsă)
         run: |
           python3 <<'PY'
