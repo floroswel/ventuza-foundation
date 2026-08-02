@@ -23,6 +23,7 @@ import {
   resolveWebClientId,
   type NativeGoogleDiagnostic,
 } from "@/lib/native-google-auth";
+import { readAndroidSignature, type AndroidSignatureInfo } from "@/lib/android-signature";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import {
