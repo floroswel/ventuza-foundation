@@ -625,6 +625,26 @@ function AuthPage() {
                 <strong className="text-foreground">Client ID runtime:</strong>{" "}
                 {runtimeClientId ?? (isNative ? "se încarcă…" : "OAuth web managed")}
               </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">Package instalat:</strong>{" "}
+                {signatureInfo?.packageName ?? (isNative ? "necomunicat" : "n/a (web)")}
+              </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">SHA-1 semnătură build:</strong>{" "}
+                {signatureInfo?.sha1 ?? signatureInfo?.note ?? "indisponibil"}
+              </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">SHA-256 semnătură build:</strong>{" "}
+                {signatureInfo?.sha256 ?? "indisponibil"}
+              </p>
+              {signatureInfo?.sha1 && (
+                <p className="text-muted-foreground">
+                  Acest SHA-1 trebuie să existe în clientul OAuth <strong>Android</strong> pentru
+                  package <code>app.suzeta</code>. Dacă ai instalat din Play, este amprenta cheii
+                  Play App Signing; la instalare locală, cea a cheii de upload.
+                </p>
+              )}
+
               <div className="max-h-48 overflow-y-auto rounded border border-border bg-background p-2 font-mono" aria-live="polite">
                 {diagnosticLines.length === 0 ? (
                   <p className="text-muted-foreground">Apasă Google sau autentificarea cu email. Pașii apar aici.</p>
