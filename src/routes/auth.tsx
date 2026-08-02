@@ -23,6 +23,7 @@ import {
   resolveWebClientId,
   type NativeGoogleDiagnostic,
 } from "@/lib/native-google-auth";
+import { readAndroidSignature, type AndroidSignatureInfo } from "@/lib/android-signature";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import {
@@ -155,6 +156,7 @@ function AuthPage() {
   const [nativeGoogleReady, setNativeGoogleReady] = useState(hasNativeGoogleConfig());
   const [diagnosticEnabled, setDiagnosticEnabled] = useState(false);
   const [runtimeClientId, setRuntimeClientId] = useState<string | null>(null);
+  const [signatureInfo, setSignatureInfo] = useState<AndroidSignatureInfo | null>(null);
   const [diagnosticLines, setDiagnosticLines] = useState<AuthDiagnosticLine[]>([]);
 
   function addDiagnostic(flow: AuthDiagnosticLine["flow"], status: string, detail?: string) {
@@ -183,6 +185,7 @@ function AuthPage() {
       const native = await isNativeAndroid();
       if (cancelled) return;
       setIsNative(native);
+      setSignatureInfo(readAndroidSignature());
       // Sondăm Client ID-ul DOAR pe nativ. Pe web nu e nevoie (folosim brokerul
       // managed) și fetch-ul suplimentar întârzia inutil randarea formularului.
       if (native) {
@@ -622,6 +625,26 @@ function AuthPage() {
                 <strong className="text-foreground">Client ID runtime:</strong>{" "}
                 {runtimeClientId ?? (isNative ? "se încarcă…" : "OAuth web managed")}
               </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">Package instalat:</strong>{" "}
+                {signatureInfo?.packageName ?? (isNative ? "necomunicat" : "n/a (web)")}
+              </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">SHA-1 semnătură build:</strong>{" "}
+                {signatureInfo?.sha1 ?? signatureInfo?.note ?? "indisponibil"}
+              </p>
+              <p className="break-all text-muted-foreground">
+                <strong className="text-foreground">SHA-256 semnătură build:</strong>{" "}
+                {signatureInfo?.sha256 ?? "indisponibil"}
+              </p>
+              {signatureInfo?.sha1 && (
+                <p className="text-muted-foreground">
+                  Acest SHA-1 trebuie să existe în clientul OAuth <strong>Android</strong> pentru
+                  package <code>app.suzeta</code>. Dacă ai instalat din Play, este amprenta cheii
+                  Play App Signing; la instalare locală, cea a cheii de upload.
+                </p>
+              )}
+
               <div className="max-h-48 overflow-y-auto rounded border border-border bg-background p-2 font-mono" aria-live="polite">
                 {diagnosticLines.length === 0 ? (
                   <p className="text-muted-foreground">Apasă Google sau autentificarea cu email. Pașii apar aici.</p>
@@ -641,6 +664,7 @@ function AuthPage() {
                     const payload = {
                       build: `${MOBILE_VERSION_CODE} · ${shortBuildSha}`,
                       clientId: runtimeClientId,
+                      signature: signatureInfo,
                       diagnostics: diagnosticLines,
                       network: getEntries().filter((entry) => entry.source.startsWith("auth.") || entry.source === "fetch"),
                     };
