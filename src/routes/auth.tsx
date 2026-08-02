@@ -664,6 +664,7 @@ function AuthPage() {
                     const payload = {
                       build: `${MOBILE_VERSION_CODE} · ${shortBuildSha}`,
                       clientId: runtimeClientId,
+                      signature: signatureInfo,
                       diagnostics: diagnosticLines,
                       network: getEntries().filter((entry) => entry.source.startsWith("auth.") || entry.source === "fetch"),
                     };
