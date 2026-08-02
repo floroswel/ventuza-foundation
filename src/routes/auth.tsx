@@ -155,6 +155,7 @@ function AuthPage() {
   const [nativeGoogleReady, setNativeGoogleReady] = useState(hasNativeGoogleConfig());
   const [diagnosticEnabled, setDiagnosticEnabled] = useState(false);
   const [runtimeClientId, setRuntimeClientId] = useState<string | null>(null);
+  const [signatureInfo, setSignatureInfo] = useState<AndroidSignatureInfo | null>(null);
   const [diagnosticLines, setDiagnosticLines] = useState<AuthDiagnosticLine[]>([]);
 
   function addDiagnostic(flow: AuthDiagnosticLine["flow"], status: string, detail?: string) {
