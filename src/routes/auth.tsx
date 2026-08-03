@@ -37,7 +37,7 @@ import {
 } from "@/lib/build-info";
 import { withGuardian } from "@/components/with-guardian";
 import { withAuthTimeout } from "@/lib/auth-timeout";
-import { maskEmail, recordStage, supabaseHealthCheck } from "@/lib/auth-telemetry";
+import { inspectSupabaseConfig, maskEmail, readAuthStages, recordStage, supabaseHealthCheck } from "@/lib/auth-telemetry";
 import { clearEntries, getEntries, installOnce, isDebugEnabled, log as debugLog, setDebugEnabled } from "@/lib/debug-logger";
 
 
