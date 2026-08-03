@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.8",
-  "versionCode": 8,
+  "versionName": "1.0.10",
+  "versionCode": 10,
   "track": "internal",
-  "notes": "Auth fix build 8: signup email cu timeout 20s + coduri de eroare distincte, Turnstile sărit pe Android nativ, Google Sign-In exclusiv prin Credential Manager nativ (fără OAuth în WebView)."
+  "notes": "Build 10: Google Sign-In prin Chrome Custom Tabs pe Android (fără dependență de Credential Manager/SHA-1), creare cont cu email fără blocaj pe birthdate (redirect imediat la verificarea emailului), precheck-uri fail-open la 4s."
 }
