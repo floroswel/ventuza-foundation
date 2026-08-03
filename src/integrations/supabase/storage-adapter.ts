@@ -64,13 +64,13 @@ function nativeStorage(): SupportedStorage {
   // Lazy import ca să nu se ceară în bundle-ul web unde plugin-ul nu există la runtime.
   const preferencesPromise = import("@capacitor/preferences").then((m) => m.Preferences);
   const fallback = webStorage();
-  const within = async <T,>(operation: Promise<T>, fallbackValue: T): Promise<T> => {
+  const within = async <T,>(operation: Promise<T>, fallbackValue: T, timeoutMs = 750): Promise<T> => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       return await Promise.race([
         operation,
         new Promise<T>((resolve) => {
-          timer = setTimeout(() => resolve(fallbackValue), 1_500);
+          timer = setTimeout(() => resolve(fallbackValue), timeoutMs);
         }),
       ]);
     } finally {
@@ -79,31 +79,34 @@ function nativeStorage(): SupportedStorage {
   };
   return {
     getItem: async (k) => {
+      // localStorage este sursa rapidă pentru sesiunea curentă. Preferences este
+      // folosit doar ca recuperare după ce WebView și-a pierdut storage-ul.
+      const localValue = await fallback.getItem(k);
+      if (localValue !== null) return localValue;
       try {
-        const P = await preferencesPromise;
+        const P = await within(preferencesPromise, null, 500);
+        if (!P) return null;
         const result = await within(P.get({ key: k }), { value: null });
-        return result.value ?? (await fallback.getItem(k));
+        if (result.value !== null) await fallback.setItem(k, result.value);
+        return result.value;
       } catch {
-        return fallback.getItem(k);
+        return null;
       }
     },
     setItem: async (k, v) => {
+      // Supabase așteaptă storage.setItem înainte să rezolve signIn/signUp.
+      // Scriem sincron în WebView și nu ținem autentificarea blocată de I/O-ul
+      // SharedPreferences; copia nativă se persistă best-effort în fundal.
       await fallback.setItem(k, v);
-      try {
-        const P = await preferencesPromise;
-        await within(P.set({ key: k, value: v }), undefined);
-      } catch {
-        /* fallback-ul web a fost deja scris */
-      }
+      void preferencesPromise
+        .then((P) => within(P.set({ key: k, value: v }), undefined))
+        .catch(() => undefined);
     },
     removeItem: async (k) => {
       await fallback.removeItem(k);
-      try {
-        const P = await preferencesPromise;
-        await within(P.remove({ key: k }), undefined);
-      } catch {
-        /* fallback-ul web a fost deja curățat */
-      }
+      void preferencesPromise
+        .then((P) => within(P.remove({ key: k }), undefined))
+        .catch(() => undefined);
     },
   };
 }
