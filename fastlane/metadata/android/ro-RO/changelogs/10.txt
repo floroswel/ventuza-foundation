@@ -1,0 +1,5 @@
+Suzeta 1.0.10
+
+• Conectare cu Google reparată pe Android (se deschide în Chrome, nu mai apare eroarea 404).
+• Crearea contului cu email este instant: nu mai rămâne blocată la data nașterii.
+• Mesaje de eroare clare la autentificare + timeout-uri mai scurte.

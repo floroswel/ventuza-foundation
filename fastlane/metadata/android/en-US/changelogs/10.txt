@@ -1,0 +1,5 @@
+Suzeta 1.0.10
+
+• Google Sign-In fixed on Android (opens in Chrome, no more 404).
+• Email sign-up is instant: no more hanging on the birthdate step.
+• Clearer authentication errors and shorter timeouts.
