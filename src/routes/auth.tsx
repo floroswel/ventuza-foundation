@@ -589,9 +589,28 @@ function AuthPage() {
           navigate({ to: "/auth/check-email", search: { email }, replace: true });
           return;
         }
+        // Diferențiem OFFLINE (telefonul nu are net) de TIMEOUT server.
+        const online = typeof navigator === "undefined" ? true : navigator.onLine !== false;
+        if (!online) {
+          addDiagnostic("email", "AUTH_OFFLINE", "navigator.onLine=false");
+          handleAuthError(error, {
+            message: "Telefonul nu este conectat la internet.",
+            action: "Activează datele mobile sau Wi-Fi, apoi apasă din nou.",
+          });
+          return;
+        }
+        const health = await supabaseHealthCheck(5_000);
+        addDiagnostic(
+          "email",
+          `HEALTH_${health.status.toUpperCase()}`,
+          `${health.host} · HTTP ${health.httpStatus ?? "-"} · ${health.durationMs} ms`,
+        );
         handleAuthError(error, {
-          message: "Conexiunea de autentificare a expirat. Verifică internetul și încearcă din nou.",
-          action: "Butonul a fost reactivat; poți reîncerca imediat.",
+          message:
+            health.status === "connected"
+              ? "AUTH_SERVER_ERROR: serverul de autentificare nu a răspuns la timp."
+              : "AUTH_NETWORK_TIMEOUT: nu am putut ajunge la serverul de autentificare.",
+          action: "Apasă din nou pe buton — cererea a fost oprită, nu rămâne blocată.",
         });
       } else {
         addDiagnostic("email", "ERROR", error instanceof Error ? error.message : String(error));
