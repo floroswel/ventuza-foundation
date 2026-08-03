@@ -13,8 +13,10 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
+import { isNativePlatformSync } from "@/lib/native-platform-sync";
 import { Button } from "@/components/ui/button";
-import { getMyDiditStatus, startDiditVerification, syncMyDiditStatus } from "@/lib/didit.functions";
+
 
 export const Route = createFileRoute("/verify")({
   ssr: false,
