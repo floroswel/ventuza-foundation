@@ -33,8 +33,16 @@ export function SessionGuards() {
   // local și trimitem la /auth, altfel app-ul rămâne blocat în 403/409.
   useEffect(() => {
     void (async () => {
-      const { reapStaleSession } = await import("@/lib/stale-session");
-      await reapStaleSession();
+      console.log("[AUTH] GUARD_SESSION_RESTORE_STARTED");
+      try {
+        const { reapStaleSession } = await import("@/lib/stale-session");
+        await reapStaleSession();
+        console.log("[AUTH] GUARD_SESSION_RESTORE_FINISHED", { err: null });
+      } catch (err) {
+        console.log("[AUTH] GUARD_SESSION_RESTORE_FINISHED", {
+          err: err instanceof Error ? err.message : String(err),
+        });
+      }
     })();
   }, []);
 
@@ -50,7 +58,9 @@ export function SessionGuards() {
     // `email_confirmed_at` lives on auth.users; the client User object exposes it.
     const confirmedAt = (user as unknown as { email_confirmed_at?: string | null })
       .email_confirmed_at;
+    console.log("[AUTH] GUARD_EMAIL_CONFIRMED_CHECK", { path, confirmed: !!confirmedAt });
     if (!confirmedAt && user.email) {
+      console.log("[AUTH] NAVIGATION_STARTED", { to: "/auth/check-email", reason: "email_not_confirmed" });
       navigate({ to: "/auth/check-email", search: { email: user.email }, replace: true });
     }
   }, [user, location.pathname, navigate]);
@@ -60,15 +70,23 @@ export function SessionGuards() {
     if (!user) return;
     let cancelled = false;
     void (async () => {
-      const { data } = await supabase
+      console.log("[AUTH] GUARD_ONBOARDING_FETCH_STARTED", { path: location.pathname });
+      const { data, error } = await supabase
         .from("profiles")
         .select("birthdate, onboarding_completed")
         .eq("id", user.id)
         .maybeSingle();
+      console.log("[AUTH] GUARD_ONBOARDING_FETCH_FINISHED", {
+        err: error ? { code: error.code, msg: error.message } : null,
+        rowPresent: !!data,
+        birthdatePresent: !!data?.birthdate,
+        onboarding_completed: data?.onboarding_completed ?? null,
+      });
       if (cancelled) return;
       const path = location.pathname || "/";
       const exempt = ALLOWED_WITHOUT_BIRTHDATE.some((p) => path.startsWith(p));
       if (!data?.birthdate && !exempt) {
+        console.log("[AUTH] NAVIGATION_STARTED", { to: "/n", reason: "missing_birthdate" });
         navigate({ to: "/n", replace: true });
       }
     })();
