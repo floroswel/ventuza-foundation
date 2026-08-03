@@ -26,6 +26,7 @@ import {
   type NativeGoogleDiagnostic,
 } from "@/lib/native-google-auth";
 import { classifySigningCertificate, describeInstallSource, readAndroidSignature, readNativeGoogleLogs, readNativeLogcat, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
+import { browserGoogleSignIn, NATIVE_BRIDGE_CALLBACK } from "@/lib/native-oauth-browser";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import {
@@ -43,6 +44,7 @@ import { clearEntries, getEntries, installOnce, isDebugEnabled, log as debugLog,
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).catch("login"),
   redirect: z.string().optional(),
+  native_bridge: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth")({
@@ -212,7 +214,9 @@ function AuthPage() {
   // Butonul Google apare doar dacă avem cale funcțională:
   //  - pe Android nativ: doar dacă avem Web Client ID (env sau secret server)
   //  - pe web: mereu (broker Lovable managed OAuth)
-  const googleAvailable = isNative ? nativeGoogleReady : nativeChecked || !isNative;
+  // Pe nativ butonul rămâne mereu disponibil: chiar fără Web Client ID avem
+  // fallback-ul prin Chrome Custom Tabs (nu depinde de clientul Android).
+  const googleAvailable = isNative ? true : nativeChecked || !isNative;
   const certificateMatch = classifySigningCertificate(signatureInfo?.sha1);
 
 
@@ -253,8 +257,21 @@ function AuthPage() {
             res.code === "cancelled" ? "CANCELLED" : "ERROR",
             formatGoogleDiagnostic(res.diagnostic),
           );
-          if (res.code === "cancelled") return;
-          handleAuthError(new Error(res.message ?? "Google sign-in failed"));
+          // Fallback automat: Chrome Custom Tabs + deep link. Nu depinde de
+          // clientul OAuth Android și nici de SHA-1-ul build-ului instalat.
+          addDiagnostic("google", "BROWSER_FALLBACK_STARTED", "Chrome Custom Tabs → app.suzeta://auth-callback");
+          const viaBrowser = await browserGoogleSignIn();
+          if (viaBrowser.ok) {
+            addDiagnostic("google", "RESPONSE_RECEIVED", "sesiune primită prin deep link");
+            return;
+          }
+          addDiagnostic(
+            "google",
+            viaBrowser.code === "cancelled" ? "CANCELLED" : "ERROR",
+            `fallback browser: ${viaBrowser.message ?? viaBrowser.code}`,
+          );
+          if (viaBrowser.code === "cancelled" && res.code === "cancelled") return;
+          handleAuthError(new Error(viaBrowser.message ?? res.message ?? "Google sign-in failed"));
           return;
         }
         addDiagnostic("google", "RESPONSE_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
@@ -299,15 +316,39 @@ function AuthPage() {
     toast.error(mapped.message, { description: mapped.action, duration: mapped.retryAfterSec && mapped.retryAfterSec > 30 ? 8000 : 5500 });
   }
 
+  // Pagina web servește și ca „punte” pentru aplicația Android: când e
+  // deschisă în Chrome Custom Tabs cu ?native_bridge=1, după autentificare
+  // trimite sesiunea înapoi în app prin deep link în loc să navigheze intern.
+  useEffect(() => {
+    if (search.native_bridge === "1") {
+      try { sessionStorage.setItem("vz_native_bridge", "1"); } catch { /* ignore */ }
+    }
+  }, [search.native_bridge]);
+
   useEffect(() => {
     if (!authLoading && user) {
       void (async () => {
         // Catch OAuth round-trips that landed back on /auth.
         await persistPendingBirthdate(user.id);
+        let bridge = search.native_bridge === "1";
+        try { bridge = bridge || sessionStorage.getItem("vz_native_bridge") === "1"; } catch { /* ignore */ }
+        if (bridge) {
+          try { sessionStorage.removeItem("vz_native_bridge"); } catch { /* ignore */ }
+          const { data } = await supabase.auth.getSession();
+          const session = data.session;
+          if (session?.access_token && session?.refresh_token) {
+            const params = new URLSearchParams({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+            });
+            window.location.href = `${NATIVE_BRIDGE_CALLBACK}#${params.toString()}`;
+            return;
+          }
+        }
         await routeAfterAuth(user.id, navigate, search.redirect);
       })();
     }
-  }, [authLoading, user, navigate, search.redirect]);
+  }, [authLoading, user, navigate, search.redirect, search.native_bridge]);
 
   function ageFromBirthDate(iso: string): number | null {
     if (!iso) return null;
