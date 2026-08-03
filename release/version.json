@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.10",
-  "versionCode": 10,
+  "versionName": "1.0.11",
+  "versionCode": 11,
   "track": "internal",
-  "notes": "Build 10: Google Sign-In prin Chrome Custom Tabs pe Android (fără dependență de Credential Manager/SHA-1), creare cont cu email fără blocaj pe birthdate (redirect imediat la verificarea emailului), precheck-uri fail-open la 4s."
+  "notes": "Build 11: verificarea vârstei (Didit) pornește corect în aplicația nativă (fără eroare 404, se deschide în Chrome Custom Tab), permisiunea de locație este cerută o singură dată la intrarea în aplicație și poziția se preia automat când permisiunea există deja."
 }
