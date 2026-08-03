@@ -882,12 +882,18 @@ function AuthPage() {
                   size="sm"
                   variant="outline"
                   onClick={async () => {
+                    const health = await supabaseHealthCheck(6000);
                     const payload = {
                       build: `${MOBILE_VERSION_CODE} · ${shortBuildSha}`,
                       packageName: signatureInfo?.packageName ?? "app.suzeta (necomunicat de runtime)",
                       versionName: signatureInfo?.versionName,
                       versionCode: signatureInfo?.versionCode,
                       installSource: describeInstallSource(signatureInfo),
+                      platform: isNative ? "android-native" : "web",
+                      online: typeof navigator === "undefined" ? null : navigator.onLine,
+                      supabase: { ...inspectSupabaseConfig(), health },
+                      turnstile: captchaRequired ? (captchaToken ? "token_received" : "pending") : "skipped_native",
+                      stages: readAuthStages(),
                       serverClientId: runtimeClientId,
                       clientId: runtimeClientId,
                       signature: signatureInfo,
@@ -899,6 +905,8 @@ function AuthPage() {
                       network: getEntries().filter((entry) => entry.source.startsWith("auth.") || entry.source === "fetch"),
                     };
                     await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+                    toast.success("Diagnosticul a fost copiat");
+                  }}
                     toast.success("Diagnosticul a fost copiat");
                   }}
                 >
