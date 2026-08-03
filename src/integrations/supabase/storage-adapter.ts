@@ -63,30 +63,46 @@ function webStorage(): SupportedStorage {
 function nativeStorage(): SupportedStorage {
   // Lazy import ca să nu se ceară în bundle-ul web unde plugin-ul nu există la runtime.
   const preferencesPromise = import("@capacitor/preferences").then((m) => m.Preferences);
+  const fallback = webStorage();
+  const within = async <T,>(operation: Promise<T>, fallbackValue: T): Promise<T> => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        operation,
+        new Promise<T>((resolve) => {
+          timer = setTimeout(() => resolve(fallbackValue), 1_500);
+        }),
+      ]);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+  };
   return {
     getItem: async (k) => {
       try {
         const P = await preferencesPromise;
-        const { value } = await P.get({ key: k });
-        return value ?? null;
+        const result = await within(P.get({ key: k }), { value: null });
+        return result.value ?? (await fallback.getItem(k));
       } catch {
-        return null;
+        return fallback.getItem(k);
       }
     },
     setItem: async (k, v) => {
+      await fallback.setItem(k, v);
       try {
         const P = await preferencesPromise;
-        await P.set({ key: k, value: v });
+        await within(P.set({ key: k, value: v }), undefined);
       } catch {
-        /* silent */
+        /* fallback-ul web a fost deja scris */
       }
     },
     removeItem: async (k) => {
+      await fallback.removeItem(k);
       try {
         const P = await preferencesPromise;
-        await P.remove({ key: k });
+        await within(P.remove({ key: k }), undefined);
       } catch {
-        /* silent */
+        /* fallback-ul web a fost deja curățat */
       }
     },
   };
