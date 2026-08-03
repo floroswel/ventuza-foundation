@@ -226,6 +226,7 @@ function Landing() {
                 Continue with Google
               </button>
             )}
+          </div>
         </section>
 
         {/* What is Suzeta */}
