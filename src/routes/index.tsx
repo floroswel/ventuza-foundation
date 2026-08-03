@@ -15,6 +15,7 @@ import { lovable } from "@/integrations/lovable";
 import { oauthOrigin } from "@/lib/canonical-origin";
 import { PublicFooter } from "@/components/PublicFooter";
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
+import { isNativePlatformSync } from "@/lib/native-platform-sync";
 import {
   FAQ,
   HOME_DESCRIPTION,
