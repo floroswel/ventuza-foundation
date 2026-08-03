@@ -15,6 +15,7 @@ import { lovable } from "@/integrations/lovable";
 import { oauthOrigin } from "@/lib/canonical-origin";
 import { PublicFooter } from "@/components/PublicFooter";
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
+import { isNativePlatformSync } from "@/lib/native-platform-sync";
 import {
   FAQ,
   HOME_DESCRIPTION,
@@ -138,6 +139,23 @@ function Landing() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [googleBusy, setGoogleBusy] = useState(false);
+  // Google e disponibil DOAR pe web. În app-ul nativ (Play Store) fluxul OAuth
+  // prin webview nu e suportat, deci butonul nu se randează deloc.
+  const [googleAvailable, setGoogleAvailable] = useState(!isNativePlatformSync());
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        if (!cancelled) setGoogleAvailable(!Capacitor.isNativePlatform());
+      } catch {
+        /* web */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Signed-in users are sent into the app; logged-out visitors and crawlers
   // always get the full public landing page rendered server-side.
@@ -198,14 +216,16 @@ function Landing() {
             >
               Sign in
             </Link>
-            <button
-              type="button"
-              onClick={() => void handleGoogle()}
-              disabled={googleBusy}
-              className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-surface text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-60"
-            >
-              Continue with Google
-            </button>
+            {googleAvailable && (
+              <button
+                type="button"
+                onClick={() => void handleGoogle()}
+                disabled={googleBusy}
+                className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-surface text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-60"
+              >
+                Continue with Google
+              </button>
+            )}
           </div>
         </section>
 

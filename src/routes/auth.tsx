@@ -27,6 +27,7 @@ import {
 } from "@/lib/native-google-auth";
 import { classifySigningCertificate, describeInstallSource, readAndroidSignature, readNativeGoogleLogs, readNativeLogcat, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
 import { browserGoogleSignIn, NATIVE_BRIDGE_CALLBACK } from "@/lib/native-oauth-browser";
+import { isNativePlatformSync } from "@/lib/native-platform-sync";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import {
@@ -131,9 +132,13 @@ async function persistPendingBirthdate(userId: string) {
   }
   if (!pending) return;
   try {
-    await supabase.from("profiles").update({ birthdate: pending }).eq("id", userId);
+    await withAuthTimeout(
+      "pending_birthdate_update",
+      supabase.from("profiles").update({ birthdate: pending }).eq("id", userId),
+      8_000,
+    );
   } catch {
-    /* ignore */
+    /* ignore — nu blocăm redirectul post-login */
   }
   try {
     sessionStorage.removeItem("vz_pending_birthdate");
@@ -219,7 +224,7 @@ function AuthPage() {
   const captchaRequired = isCaptchaMandatory();
   const captchaMisconfigured = isTurnstileMisconfiguredInProd();
   const [googleBusy, setGoogleBusy] = useState(false);
-  const [isNative, setIsNative] = useState(false);
+  const [isNative, setIsNative] = useState(isNativePlatformSync());
   const [nativeChecked, setNativeChecked] = useState(false);
   const [nativeGoogleReady, setNativeGoogleReady] = useState(hasNativeGoogleConfig());
   const [diagnosticEnabled, setDiagnosticEnabled] = useState(false);
@@ -255,7 +260,8 @@ function AuthPage() {
     setDiagnosticEnabled(debugOn);
     if (debugOn) installOnce();
     void (async () => {
-      const native = await isNativeAndroid();
+      // Orice platformă nativă (nu doar Android) ascunde butonul Google.
+      const native = (await isNativePlatform()) || (await isNativeAndroid());
       if (cancelled) return;
       setIsNative(native);
       setSignatureInfo(readAndroidSignature());
@@ -499,6 +505,18 @@ function AuthPage() {
     setAuthError(null);
 
     setSubmitting(true);
+    // Watchdog absolut: indiferent ce await rămâne suspendat (SDK, storage
+    // nativ, fetch fără răspuns), spinner-ul se eliberează și userul primește
+    // o eroare reală în loc să aștepte la infinit.
+    const watchdog = window.setTimeout(() => {
+      authLog("AUTH_WATCHDOG_TRIPPED", { mode, afterMs: 45_000 });
+      addDiagnostic("email", "WATCHDOG_TRIPPED", "45 s fără finalizare — deblochez butonul");
+      setSubmitting(false);
+      handleAuthError(new Error("auth_watchdog_timeout"), {
+        message: "Cererea de autentificare nu a primit răspuns.",
+        action: "Verifică conexiunea și apasă din nou — cererea a fost oprită.",
+      });
+    }, 45_000);
     authLog(mode === "signup" ? "EMAIL_SIGNUP_REQUESTED" : "EMAIL_LOGIN_STARTED", {
       mode,
       captchaRequired,
@@ -575,7 +593,14 @@ function AuthPage() {
             const t0 = Date.now();
             try {
               const { computeDeviceFingerprint } = await import("@/lib/fingerprint");
-              const fp = await computeDeviceFingerprint().catch(() => null);
+              // Amprenta de device poate rămâne suspendată în WebView-ul nativ
+              // (API-uri care nu răspund niciodată). Fără acest timeout, întregul
+              // preflight nu se mai rezolvă și butonul se învârte la infinit.
+              const fp = await Promise.race([
+                computeDeviceFingerprint().catch(() => null),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 2_000)),
+              ]);
+              if (!fp) authLog("FINGERPRINT_SKIPPED", { reason: "timeout_or_error" });
               const res = await fetch(guardUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -747,7 +772,13 @@ function AuthPage() {
         // Recuperare: cererea poate să fi reușit pe server chiar dacă răspunsul
         // a întârziat (rețea mobilă lentă). Verificăm sesiunea reală înainte
         // să afișăm o eroare roșie.
-        const { data: recovered } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+        // getSession() poate rămâne blocat pe lock-ul intern al clientului
+        // Supabase în WebView. Îl mărginim explicit ca să nu blocăm handlerul.
+        const { data: recovered } = await withAuthTimeout(
+          "session_recovery",
+          supabase.auth.getSession(),
+          5_000,
+        ).catch(() => ({ data: { session: null } }));
         if (recovered?.session?.user) {
           authLog("SESSION_CREATED", { via: "timeout_recovery" });
           addDiagnostic("email", "TIMEOUT_RECOVERED", "sesiune activă găsită după timeout");
@@ -795,6 +826,7 @@ function AuthPage() {
       }
 
     } finally {
+      window.clearTimeout(watchdog);
       setSubmitting(false);
       addDiagnostic("email", "REQUEST_FINISHED");
       authLog(mode === "signup" ? "EMAIL_SIGNUP_FINISHED" : "EMAIL_LOGIN_HANDLER_FINISHED", { submitting: false });
