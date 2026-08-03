@@ -275,12 +275,11 @@ function AuthPage() {
       cancelled = true;
     };
   }, []);
-  // Butonul Google apare doar dacă avem cale funcțională:
-  //  - pe Android nativ: doar dacă avem Web Client ID (env sau secret server)
-  //  - pe web: mereu (broker Lovable managed OAuth)
-  // Pe nativ butonul rămâne mereu disponibil: chiar fără Web Client ID avem
-  // fallback-ul prin Chrome Custom Tabs (nu depinde de clientul Android).
-  const googleAvailable = isNative ? true : nativeChecked || !isNative;
+  // Butonul Google: ASCUNS pe Android nativ (fluxul nativ nu e stabil în
+  // producție — Credential Manager / Custom Tabs), VIZIBIL pe web unde
+  // brokerul managed OAuth funcționează corect.
+  const googleAvailable = !isNative;
+
   const certificateMatch = classifySigningCertificate(signatureInfo?.sha1);
 
 

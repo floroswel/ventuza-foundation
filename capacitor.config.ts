@@ -28,17 +28,26 @@ const config: CapacitorConfig = {
   android: {
     allowMixedContent: false,
     backgroundColor: "#0B0B10",
+    // Fără debug WebView în release și fără zoom de browser în pagină.
+    webContentsDebuggingEnabled: false,
+    useLegacyBridge: false,
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 1200,
+      launchShowDuration: 900,
+      launchAutoHide: true,
+      launchFadeOutDuration: 300,
       backgroundColor: "#0B0B10",
       androidSplashResourceName: "splash",
+      androidScaleType: "CENTER_CROP",
+      splashFullScreen: true,
+      splashImmersiveType: false,
       showSpinner: false,
     },
     StatusBar: {
       style: "DARK",
       backgroundColor: "#0B0B10",
+      overlaysWebView: true,
     },
     Keyboard: {
       resize: "native",

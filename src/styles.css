@@ -452,3 +452,70 @@ html {
 @media (prefers-reduced-motion: reduce) {
   .radar-ring { animation: none; }
 }
+
+/* ============================================================
+   NATIVE ANDROID FEEL — elimină comportamentele „de site" din WebView.
+   Aplicat global; input-urile și zonele marcate rămân selectabile.
+   ============================================================ */
+html {
+  /* Fără pull-to-refresh și fără bounce/overscroll glow de browser. */
+  overscroll-behavior: none;
+  /* Fără double-tap-to-zoom; tap-urile se simt instant. */
+  touch-action: manipulation;
+}
+
+html, body {
+  /* Fără highlight albastru la tap și fără meniu contextual la long-press. */
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  overscroll-behavior: none;
+}
+
+/* Fără selecție de text „web" pe UI. Textul editabil și conținutul marcat
+   explicit cu [data-selectable] rămân selectabile (ex. cod de referral). */
+body {
+  -webkit-user-select: none;
+  user-select: none;
+}
+input,
+textarea,
+select,
+[contenteditable="true"],
+[data-selectable],
+[data-selectable] * {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
+}
+
+/* Scroll cu inerție nativă în containerele scrollabile. */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Fără highlight de focus „browser" pe tap (păstrăm focus-visible pt. a11y). */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Imaginile nu pot fi trase (drag ghost = comportament de pagină web). */
+img {
+  -webkit-user-drag: none;
+  user-select: none;
+}
+
+/* ---- Tranziții native între ecrane -------------------------------- */
+@keyframes page-enter {
+  from { opacity: 0; transform: translate3d(0, 8px, 0); }
+  to   { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.page-transition {
+  animation: page-enter 200ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  will-change: opacity, transform;
+  /* Fond opac: fără flash alb între ecrane. */
+  background-color: var(--color-background);
+  min-height: 100dvh;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-transition { animation: none; }
+}

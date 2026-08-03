@@ -191,6 +191,19 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+/**
+ * Wrapper de tranziție între ecrane — animație scurtă la fiecare schimbare de
+ * rută, cu fundal opac ca să nu existe flash alb (comportament de browser).
+ */
+function PageTransition({ children }: { children: ReactNode }) {
+  const location = useLocation();
+  return (
+    <div key={location.pathname} className="page-transition">
+      {children}
+    </div>
+  );
+}
+
 function ProximityWatcherMount() {
   useProximityForegroundWatcher();
   usePresenceHeartbeat();
@@ -313,7 +326,9 @@ function RootComponent() {
             <ProximityWatcherMount />
             <NativePushNavigatorMount />
             <GuardianBoundary area="app" category="react">
-              <Outlet />
+              <PageTransition>
+                <Outlet />
+              </PageTransition>
             </GuardianBoundary>
 
             <OfflineBanner />

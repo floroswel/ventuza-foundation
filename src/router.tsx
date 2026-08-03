@@ -2,6 +2,18 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
+function DefaultPendingComponent() {
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-background">
+      <div
+        aria-label="Se încarcă"
+        role="status"
+        className="size-8 animate-spin rounded-full border-2 border-primary/25 border-t-primary"
+      />
+    </div>
+  );
+}
+
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   return (
@@ -67,6 +79,11 @@ export const getRouter = () => {
     defaultPreloadDelay: 50,
     defaultPreloadStaleTime: 0,
     defaultErrorComponent: DefaultErrorComponent,
+    // Nicio ecran alb la navigare: dacă o rută lazy întârzie >150ms afișăm un
+    // indicator nativ, minim 300ms ca să nu clipească.
+    defaultPendingMs: 150,
+    defaultPendingMinMs: 300,
+    defaultPendingComponent: DefaultPendingComponent,
   });
 
   return router;
