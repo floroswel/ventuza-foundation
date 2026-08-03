@@ -242,16 +242,39 @@ function AuthPage() {
     setGoogleBusy(true);
     addDiagnostic("google", "REQUEST_STARTED", `platform=${isNative ? "android-native" : "web"}`);
     try {
-      // În Capacitor (WebView) fluxul web de OAuth prin redirect dă 404 —
-      // Google blochează sign-in-ul din WebView-uri. Pe nativ mergem DIRECT pe
-      // Chrome Custom Tabs (browser de sistem, acceptat de Google), care nu
-      // depinde de clientul OAuth Android și nici de SHA-1-ul build-ului.
-      // SDK-ul nativ (Credential Manager) rămâne doar ca a doua încercare.
+      // ANDROID: DOAR calea nativă (Credential Manager → idToken →
+      // signInWithIdToken). Fluxul web de OAuth în WebView este interzis
+      // (Google returnează 404 pentru WebView-uri). Chrome Custom Tabs rămâne
+      // exclusiv ca plasă de siguranță când SDK-ul nativ NU e disponibil
+      // (client ID lipsă / plugin absent) — niciodată după o anulare reală.
       if (await isNativePlatform()) {
         const pressedAt = Date.now();
-        addDiagnostic("google", "BROWSER_FLOW_STARTED", "Chrome Custom Tabs → app.suzeta://auth-callback");
+        addDiagnostic("google", "SDK_LOGIN_STARTED", `clientId=${runtimeClientId ? "prezent" : "în curs de rezolvare"}`);
+        const res = await nativeGoogleSignIn();
+        setNativeGoogleLogs(readNativeGoogleLogs());
+        setNativeLogcat(readNativeLogcat());
+        setGoogleRuntime(getNativeGoogleRuntimeState());
+        addDiagnostic("google", "SDK_LOGIN_FINISHED", `durată=${Date.now() - pressedAt} ms`);
+        if (res.ok) {
+          addDiagnostic("google", "RESPONSE_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
+          return;
+        }
+        addDiagnostic(
+          "google",
+          res.code === "cancelled" ? "CANCELLED" : "ERROR",
+          formatGoogleDiagnostic(res.diagnostic),
+        );
+        if (res.code === "cancelled") {
+          handleAuthError(new Error("Autentificarea Google a fost anulată."), {
+            message: "Autentificarea Google a fost anulată.",
+            action: "Apasă din nou și alege contul Google din listă.",
+          });
+          return;
+        }
+        // SDK indisponibil / neconfigurat → Chrome Custom Tabs (browser de
+        // sistem, NU WebView). Nu navigăm niciodată intern la o pagină 404.
+        addDiagnostic("google", "BROWSER_FALLBACK_STARTED", "SDK nativ indisponibil → Chrome Custom Tabs");
         const viaBrowser = await browserGoogleSignIn(180_000, mode === "signup" ? "signup" : "login");
-        addDiagnostic("google", "BROWSER_FLOW_FINISHED", `durată buton→răspuns=${Date.now() - pressedAt} ms`);
         if (viaBrowser.ok) {
           addDiagnostic("google", "RESPONSE_RECEIVED", "sesiune primită prin deep link");
           return;
@@ -262,25 +285,8 @@ function AuthPage() {
           `browser: ${viaBrowser.message ?? viaBrowser.code}`,
         );
         if (viaBrowser.code === "cancelled") return;
-
-        // Ultimă șansă: SDK-ul nativ.
-        addDiagnostic("google", "SDK_LOGIN_STARTED", `clientId=${runtimeClientId ?? "în curs de rezolvare"}`);
-        const res = await nativeGoogleSignIn();
-        setNativeGoogleLogs(readNativeGoogleLogs());
-        setNativeLogcat(readNativeLogcat());
-        setGoogleRuntime(getNativeGoogleRuntimeState());
-        if (!res.ok) {
-          addDiagnostic(
-            "google",
-            res.code === "cancelled" ? "CANCELLED" : "ERROR",
-            formatGoogleDiagnostic(res.diagnostic),
-          );
-          if (res.code === "cancelled") return;
-          handleAuthError(new Error(res.message ?? viaBrowser.message ?? "Google sign-in failed"));
-          return;
-        }
-        addDiagnostic("google", "RESPONSE_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
-        // Session set by supabase.auth.signInWithIdToken; SessionGuards redirects.
+        handleAuthError(new Error(res.message ?? viaBrowser.message ?? "Google sign-in failed"));
+        return;
       } else {
 
         addDiagnostic("google", "OAUTH_BROKER_STARTED", `redirect=${oauthOrigin()}/auth`);
