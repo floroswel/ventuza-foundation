@@ -18,8 +18,26 @@ import { isProductionHost } from "@/lib/age-gate-policy";
 
 const SITE_KEY = (import.meta.env.VITE_TURNSTILE_SITE_KEY as string | undefined) ?? "";
 
+/**
+ * Runtime nativ (Capacitor). Turnstile rulează în WebView de pe
+ * `capacitor://localhost` / `https://localhost`, origin pe care Cloudflare nu
+ * îl poate valida → widgetul fie nu se încarcă, fie nu emite token, iar
+ * signup-ul rămâne blocat până la timeout. Pe nativ sărim captcha și ne bazăm
+ * pe rate limit-ul server-side din `/api/public/signup-guard` + Supabase.
+ */
+export function isNativeRuntimeSync(): boolean {
+  try {
+    const cap = (globalThis as unknown as {
+      Capacitor?: { isNativePlatform?: () => boolean };
+    }).Capacitor;
+    return cap?.isNativePlatform?.() === true;
+  } catch {
+    return false;
+  }
+}
+
 export function isTurnstileConfigured(): boolean {
-  return SITE_KEY.length > 0;
+  return SITE_KEY.length > 0 && !isNativeRuntimeSync();
 }
 
 /** Captcha e obligatoriu DOAR când site key-ul e configurat (fail-open dacă lipsește). */
