@@ -569,28 +569,41 @@ function AuthPage() {
         }
         addDiagnostic("email", "AUTH_RESPONSE_RECEIVED", `user=${data.user ? "da" : "nu"} · session=${data.session ? "da" : "nu"}`);
         // Persist birthdate on profile (trigger `enforce_min_age` enforces 18+ server-side).
-        // Canonical column is `birthdate` — used by age gate, discover, /n onboarding.
-        // Capture browser language as fallback for transactional emails (ro/en only).
-        if (data.user) {
+        // ATENȚIE: fără sesiune (confirmare email obligatorie) update-ul rulează ca
+        // anon și nu poate reuși — nu blocăm userul acolo, salvăm local și îl
+        // trimitem imediat la ecranul „verifică emailul”. /n scrie birthdate după login.
+        if (data.user && data.session) {
           const browserLang = (navigator.language || "ro").toLowerCase().startsWith("ro") ? "ro" : "en";
-          await withAuthTimeout(
-            "profile_signup_update",
-            supabase
-              .from("profiles")
-              .update({ birthdate: birthDate, preferred_language: browserLang })
-              .eq("id", data.user.id),
-            10_000,
-          );
-          addDiagnostic("email", "PROFILE_UPDATE_RESPONSE_RECEIVED");
+          try {
+            await withAuthTimeout(
+              "profile_signup_update",
+              supabase
+                .from("profiles")
+                .update({ birthdate: birthDate, preferred_language: browserLang })
+                .eq("id", data.user.id),
+              8_000,
+            );
+            addDiagnostic("email", "PROFILE_UPDATE_RESPONSE_RECEIVED");
+          } catch {
+            addDiagnostic("email", "PROFILE_UPDATE_SKIPPED", "timeout · continuăm");
+          }
         }
+        try {
+          if (birthDate) {
+            sessionStorage.setItem("vz_pending_birthdate", birthDate);
+            localStorage.setItem("vz_pending_birthdate", birthDate);
+          }
+        } catch { /* ignore */ }
         if (data.session) {
           toast.success(t("auth.errors.welcome"));
           await routeAfterAuth(data.user!.id, navigate);
         } else {
           // Email confirmation required → ghidăm userul către o pagină dedicată
           // cu resend + countdown (nu îl lăsăm blocat pe /auth fără feedback).
+          addDiagnostic("email", "SIGNUP_OK_EMAIL_CONFIRM_REQUIRED");
           navigate({ to: "/auth/check-email", search: { email: emailParsed.data }, replace: true });
         }
+
       } else {
         addDiagnostic("email", "EMAIL_LOGIN_STARTED", maskEmail(emailParsed.data));
         const loginStartedAt = Date.now();
