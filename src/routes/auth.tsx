@@ -544,7 +544,9 @@ function AuthPage() {
             password: passParsed.data,
             options: { captchaToken: captchaToken ?? undefined },
           }),
+          30_000,
         );
+
         if (error) {
           addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
           handleAuthError(error);
