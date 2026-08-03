@@ -7,6 +7,7 @@
  */
 
 type SignatureBridge = {
+  getAll?: () => string;
   getPackageName?: () => string;
   getSha1?: () => string;
   getSha256?: () => string;
@@ -94,16 +95,31 @@ export function readAndroidSignature(): AndroidSignatureInfo {
       return null;
     }
   };
+  // Sursa primară: un singur apel nativ care citește PackageManager + certificat.
+  let all: Record<string, string> = {};
+  try {
+    const raw = bridge.getAll?.();
+    if (raw) all = JSON.parse(raw) as Record<string, string>;
+  } catch {
+    all = {};
+  }
+  const pick = (key: string, fn?: () => string): string | null => {
+    const v = all[key];
+    if (typeof v === "string" && v.length > 0) return v;
+    return safe(fn);
+  };
   return {
     available: true,
-    packageName: safe(bridge.getPackageName),
-    sha1: safe(bridge.getSha1),
-    sha256: safe(bridge.getSha256),
-    installerPackage: safe(bridge.getInstallerPackage),
-    installSource: safe(bridge.getInstallSource),
-    versionName: safe(bridge.getVersionName),
-    versionCode: safe(bridge.getVersionCode),
+    packageName: pick("packageName", bridge.getPackageName),
+    sha1: pick("sha1", bridge.getSha1),
+    sha256: pick("sha256", bridge.getSha256),
+    installerPackage: pick("installerPackage", bridge.getInstallerPackage),
+    installSource: pick("installSource", bridge.getInstallSource),
+    versionName: pick("versionName", bridge.getVersionName),
+    versionCode: pick("versionCode", bridge.getVersionCode),
+    note: all.error ?? all.versionError,
   };
+
 }
 
 /** Etichetă lizibilă pentru sursa instalării. */

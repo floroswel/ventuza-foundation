@@ -149,7 +149,13 @@ export type NativeGoogleResult =
   | { ok: true; diagnostic?: NativeGoogleDiagnostic }
   | {
       ok: false;
-      code: "unsupported" | "no_id_token" | "cancelled" | "error";
+      code:
+        | "unsupported"
+        | "no_id_token"
+        | "cancelled"
+        | "no_credential"
+        | "reauth_failed"
+        | "error";
       message?: string;
       diagnostic?: NativeGoogleDiagnostic;
     };
@@ -257,8 +263,29 @@ async function runNativeGoogleSignIn(): Promise<NativeGoogleResult> {
       },
     ];
 
+    /**
+     * Clasificare corectă a erorilor Credential Manager. Pluginul le
+     * raportează pe toate ca „cancelled by user”, ceea ce e fals:
+     *  - `NoCredentialException` → nu există credential eligibil pe device;
+     *  - `[16] Account reauth failed` → contul Google cere reautentificare;
+     *  - Back/Cancel real → `GOOGLE_USER_CANCELLED`.
+     */
+    function classify(message: string): "no_credential" | "reauth_failed" | "cancelled" | "error" {
+      if (/NoCredential|no credential(s)? available/i.test(message)) return "no_credential";
+      if (/reauth failed|\[16\]/i.test(message)) return "reauth_failed";
+      if (/cancel/i.test(message)) return "cancelled";
+      return "error";
+    }
+    const codeLabel = {
+      no_credential: "GOOGLE_NO_CREDENTIAL_AVAILABLE",
+      reauth_failed: "GOOGLE_ACCOUNT_REAUTH_FAILED",
+      cancelled: "GOOGLE_USER_CANCELLED",
+      error: "GOOGLE_SDK_ERROR",
+    } as const;
+
     let result: { result?: { idToken?: string | null } } | null = null;
     let lastDiagnostic: NativeGoogleDiagnostic | undefined;
+    let lastKind: "no_credential" | "reauth_failed" | "cancelled" | "error" = "error";
     for (const attempt of attempts) {
       const attemptStart = Date.now();
       try {
@@ -271,19 +298,20 @@ async function runNativeGoogleSignIn(): Promise<NativeGoogleResult> {
       } catch (error) {
         const diagnostic = diagnosticFromError(error, "google_login");
         diagnostic.elapsedMs = Date.now() - attemptStart;
+        const kind = classify(diagnostic.message ?? "");
+        lastKind = kind;
         runtimeState.attempts.push({
           label: attempt.label,
           elapsedMs: diagnostic.elapsedMs,
-          outcome: error instanceof Error ? error.message.slice(0, 120) : String(error).slice(0, 120),
+          outcome: `${codeLabel[kind]}: ${(diagnostic.message ?? "").slice(0, 100)}`,
         });
-        diagnostic.code = `${diagnostic.code ?? "unknown"}@${attempt.label}`;
+        diagnostic.code = `${codeLabel[kind]}@${attempt.label}`;
         lastDiagnostic = diagnostic;
-        // Dacă e o anulare/absență de credential, mai încercăm varianta următoare.
-        const cancelLike = /cancel|no credential|NoCredential|16:|activity is cancelled/i.test(
-          diagnostic.message ?? "",
-        );
-        if (!cancelLike) {
-          return { ok: false, code: "error", message: diagnostic.message, diagnostic };
+        // Reauth eșuat, anulare reală sau eroare de SDK → NU relansăm o a doua
+        // cerere automată (ar produce încă un dialog inutil). Doar absența de
+        // credential justifică încercarea alternativă.
+        if (kind !== "no_credential") {
+          return { ok: false, code: kind, message: diagnostic.message, diagnostic };
         }
       }
     }
@@ -291,18 +319,25 @@ async function runNativeGoogleSignIn(): Promise<NativeGoogleResult> {
     if (!result) {
       const diagnostic = lastDiagnostic ?? {
         stage: "google_login" as const,
-        code: "cancelled",
-        message: "Google Sign-In cancelled",
+        code: codeLabel[lastKind],
+        message: "Google Sign-In indisponibil",
+      };
+      const messages: Record<typeof lastKind, string> = {
+        no_credential:
+          "Nu există niciun cont Google eligibil pe acest telefon pentru Suzeta (NoCredentialException).",
+        reauth_failed:
+          "Contul Google cere reautentificare pe telefon (Account reauth failed).",
+        cancelled: "Ai închis fereastra Google înainte de finalizare.",
+        error: diagnostic.message ?? "Eroare Google Sign-In.",
       };
       return {
         ok: false,
-        code: "cancelled",
-        message:
-          "Google nu a returnat niciun cont. Verifică: (1) ai un cont Google adăugat în Setări → Conturi pe telefon, (2) SHA-1 al build-ului instalat este în clientul OAuth Android (app.suzeta). Detaliu: " +
-          (diagnostic.message ?? ""),
+        code: lastKind,
+        message: messages[lastKind],
         diagnostic,
       };
     }
+
 
 
     const idToken = result?.result?.idToken ?? null;

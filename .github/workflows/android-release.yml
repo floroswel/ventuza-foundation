@@ -351,6 +351,14 @@ jobs:
             echo "✓ MainActivity override aplicat în $DEST"
           fi
 
+          # 4b) ProGuard/R8 — păstrează metodele @JavascriptInterface (altfel
+          #     diagnosticul nativ întoarce null pentru SHA/versiuni).
+          if [ -f android-overrides/proguard-rules.pro ]; then
+            cat android-overrides/proguard-rules.pro >> android/app/proguard-rules.pro
+            echo "✓ Reguli ProGuard adăugate"
+          fi
+
+
       - name: Validează resursele Android (PNG/XML/duplicate/referințe lipsă)
         run: |
           python3 <<'PY'
