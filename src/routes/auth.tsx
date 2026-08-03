@@ -242,19 +242,35 @@ function AuthPage() {
     setGoogleBusy(true);
     addDiagnostic("google", "REQUEST_STARTED", `platform=${isNative ? "android-native" : "web"}`);
     try {
-      // ANDROID: DOAR calea nativă (Credential Manager → idToken →
-      // signInWithIdToken). Fluxul web de OAuth în WebView este interzis
-      // (Google returnează 404 pentru WebView-uri). Chrome Custom Tabs rămâne
-      // exclusiv ca plasă de siguranță când SDK-ul nativ NU e disponibil
-      // (client ID lipsă / plugin absent) — niciodată după o anulare reală.
+      // ANDROID: Chrome Custom Tabs (browser de sistem) este calea PRIMARĂ.
+      // Motiv dovedit din logcat build 7: Android Credential Manager întoarce
+      // `NoCredentialException: No credentials available` și
+      // `[16] Account reauth failed` — pluginul le raportează drept
+      // "cancelled by user", deci SDK-ul nativ nu poate finaliza login-ul pe
+      // device-urile utilizatorilor. Custom Tabs NU e WebView, deci Google nu
+      // returnează 404. SDK-ul nativ rămâne doar ca fallback.
       if (await isNativePlatform()) {
         const pressedAt = Date.now();
-        addDiagnostic("google", "SDK_LOGIN_STARTED", `clientId=${runtimeClientId ? "prezent" : "în curs de rezolvare"}`);
+        addDiagnostic("google", "BROWSER_FLOW_STARTED", "Chrome Custom Tabs (flux primar)");
+        const viaBrowser = await browserGoogleSignIn(180_000, mode === "signup" ? "signup" : "login");
+        addDiagnostic("google", "BROWSER_FLOW_FINISHED", `durată=${Date.now() - pressedAt} ms`);
+        if (viaBrowser.ok) {
+          addDiagnostic("google", "RESPONSE_RECEIVED", "sesiune primită prin deep link");
+          return;
+        }
+        if (viaBrowser.code === "cancelled") {
+          addDiagnostic("google", "CANCELLED", `browser: ${viaBrowser.message ?? viaBrowser.code}`);
+          handleAuthError(new Error("Autentificarea Google a fost anulată."), {
+            message: "Autentificarea Google a fost anulată.",
+            action: "Apasă din nou și alege contul Google în fereastra Google.",
+          });
+          return;
+        }
+        addDiagnostic("google", "SDK_FALLBACK_STARTED", `browser: ${viaBrowser.message ?? viaBrowser.code}`);
         const res = await nativeGoogleSignIn();
         setNativeGoogleLogs(readNativeGoogleLogs());
         setNativeLogcat(readNativeLogcat());
         setGoogleRuntime(getNativeGoogleRuntimeState());
-        addDiagnostic("google", "SDK_LOGIN_FINISHED", `durată=${Date.now() - pressedAt} ms`);
         if (res.ok) {
           addDiagnostic("google", "RESPONSE_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
           return;
@@ -264,30 +280,13 @@ function AuthPage() {
           res.code === "cancelled" ? "CANCELLED" : "ERROR",
           formatGoogleDiagnostic(res.diagnostic),
         );
-        if (res.code === "cancelled") {
-          handleAuthError(new Error("Autentificarea Google a fost anulată."), {
-            message: "Autentificarea Google a fost anulată.",
-            action: "Apasă din nou și alege contul Google din listă.",
-          });
-          return;
-        }
-        // SDK indisponibil / neconfigurat → Chrome Custom Tabs (browser de
-        // sistem, NU WebView). Nu navigăm niciodată intern la o pagină 404.
-        addDiagnostic("google", "BROWSER_FALLBACK_STARTED", "SDK nativ indisponibil → Chrome Custom Tabs");
-        const viaBrowser = await browserGoogleSignIn(180_000, mode === "signup" ? "signup" : "login");
-        if (viaBrowser.ok) {
-          addDiagnostic("google", "RESPONSE_RECEIVED", "sesiune primită prin deep link");
-          return;
-        }
-        addDiagnostic(
-          "google",
-          viaBrowser.code === "cancelled" ? "CANCELLED" : "ERROR",
-          `browser: ${viaBrowser.message ?? viaBrowser.code}`,
-        );
-        if (viaBrowser.code === "cancelled") return;
-        handleAuthError(new Error(res.message ?? viaBrowser.message ?? "Google sign-in failed"));
+        handleAuthError(new Error(viaBrowser.message ?? res.message ?? "Google sign-in failed"), {
+          message: "Nu am putut finaliza autentificarea cu Google.",
+          action: "Încearcă din nou sau folosește email și parolă.",
+        });
         return;
       } else {
+
 
         addDiagnostic("google", "OAUTH_BROKER_STARTED", `redirect=${oauthOrigin()}/auth`);
         const result = await lovable.auth.signInWithOAuth("google", {
