@@ -501,6 +501,18 @@ function AuthPage() {
     setAuthError(null);
 
     setSubmitting(true);
+    // Watchdog absolut: indiferent ce await rămâne suspendat (SDK, storage
+    // nativ, fetch fără răspuns), spinner-ul se eliberează și userul primește
+    // o eroare reală în loc să aștepte la infinit.
+    const watchdog = window.setTimeout(() => {
+      authLog("AUTH_WATCHDOG_TRIPPED", { mode, afterMs: 45_000 });
+      addDiagnostic("email", "WATCHDOG_TRIPPED", "45 s fără finalizare — deblochez butonul");
+      setSubmitting(false);
+      handleAuthError(new Error("auth_watchdog_timeout"), {
+        message: "Cererea de autentificare nu a primit răspuns.",
+        action: "Verifică conexiunea și apasă din nou — cererea a fost oprită.",
+      });
+    }, 45_000);
     authLog(mode === "signup" ? "EMAIL_SIGNUP_REQUESTED" : "EMAIL_LOGIN_STARTED", {
       mode,
       captchaRequired,
