@@ -738,6 +738,7 @@ function AuthPage() {
         }
       }
     } catch (error) {
+      authLog("AUTH_ERROR_FINAL", { raw: error, info: supabaseErrorInfo(error) });
       if (error instanceof Error && error.name === "AuthTimeoutError") {
         addDiagnostic("email", "TIMEOUT", error.message);
         // Recuperare: cererea poate să fi reușit pe server chiar dacă răspunsul
@@ -745,6 +746,7 @@ function AuthPage() {
         // să afișăm o eroare roșie.
         const { data: recovered } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
         if (recovered?.session?.user) {
+          authLog("SESSION_CREATED", { via: "timeout_recovery" });
           addDiagnostic("email", "TIMEOUT_RECOVERED", "sesiune activă găsită după timeout");
           await routeAfterAuth(recovered.session.user.id, navigate, search.redirect);
           return;
@@ -754,7 +756,9 @@ function AuthPage() {
           toast.message("Cererea durează mai mult decât de obicei", {
             description: "Dacă ai primit emailul de confirmare, contul este creat. Verifică inboxul.",
           });
+          authLog("AUTH_NAVIGATION_STARTED", { to: "/auth/check-email", reason: "timeout_pending" });
           navigate({ to: "/auth/check-email", search: { email }, replace: true });
+          authLog("AUTH_NAVIGATION_FINISHED", { to: "/auth/check-email" });
           return;
         }
         // Diferențiem OFFLINE (telefonul nu are net) de TIMEOUT server.
@@ -768,6 +772,7 @@ function AuthPage() {
           return;
         }
         const health = await supabaseHealthCheck(5_000);
+        authLog("HEALTH_CHECK", { status: health.status, httpStatus: health.httpStatus ?? null, ms: health.durationMs });
         addDiagnostic(
           "email",
           `HEALTH_${health.status.toUpperCase()}`,
@@ -782,12 +787,14 @@ function AuthPage() {
         });
       } else {
         addDiagnostic("email", "ERROR", error instanceof Error ? error.message : String(error));
-        handleAuthError(error);
+        // Eroare reală Supabase (nu timeout) → afișăm mesajul real al serverului.
+        handleAuthError(error, isSupabaseAuthError(error) ? { message: error.message } : undefined);
       }
 
     } finally {
       setSubmitting(false);
       addDiagnostic("email", "REQUEST_FINISHED");
+      authLog(mode === "signup" ? "EMAIL_SIGNUP_FINISHED" : "EMAIL_LOGIN_HANDLER_FINISHED", { submitting: false });
     }
   }
 
