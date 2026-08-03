@@ -27,6 +27,7 @@ import {
 } from "@/lib/native-google-auth";
 import { classifySigningCertificate, describeInstallSource, readAndroidSignature, readNativeGoogleLogs, readNativeLogcat, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
 import { browserGoogleSignIn, NATIVE_BRIDGE_CALLBACK } from "@/lib/native-oauth-browser";
+import { isNativePlatformSync } from "@/lib/native-platform-sync";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import {
