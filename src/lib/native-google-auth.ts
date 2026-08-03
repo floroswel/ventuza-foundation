@@ -149,7 +149,13 @@ export type NativeGoogleResult =
   | { ok: true; diagnostic?: NativeGoogleDiagnostic }
   | {
       ok: false;
-      code: "unsupported" | "no_id_token" | "cancelled" | "error";
+      code:
+        | "unsupported"
+        | "no_id_token"
+        | "cancelled"
+        | "no_credential"
+        | "reauth_failed"
+        | "error";
       message?: string;
       diagnostic?: NativeGoogleDiagnostic;
     };
