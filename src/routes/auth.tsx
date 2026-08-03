@@ -330,6 +330,20 @@ function AuthPage() {
     }
   }, [search.native_bridge]);
 
+  // Auto-pornire OAuth când puntea e deschisă din aplicație: userul a apăsat
+  // deja „Continuă cu Google” în app, nu trebuie să mai apese încă o dată.
+  const bridgeAutoStarted = useRef(false);
+  useEffect(() => {
+    if (bridgeAutoStarted.current) return;
+    if (authLoading || user) return;
+    if (search.native_bridge !== "1" || search.auto !== "google") return;
+    bridgeAutoStarted.current = true;
+    void onGoogleSignIn();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user, search.native_bridge, search.auto]);
+
+
+
   useEffect(() => {
     if (!authLoading && user) {
       void (async () => {
