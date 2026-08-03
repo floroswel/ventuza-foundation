@@ -435,50 +435,63 @@ function AuthPage() {
           return;
         }
 
-        // Server-side disposable email preflight (enforced again by DB trigger
-        // public.enforce_disposable_email_on_profile).
-        addDiagnostic("email", "PREFLIGHT_STARTED", "assert_email_allowed");
-        const { error: disposableErr } = await withAuthTimeout(
-          "email_preflight",
-          supabase.rpc("assert_email_allowed", { _email: emailParsed.data }),
-        );
-        if (disposableErr) {
-          addDiagnostic("email", "PREFLIGHT_ERROR", disposableErr.message);
-          handleAuthError(disposableErr);
+        // Preflight-uri (disposable email + anti-bot). Rulează în paralel, cu
+        // timeout scurt și fail-open: pe rețele mobile lente nu au voie să
+        // consume bugetul de timp al signup-ului propriu-zis.
+        addDiagnostic("email", "PREFLIGHT_STARTED", "assert_email_allowed + signup-guard");
+        const nativeRuntime = await isNativePlatform();
+        const guardUrl = nativeRuntime
+          ? "https://suzeta.app/api/public/signup-guard"
+          : "/api/public/signup-guard";
+
+        const [preflight, guard] = await Promise.all([
+          withAuthTimeout(
+            "email_preflight",
+            supabase.rpc("assert_email_allowed", { _email: emailParsed.data }),
+            6_000,
+          ).catch(() => null),
+          (async () => {
+            try {
+              const { computeDeviceFingerprint } = await import("@/lib/fingerprint");
+              const fp = await computeDeviceFingerprint().catch(() => null);
+              return await fetch(guardUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ fingerprint: fp ?? undefined }),
+                signal: AbortSignal.timeout(6_000),
+              });
+            } catch (guardError) {
+              addDiagnostic(
+                "email",
+                "SIGNUP_GUARD_ERROR_FAIL_OPEN",
+                guardError instanceof Error ? guardError.message : String(guardError),
+              );
+              return null;
+            }
+          })(),
+        ]);
+
+        if (preflight?.error) {
+          addDiagnostic("email", "PREFLIGHT_ERROR", preflight.error.message);
+          handleAuthError(preflight.error);
           return;
         }
-        addDiagnostic("email", "PREFLIGHT_RESPONSE_RECEIVED");
-        // Anti-bot throttle per IP + device fingerprint (caps at /api/public/signup-guard).
-        try {
-          const { computeDeviceFingerprint } = await import("@/lib/fingerprint");
-          const fp = await computeDeviceFingerprint().catch(() => null);
-          const guardUrl = (await isNativePlatform())
-            ? "https://suzeta.app/api/public/signup-guard"
-            : "/api/public/signup-guard";
-          addDiagnostic("email", "SIGNUP_GUARD_STARTED", guardUrl);
-          const guardRes = await fetch(guardUrl, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fingerprint: fp ?? undefined }),
-            signal: AbortSignal.timeout(8_000),
-          });
-          addDiagnostic("email", "SIGNUP_GUARD_RESPONSE_RECEIVED", `HTTP ${guardRes.status} · ${guardUrl}`);
-          if (guardRes.status === 429) {
-            const payload = (await guardRes.json().catch(() => ({}))) as {
+        if (guard) {
+          addDiagnostic("email", "SIGNUP_GUARD_RESPONSE_RECEIVED", `HTTP ${guard.status} · ${guardUrl}`);
+          if (guard.status === 429) {
+            const payload = (await guard.json().catch(() => ({}))) as {
               error?: string;
               retryAfterSec?: number;
             };
-            const headerRetry = Number(guardRes.headers.get("Retry-After") ?? "");
+            const headerRetry = Number(guard.headers.get("Retry-After") ?? "");
             const retryAfterSec =
               payload.retryAfterSec ??
               (Number.isFinite(headerRetry) && headerRetry > 0 ? headerRetry : 3600);
             handleAuthError(new Error(payload.error ?? "signup_throttled"), { retryAfterSec });
             return;
           }
-        } catch (guardError) {
-          addDiagnostic("email", "SIGNUP_GUARD_ERROR_FAIL_OPEN", guardError instanceof Error ? guardError.message : String(guardError));
-          // Network failure: fail-open so real users aren't locked out.
         }
+        addDiagnostic("email", "PREFLIGHT_RESPONSE_RECEIVED");
         addDiagnostic("email", "AUTH_REQUEST_STARTED", "signUp");
         const { data, error } = await withAuthTimeout(
           "email_signup",
@@ -490,7 +503,9 @@ function AuthPage() {
               captchaToken: captchaToken ?? undefined,
             },
           }),
+          45_000,
         );
+
         if (error) {
           addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
           handleAuthError(error);
@@ -529,7 +544,9 @@ function AuthPage() {
             password: passParsed.data,
             options: { captchaToken: captchaToken ?? undefined },
           }),
+          30_000,
         );
+
         if (error) {
           addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
           handleAuthError(error);
@@ -541,6 +558,23 @@ function AuthPage() {
     } catch (error) {
       if (error instanceof Error && error.name === "AuthTimeoutError") {
         addDiagnostic("email", "TIMEOUT", error.message);
+        // Recuperare: cererea poate să fi reușit pe server chiar dacă răspunsul
+        // a întârziat (rețea mobilă lentă). Verificăm sesiunea reală înainte
+        // să afișăm o eroare roșie.
+        const { data: recovered } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+        if (recovered?.session?.user) {
+          addDiagnostic("email", "TIMEOUT_RECOVERED", "sesiune activă găsită după timeout");
+          await routeAfterAuth(recovered.session.user.id, navigate, search.redirect);
+          return;
+        }
+        if (mode === "signup" && error.message.startsWith("email_signup")) {
+          addDiagnostic("email", "TIMEOUT_SIGNUP_PENDING", "trimit userul la confirmarea emailului");
+          toast.message("Cererea durează mai mult decât de obicei", {
+            description: "Dacă ai primit emailul de confirmare, contul este creat. Verifică inboxul.",
+          });
+          navigate({ to: "/auth/check-email", search: { email }, replace: true });
+          return;
+        }
         handleAuthError(error, {
           message: "Conexiunea de autentificare a expirat. Verifică internetul și încearcă din nou.",
           action: "Butonul a fost reactivat; poți reîncerca imediat.",
@@ -549,6 +583,7 @@ function AuthPage() {
         addDiagnostic("email", "ERROR", error instanceof Error ? error.message : String(error));
         handleAuthError(error);
       }
+
     } finally {
       setSubmitting(false);
       addDiagnostic("email", "REQUEST_FINISHED");
