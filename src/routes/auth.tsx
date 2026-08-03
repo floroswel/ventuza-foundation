@@ -300,15 +300,39 @@ function AuthPage() {
     toast.error(mapped.message, { description: mapped.action, duration: mapped.retryAfterSec && mapped.retryAfterSec > 30 ? 8000 : 5500 });
   }
 
+  // Pagina web servește și ca „punte” pentru aplicația Android: când e
+  // deschisă în Chrome Custom Tabs cu ?native_bridge=1, după autentificare
+  // trimite sesiunea înapoi în app prin deep link în loc să navigheze intern.
+  useEffect(() => {
+    if (search.native_bridge === "1") {
+      try { sessionStorage.setItem("vz_native_bridge", "1"); } catch { /* ignore */ }
+    }
+  }, [search.native_bridge]);
+
   useEffect(() => {
     if (!authLoading && user) {
       void (async () => {
         // Catch OAuth round-trips that landed back on /auth.
         await persistPendingBirthdate(user.id);
+        let bridge = search.native_bridge === "1";
+        try { bridge = bridge || sessionStorage.getItem("vz_native_bridge") === "1"; } catch { /* ignore */ }
+        if (bridge) {
+          try { sessionStorage.removeItem("vz_native_bridge"); } catch { /* ignore */ }
+          const { data } = await supabase.auth.getSession();
+          const session = data.session;
+          if (session?.access_token && session?.refresh_token) {
+            const params = new URLSearchParams({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+            });
+            window.location.href = `${NATIVE_BRIDGE_CALLBACK}#${params.toString()}`;
+            return;
+          }
+        }
         await routeAfterAuth(user.id, navigate, search.redirect);
       })();
     }
-  }, [authLoading, user, navigate, search.redirect]);
+  }, [authLoading, user, navigate, search.redirect, search.native_bridge]);
 
   function ageFromBirthDate(iso: string): number | null {
     if (!iso) return null;
