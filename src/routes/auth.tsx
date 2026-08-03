@@ -577,7 +577,14 @@ function AuthPage() {
             const t0 = Date.now();
             try {
               const { computeDeviceFingerprint } = await import("@/lib/fingerprint");
-              const fp = await computeDeviceFingerprint().catch(() => null);
+              // Amprenta de device poate rămâne suspendată în WebView-ul nativ
+              // (API-uri care nu răspund niciodată). Fără acest timeout, întregul
+              // preflight nu se mai rezolvă și butonul se învârte la infinit.
+              const fp = await Promise.race([
+                computeDeviceFingerprint().catch(() => null),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 2_000)),
+              ]);
+              if (!fp) authLog("FINGERPRINT_SKIPPED", { reason: "timeout_or_error" });
               const res = await fetch(guardUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
