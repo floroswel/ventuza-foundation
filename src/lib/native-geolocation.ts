@@ -106,3 +106,23 @@ export async function watchPosition(
   );
   return { clear: () => navigator.geolocation.clearWatch(wid) };
 }
+
+/**
+ * Cere explicit permisiunea de locație (dialogul OS pe Android).
+ * Întoarce true dacă permisiunea e acordată după cerere.
+ */
+export async function ensureLocationPermission(): Promise<boolean> {
+  if (await isNative()) {
+    try {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const perm = await Geolocation.checkPermissions();
+      if (perm.location === "granted") return true;
+      const req = await Geolocation.requestPermissions();
+      return req.location === "granted";
+    } catch {
+      return false;
+    }
+  }
+  // Web: dialogul apare la primul getCurrentPosition.
+  return typeof navigator !== "undefined" && "geolocation" in navigator;
+}
