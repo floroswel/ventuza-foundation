@@ -21,15 +21,48 @@ import { notifyLocationSharingChanged } from "@/hooks/useLocationWatcher";
  */
 const STORAGE_PREFIX = "suzeta_loc_prompt_seen_v1:";
 
+// Rute unde primer-ul NU are ce căuta (flux de auth / onboarding / legal).
+const EXCLUDED_PREFIXES = [
+  "/auth",
+  "/n",
+  "/onboarding",
+  "/legal",
+  "/reset-password",
+  "/blocked",
+  "/admin",
+];
+
 function routeNeedsLocationPrimer(pathname: string) {
-  return (
-    pathname === "/" ||
-    pathname.startsWith("/discover") ||
-    pathname.startsWith("/nearby") ||
-    pathname.startsWith("/cruise") ||
-    pathname.startsWith("/visitors")
-  );
+  return !EXCLUDED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
+
+/** Starea permisiunii de locație, corect detectată și pe Android nativ. */
+async function readPermissionState(): Promise<"prompt" | "granted" | "denied" | "unknown"> {
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (Capacitor.isNativePlatform()) {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const perm = await Geolocation.checkPermissions();
+      const s = perm.location;
+      if (s === "granted") return "granted";
+      if (s === "denied") return "denied";
+      return "prompt";
+    }
+  } catch {
+    /* nu suntem pe native sau pluginul lipsește */
+  }
+  try {
+    const perms = (navigator as Navigator & { permissions?: Permissions }).permissions;
+    if (perms?.query) {
+      const st = await perms.query({ name: "geolocation" as PermissionName });
+      return st.state as "prompt" | "granted" | "denied";
+    }
+  } catch {
+    /* Permissions API indisponibil */
+  }
+  return "unknown";
+}
+
 
 export function LocationPermissionPrompt() {
   const { user } = useAuth();
