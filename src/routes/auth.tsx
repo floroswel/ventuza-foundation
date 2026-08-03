@@ -521,7 +521,10 @@ function AuthPage() {
         // Preflight-uri (disposable email + anti-bot). Rulează în paralel, cu
         // timeout scurt și fail-open: pe rețele mobile lente nu au voie să
         // consume bugetul de timp al signup-ului propriu-zis.
+        authLog("PREFLIGHT_ALL_STARTED", { timeoutMs: 4000, failOpen: true });
         addDiagnostic("email", "PREFLIGHT_ALL_STARTED", "assert_email_allowed + signup-guard (paralel, 4s, fail-open)");
+        if (!captchaRequired) authLog("TURNSTILE_SKIPPED_ANDROID");
+        else authLog(captchaToken ? "TURNSTILE_TOKEN_RECEIVED" : "TURNSTILE_FAILED", { captchaToken: tokenInfo(captchaToken) });
         addDiagnostic(
           "email",
           captchaRequired
@@ -536,8 +539,9 @@ function AuthPage() {
           : "/api/public/signup-guard";
 
         const PREFLIGHT_MS = 4_000;
-        const [preflight, guard] = await Promise.all([
+        const settled = await Promise.allSettled([
           (async () => {
+            authLog("EMAIL_ALLOWED_STARTED");
             addDiagnostic("email", "EMAIL_ALLOWED_STARTED");
             const t0 = Date.now();
             try {
@@ -546,20 +550,24 @@ function AuthPage() {
                 supabase.rpc("assert_email_allowed", { _email: emailParsed.data }),
                 PREFLIGHT_MS,
               );
+              authLog("EMAIL_ALLOWED_FINISHED", { ms: Date.now() - t0, err: r.error ? supabaseErrorInfo(r.error) : null });
               addDiagnostic("email", "EMAIL_ALLOWED_FINISHED", `${Date.now() - t0} ms`);
               return r;
             } catch (e) {
+              authLog("EMAIL_ALLOWED_TIMEOUT", { ms: Date.now() - t0, err: supabaseErrorInfo(e) });
               addDiagnostic(
                 "email",
                 "EMAIL_ALLOWED_TIMEOUT",
                 `${Date.now() - t0} ms · ${e instanceof Error ? e.message : String(e)}`,
               );
               // Fail-open: nu blocăm signup-ul dacă RPC-ul anti-spam nu răspunde.
+              authLog("PRECHECK_TIMEOUT_FAIL_OPEN", { which: "assert_email_allowed" });
               addDiagnostic("email", "PRECHECK_TIMEOUT_FAIL_OPEN", "assert_email_allowed");
               return null;
             }
           })(),
           (async () => {
+            authLog("SIGNUP_GUARD_STARTED", { url: guardUrl });
             addDiagnostic("email", "SIGNUP_GUARD_STARTED", guardUrl);
             const t0 = Date.now();
             try {
@@ -571,19 +579,24 @@ function AuthPage() {
                 body: JSON.stringify({ fingerprint: fp ?? undefined }),
                 signal: AbortSignal.timeout(PREFLIGHT_MS),
               });
+              authLog("SIGNUP_GUARD_FINISHED", { status: res.status, ms: Date.now() - t0 });
               addDiagnostic("email", "SIGNUP_GUARD_FINISHED", `HTTP ${res.status} · ${Date.now() - t0} ms`);
               return res;
             } catch (guardError) {
+              authLog("SIGNUP_GUARD_TIMEOUT", { ms: Date.now() - t0, err: supabaseErrorInfo(guardError) });
               addDiagnostic(
                 "email",
                 "SIGNUP_GUARD_TIMEOUT",
                 `${Date.now() - t0} ms · ${guardError instanceof Error ? guardError.message : String(guardError)}`,
               );
+              authLog("PRECHECK_TIMEOUT_FAIL_OPEN", { which: "signup-guard" });
               addDiagnostic("email", "PRECHECK_TIMEOUT_FAIL_OPEN", "signup-guard");
               return null;
             }
           })(),
         ]);
+        const preflight = settled[0].status === "fulfilled" ? settled[0].value : null;
+        const guard = settled[1].status === "fulfilled" ? settled[1].value : null;
 
         // Doar un refuz EXPLICIT al serverului oprește signup-ul. Timeout,
         // rețea căzută sau eroare de transport → continuăm (fail-open).
