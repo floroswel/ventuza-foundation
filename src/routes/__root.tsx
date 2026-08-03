@@ -313,7 +313,9 @@ function RootComponent() {
             <ProximityWatcherMount />
             <NativePushNavigatorMount />
             <GuardianBoundary area="app" category="react">
-              <Outlet />
+              <PageTransition>
+                <Outlet />
+              </PageTransition>
             </GuardianBoundary>
 
             <OfflineBanner />
