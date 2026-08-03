@@ -153,28 +153,48 @@ async function routeAfterAuth(
   redirectTo?: string,
 ) {
   if (redirectTo && redirectTo.startsWith("/")) {
+    authLog("NAVIGATION_STARTED", { to: redirectTo, reason: "redirect_param" });
     navigate({ to: redirectTo, replace: true });
+    authLog("AUTH_NAVIGATION_FINISHED", { to: redirectTo });
     return;
   }
-  const { data } = await withAuthTimeout(
-    "profile_route",
-    supabase
-      .from("profiles")
-      .select("onboarding_completed, birthdate")
-      .eq("id", userId)
-      .maybeSingle(),
-    10_000,
-  );
+  authLog("PROFILE_FETCH_STARTED", { userId: !!userId });
+  let data: { onboarding_completed?: boolean | null; birthdate?: string | null } | null = null;
+  try {
+    const res = await withAuthTimeout(
+      "profile_route",
+      supabase
+        .from("profiles")
+        .select("onboarding_completed, birthdate")
+        .eq("id", userId)
+        .maybeSingle(),
+      10_000,
+    );
+    data = res.data;
+    authLog("PROFILE_FETCH_FINISHED", {
+      err: res.error ? supabaseErrorInfo(res.error) : null,
+      rowPresent: !!res.data,
+      onboarding_completed: res.data?.onboarding_completed ?? null,
+      birthdatePresent: !!res.data?.birthdate,
+    });
+  } catch (err) {
+    authLog("PROFILE_FETCH_FINISHED", { err: supabaseErrorInfo(err) });
+    throw err;
+  }
   // OAuth signups may not have a birthdate yet — SessionGuards also enforces
   // this, but we route directly to /n to avoid a flash of /discover.
   if (!data?.birthdate) {
+    authLog("NAVIGATION_STARTED", { to: "/n", reason: "missing_birthdate" });
     navigate({ to: "/n", replace: true });
+    authLog("AUTH_NAVIGATION_FINISHED", { to: "/n" });
     return;
   }
   // Default landing for returning users is /discover (the main feed).
   // /cruise is the opt-in "Right Now" feed and used to be a confusing default.
-  if (data?.onboarding_completed) navigate({ to: "/discover", replace: true });
-  else navigate({ to: "/n", replace: true });
+  const target = data?.onboarding_completed ? "/discover" : "/n";
+  authLog("NAVIGATION_STARTED", { to: target, reason: "onboarding_gate" });
+  navigate({ to: target, replace: true });
+  authLog("AUTH_NAVIGATION_FINISHED", { to: target });
 }
 
 function AuthPage() {
