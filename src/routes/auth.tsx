@@ -240,43 +240,46 @@ function AuthPage() {
     addDiagnostic("google", "REQUEST_STARTED", `platform=${isNative ? "android-native" : "web"}`);
     try {
       // În Capacitor (WebView) fluxul web de OAuth prin redirect dă 404 —
-      // Google blochează sign-in-ul din WebView-uri. Pe nativ mergem EXCLUSIV
-      // pe SDK-ul nativ + supabase.auth.signInWithIdToken; nu facem niciodată
-      // fallback pe redirect web.
+      // Google blochează sign-in-ul din WebView-uri. Pe nativ mergem DIRECT pe
+      // Chrome Custom Tabs (browser de sistem, acceptat de Google), care nu
+      // depinde de clientul OAuth Android și nici de SHA-1-ul build-ului.
+      // SDK-ul nativ (Credential Manager) rămâne doar ca a doua încercare.
       if (await isNativePlatform()) {
-        addDiagnostic("google", "SDK_LOGIN_STARTED", `clientId=${runtimeClientId ?? "în curs de rezolvare"}`);
         const pressedAt = Date.now();
+        addDiagnostic("google", "BROWSER_FLOW_STARTED", "Chrome Custom Tabs → app.suzeta://auth-callback");
+        const viaBrowser = await browserGoogleSignIn(180_000, mode === "signup" ? "signup" : "login");
+        addDiagnostic("google", "BROWSER_FLOW_FINISHED", `durată buton→răspuns=${Date.now() - pressedAt} ms`);
+        if (viaBrowser.ok) {
+          addDiagnostic("google", "RESPONSE_RECEIVED", "sesiune primită prin deep link");
+          return;
+        }
+        addDiagnostic(
+          "google",
+          viaBrowser.code === "cancelled" ? "CANCELLED" : "ERROR",
+          `browser: ${viaBrowser.message ?? viaBrowser.code}`,
+        );
+        if (viaBrowser.code === "cancelled") return;
+
+        // Ultimă șansă: SDK-ul nativ.
+        addDiagnostic("google", "SDK_LOGIN_STARTED", `clientId=${runtimeClientId ?? "în curs de rezolvare"}`);
         const res = await nativeGoogleSignIn();
         setNativeGoogleLogs(readNativeGoogleLogs());
         setNativeLogcat(readNativeLogcat());
         setGoogleRuntime(getNativeGoogleRuntimeState());
-        addDiagnostic("google", "SDK_LOGIN_FINISHED", `durată buton→răspuns=${Date.now() - pressedAt} ms`);
         if (!res.ok) {
           addDiagnostic(
             "google",
             res.code === "cancelled" ? "CANCELLED" : "ERROR",
             formatGoogleDiagnostic(res.diagnostic),
           );
-          // Fallback automat: Chrome Custom Tabs + deep link. Nu depinde de
-          // clientul OAuth Android și nici de SHA-1-ul build-ului instalat.
-          addDiagnostic("google", "BROWSER_FALLBACK_STARTED", "Chrome Custom Tabs → app.suzeta://auth-callback");
-          const viaBrowser = await browserGoogleSignIn();
-          if (viaBrowser.ok) {
-            addDiagnostic("google", "RESPONSE_RECEIVED", "sesiune primită prin deep link");
-            return;
-          }
-          addDiagnostic(
-            "google",
-            viaBrowser.code === "cancelled" ? "CANCELLED" : "ERROR",
-            `fallback browser: ${viaBrowser.message ?? viaBrowser.code}`,
-          );
-          if (viaBrowser.code === "cancelled" && res.code === "cancelled") return;
-          handleAuthError(new Error(viaBrowser.message ?? res.message ?? "Google sign-in failed"));
+          if (res.code === "cancelled") return;
+          handleAuthError(new Error(res.message ?? viaBrowser.message ?? "Google sign-in failed"));
           return;
         }
         addDiagnostic("google", "RESPONSE_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
         // Session set by supabase.auth.signInWithIdToken; SessionGuards redirects.
       } else {
+
         addDiagnostic("google", "OAUTH_BROKER_STARTED", `redirect=${oauthOrigin()}/auth`);
         const result = await lovable.auth.signInWithOAuth("google", {
           redirect_uri: `${oauthOrigin()}/auth`,
