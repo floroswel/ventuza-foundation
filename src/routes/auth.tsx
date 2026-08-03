@@ -756,7 +756,13 @@ function AuthPage() {
         // Recuperare: cererea poate să fi reușit pe server chiar dacă răspunsul
         // a întârziat (rețea mobilă lentă). Verificăm sesiunea reală înainte
         // să afișăm o eroare roșie.
-        const { data: recovered } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+        // getSession() poate rămâne blocat pe lock-ul intern al clientului
+        // Supabase în WebView. Îl mărginim explicit ca să nu blocăm handlerul.
+        const { data: recovered } = await withAuthTimeout(
+          "session_recovery",
+          supabase.auth.getSession(),
+          5_000,
+        ).catch(() => ({ data: { session: null } }));
         if (recovered?.session?.user) {
           authLog("SESSION_CREATED", { via: "timeout_recovery" });
           addDiagnostic("email", "TIMEOUT_RECOVERED", "sesiune activă găsită după timeout");
