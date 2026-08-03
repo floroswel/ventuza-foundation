@@ -22,7 +22,10 @@ export function SessionGuards() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  useDeviceFingerprint();
+  // Nu porni getUser() cât timp suntem delogați. Pe Android WebView, această
+  // cerere concurentă putea păstra lock-ul clientului auth exact când userul
+  // apăsa Login/Creare cont, iar signIn/signUp rămânea în așteptare.
+  useDeviceFingerprint(!!user);
 
   // Sesiune fantomă (user șters server-side / refresh token revocat) → curățăm
   // local și trimitem la /auth, altfel app-ul rămâne blocat în 403/409.

@@ -74,7 +74,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const loadingGuard = window.setTimeout(() => {
       if (!cancelled) setLoading(false);
     }, 1500);
-    void supabase.auth.getSession().then(({ data }) => {
+    const sessionHydration = Promise.race([
+      supabase.auth.getSession(),
+      new Promise<never>((_, reject) => {
+        window.setTimeout(() => reject(new Error("initial_session_timeout")), 5_000);
+      }),
+    ]);
+    void sessionHydration.then(({ data }) => {
       if (cancelled) return;
       window.clearTimeout(loadingGuard);
       setSession(data.session ?? null);

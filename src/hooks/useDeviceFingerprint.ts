@@ -6,8 +6,9 @@ import { computeDeviceFingerprint } from "@/lib/fingerprint";
  * Registers the current browser fingerprint to the signed-in user.
  * Runs once per session. If the device has been banned, signs the user out.
  */
-export function useDeviceFingerprint() {
+export function useDeviceFingerprint(enabled = true) {
   useEffect(() => {
+    if (!enabled) return;
     let cancelled = false;
     (async () => {
       try {
@@ -35,5 +36,5 @@ export function useDeviceFingerprint() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 }
