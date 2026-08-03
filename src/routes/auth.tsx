@@ -496,6 +496,11 @@ function AuthPage() {
     setAuthError(null);
 
     setSubmitting(true);
+    authLog(mode === "signup" ? "EMAIL_SIGNUP_REQUESTED" : "EMAIL_LOGIN_STARTED", {
+      mode,
+      captchaRequired,
+      captchaToken: tokenInfo(captchaToken),
+    });
     addDiagnostic("email", "REQUEST_STARTED", `operație=${mode}`);
     try {
       if (mode === "signup") {
