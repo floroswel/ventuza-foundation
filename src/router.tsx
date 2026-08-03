@@ -67,6 +67,11 @@ export const getRouter = () => {
     defaultPreloadDelay: 50,
     defaultPreloadStaleTime: 0,
     defaultErrorComponent: DefaultErrorComponent,
+    // Nicio ecran alb la navigare: dacă o rută lazy întârzie >150ms afișăm un
+    // indicator nativ, minim 300ms ca să nu clipească.
+    defaultPendingMs: 150,
+    defaultPendingMinMs: 300,
+    defaultPendingComponent: DefaultPendingComponent,
   });
 
   return router;
