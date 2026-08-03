@@ -9,11 +9,6 @@ import { useAuth } from "@/lib/auth-context";
 // a real birthdate (server-side `enforce_min_age_trg` enforces 18+).
 const ALLOWED_WITHOUT_BIRTHDATE = ["/n", "/auth", "/age-gate", "/legal", "/r/"];
 
-// Routes a user whose email isn't confirmed can still land on. The rest of the
-// app gates server-side via `assert_account_usable()` — this redirect is just
-// UX so the user lands somewhere actionable (resend link) instead of hitting
-// `email_not_confirmed` errors on every social RPC.
-const ALLOWED_WITHOUT_EMAIL_CONFIRMED = ["/auth", "/legal", "/reset-password", "/account-deletion"];
 
 /**
  * Invisible component that wires session-scoped background guards.
