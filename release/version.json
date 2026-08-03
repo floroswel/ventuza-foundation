@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.0",
-  "versionCode": 1,
+  "versionName": "1.0.8",
+  "versionCode": 8,
   "track": "internal",
-  "notes": "Aplicație NOUĂ în Play Console (package app.suzeta). Pornim de la versionCode 1 / versionName 1.0.0. La build, workflow-ul poate primi version_code explicit; altfel derivă MAJOR*10000+MINOR*100+PATCH."
+  "notes": "Auth fix build 8: signup email cu timeout 20s + coduri de eroare distincte, Turnstile sărit pe Android nativ, Google Sign-In exclusiv prin Credential Manager nativ (fără OAuth în WebView)."
 }
