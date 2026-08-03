@@ -439,6 +439,14 @@ function AuthPage() {
         // timeout scurt și fail-open: pe rețele mobile lente nu au voie să
         // consume bugetul de timp al signup-ului propriu-zis.
         addDiagnostic("email", "PREFLIGHT_STARTED", "assert_email_allowed + signup-guard");
+        addDiagnostic(
+          "email",
+          captchaRequired
+            ? captchaToken
+              ? "TURNSTILE_TOKEN_RECEIVED"
+              : "TURNSTILE_FAILED"
+            : "TURNSTILE_SKIPPED_ANDROID",
+        );
         const nativeRuntime = await isNativePlatform();
         const guardUrl = nativeRuntime
           ? "https://suzeta.app/api/public/signup-guard"
@@ -448,7 +456,7 @@ function AuthPage() {
           withAuthTimeout(
             "email_preflight",
             supabase.rpc("assert_email_allowed", { _email: emailParsed.data }),
-            6_000,
+            4_000,
           ).catch(() => null),
           (async () => {
             try {
@@ -458,7 +466,7 @@ function AuthPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fingerprint: fp ?? undefined }),
-                signal: AbortSignal.timeout(6_000),
+                signal: AbortSignal.timeout(4_000),
               });
             } catch (guardError) {
               addDiagnostic(
@@ -492,7 +500,8 @@ function AuthPage() {
           }
         }
         addDiagnostic("email", "PREFLIGHT_RESPONSE_RECEIVED");
-        addDiagnostic("email", "AUTH_REQUEST_STARTED", "signUp");
+        addDiagnostic("email", "AUTH_REQUEST_STARTED", `signUp · ${maskEmail(emailParsed.data)}`);
+        const signupStartedAt = Date.now();
         const { data, error } = await withAuthTimeout(
           "email_signup",
           supabase.auth.signUp({
@@ -503,8 +512,10 @@ function AuthPage() {
               captchaToken: captchaToken ?? undefined,
             },
           }),
-          45_000,
+          20_000,
         );
+        recordStage("auth.signUp", Date.now() - signupStartedAt);
+
 
         if (error) {
           addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
