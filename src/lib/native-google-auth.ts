@@ -341,13 +341,18 @@ async function runNativeGoogleSignIn(): Promise<NativeGoogleResult> {
 
 
     const idToken = result?.result?.idToken ?? null;
-    if (!idToken) return {
-      ok: false,
-      code: "no_id_token",
-      diagnostic: { stage: "google_login", code: "no_id_token", message: "Google SDK nu a returnat idToken" },
-    };
+    console.log("[AUTH] ID_TOKEN_RECEIVED", { present: !!idToken, length: idToken ? idToken.length : 0 });
+    if (!idToken) {
+      console.log("[AUTH] GOOGLE_IDTOKEN_NULL");
+      return {
+        ok: false,
+        code: "no_id_token",
+        diagnostic: { stage: "google_login", code: "no_id_token", message: "Google SDK nu a returnat idToken" },
+      };
+    }
 
     const { withAuthTimeout } = await import("@/lib/auth-timeout");
+    console.log("[AUTH] SUPABASE_GOOGLE_SIGNIN_STARTED");
     const { error } = await withAuthTimeout(
       "google_token_exchange",
       supabase.auth.signInWithIdToken({
@@ -355,13 +360,22 @@ async function runNativeGoogleSignIn(): Promise<NativeGoogleResult> {
         token: idToken,
       }),
     );
-    if (error) return {
-      ok: false,
-      code: "error",
-      message: error.message,
-      diagnostic: diagnosticFromError(error, "token_exchange"),
-    };
+    if (error) {
+      const e = error as unknown as { code?: string; status?: number; message?: string };
+      console.log(
+        `[AUTH] GOOGLE_SUPABASE_ERROR code=${e.code ?? e.status ?? "none"} msg=${e.message ?? String(error)}`,
+        error,
+      );
+      return {
+        ok: false,
+        code: "error",
+        message: error.message,
+        diagnostic: diagnosticFromError(error, "token_exchange"),
+      };
+    }
+    console.log("[AUTH] SUPABASE_SESSION_CREATED", { via: "signInWithIdToken" });
     return { ok: true, diagnostic: { stage: "complete" } };
+
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     const diagnostic = diagnosticFromError(e, "token_exchange");
