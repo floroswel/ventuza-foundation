@@ -82,6 +82,7 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
+import { Route as ApiPublicDiditStartRouteImport } from './routes/api/public/didit-start'
 import { Route as ApiPublicDiditWebhookRouteImport } from './routes/api/public/didit-webhook'
 import { Route as ApiPublicGoogleClientIdRouteImport } from './routes/api/public/google-client-id'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
@@ -461,6 +462,11 @@ const ApiPublicAgeWebhookRoute = ApiPublicAgeWebhookRouteImport.update({
   path: '/api/public/age-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDiditStartRoute = ApiPublicDiditStartRouteImport.update({
+  id: '/api/public/didit-start',
+  path: '/api/public/didit-start',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDiditWebhookRoute = ApiPublicDiditWebhookRouteImport.update({
   id: '/api/public/didit-webhook',
   path: '/api/public/didit-webhook',
@@ -584,6 +590,7 @@ export interface FileRoutesByFullPath {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
+  '/api/public/didit-start': typeof ApiPublicDiditStartRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-client-id': typeof ApiPublicGoogleClientIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -667,6 +674,7 @@ export interface FileRoutesByTo {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
+  '/api/public/didit-start': typeof ApiPublicDiditStartRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-client-id': typeof ApiPublicGoogleClientIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -752,6 +760,7 @@ export interface FileRoutesById {
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
+  '/api/public/didit-start': typeof ApiPublicDiditStartRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/google-client-id': typeof ApiPublicGoogleClientIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -838,6 +847,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/admin/users/$id'
     | '/api/public/age-webhook'
+    | '/api/public/didit-start'
     | '/api/public/didit-webhook'
     | '/api/public/google-client-id'
     | '/api/public/google-play-rtdn'
@@ -921,6 +931,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/admin/users/$id'
     | '/api/public/age-webhook'
+    | '/api/public/didit-start'
     | '/api/public/didit-webhook'
     | '/api/public/google-client-id'
     | '/api/public/google-play-rtdn'
@@ -1005,6 +1016,7 @@ export interface FileRouteTypes {
     | '/.mcp/invoke-tool/$tool'
     | '/admin/users/$id'
     | '/api/public/age-webhook'
+    | '/api/public/didit-start'
     | '/api/public/didit-webhook'
     | '/api/public/google-client-id'
     | '/api/public/google-play-rtdn'
@@ -1078,6 +1090,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
+  ApiPublicDiditStartRoute: typeof ApiPublicDiditStartRoute
   ApiPublicDiditWebhookRoute: typeof ApiPublicDiditWebhookRoute
   ApiPublicGoogleClientIdRoute: typeof ApiPublicGoogleClientIdRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
@@ -1601,6 +1614,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicAgeWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/didit-start': {
+      id: '/api/public/didit-start'
+      path: '/api/public/didit-start'
+      fullPath: '/api/public/didit-start'
+      preLoaderRoute: typeof ApiPublicDiditStartRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/didit-webhook': {
       id: '/api/public/didit-webhook'
       path: '/api/public/didit-webhook'
@@ -1840,6 +1860,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
+  ApiPublicDiditStartRoute: ApiPublicDiditStartRoute,
   ApiPublicDiditWebhookRoute: ApiPublicDiditWebhookRoute,
   ApiPublicGoogleClientIdRoute: ApiPublicGoogleClientIdRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,

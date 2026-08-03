@@ -21,15 +21,48 @@ import { notifyLocationSharingChanged } from "@/hooks/useLocationWatcher";
  */
 const STORAGE_PREFIX = "suzeta_loc_prompt_seen_v1:";
 
+// Rute unde primer-ul NU are ce căuta (flux de auth / onboarding / legal).
+const EXCLUDED_PREFIXES = [
+  "/auth",
+  "/n",
+  "/onboarding",
+  "/legal",
+  "/reset-password",
+  "/blocked",
+  "/admin",
+];
+
 function routeNeedsLocationPrimer(pathname: string) {
-  return (
-    pathname === "/" ||
-    pathname.startsWith("/discover") ||
-    pathname.startsWith("/nearby") ||
-    pathname.startsWith("/cruise") ||
-    pathname.startsWith("/visitors")
-  );
+  return !EXCLUDED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
+
+/** Starea permisiunii de locație, corect detectată și pe Android nativ. */
+async function readPermissionState(): Promise<"prompt" | "granted" | "denied" | "unknown"> {
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    if (Capacitor.isNativePlatform()) {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const perm = await Geolocation.checkPermissions();
+      const s = perm.location;
+      if (s === "granted") return "granted";
+      if (s === "denied") return "denied";
+      return "prompt";
+    }
+  } catch {
+    /* nu suntem pe native sau pluginul lipsește */
+  }
+  try {
+    const perms = (navigator as Navigator & { permissions?: Permissions }).permissions;
+    if (perms?.query) {
+      const st = await perms.query({ name: "geolocation" as PermissionName });
+      return st.state as "prompt" | "granted" | "denied";
+    }
+  } catch {
+    /* Permissions API indisponibil */
+  }
+  return "unknown";
+}
+
 
 export function LocationPermissionPrompt() {
   const { user } = useAuth();
@@ -47,7 +80,7 @@ export function LocationPermissionPrompt() {
     const path = location.pathname || "/";
     if (!routeNeedsLocationPrimer(path)) return;
     if (forceStealth || hidePreciseLocation || isBlocked) return;
-    if (typeof window === "undefined" || !("geolocation" in navigator)) return;
+    if (typeof window === "undefined") return;
 
     const key = STORAGE_PREFIX + user.id;
     if (localStorage.getItem(key)) return;
@@ -64,22 +97,30 @@ export function LocationPermissionPrompt() {
         localStorage.setItem(key, "1"); // respect user's off setting
         return;
       }
-      // Verifică starea permisiunii — nu arătăm primer-ul dacă e deja granted/denied.
-      try {
-        const perms = (navigator as Navigator & { permissions?: Permissions }).permissions;
-        if (perms && perms.query) {
-          const st = await perms.query({ name: "geolocation" as PermissionName });
-          if (cancelled) return;
-          if (st.state !== "prompt") {
-            localStorage.setItem(key, "1");
-            return;
+      const state = await readPermissionState();
+      if (cancelled) return;
+      if (state === "granted") {
+        // Deja avem permisiunea → luăm poziția în tăcere, fără dialog.
+        localStorage.setItem(key, "1");
+        try {
+          const { getCurrentPosition } = await import("@/lib/native-geolocation");
+          const pos = await getCurrentPosition({ enableHighAccuracy: false, timeout: 15_000 });
+          if (pos && !cancelled) {
+            await supabase.rpc("update_my_location", {
+              lng: pos.coords.longitude,
+              lat: pos.coords.latitude,
+            });
           }
+        } catch {
+          /* silențios — userul poate reîncerca din Profil */
         }
-      } catch {
-        /* Permissions API indisponibil — continuăm cu primer-ul. */
+        return;
       }
+      // `denied` pe Android nu e permanent decât după 2 refuzuri; arătăm oricum
+      // primer-ul o singură dată, ca userul să poată reacorda permisiunea.
       setOpen(true);
     })();
+
 
     return () => {
       cancelled = true;
@@ -94,13 +135,22 @@ export function LocationPermissionPrompt() {
   async function handleAllow() {
     setBusy(true);
     try {
-      const { getCurrentPosition } = await import("@/lib/native-geolocation");
+      const { ensureLocationPermission, getCurrentPosition } = await import(
+        "@/lib/native-geolocation"
+      );
+      const granted = await ensureLocationPermission();
+      if (!granted) {
+        markSeen();
+        toast("Poți activa locația mai târziu din Profil → Confidențialitate");
+        return;
+      }
       const pos = await getCurrentPosition({ enableHighAccuracy: true, timeout: 20_000, maximumAge: 10_000 });
       if (!pos) {
         markSeen();
         toast("Poți activa locația mai târziu din Profil → Confidențialitate");
         return;
       }
+
       // Așteaptă rezultatul RPC — nu afișa "succes" dacă serverul respinge.
       const { error } = await supabase.rpc("update_my_location", {
         lng: pos.coords.longitude,

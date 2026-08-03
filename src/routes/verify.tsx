@@ -13,8 +13,12 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
+import { isNativePlatformSync } from "@/lib/native-platform-sync";
 import { Button } from "@/components/ui/button";
 import { getMyDiditStatus, startDiditVerification, syncMyDiditStatus } from "@/lib/didit.functions";
+
+
 
 export const Route = createFileRoute("/verify")({
   ssr: false,
@@ -148,31 +152,64 @@ function VerifyPage() {
     if (!user || starting) return;
     setStarting(true);
     try {
-      const returnUrl = `${window.location.origin}/verify/status`;
-      const res = (await startSession({ data: { returnUrl } })) as {
-        sessionId: string;
-        url: string;
-      };
+      const native = isNativePlatformSync();
+      // Pe native bundle-ul rulează de pe `localhost`, deci server functions
+      // (same-origin RPC) întorc 404. Folosim ruta publică cu URL absolut.
+      const returnUrl = native
+        ? "https://suzeta.app/verify/status"
+        : `${window.location.origin}/verify/status`;
+
+      let res: { sessionId?: string; url?: string } | null = null;
+      if (native) {
+        const { data: sessionData } = await supabase.auth.getSession();
+        const token = sessionData.session?.access_token ?? "";
+        const r = await fetch("https://suzeta.app/api/public/didit-start", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ returnUrl }),
+        });
+        const json = (await r.json().catch(() => ({}))) as { url?: string; sessionId?: string; error?: string };
+        if (!r.ok) throw new Error(json.error || "Nu am putut porni verificarea.");
+        res = json;
+      } else {
+        res = (await startSession({ data: { returnUrl } })) as { sessionId: string; url: string };
+      }
+
       if (!res?.url) throw new Error("Didit nu a returnat un URL de verificare.");
+      const targetUrl = res.url;
+
+      if (native) {
+        // Custom Tab: camera funcționează, iar app-ul rămâne în background.
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.open({ url: targetUrl, presentationStyle: "fullscreen" });
+        setStarting(false);
+        void refresh({ force: true });
+        return;
+      }
+
       // Dacă suntem într-un iframe (ex: preview Lovable), navigăm în top-level
       // window — altfel browserul blochează camera pe iframe cross-origin fără
       // `allow="camera"`.
       try {
         if (window.top && window.top !== window.self) {
-          window.top.location.href = res.url;
+          window.top.location.href = targetUrl;
           return;
         }
       } catch {
         // Cross-origin top access blocat → deschidem în tab nou ca fallback.
-        const opened = window.open(res.url, "_blank", "noopener,noreferrer");
+        const opened = window.open(targetUrl, "_blank", "noopener,noreferrer");
         if (opened) return;
       }
-      window.location.assign(res.url);
+      window.location.assign(targetUrl);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Nu am putut porni verificarea.");
       setStarting(false);
     }
   }
+
 
   if (authLoading || loading) {
     return (
