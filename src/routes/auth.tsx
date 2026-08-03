@@ -255,8 +255,21 @@ function AuthPage() {
             res.code === "cancelled" ? "CANCELLED" : "ERROR",
             formatGoogleDiagnostic(res.diagnostic),
           );
-          if (res.code === "cancelled") return;
-          handleAuthError(new Error(res.message ?? "Google sign-in failed"));
+          // Fallback automat: Chrome Custom Tabs + deep link. Nu depinde de
+          // clientul OAuth Android și nici de SHA-1-ul build-ului instalat.
+          addDiagnostic("google", "BROWSER_FALLBACK_STARTED", "Chrome Custom Tabs → app.suzeta://auth-callback");
+          const viaBrowser = await browserGoogleSignIn();
+          if (viaBrowser.ok) {
+            addDiagnostic("google", "RESPONSE_RECEIVED", "sesiune primită prin deep link");
+            return;
+          }
+          addDiagnostic(
+            "google",
+            viaBrowser.code === "cancelled" ? "CANCELLED" : "ERROR",
+            `fallback browser: ${viaBrowser.message ?? viaBrowser.code}`,
+          );
+          if (viaBrowser.code === "cancelled" && res.code === "cancelled") return;
+          handleAuthError(new Error(viaBrowser.message ?? res.message ?? "Google sign-in failed"));
           return;
         }
         addDiagnostic("google", "RESPONSE_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
