@@ -173,7 +173,7 @@ async function routeAfterAuth(
         .select("onboarding_completed, birthdate")
         .eq("id", userId)
         .maybeSingle(),
-      10_000,
+      4_000,
     );
     data = res.data;
     authLog("PROFILE_FETCH_FINISHED", {
@@ -542,8 +542,8 @@ function AuthPage() {
         // Preflight-uri (disposable email + anti-bot). Rulează în paralel, cu
         // timeout scurt și fail-open: pe rețele mobile lente nu au voie să
         // consume bugetul de timp al signup-ului propriu-zis.
-        authLog("PREFLIGHT_ALL_STARTED", { timeoutMs: 4000, failOpen: true });
-        addDiagnostic("email", "PREFLIGHT_ALL_STARTED", "assert_email_allowed + signup-guard (paralel, 4s, fail-open)");
+        authLog("PREFLIGHT_ALL_STARTED", { timeoutMs: 1500, failOpen: true });
+        addDiagnostic("email", "PREFLIGHT_ALL_STARTED", "assert_email_allowed + signup-guard (paralel, 1.5s, fail-open)");
         if (!captchaRequired) authLog("TURNSTILE_SKIPPED_ANDROID");
         else authLog(captchaToken ? "TURNSTILE_TOKEN_RECEIVED" : "TURNSTILE_FAILED", { captchaToken: tokenInfo(captchaToken) });
         addDiagnostic(
@@ -559,7 +559,7 @@ function AuthPage() {
           ? "https://suzeta.app/api/public/signup-guard"
           : "/api/public/signup-guard";
 
-        const PREFLIGHT_MS = 4_000;
+        const PREFLIGHT_MS = 1_500;
         const settled = await Promise.allSettled([
           (async () => {
             authLog("EMAIL_ALLOWED_STARTED");
@@ -598,7 +598,7 @@ function AuthPage() {
               // preflight nu se mai rezolvă și butonul se învârte la infinit.
               const fp = await Promise.race([
                 computeDeviceFingerprint().catch(() => null),
-                new Promise<null>((resolve) => setTimeout(() => resolve(null), 2_000)),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 750)),
               ]);
               if (!fp) authLog("FINGERPRINT_SKIPPED", { reason: "timeout_or_error" });
               const res = await fetch(guardUrl, {
@@ -697,7 +697,7 @@ function AuthPage() {
                 .from("profiles")
                 .update({ birthdate: birthDate, preferred_language: browserLang })
                 .eq("id", data.user.id),
-              8_000,
+              3_000,
             );
             authLog("PROFILE_CREATION_FINISHED", { err: upd.error ? supabaseErrorInfo(upd.error) : null });
             addDiagnostic("email", "PROFILE_UPDATE_RESPONSE_RECEIVED");
@@ -720,13 +720,14 @@ function AuthPage() {
           authLog("AUTH_NAVIGATION_STARTED", { reason: "session_present" });
           await routeAfterAuth(data.user!.id, navigate);
         } else {
-          // Email confirmation required → ghidăm userul către o pagină dedicată
-          // cu resend + countdown (nu îl lăsăm blocat pe /auth fără feedback).
-          authLog("EMAIL_CONFIRMATION_REQUIRED");
-          addDiagnostic("email", "SIGNUP_OK_EMAIL_CONFIRM_REQUIRED");
-          authLog("AUTH_NAVIGATION_STARTED", { to: "/auth/check-email" });
-          navigate({ to: "/auth/check-email", search: { email: emailParsed.data }, replace: true });
-          authLog("AUTH_NAVIGATION_FINISHED", { to: "/auth/check-email" });
+          // Auto-confirm este activ. Lipsa sesiunii este o eroare tranzitorie,
+          // nu un motiv să trimitem utilizatorul la verificarea emailului.
+          authLog("SIGNUP_SESSION_MISSING", { autoConfirmExpected: true });
+          addDiagnostic("email", "SIGNUP_SESSION_MISSING", "auto-confirm activ, fără sesiune în răspuns");
+          handleAuthError(new Error("signup_session_missing"), {
+            message: "Contul a fost creat, dar sesiunea nu a pornit.",
+            action: "Apasă Conectare și intră cu emailul și parola alese.",
+          });
         }
 
       } else {
@@ -783,16 +784,6 @@ function AuthPage() {
           authLog("SESSION_CREATED", { via: "timeout_recovery" });
           addDiagnostic("email", "TIMEOUT_RECOVERED", "sesiune activă găsită după timeout");
           await routeAfterAuth(recovered.session.user.id, navigate, search.redirect);
-          return;
-        }
-        if (mode === "signup" && error.message.startsWith("email_signup")) {
-          addDiagnostic("email", "TIMEOUT_SIGNUP_PENDING", "trimit userul la confirmarea emailului");
-          toast.message("Cererea durează mai mult decât de obicei", {
-            description: "Dacă ai primit emailul de confirmare, contul este creat. Verifică inboxul.",
-          });
-          authLog("AUTH_NAVIGATION_STARTED", { to: "/auth/check-email", reason: "timeout_pending" });
-          navigate({ to: "/auth/check-email", search: { email }, replace: true });
-          authLog("AUTH_NAVIGATION_FINISHED", { to: "/auth/check-email" });
           return;
         }
         // Diferențiem OFFLINE (telefonul nu are net) de TIMEOUT server.
@@ -1290,15 +1281,6 @@ function AuthPage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <span>{authError.message}</span>
-                {authError.code === "email_not_confirmed" && (
-                  <Link
-                    to="/auth/check-email"
-                    search={{ email: email || undefined }}
-                    className="shrink-0 text-xs font-medium underline"
-                  >
-                    {t("auth.resend")}
-                  </Link>
-                )}
               </div>
               {retryCountdown > 0 && (
                 <p className="mt-1 text-xs opacity-80">
