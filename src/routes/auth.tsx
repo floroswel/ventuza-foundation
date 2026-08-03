@@ -618,8 +618,10 @@ function AuthPage() {
           return;
         }
         if (!preflight || !guard) {
+          authLog("PREFLIGHT_CONTINUE_FAIL_OPEN", { preflight: !!preflight, guard: !!guard });
           addDiagnostic("email", "PREFLIGHT_CONTINUE_FAIL_OPEN", "continui la Supabase signUp");
         }
+        authLog("SUPABASE_SIGNUP_STARTED", { email: maskEmail(emailParsed.data), captchaToken: tokenInfo(captchaToken) });
         addDiagnostic("email", "SUPABASE_SIGNUP_STARTED", maskEmail(emailParsed.data));
 
         addDiagnostic("email", "AUTH_REQUEST_STARTED", `signUp · ${maskEmail(emailParsed.data)}`);
@@ -637,13 +639,21 @@ function AuthPage() {
           20_000,
         );
         recordStage("auth.signUp", Date.now() - signupStartedAt);
-
+        {
+          const info = supabaseErrorInfo(error);
+          authLog(
+            `SUPABASE_SIGNUP_RESPONSE status=${error ? info.status : 200} code=${error ? info.code : "none"} msg=${error ? info.msg : "ok"}`,
+            { ms: Date.now() - signupStartedAt, error: error ?? null, userPresent: !!data?.user, sessionPresent: !!data?.session },
+          );
+        }
 
         if (error) {
           addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
-          handleAuthError(error);
+          // Eroare reală de la Supabase → afișăm mesajul real, nu „verifică internetul”.
+          handleAuthError(error, isSupabaseAuthError(error) ? { message: error.message } : undefined);
           return;
         }
+        authLog("USER_CREATED", { userPresent: !!data.user, sessionPresent: !!data.session });
         addDiagnostic("email", "AUTH_RESPONSE_RECEIVED", `user=${data.user ? "da" : "nu"} · session=${data.session ? "da" : "nu"}`);
         // Persist birthdate on profile (trigger `enforce_min_age` enforces 18+ server-side).
         // ATENȚIE: fără sesiune (confirmare email obligatorie) update-ul rulează ca
@@ -651,8 +661,9 @@ function AuthPage() {
         // trimitem imediat la ecranul „verifică emailul”. /n scrie birthdate după login.
         if (data.user && data.session) {
           const browserLang = (navigator.language || "ro").toLowerCase().startsWith("ro") ? "ro" : "en";
+          authLog("PROFILE_CREATION_STARTED", { hasSession: true });
           try {
-            await withAuthTimeout(
+            const upd = await withAuthTimeout(
               "profile_signup_update",
               supabase
                 .from("profiles")
@@ -660,10 +671,15 @@ function AuthPage() {
                 .eq("id", data.user.id),
               8_000,
             );
+            authLog("PROFILE_CREATION_FINISHED", { err: upd.error ? supabaseErrorInfo(upd.error) : null });
             addDiagnostic("email", "PROFILE_UPDATE_RESPONSE_RECEIVED");
-          } catch {
+          } catch (err) {
+            authLog("PROFILE_CREATION_FINISHED", { err: supabaseErrorInfo(err) });
             addDiagnostic("email", "PROFILE_UPDATE_SKIPPED", "timeout · continuăm");
           }
+        } else {
+          authLog("PROFILE_CREATION_STARTED", { hasSession: false, skipped: true });
+          authLog("PROFILE_CREATION_FINISHED", { err: null, skipped: "no_session" });
         }
         try {
           if (birthDate) {
@@ -673,15 +689,20 @@ function AuthPage() {
         } catch { /* ignore */ }
         if (data.session) {
           toast.success(t("auth.errors.welcome"));
+          authLog("AUTH_NAVIGATION_STARTED", { reason: "session_present" });
           await routeAfterAuth(data.user!.id, navigate);
         } else {
           // Email confirmation required → ghidăm userul către o pagină dedicată
           // cu resend + countdown (nu îl lăsăm blocat pe /auth fără feedback).
+          authLog("EMAIL_CONFIRMATION_REQUIRED");
           addDiagnostic("email", "SIGNUP_OK_EMAIL_CONFIRM_REQUIRED");
+          authLog("AUTH_NAVIGATION_STARTED", { to: "/auth/check-email" });
           navigate({ to: "/auth/check-email", search: { email: emailParsed.data }, replace: true });
+          authLog("AUTH_NAVIGATION_FINISHED", { to: "/auth/check-email" });
         }
 
       } else {
+        authLog("SUPABASE_LOGIN_STARTED", { email: maskEmail(emailParsed.data), captchaToken: tokenInfo(captchaToken) });
         addDiagnostic("email", "EMAIL_LOGIN_STARTED", maskEmail(emailParsed.data));
         const loginStartedAt = Date.now();
         const { data, error } = await withAuthTimeout(
@@ -694,14 +715,27 @@ function AuthPage() {
           20_000,
         );
         recordStage("auth.signInWithPassword", Date.now() - loginStartedAt);
+        {
+          const info = supabaseErrorInfo(error);
+          authLog(
+            `SUPABASE_LOGIN_RESPONSE status=${error ? info.status : 200} code=${error ? info.code : "none"} msg=${error ? info.msg : "ok"} sessionPresent=${!!data?.session}`,
+            { ms: Date.now() - loginStartedAt, error: error ?? null, userPresent: !!data?.user },
+          );
+        }
 
         if (error) {
           addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
-          handleAuthError(error);
+          handleAuthError(error, isSupabaseAuthError(error) ? { message: error.message } : undefined);
           return;
         }
+        if (data.session) authLog("SESSION_CREATED", { userPresent: !!data.user });
         addDiagnostic("email", "AUTH_RESPONSE_RECEIVED", `user=${data.user ? "da" : "nu"} · session=${data.session ? "da" : "nu"}`);
-        if (data.user) await routeAfterAuth(data.user.id, navigate, search.redirect);
+        if (data.user) {
+          await routeAfterAuth(data.user.id, navigate, search.redirect);
+          authLog("LOGIN_FINISHED");
+        } else {
+          authLog("LOGIN_FINISHED", { warn: "no_user_in_response" });
+        }
       }
     } catch (error) {
       if (error instanceof Error && error.name === "AuthTimeoutError") {
