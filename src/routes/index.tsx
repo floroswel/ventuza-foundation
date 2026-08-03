@@ -139,6 +139,23 @@ function Landing() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [googleBusy, setGoogleBusy] = useState(false);
+  // Google e disponibil DOAR pe web. În app-ul nativ (Play Store) fluxul OAuth
+  // prin webview nu e suportat, deci butonul nu se randează deloc.
+  const [googleAvailable, setGoogleAvailable] = useState(!isNativePlatformSync());
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const { Capacitor } = await import("@capacitor/core");
+        if (!cancelled) setGoogleAvailable(!Capacitor.isNativePlatform());
+      } catch {
+        /* web */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Signed-in users are sent into the app; logged-out visitors and crawlers
   // always get the full public landing page rendered server-side.
