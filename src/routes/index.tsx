@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import {
   Heart,
@@ -104,6 +104,12 @@ export const Route = createFileRoute("/")({
       },
     ],
   }),
+  // În app-ul nativ (Capacitor) landing-ul de marketing nu are rost: primul
+  // ecran trebuie să fie direct autentificarea. Pe web rămâne pagina publică
+  // (SEO/crawlere) — `isNativePlatformSync()` e false pe server și în browser.
+  beforeLoad: () => {
+    if (isNativePlatformSync()) throw redirect({ to: "/auth", replace: true });
+  },
   component: Landing,
 });
 
