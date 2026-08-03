@@ -98,10 +98,42 @@ public class MainActivity extends BridgeActivity {
 
   public class SignatureBridge {
 
+    /**
+     * Toate metadatele într-un singur apel (PackageManager + certificat).
+     * Evită situația în care un getter individual eșuează și rămâne null.
+     */
+    @JavascriptInterface
+    public String getAll() {
+      JSONObject out = new JSONObject();
+      try {
+        PackageManager pm = MainActivity.this.getPackageManager();
+        String pkg = MainActivity.this.getPackageName();
+        out.put("packageName", pkg);
+        try {
+          PackageInfo info = pm.getPackageInfo(pkg, 0);
+          out.put("versionName", info.versionName == null ? "" : info.versionName);
+          long code = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+            ? info.getLongVersionCode()
+            : (long) info.versionCode;
+          out.put("versionCode", String.valueOf(code));
+        } catch (Throwable t) {
+          out.put("versionError", String.valueOf(t));
+        }
+        out.put("installerPackage", getInstallerPackage());
+        out.put("installSource", getInstallSource());
+        out.put("sha1", digest("SHA-1"));
+        out.put("sha256", digest("SHA-256"));
+      } catch (Throwable t) {
+        try { out.put("error", String.valueOf(t)); } catch (Throwable ignored) { /* noop */ }
+      }
+      return out.toString();
+    }
+
     @JavascriptInterface
     public String getPackageName() {
       return MainActivity.this.getPackageName();
     }
+
 
     @JavascriptInterface
     public String getSha1() {
