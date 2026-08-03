@@ -9,11 +9,6 @@ import { useAuth } from "@/lib/auth-context";
 // a real birthdate (server-side `enforce_min_age_trg` enforces 18+).
 const ALLOWED_WITHOUT_BIRTHDATE = ["/n", "/auth", "/age-gate", "/legal", "/r/"];
 
-// Routes a user whose email isn't confirmed can still land on. The rest of the
-// app gates server-side via `assert_account_usable()` — this redirect is just
-// UX so the user lands somewhere actionable (resend link) instead of hitting
-// `email_not_confirmed` errors on every social RPC.
-const ALLOWED_WITHOUT_EMAIL_CONFIRMED = ["/auth", "/legal", "/reset-password", "/account-deletion"];
 
 /**
  * Invisible component that wires session-scoped background guards.
@@ -48,22 +43,10 @@ export function SessionGuards() {
 
 
 
-  // Email-confirmation guard. OAuth providers (Google/Apple) auto-confirm so
-  // this affects only email/password signups that bypass the check-email step.
-  useEffect(() => {
-    if (!user) return;
-    const path = location.pathname || "/";
-    const exempt = ALLOWED_WITHOUT_EMAIL_CONFIRMED.some((p) => path.startsWith(p));
-    if (exempt) return;
-    // `email_confirmed_at` lives on auth.users; the client User object exposes it.
-    const confirmedAt = (user as unknown as { email_confirmed_at?: string | null })
-      .email_confirmed_at;
-    console.log("[AUTH] GUARD_EMAIL_CONFIRMED_CHECK", { path, confirmed: !!confirmedAt });
-    if (!confirmedAt && user.email) {
-      console.log("[AUTH] NAVIGATION_STARTED", { to: "/auth/check-email", reason: "email_not_confirmed" });
-      navigate({ to: "/auth/check-email", search: { email: user.email }, replace: true });
-    }
-  }, [user, location.pathname, navigate]);
+  // Gate-ul de confirmare email a fost ELIMINAT: „Confirm email” e dezactivat
+  // în backend, identitatea se verifică prin Didit în onboarding. Un user cu
+  // sesiune validă merge direct la onboarding.
+
 
   // Birthdate / onboarding guard — must run on every navigation while signed in.
   useEffect(() => {
