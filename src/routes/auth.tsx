@@ -720,13 +720,14 @@ function AuthPage() {
           authLog("AUTH_NAVIGATION_STARTED", { reason: "session_present" });
           await routeAfterAuth(data.user!.id, navigate);
         } else {
-          // Email confirmation required → ghidăm userul către o pagină dedicată
-          // cu resend + countdown (nu îl lăsăm blocat pe /auth fără feedback).
-          authLog("EMAIL_CONFIRMATION_REQUIRED");
-          addDiagnostic("email", "SIGNUP_OK_EMAIL_CONFIRM_REQUIRED");
-          authLog("AUTH_NAVIGATION_STARTED", { to: "/auth/check-email" });
-          navigate({ to: "/auth/check-email", search: { email: emailParsed.data }, replace: true });
-          authLog("AUTH_NAVIGATION_FINISHED", { to: "/auth/check-email" });
+          // Auto-confirm este activ. Lipsa sesiunii este o eroare tranzitorie,
+          // nu un motiv să trimitem utilizatorul la verificarea emailului.
+          authLog("SIGNUP_SESSION_MISSING", { autoConfirmExpected: true });
+          addDiagnostic("email", "SIGNUP_SESSION_MISSING", "auto-confirm activ, fără sesiune în răspuns");
+          handleAuthError(new Error("signup_session_missing"), {
+            message: "Contul a fost creat, dar sesiunea nu a pornit.",
+            action: "Apasă Conectare și intră cu emailul și parola alese.",
+          });
         }
 
       } else {
@@ -783,16 +784,6 @@ function AuthPage() {
           authLog("SESSION_CREATED", { via: "timeout_recovery" });
           addDiagnostic("email", "TIMEOUT_RECOVERED", "sesiune activă găsită după timeout");
           await routeAfterAuth(recovered.session.user.id, navigate, search.redirect);
-          return;
-        }
-        if (mode === "signup" && error.message.startsWith("email_signup")) {
-          addDiagnostic("email", "TIMEOUT_SIGNUP_PENDING", "trimit userul la confirmarea emailului");
-          toast.message("Cererea durează mai mult decât de obicei", {
-            description: "Dacă ai primit emailul de confirmare, contul este creat. Verifică inboxul.",
-          });
-          authLog("AUTH_NAVIGATION_STARTED", { to: "/auth/check-email", reason: "timeout_pending" });
-          navigate({ to: "/auth/check-email", search: { email }, replace: true });
-          authLog("AUTH_NAVIGATION_FINISHED", { to: "/auth/check-email" });
           return;
         }
         // Diferențiem OFFLINE (telefonul nu are net) de TIMEOUT server.
@@ -1290,15 +1281,6 @@ function AuthPage() {
             >
               <div className="flex items-start justify-between gap-2">
                 <span>{authError.message}</span>
-                {authError.code === "email_not_confirmed" && (
-                  <Link
-                    to="/auth/check-email"
-                    search={{ email: email || undefined }}
-                    className="shrink-0 text-xs font-medium underline"
-                  >
-                    {t("auth.resend")}
-                  </Link>
-                )}
               </div>
               {retryCountdown > 0 && (
                 <p className="mt-1 text-xs opacity-80">
