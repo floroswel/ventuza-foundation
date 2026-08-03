@@ -43,6 +43,7 @@ import { clearEntries, getEntries, installOnce, isDebugEnabled, log as debugLog,
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).catch("login"),
   redirect: z.string().optional(),
+  native_bridge: z.string().optional(),
 });
 
 export const Route = createFileRoute("/auth")({
