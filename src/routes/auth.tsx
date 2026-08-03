@@ -548,7 +548,8 @@ function AuthPage() {
           navigate({ to: "/auth/check-email", search: { email: emailParsed.data }, replace: true });
         }
       } else {
-        addDiagnostic("email", "AUTH_REQUEST_STARTED", "signInWithPassword");
+        addDiagnostic("email", "EMAIL_LOGIN_STARTED", maskEmail(emailParsed.data));
+        const loginStartedAt = Date.now();
         const { data, error } = await withAuthTimeout(
           "email_login",
           supabase.auth.signInWithPassword({
@@ -556,8 +557,9 @@ function AuthPage() {
             password: passParsed.data,
             options: { captchaToken: captchaToken ?? undefined },
           }),
-          30_000,
+          20_000,
         );
+        recordStage("auth.signInWithPassword", Date.now() - loginStartedAt);
 
         if (error) {
           addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
