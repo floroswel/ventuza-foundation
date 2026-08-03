@@ -71,6 +71,47 @@ type AuthDiagnosticLine = {
   detail?: string;
 };
 
+/**
+ * Log structurat pentru fluxurile de autentificare.
+ * NU loghează niciodată parole sau tokenuri — doar prezență + lungime.
+ */
+function authLog(step: string, extra?: Record<string, unknown>) {
+  try {
+    if (extra && Object.keys(extra).length > 0) {
+      // eslint-disable-next-line no-console
+      console.log(`[AUTH] ${step}`, extra);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log(`[AUTH] ${step}`);
+    }
+  } catch {
+    /* ignore */
+  }
+}
+
+function tokenInfo(token: string | null | undefined) {
+  return { present: !!token, length: token ? token.length : 0 };
+}
+
+/** Extrage câmpurile reale dintr-o eroare Supabase, fără să le înghită. */
+function supabaseErrorInfo(err: unknown) {
+  const e = err as { status?: number; code?: string; message?: string; name?: string } | null;
+  return {
+    status: e?.status ?? null,
+    code: e?.code ?? null,
+    msg: e?.message ?? String(err),
+    name: e?.name ?? null,
+  };
+}
+
+function isSupabaseAuthError(err: unknown): err is { message: string; code?: string; status?: number } {
+  const e = err as { name?: string; message?: string; status?: number; code?: string } | null;
+  if (!e || typeof e.message !== "string") return false;
+  if (e.name === "AuthTimeoutError") return false;
+  return typeof e.status === "number" || typeof e.code === "string" || /Auth/.test(e.name ?? "");
+}
+
+
 async function persistPendingBirthdate(userId: string) {
   if (typeof window === "undefined") return;
   // sessionStorage poate fi pierdut între contexte (Safari ASWebAuthSession,
