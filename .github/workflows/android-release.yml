@@ -171,17 +171,19 @@ jobs:
                   raise SystemExit("GoogleProvider s-a schimbat: punctul de instrumentare lipsește")
               s = s.replace(needle, replacement, 1)
           helper_anchor = '    private void handleSignInError(GetCredentialException e, PluginCall call, JSONObject config) {'
-          helper = '''    private void recordSuzetaDiagnostic(Throwable error) {
-        try {
-            Class<?> activityClass = Class.forName("app.suzeta.MainActivity");
-            java.lang.reflect.Method method = activityClass.getMethod("recordGoogleDiagnostic", String.class, Throwable.class);
-            method.invoke(null, "credential_error", error);
-        } catch (Throwable ignored) {
-            // Diagnosticul nu trebuie să afecteze autentificarea.
-        }
-    }
-
-'''
+          helper = "\n".join([
+              '    private void recordSuzetaDiagnostic(Throwable error) {',
+              '        try {',
+              '            Class<?> activityClass = Class.forName("app.suzeta.MainActivity");',
+              '            java.lang.reflect.Method method = activityClass.getMethod("recordGoogleDiagnostic", String.class, Throwable.class);',
+              '            method.invoke(null, "credential_error", error);',
+              '        } catch (Throwable ignored) {',
+              '            // Diagnosticul nu trebuie sa afecteze autentificarea.',
+              '        }',
+              '    }',
+              '',
+              '',
+          ])
           if helper not in s:
               if helper_anchor not in s:
                   raise SystemExit("GoogleProvider s-a schimbat: ancora helper-ului lipsește")
