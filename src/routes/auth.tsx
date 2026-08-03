@@ -173,7 +173,7 @@ async function routeAfterAuth(
         .select("onboarding_completed, birthdate")
         .eq("id", userId)
         .maybeSingle(),
-      10_000,
+      4_000,
     );
     data = res.data;
     authLog("PROFILE_FETCH_FINISHED", {
@@ -542,8 +542,8 @@ function AuthPage() {
         // Preflight-uri (disposable email + anti-bot). Rulează în paralel, cu
         // timeout scurt și fail-open: pe rețele mobile lente nu au voie să
         // consume bugetul de timp al signup-ului propriu-zis.
-        authLog("PREFLIGHT_ALL_STARTED", { timeoutMs: 4000, failOpen: true });
-        addDiagnostic("email", "PREFLIGHT_ALL_STARTED", "assert_email_allowed + signup-guard (paralel, 4s, fail-open)");
+        authLog("PREFLIGHT_ALL_STARTED", { timeoutMs: 1500, failOpen: true });
+        addDiagnostic("email", "PREFLIGHT_ALL_STARTED", "assert_email_allowed + signup-guard (paralel, 1.5s, fail-open)");
         if (!captchaRequired) authLog("TURNSTILE_SKIPPED_ANDROID");
         else authLog(captchaToken ? "TURNSTILE_TOKEN_RECEIVED" : "TURNSTILE_FAILED", { captchaToken: tokenInfo(captchaToken) });
         addDiagnostic(
@@ -559,7 +559,7 @@ function AuthPage() {
           ? "https://suzeta.app/api/public/signup-guard"
           : "/api/public/signup-guard";
 
-        const PREFLIGHT_MS = 4_000;
+        const PREFLIGHT_MS = 1_500;
         const settled = await Promise.allSettled([
           (async () => {
             authLog("EMAIL_ALLOWED_STARTED");
@@ -598,7 +598,7 @@ function AuthPage() {
               // preflight nu se mai rezolvă și butonul se învârte la infinit.
               const fp = await Promise.race([
                 computeDeviceFingerprint().catch(() => null),
-                new Promise<null>((resolve) => setTimeout(() => resolve(null), 2_000)),
+                new Promise<null>((resolve) => setTimeout(() => resolve(null), 750)),
               ]);
               if (!fp) authLog("FINGERPRINT_SKIPPED", { reason: "timeout_or_error" });
               const res = await fetch(guardUrl, {
@@ -697,7 +697,7 @@ function AuthPage() {
                 .from("profiles")
                 .update({ birthdate: birthDate, preferred_language: browserLang })
                 .eq("id", data.user.id),
-              8_000,
+              3_000,
             );
             authLog("PROFILE_CREATION_FINISHED", { err: upd.error ? supabaseErrorInfo(upd.error) : null });
             addDiagnostic("email", "PROFILE_UPDATE_RESPONSE_RECEIVED");
