@@ -219,7 +219,7 @@ function AuthPage() {
   const captchaRequired = isCaptchaMandatory();
   const captchaMisconfigured = isTurnstileMisconfiguredInProd();
   const [googleBusy, setGoogleBusy] = useState(false);
-  const [isNative, setIsNative] = useState(false);
+  const [isNative, setIsNative] = useState(isNativePlatformSync());
   const [nativeChecked, setNativeChecked] = useState(false);
   const [nativeGoogleReady, setNativeGoogleReady] = useState(hasNativeGoogleConfig());
   const [diagnosticEnabled, setDiagnosticEnabled] = useState(false);
