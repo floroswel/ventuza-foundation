@@ -444,7 +444,7 @@ function AuthPage() {
         // Preflight-uri (disposable email + anti-bot). Rulează în paralel, cu
         // timeout scurt și fail-open: pe rețele mobile lente nu au voie să
         // consume bugetul de timp al signup-ului propriu-zis.
-        addDiagnostic("email", "PREFLIGHT_STARTED", "assert_email_allowed + signup-guard");
+        addDiagnostic("email", "PREFLIGHT_ALL_STARTED", "assert_email_allowed + signup-guard (paralel, 4s, fail-open)");
         addDiagnostic(
           "email",
           captchaRequired
@@ -458,54 +458,80 @@ function AuthPage() {
           ? "https://suzeta.app/api/public/signup-guard"
           : "/api/public/signup-guard";
 
+        const PREFLIGHT_MS = 4_000;
         const [preflight, guard] = await Promise.all([
-          withAuthTimeout(
-            "email_preflight",
-            supabase.rpc("assert_email_allowed", { _email: emailParsed.data }),
-            4_000,
-          ).catch(() => null),
           (async () => {
+            addDiagnostic("email", "EMAIL_ALLOWED_STARTED");
+            const t0 = Date.now();
+            try {
+              const r = await withAuthTimeout(
+                "email_preflight",
+                supabase.rpc("assert_email_allowed", { _email: emailParsed.data }),
+                PREFLIGHT_MS,
+              );
+              addDiagnostic("email", "EMAIL_ALLOWED_FINISHED", `${Date.now() - t0} ms`);
+              return r;
+            } catch (e) {
+              addDiagnostic(
+                "email",
+                "EMAIL_ALLOWED_TIMEOUT",
+                `${Date.now() - t0} ms · ${e instanceof Error ? e.message : String(e)}`,
+              );
+              // Fail-open: nu blocăm signup-ul dacă RPC-ul anti-spam nu răspunde.
+              addDiagnostic("email", "PRECHECK_TIMEOUT_FAIL_OPEN", "assert_email_allowed");
+              return null;
+            }
+          })(),
+          (async () => {
+            addDiagnostic("email", "SIGNUP_GUARD_STARTED", guardUrl);
+            const t0 = Date.now();
             try {
               const { computeDeviceFingerprint } = await import("@/lib/fingerprint");
               const fp = await computeDeviceFingerprint().catch(() => null);
-              return await fetch(guardUrl, {
+              const res = await fetch(guardUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fingerprint: fp ?? undefined }),
-                signal: AbortSignal.timeout(4_000),
+                signal: AbortSignal.timeout(PREFLIGHT_MS),
               });
+              addDiagnostic("email", "SIGNUP_GUARD_FINISHED", `HTTP ${res.status} · ${Date.now() - t0} ms`);
+              return res;
             } catch (guardError) {
               addDiagnostic(
                 "email",
-                "SIGNUP_GUARD_ERROR_FAIL_OPEN",
-                guardError instanceof Error ? guardError.message : String(guardError),
+                "SIGNUP_GUARD_TIMEOUT",
+                `${Date.now() - t0} ms · ${guardError instanceof Error ? guardError.message : String(guardError)}`,
               );
+              addDiagnostic("email", "PRECHECK_TIMEOUT_FAIL_OPEN", "signup-guard");
               return null;
             }
           })(),
         ]);
 
+        // Doar un refuz EXPLICIT al serverului oprește signup-ul. Timeout,
+        // rețea căzută sau eroare de transport → continuăm (fail-open).
         if (preflight?.error) {
           addDiagnostic("email", "PREFLIGHT_ERROR", preflight.error.message);
           handleAuthError(preflight.error);
           return;
         }
-        if (guard) {
-          addDiagnostic("email", "SIGNUP_GUARD_RESPONSE_RECEIVED", `HTTP ${guard.status} · ${guardUrl}`);
-          if (guard.status === 429) {
-            const payload = (await guard.json().catch(() => ({}))) as {
-              error?: string;
-              retryAfterSec?: number;
-            };
-            const headerRetry = Number(guard.headers.get("Retry-After") ?? "");
-            const retryAfterSec =
-              payload.retryAfterSec ??
-              (Number.isFinite(headerRetry) && headerRetry > 0 ? headerRetry : 3600);
-            handleAuthError(new Error(payload.error ?? "signup_throttled"), { retryAfterSec });
-            return;
-          }
+        if (guard && guard.status === 429) {
+          const payload = (await guard.json().catch(() => ({}))) as {
+            error?: string;
+            retryAfterSec?: number;
+          };
+          const headerRetry = Number(guard.headers.get("Retry-After") ?? "");
+          const retryAfterSec =
+            payload.retryAfterSec ??
+            (Number.isFinite(headerRetry) && headerRetry > 0 ? headerRetry : 3600);
+          handleAuthError(new Error(payload.error ?? "signup_throttled"), { retryAfterSec });
+          return;
         }
-        addDiagnostic("email", "PREFLIGHT_RESPONSE_RECEIVED");
+        if (!preflight || !guard) {
+          addDiagnostic("email", "PREFLIGHT_CONTINUE_FAIL_OPEN", "continui la Supabase signUp");
+        }
+        addDiagnostic("email", "SUPABASE_SIGNUP_STARTED", maskEmail(emailParsed.data));
+
         addDiagnostic("email", "AUTH_REQUEST_STARTED", `signUp · ${maskEmail(emailParsed.data)}`);
         const signupStartedAt = Date.now();
         const { data, error } = await withAuthTimeout(
