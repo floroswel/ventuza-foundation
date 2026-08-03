@@ -77,7 +77,8 @@ export async function supabaseHealthCheck(timeoutMs = 6000): Promise<SupabaseHea
     });
     return {
       host,
-      status: res.ok ? "connected" : "http_error",
+      // 401 = server atins (lipsă/expirare apikey) → rețeaua funcționează.
+      status: res.status < 500 ? "connected" : "http_error",
       httpStatus: res.status,
       durationMs: Date.now() - t0,
     };
