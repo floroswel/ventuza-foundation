@@ -822,6 +822,7 @@ function AuthPage() {
       }
 
     } finally {
+      window.clearTimeout(watchdog);
       setSubmitting(false);
       addDiagnostic("email", "REQUEST_FINISHED");
       authLog(mode === "signup" ? "EMAIL_SIGNUP_FINISHED" : "EMAIL_LOGIN_HANDLER_FINISHED", { submitting: false });
