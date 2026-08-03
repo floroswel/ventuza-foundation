@@ -2,6 +2,18 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 
+function DefaultPendingComponent() {
+  return (
+    <div className="flex min-h-dvh items-center justify-center bg-background">
+      <div
+        aria-label="Se încarcă"
+        role="status"
+        className="size-8 animate-spin rounded-full border-2 border-primary/25 border-t-primary"
+      />
+    </div>
+  );
+}
+
 function DefaultErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   console.error(error);
   return (
