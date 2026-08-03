@@ -815,9 +815,12 @@ function AuthPage() {
         handleAuthError(error, {
           message:
             health.status === "connected"
-              ? "AUTH_SERVER_ERROR: serverul de autentificare nu a răspuns la timp."
+              ? "Răspunsul autentificării a întârziat pe acest dispozitiv."
               : "AUTH_NETWORK_TIMEOUT: nu am putut ajunge la serverul de autentificare.",
-          action: "Apasă din nou pe buton — cererea a fost oprită, nu rămâne blocată.",
+          action:
+            health.status === "connected"
+              ? "Serverul este activ. Apasă din nou; aplicația nu va mai rămâne blocată la salvarea sesiunii."
+              : "Verifică datele mobile sau Wi-Fi și încearcă din nou.",
         });
       } else {
         addDiagnostic("email", "ERROR", error instanceof Error ? error.message : String(error));
