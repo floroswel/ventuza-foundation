@@ -907,8 +907,6 @@ function AuthPage() {
                     await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
                     toast.success("Diagnosticul a fost copiat");
                   }}
-                    toast.success("Diagnosticul a fost copiat");
-                  }}
                 >
                   <Copy className="size-3.5" /> Copy diagnostics
                 </Button>
