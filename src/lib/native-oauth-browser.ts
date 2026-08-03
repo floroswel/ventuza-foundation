@@ -35,7 +35,10 @@ function parseTokens(url: string): { access_token: string; refresh_token: string
  * Deschide fluxul OAuth în browserul de sistem și așteaptă deep link-ul de
  * întoarcere. Rezolvă doar după ce sesiunea Supabase a fost setată.
  */
-export async function browserGoogleSignIn(timeoutMs = 180_000): Promise<BrowserOAuthResult> {
+export async function browserGoogleSignIn(
+  timeoutMs = 180_000,
+  mode: "login" | "signup" = "login",
+): Promise<BrowserOAuthResult> {
   let App: typeof import("@capacitor/app").App;
   let Browser: typeof import("@capacitor/browser").Browser;
   try {
@@ -45,7 +48,8 @@ export async function browserGoogleSignIn(timeoutMs = 180_000): Promise<BrowserO
     return { ok: false, code: "unsupported", message: "Capacitor plugins indisponibile" };
   }
 
-  const url = `${PROD_ORIGIN}/auth?native_bridge=1&mode=login`;
+  const url = `${PROD_ORIGIN}/auth?native_bridge=1&auto=google&mode=${mode}`;
+
 
   return new Promise<BrowserOAuthResult>((resolve) => {
     let settled = false;
