@@ -320,6 +320,7 @@ function AuthPage() {
         addDiagnostic("google", "CUSTOM_TAB_FAILED", viaBrowser.message ?? viaBrowser.code);
 
         // Fallback: SDK nativ (Credential Manager).
+        authLog("CREDENTIAL_REQUEST_STARTED", { clientIdPresent: !!runtimeClientId });
         addDiagnostic("google", "CREDENTIAL_REQUEST_STARTED", `clientId=${runtimeClientId ? "prezent" : "în curs"}`);
         const res = await nativeGoogleSignIn();
         setNativeGoogleLogs(readNativeGoogleLogs());
@@ -328,9 +329,12 @@ function AuthPage() {
         addDiagnostic("google", "CREDENTIAL_RETURNED", `durată=${Date.now() - pressedAt} ms`);
         if (res.ok) {
           addDiagnostic("google", "ID_TOKEN_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
+          authLog("SUPABASE_SESSION_CREATED", { via: "native_sdk" });
           addDiagnostic("google", "SUPABASE_SESSION_CREATED");
+          authLog("NAVIGATION_FINISHED", { via: "native_sdk" });
           return;
         }
+
         const label = {
           cancelled: "GOOGLE_USER_CANCELLED",
           no_credential: "GOOGLE_NO_CREDENTIAL_AVAILABLE",
