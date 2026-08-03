@@ -37,6 +37,7 @@ import {
 } from "@/lib/build-info";
 import { withGuardian } from "@/components/with-guardian";
 import { withAuthTimeout } from "@/lib/auth-timeout";
+import { inspectSupabaseConfig, maskEmail, readAuthStages, recordStage, supabaseHealthCheck } from "@/lib/auth-telemetry";
 import { clearEntries, getEntries, installOnce, isDebugEnabled, log as debugLog, setDebugEnabled } from "@/lib/debug-logger";
 
 
@@ -241,16 +242,39 @@ function AuthPage() {
     setGoogleBusy(true);
     addDiagnostic("google", "REQUEST_STARTED", `platform=${isNative ? "android-native" : "web"}`);
     try {
-      // În Capacitor (WebView) fluxul web de OAuth prin redirect dă 404 —
-      // Google blochează sign-in-ul din WebView-uri. Pe nativ mergem DIRECT pe
-      // Chrome Custom Tabs (browser de sistem, acceptat de Google), care nu
-      // depinde de clientul OAuth Android și nici de SHA-1-ul build-ului.
-      // SDK-ul nativ (Credential Manager) rămâne doar ca a doua încercare.
+      // ANDROID: DOAR calea nativă (Credential Manager → idToken →
+      // signInWithIdToken). Fluxul web de OAuth în WebView este interzis
+      // (Google returnează 404 pentru WebView-uri). Chrome Custom Tabs rămâne
+      // exclusiv ca plasă de siguranță când SDK-ul nativ NU e disponibil
+      // (client ID lipsă / plugin absent) — niciodată după o anulare reală.
       if (await isNativePlatform()) {
         const pressedAt = Date.now();
-        addDiagnostic("google", "BROWSER_FLOW_STARTED", "Chrome Custom Tabs → app.suzeta://auth-callback");
+        addDiagnostic("google", "SDK_LOGIN_STARTED", `clientId=${runtimeClientId ? "prezent" : "în curs de rezolvare"}`);
+        const res = await nativeGoogleSignIn();
+        setNativeGoogleLogs(readNativeGoogleLogs());
+        setNativeLogcat(readNativeLogcat());
+        setGoogleRuntime(getNativeGoogleRuntimeState());
+        addDiagnostic("google", "SDK_LOGIN_FINISHED", `durată=${Date.now() - pressedAt} ms`);
+        if (res.ok) {
+          addDiagnostic("google", "RESPONSE_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
+          return;
+        }
+        addDiagnostic(
+          "google",
+          res.code === "cancelled" ? "CANCELLED" : "ERROR",
+          formatGoogleDiagnostic(res.diagnostic),
+        );
+        if (res.code === "cancelled") {
+          handleAuthError(new Error("Autentificarea Google a fost anulată."), {
+            message: "Autentificarea Google a fost anulată.",
+            action: "Apasă din nou și alege contul Google din listă.",
+          });
+          return;
+        }
+        // SDK indisponibil / neconfigurat → Chrome Custom Tabs (browser de
+        // sistem, NU WebView). Nu navigăm niciodată intern la o pagină 404.
+        addDiagnostic("google", "BROWSER_FALLBACK_STARTED", "SDK nativ indisponibil → Chrome Custom Tabs");
         const viaBrowser = await browserGoogleSignIn(180_000, mode === "signup" ? "signup" : "login");
-        addDiagnostic("google", "BROWSER_FLOW_FINISHED", `durată buton→răspuns=${Date.now() - pressedAt} ms`);
         if (viaBrowser.ok) {
           addDiagnostic("google", "RESPONSE_RECEIVED", "sesiune primită prin deep link");
           return;
@@ -261,25 +285,8 @@ function AuthPage() {
           `browser: ${viaBrowser.message ?? viaBrowser.code}`,
         );
         if (viaBrowser.code === "cancelled") return;
-
-        // Ultimă șansă: SDK-ul nativ.
-        addDiagnostic("google", "SDK_LOGIN_STARTED", `clientId=${runtimeClientId ?? "în curs de rezolvare"}`);
-        const res = await nativeGoogleSignIn();
-        setNativeGoogleLogs(readNativeGoogleLogs());
-        setNativeLogcat(readNativeLogcat());
-        setGoogleRuntime(getNativeGoogleRuntimeState());
-        if (!res.ok) {
-          addDiagnostic(
-            "google",
-            res.code === "cancelled" ? "CANCELLED" : "ERROR",
-            formatGoogleDiagnostic(res.diagnostic),
-          );
-          if (res.code === "cancelled") return;
-          handleAuthError(new Error(res.message ?? viaBrowser.message ?? "Google sign-in failed"));
-          return;
-        }
-        addDiagnostic("google", "RESPONSE_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
-        // Session set by supabase.auth.signInWithIdToken; SessionGuards redirects.
+        handleAuthError(new Error(res.message ?? viaBrowser.message ?? "Google sign-in failed"));
+        return;
       } else {
 
         addDiagnostic("google", "OAUTH_BROKER_STARTED", `redirect=${oauthOrigin()}/auth`);
@@ -439,6 +446,14 @@ function AuthPage() {
         // timeout scurt și fail-open: pe rețele mobile lente nu au voie să
         // consume bugetul de timp al signup-ului propriu-zis.
         addDiagnostic("email", "PREFLIGHT_STARTED", "assert_email_allowed + signup-guard");
+        addDiagnostic(
+          "email",
+          captchaRequired
+            ? captchaToken
+              ? "TURNSTILE_TOKEN_RECEIVED"
+              : "TURNSTILE_FAILED"
+            : "TURNSTILE_SKIPPED_ANDROID",
+        );
         const nativeRuntime = await isNativePlatform();
         const guardUrl = nativeRuntime
           ? "https://suzeta.app/api/public/signup-guard"
@@ -448,7 +463,7 @@ function AuthPage() {
           withAuthTimeout(
             "email_preflight",
             supabase.rpc("assert_email_allowed", { _email: emailParsed.data }),
-            6_000,
+            4_000,
           ).catch(() => null),
           (async () => {
             try {
@@ -458,7 +473,7 @@ function AuthPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ fingerprint: fp ?? undefined }),
-                signal: AbortSignal.timeout(6_000),
+                signal: AbortSignal.timeout(4_000),
               });
             } catch (guardError) {
               addDiagnostic(
@@ -492,7 +507,8 @@ function AuthPage() {
           }
         }
         addDiagnostic("email", "PREFLIGHT_RESPONSE_RECEIVED");
-        addDiagnostic("email", "AUTH_REQUEST_STARTED", "signUp");
+        addDiagnostic("email", "AUTH_REQUEST_STARTED", `signUp · ${maskEmail(emailParsed.data)}`);
+        const signupStartedAt = Date.now();
         const { data, error } = await withAuthTimeout(
           "email_signup",
           supabase.auth.signUp({
@@ -503,8 +519,10 @@ function AuthPage() {
               captchaToken: captchaToken ?? undefined,
             },
           }),
-          45_000,
+          20_000,
         );
+        recordStage("auth.signUp", Date.now() - signupStartedAt);
+
 
         if (error) {
           addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
@@ -536,7 +554,8 @@ function AuthPage() {
           navigate({ to: "/auth/check-email", search: { email: emailParsed.data }, replace: true });
         }
       } else {
-        addDiagnostic("email", "AUTH_REQUEST_STARTED", "signInWithPassword");
+        addDiagnostic("email", "EMAIL_LOGIN_STARTED", maskEmail(emailParsed.data));
+        const loginStartedAt = Date.now();
         const { data, error } = await withAuthTimeout(
           "email_login",
           supabase.auth.signInWithPassword({
@@ -544,8 +563,9 @@ function AuthPage() {
             password: passParsed.data,
             options: { captchaToken: captchaToken ?? undefined },
           }),
-          30_000,
+          20_000,
         );
+        recordStage("auth.signInWithPassword", Date.now() - loginStartedAt);
 
         if (error) {
           addDiagnostic("email", "AUTH_RESPONSE_ERROR", `cod=${error.code ?? "-"} · status=${error.status ?? "-"} · ${error.message}`);
@@ -575,9 +595,28 @@ function AuthPage() {
           navigate({ to: "/auth/check-email", search: { email }, replace: true });
           return;
         }
+        // Diferențiem OFFLINE (telefonul nu are net) de TIMEOUT server.
+        const online = typeof navigator === "undefined" ? true : navigator.onLine !== false;
+        if (!online) {
+          addDiagnostic("email", "AUTH_OFFLINE", "navigator.onLine=false");
+          handleAuthError(error, {
+            message: "Telefonul nu este conectat la internet.",
+            action: "Activează datele mobile sau Wi-Fi, apoi apasă din nou.",
+          });
+          return;
+        }
+        const health = await supabaseHealthCheck(5_000);
+        addDiagnostic(
+          "email",
+          `HEALTH_${health.status.toUpperCase()}`,
+          `${health.host} · HTTP ${health.httpStatus ?? "-"} · ${health.durationMs} ms`,
+        );
         handleAuthError(error, {
-          message: "Conexiunea de autentificare a expirat. Verifică internetul și încearcă din nou.",
-          action: "Butonul a fost reactivat; poți reîncerca imediat.",
+          message:
+            health.status === "connected"
+              ? "AUTH_SERVER_ERROR: serverul de autentificare nu a răspuns la timp."
+              : "AUTH_NETWORK_TIMEOUT: nu am putut ajunge la serverul de autentificare.",
+          action: "Apasă din nou pe buton — cererea a fost oprită, nu rămâne blocată.",
         });
       } else {
         addDiagnostic("email", "ERROR", error instanceof Error ? error.message : String(error));
@@ -843,12 +882,18 @@ function AuthPage() {
                   size="sm"
                   variant="outline"
                   onClick={async () => {
+                    const health = await supabaseHealthCheck(6000);
                     const payload = {
                       build: `${MOBILE_VERSION_CODE} · ${shortBuildSha}`,
                       packageName: signatureInfo?.packageName ?? "app.suzeta (necomunicat de runtime)",
                       versionName: signatureInfo?.versionName,
                       versionCode: signatureInfo?.versionCode,
                       installSource: describeInstallSource(signatureInfo),
+                      platform: isNative ? "android-native" : "web",
+                      online: typeof navigator === "undefined" ? null : navigator.onLine,
+                      supabase: { ...inspectSupabaseConfig(), health },
+                      turnstile: captchaRequired ? (captchaToken ? "token_received" : "pending") : "skipped_native",
+                      stages: readAuthStages(),
                       serverClientId: runtimeClientId,
                       clientId: runtimeClientId,
                       signature: signatureInfo,
