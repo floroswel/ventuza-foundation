@@ -129,7 +129,9 @@ export function formatHeight(cm: number | null): string | null {
 }
 
 export async function requestAndStoreLocation(): Promise<{ ok: boolean; error?: string }> {
-  const { getCurrentPosition } = await import("./native-geolocation");
+  const { ensureLocationPermission, getCurrentPosition } = await import("./native-geolocation");
+  // Cerem întâi permisiunea explicit (dialog OS pe Android), apoi poziția.
+  await ensureLocationPermission();
   let pos = await getCurrentPosition({ enableHighAccuracy: true, maximumAge: 10 * 60 * 1000, timeout: 12_000 });
   if (!pos) pos = await getCurrentPosition({ enableHighAccuracy: false, maximumAge: 10 * 60 * 1000, timeout: 20_000 });
   if (!pos) {
@@ -139,6 +141,7 @@ export async function requestAndStoreLocation(): Promise<{ ok: boolean; error?: 
         "Nu am putut obține locația. Verifică permisiunea aplicației (Setări → Aplicații → Suzeta → Permisiuni → Locație) și că Location Services este activ.",
     };
   }
+
   const { error } = await supabase.rpc("update_my_location", {
     lng: pos.coords.longitude,
     lat: pos.coords.latitude,
