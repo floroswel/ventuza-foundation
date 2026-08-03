@@ -256,7 +256,8 @@ function AuthPage() {
     setDiagnosticEnabled(debugOn);
     if (debugOn) installOnce();
     void (async () => {
-      const native = await isNativeAndroid();
+      // Orice platformă nativă (nu doar Android) ascunde butonul Google.
+      const native = (await isNativePlatform()) || (await isNativeAndroid());
       if (cancelled) return;
       setIsNative(native);
       setSignatureInfo(readAndroidSignature());
