@@ -132,9 +132,13 @@ async function persistPendingBirthdate(userId: string) {
   }
   if (!pending) return;
   try {
-    await supabase.from("profiles").update({ birthdate: pending }).eq("id", userId);
+    await withAuthTimeout(
+      "pending_birthdate_update",
+      supabase.from("profiles").update({ birthdate: pending }).eq("id", userId),
+      8_000,
+    );
   } catch {
-    /* ignore */
+    /* ignore — nu blocăm redirectul post-login */
   }
   try {
     sessionStorage.removeItem("vz_pending_birthdate");
