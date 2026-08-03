@@ -556,6 +556,23 @@ function AuthPage() {
     } catch (error) {
       if (error instanceof Error && error.name === "AuthTimeoutError") {
         addDiagnostic("email", "TIMEOUT", error.message);
+        // Recuperare: cererea poate să fi reușit pe server chiar dacă răspunsul
+        // a întârziat (rețea mobilă lentă). Verificăm sesiunea reală înainte
+        // să afișăm o eroare roșie.
+        const { data: recovered } = await supabase.auth.getSession().catch(() => ({ data: { session: null } }));
+        if (recovered?.session?.user) {
+          addDiagnostic("email", "TIMEOUT_RECOVERED", "sesiune activă găsită după timeout");
+          await routeAfterAuth(recovered.session.user.id, navigate, search.redirect);
+          return;
+        }
+        if (mode === "signup" && error.message.startsWith("email_signup")) {
+          addDiagnostic("email", "TIMEOUT_SIGNUP_PENDING", "trimit userul la confirmarea emailului");
+          toast.message("Cererea durează mai mult decât de obicei", {
+            description: "Dacă ai primit emailul de confirmare, contul este creat. Verifică inboxul.",
+          });
+          navigate({ to: "/auth/check-email", search: { email }, replace: true });
+          return;
+        }
         handleAuthError(error, {
           message: "Conexiunea de autentificare a expirat. Verifică internetul și încearcă din nou.",
           action: "Butonul a fost reactivat; poți reîncerca imediat.",
@@ -564,6 +581,7 @@ function AuthPage() {
         addDiagnostic("email", "ERROR", error instanceof Error ? error.message : String(error));
         handleAuthError(error);
       }
+
     } finally {
       setSubmitting(false);
       addDiagnostic("email", "REQUEST_FINISHED");
