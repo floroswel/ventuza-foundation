@@ -7,6 +7,7 @@
  */
 
 type SignatureBridge = {
+  getAll?: () => string;
   getPackageName?: () => string;
   getSha1?: () => string;
   getSha256?: () => string;
