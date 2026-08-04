@@ -60,14 +60,51 @@ function applySecurityHeaders(response: Response, url: URL): Response {
   });
 }
 
+/**
+ * App-ul Android împachetat local rulează pe originul WebView (`https://localhost`
+ * / `capacitor://localhost`). Cererile lui către `/_serverFn` și `/api/` sunt
+ * cross-origin, deci au nevoie de CORS explicit — doar pentru aceste origini
+ * native, niciodată pentru web generic.
+ */
+const NATIVE_ORIGINS = new Set([
+  "https://localhost",
+  "http://localhost",
+  "capacitor://localhost",
+  "ionic://localhost",
+]);
+
+function isApiPath(pathname: string): boolean {
+  return pathname.startsWith("/_serverFn") || pathname.startsWith("/api/");
+}
+
+function applyNativeCors(response: Response, request: Request, url: URL): Response {
+  const origin = request.headers.get("origin");
+  if (!origin || !NATIVE_ORIGINS.has(origin) || !isApiPath(url.pathname)) return response;
+  const headers = new Headers(response.headers);
+  headers.set("Access-Control-Allow-Origin", origin);
+  headers.set("Access-Control-Allow-Credentials", "true");
+  headers.set("Access-Control-Allow-Headers", "authorization, content-type, x-requested-with");
+  headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  headers.set("Vary", "Origin");
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
+  });
+}
+
 export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const url = new URL(request.url);
+    const origin = request.headers.get("origin");
+    if (request.method === "OPTIONS" && origin && NATIVE_ORIGINS.has(origin) && isApiPath(url.pathname)) {
+      return applyNativeCors(new Response(null, { status: 204 }), request, url);
+    }
     try {
       const handler = await getServerEntry();
       const response = await handler.fetch(request, env, ctx);
       const normalized = await normalizeCatastrophicSsrResponse(response);
-      return applySecurityHeaders(normalized, url);
+      return applyNativeCors(applySecurityHeaders(normalized, url), request, url);
     } catch (error) {
       console.error(error);
       return new Response(renderErrorPage(), {
