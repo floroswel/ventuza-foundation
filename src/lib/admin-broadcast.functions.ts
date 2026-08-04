@@ -31,9 +31,9 @@ async function selectAudience(sa: any, f: AudienceFilterT): Promise<string[]> {
     q = q.lte("created_at", new Date(Date.now() - f.minAgeDays * 86400000).toISOString());
   if (f.maxAgeDays !== undefined)
     q = q.gte("created_at", new Date(Date.now() - f.maxAgeDays * 86400000).toISOString());
-  if (f.activeSince) q = q.gte("last_active_at", f.activeSince);
+  if (f.activeSince) q = q.gte("last_seen", f.activeSince);
   if (f.hasNoActivity30d)
-    q = q.lte("last_active_at", new Date(Date.now() - 30 * 86400000).toISOString());
+    q = q.lte("last_seen", new Date(Date.now() - 30 * 86400000).toISOString());
   const { data: profs, error } = await q.limit(20000);
   if (error) throw new Error(error.message);
   let ids: string[] = (profs ?? []).map((p: any) => p.id);
