@@ -150,8 +150,8 @@ function GroupChatPage() {
     );
 
   return (
-    <div className="flex h-dvh flex-col bg-background">
-      <header className="flex items-center justify-between border-b border-border/60 bg-background/95 px-3 py-3 backdrop-blur">
+    <div className="flex h-[100dvh] w-full min-h-0 min-w-0 flex-col overflow-hidden bg-background">
+      <header className="flex shrink-0 items-center justify-between border-b border-border/60 bg-background/95 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur">
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate({ to: "/groups" })}
@@ -181,7 +181,7 @@ function GroupChatPage() {
         )}
       </header>
 
-      <div ref={scrollerRef} className="flex-1 overflow-y-auto px-3 py-4">
+      <div ref={scrollerRef} className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
         {!isMember ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground">
             <p>Nu ești membru. Alătură-te ca să citești și să scrii.</p>
@@ -236,14 +236,14 @@ function GroupChatPage() {
       {isMember && (
         <form
           onSubmit={handleSend}
-          className="sticky bottom-0 flex items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-3 pb-bar backdrop-blur"
+          className="z-10 flex shrink-0 items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-3 pb-bar backdrop-blur"
         >
           <input
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Mesaj pentru squad…"
             maxLength={2000}
-            className="flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
+            className="w-full min-w-0 flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary"
           />
           <button
             type="submit"
