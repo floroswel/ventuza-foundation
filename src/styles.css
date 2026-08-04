@@ -440,6 +440,10 @@ html {
 @utility min-h-dvh-safe {
   min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
 }
+/* Ecran full-height în interiorul <body> care are deja padding safe-area. */
+@utility h-dvh-safe {
+  height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+}
 
 /* Native Android — Keyboard aware bottom padding.
    Populated by src/lib/native-runtime.ts via @capacitor/keyboard listeners.
