@@ -1201,7 +1201,7 @@ function ThreadPage() {
           }
           maxLength={4000}
           disabled={blockedFirstMessage}
-          className="flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary disabled:opacity-60"
+          className="w-full min-w-0 flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary disabled:opacity-60"
         />
         <button
           type="submit"
