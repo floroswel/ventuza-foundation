@@ -1165,7 +1165,7 @@ function ThreadPage() {
 
       <form
         onSubmit={handleSend}
-        className="z-10 flex shrink-0 items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-2 pb-[max(1rem,env(safe-area-inset-bottom))] backdrop-blur"
+        className="z-10 flex shrink-0 items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-2 pb-bar backdrop-blur"
       >
         <button
           type="button"

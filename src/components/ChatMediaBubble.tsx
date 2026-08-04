@@ -153,7 +153,7 @@ function LocationMap({
           loading="lazy"
         />
       </div>
-      <div className="flex flex-col gap-2 border-t border-white/10 bg-black/80 px-4 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
+      <div className="flex flex-col gap-2 border-t border-white/10 bg-black/80 px-4 py-3 pb-bar">
         <a
           href={gmaps}
           target="_blank"

@@ -236,7 +236,7 @@ function GroupChatPage() {
       {isMember && (
         <form
           onSubmit={handleSend}
-          className="sticky bottom-0 flex items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] backdrop-blur"
+          className="sticky bottom-0 flex items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-3 pb-bar backdrop-blur"
         >
           <input
             value={text}
