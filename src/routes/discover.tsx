@@ -687,10 +687,13 @@ function DiscoverPage() {
                 toast.success("Locație activată");
                 load();
               } else {
-                toast.message("Permisiune blocată", {
-                  description:
-                    "Deschide 🔒 din bara de adrese → Permisiuni → Locație → Permite, apoi reîncarcă pagina.",
-                  duration: 8000,
+                const { openLocationSettings } = await import("@/lib/native-geolocation");
+                const opened = await openLocationSettings();
+                toast.message(opened ? "Permite locația pentru Suzeta" : "Locația nu a fost activată", {
+                  description: opened
+                    ? "Activează permisiunea în ecranul deschis, apoi revino în aplicație."
+                    : (r.error ?? "Permite locația din setările aplicației."),
+                  duration: 6000,
                 });
               }
             }}
@@ -1341,7 +1344,7 @@ function ProfileSheet({
         onClick={(e) => e.stopPropagation()}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        className="relative flex h-full w-full flex-col border-border bg-surface sm:h-[92dvh] sm:max-w-md sm:rounded-t-3xl sm:border"
+        className="relative flex h-[100dvh] min-h-0 w-full flex-col border-border bg-surface sm:h-[92dvh] sm:max-w-md sm:rounded-t-3xl sm:border"
       >
         {/* Prev / Next desktop arrows */}
         {prev && (
@@ -1363,7 +1366,7 @@ function ProfileSheet({
           </button>
         )}
 
-        <div className="flex-1 overflow-y-auto overscroll-contain">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
           <ProfilePhotoGallery
           photos={signedPhotos}
           alt={profile.display_name ?? ""}
@@ -1485,7 +1488,7 @@ function ProfileSheet({
         </div>
 
         {/* Sticky action bar */}
-        <div className="sticky bottom-0 z-10 border-t border-border/60 bg-surface/95 px-4 py-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
+        <div className="z-10 shrink-0 border-t border-border/60 bg-surface/95 px-4 py-2 pb-[max(env(safe-area-inset-bottom),0.75rem)] backdrop-blur">
           <div className="flex items-center gap-2">
             <button
               onClick={() => onDecision(profile, "pass")}

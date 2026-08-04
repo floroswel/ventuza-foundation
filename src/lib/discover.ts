@@ -131,14 +131,16 @@ export function formatHeight(cm: number | null): string | null {
 export async function requestAndStoreLocation(): Promise<{ ok: boolean; error?: string }> {
   const { ensureLocationPermission, getCurrentPosition } = await import("./native-geolocation");
   // Cerem întâi permisiunea explicit (dialog OS pe Android), apoi poziția.
-  await ensureLocationPermission();
+  const granted = await ensureLocationPermission();
+  if (!granted) {
+    return { ok: false, error: "Permisiunea de locație nu a fost acordată." };
+  }
   let pos = await getCurrentPosition({ enableHighAccuracy: true, maximumAge: 10 * 60 * 1000, timeout: 12_000 });
   if (!pos) pos = await getCurrentPosition({ enableHighAccuracy: false, maximumAge: 10 * 60 * 1000, timeout: 20_000 });
   if (!pos) {
     return {
       ok: false,
-      error:
-        "Nu am putut obține locația. Verifică permisiunea aplicației (Setări → Aplicații → Suzeta → Permisiuni → Locație) și că Location Services este activ.",
+      error: "Locația telefonului nu este disponibilă momentan.",
     };
   }
 

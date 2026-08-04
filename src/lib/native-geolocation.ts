@@ -126,3 +126,15 @@ export async function ensureLocationPermission(): Promise<boolean> {
   // Web: dialogul apare la primul getCurrentPosition.
   return typeof navigator !== "undefined" && "geolocation" in navigator;
 }
+
+/** Deschide setările aplicației doar când Android nu mai poate afișa dialogul OS. */
+export async function openLocationSettings(): Promise<boolean> {
+  if (!(await isNative())) return false;
+  try {
+    const { NativeSettings, AndroidSettings } = await import("capacitor-native-settings");
+    await NativeSettings.openAndroid({ option: AndroidSettings.ApplicationDetails });
+    return true;
+  } catch {
+    return false;
+  }
+}
