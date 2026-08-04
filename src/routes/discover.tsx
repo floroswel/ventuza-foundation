@@ -182,7 +182,13 @@ function DiscoverPage() {
 
   useEffect(() => {
     if (!user || locStatus !== "unknown") return;
-    requestAndStoreLocation().then((r) => {
+    void import("@/lib/native-geolocation").then(async ({ getLocationPermissionState }) => {
+      const permission = await getLocationPermissionState();
+      if (permission !== "granted") {
+        setLocStatus("denied");
+        return;
+      }
+      const r = await requestAndStoreLocation();
       setLocStatus(r.ok ? "granted" : "denied");
       if (r.ok) {
         // Informăm userul o singură dată că poate opri oricând locația din
@@ -198,12 +204,6 @@ function DiscoverPage() {
             duration: 7000,
           });
         }
-      } else {
-        toast.message("Locație indisponibilă", {
-          id: "loc-unavailable",
-          description: r.error ?? "Îți arătăm rezultate pe baza filtrelor tale.",
-          duration: 6000,
-        });
       }
     });
   }, [user, locStatus]);
@@ -402,7 +402,10 @@ function DiscoverPage() {
   // Re-fetch când watcher-ul de locație raportează mișcare semnificativă.
   useEffect(() => {
     if (!user) return;
-    const onMoved = () => void load();
+    const onMoved = () => {
+      setLocStatus("granted");
+      void load();
+    };
     window.addEventListener("suzeta:location-updated", onMoved);
     return () => window.removeEventListener("suzeta:location-updated", onMoved);
   }, [user, load]);

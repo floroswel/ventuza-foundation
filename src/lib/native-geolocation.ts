@@ -13,6 +13,32 @@ async function isNative(): Promise<boolean> {
   }
 }
 
+export async function getLocationPermissionState(): Promise<
+  "prompt" | "granted" | "denied" | "unknown"
+> {
+  if (await isNative()) {
+    try {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const permission = await Geolocation.checkPermissions();
+      if (permission.location === "granted") return "granted";
+      if (permission.location === "denied") return "denied";
+      return "prompt";
+    } catch {
+      return "unknown";
+    }
+  }
+  try {
+    const permissions = (navigator as Navigator & { permissions?: Permissions }).permissions;
+    if (permissions?.query) {
+      const status = await permissions.query({ name: "geolocation" as PermissionName });
+      return status.state as "prompt" | "granted" | "denied";
+    }
+  } catch {
+    /* Permissions API indisponibil */
+  }
+  return "unknown";
+}
+
 export async function getCurrentPosition(opts?: {
   enableHighAccuracy?: boolean;
   timeout?: number;
