@@ -22,18 +22,13 @@ import { notifyLocationSharingChanged } from "@/hooks/useLocationWatcher";
 const STORAGE_PREFIX = "suzeta_loc_prompt_seen_v1:";
 
 // Rute unde primer-ul NU are ce căuta (flux de auth / onboarding / legal).
-const EXCLUDED_PREFIXES = [
-  "/auth",
-  "/n",
-  "/onboarding",
-  "/legal",
-  "/reset-password",
-  "/blocked",
-  "/admin",
-];
+// Allowlist strict: promptul de locație apare DOAR pe ecranele care chiar
+// folosesc locația. Nu trebuie să acopere verificarea de vârstă, mesajele,
+// setările etc.
+const LOCATION_ROUTES = ["/", "/discover", "/nearby", "/cruise", "/visitors", "/explore"];
 
 function routeNeedsLocationPrimer(pathname: string) {
-  return !EXCLUDED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  return LOCATION_ROUTES.some((p) => pathname === p || (p !== "/" && pathname.startsWith(`${p}/`)));
 }
 
 export function LocationPermissionPrompt() {
