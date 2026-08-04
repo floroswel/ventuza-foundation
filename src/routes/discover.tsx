@@ -1149,6 +1149,11 @@ function Cascade({
                   </span>
                 </p>
                 <PositionTag value={p.position} size="sm" />
+                {p.tribes && p.tribes.length > 0 && (
+                  <p className="truncate text-[10px] text-white/70">
+                    {p.tribes.slice(0, 2).join(" · ")}
+                  </p>
+                )}
               </div>
               {p.distance_m != null && (
                 <span className="shrink-0 text-[10px] text-white/70">

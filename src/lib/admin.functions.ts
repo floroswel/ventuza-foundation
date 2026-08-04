@@ -227,7 +227,7 @@ function safeColumnsFor(table: string): string {
       "xp",
       "created_at",
       "updated_at",
-      "last_active_at",
+      "last_seen",
       "is_premium",
       "age",
     ].join(",");

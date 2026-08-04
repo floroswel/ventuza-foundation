@@ -46,7 +46,11 @@ import { clearEntries, getEntries, installOnce, isDebugEnabled, log as debugLog,
 const searchSchema = z.object({
   mode: z.enum(["login", "signup"]).catch("login"),
   redirect: z.string().optional(),
-  native_bridge: z.string().optional(),
+  // Router-ul convertește `?native_bridge=1` în number — acceptăm ambele.
+  native_bridge: z
+    .union([z.string(), z.number(), z.boolean()])
+    .optional()
+    .transform((v) => (v === undefined ? undefined : String(v))),
   auto: z.string().optional(),
 
 });
