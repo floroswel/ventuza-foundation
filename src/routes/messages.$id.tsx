@@ -710,23 +710,10 @@ function ThreadPage() {
         ) : (
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <div className="size-9 shrink-0 overflow-hidden rounded-full bg-muted">
-              {other?.photo ? (
-                <img src={other.photo} alt="" className="size-full object-cover" />
-              ) : null}
+              <div className="size-full animate-pulse bg-muted-foreground/10" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1 truncate text-sm font-semibold">
-                {other?.name ?? "…"}
-                {other?.verified && (
-                  <span title="Acest cont este verificat" className="inline-flex">
-                    <BadgeCheck
-                      className="size-3.5 shrink-0 text-primary"
-                      aria-label="Acest cont este verificat"
-                    />
-                  </span>
-                )}
-
-              </p>
+              <p className="truncate text-sm font-semibold">…</p>
               <p className="truncate text-[10px] text-muted-foreground">
                 {otherTyping ? (
                   <span className="text-primary">typing…</span>
