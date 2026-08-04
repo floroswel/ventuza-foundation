@@ -306,9 +306,15 @@ function RootComponent() {
       cleanup = setupQueryPersistence(queryClient);
     });
     // Outbox mesaje offline — auto-flush la reconectare.
-    void import("@/lib/message-outbox").then(({ wireOutboxAutoFlush }) => {
-      wireOutboxAutoFlush();
-    });
+    void import("@/lib/message-outbox")
+      .then((module) => {
+        if (typeof module?.wireOutboxAutoFlush === "function") {
+          module.wireOutboxAutoFlush();
+        }
+      })
+      .catch((error) => {
+        console.warn("[outbox] inițializarea automată nu este disponibilă", error);
+      });
     return () => {
       cleanup?.();
     };

@@ -32,6 +32,11 @@ export function installNativeApiOrigin(): void {
   if (patched || !isNative()) return;
   patched = true;
 
+  // Marker sincron, instalat înainte de primul render. Permite ca toate
+  // ajustările de WebView să rămână strict în bundle-ul Capacitor, fără să
+  // schimbe scroll-ul sau gesturile versiunii web.
+  document.documentElement.classList.add("native-app");
+
   const original = window.fetch.bind(window);
   window.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
     try {

@@ -486,52 +486,62 @@ html {
 }
 
 /* ============================================================
-   NATIVE ANDROID FEEL — elimină comportamentele „de site" din WebView.
-   Aplicat global; input-urile și zonele marcate rămân selectabile.
+   NATIVE ANDROID FEEL — strict pentru WebView-ul Capacitor.
+   Clasa este instalată sincron de native-api-origin înainte de primul render,
+   astfel încât versiunea web își păstrează comportamentul neschimbat.
    ============================================================ */
-html {
+html.native-app {
   /* Fără pull-to-refresh și fără bounce/overscroll glow de browser. */
-  overscroll-behavior: none;
-  /* Fără double-tap-to-zoom; tap-urile se simt instant. */
-  touch-action: manipulation;
+  overscroll-behavior-x: none;
+  /* Pan vertical explicit: unele Android WebView-uri opresc scroll-ul dacă
+     touch-action este setat global la manipulation. */
+  touch-action: pan-y;
+  height: auto;
+  min-height: 100%;
 }
 
-html, body {
+html.native-app body {
   /* Fără highlight albastru la tap și fără meniu contextual la long-press. */
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
-  overscroll-behavior: none;
+  overscroll-behavior-x: none;
+  overscroll-behavior-y: auto;
+  touch-action: pan-y;
+  height: auto;
+  min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Fără selecție de text „web" pe UI. Textul editabil și conținutul marcat
    explicit cu [data-selectable] rămân selectabile (ex. cod de referral). */
-body {
+html.native-app body {
   -webkit-user-select: none;
   user-select: none;
 }
-input,
-textarea,
-select,
-[contenteditable="true"],
-[data-selectable],
-[data-selectable] * {
+html.native-app input,
+html.native-app textarea,
+html.native-app select,
+html.native-app [contenteditable="true"],
+html.native-app [data-selectable],
+html.native-app [data-selectable] * {
   -webkit-user-select: text;
   user-select: text;
   -webkit-touch-callout: default;
 }
 
 /* Scroll cu inerție nativă în containerele scrollabile. */
-* {
+html.native-app * {
   -webkit-overflow-scrolling: touch;
 }
 
 /* Fără highlight de focus „browser" pe tap (păstrăm focus-visible pt. a11y). */
-:focus:not(:focus-visible) {
+html.native-app :focus:not(:focus-visible) {
   outline: none;
 }
 
 /* Imaginile nu pot fi trase (drag ghost = comportament de pagină web). */
-img {
+html.native-app img {
   -webkit-user-drag: none;
   user-select: none;
 }
@@ -547,6 +557,11 @@ img {
   /* Fond opac: fără flash alb între ecrane. */
   background-color: var(--color-background);
   min-height: 100dvh;
+}
+html.native-app .page-transition {
+  min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+  overflow: visible;
+  touch-action: pan-y;
 }
 @media (prefers-reduced-motion: reduce) {
   .page-transition { animation: none; }

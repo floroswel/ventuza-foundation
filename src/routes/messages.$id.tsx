@@ -670,10 +670,10 @@ function ThreadPage() {
         >
           <ChevronLeft className="size-5" />
         </Link>
-        {other?.profile_slug ? (
+        {other ? (
           <Link
             to="/u/$slug"
-            params={{ slug: other.profile_slug }}
+            params={{ slug: other.profile_slug || other.id }}
             className="flex min-w-0 flex-1 items-center gap-3 rounded-full pr-2 hover:bg-muted/40"
             aria-label={`Deschide profilul ${other?.name ?? ""}`}
           >
