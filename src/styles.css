@@ -440,6 +440,13 @@ html {
   margin-bottom: var(--keyboard-height);
 }
 
+/* Bară de acțiuni / composer lipită de jos.
+   Garantează un spațiu minim peste bara gestuală Android chiar și când
+   env(safe-area-inset-bottom) raportează 0 (unele WebView-uri Android). */
+@utility pb-bar {
+  padding-bottom: max(env(safe-area-inset-bottom), 0.875rem);
+}
+
 /* Cruise radar: pulsing concentric rings */
 @keyframes radar-pulse {
   0% { opacity: 0.55; transform: translate(-50%, -50%) scale(0.92); }
