@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Bell,
   CalendarHeart,
@@ -52,6 +53,7 @@ function timeAgo(iso: string) {
 }
 
 function NotificationsPage() {
+  const { t } = useTranslation();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { notifications, loading, markAllRead, markRead, remove } = useNotifications();
@@ -69,12 +71,12 @@ function NotificationsPage() {
         >
           <ChevronLeft className="size-5" />
         </Link>
-        <h1 className="text-lg font-semibold tracking-tight">Notifications</h1>
+        <h1 className="text-lg font-semibold tracking-tight">{t("notif.title")}</h1>
         <button
           onClick={() => markAllRead()}
           className="ml-auto rounded-full px-3 py-1 text-xs text-muted-foreground hover:text-foreground"
         >
-          Mark all read
+          {t("notif.markAllRead")}
         </button>
       </header>
 
@@ -86,8 +88,8 @@ function NotificationsPage() {
         ) : notifications.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-24 text-center text-muted-foreground">
             <Bell className="size-10 text-primary/60" />
-            <p className="mt-3 text-sm">No notifications yet.</p>
-            <p className="text-xs">We'll ping you when something interesting happens.</p>
+            <p className="mt-3 text-sm">{t("notif.emptyTitle")}</p>
+            <p className="text-xs">{t("notif.emptyDesc")}</p>
           </div>
         ) : (
           <ul className="space-y-1">
