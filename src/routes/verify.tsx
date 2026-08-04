@@ -222,7 +222,7 @@ function VerifyPage() {
 
   if (ageStatus === "verified") {
     return (
-      <main className="min-h-dvh bg-background px-5 pb-10 pt-[max(env(safe-area-inset-top),1.25rem)] text-foreground">
+      <main className="min-h-dvh bg-background px-5 pb-10 pt-[max(var(--safe-top),1.25rem)] text-foreground">
         <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center text-center">
           <div className="grid size-20 place-items-center rounded-full border border-primary/30 bg-primary/10">
             <BadgeCheck className="size-10 text-primary" />
@@ -241,7 +241,7 @@ function VerifyPage() {
 
   return (
     <main className="min-h-dvh bg-background pb-10 text-foreground">
-      <div className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),1.25rem)]">
+      <div className="mx-auto max-w-md px-5 pt-[max(var(--safe-top),1.25rem)]">
         <BackLink />
 
         <header className="mt-6">

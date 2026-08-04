@@ -662,8 +662,8 @@ function ThreadPage() {
 
   return (
 
-    <div className="mx-auto flex h-[100dvh] w-full min-h-0 min-w-0 max-w-md flex-col overflow-hidden bg-background">
-      <header className="z-20 flex shrink-0 items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur">
+    <div className="mx-auto flex h-dvh-safe w-full min-h-0 min-w-0 max-w-md flex-col overflow-hidden bg-background">
+      <header className="z-20 flex shrink-0 items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
         <Link
           to="/messages"
           className="rounded-full p-2 text-muted-foreground hover:text-foreground"
@@ -1165,7 +1165,7 @@ function ThreadPage() {
 
       <form
         onSubmit={handleSend}
-        className="z-10 flex shrink-0 items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-2 pb-bar backdrop-blur"
+        className="sticky bottom-0 z-10 flex shrink-0 items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-2 pb-bar backdrop-blur"
       >
         <button
           type="button"
@@ -1323,7 +1323,7 @@ function MessagesScroller({
     <div
       ref={scrollerRef as React.RefObject<HTMLDivElement>}
       onScroll={onScroll}
-      className="min-h-0 flex-1 overflow-y-auto px-4 py-4"
+      className="scroll-pane px-4 py-4"
     >
       {loading ? (
         <div className="flex items-center justify-center py-16 text-muted-foreground">

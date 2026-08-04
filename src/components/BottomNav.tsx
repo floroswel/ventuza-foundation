@@ -33,7 +33,7 @@ export function BottomNav() {
 
   return (
     <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-md items-stretch justify-around pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))]">
+      <div className="mx-auto flex max-w-md items-stretch justify-around pt-1.5 pb-[max(0.5rem,var(--safe-bottom))] pl-[max(0.5rem,env(safe-area-inset-left))] pr-[max(0.5rem,env(safe-area-inset-right))]">
         {items.map(({ to, label, Icon, badge = 0, fillWhenActive }) => {
           const active = pathname === to || pathname.startsWith(`${to}/`);
           return (

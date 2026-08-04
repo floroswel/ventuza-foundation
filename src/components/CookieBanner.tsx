@@ -86,7 +86,7 @@ export function CookieBanner() {
     <div
       role="dialog"
       aria-label={t("cookies.ariaLabel")}
-      className="fixed inset-x-3 bottom-[calc(4.75rem+max(0.5rem,env(safe-area-inset-bottom)))] z-[60] mx-auto max-h-[70dvh] max-w-md overflow-y-auto rounded-2xl border border-border bg-surface/95 p-4 shadow-2xl backdrop-blur"
+      className="fixed inset-x-3 bottom-[calc(4.75rem+max(0.5rem,var(--safe-bottom)))] z-[60] mx-auto max-h-[70dvh] max-w-md overflow-y-auto rounded-2xl border border-border bg-surface/95 p-4 shadow-2xl backdrop-blur"
     >
       {!showCustom ? (
         <>

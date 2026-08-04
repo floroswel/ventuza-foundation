@@ -110,6 +110,14 @@ html {
 }
 
 @layer base {
+  :root {
+    --keyboard-height: 0px;
+    /* Insets efective: env() dacă WebView-ul le raportează, altfel valorile
+       injectate nativ din WindowInsets (MainActivity). */
+    --safe-top: max(env(safe-area-inset-top), var(--android-inset-top, 0px));
+    --safe-bottom: max(env(safe-area-inset-bottom), var(--android-inset-bottom, 0px));
+  }
+
   * {
     border-color: var(--color-border);
   }
@@ -122,7 +130,8 @@ html {
     /* Capacitor edge-to-edge: WebView-ul se întinde sub status/nav bar.
        Adăugăm padding safe-area la nivel de body ca headerul și conținutul
        să nu intre sub ceas/baterie/bara gestuală. */
-    padding-top: env(safe-area-inset-top);
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
     /* Fără scroll orizontal pe ecrane înguste (360–380px) sau tablete. */
@@ -412,12 +421,15 @@ html {
 }
 
 /* Safe-area utilitare pentru Capacitor / notch / bară gestuală Android 15+.
-   Se combină cu <meta name="viewport" content="viewport-fit=cover">. */
+   Se combină cu <meta name="viewport" content="viewport-fit=cover">.
+   Pe unele WebView-uri Android env(safe-area-inset-*) raportează 0 chiar și
+   edge-to-edge; MainActivity injectează atunci --android-inset-* din
+   WindowInsets, iar max() alege valoarea reală. */
 @utility pt-safe {
-  padding-top: env(safe-area-inset-top);
+  padding-top: var(--safe-top);
 }
 @utility pb-safe {
-  padding-bottom: env(safe-area-inset-bottom);
+  padding-bottom: var(--safe-bottom);
 }
 @utility pl-safe {
   padding-left: env(safe-area-inset-left);
@@ -426,25 +438,37 @@ html {
   padding-right: env(safe-area-inset-right);
 }
 @utility min-h-dvh-safe {
-  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
+}
+/* Ecran full-height în interiorul <body> care are deja padding safe-area. */
+@utility h-dvh-safe {
+  height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
 }
 
 /* Native Android — Keyboard aware bottom padding.
    Populated by src/lib/native-runtime.ts via @capacitor/keyboard listeners.
    Utility: <div class="pb-keyboard">  → padding-bottom grows when keyboard is up. */
-:root { --keyboard-height: 0px; }
 @utility pb-keyboard {
-  padding-bottom: calc(env(safe-area-inset-bottom) + var(--keyboard-height));
+  padding-bottom: calc(var(--safe-bottom) + var(--keyboard-height));
 }
 @utility mb-keyboard {
   margin-bottom: var(--keyboard-height);
 }
 
 /* Bară de acțiuni / composer lipită de jos.
-   Garantează un spațiu minim peste bara gestuală Android chiar și când
-   env(safe-area-inset-bottom) raportează 0 (unele WebView-uri Android). */
+   Garantează un spațiu minim peste bara gestuală Android. */
 @utility pb-bar {
-  padding-bottom: max(env(safe-area-inset-bottom), 0.875rem);
+  padding-bottom: max(var(--safe-bottom), 0.875rem);
+}
+
+/* Listă scrollabilă în interiorul unui flex column (chat, feed-uri).
+   `min-height: 0` este obligatoriu, altfel flex-ul nu permite scroll. */
+@utility scroll-pane {
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* Cruise radar: pulsing concentric rings */

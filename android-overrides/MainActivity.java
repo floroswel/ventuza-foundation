@@ -6,8 +6,16 @@ import android.content.pm.Signature;
 import android.content.pm.InstallSourceInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.View;
 import android.view.WindowManager;
+import android.webkit.WebView;
 import android.webkit.JavascriptInterface;
+
+import androidx.core.graphics.Insets;
+import androidx.core.view.OnApplyWindowInsetsListener;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.getcapacitor.BridgeActivity;
 
@@ -90,14 +98,50 @@ public class MainActivity extends BridgeActivity {
     super.onCreate(savedInstanceState);
     // Capturile sunt permise temporar pentru diagnosticarea layout-ului Android.
     getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+    // Edge-to-edge real: WebView-ul desenează sub status/nav bar, iar noi
+    // trimitem insets-urile reale în CSS (--android-inset-top/bottom), pentru
+    // că env(safe-area-inset-*) raportează 0 pe multe WebView-uri Android.
+    try {
+      WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+    } catch (Throwable ignored) { /* best effort */ }
     try {
       if (getBridge() != null && getBridge().getWebView() != null) {
-        getBridge().getWebView().addJavascriptInterface(new SignatureBridge(), "SuzetaSignature");
+        final WebView webView = getBridge().getWebView();
+        webView.addJavascriptInterface(new SignatureBridge(), "SuzetaSignature");
+        ViewCompat.setOnApplyWindowInsetsListener(webView, new OnApplyWindowInsetsListener() {
+          @Override
+          public WindowInsetsCompat onApplyWindowInsets(View view, WindowInsetsCompat insets) {
+            try {
+              Insets bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+              float density = view.getResources().getDisplayMetrics().density;
+              final int top = Math.round(bars.top / density);
+              final int bottom = Math.round(bars.bottom / density);
+              final int left = Math.round(bars.left / density);
+              final int right = Math.round(bars.right / density);
+              final String js =
+                "(function(){var s=document.documentElement.style;"
+                + "s.setProperty('--android-inset-top','" + top + "px');"
+                + "s.setProperty('--android-inset-bottom','" + bottom + "px');"
+                + "s.setProperty('--android-inset-left','" + left + "px');"
+                + "s.setProperty('--android-inset-right','" + right + "px');})();";
+              view.post(new Runnable() {
+                @Override
+                public void run() {
+                  try { webView.evaluateJavascript(js, null); } catch (Throwable ignored) { }
+                }
+              });
+            } catch (Throwable ignored) { /* best effort */ }
+            return insets;
+          }
+        });
+        ViewCompat.requestApplyInsets(webView);
       }
     } catch (Throwable ignored) {
       // Diagnosticul e best-effort; nu blocăm pornirea aplicației.
     }
   }
+
 
   public class SignatureBridge {
 
