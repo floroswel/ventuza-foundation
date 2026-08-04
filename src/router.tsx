@@ -1,6 +1,10 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
+import { installNativeApiOrigin } from "./lib/native-api-origin";
+
+// Nativ (Capacitor): rescrie `/_serverFn` și `/api/` către originul de producție.
+installNativeApiOrigin();
 
 function DefaultPendingComponent() {
   return (
