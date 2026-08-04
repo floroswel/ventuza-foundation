@@ -257,12 +257,14 @@ function formatWhen(iso: string | null | undefined): string {
     d.getFullYear() === now.getFullYear() &&
     d.getMonth() === now.getMonth() &&
     d.getDate() === now.getDate();
+  const locale =
+    (typeof navigator !== "undefined" && navigator.language) || "ro-RO";
   if (sameDay) {
-    return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
   }
-  if (diff < 2 * day) return "Yesterday";
+  if (diff < 2 * day) return locale.startsWith("ro") ? "Ieri" : "Yesterday";
   if (diff < 7 * day) {
-    return d.toLocaleDateString([], { weekday: "long" });
+    return d.toLocaleDateString(locale, { weekday: "long" });
   }
-  return d.toLocaleDateString();
+  return d.toLocaleDateString(locale);
 }
