@@ -151,7 +151,7 @@ function GroupChatPage() {
 
   return (
     <div className="flex h-[100dvh] w-full min-h-0 min-w-0 flex-col overflow-hidden bg-background">
-      <header className="flex shrink-0 items-center justify-between border-b border-border/60 bg-background/95 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur">
+      <header className="flex shrink-0 items-center justify-between border-b border-border/60 bg-background/95 px-3 py-3 pt-[max(0.75rem,var(--safe-top))] backdrop-blur">
         <div className="flex items-center gap-2">
           <button
             onClick={() => navigate({ to: "/groups" })}

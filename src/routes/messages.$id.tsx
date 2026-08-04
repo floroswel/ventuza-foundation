@@ -663,7 +663,7 @@ function ThreadPage() {
   return (
 
     <div className="mx-auto flex h-[100dvh] w-full min-h-0 min-w-0 max-w-md flex-col overflow-hidden bg-background">
-      <header className="z-20 flex shrink-0 items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 pt-[max(0.75rem,env(safe-area-inset-top))] backdrop-blur">
+      <header className="z-20 flex shrink-0 items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 pt-[max(0.75rem,var(--safe-top))] backdrop-blur">
         <Link
           to="/messages"
           className="rounded-full p-2 text-muted-foreground hover:text-foreground"

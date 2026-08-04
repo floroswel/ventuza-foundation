@@ -127,7 +127,7 @@ function VerifyStatusPage() {
 
   return (
     <main className="min-h-dvh bg-background pb-10 text-foreground">
-      <div className="mx-auto max-w-md px-5 pt-[max(env(safe-area-inset-top),1.25rem)]">
+      <div className="mx-auto max-w-md px-5 pt-[max(var(--safe-top),1.25rem)]">
         <Link
           to="/verify"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground"

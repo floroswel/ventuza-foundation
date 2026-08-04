@@ -96,7 +96,7 @@ function AccountPage() {
   return (
     <div className="min-h-dvh bg-background pb-28">
       {/* Header */}
-      <header className="relative overflow-hidden px-4 pb-4 pt-[max(env(safe-area-inset-top),1rem)]">
+      <header className="relative overflow-hidden px-4 pb-4 pt-[max(var(--safe-top),1rem)]">
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-primary/25 via-background to-background" />
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold tracking-tight">Cont</h1>

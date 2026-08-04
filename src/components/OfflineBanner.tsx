@@ -27,7 +27,7 @@ export function OfflineBanner() {
 
   if (online || dismissed) return null;
   return (
-    <div className="pointer-events-auto fixed inset-x-0 top-0 z-[60] flex justify-center px-3 pt-[max(0.5rem,env(safe-area-inset-top))]">
+    <div className="pointer-events-auto fixed inset-x-0 top-0 z-[60] flex justify-center px-3 pt-[max(0.5rem,var(--safe-top))]">
       <div className="flex max-w-md items-center gap-2 rounded-full border border-amber-400/40 bg-amber-500/15 px-3 py-1.5 text-xs text-amber-100 shadow-lg backdrop-blur">
         <WifiOff className="size-3.5 shrink-0" />
         <span className="flex-1">Ești offline — vezi conținut salvat</span>
