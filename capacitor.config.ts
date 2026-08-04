@@ -50,7 +50,9 @@ const config: CapacitorConfig = {
       overlaysWebView: true,
     },
     Keyboard: {
-      resize: "body",
+      // `body`/`native` rescriu înălțimea documentului și blochează scroll-ul
+      // vertical în WebView. Gestionăm noi spațiul prin --keyboard-height.
+      resize: "none",
       resizeOnFullScreen: true,
     },
     PrivacyScreen: {
