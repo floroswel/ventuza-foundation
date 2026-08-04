@@ -228,10 +228,10 @@ function RootComponent() {
       document.documentElement.lang = mod.default.language || "ro";
     });
 
-    // Anti-screenshot (Android FLAG_SECURE + best-effort web)
-    void import("@/lib/privacy-screen").then(({ initPrivacyScreen }) =>
-      initPrivacyScreen(),
-    );
+    // Capturile sunt permise temporar pentru diagnosticarea layout-ului Android.
+    void import("@capacitor-community/privacy-screen")
+      .then(({ PrivacyScreen }) => PrivacyScreen.disable())
+      .catch(() => undefined);
 
 
 

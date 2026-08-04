@@ -69,6 +69,7 @@
         "@tanstack/router-plugin": "^1.168.23",
         "canvas-confetti": "^1.9.4",
         "capacitor-native-biometric": "^4.2.2",
+        "capacitor-native-settings": "^8.1.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "cmdk": "^1.1.1",
@@ -1148,6 +1149,8 @@
     "canvas-confetti": ["canvas-confetti@1.9.4", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/canvas-confetti/-/canvas-confetti-1.9.4.tgz", {}, "sha512-yxQbJkAVrFXWNbTUjPqjF7G+g6pDotOUHGbkZq2NELZUMDpiJ85rIEazVb8GTaAptNW2miJAXbs1BtioA251Pw=="],
 
     "capacitor-native-biometric": ["capacitor-native-biometric@4.2.2", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/capacitor-native-biometric/-/capacitor-native-biometric-4.2.2.tgz", { "dependencies": { "@capacitor/core": "^3.4.3" } }, "sha512-stg0h48UxgkNuNcCAgCXLp2DUspRQs79bCBPntpCBhsDxk2bhDRUu+J/QpFtDQHG4M4DioSUcYaAsVw2N6N7wA=="],
+
+    "capacitor-native-settings": ["capacitor-native-settings@8.1.0", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/capacitor-native-settings/-/capacitor-native-settings-8.1.0.tgz", { "peerDependencies": { "@capacitor/core": ">=8.0.2" } }, "sha512-bcIsKO0EBChdiG2l7RAt70cKxz0Vygfx7quN6tSoNlwziCct8f5EgT8xmwNit+7F712ojl54xNaEddu87EpkjQ=="],
 
     "ccount": ["ccount@2.0.1", "https://europe-west1-npm.pkg.dev/lovable-core-prod/sandbox-npm-cache/ccount/-/ccount-2.0.1.tgz", {}, "sha512-eyrF0jiFpY+3drT6383f1qhkbGsLSifNAjA61IUjZjmLCWjItY6LB9ft9YhoDgwfmclB2zhu51Lc7+95b8NRAg=="],
 

@@ -13,6 +13,32 @@ async function isNative(): Promise<boolean> {
   }
 }
 
+export async function getLocationPermissionState(): Promise<
+  "prompt" | "granted" | "denied" | "unknown"
+> {
+  if (await isNative()) {
+    try {
+      const { Geolocation } = await import("@capacitor/geolocation");
+      const permission = await Geolocation.checkPermissions();
+      if (permission.location === "granted") return "granted";
+      if (permission.location === "denied") return "denied";
+      return "prompt";
+    } catch {
+      return "unknown";
+    }
+  }
+  try {
+    const permissions = (navigator as Navigator & { permissions?: Permissions }).permissions;
+    if (permissions?.query) {
+      const status = await permissions.query({ name: "geolocation" as PermissionName });
+      return status.state as "prompt" | "granted" | "denied";
+    }
+  } catch {
+    /* Permissions API indisponibil */
+  }
+  return "unknown";
+}
+
 export async function getCurrentPosition(opts?: {
   enableHighAccuracy?: boolean;
   timeout?: number;
@@ -125,4 +151,16 @@ export async function ensureLocationPermission(): Promise<boolean> {
   }
   // Web: dialogul apare la primul getCurrentPosition.
   return typeof navigator !== "undefined" && "geolocation" in navigator;
+}
+
+/** Deschide setările aplicației doar când Android nu mai poate afișa dialogul OS. */
+export async function openLocationSettings(): Promise<boolean> {
+  if (!(await isNative())) return false;
+  try {
+    const { NativeSettings, AndroidSettings } = await import("capacitor-native-settings");
+    await NativeSettings.openAndroid({ option: AndroidSettings.ApplicationDetails });
+    return true;
+  } catch {
+    return false;
+  }
 }

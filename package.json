@@ -85,6 +85,7 @@
     "@tanstack/router-plugin": "^1.168.23",
     "canvas-confetti": "^1.9.4",
     "capacitor-native-biometric": "^4.2.2",
+    "capacitor-native-settings": "^8.1.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",

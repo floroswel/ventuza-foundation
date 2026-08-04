@@ -6,6 +6,7 @@ import android.content.pm.Signature;
 import android.content.pm.InstallSourceInfo;
 import android.os.Build;
 import android.os.Bundle;
+import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 
 import com.getcapacitor.BridgeActivity;
@@ -87,6 +88,8 @@ public class MainActivity extends BridgeActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    // Capturile sunt permise temporar pentru diagnosticarea layout-ului Android.
+    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
     try {
       if (getBridge() != null && getBridge().getWebView() != null) {
         getBridge().getWebView().addJavascriptInterface(new SignatureBridge(), "SuzetaSignature");

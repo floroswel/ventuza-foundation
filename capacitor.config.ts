@@ -54,9 +54,9 @@ const config: CapacitorConfig = {
       resizeOnFullScreen: true,
     },
     PrivacyScreen: {
-      enable: true,
+      enable: false,
       imageName: "Splash",
-      preventScreenshots: true,
+      preventScreenshots: false,
     },
 
   },

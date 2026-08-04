@@ -317,7 +317,7 @@ jobs:
                   '<manifest xmlns:tools="http://schemas.android.com/tools"',
                   1,
               )
-          # b) remove AD_ID
+          # b) remove AD_ID + păstrează permisiunile foreground necesare locației native
           if 'com.google.android.gms.permission.AD_ID' not in s or 'tools:node="remove"' not in s:
               # scoate orice ocurență existentă (pentru a evita duplicate)
               s = re.sub(
@@ -332,8 +332,18 @@ jobs:
                   '                     tools:node="remove"/>\n'
               )
               s = s.replace('</manifest>', inject + '</manifest>', 1)
+          for permission in (
+              'android.permission.ACCESS_COARSE_LOCATION',
+              'android.permission.ACCESS_FINE_LOCATION',
+          ):
+              if permission not in s:
+                  s = s.replace(
+                      '</manifest>',
+                      f'    <uses-permission android:name="{permission}"/>\n</manifest>',
+                      1,
+                  )
           open(p, 'w').write(s)
-          print("✓ AndroidManifest.xml patched (tools:node=remove pentru AD_ID + ACCESS_BACKGROUND_LOCATION)")
+          print("✓ AndroidManifest.xml patched (foreground location + no AD_ID/background location)")
           PY
 
           # 3) Copiere resurse override dacă există (icon monochrome, splash)

@@ -36,34 +36,6 @@ function routeNeedsLocationPrimer(pathname: string) {
   return !EXCLUDED_PREFIXES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
 }
 
-/** Starea permisiunii de locație, corect detectată și pe Android nativ. */
-async function readPermissionState(): Promise<"prompt" | "granted" | "denied" | "unknown"> {
-  try {
-    const { Capacitor } = await import("@capacitor/core");
-    if (Capacitor.isNativePlatform()) {
-      const { Geolocation } = await import("@capacitor/geolocation");
-      const perm = await Geolocation.checkPermissions();
-      const s = perm.location;
-      if (s === "granted") return "granted";
-      if (s === "denied") return "denied";
-      return "prompt";
-    }
-  } catch {
-    /* nu suntem pe native sau pluginul lipsește */
-  }
-  try {
-    const perms = (navigator as Navigator & { permissions?: Permissions }).permissions;
-    if (perms?.query) {
-      const st = await perms.query({ name: "geolocation" as PermissionName });
-      return st.state as "prompt" | "granted" | "denied";
-    }
-  } catch {
-    /* Permissions API indisponibil */
-  }
-  return "unknown";
-}
-
-
 export function LocationPermissionPrompt() {
   const { user } = useAuth();
   const location = useLocation();
@@ -97,7 +69,8 @@ export function LocationPermissionPrompt() {
         localStorage.setItem(key, "1"); // respect user's off setting
         return;
       }
-      const state = await readPermissionState();
+      const { getLocationPermissionState } = await import("@/lib/native-geolocation");
+      const state = await getLocationPermissionState();
       if (cancelled) return;
       if (state === "granted") {
         // Deja avem permisiunea → luăm poziția în tăcere, fără dialog.
@@ -160,6 +133,8 @@ export function LocationPermissionPrompt() {
       if (error) {
         toast.error("Nu am putut salva locația pe server. Încearcă din nou din Profil.");
       } else {
+        notifyLocationSharingChanged(true);
+        window.dispatchEvent(new CustomEvent("suzeta:location-updated"));
         toast.success("Locația a fost activată");
       }
     } catch (e) {
