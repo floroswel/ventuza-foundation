@@ -456,9 +456,10 @@ html {
 }
 
 /* Bară de acțiuni / composer lipită de jos.
-   Garantează un spațiu minim peste bara gestuală Android. */
+   Garantează un spațiu minim peste bara gestuală Android și urcă odată cu
+   tastatura (Keyboard resize = "none", deci CSS-ul face treaba). */
 @utility pb-bar {
-  padding-bottom: max(var(--safe-bottom), 0.875rem);
+  padding-bottom: calc(max(var(--safe-bottom), 0.875rem) + var(--keyboard-height));
 }
 
 /* Listă scrollabilă în interiorul unui flex column (chat, feed-uri).
