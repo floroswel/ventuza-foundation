@@ -485,6 +485,12 @@ const en: typeof ro = {
       network: "Check your internet. Switch between Wi-Fi and mobile data.",
     },
   },
+  notif: {
+    title: "Notifications",
+    markAllRead: "Mark all read",
+    emptyTitle: "No notifications yet.",
+    emptyDesc: "We'll ping you when something interesting happens.",
+  },
   cookies: {
     intro:
       "We use essential cookies for authentication and safety. With your consent, we add anonymous analytics and marketing measurements to improve the app.",
