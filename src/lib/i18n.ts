@@ -168,6 +168,12 @@ const ro = {
       network: "Verifică internetul. Dacă ești pe date mobile, treci pe Wi-Fi (sau invers).",
     },
   },
+  notif: {
+    title: "Notificări",
+    markAllRead: "Marchează tot ca citit",
+    emptyTitle: "Nicio notificare încă.",
+    emptyDesc: "Te anunțăm când se întâmplă ceva interesant.",
+  },
   cookies: {
     intro:
       "Folosim cookie-uri esențiale pentru autentificare și siguranță. Cu acordul tău, adăugăm analytics anonime și măsurători de marketing pentru îmbunătățirea aplicației.",
@@ -478,6 +484,12 @@ const en: typeof ro = {
       storageGeneric: "Check your internet and retry.",
       network: "Check your internet. Switch between Wi-Fi and mobile data.",
     },
+  },
+  notif: {
+    title: "Notifications",
+    markAllRead: "Mark all read",
+    emptyTitle: "No notifications yet.",
+    emptyDesc: "We'll ping you when something interesting happens.",
   },
   cookies: {
     intro:
