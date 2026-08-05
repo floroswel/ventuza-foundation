@@ -343,6 +343,7 @@ function RootComponent() {
             <SessionGuards />
             <CountryRiskGuard />
             <ProximityWatcherMount />
+            <ScreenSecurityMount />
             <NativePushNavigatorMount />
             <GuardianBoundary area="app" category="react">
               <PageTransition>
