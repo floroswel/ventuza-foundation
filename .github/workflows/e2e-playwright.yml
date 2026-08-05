@@ -152,7 +152,7 @@ jobs:
               # Ridicăm primele linii de eșec ca ADNOTĂRI. Logurile brute ale
               # jobului cer drepturi de admin pe repo, deci fără asta nu se poate
               # afla ce suită a picat decât rulând totul din nou local.
-              grep -aE "✗|FAIL|Error|error:|Traceback" "$RUNNER_TEMP/$name.out" \
+              grep -aE "✗|FAIL|Error|error:|Traceback|Nu s-a încărcat|abort|Missing" "$RUNNER_TEMP/$name.out" \
                 | head -4 \
                 | while IFS= read -r line; do
                     echo "::error title=$name::${line:0:400}"

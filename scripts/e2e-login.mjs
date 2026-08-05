@@ -163,6 +163,58 @@ writeFileSync(
   { encoding: "utf8", mode: 0o600 },
 );
 
+// Pregătirea contului. `SessionGuards` redirecționează forțat spre /n orice rută
+// care nu e în ALLOWED_WITHOUT_BIRTHDATE (SessionGuards.tsx:74-77) când profilul
+// nu are `birthdate`. `/settings` și `/profile` NU sunt în listă, deci un cont
+// nepregătit face ca suitele care le folosesc să eșueze cu timeout-uri pe
+// elemente inexistente — simptom greu de legat de cauză.
+// Citim DOAR rândul propriu, cu tokenul propriu (permis de RLS, fără
+// service_role) și raportăm doar booleeni, niciodată date personale.
+const userId = session?.user?.id;
+if (userId) {
+  try {
+    const pr = await fetch(
+      `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(userId)}&select=birthdate,onboarding_completed,age_status`,
+      { headers: { apikey: ANON_KEY, Authorization: `Bearer ${session.access_token}` } },
+    );
+    if (pr.ok) {
+      const rows = await pr.json();
+      const row = Array.isArray(rows) ? rows[0] : null;
+      if (row) {
+        const hasBirthdate = Boolean(row.birthdate);
+        const onboarded = row.onboarding_completed === true;
+        log("Starea contului de test (doar indicatori, fără date personale):");
+        log(`  birthdate setat: ${hasBirthdate}`);
+        log(`  onboarding_completed: ${onboarded}`);
+        log(`  age_status: ${row.age_status ?? "necunoscut"}`);
+        if (!hasBirthdate || !onboarded) {
+          log("::error::Contul de test nu este pregătit pentru suitele autentificate.");
+          if (!hasBirthdate) {
+            log(
+              "::error::Profilul nu are `birthdate`. SessionGuards redirecționează atunci /profile și /settings către /n, deci consents_data_safety și profile_edit eșuează cu timeout pe elemente care nu se randează niciodată.",
+            );
+          }
+          if (!onboarded) {
+            log("::error::`onboarding_completed` este false, deci contul nu a trecut prin fluxul din /n.");
+          }
+          log(
+            "::error::Pregătește contul O SINGURĂ DATĂ: autentifică-te în aplicație cu E2E_TEST_EMAIL și parcurge onboardingul din /n până la final. Nu se creează utilizatori din CI și nu se scriu date de test automat.",
+          );
+          process.exitCode = 1;
+        } else {
+          log("  → contul poate accesa /profile și /settings.");
+        }
+      } else {
+        log("::warning::Nu am putut citi rândul de profil al contului de test (RLS sau profil inexistent).");
+      }
+    } else {
+      log(`::warning::Verificarea stării contului a returnat HTTP ${pr.status}; continuăm.`);
+    }
+  } catch {
+    log("::warning::Verificarea stării contului a eșuat (rețea); continuăm.");
+  }
+}
+
 // Raport fără date sensibile: doar faptul că sesiunea există și cât ține.
 const expiresIn = Number(session.expires_in ?? 0);
 log("Sesiune de test obținută la runtime (fără secret static, fără rotație manuală).");
