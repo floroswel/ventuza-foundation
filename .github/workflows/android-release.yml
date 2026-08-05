@@ -85,6 +85,19 @@ jobs:
             echo "::notice::Build de test din $GITHUB_REF — doar artefact, fără upload în Play."
           fi
           git show -s --format='Commit time: %cI%nSubject: %s' HEAD
+          echo "----- Amprenta surselor Android (fără secrete) -----"
+          LAYOUT=android-overrides/res/layout/activity_main.xml
+          if [ -f "$LAYOUT" ]; then
+            echo "SHA-256 $LAYOUT: $(sha256sum "$LAYOUT" | awk '{print $1}')"
+          else
+            echo "::error::$LAYOUT lipsește din acest commit."
+            exit 1
+          fi
+          # Un dispatch pornit înainte de a împinge un fix construiește HEAD-ul de
+          # ATUNCI. Amprenta de mai sus arată imediat dacă rularea conține fixul
+          # așteptat, în loc să pară o regresie a aceleiași erori.
+          echo "Ultimele 3 commituri împachetate:"
+          git log --oneline -3 | sed 's/^/  /'
 
       - name: Calculează metadatele vizibile ale buildului
         id: buildmeta
@@ -406,8 +419,51 @@ jobs:
 
           # 3) Copiere resurse override dacă există (icon monochrome, splash)
           if [ -d android-overrides/res ]; then
+            # 3a) Validare ÎNAINTE de copiere: dacă sursa e malformată, oprim aici,
+            #     nu după ce am contaminat proiectul Android. XML 1.0 §2.5 interzice
+            #     secvența de două liniuțe în comentarii, iar AAPT respinge fișierul.
+            python3 - <<'PY'
+          import glob, sys, re
+          import xml.etree.ElementTree as ET
+          bad = []
+          for f in sorted(glob.glob("android-overrides/res/**/*.xml", recursive=True)):
+              try:
+                  ET.parse(f)
+              except Exception as e:
+                  bad.append(f"{f}: {e}")
+          layout = "android-overrides/res/layout/activity_main.xml"
+          try:
+              src = open(layout, encoding="utf-8").read()
+              for m in re.finditer(r"<!--.*?-->", src, re.S):
+                  if "--" in m.group(0)[4:-3]:
+                      bad.append(f"{layout}: comentariu cu secvența interzisă de XML 1.0 §2.5")
+          except FileNotFoundError:
+              bad.append(f"{layout}: lipsește")
+          for b in bad:
+              print(f"::error::Sursă override invalidă — {b}")
+          if bad:
+              sys.exit(1)
+          print("✓ Sursele XML din android-overrides/res sunt valide (pre-copiere).")
+          PY
             cp -rv android-overrides/res/* android/app/src/main/res/
             echo "✓ Resurse override copiate din android-overrides/res/"
+            # 3b) Validare DUPĂ copiere + amprente identice, ca să excludem orice
+            #     alterare la copiere sau un fișier preexistent rămas necopiat.
+            SRC=android-overrides/res/layout/activity_main.xml
+            DST=android/app/src/main/res/layout/activity_main.xml
+            python3 -c "import xml.etree.ElementTree as ET,sys; ET.parse('$DST')" || {
+              echo "::error::$DST nu parsează după copiere."
+              exit 1
+            }
+            H_SRC="$(sha256sum "$SRC" | awk '{print $1}')"
+            H_DST="$(sha256sum "$DST" | awk '{print $1}')"
+            echo "SHA-256 sursă      : $H_SRC"
+            echo "SHA-256 destinație : $H_DST"
+            if [ "$H_SRC" != "$H_DST" ]; then
+              echo "::error::Layout-ul copiat diferă de sursă — override-ul nu s-a aplicat corect."
+              exit 1
+            fi
+            echo "✓ activity_main.xml parsează și este identic cu sursa."
           fi
 
           # 4) MainActivity override — expune SHA-1/SHA-256 al semnăturii instalate
