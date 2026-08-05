@@ -26,6 +26,13 @@ jobs:
         run: bunx tsc --noEmit
 
       - name: Unit + critical tests (blocking)
+        # Testele de integrare live citesc `process.env` prin vitest.config.ts.
+        # Fără aceste variabile, 12 teste eșuează cu „Lipsesc VITE_SUPABASE_URL
+        # / VITE_SUPABASE_PUBLISHABLE_KEY" — aceleași valori folosite de pasul
+        # Build de mai jos.
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         run: bunx vitest run
 
       - name: Build (blocking)

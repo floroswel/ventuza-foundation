@@ -53,7 +53,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          # Lockfile-ul proiectului este `bun.lock` (text), nu `bun.lockb`.
+          # Cu `bun.lockb` inexistent, cheia era constantă și restaura un
+          # node_modules vechi → dev serverul cădea cu
+          # „Cannot find package '@babel/code-frame'".
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
 
       - name: Install deps
         run: bun install --frozen-lockfile

@@ -39,5 +39,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist-assets
-          path: dist/client/assets/*.js
+          # Ambele locații posibile (vezi comentariul din check-bundle-size.mjs):
+          # nitro pe CI scrie în .output/public, sandbox-ul/mobile în dist/client.
+          path: |
+            dist/client/assets/*.js
+            .output/public/assets/*.js
+          if-no-files-found: ignore
           retention-days: 7

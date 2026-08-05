@@ -5,11 +5,43 @@
  *
  * Usage: node scripts/check-bundle-size.mjs [--json]
  */
-import { readdirSync, statSync, readFileSync } from "node:fs";
+import { readdirSync, statSync, readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 
-const DIST = "dist/client/assets";
+/**
+ * Directorul de assets diferă între build-uri, deci îl detectăm:
+ *
+ *  - `bun run build:mobile` (vite.mobile.config.ts) are `nitro: false` și
+ *    `outDir` explicit → `dist/client/assets`.
+ *  - `bun run build` (vite.config.ts) rulează cu nitro. Override-ul
+ *    `output.publicDir = "dist/client"` din @lovable.dev/vite-tanstack-config se
+ *    aplică DOAR în sandbox-ul Lovable; pe runnerul CI nitro folosește
+ *    output-ul implicit → `.output/public/assets`.
+ *
+ * Prima cale existentă câștigă. Se poate forța cu BUNDLE_ASSETS_DIR.
+ */
+const CANDIDATES = [
+  process.env.BUNDLE_ASSETS_DIR,
+  "dist/client/assets",
+  ".output/public/assets",
+].filter(Boolean);
+
+function resolveAssetsDir() {
+  for (const dir of CANDIDATES) {
+    if (existsSync(dir) && statSync(dir).isDirectory()) return dir;
+  }
+  console.error("\n❌ Bundle size check FAILED: nu găsesc directorul de assets.\n");
+  console.error("Căi verificate, în ordine:");
+  for (const dir of CANDIDATES) console.error(`  - ${dir}`);
+  console.error(
+    "\nRulează întâi un build (`bun run build` sau `bun run build:mobile`).\n" +
+      "Dacă build-ul scrie în altă parte, setează BUNDLE_ASSETS_DIR=<cale>.\n",
+  );
+  process.exit(1);
+}
+
+const DIST = resolveAssetsDir();
 
 // Budgets in KB (gzipped). Raise deliberately when a change is justified.
 // Pattern matches the filename prefix (before the hash).
@@ -73,7 +105,7 @@ for (const budget of BUDGETS) {
 const initial = files.find((f) => /^index-[^.]+\.js$/.test(f.name));
 const initialKB = initial ? initial.gzip / 1024 : 0;
 
-console.log("\n=== Bundle size budgets ===\n");
+console.log(`\n=== Bundle size budgets (assets: ${DIST}) ===\n`);
 console.log(report.join("\n"));
 console.log(`\nInitial JS (main entry gzip): ${initialKB.toFixed(1)} KB / ${TOTAL_INITIAL_GZIP_KB} KB budget`);
 
