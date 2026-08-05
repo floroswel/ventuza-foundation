@@ -19,3 +19,29 @@
 # Credential Manager / Google Identity
 -keep class androidx.credentials.** { *; }
 -keep class com.google.android.libraries.identity.googleid.** { *; }
+
+# App own package (bridge, plugins, generated classes)
+-keep class app.suzeta.** { *; }
+
+# Supabase (Kotlin client, dacă e adăugat vreodată nativ)
+-keep class io.github.jan.supabase.** { *; }
+
+# Gson / serializare prin adnotări
+-keepclassmembers class * {
+    @com.google.gson.annotations.SerializedName <fields>;
+}
+
+# RevenueCat
+-keep class com.revenuecat.purchases.** { *; }
+
+# Social Login (Capgo + community)
+-keep class com.getcapacitor.community.sociallogin.** { *; }
+-keep class ee.forgr.capacitor.social.login.** { *; }
+
+# Root / tamper detection
+-keep class com.scottyab.rootbeer.** { *; }
+
+# Metode native — nu obfusca
+-keepclasseswithmembernames class * {
+    native <methods>;
+}
