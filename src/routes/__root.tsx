@@ -217,6 +217,18 @@ function LocationPermissionPromptMount() {
   return <LocationPermissionPrompt />;
 }
 
+/** Anti-screenshot: blocat pe conținut privat, permis pe ecranele publice. */
+function ScreenSecurityMount() {
+  const location = useLocation();
+  useEffect(() => {
+    void import("@/lib/native-screen-security").then(({ applyScreenshotPolicy }) =>
+      applyScreenshotPolicy(location.pathname),
+    );
+  }, [location.pathname]);
+  return null;
+}
+
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
@@ -228,10 +240,11 @@ function RootComponent() {
       document.documentElement.lang = mod.default.language || "ro";
     });
 
-    // Capturile sunt permise temporar pentru diagnosticarea layout-ului Android.
+    // Privacy screen: ecranul din multitasking/recents este ascuns.
     void import("@capacitor-community/privacy-screen")
-      .then(({ PrivacyScreen }) => PrivacyScreen.disable())
+      .then(({ PrivacyScreen }) => PrivacyScreen.enable())
       .catch(() => undefined);
+
 
 
 
@@ -330,6 +343,7 @@ function RootComponent() {
             <SessionGuards />
             <CountryRiskGuard />
             <ProximityWatcherMount />
+            <ScreenSecurityMount />
             <NativePushNavigatorMount />
             <GuardianBoundary area="app" category="react">
               <PageTransition>

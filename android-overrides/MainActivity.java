@@ -96,8 +96,13 @@ public class MainActivity extends BridgeActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    // Capturile sunt permise temporar pentru diagnosticarea layout-ului Android.
-    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+    // Securitate: blocăm screenshot-urile și screen recording-ul pe tot
+    // conținutul privat (chat, profile, poze). Ecranele publice cer explicit
+    // ridicarea flag-ului prin bridge-ul JS `setScreenshotAllowed(true)`.
+    getWindow().setFlags(
+      WindowManager.LayoutParams.FLAG_SECURE,
+      WindowManager.LayoutParams.FLAG_SECURE);
+
     // Edge-to-edge real: WebView-ul desenează sub status/nav bar, iar noi
     // trimitem insets-urile reale în CSS (--android-inset-top/bottom), pentru
     // că env(safe-area-inset-*) raportează 0 pe multe WebView-uri Android.
@@ -148,6 +153,29 @@ public class MainActivity extends BridgeActivity {
 
 
   public class SignatureBridge {
+
+    /**
+     * Permite/blochează capturile de ecran în funcție de ecranul curent.
+     * Default-ul aplicației este BLOCAT (FLAG_SECURE setat în onCreate).
+     */
+    @JavascriptInterface
+    public void setScreenshotAllowed(final boolean allowed) {
+      MainActivity.this.runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            if (allowed) {
+              getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            } else {
+              getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE);
+            }
+          } catch (Throwable ignored) { /* best effort */ }
+        }
+      });
+    }
+
 
     /**
      * Toate metadatele într-un singur apel (PackageManager + certificat).
