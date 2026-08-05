@@ -31,10 +31,13 @@ jobs:
       # `captchaToken`. Secretul (server) e opțional în CI — nu îl setăm.
       VITE_TURNSTILE_SITE_KEY: ${{ vars.E2E_TURNSTILE_SITE_KEY || '1x00000000000000000000AA' }}
       # Supabase — publishable + URL sunt necesare pentru build și pentru
-      # sondele REST din testele e2e. Setate ca Repository Variables (public).
-      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID }}
+      # sondele REST din testele e2e. Secretele au prioritate, apoi Repository
+      # Variables. Fără ele, pasul „Write .env" scria un .env GOL (suprascriind
+      # cel din repo), aplicația nu mai putea inițializa clientul Supabase și
+      # toate cele 6 suite cădeau (exit code = numărul de suite eșuate).
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID || vars.VITE_SUPABASE_PROJECT_ID }}
       # Sesiunea injectată e OPȚIONALĂ. Fără ea, testele autenticate se
       # skip-uiesc automat (LOVABLE_BROWSER_AUTH_STATUS=signed_out).
       LOVABLE_BROWSER_AUTH_STATUS: ${{ secrets.E2E_SUPABASE_SESSION_JSON && 'injected' || 'signed_out' }}
@@ -79,6 +82,21 @@ jobs:
           python -m pip install --upgrade pip
           pip install "playwright==1.47.*"
           python -m playwright install --with-deps chromium
+
+      - name: Validează configurația Supabase (fail-fast)
+        run: |
+          missing=0
+          for name in VITE_SUPABASE_URL VITE_SUPABASE_PUBLISHABLE_KEY VITE_SUPABASE_PROJECT_ID; do
+            if [ -z "${!name}" ]; then
+              echo "::error::$name lipsește (nici Secret, nici Variable). Pasul următor ar suprascrie .env cu o valoare goală, aplicația nu ar porni și toate suitele e2e ar eșua fără cauză vizibilă."
+              missing=1
+            fi
+          done
+          if [ "$missing" != "0" ]; then
+            echo "::error::Adaugă valorile în GitHub → Settings → Secrets and variables → Actions (Secrets sau Variables). Nu sunt hardcodate în workflow intenționat."
+            exit 1
+          fi
+          echo "✓ Configurație prezentă (doar lungimi: URL=${#VITE_SUPABASE_URL}, KEY=${#VITE_SUPABASE_PUBLISHABLE_KEY}, PROJECT_ID=${#VITE_SUPABASE_PROJECT_ID})."
 
       - name: Write .env for Vite
         run: |
