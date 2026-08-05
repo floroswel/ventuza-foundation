@@ -847,8 +847,11 @@ function EditDrawer({
         {/* About */}
         <EditSection>
           <div className="space-y-2">
-            <Label>Display Name</Label>
+            {/* `htmlFor`/`id`: fără ele eticheta nu e asociată inputului, deci nici
+                cititoarele de ecran, nici `getByLabel` nu îl găsesc. */}
+            <Label htmlFor="edit-display-name">Display Name</Label>
             <Input
+              id="edit-display-name"
               value={form.display_name ?? ""}
               onChange={(e) => setForm({ ...form, display_name: e.target.value })}
               placeholder="Everyone will see this on the grid…"
@@ -861,10 +864,11 @@ function EditDrawer({
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>About Me</Label>
+              <Label htmlFor="edit-bio">About Me</Label>
               <AiBioButton form={form} setForm={setForm} />
             </div>
             <Textarea
+              id="edit-bio"
               value={form.bio ?? ""}
               onChange={(e) => setForm({ ...form, bio: e.target.value })}
               rows={4}

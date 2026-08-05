@@ -90,16 +90,21 @@ async def rest_get_profile(page: Page) -> dict | None:
     """Fetch own profile row via PostgREST (RLS = own row only)."""
     if not (SUPA_URL and ANON_KEY and ACCESS_TOKEN):
         return None
+    # `page.evaluate` primește o EXPRESIE, nu un corp de funcție: `await` și
+    # `return` la nivel superior dau „SyntaxError: await is only valid in async
+    # functions". Împachetăm într-un IIFE async.
     js = f"""
-    const res = await fetch({json.dumps(SUPA_URL)} +
-      '/rest/v1/profiles?select=display_name,bio,pronouns,orientation,interests,prompts,verified_at&limit=1',
-      {{ headers: {{
-        apikey: {json.dumps(ANON_KEY)},
-        Authorization: 'Bearer ' + {json.dumps(ACCESS_TOKEN)},
-      }} }});
-    if (!res.ok) return null;
-    const rows = await res.json();
-    return rows[0] || null;
+    (async () => {{
+      const res = await fetch({json.dumps(SUPA_URL)} +
+        '/rest/v1/profiles?select=display_name,bio,pronouns,orientation,interests,prompts,verified_at&limit=1',
+        {{ headers: {{
+          apikey: {json.dumps(ANON_KEY)},
+          Authorization: 'Bearer ' + {json.dumps(ACCESS_TOKEN)},
+        }} }});
+      if (!res.ok) return null;
+      const rows = await res.json();
+      return rows[0] || null;
+    }})()
     """
     return await page.evaluate(js)
 

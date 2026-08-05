@@ -101,7 +101,11 @@ def consents_section(page):
 
 
 async def set_toggle(page, kind: str, desired: bool):
-    cb = consents_section(page).locator("input[type=checkbox]").nth(OPTIONAL_KINDS.index(kind))
+    # Selectăm după `data-consent-kind`, nu după poziție. ConsentsCard randează
+    # 6 consimțăminte (partner_announcements este al 5-lea), iar lista din test
+    # are 5 — indexarea pe poziție comuta `partner_announcements` și apoi verifica
+    # `marketing`, de unde „has_active_consent=False" și „consent_log=None".
+    cb = page.locator(f'[data-consent-kind="{kind}"] input[type=checkbox]').first
     await cb.wait_for(state="visible", timeout=5000)
     if await cb.is_checked() == desired:
         return
@@ -109,13 +113,12 @@ async def set_toggle(page, kind: str, desired: bool):
     try:
         await page.wait_for_function(
             """(args) => {
-                const secs = Array.from(document.querySelectorAll('section'));
-                const sec = secs.find(s => s.textContent && s.textContent.includes('Consimțăminte GDPR'));
-                if (!sec) return false;
-                const boxes = sec.querySelectorAll('input[type=checkbox]');
-                return boxes[args.idx] && boxes[args.idx].checked === args.desired;
+                const row = document.querySelector('[data-consent-kind="' + args.kind + '"]');
+                if (!row) return false;
+                const box = row.querySelector('input[type=checkbox]');
+                return box && box.checked === args.desired;
             }""",
-            arg={"idx": OPTIONAL_KINDS.index(kind), "desired": desired},
+            arg={"kind": kind, "desired": desired},
             timeout=8000,
         )
     except Exception:

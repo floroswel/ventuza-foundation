@@ -99,8 +99,11 @@ export function ConsentsCard() {
         {OPTIONAL_KINDS.map((kind) => {
           const meta = CONSENT_REGISTRY[kind];
           const active = !!state[kind];
+          // `data-consent-kind` este hook-ul stabil pentru E2E. Fără el testul
+          // localiza checkbox-ul după poziție și, când s-a adăugat
+          // `partner_announcements` în listă, comuta consimțământul greșit.
           return (
-            <div key={kind} className="py-3">
+            <div key={kind} data-consent-kind={kind} className="py-3">
               <label className="flex items-start justify-between gap-3 cursor-pointer">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 text-sm font-medium">
