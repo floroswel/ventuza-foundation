@@ -511,6 +511,22 @@ jobs:
           PY
             echo "✓ firebase-messaging + BoM adăugate în app/build.gradle"
           fi
+          if ! grep -q "rootbeer-lib" "$APP_GRADLE"; then
+            python3 <<'PY'
+          p = "android/app/build.gradle"
+          s = open(p).read()
+          if "dependencies {" in s:
+              s = s.replace(
+                  "dependencies {",
+                  "dependencies {\n    implementation 'com.scottyab:rootbeer-lib:0.1.1'",
+                  1,
+              )
+          open(p, 'w').write(s)
+          PY
+            echo "✓ rootbeer-lib adăugat în app/build.gradle (root/tamper detection)"
+          fi
+
+
 
       - name: Hardening Manifest (allowBackup=false, dataExtraction=false)
         run: |
