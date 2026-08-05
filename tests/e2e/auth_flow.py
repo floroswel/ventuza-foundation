@@ -32,10 +32,20 @@ Pentru a testa complet ramura cu Turnstile activ:
 
 Presupune dev server pe http://localhost:8080.
 Testele NU necesită sesiune Supabase injectată — folosesc doar suprafața
-publică /auth. Nu creează useri reali în Supabase Auth: adresele generate
-sunt @example.com și sunt respinse de gate-ul de disposable-email (assert_email_allowed)
-înainte de scriere. Pentru a testa signup end-to-end cu user real, folosește
-un email pe un domeniu permis (@gmail.com etc.).
+publică /auth.
+
+STRATEGIE PENTRU S3 (signup) ȘI CLEANUP
+---------------------------------------
+S3 folosește contul dedicat din `E2E_TEST_EMAIL`, care EXISTĂ deja. Supabase
+respinge înscrierea cu „user already registered", aplicația mapează eroarea
+într-un toast, iar testul validează exact acest traseu. **Nu se creează niciun
+utilizator, deci nu există nimic de curățat** — de aceea nu ștergem conturi și
+nu avem nevoie de `service_role`.
+
+Varianta anterioară folosea `e2e-<timestamp>@example.com` și presupunea că
+`assert_email_allowed` respinge domeniul înainte de scriere. Verificat pe acest
+deployment: NU îl respinge — `POST /auth/v1/signup` întoarce 200 și lăsa un
+utilizator real în Supabase Auth la fiecare rulare CI.
 """
 import asyncio, os, re, sys, time
 from pathlib import Path
@@ -44,6 +54,9 @@ from playwright.async_api import async_playwright, Page, expect
 OUT = Path(__file__).parent / "screenshots" / "auth"
 OUT.mkdir(exist_ok=True, parents=True)
 BASE = os.environ.get("E2E_BASE_URL", "http://localhost:8080")
+# Contul dedicat de test. S3 îl refolosește intenționat, ca signup-ul să fie
+# respins („user already registered") în loc să creeze utilizatori noi.
+TEST_EMAIL = os.environ.get("E2E_TEST_EMAIL", "").strip()
 
 PASS: list[str] = []
 FAIL: list[tuple[str, str]] = []
@@ -199,8 +212,15 @@ async def test_signup_underage(page: Page) -> None:
 # ─── S3 · signup valid → check-email ──────────────────────────────────────
 async def test_signup_valid_flow(page: Page) -> None:
     name = "S3 signup — date valide → /auth/check-email"
+    if not TEST_EMAIL:
+        bad(name, "E2E_TEST_EMAIL nu este setat — vezi strategia din docstring")
+        return
     await goto_auth(page, "signup")
-    email = f"e2e-{int(time.time())}@example.com"
+    # Contul dedicat EXISTĂ deja, deci Supabase respinge înscrierea
+    # („user already registered") și nu se creează nimic. Varianta anterioară
+    # folosea e2e-<timestamp>@example.com, care trecea de gate și lăsa un
+    # utilizator real în Supabase Auth la FIECARE rulare CI.
+    email = TEST_EMAIL
     await page.locator("#email").fill(email)
     await page.locator("#password").fill("parola-lunga-123!")
     checkboxes = page.locator("input[type='checkbox']")

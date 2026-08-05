@@ -36,13 +36,12 @@ jobs:
       # ar avea prioritate față de $GITHUB_ENV, iar o valoare goală ar anula
       # rezolvarea — exact cauza pentru care „Write .env" scria un .env GOL și
       # toate cele 6 suite e2e cădeau (exit code = numărul de suite eșuate).
-      # Sesiunea injectată e OPȚIONALĂ. Fără ea, testele autenticate se
-      # skip-uiesc automat (LOVABLE_BROWSER_AUTH_STATUS=signed_out).
-      LOVABLE_BROWSER_AUTH_STATUS: ${{ secrets.E2E_SUPABASE_SESSION_JSON && 'injected' || 'signed_out' }}
-      LOVABLE_BROWSER_SUPABASE_SESSION_JSON: ${{ secrets.E2E_SUPABASE_SESSION_JSON }}
-      LOVABLE_BROWSER_SUPABASE_STORAGE_KEY: ${{ secrets.E2E_SUPABASE_STORAGE_KEY }}
-      LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN: ${{ secrets.E2E_SUPABASE_ACCESS_TOKEN }}
-      LOVABLE_BROWSER_SUPABASE_COOKIES_JSON: ${{ secrets.E2E_SUPABASE_COOKIES_JSON }}
+      # Sesiunea NU mai vine dintr-un secret static (`E2E_SUPABASE_SESSION_JSON`
+      # conținea access_token + refresh_token, expira și cerea rotație manuală).
+      # Pasul „Authenticate E2E test account" face un password grant la fiecare
+      # rulare și scrie sesiunea proaspătă într-un fișier din $RUNNER_TEMP, citit
+      # EXCLUSIV de pasul care rulează testele. Nu se declară aici, ca să nu
+      # ajungă în environment-ul tuturor pașilor.
       E2E_BASE_URL: http://localhost:8080
       # Testele care scriu în DB (edit profil, upload real) rămân opt-in.
       E2E_ALLOW_REAL_WRITE: ${{ vars.E2E_ALLOW_REAL_WRITE || '' }}
@@ -59,6 +58,16 @@ jobs:
           VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
           VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID || vars.VITE_SUPABASE_PROJECT_ID }}
         run: node scripts/resolve-public-env.mjs
+
+      # Fail-fast ÎNAINTE de instalări lungi: dacă lipsesc credențialele contului
+      # de test, oprim aici cu numele secretului lipsă. Sesiunea proaspătă se
+      # scrie în $RUNNER_TEMP (în afara workspace-ului), nu în $GITHUB_ENV, deci
+      # ajunge doar la pasul de teste. Nu se creează utilizatori automat.
+      - name: Authenticate E2E test account (fresh session)
+        env:
+          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+        run: node scripts/e2e-login.mjs --out "$RUNNER_TEMP/e2e-session.env"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -116,8 +125,19 @@ jobs:
 
       - name: Run Playwright e2e
         id: e2e
+        env:
+          # Contul dedicat ajunge la S3 din auth_flow, ca signup-ul să lovească un
+          # email care EXISTĂ deja („user already registered") în loc să creeze un
+          # utilizator nou la fiecare rulare.
+          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
         run: |
           set +e
+          # Sesiunea proaspătă e încărcată DOAR aici, în shell-ul acestui pas.
+          # `set -a` o exportă către procesele python; nimic nu ajunge în
+          # $GITHUB_ENV, deci ceilalți pași nu o văd.
+          set -a
+          . "$RUNNER_TEMP/e2e-session.env"
+          set +a
           fails=0
           for f in tests/e2e/*.py; do
             echo "::group::$f"
@@ -128,6 +148,13 @@ jobs:
           done
           echo "failed_suites=$fails" >> $GITHUB_OUTPUT
           exit $fails
+
+      - name: Shred runtime session
+        if: always()
+        run: |
+          # Sesiunea nu trebuie să supraviețuiască jobului și nu urcă în artifacts
+          # (path-urile de upload sunt doar tests/e2e/screenshots).
+          rm -f "$RUNNER_TEMP/e2e-session.env"
 
       - name: Stop dev server
         if: always()
