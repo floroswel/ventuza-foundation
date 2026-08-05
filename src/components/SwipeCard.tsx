@@ -1,4 +1,4 @@
-import { motion, PanInfo, useMotionValue, useTransform } from "framer-motion";
+import { m as motion, PanInfo, useMotionValue, useTransform } from "framer-motion";
 import { useEffect, useState } from "react";
 import { Heart, Star, X, MapPin, Flag } from "lucide-react";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";

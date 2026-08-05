@@ -1,4 +1,4 @@
-import { motion, useMotionValue, useTransform, animate, type PanInfo } from "framer-motion";
+import { m as motion, useMotionValue, useTransform, animate, type PanInfo } from "framer-motion";
 import { CornerUpLeft } from "lucide-react";
 import { useCallback, type ReactNode } from "react";
 

@@ -350,8 +350,42 @@ jobs:
                   1,
               )
           s = s.replace('android:usesCleartextTraffic="true"', 'android:usesCleartextTraffic="false"')
+          # d) hardening <application>: fără backup, fără cleartext, fără legacy storage
+          app_attrs = {
+              'android:allowBackup': 'false',
+              'android:fullBackupContent': 'false',
+              'android:dataExtractionRules': None,  # gestionat separat mai jos
+              'android:usesCleartextTraffic': 'false',
+              'android:requestLegacyExternalStorage': 'false',
+          }
+          for attr, val in app_attrs.items():
+              if val is None:
+                  continue
+              if re.search(rf'<application[^>]*{re.escape(attr)}=', s):
+                  s = re.sub(rf'({re.escape(attr)}=")[^"]*(")', rf'\g<1>{val}\g<2>', s, count=1)
+              else:
+                  s = s.replace('<application', f'<application {attr}="{val}"', 1)
+          # e) hardening MainActivity: singleTask + portrait + adjustPan
+          m = re.search(r'<activity\b[^>]*android:name="[^"]*MainActivity"[^>]*>', s)
+          if m:
+              tag = m.group(0)
+              new_tag = tag
+              for attr, val in (
+                  ('android:launchMode', 'singleTask'),
+                  ('android:screenOrientation', 'portrait'),
+                  ('android:windowSoftInputMode', 'adjustPan'),
+                  ('android:exported', 'true'),
+              ):
+                  if f'{attr}=' in new_tag:
+                      new_tag = re.sub(rf'({re.escape(attr)}=")[^"]*(")', rf'\g<1>{val}\g<2>', new_tag, count=1)
+                  else:
+                      new_tag = new_tag.replace('<activity', f'<activity {attr}="{val}"', 1)
+              s = s.replace(tag, new_tag, 1)
+          else:
+              raise SystemExit("MainActivity nu a fost găsit în AndroidManifest.xml")
           open(p, 'w').write(s)
-          print("✓ AndroidManifest.xml patched (foreground location + no AD_ID/background location + networkSecurityConfig)")
+          print("✓ AndroidManifest.xml patched (security attrs + activity hardening + networkSecurityConfig)")
+
           PY
 
           # 3) Copiere resurse override dacă există (icon monochrome, splash)

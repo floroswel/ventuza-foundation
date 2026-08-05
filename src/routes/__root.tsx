@@ -18,6 +18,11 @@ import { enforceCanonicalHost } from "@/lib/canonical-origin";
 import { AuthProvider } from "@/lib/auth-context";
 import { NotificationsProvider } from "@/lib/notifications-context";
 import { NotificationPrefsProvider } from "@/lib/notification-prefs-context";
+import { LazyMotion } from "framer-motion";
+
+/** Feature-urile framer-motion trăiesc într-un chunk separat (vezi src/lib/motion-features.ts). */
+const loadMotionFeatures = () => import("@/lib/motion-features").then((m) => m.default);
+
 import { Toaster } from "sonner";
 import { CookieBanner } from "@/components/CookieBanner";
 import { TravelWarning } from "@/components/TravelWarning";
@@ -336,8 +341,10 @@ function RootComponent() {
 
 
   return (
+    <LazyMotion features={loadMotionFeatures} strict>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+
         <NotificationPrefsProvider>
           <NotificationsProvider>
             <SessionGuards />
@@ -367,6 +374,8 @@ function RootComponent() {
         </NotificationPrefsProvider>
       </AuthProvider>
     </QueryClientProvider>
+    </LazyMotion>
+
   );
 }
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { AnimatePresence, motion, type PanInfo } from "framer-motion";
+import { AnimatePresence, m as motion, type PanInfo } from "framer-motion";
 import { ChevronLeft, ChevronRight, ImageOff, Loader2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { convertHeicUrl, isHeicUrl } from "@/lib/heic-fallback";
