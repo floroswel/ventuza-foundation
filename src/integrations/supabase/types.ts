@@ -5823,7 +5823,7 @@ export type Database = {
           birthdate: string
           body_type: string
           display_name: string
-          gender: string
+          gender: string[]
           height_cm: number
           hide_age: boolean
           id: string
@@ -5835,7 +5835,7 @@ export type Database = {
           preferred_language: string
           profile_slug: string
           prompts: Json
-          pronouns: string
+          pronouns: string[]
           tribes: string[]
           verified: boolean
           verified_at: string
