@@ -26,12 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      # Secretele au prioritate, apoi Repository Variables. Fără ele, pasul
-      # „Write .env" suprascria .env-ul din repo cu valori goale și toate
-      # capturile visual eșuau fără cauză vizibilă. Fără hardcodare.
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID || vars.VITE_SUPABASE_PROJECT_ID }}
+      # Supabase: NU se declară aici — vezi pasul „Resolve public Supabase env".
+      # Valorile ajung prin $GITHUB_ENV; un `env:` la nivel de job ar avea
+      # prioritate și o valoare goală ar anula rezolvarea.
       VITE_TURNSTILE_SITE_KEY: ${{ vars.E2E_TURNSTILE_SITE_KEY || '1x00000000000000000000AA' }}
       VR_BASE_URL: http://localhost:8080
       # Sesiune de test opțională: fără ea, suita de onboarding se omite.
@@ -41,6 +38,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # Înainte de „Write .env for Vite", care suprascrie `.env`-ul versionat.
+      - name: Resolve public Supabase env
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID || vars.VITE_SUPABASE_PROJECT_ID }}
+        run: node scripts/resolve-public-env.mjs
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -70,21 +75,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install "playwright==1.47.*"
           python -m playwright install --with-deps chromium
-
-      - name: Validează configurația Supabase (fail-fast)
-        run: |
-          missing=0
-          for name in VITE_SUPABASE_URL VITE_SUPABASE_PUBLISHABLE_KEY VITE_SUPABASE_PROJECT_ID; do
-            if [ -z "${!name}" ]; then
-              echo "::error::$name lipsește (nici Secret, nici Variable). Pasul următor ar suprascrie .env cu o valoare goală și toate verificările visual ar eșua fără cauză vizibilă."
-              missing=1
-            fi
-          done
-          if [ "$missing" != "0" ]; then
-            echo "::error::Adaugă valorile în GitHub → Settings → Secrets and variables → Actions (Secrets sau Variables). Nu sunt hardcodate în workflow intenționat."
-            exit 1
-          fi
-          echo "✓ Configurație prezentă (doar lungimi: URL=${#VITE_SUPABASE_URL}, KEY=${#VITE_SUPABASE_PUBLISHABLE_KEY}, PROJECT_ID=${#VITE_SUPABASE_PROJECT_ID})."
 
       - name: Write .env for Vite
         run: |

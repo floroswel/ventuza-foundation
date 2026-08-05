@@ -13,33 +13,20 @@ on:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    # Sursă unică pentru toți pașii. Secretele au prioritate, apoi Repository
-    # Variables (`vars`). Cheile NU sunt hardcodate aici; dacă ambele surse
-    # lipsesc, pasul de validare de mai jos oprește workflow-ul imediat, în loc
-    # să lase 12 teste să cadă în cascadă cu „Lipsesc VITE_SUPABASE_*".
-    env:
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Validează configurația Supabase (fail-fast)
-        run: |
-          missing=0
-          if [ -z "$VITE_SUPABASE_URL" ]; then
-            echo "::error::VITE_SUPABASE_URL lipsește. Testele de integrare live nu pot rula. Adaugă-l în GitHub → Settings → Secrets and variables → Actions, ca Secret SAU ca Variable (este o valoare publică: URL-ul proiectului Supabase)."
-            missing=1
-          fi
-          if [ -z "$VITE_SUPABASE_PUBLISHABLE_KEY" ]; then
-            echo "::error::VITE_SUPABASE_PUBLISHABLE_KEY lipsește. Adaugă-l în GitHub → Settings → Secrets and variables → Actions, ca Secret SAU ca Variable (cheia anon/publishable este protejată de RLS)."
-            missing=1
-          fi
-          if [ "$missing" != "0" ]; then
-            echo "::error::Opresc workflow-ul devreme: fără aceste valori, pasul de teste ar raporta 12 eșecuri derivate, care ascund cauza reală."
-            exit 1
-          fi
-          # Doar lungimi, niciodată valorile.
-          echo "✓ Configurație prezentă (URL: ${#VITE_SUPABASE_URL} caractere, KEY: ${#VITE_SUPABASE_PUBLISHABLE_KEY} caractere)."
+      # Rezolvă configurația publică o singură dată: Secret → Variable → `.env`
+      # versionat. Scrie rezultatul în $GITHUB_ENV pentru pașii următori, deci
+      # aceste variabile NU trebuie declarate la nivel de job: un `env:` din
+      # workflow are prioritate față de $GITHUB_ENV și o valoare goală ar
+      # suprascrie exact ce am rezolvat aici.
+      - name: Resolve public Supabase env
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID || vars.VITE_SUPABASE_PROJECT_ID }}
+        run: node scripts/resolve-public-env.mjs
 
       - uses: oven-sh/setup-bun@v2
         with:
