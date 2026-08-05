@@ -342,8 +342,16 @@ jobs:
                       f'    <uses-permission android:name="{permission}"/>\n</manifest>',
                       1,
                   )
+          # c) network security config (HTTPS-only, fără CA-uri user în release)
+          if 'android:networkSecurityConfig' not in s:
+              s = s.replace(
+                  '<application',
+                  '<application android:networkSecurityConfig="@xml/network_security_config"',
+                  1,
+              )
+          s = s.replace('android:usesCleartextTraffic="true"', 'android:usesCleartextTraffic="false"')
           open(p, 'w').write(s)
-          print("✓ AndroidManifest.xml patched (foreground location + no AD_ID/background location)")
+          print("✓ AndroidManifest.xml patched (foreground location + no AD_ID/background location + networkSecurityConfig)")
           PY
 
           # 3) Copiere resurse override dacă există (icon monochrome, splash)
