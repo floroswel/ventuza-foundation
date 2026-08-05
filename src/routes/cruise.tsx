@@ -114,7 +114,7 @@ function CruisePage() {
   }, [profiles]);
 
   return (
-    <main className="relative min-h-dvh bg-background pb-28">
+    <main className="relative min-h-dvh bg-background pb-nav">
       <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 px-4 pb-3 pt-4 backdrop-blur">
         <div className="flex items-center gap-3">
           <Link

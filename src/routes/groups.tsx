@@ -80,7 +80,7 @@ function GroupsPage() {
   }
 
   return (
-    <main className="min-h-dvh bg-background pb-28">
+    <main className="min-h-dvh bg-background pb-nav">
       <header className="sticky top-0 z-10 flex items-center justify-between border-b border-border/60 bg-background/95 px-4 py-3 backdrop-blur">
         <button
           onClick={() => navigate({ to: "/discover" })}

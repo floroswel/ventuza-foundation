@@ -134,7 +134,7 @@ function VisitorsPage() {
   }, [user]);
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-24">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-nav">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
         <Link
           to="/profile"

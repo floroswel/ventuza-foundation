@@ -124,7 +124,8 @@ public class MainActivity extends BridgeActivity {
                 + "s.setProperty('--android-inset-top','" + top + "px');"
                 + "s.setProperty('--android-inset-bottom','" + bottom + "px');"
                 + "s.setProperty('--android-inset-left','" + left + "px');"
-                + "s.setProperty('--android-inset-right','" + right + "px');})();";
+                + "s.setProperty('--android-inset-right','" + right + "px');"
+                + "try{window.dispatchEvent(new CustomEvent('safeareaupdate'));}catch(e){}})();";
               view.post(new Runnable() {
                 @Override
                 public void run() {
@@ -132,7 +133,10 @@ public class MainActivity extends BridgeActivity {
                 }
               });
             } catch (Throwable ignored) { /* best effort */ }
-            return insets;
+            // Consumăm insets-urile: layout-ul nativ nu mai adaugă padding pe
+            // WebView (altfel înălțimea calculată e greșită și scroll-ul pare blocat).
+            return WindowInsetsCompat.CONSUMED;
+
           }
         });
         ViewCompat.requestApplyInsets(webView);

@@ -116,7 +116,20 @@ html {
        injectate nativ din WindowInsets (MainActivity). */
     --safe-top: max(env(safe-area-inset-top), var(--android-inset-top, 0px));
     --safe-bottom: max(env(safe-area-inset-bottom), var(--android-inset-bottom, 0px));
+    --safe-left: max(env(safe-area-inset-left), var(--android-inset-left, 0px));
+    --safe-right: max(env(safe-area-inset-right), var(--android-inset-right, 0px));
   }
+
+  /* Fallback pentru WebView-uri vechi fără dvh: doar env(). */
+  @supports not (height: 100dvh) {
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+    }
+  }
+
 
   * {
     border-color: var(--color-border);
@@ -132,8 +145,8 @@ html {
        să nu intre sub ceas/baterie/bara gestuală. */
     padding-top: var(--safe-top);
     padding-bottom: var(--safe-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
     /* Fără scroll orizontal pe ecrane înguste (360–380px) sau tablete. */
     max-width: 100%;
     overflow-x: hidden;
@@ -432,10 +445,14 @@ html {
   padding-bottom: var(--safe-bottom);
 }
 @utility pl-safe {
-  padding-left: env(safe-area-inset-left);
+  padding-left: var(--safe-left);
 }
 @utility pr-safe {
-  padding-right: env(safe-area-inset-right);
+  padding-right: var(--safe-right);
+}
+/* Spațiu pentru bara de navigație fixă (BottomNav = ~4rem + safe area). */
+@utility pb-nav {
+  padding-bottom: calc(4.5rem + var(--safe-bottom));
 }
 @utility min-h-dvh-safe {
   min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
@@ -444,6 +461,7 @@ html {
 @utility h-dvh-safe {
   height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
 }
+
 
 /* Native Android — Keyboard aware bottom padding.
    Populated by src/lib/native-runtime.ts via @capacitor/keyboard listeners.
