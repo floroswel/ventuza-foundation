@@ -217,6 +217,18 @@ function LocationPermissionPromptMount() {
   return <LocationPermissionPrompt />;
 }
 
+/** Anti-screenshot: blocat pe conținut privat, permis pe ecranele publice. */
+function ScreenSecurityMount() {
+  const location = useLocation();
+  useEffect(() => {
+    void import("@/lib/native-screen-security").then(({ applyScreenshotPolicy }) =>
+      applyScreenshotPolicy(location.pathname),
+    );
+  }, [location.pathname]);
+  return null;
+}
+
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
