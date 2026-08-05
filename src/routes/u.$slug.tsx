@@ -39,6 +39,8 @@ function age(iso?: string | null) {
 function PublicProfilePage() {
   const optLabel = useOptionLabel();
   const { slug } = Route.useParams();
+  const { user } = useAuth();
+  const router = useRouter();
   const { i18n } = useTranslation();
   const [profile, setProfile] = useState<any | null>(null);
   const [signedPhotos, setSignedPhotos] = useState<string[]>([]);
