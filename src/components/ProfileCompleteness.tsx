@@ -9,11 +9,6 @@ export function ProfileCompleteness({ profile, onEdit }: { profile: any; onEdit:
       { key: "photos", label: "Adaugă cel puțin 3 poze", done: (profile.photos?.length ?? 0) >= 3 },
       { key: "bio", label: "Scrie un bio", done: !!profile.bio && profile.bio.length > 30 },
       {
-        key: "prompts",
-        label: "Răspunde la un prompt",
-        done: !!profile.prompts?.some((p: any) => p.answer?.trim()),
-      },
-      {
         key: "interests",
         label: "Alege minim 3 interese",
         done: (profile.interests?.length ?? 0) >= 3,
