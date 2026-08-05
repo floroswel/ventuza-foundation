@@ -3,7 +3,10 @@
   Suzeta — override edge-to-edge (Android 15 / API 35+).
   Root-ul si WebView-ul NU consuma system window insets: MainActivity.java
   citeste insets-urile prin WindowInsetsCompat si le injecteaza in WebView ca
-  variabile CSS (--android-inset-*), iar CSS-ul aplica safe-area padding.
+  variabile CSS de tip android-inset-* (prefixate cu doua liniute in CSS),
+  iar CSS-ul aplica safe-area padding. NU scrie acele doua liniute aici:
+  XML interzice secventa respectiva in interiorul unui comentariu (XML 1.0,
+  paragraf 2.5), iar AAPT respinge fisierul cu "not well-formed".
   Daca fitsSystemWindows ar fi true, Android ar adauga padding nativ si am
   obtine dublu spacing + zone negre sub status/navigation bar.
 -->

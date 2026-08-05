@@ -35,6 +35,31 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile
 
+      - name: Resurse Android XML valide (blocking)
+        # `android-overrides/res/*` este copiat direct în proiectul Android, iar
+        # AAPT respinge orice XML malformat. Până acum eroarea apărea abia în
+        # Android Release, după ~10 minute de build. Un `--` într-un comentariu
+        # (interzis de XML 1.0 §2.5) a blocat exact așa un release.
+        # `AndroidManifest.additions.xml` e exclus intenționat: e un fragment de
+        # documentație, fără rădăcină, care nu se copiază niciodată în android/.
+        run: |
+          python3 - <<'PY'
+          import glob, sys
+          import xml.etree.ElementTree as ET
+          bad = []
+          files = sorted(glob.glob("android-overrides/res/**/*.xml", recursive=True))
+          for f in files:
+              try:
+                  ET.parse(f)
+              except Exception as e:
+                  bad.append(f"{f}: {e}")
+          for b in bad:
+              print(f"::error::XML Android invalid — {b}")
+          if bad:
+              sys.exit(1)
+          print(f"✓ {len(files)} fișiere XML din android-overrides/res sunt valide.")
+          PY
+
       - name: TypeScript (blocking)
         run: bunx tsc --noEmit
 
