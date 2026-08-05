@@ -369,6 +369,8 @@ function RootComponent() {
         </NotificationPrefsProvider>
       </AuthProvider>
     </QueryClientProvider>
+    </LazyMotion>
+
   );
 }
 
