@@ -139,14 +139,33 @@ jobs:
           . "$RUNNER_TEMP/e2e-session.env"
           set +a
           fails=0
+          failed_names=""
           for f in tests/e2e/*.py; do
-            echo "::group::$f"
-            python "$f"
-            rc=$?
+            name="$(basename "$f")"
+            echo "::group::$name"
+            python "$f" 2>&1 | tee "$RUNNER_TEMP/$name.out"
+            rc=${PIPESTATUS[0]}
             echo "::endgroup::"
-            if [ $rc -ne 0 ]; then fails=$((fails+1)); fi
+            if [ "$rc" -ne 0 ]; then
+              fails=$((fails+1))
+              failed_names="$failed_names $name"
+              # Ridicăm primele linii de eșec ca ADNOTĂRI. Logurile brute ale
+              # jobului cer drepturi de admin pe repo, deci fără asta nu se poate
+              # afla ce suită a picat decât rulând totul din nou local.
+              grep -aE "✗|FAIL|Error|error:|Traceback" "$RUNNER_TEMP/$name.out" \
+                | head -4 \
+                | while IFS= read -r line; do
+                    echo "::error title=$name::${line:0:400}"
+                  done
+              if [ ! -s "$RUNNER_TEMP/$name.out" ]; then
+                echo "::error title=$name::suita a eșuat fără output (rc=$rc)"
+              fi
+            fi
           done
           echo "failed_suites=$fails" >> $GITHUB_OUTPUT
+          if [ "$fails" -ne 0 ]; then
+            echo "::error::Suite eșuate ($fails):$failed_names"
+          fi
           exit $fails
 
       - name: Shred runtime session
