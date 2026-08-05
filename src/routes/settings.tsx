@@ -231,7 +231,7 @@ function SettingsPage() {
   }
 
   return (
-    <div className="min-h-dvh bg-background pb-32">
+    <div className="min-h-dvh bg-background pb-nav">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur">
         <Link
           to="/profile"

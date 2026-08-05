@@ -573,7 +573,7 @@ function DiscoverPage() {
   }
 
   return (
-    <main className="relative min-h-dvh bg-background pb-28">
+    <main className="relative min-h-dvh bg-background pb-nav">
       <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 px-4 pb-2 pt-4 backdrop-blur">
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">

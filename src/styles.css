@@ -145,8 +145,8 @@ html {
        să nu intre sub ceas/baterie/bara gestuală. */
     padding-top: var(--safe-top);
     padding-bottom: var(--safe-bottom);
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
+    padding-left: var(--safe-left);
+    padding-right: var(--safe-right);
     /* Fără scroll orizontal pe ecrane înguste (360–380px) sau tablete. */
     max-width: 100%;
     overflow-x: hidden;

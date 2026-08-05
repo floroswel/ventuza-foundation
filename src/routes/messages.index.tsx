@@ -115,7 +115,7 @@ function MessagesPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-24">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-nav">
       <header className="sticky top-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-border/40 bg-background/85 px-5 py-4 backdrop-blur">
         <Crown className="size-6 text-primary" aria-hidden />
         <h1 className="text-center font-serif text-2xl tracking-wide text-primary">

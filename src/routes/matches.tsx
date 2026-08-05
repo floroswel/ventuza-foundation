@@ -90,7 +90,7 @@ function MatchesPage() {
   }
 
   return (
-    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-24">
+    <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-nav">
       <header className="sticky top-0 z-20 border-b border-primary/20 bg-background/85 px-5 py-4 text-center backdrop-blur">
         <h1 className="font-serif text-2xl tracking-wide text-primary">Potriviri</h1>
       </header>

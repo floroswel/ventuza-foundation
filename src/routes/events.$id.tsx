@@ -115,7 +115,7 @@ function EventDetailPage() {
     event.my_rsvp !== "going";
 
   return (
-    <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-32">
+    <main className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-nav">
       <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
         <Link to="/events" className="rounded-full p-2 text-muted-foreground hover:text-foreground">
           <ChevronLeft className="size-5" />
