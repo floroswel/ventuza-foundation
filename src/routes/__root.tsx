@@ -336,8 +336,10 @@ function RootComponent() {
 
 
   return (
+    <LazyMotion features={loadMotionFeatures} strict>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
+
         <NotificationPrefsProvider>
           <NotificationsProvider>
             <SessionGuards />
