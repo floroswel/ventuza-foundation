@@ -116,7 +116,20 @@ html {
        injectate nativ din WindowInsets (MainActivity). */
     --safe-top: max(env(safe-area-inset-top), var(--android-inset-top, 0px));
     --safe-bottom: max(env(safe-area-inset-bottom), var(--android-inset-bottom, 0px));
+    --safe-left: max(env(safe-area-inset-left), var(--android-inset-left, 0px));
+    --safe-right: max(env(safe-area-inset-right), var(--android-inset-right, 0px));
   }
+
+  /* Fallback pentru WebView-uri vechi fără dvh: doar env(). */
+  @supports not (height: 100dvh) {
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+      --safe-left: env(safe-area-inset-left, 0px);
+      --safe-right: env(safe-area-inset-right, 0px);
+    }
+  }
+
 
   * {
     border-color: var(--color-border);
