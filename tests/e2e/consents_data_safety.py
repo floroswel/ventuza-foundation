@@ -178,7 +178,13 @@ async def main() -> int:
                 # reload și verifică că checkbox persistă (T1/T3)
                 await page.reload(wait_until="networkidle")
                 await page.locator("section:has-text('Consimțăminte GDPR')").wait_for(timeout=8000)
-                cb = consents_section(page).locator("input[type=checkbox]").nth(OPTIONAL_KINDS.index(kind))
+                # Aceeași adresare stabilă ca în `set_toggle`. Aici rămăsese
+                # indexarea pe poziție: `set_toggle` comuta corect `marketing`
+                # (index 5 în UI), dar verificarea citea index 4, adică
+                # `partner_announcements`, care e off — de unde
+                # „checkbox după reload=False, așteptat True", deși scrierea
+                # reușise (has_active_consent întorcea true).
+                cb = page.locator(f'[data-consent-kind="{kind}"] input[type=checkbox]').first
                 actual = await cb.is_checked()
                 if actual != desired:
                     await fail(f"[{kind}] checkbox după reload={actual}, așteptat {desired}")
