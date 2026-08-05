@@ -228,10 +228,11 @@ function RootComponent() {
       document.documentElement.lang = mod.default.language || "ro";
     });
 
-    // Capturile sunt permise temporar pentru diagnosticarea layout-ului Android.
+    // Privacy screen: ecranul din multitasking/recents este ascuns.
     void import("@capacitor-community/privacy-screen")
-      .then(({ PrivacyScreen }) => PrivacyScreen.disable())
+      .then(({ PrivacyScreen }) => PrivacyScreen.enable())
       .catch(() => undefined);
+
 
 
 
