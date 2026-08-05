@@ -1310,7 +1310,7 @@ function MessagesScroller({
     <div
       ref={scrollerRef as React.RefObject<HTMLDivElement>}
       onScroll={onScroll}
-      className="scroll-pane px-4 py-4"
+      className="scroll-pane px-4 py-4 pb-keyboard"
     >
       {loading ? (
         <div className="flex items-center justify-center py-16 text-muted-foreground">
