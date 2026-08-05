@@ -41,7 +41,14 @@ OPTIONAL_KINDS = [
 
 # Cuvinte-cheie așteptate pe /legal/data-safety per kind
 KEYWORDS = {
-    "internal_verification": ["Selfie verificare vârstă", "liveness"],
+    # Cheia era `internal_verification`, dar tipul de consimțământ a fost
+    # redenumit `age_verification` (vezi consent-registry.ts și consent_kinds()
+    # din DB) fără să fie actualizat aici — de unde `KeyError: 'age_verification'`
+    # la T5, care oprea suita cu Traceback.
+    # „liveness" a fost scos din listă: nu apare pe /legal/data-safety (verificat
+    # în src/routes/legal.data-safety.tsx), deci era o așteptare falsă. Mențiunea
+    # care există efectiv rămâne asertată.
+    "age_verification": ["Selfie verificare vârstă"],
     "ai_features": ["funcții AI", "Lovable AI"],
     "push_notifications": ["Notificări push", "FCM"],
     "background_location": ["Locație în fundal", "geofencing"],

@@ -105,6 +105,15 @@ async def goto_onboarding(page: Page) -> str:
             await page.locator("text=/step\\.basics|onboarding\\.step|1\\/4/i").first.wait_for(
                 state="attached", timeout=250
             )
+            # Stepper-ul se randează ÎNAINTE ca n.tsx să termine fetch-ul de profil
+            # (n.tsx:146-164). Pentru un cont cu onboarding_completed=true, redirectul
+            # spre /discover vine imediat după, deci un `return` aici ar face suita să
+            # continue pe o pagină care e pe cale să dispară — iar pașii următori
+            # eșuau apoi la click pe „Continuă". Lăsăm redirectul să se așeze.
+            for _ in range(12):
+                await page.wait_for_timeout(250)
+                if "/discover" in page.url or "/auth" in page.url:
+                    return page.url
             return page.url
         except Exception:
             pass
