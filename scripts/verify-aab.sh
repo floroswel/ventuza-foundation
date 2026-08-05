@@ -25,6 +25,17 @@ echo "==> 5. AndroidManifest flags"
 grep -E "allowBackup|usesCleartextTraffic|networkSecurityConfig" \
   android/app/src/main/AndroidManifest.xml || echo "(niciun flag setat explicit)"
 
+echo "==> 5b. Edge-to-edge layout (API 35+)"
+LAYOUT=android/app/src/main/res/layout/activity_main.xml
+if grep -q 'android:fitsSystemWindows="false"' "$LAYOUT" \
+   && grep -A6 "CapacitorWebView" "$LAYOUT" | grep -q 'android:fitsSystemWindows="false"'; then
+  echo "OK - root + WebView cu fitsSystemWindows=false"
+else
+  echo "EROARE: $LAYOUT nu are fitsSystemWindows=false pe root ȘI pe CapacitorWebView"
+  echo "        (copiază android-overrides/res/layout/activity_main.xml)"
+  exit 1
+fi
+
 echo "==> 6. Build AAB"
 cd android && ./gradlew bundleRelease
 echo "AAB: android/app/build/outputs/bundle/release/app-release.aab"
