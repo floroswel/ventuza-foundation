@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Suzeta — override edge-to-edge (Android 15 / API 35+).
+  Root-ul si WebView-ul NU consuma system window insets: MainActivity.java
+  citeste insets-urile prin WindowInsetsCompat si le injecteaza in WebView ca
+  variabile CSS (--android-inset-*), iar CSS-ul aplica safe-area padding.
+  Daca fitsSystemWindows ar fi true, Android ar adauga padding nativ si am
+  obtine dublu spacing + zone negre sub status/navigation bar.
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainCoordinator"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="false"
+    tools:context=".MainActivity">
+
+    <com.getcapacitor.CapacitorWebView
+        android:id="@+id/webview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="false" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
