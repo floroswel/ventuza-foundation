@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useServerFn } from "@tanstack/react-start";
@@ -11,6 +11,7 @@ import { formatHeight } from "@/lib/discover";
 import { useOptionLabel } from "@/lib/i18n/option-labels";
 import { PositionTag } from "@/components/PositionTag";
 import { translateProfile } from "@/lib/translate.functions";
+import { useAuth } from "@/lib/auth-context";
 
 
 export const Route = createFileRoute("/u/$slug")({
@@ -38,6 +39,8 @@ function age(iso?: string | null) {
 function PublicProfilePage() {
   const optLabel = useOptionLabel();
   const { slug } = Route.useParams();
+  const { user } = useAuth();
+  const router = useRouter();
   const { i18n } = useTranslation();
   const [profile, setProfile] = useState<any | null>(null);
   const [signedPhotos, setSignedPhotos] = useState<string[]>([]);
@@ -154,13 +157,14 @@ function PublicProfilePage() {
           photos={signedPhotos}
           alt={profile.display_name ?? ""}
           topRight={
-            <Link
-              to="/"
+            <button
+              type="button"
+              onClick={() => router.history.back()}
               className="inline-flex size-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur"
               aria-label="Back"
             >
               <ArrowLeft className="size-4" />
-            </Link>
+            </button>
           }
           overlay={
             <>
@@ -344,13 +348,23 @@ function PublicProfilePage() {
           </section>
         )}
 
-        <Link
-          to="/auth"
-          search={{ mode: "signup" }}
-          className="block rounded-full bg-primary py-3 text-center text-sm font-medium text-primary-foreground"
-        >
-          Intră în Suzeta ca să te conectezi cu {profile.display_name}
-        </Link>
+        {user ? (
+          <button
+            type="button"
+            onClick={() => router.history.back()}
+            className="block w-full rounded-full border border-border bg-surface py-3 text-center text-sm font-medium text-foreground"
+          >
+            Înapoi
+          </button>
+        ) : (
+          <Link
+            to="/auth"
+            search={{ mode: "signup" }}
+            className="block rounded-full bg-primary py-3 text-center text-sm font-medium text-primary-foreground"
+          >
+            Intră în Suzeta ca să te conectezi cu {profile.display_name}
+          </Link>
+        )}
       </div>
     </main>
   );
