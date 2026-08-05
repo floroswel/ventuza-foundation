@@ -20,6 +20,7 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.getcapacitor.BridgeActivity;
+import com.scottyab.rootbeer.RootBeer;
 
 import java.security.MessageDigest;
 import java.lang.reflect.Method;
@@ -173,6 +174,43 @@ public class MainActivity extends BridgeActivity {
 
 
   public class SignatureBridge {
+
+    /** Root / Magisk detection (RootBeer). Fail-open la eroare: nu blocăm userii legitimi. */
+    @JavascriptInterface
+    public boolean isDeviceRooted() {
+      try {
+        RootBeer rootBeer = new RootBeer(MainActivity.this);
+        return rootBeer.isRooted() || rootBeer.checkForMagiskBinary();
+      } catch (Throwable ignored) {
+        return false;
+      }
+    }
+
+    /** Emulator detection — semnal de risc pentru anti-fraud, nu blocaj. */
+    @JavascriptInterface
+    public boolean isRunningOnEmulator() {
+      try {
+        return (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
+          || Build.FINGERPRINT.startsWith("generic")
+          || Build.FINGERPRINT.startsWith("unknown")
+          || Build.HARDWARE.contains("goldfish")
+          || Build.HARDWARE.contains("ranchu")
+          || Build.MODEL.contains("google_sdk")
+          || Build.MODEL.contains("Emulator")
+          || Build.MODEL.contains("Android SDK built for x86")
+          || Build.MANUFACTURER.contains("Genymotion")
+          || Build.PRODUCT.contains("sdk_google")
+          || Build.PRODUCT.contains("google_sdk")
+          || Build.PRODUCT.contains("sdk")
+          || Build.PRODUCT.contains("sdk_x86")
+          || Build.PRODUCT.contains("vbox86p")
+          || Build.PRODUCT.contains("emulator")
+          || Build.PRODUCT.contains("simulator");
+      } catch (Throwable ignored) {
+        return false;
+      }
+    }
+
 
     /**
      * Permite/blochează capturile de ecran în funcție de ecranul curent.
