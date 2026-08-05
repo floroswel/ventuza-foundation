@@ -44,6 +44,11 @@ function PublicProfilePage() {
   const [signedVoice, setSignedVoice] = useState<string | null>(null);
   const [signedVideo, setSignedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  // `get_profile_by_slug` rulează `assert_age_verified()` → `assert_account_usable()`,
+  // care ridică excepții (`age_verification_required`, `not_authenticated`,
+  // `account_temporarily_banned`) cu ERRCODE 42501. Eroarea RPC era complet
+  // ignorată, deci orice refuz al gate-ului apărea ca „Profil indisponibil".
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [translation, setTranslation] = useState<{
     bio?: string | null;
     ideal_match?: string | null;
@@ -65,8 +70,9 @@ function PublicProfilePage() {
 
   useEffect(() => {
     (async () => {
-      const { data: rows } = await supabase.rpc("get_profile_by_slug", { _slug: slug });
+      const { data: rows, error } = await supabase.rpc("get_profile_by_slug", { _slug: slug });
       const data = Array.isArray(rows) ? (rows[0] as any) : (rows as any);
+      setLoadError(error ? (error.message || error.code || "unknown") : null);
       setProfile(data ?? null);
       setLoading(false);
       const paths: string[] = Array.isArray(data?.photos) ? data.photos : [];
@@ -134,15 +140,48 @@ function PublicProfilePage() {
   }
 
   if (!profile) {
+    // Cererea respinsă de un gate NU este același lucru cu „profil inexistent".
+    // Fără această distincție, un refuz de verificare 18+ arăta ca un link rupt.
+    const needsAgeVerification = !!loadError && loadError.includes("age_verification_required");
+    const needsAuth = !!loadError && loadError.includes("not_authenticated");
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background px-6 text-center">
-        <h1 className="text-xl font-medium">Profil indisponibil</h1>
+        <h1 className="text-xl font-medium">
+          {needsAgeVerification
+            ? "Verificare 18+ necesară"
+            : needsAuth
+              ? "Trebuie să fii conectat"
+              : "Profil indisponibil"}
+        </h1>
         <p className="text-sm text-muted-foreground">
-          Link-ul nu mai este valid sau profilul a fost ascuns.
+          {needsAgeVerification
+            ? "Profilurile altor utilizatori sunt vizibile doar după verificarea vârstei."
+            : needsAuth
+              ? "Conectează-te pentru a vedea profilurile."
+              : loadError
+                ? "Nu am putut încărca profilul. Încearcă din nou."
+                : "Link-ul nu mai este valid sau profilul a fost ascuns."}
         </p>
-        <Link to="/" className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground">
-          Acasă
-        </Link>
+        {needsAgeVerification ? (
+          <Link
+            to="/verify"
+            className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground"
+          >
+            Începe verificarea
+          </Link>
+        ) : needsAuth ? (
+          <Link
+            to="/auth"
+            search={{ mode: "login" }}
+            className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground"
+          >
+            Conectează-te
+          </Link>
+        ) : (
+          <Link to="/" className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground">
+            Acasă
+          </Link>
+        )}
       </main>
     );
   }

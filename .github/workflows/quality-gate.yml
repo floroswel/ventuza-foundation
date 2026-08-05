@@ -23,7 +23,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: TypeScript (blocking)
-        run: bunx tsgo --noEmit
+        run: bunx tsc --noEmit
 
       - name: Unit + critical tests (blocking)
         run: bunx vitest run

@@ -315,6 +315,13 @@ function RootComponent() {
     void import("@/lib/native-runtime").then(({ bootstrapNativeRuntime }) =>
       bootstrapNativeRuntime(router),
     );
+    // Diagnostic scroll — DOAR development. `import.meta.env.DEV` devine `false`
+    // la build, deci importul și apelul dispar din bundle-ul release/AAB.
+    if (import.meta.env.DEV) {
+      void import("@/lib/scroll-diagnostics").then(({ installScrollDiagnostics }) =>
+        installScrollDiagnostics(),
+      );
+    }
   }, [router]);
 
   useEffect(() => {

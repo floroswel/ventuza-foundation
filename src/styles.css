@@ -527,7 +527,18 @@ html.native-app body {
   touch-action: pan-y;
   height: auto;
   min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
-  overflow-y: auto;
+  /* `body` NU trebuie să fie scroll container.
+     Regula de bază (`html, body { overflow-x: hidden }`) pune overflow-x și pe
+     `html`, deci overflow-ul rădăcinii nu mai e `visible` → regula de propagare
+     body→viewport NU se aplică. Astfel `overflow-y: auto` rămânea pe body
+     însuși, iar cu `height: auto` body crește exact cât conținutul:
+     scrollHeight == clientHeight, adică un scroll container cu extent ZERO
+     între conținut și scroller-ul real (html). Gestul de pan e captat de el.
+     `overflow-x: clip` taie orizontala fără a crea scroll container (spre
+     deosebire de `hidden`), iar `overflow-y: visible` rămâne `visible` când
+     celălalt axis e `clip` — deci scroll-ul vertical revine la viewport. */
+  overflow-x: clip;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
 
