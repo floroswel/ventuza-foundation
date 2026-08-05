@@ -157,13 +157,14 @@ function PublicProfilePage() {
           photos={signedPhotos}
           alt={profile.display_name ?? ""}
           topRight={
-            <Link
-              to="/"
+            <button
+              type="button"
+              onClick={() => router.history.back()}
               className="inline-flex size-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur"
               aria-label="Back"
             >
               <ArrowLeft className="size-4" />
-            </Link>
+            </button>
           }
           overlay={
             <>
