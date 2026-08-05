@@ -11,6 +11,7 @@ import { formatHeight } from "@/lib/discover";
 import { useOptionLabel } from "@/lib/i18n/option-labels";
 import { PositionTag } from "@/components/PositionTag";
 import { translateProfile } from "@/lib/translate.functions";
+import { useAuth } from "@/lib/auth-context";
 
 
 export const Route = createFileRoute("/u/$slug")({
