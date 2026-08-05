@@ -155,6 +155,29 @@ public class MainActivity extends BridgeActivity {
   public class SignatureBridge {
 
     /**
+     * Permite/blochează capturile de ecran în funcție de ecranul curent.
+     * Default-ul aplicației este BLOCAT (FLAG_SECURE setat în onCreate).
+     */
+    @JavascriptInterface
+    public void setScreenshotAllowed(final boolean allowed) {
+      MainActivity.this.runOnUiThread(new Runnable() {
+        @Override
+        public void run() {
+          try {
+            if (allowed) {
+              getWindow().clearFlags(WindowManager.LayoutParams.FLAG_SECURE);
+            } else {
+              getWindow().setFlags(
+                WindowManager.LayoutParams.FLAG_SECURE,
+                WindowManager.LayoutParams.FLAG_SECURE);
+            }
+          } catch (Throwable ignored) { /* best effort */ }
+        }
+      });
+    }
+
+
+    /**
      * Toate metadatele într-un singur apel (PackageManager + certificat).
      * Evită situația în care un getter individual eșuează și rămâne null.
      */
