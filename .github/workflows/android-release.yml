@@ -30,15 +30,19 @@ on:
         required: true
         default: true
         type: boolean
+      # Fără valori implicite hardcodate. Aveau `1.0.10` / `10`, iar cel mai mare
+      # versionCode construit efectiv este 20 — o rulare cu inputurile lăsate
+      # neschimbate ar fi produs un AAB regresiv, respins de Play. Gol =
+      # se citește `release/version.json`, sursa de record a proiectului.
       version:
-        description: "Versiune SemVer (ex: 1.0.10). Gol = derivat automat din tag/timestamp."
+        description: "Versiune SemVer (ex: 1.0.12). Gol = din release/version.json (sau din tag)."
         required: false
-        default: "1.0.10"
+        default: ""
         type: string
       version_code:
-        description: "versionCode explicit (ex: 10 pentru build-ul auth-fix). Gol = derivat din SemVer."
+        description: "versionCode explicit (ex: 21). Gol = din release/version.json (sau derivat din tag)."
         required: false
-        default: "10"
+        default: ""
         type: string
 
 concurrency:
@@ -70,8 +74,15 @@ jobs:
             exit 1
           }
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
-            echo "::error::Release-ul manual trebuie pornit cu branch-ul main selectat; ref curent: $GITHUB_REF"
-            exit 1
+            # Dintr-un branch de lucru se poate produce DOAR artefactul AAB, pentru
+            # testare pe device înainte de merge. Publicarea în Play rămâne
+            # posibilă exclusiv din main sau prin tag (vezi și gardul de pe pasul
+            # „Publish în Google Play").
+            if [ "${{ inputs.skip_play_upload }}" != "true" ]; then
+              echo "::error::Din alt branch decât main se poate produce doar artefactul AAB. Setează skip_play_upload=true, sau pornește din main pentru publicare."
+              exit 1
+            fi
+            echo "::notice::Build de test din $GITHUB_REF — doar artefact, fără upload în Play."
           fi
           git show -s --format='Commit time: %cI%nSubject: %s' HEAD
 
@@ -86,8 +97,13 @@ jobs:
             RAW="${GITHUB_REF#refs/tags/v}"
             IFS='.' read -r MAJ MIN PAT <<< "$RAW"
             CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
+          elif [ -f release/version.json ]; then
+            # Sursa de record a proiectului. Până acum era ignorată de workflow,
+            # deci `bun run version:bump` nu avea niciun efect pe build.
+            CODE="$(node -e 'process.stdout.write(String(require("./release/version.json").versionCode))')"
+            echo "versionCode din release/version.json: $CODE"
           else
-            echo "::error::versionCode lipsește pentru buildul manual."
+            echo "::error::versionCode lipsește: nu e dat ca input, nu venim din tag și release/version.json nu există."
             exit 1
           fi
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
@@ -586,12 +602,18 @@ jobs:
             RAW="$MANUAL_VERSION"
           elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             RAW="${GITHUB_REF#refs/tags/v}"
+          elif [ -f release/version.json ]; then
+            RAW="$(node -e 'process.stdout.write(String(require("./release/version.json").versionName))')"
           else
             RAW="0.0.$(date +%s | tail -c 6)"
           fi
           IFS='.' read -r MAJ MIN PAT <<< "$RAW"
           if [[ -n "${MANUAL_CODE}" ]]; then
             CODE="${MANUAL_CODE}"
+          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
+          elif [ -f release/version.json ]; then
+            CODE="$(node -e 'process.stdout.write(String(require("./release/version.json").versionCode))')"
           else
             CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
           fi
@@ -876,8 +898,11 @@ jobs:
           done
           ls -la "$OUT"
 
+      # Gardul suplimentar `github.ref`: un dispatch dintr-un branch de lucru nu
+      # poate publica nici dacă cineva pune skip_play_upload=false. Tag-urile
+      # (refs/tags/v*) rămân neafectate, deci fluxul de release pe tag e intact.
       - name: Publish în Google Play
-        if: ${{ github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true' }}
+        if: ${{ (github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true') && (github.event_name == 'push' || github.ref == 'refs/heads/main') }}
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
