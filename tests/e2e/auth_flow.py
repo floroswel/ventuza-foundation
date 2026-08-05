@@ -225,21 +225,33 @@ async def test_signup_valid_flow(page: Page) -> None:
         return
     await btn.click()
 
-    # Așteptăm fie /auth/check-email, fie un toast (disposable email / captcha /
-    # rate limit); considerăm testul PASS dacă apare unul din răspunsurile
-    # așteptate — @example.com este blocat de assert_email_allowed pe unele
-    # deployment-uri, ceea ce este comportamentul corect.
-    try:
-        await page.wait_for_url(re.compile(r".*/auth/check-email.*"), timeout=8000)
+    # Trei rezultate sunt corecte, în funcție de configurația proiectului Supabase:
+    #   a) confirmarea pe email e obligatorie → redirect /auth/check-email;
+    #   b) confirmarea e dezactivată → sesiune creată imediat → aplicația rutează
+    #      spre onboarding (/n), pentru că profilul nu are încă birthdate;
+    #   c) cererea e respinsă server-side (email nepermis / captcha / rate limit)
+    #      → rămâne pe /auth și apare un toast.
+    # Verificăm prin polling, nu cu două așteptări în serie: un toast Sonner
+    # dispare în ~4s, deci aștepta 8s după URL rata fereastra lui (cursă de timing).
+    outcome = None
+    for _ in range(32):  # ~8s la 250ms
+        url = page.url
+        if "/auth/check-email" in url:
+            outcome = "redirect check-email"
+            break
+        if "/auth" not in url:
+            outcome = f"sesiune creată → {url.rsplit('/', 1)[-1] or '/'}"
+            break
+        toasts = await page.locator("[data-sonner-toast]").all_inner_texts()
+        if toasts:
+            outcome = f"răspuns server-side: {toasts[0][:80]}"
+            break
+        await page.wait_for_timeout(250)
+    if outcome:
         await page.screenshot(path=str(OUT / "s3_check_email.png"))
-        ok(name + " (redirect check-email)")
+        ok(f"{name} ({outcome})")
         return
-    except Exception:
-        msg = await wait_toast(page, re.compile(r".", re.S), timeout_ms=1500)
-        if msg:
-            ok(name + f" (respins server-side: {msg[:80]})")
-            return
-        bad(name, "nici redirect check-email, nici toast eroare")
+    bad(name, "nici redirect, nici sesiune, nici toast după submit")
 
 
 # ─── S4 · /auth/check-email ────────────────────────────────────────────────
@@ -267,7 +279,10 @@ async def test_forgot_password_empty(page: Page) -> None:
     await goto_auth(page, "login")
     # Lăsăm inputul gol și apăsăm "Am uitat parola"
     await page.locator("#email").fill("")
-    await page.get_by_role("button", name=re.compile(r"AM UITAT|FORGOT", re.I)).click()
+    # Textul RO este „Ai uitat parola?" (i18n `auth.forgot`), EN „Forgot password?".
+    # Regexul anterior cerea „AM UITAT", care nu se potrivea cu niciunul, deci
+    # locatorul expira mereu — fals negativ, nu un defect al aplicației.
+    await page.get_by_role("button", name=re.compile(r"uitat|forgot", re.I)).click()
     msg = await wait_toast(page, re.compile(r"email|introdu|enter", re.I))
     if not msg:
         bad(name, "nu a apărut toast pentru email lipsă")
