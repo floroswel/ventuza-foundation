@@ -151,11 +151,24 @@ if (isCI) {
   log(`::add-mask::${sessionJson}`);
 }
 
+// Fișierul este încărcat cu `set -a; . fișier`, deci fiecare valoare trece prin
+// parserul shell. JSON-ul nu poate fi transportat direct: bash face
+// quote-removal și `{"access_token":"..."}` devine `{access_token:...}`, adică
+// JSON invalid. auth-js îl respinge prin `_isValidSession` (GoTrueClient.js:3931),
+// șterge sesiunea, iar aplicația redirecționează la /auth?mode=login — exact
+// cauza pentru care toate suitele autentificate eșuau.
+// Escaparea cu apostrofuri e fragilă, așa că transportăm JSON-ul în base64:
+// alfabetul base64 nu conține niciun caracter special pentru shell. Pasul de
+// teste îl decodează într-o atribuire citată, deci valoarea nu mai atinge
+// parserul shell. `storageKey` și tokenul sunt deja shell-safe.
+const sessionB64 = Buffer.from(sessionJson, "utf8").toString("base64");
+if (isCI) log(`::add-mask::${sessionB64}`);
+
 writeFileSync(
   outFile,
   [
     "LOVABLE_BROWSER_AUTH_STATUS=injected",
-    `LOVABLE_BROWSER_SUPABASE_SESSION_JSON=${sessionJson}`,
+    `LOVABLE_BROWSER_SUPABASE_SESSION_JSON_B64=${sessionB64}`,
     `LOVABLE_BROWSER_SUPABASE_STORAGE_KEY=${storageKey}`,
     `LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN=${session.access_token}`,
     "",

@@ -138,6 +138,15 @@ jobs:
           set -a
           . "$RUNNER_TEMP/e2e-session.env"
           set +a
+          # JSON-ul sesiunii vine în base64 tocmai pentru că `. fișier` ar face
+          # quote-removal pe ghilimelele din JSON și l-ar invalida. Decodarea se
+          # face într-o atribuire citată, deci valoarea nu trece prin parserul
+          # shell. Vezi comentariul din scripts/e2e-login.mjs.
+          export LOVABLE_BROWSER_SUPABASE_SESSION_JSON="$(printf '%s' "$LOVABLE_BROWSER_SUPABASE_SESSION_JSON_B64" | base64 -d)"
+          if ! printf '%s' "$LOVABLE_BROWSER_SUPABASE_SESSION_JSON" | python -c 'import json,sys; json.load(sys.stdin)'; then
+            echo "::error::Sesiunea decodată nu este JSON valid — testele autentificate ar rula ca deconectate."
+            exit 1
+          fi
           fails=0
           failed_names=""
           for f in tests/e2e/*.py; do
