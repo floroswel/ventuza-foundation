@@ -344,13 +344,23 @@ function PublicProfilePage() {
           </section>
         )}
 
-        <Link
-          to="/auth"
-          search={{ mode: "signup" }}
-          className="block rounded-full bg-primary py-3 text-center text-sm font-medium text-primary-foreground"
-        >
-          Intră în Suzeta ca să te conectezi cu {profile.display_name}
-        </Link>
+        {user ? (
+          <button
+            type="button"
+            onClick={() => router.history.back()}
+            className="block w-full rounded-full border border-border bg-surface py-3 text-center text-sm font-medium text-foreground"
+          >
+            Înapoi
+          </button>
+        ) : (
+          <Link
+            to="/auth"
+            search={{ mode: "signup" }}
+            className="block rounded-full bg-primary py-3 text-center text-sm font-medium text-primary-foreground"
+          >
+            Intră în Suzeta ca să te conectezi cu {profile.display_name}
+          </Link>
+        )}
       </div>
     </main>
   );
