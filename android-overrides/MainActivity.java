@@ -8,6 +8,8 @@ import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.WindowManager;
+import android.webkit.CookieManager;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.JavascriptInterface;
 
@@ -113,6 +115,24 @@ public class MainActivity extends BridgeActivity {
       if (getBridge() != null && getBridge().getWebView() != null) {
         final WebView webView = getBridge().getWebView();
         webView.addJavascriptInterface(new SignatureBridge(), "SuzetaSignature");
+
+        // ---- WebView security hardening (2.2) ----
+        try {
+          WebSettings settings = webView.getSettings();
+          // Fără acces la fișiere locale (blochează atacurile file://).
+          settings.setAllowFileAccess(false);
+          settings.setAllowContentAccess(false);
+          settings.setAllowFileAccessFromFileURLs(false);
+          settings.setAllowUniversalAccessFromFileURLs(false);
+          // HTTPS-only: nicio resursă mixed content.
+          settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+          // Interfețe JS legacy inutile, expuse istoric de WebView.
+          webView.removeJavascriptInterface("searchBoxJavaBridge_");
+          webView.removeJavascriptInterface("accessibility");
+          webView.removeJavascriptInterface("accessibilityTraversal");
+          // Fără cookie-uri third-party în WebView.
+          CookieManager.getInstance().setAcceptThirdPartyCookies(webView, false);
+        } catch (Throwable ignored) { /* best effort */ }
         ViewCompat.setOnApplyWindowInsetsListener(webView, new OnApplyWindowInsetsListener() {
           @Override
           public WindowInsetsCompat onApplyWindowInsets(View view, WindowInsetsCompat insets) {

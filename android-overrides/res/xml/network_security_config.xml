@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Network security config Suzeta (2.3).
+
+  - Cleartext HTTP este INTERZIS global și explicit pe suzeta.app.
+  - Certificate pinning: NU folosim pin-uri hardcodate pe un certificat
+    gestionat automat (Lovable/Cloudflare rotesc certificatul, iar un pin
+    greșit sau expirat face aplicația complet inutilizabilă în producție,
+    fără posibilitate de hotfix OTA). Când vom avea control pe CA/rotația
+    certificatului, adăugăm <pin-set> aici cu pin-ul curent + pin de backup.
+  - debug-overrides permite CA-uri user doar în build-urile debug (proxy local).
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </base-config>
+
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">suzeta.app</domain>
+        <trust-anchors>
+            <certificates src="system"/>
+        </trust-anchors>
+    </domain-config>
+
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system"/>
+            <certificates src="user"/>
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>
