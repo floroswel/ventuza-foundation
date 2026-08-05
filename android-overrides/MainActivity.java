@@ -20,6 +20,7 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.getcapacitor.BridgeActivity;
+import com.scottyab.rootbeer.RootBeer;
 
 import java.security.MessageDigest;
 import java.lang.reflect.Method;
