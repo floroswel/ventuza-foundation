@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import confetti from "canvas-confetti";
-import { motion, AnimatePresence } from "framer-motion";
+import { m as motion, AnimatePresence } from "framer-motion";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EnablePushButton } from "@/components/EnablePushButton";
