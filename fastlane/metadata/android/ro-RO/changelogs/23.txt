@@ -1,0 +1,5 @@
+• Tastatura nu mai acoperă căsuța de scris, iar textul tastat și butonul Trimite rămân vizibile.
+• Notificările au din nou sunet și pot apărea ca alertă, respectând modul telefonului: sonerie, vibrație, silent sau Nu deranja.
+• Apăsarea pe o notificare deschide conversația sau profilul corect, chiar dacă aplicația era închisă.
+• Like nu te mai scoate din profil, iar Pass trece la profilul următor.
+• Notificarea de Like arată cine ți-a dat Like și duce la profilul lui.

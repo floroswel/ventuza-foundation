@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.13",
-  "versionCode": 22,
+  "versionName": "1.0.14",
+  "versionCode": 23,
   "track": "internal",
-  "notes": "Build 22: tastatura Android nu mai acopera casuta de scris din conversatie - composer-ul urca deasupra tastaturii, textul tastat si butonul Trimite ramane vizibile, iar ultimul mesaj se vede deasupra composer-ului. Prima apasare pe Back inchide tastatura fara sa iasa din conversatie. Panoul de diagnostic al autentificarii a fost scos din interfata."
+  "notes": "Build 23: tastatura nu mai acopera casuta de scris din chat (compensare exclusiv nativa, fara dubla ridicare). Notificarile Android au din nou sunet: canalele erau create cu un sunet inexistent si erau mute; canale noi messages_v2/matches_v2. Tap pe notificare deschide destinatia corecta si dupa repornirea aplicatiei. Like nu mai inchide profilul, Pass trece la profilul urmator, iar notificarea de Like arata cine a dat Like si duce la profilul lui. targetSdk 36."
 }
