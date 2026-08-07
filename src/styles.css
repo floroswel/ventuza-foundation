@@ -117,11 +117,19 @@ html {
        fereastra nu se mai redimensionează pentru tastatură, deci acesta este
        singurul semnal fiabil pe API 30+. */
     --android-keyboard-height: 0px;
-    /* O SINGURĂ sursă efectivă pentru compensare. `max`, nu sumă: ambele surse
-       raportează aceeași înălțime, iar dacă una tace, cealaltă acoperă cazul.
-       Toate utilitarele de composer folosesc exclusiv această variabilă — două
-       compensări suprapuse ar ridica input-ul de două ori. */
-    --keyboard-inset: max(var(--keyboard-height, 0px), var(--android-keyboard-height, 0px));
+    /* Derivat din `visualViewport` (installViewportKeyboardTracking). Sursa web
+       standard, independentă de Capacitor și de insets — acoperă cazul în care
+       nici pluginul, nici insetul IME nu raportează nimic. */
+    --visual-keyboard-height: 0px;
+    /* O SINGURĂ sursă efectivă pentru compensare. `max`, nu sumă: toate cele trei
+       descriu aceeași tastatură, iar dacă una tace, celelalte acoperă cazul.
+       Utilitarele de composer folosesc exclusiv această variabilă — compensări
+       suprapuse ar ridica input-ul de mai multe ori. */
+    --keyboard-inset: max(
+      var(--keyboard-height, 0px),
+      var(--android-keyboard-height, 0px),
+      var(--visual-keyboard-height, 0px)
+    );
     /* Insets efective: env() dacă WebView-ul le raportează, altfel valorile
        injectate nativ din WindowInsets (MainActivity). */
     --safe-top: max(env(safe-area-inset-top), var(--android-inset-top, 0px));

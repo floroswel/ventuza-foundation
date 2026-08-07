@@ -51,3 +51,56 @@ export function isNearBottom(m: ScrollMetrics, threshold = 200): boolean {
 export function bottomScrollTop(m: Pick<ScrollMetrics, "scrollHeight" | "clientHeight">): number {
   return Math.max(0, m.scrollHeight - m.clientHeight);
 }
+
+/**
+ * A treia sursă, independentă de Capacitor și de insets: `visualViewport`.
+ * Când tastatura urcă, viewportul vizual se micșorează față de cel de layout.
+ * Funcționează și pe web, și în WebView, deci acoperă cazul în care nici pluginul
+ * nici insetul IME nu raportează nimic.
+ */
+export function keyboardHeightFromViewport(m: {
+  innerHeight: number;
+  viewportHeight: number;
+  offsetTop?: number;
+}): number {
+  const offsetTop = m.offsetTop ?? 0;
+  if (!Number.isFinite(m.innerHeight) || !Number.isFinite(m.viewportHeight)) return 0;
+  if (!Number.isFinite(offsetTop)) return 0;
+  const height = m.innerHeight - m.viewportHeight - offsetTop;
+  // Sub prag e zgomot: bare de browser care apar/dispar, rotunjiri de densitate.
+  return height > KEYBOARD_OPEN_THRESHOLD_PX ? Math.round(height) : 0;
+}
+
+/**
+ * Urmărește `visualViewport` și publică rezultatul în `--visual-keyboard-height`,
+ * plus evenimentul pe care chatul îl folosește pentru reancorare. Întoarce
+ * funcția de dezabonare.
+ */
+export function installViewportKeyboardTracking(): () => void {
+  if (typeof window === "undefined") return () => {};
+  const viewport = window.visualViewport;
+  if (!viewport) return () => {};
+  let last = -1;
+  const apply = () => {
+    const px = keyboardHeightFromViewport({
+      innerHeight: window.innerHeight,
+      viewportHeight: viewport.height,
+      offsetTop: viewport.offsetTop,
+    });
+    if (px === last) return; // `scroll` se declanșează des; nu emitem redundant
+    last = px;
+    document.documentElement.style.setProperty("--visual-keyboard-height", `${px}px`);
+    try {
+      window.dispatchEvent(new CustomEvent("suzeta:keyboard", { detail: { height: px } }));
+    } catch {
+      /* compensarea CSS rămâne activă și fără eveniment */
+    }
+  };
+  apply();
+  viewport.addEventListener("resize", apply);
+  viewport.addEventListener("scroll", apply);
+  return () => {
+    viewport.removeEventListener("resize", apply);
+    viewport.removeEventListener("scroll", apply);
+  };
+}

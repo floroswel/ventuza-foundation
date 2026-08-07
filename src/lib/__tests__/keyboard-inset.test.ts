@@ -15,6 +15,7 @@ import {
   distanceFromBottom,
   isNearBottom,
   bottomScrollTop,
+  keyboardHeightFromViewport,
   KEYBOARD_OPEN_THRESHOLD_PX,
 } from "@/lib/keyboard-inset";
 
@@ -100,5 +101,46 @@ describe("ancorarea listei de mesaje", () => {
     expect(isKeyboardOpen(closed)).toBe(false);
     // Fără spațiu rezervat, lista își recapătă toată înălțimea.
     expect(bottomScrollTop({ scrollHeight: 1000, clientHeight: 400 })).toBe(600);
+  });
+});
+
+describe("keyboardHeightFromViewport — sursa visualViewport", () => {
+  it("deduce tastatura din micșorarea viewportului vizual", () => {
+    expect(keyboardHeightFromViewport({ innerHeight: 800, viewportHeight: 480 })).toBe(320);
+  });
+
+  it("scade offsetTop, altfel derularea viewportului ar părea tastatură", () => {
+    expect(keyboardHeightFromViewport({ innerHeight: 800, viewportHeight: 480, offsetTop: 40 })).toBe(280);
+  });
+
+  it("întoarce 0 când tastatura e închisă", () => {
+    expect(keyboardHeightFromViewport({ innerHeight: 800, viewportHeight: 800 })).toBe(0);
+  });
+
+  it("ignoră diferențele mici (bare de browser, rotunjiri)", () => {
+    expect(keyboardHeightFromViewport({ innerHeight: 800, viewportHeight: 800 - KEYBOARD_OPEN_THRESHOLD_PX })).toBe(0);
+    expect(keyboardHeightFromViewport({ innerHeight: 800, viewportHeight: 800 - KEYBOARD_OPEN_THRESHOLD_PX - 1 })).toBe(
+      KEYBOARD_OPEN_THRESHOLD_PX + 1,
+    );
+  });
+
+  it("nu întoarce negativ dacă viewportul vizual e mai mare", () => {
+    expect(keyboardHeightFromViewport({ innerHeight: 480, viewportHeight: 800 })).toBe(0);
+  });
+
+  it("tolerează valori invalide", () => {
+    expect(keyboardHeightFromViewport({ innerHeight: Number.NaN, viewportHeight: 480 })).toBe(0);
+    expect(keyboardHeightFromViewport({ innerHeight: 800, viewportHeight: Number.NaN })).toBe(0);
+    expect(keyboardHeightFromViewport({ innerHeight: 800, viewportHeight: 480, offsetTop: Number.NaN })).toBe(0);
+  });
+
+  it("rotunjește fracțiunile de densitate", () => {
+    expect(keyboardHeightFromViewport({ innerHeight: 800, viewportHeight: 479.6 })).toBe(320);
+  });
+
+  it("se combină cu celelalte surse fără să le însumeze", () => {
+    const viewport = keyboardHeightFromViewport({ innerHeight: 800, viewportHeight: 480 });
+    expect(effectiveKeyboardHeight(0, 0, viewport)).toBe(320);
+    expect(effectiveKeyboardHeight(320, 320, viewport)).toBe(320);
   });
 });
