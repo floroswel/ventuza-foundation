@@ -812,14 +812,13 @@ jobs:
           fi
           echo "✓ targetSdk=$TSDK"
           # 2) AD_ID trebuie să LIPSEASCĂ
-          if grep -q 'com.google.android.gms.permission.AD_ID' "$MERGED" | grep -qv 'tools:node="remove"'; then
-            if grep 'com.google.android.gms.permission.AD_ID' "$MERGED" | grep -qv 'tools:node'; then
-              echo "::error::AD_ID prezent în merged manifest. Data Safety declară 'No advertising' — permisiunea trebuie eliminată."
-              grep 'AD_ID' "$MERGED"
-              exit 1
-            fi
+          if grep 'com.google.android.gms.permission.AD_ID' "$MERGED" | grep -qv 'tools:node'; then
+            echo "::error::AD_ID prezent în merged manifest. Data Safety declară 'No advertising' — permisiunea trebuie eliminată."
+            grep 'AD_ID' "$MERGED"
+            exit 1
           fi
           echo "✓ AD_ID absent din merged manifest"
+
           # 3) ACCESS_BACKGROUND_LOCATION trebuie să LIPSEASCĂ (geofencing dormant)
           if grep 'android.permission.ACCESS_BACKGROUND_LOCATION' "$MERGED" | grep -qv 'tools:node'; then
             echo "::error::ACCESS_BACKGROUND_LOCATION prezent. Geofencing background nu e activ — permisiunea trebuie eliminată."
