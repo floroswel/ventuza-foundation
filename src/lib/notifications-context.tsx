@@ -8,6 +8,8 @@ import {
   useState,
 } from "react";
 import { useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
+import { saveFcmSubscription } from "@/lib/push.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -93,7 +95,38 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     });
   }, [navigate]);
 
-
+  /**
+   * Reluăm push-ul nativ la fiecare pornire, pentru utilizatorii care l-au
+   * activat deja. NU cere permisiunea — dacă nu e acordată, iese tăcut.
+   *
+   * Fără asta, ascultătorii trăiau doar în sesiunea în care s-a apăsat butonul
+   * „Activează”: la un cold start, un tap pe notificare deschidea aplicația pe
+   * ecranul principal în loc de conversație, iar un token rotit de FCM nu mai
+   * ajungea niciodată în `push_subscriptions`.
+   */
+  const saveFcm = useServerFn(saveFcmSubscription);
+  useEffect(() => {
+    if (!user) return;
+    void (async () => {
+      try {
+        const { resumeNativePush } = await import("@/lib/native-push");
+        await resumeNativePush({
+          saveToken: async (token) => {
+            await saveFcm({
+              data: {
+                token,
+                platform: "android",
+                userAgent:
+                  typeof navigator === "undefined" ? "" : navigator.userAgent.slice(0, 500),
+              },
+            });
+          },
+        });
+      } catch (e) {
+        console.warn("[notifications] resumeNativePush failed", e);
+      }
+    })();
+  }, [user, saveFcm]);
 
   // Realtime subscription
   useEffect(() => {

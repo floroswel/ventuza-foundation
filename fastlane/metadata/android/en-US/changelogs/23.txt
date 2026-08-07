@@ -1,0 +1,5 @@
+• The keyboard no longer covers the message box, and what you type and the Send button stay visible.
+• Notifications have sound again and can pop up, following your phone's mode: ring, vibrate, silent or Do Not Disturb.
+• Tapping a notification opens the right conversation or profile, even if the app was closed.
+• Like no longer closes the profile, and Pass moves straight to the next one.
+• The Like notification now shows who liked you and opens their profile.

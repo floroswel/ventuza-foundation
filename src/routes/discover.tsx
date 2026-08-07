@@ -27,6 +27,12 @@ import {
   Star,
   X,
 } from "lucide-react";
+import {
+  nextEligibleId,
+  sheetOutcomeFor,
+  shouldSendDecision,
+  type DecisionAction,
+} from "@/lib/discover-decision";
 import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
 import { SmartImage } from "@/components/SmartImage";
 import { useServerFn } from "@tanstack/react-start";
@@ -129,15 +135,34 @@ function DiscoverPage() {
       if (!user) return null;
       const { data } = await supabase
         .from("profiles")
-        .select("incognito")
+        // `profile_slug` + `display_name`: push-ul de Like trebuie să ducă la
+        // profilul CELUI care a dat Like, exact ca notificarea din clopoțel.
+        .select("incognito, profile_slug, display_name")
         .eq("id", user.id)
         .maybeSingle();
-      return (data ?? null) as { incognito: boolean | null } | null;
+      return (data ?? null) as {
+        incognito: boolean | null;
+        profile_slug: string | null;
+        display_name: string | null;
+      } | null;
     },
     enabled: !!user,
     staleTime: 60_000,
   });
   const incognito = !!myProfileQuery.data?.incognito;
+  const mySlug = myProfileQuery.data?.profile_slug ?? null;
+  const myName = myProfileQuery.data?.display_name ?? null;
+
+  /**
+   * Deciziile luate în sesiunea curentă. Like-ul rămâne pe profil, deci
+   * butonul trebuie să arate că a fost trimis, iar un al doilea tap nu mai
+   * trimite nimic. Pass-ul filtrează profilul din listă ca să nu reapară.
+   */
+  const [decisions, setDecisions] = useState<Record<string, DecisionAction>>({});
+  const passedIds = useMemo(
+    () => new Set(Object.keys(decisions).filter((id) => decisions[id] === "pass")),
+    [decisions],
+  );
 
   // Mirror profiluri afișate în cache pentru offline restore.
   useEffect(() => {
@@ -443,16 +468,19 @@ function DiscoverPage() {
   }, [user]);
 
   const visible = useMemo(() => {
+    // Pass scoate profilul din listă pentru sesiunea curentă: „nu relua imediat
+    // profilurile cărora li s-a dat Pass”. Like-ul NU scoate nimic.
+    const pool = profiles.filter((p) => !passedIds.has(p.id));
     if (tab === "fresh") {
-      return [...profiles].sort(
+      return [...pool].sort(
         (a, b) => new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime(),
       );
     }
     // Nearby (Grindr-style): online first, apoi distanță ascendentă.
-    // Profilele NU dispar după interacțiune — se reordonează doar când
-    // se schimbă distanța sau status-ul online (see load() + interval 30s).
+    // Profilele NU dispar după Like — se reordonează doar când se schimbă
+    // distanța sau status-ul online (see load() + interval 30s).
     const DIST_UNKNOWN = Number.POSITIVE_INFINITY;
-    return [...profiles].sort((a, b) => {
+    return [...pool].sort((a, b) => {
       const aOn = isOnline(a.last_seen) ? 0 : 1;
       const bOn = isOnline(b.last_seen) ? 0 : 1;
       if (aOn !== bOn) return aOn - bOn;
@@ -462,18 +490,41 @@ function DiscoverPage() {
       // Tie-break: cel mai recent văzut sus, ca să nu bâlbâie ordinea.
       return new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime();
     });
-  }, [profiles, tab]);
+  }, [profiles, tab, passedIds]);
 
   const handleDecision = useCallback(
     async (target: DiscoverProfile, action: "like" | "pass" | "super") => {
       if (!user) return;
-      // Închide profilul deschis. Poziția din grilă este memorată la deschidere
-      // și restaurată de efectul de mai jos, deci utilizatorul revine exact
-      // unde era, fără reîncărcarea listei.
-      setSelected(null);
 
-      // O relație swiper/target este unică în DB. Repetarea unei decizii în
-      // grid trebuie să actualizeze alegerea, nu să producă HTTP 409.
+      // Al doilea tap pe Like nu mai trimite nimic: nici rând în `swipes`,
+      // nici o a doua notificare la destinatar.
+      if (!shouldSendDecision(action, decisions[target.id])) return;
+
+      // Următorul profil se calculează ÎNAINTE ca cel curent să fie scos din
+      // listă de `passedIds`, altfel indexul s-ar deplasa sub noi.
+      const outcome = sheetOutcomeFor(
+        action,
+        nextEligibleId(
+          visible.map((p) => p.id),
+          target.id,
+          passedIds,
+        ),
+      );
+
+      setDecisions((d) => ({ ...d, [target.id]: action }));
+
+      // Fiecare gest cu propriul efect asupra sheet-ului deschis:
+      //   Like → rămâne pe profil;  Pass → următorul profil;  fără următor → Grid.
+      // Back/X folosesc `onClose`, care a rămas singurul drum înapoi în Grid.
+      if (selected?.id === target.id && outcome.kind !== "stay") {
+        setSelected(
+          outcome.kind === "advance"
+            ? (visible.find((p) => p.id === outcome.next) ?? null)
+            : null,
+        );
+      }
+
+      // O relație swiper/target este unică în DB.
       const { error } = await supabase.from("swipes").upsert(
         {
           swiper_id: user.id,
@@ -484,6 +535,13 @@ function DiscoverPage() {
       );
       if (error) {
         toast.error(error.message);
+        // Decizia nu a ajuns în DB — nu o ținem marcată local, altfel butonul
+        // ar arăta „trimis” pentru un Like inexistent.
+        setDecisions((d) => {
+          const next = { ...d };
+          delete next[target.id];
+          return next;
+        });
         return;
       }
 
@@ -531,17 +589,20 @@ function DiscoverPage() {
             }
           })();
         } else {
-          // Like unilateral: push anonim către target (nu dezvăluim identitatea).
-          // Notificarea in-app (toast + badge) e creată de trigger-ul DB `notify_new_like`.
+          // Like unilateral. Push-ul și notificarea din clopoțel (creată de
+          // trigger-ul DB `tg_notify_new_like`) trebuie să spună ACELAȘI lucru
+          // și să ducă la ACELAȘI loc — profilul celui care a dat Like.
+          // `tag` este identic pentru aceeași pereche, deci un Like repetat
+          // înlocuiește notificarea, nu adaugă una nouă.
           void (async () => {
             try {
               const { sendPushToUser } = await import("@/lib/push.functions");
               await sendPushToUser({
                 data: {
                   toUserId: target.id,
-                  title: "Cuiva îi place de tine 👀",
-                  body: "Deschide Suzeta să vezi cine.",
-                  url: "/discover",
+                  title: `${myName ?? "Cineva"} ți-a dat Like ❤️`,
+                  body: "Vezi profilul.",
+                  url: mySlug ? `/u/${mySlug}` : "/discover",
                   tag: `like:${user.id}:${target.id}`,
                   category: "likes",
                 },
@@ -553,7 +614,7 @@ function DiscoverPage() {
         }
       }
     },
-    [user, view],
+    [user, view, decisions, visible, passedIds, selected, mySlug, myName],
   );
 
   // Grid: păstrează poziția de derulare la închiderea profilului.
@@ -874,6 +935,7 @@ function DiscoverPage() {
         profile={selected}
         allProfiles={visible}
         currentUserId={user?.id ?? null}
+        decision={selected ? decisions[selected.id] : undefined}
         onClose={() => setSelected(null)}
         onNavigate={(p) => setSelected(p)}
         onDecision={handleDecision}
@@ -1295,6 +1357,7 @@ function ProfileSheet({
   profile,
   allProfiles,
   currentUserId,
+  decision,
   onClose,
   onNavigate,
   onDecision,
@@ -1303,6 +1366,8 @@ function ProfileSheet({
   profile: DiscoverProfile | null;
   allProfiles: DiscoverProfile[];
   currentUserId: string | null;
+  /** Decizia deja luată pentru profilul afișat, dacă există. */
+  decision?: DecisionAction;
   onClose: () => void;
   onNavigate: (p: DiscoverProfile) => void;
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
@@ -1310,6 +1375,7 @@ function ProfileSheet({
 }) {
   const [urls, setUrls] = useState<Record<string, string>>({});
   const sheetLabel = useOptionLabel();
+  const liked = decision === "like" || decision === "super";
 
   useEffect(() => {
     if (!profile?.photos?.length) {
@@ -1534,11 +1600,22 @@ function ProfileSheet({
             >
               <MessageCircle className="size-4" /> Message
             </button>
+            {/* Like rămâne pe profil, deci butonul este singurul semnal că a
+                fost trimis. Un al doilea tap nu mai produce nimic. */}
             <button
               onClick={() => onDecision(profile, "like")}
-              className="flex h-12 flex-[1.4] items-center justify-center gap-2 rounded-full bg-primary text-sm font-medium text-primary-foreground glow-gold"
+              disabled={liked}
+              aria-pressed={liked}
+              data-liked={liked ? "true" : undefined}
+              className={cn(
+                "flex h-12 flex-[1.4] items-center justify-center gap-2 rounded-full text-sm font-medium",
+                liked
+                  ? "border border-primary/40 bg-primary/10 text-primary"
+                  : "bg-primary text-primary-foreground glow-gold",
+              )}
             >
-              <Heart className="size-4" /> Like
+              <Heart className={cn("size-4", liked && "fill-current")} />{" "}
+              {liked ? "Like trimis" : "Like"}
             </button>
           </div>
           {(prev || next) && (

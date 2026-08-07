@@ -51,16 +51,25 @@ const config: CapacitorConfig = {
     },
     Keyboard: {
       // `resize` este documentat ca "Only available on iOS" în @capacitor/keyboard 8.
-      // Pe iOS `none` înseamnă că nu se rescrie înălțimea documentului; spațiul
-      // pentru tastatură îl rezervăm noi, prin `--keyboard-inset` în CSS.
+      // Pe iOS `none` înseamnă că nu se rescrie înălțimea documentului.
       resize: "none",
-      // Pe Android acest flag făcea `possiblyResizeChildOfContent()` să scrie
-      // direct `frameLayoutParams.height` (Keyboard.java:151-161), adică micșora
-      // nativ WebView-ul. Peste asta, `pb-bar` adăuga ÎNCĂ O DATĂ înălțimea
-      // tastaturii — două compensări suprapuse pe același spațiu, iar composer-ul
-      // ieșea din containerul cu `overflow-hidden`. Îl oprim: singura compensare
-      // rămâne cea din CSS, alimentată de insetul IME citit în MainActivity.
-      resizeOnFullScreen: false,
+      // Pe Android acesta este SINGURUL mecanism de compensare, dovedit pe telefon:
+      //
+      //   build 21: resizeOnFullScreen ON  + compensare CSS → composer urcat de
+      //             DOUĂ ori (ieșea din containerul cu overflow-hidden);
+      //   build 22: resizeOnFullScreen OFF + compensare CSS → composer nu urcă
+      //             deloc, deci insetul IME nu ajunge niciodată în CSS.
+      //
+      // Concluzia A/B: redimensionarea nativă funcționează, compensarea CSS nu.
+      // `possiblyResizeChildOfContent()` scrie `frameLayoutParams.height` pe
+      // copilul lui android.R.id.content (Keyboard.java:151-168), adică pe
+      // CoordinatorLayout-ul nostru → WebView-ul se micșorează → `100dvh`,
+      // `innerHeight` și `visualViewport` scad TOATE corect, iar layout-ul flex
+      // existent ridică composer-ul fără niciun px de padding adăugat din CSS.
+      //
+      // Obligatoriu: `--keyboard-inset` este 0 pe native (vezi styles.css),
+      // altfel se revine exact la dubla compensare din build 21.
+      resizeOnFullScreen: true,
     },
     PrivacyScreen: {
       enable: true,

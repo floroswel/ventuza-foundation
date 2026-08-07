@@ -130,6 +130,24 @@ html {
       var(--android-keyboard-height, 0px),
       var(--visual-keyboard-height, 0px)
     );
+  }
+
+  /* Native Android: @capacitor/keyboard redimensionează efectiv WebView-ul
+     (`resizeOnFullScreen: true`), deci `100dvh` scade deja cu înălțimea
+     tastaturii. Orice padding adăugat din CSS ar fi A DOUA compensare pe
+     același spațiu — exact regresia din build 21, unde composer-ul ieșea din
+     containerul cu `overflow-hidden`. Variabilele de mai sus rămân populate
+     pentru COMPORTAMENT (Back închide tastatura, chatul reancorează ultimul
+     mesaj), nu pentru geometrie. */
+  html.native-app {
+    --keyboard-inset: 0px;
+  }
+
+  /* Cu tastatura deschisă, bara de navigație este acoperită de tastatură, deci
+     nu mai trebuie rezervat spațiu pentru ea: altfel composer-ul plutește cu
+     încă o înălțime de navbar deasupra tastaturii. */
+  html[data-keyboard-open="true"] {
+    --safe-bottom: 0px;
     /* Insets efective: env() dacă WebView-ul le raportează, altfel valorile
        injectate nativ din WindowInsets (MainActivity). */
     --safe-top: max(env(safe-area-inset-top), var(--android-inset-top, 0px));

@@ -20,6 +20,7 @@
  */
 import { toast } from "sonner";
 import { playNotificationSound } from "@/lib/notification-sound";
+import { CHANNELS, RETIRED_CHANNEL_IDS } from "@/lib/notification-channels";
 
 type NavigateFn = (path: string) => void;
 
@@ -99,64 +100,52 @@ function goTo(url: string | undefined | null) {
   _pendingUrl = target;
 }
 
+type Plugin = typeof import("@capacitor/push-notifications").PushNotifications;
+
 /**
- * Idempotent init: request permission, register with FCM, create channels,
- * wire listeners. Safe to call multiple times.
+ * Canalele trebuie să existe ÎNAINTE ca prima notificare să sosească: un
+ * payload care trimite spre un `channel_id` inexistent este afișat de FCM pe
+ * canalul de rezervă „Miscellaneous”, cu importanță DEFAULT — fără heads-up.
+ *
+ * Vezi notification-channels.ts pentru motivul `_v2`.
  */
-export async function initNativePush(opts: {
-  saveToken: (token: string) => Promise<void>;
-}): Promise<{ ok: boolean; reason?: string }> {
-  if (_initialized) return { ok: true };
-  if (!(await isNative())) return { ok: false, reason: "web" };
-
-  let PushNotifications: typeof import("@capacitor/push-notifications").PushNotifications;
-  try {
-    ({ PushNotifications } = await import("@capacitor/push-notifications"));
-  } catch {
-    return { ok: false, reason: "plugin_missing" };
+async function ensureChannels(PushNotifications: Plugin): Promise<void> {
+  for (const id of RETIRED_CHANNEL_IDS) {
+    // Canalele vechi aveau sunetul rupt. Nu pot fi reparate — doar retrase,
+    // altfel rămân vizibile în setările Android fără să facă nimic.
+    try {
+      await PushNotifications.deleteChannel({ id });
+    } catch {
+      /* nu exista pe acest device */
+    }
   }
-
-  // Ask permission (Android 13+ shows the native dialog).
-  let perm = await PushNotifications.checkPermissions();
-  if (perm.receive === "prompt" || perm.receive === "prompt-with-rationale") {
-    perm = await PushNotifications.requestPermissions();
+  for (const c of CHANNELS) {
+    try {
+      // `sound` este OMIS intenționat: canalul primește sunetul implicit al
+      // sistemului. Orice string aici devine un URI către res/raw/<string> și
+      // face canalul mut.
+      await PushNotifications.createChannel(c);
+    } catch (e) {
+      console.warn("[native-push] createChannel failed", c.id, e);
+    }
   }
-  if (perm.receive !== "granted") return { ok: false, reason: "denied" };
+}
 
-  // Channels — mapped from the `type` field in the notification payload.
-  try {
-    await PushNotifications.createChannel({
-      id: "messages",
-      name: "Mesaje",
-      description: "Mesaje directe și conversații",
-      importance: 5,
-      visibility: 1,
-      sound: "default",
-      vibration: true,
-      lights: true,
-    });
-    await PushNotifications.createChannel({
-      id: "matches",
-      name: "Match-uri",
-      description: "Match-uri noi și taps",
-      importance: 5,
-      visibility: 1,
-      sound: "default",
-      vibration: true,
-      lights: true,
-    });
-    await PushNotifications.createChannel({
-      id: "system",
-      name: "Sistem",
-      description: "Anunțuri și alerte",
-      importance: 3,
-      visibility: 1,
-      vibration: false,
-    });
-  } catch {
-    /* channels are best-effort; older devices may not support the API */
-  }
-
+/**
+ * Ascultătorii + register. Separate de cererea de permisiune, ca să poată fi
+ * refăcute la FIECARE pornire a aplicației.
+ *
+ * De ce contează: `_initialized` trăiește în modul, deci moare odată cu
+ * procesul. Cât timp acest cod rula doar din butonul „Activează”, la un cold
+ * start nu exista niciun ascultător `pushNotificationActionPerformed` — un tap
+ * pe notificare deschidea aplicația pe ecranul principal în loc de conversație
+ * — și nici `register()`, deci un token rotit de FCM nu mai ajungea niciodată
+ * în `push_subscriptions` și notificările se opreau în tăcere.
+ */
+async function wireListeners(
+  PushNotifications: Plugin,
+  opts: { saveToken: (token: string) => Promise<void> },
+): Promise<void> {
   // Listener: token registration + rotation.
   await PushNotifications.addListener("registration", async (token) => {
     persistFcmToken(token.value);
@@ -199,8 +188,83 @@ export async function initNativePush(opts: {
   });
 
   await PushNotifications.register();
+}
+
+/**
+ * Activare explicită, din butonul de setări: cere permisiunea dacă e cazul.
+ * Singurul loc care are voie să deschidă dialogul Android 13+.
+ */
+export async function initNativePush(opts: {
+  saveToken: (token: string) => Promise<void>;
+}): Promise<{ ok: boolean; reason?: string }> {
+  if (_initialized) return { ok: true };
+  if (!(await isNative())) return { ok: false, reason: "web" };
+
+  let PushNotifications: Plugin;
+  try {
+    ({ PushNotifications } = await import("@capacitor/push-notifications"));
+  } catch {
+    return { ok: false, reason: "plugin_missing" };
+  }
+
+  let perm = await PushNotifications.checkPermissions();
+  if (perm.receive === "prompt" || perm.receive === "prompt-with-rationale") {
+    perm = await PushNotifications.requestPermissions();
+  }
+  // Refuzul NU este o eroare: aplicația funcționează normal mai departe, doar
+  // fără push. Apelantul oferă drumul către setările Android.
+  if (perm.receive !== "granted") return { ok: false, reason: "denied" };
+
+  await ensureChannels(PushNotifications);
+  await wireListeners(PushNotifications, opts);
   _initialized = true;
   return { ok: true };
+}
+
+/**
+ * Reluare la pornirea aplicației, pentru utilizatorii care au activat deja
+ * notificările. NU cere niciodată permisiunea — dacă nu e acordată, iese tăcut.
+ *
+ * Fără asta, la fiecare cold start lipseau ascultătorii (deci deep link-ul din
+ * notificare) și `register()` (deci reîmprospătarea token-ului).
+ */
+export async function resumeNativePush(opts: {
+  saveToken: (token: string) => Promise<void>;
+}): Promise<{ ok: boolean; reason?: string }> {
+  if (_initialized) return { ok: true };
+  if (!(await isNative())) return { ok: false, reason: "web" };
+
+  let PushNotifications: Plugin;
+  try {
+    ({ PushNotifications } = await import("@capacitor/push-notifications"));
+  } catch {
+    return { ok: false, reason: "plugin_missing" };
+  }
+
+  const perm = await PushNotifications.checkPermissions();
+  if (perm.receive !== "granted") return { ok: false, reason: "not_granted" };
+
+  await ensureChannels(PushNotifications);
+  await wireListeners(PushNotifications, opts);
+  _initialized = true;
+  return { ok: true };
+}
+
+/**
+ * Deschide ecranul de notificări al aplicației din setările Android. Necesar
+ * când permisiunea a fost refuzată: Android nu mai arată dialogul a doua oară,
+ * deci singurul drum înapoi trece prin setări.
+ */
+export async function openNotificationSettings(): Promise<boolean> {
+  if (!(await isNative())) return false;
+  try {
+    const { NativeSettings, AndroidSettings } = await import("capacitor-native-settings");
+    await NativeSettings.openAndroid({ option: AndroidSettings.AppNotification });
+    return true;
+  } catch (e) {
+    console.warn("[native-push] openNotificationSettings failed", e);
+    return false;
+  }
 }
 
 /**

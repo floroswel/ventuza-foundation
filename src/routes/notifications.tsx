@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Bell,
@@ -19,7 +19,12 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { useNotifications } from "@/lib/notifications-context";
 import { BottomNav } from "@/components/BottomNav";
+import { supabase } from "@/integrations/supabase/client";
+import { signPhotos } from "@/lib/discover";
 import type { NotificationType } from "@/lib/notifications";
+
+/** Avatarul celui care a declanșat notificarea (Like, tap, vizită…). */
+type Actor = { display_name: string | null; photo: string | null; profile_slug: string | null };
 
 export const Route = createFileRoute("/notifications")({
   head: () => ({ meta: [{ title: "Notifications — Suzeta" }] }),
@@ -58,6 +63,51 @@ function NotificationsPage() {
   const navigate = useNavigate();
   const { notifications, loading, markAllRead, markRead, remove } = useNotifications();
 
+  // Avatarele actorilor. RLS pe `profiles` nu permite citirea altor profiluri,
+  // deci trecem prin RPC-ul `get_notification_actors`, care aplică aceleași
+  // garduri ca /u/:slug (șters, banat, suspendat, block bilateral). Un actor
+  // blocat pur și simplu lipsește din răspuns → rândul rămâne cu iconița.
+  const actorIds = useMemo(
+    () => [...new Set(notifications.map((n) => n.actor_id).filter((v): v is string => !!v))].sort(),
+    [notifications],
+  );
+  const [actors, setActors] = useState<Record<string, Actor>>({});
+
+  useEffect(() => {
+    if (actorIds.length === 0) {
+      setActors({});
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      // `as never`: RPC adăugat de migrarea 20260807210000, încă absent din
+      // tipurile generate din DB (vezi și src/lib/chat.ts).
+      const { data, error } = await supabase.rpc("get_notification_actors" as never, {
+        _ids: actorIds,
+      } as never);
+      if (error || !data || cancelled) return;
+      const rows = data as unknown as Array<{ id: string } & Actor>;
+      const paths = rows.map((r) => r.photo).filter((p): p is string => !!p);
+      const signed = paths.length ? await signPhotos(paths) : {};
+      if (cancelled) return;
+      setActors(
+        Object.fromEntries(
+          rows.map((r) => [
+            r.id,
+            {
+              display_name: r.display_name,
+              photo: r.photo ? (signed[r.photo] ?? null) : null,
+              profile_slug: r.profile_slug,
+            },
+          ]),
+        ),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [actorIds]);
+
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
@@ -95,6 +145,7 @@ function NotificationsPage() {
           <ul className="space-y-1">
             {notifications.map((n) => {
               const Icon = ICONS[n.type] ?? Bell;
+              const actor = n.actor_id ? actors[n.actor_id] : undefined;
               const Wrapper: React.ElementType = n.link ? Link : "div";
               const wrapperProps = n.link ? { to: n.link } : {};
               return (
@@ -108,9 +159,21 @@ function NotificationsPage() {
                     className="flex flex-1 items-start gap-3"
                   >
                     <div
-                      className={`flex size-9 shrink-0 items-center justify-center rounded-full ${n.read_at ? "bg-muted text-muted-foreground" : "bg-primary/15 text-primary"}`}
+                      className={`relative flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-full ${n.read_at ? "bg-muted text-muted-foreground" : "bg-primary/15 text-primary"}`}
                     >
-                      <Icon className="size-4" />
+                      {actor?.photo ? (
+                        <img
+                          src={actor.photo}
+                          alt={actor.display_name ?? ""}
+                          className="size-full object-cover"
+                        />
+                      ) : actor?.display_name ? (
+                        <span className="text-sm font-semibold">
+                          {actor.display_name[0]?.toUpperCase()}
+                        </span>
+                      ) : (
+                        <Icon className="size-4" />
+                      )}
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="line-clamp-1 text-sm font-medium text-foreground">{n.title}</p>

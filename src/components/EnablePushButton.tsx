@@ -5,7 +5,12 @@ import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { savePushSubscription, removePushSubscription, saveFcmSubscription, removeFcmSubscription } from "@/lib/push.functions";
 import { VAPID_PUBLIC_KEY, urlBase64ToUint8Array } from "@/lib/web-push-config";
-import { initNativePush, teardownNativePush, readPersistedFcmToken } from "@/lib/native-push";
+import {
+  initNativePush,
+  teardownNativePush,
+  readPersistedFcmToken,
+  openNotificationSettings,
+} from "@/lib/native-push";
 
 async function isNativePlatform(): Promise<boolean> {
   try {
@@ -87,7 +92,18 @@ export function EnablePushButton({
         if (!r.ok) {
           if (r.reason === "denied") {
             setPermission("denied");
-            toast.error("Notificările au fost respinse.");
+            // Android nu mai arată dialogul a doua oară după un refuz, deci
+            // singurul drum înapoi trece prin setările aplicației.
+            toast.error("Notificările sunt dezactivate pentru Suzeta.", {
+              description: "Le poți reactiva din setările Android ale aplicației.",
+              duration: 8000,
+              action: {
+                label: "Deschide setările",
+                onClick: () => {
+                  void openNotificationSettings();
+                },
+              },
+            });
           } else {
             toast.error("Nu am putut activa notificările native.");
           }

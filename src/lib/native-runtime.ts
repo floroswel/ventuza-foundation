@@ -98,12 +98,14 @@ export async function bootstrapNativeRuntime(router: Router<any, any, any, any, 
     console.warn("[native] back button unavailable", err);
   }
 
-  // 2) Tastatura — expunem înălțimea prin `--keyboard-height`, consumată în CSS
-  //    prin `--keyboard-inset` (vezi styles.css). NU redimensionăm nativ:
-  //    `resizeOnFullScreen` e oprit în capacitor.config.ts, altfel spațiul ar fi
-  //    rezervat de două ori. `keyboardDidShow` dă înălțimea finală după animație,
-  //    iar MainActivity alimentează în paralel `--android-keyboard-height` din
-  //    insetul IME, pentru cazurile în care pluginul tace.
+  // 2) Tastatura — geometria o face NATIV `@capacitor/keyboard`
+  //    (`resizeOnFullScreen: true`): WebView-ul se micșorează, deci `100dvh`
+  //    scade singur și CSS-ul nu mai adaugă nimic (`--keyboard-inset` este 0 pe
+  //    native — vezi styles.css). Ce urmează aici este strict COMPORTAMENT:
+  //      - `data-keyboard-open` → Back închide întâi tastatura;
+  //      - `suzeta:keyboard`    → chatul reancorează ultimul mesaj.
+  //    Înălțimea rămâne expusă prin `--keyboard-height` pentru web, unde nu
+  //    există redimensionare nativă.
   try {
     const { Keyboard } = await import("@capacitor/keyboard");
     const apply = (height: number) => {

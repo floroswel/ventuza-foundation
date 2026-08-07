@@ -14,6 +14,7 @@
  */
 
 import type { PushPayload, SubscriptionRow } from "./web-push.server";
+import { channelIdForType } from "./notification-channels";
 
 type ServiceAccount = {
   client_email: string;
@@ -133,15 +134,14 @@ async function getAccessToken(): Promise<string | null> {
 // ────────────────────────────────────────────────────────────────────────────
 
 /**
- * `channelType` maps to the Android channel created on device:
- *   messages | matches | system (default).
+ * Canalul se alege cu ACEEAȘI funcție pe care clientul o folosește ca să creeze
+ * canalele (`notification-channels.ts`). O singură sursă de adevăr: dacă
+ * serverul trimite spre un `channel_id` inexistent pe device, FCM afișează
+ * notificarea pe canalul de rezervă „Miscellaneous”, cu importanță DEFAULT —
+ * fără heads-up și cu setări pe care utilizatorul nu le poate lega de aplicație.
  */
 function channelIdFor(payload: PushPayload & { type?: string }): string {
-  const t = (payload.type || payload.tag || "").toLowerCase();
-  if (t.includes("message") || t.includes("msg")) return "messages";
-  if (t.includes("match") || t.includes("tap") || t.includes("woof") || t.includes("like"))
-    return "matches";
-  return "system";
+  return channelIdForType(payload.type || payload.tag);
 }
 
 /**
@@ -178,11 +178,21 @@ export async function sendFcmOne(
         type: payload.type ?? "",
       },
       android: {
+        // `priority` guvernează livrarea (wake-up din Doze), NU sunetul: pe
+        // Android 8+ importanța canalului decide heads-up-ul și sunetul.
         priority: channel === "system" ? "NORMAL" : "HIGH",
         notification: {
           channel_id: channel,
+          // Același `tag` pentru același eveniment → notificarea se ÎNLOCUIEȘTE
+          // în loc să se adune (o conversație = un singur rând în shade).
           tag: payload.tag,
-          click_action: "FLUTTER_NOTIFICATION_CLICK",
+          // `click_action` era "FLUTTER_NOTIFICATION_CLICK", copiat dintr-un
+          // exemplu Flutter. Android construiește PendingIntent-ul cu acea
+          // acțiune și îl caută în pachet; nicio activitate din Suzeta nu o
+          // declară, deci tap-ul nu deschidea nimic. Fără el, FCM folosește
+          // intent-ul implicit de lansare, iar Capacitor emite
+          // `pushNotificationActionPerformed` cu `data.url` — deep link corect
+          // atât din background, cât și la cold start.
         },
       },
     },
