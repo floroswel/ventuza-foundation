@@ -1,0 +1,4 @@
+• The keyboard no longer covers the message box in a conversation: the composer moves above it.
+• What you type and the Send button stay visible.
+• The last message shows above the composer, and the list stays scrollable.
+• The first Back press closes the keyboard without leaving the conversation.

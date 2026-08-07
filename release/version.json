@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.12",
-  "versionCode": 21,
+  "versionName": "1.0.13",
+  "versionCode": 22,
   "track": "internal",
-  "notes": "Build 21: scroll reparat pe Android (Edit Profile derulează, headerele si butoanele X/Save nu mai intra sub status bar), Like/Pass revine in Grid la aceeasi poziție, profilul se deschide corect din conversație, iar mesajele de eroare pe profil indisponibil arata cauza reala."
+  "notes": "Build 22: tastatura Android nu mai acopera casuta de scris din conversatie. Composer-ul urca deasupra tastaturii, textul tastat si butonul Trimite ramane vizibile, ultimul mesaj se vede deasupra composer-ului, iar prima apasare pe Back inchide tastatura fara sa iasa din conversatie."
 }

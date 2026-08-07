@@ -1,0 +1,4 @@
+• Tastatura nu mai acoperă căsuța de scris din conversație: câmpul urcă deasupra tastaturii.
+• Textul tastat și butonul Trimite rămân vizibile.
+• Ultimul mesaj se vede deasupra căsuței de scris, iar lista rămâne derulabilă.
+• Prima apăsare pe Back închide tastatura, fără să ieși din conversație.
