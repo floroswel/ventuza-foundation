@@ -159,12 +159,16 @@ jobs:
           }
           echo "✓ Google nativ: online Credential Manager + ID token, fără redirect WebView sau scopes custom."
 
-      - name: Instrumentează diagnosticul nativ Google
+      - name: Instrumentează diagnosticul nativ Google (best effort)
+        continue-on-error: true
         run: |
-          set -euo pipefail
+          set -uo pipefail
           PROVIDER="node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java"
-          test -f "$PROVIDER"
-          python3 <<'PY'
+          if [ ! -f "$PROVIDER" ]; then
+            echo "::warning::GoogleProvider.java lipsește — sar peste instrumentarea diagnosticului (nu blochează release-ul)."
+            exit 0
+          fi
+          python3 <<'PY' || echo "::warning::Instrumentarea diagnosticului Google a eșuat — continuăm fără ea."
           p = "node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java"
           s = open(p, encoding="utf-8").read()
           needle = 'Log.e(LOG_TAG, "Google Sign-In failed", e);'
@@ -193,8 +197,8 @@ jobs:
               s = s.replace(helper_anchor, helper + helper_anchor, 1)
           open(p, "w", encoding="utf-8").write(s)
           PY
-          grep -q 'recordSuzetaDiagnostic(e)' "$PROVIDER"
-          echo "✓ Excepția Credential Manager va fi capturată în diagnosticul din aplicație."
+          echo "Pas de diagnostic terminat (non-blocant)."
+
 
       - name: Build web bundle
         env:
