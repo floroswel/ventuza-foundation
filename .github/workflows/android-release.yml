@@ -402,6 +402,29 @@ jobs:
                   s = re.sub(rf'({re.escape(attr)}=")[^"]*(")', rf'\g<1>{val}\g<2>', s, count=1)
               else:
                   s = s.replace('<application', f'<application {attr}="{val}"', 1)
+          # d1) FCM meta-data: canal implicit + iconita de notificare.
+          #     Fara default_notification_channel_id, o notificare care ajunge
+          #     inainte ca aplicatia sa fi creat canalele este afisata de FCM pe
+          #     canalul de rezerva "Miscellaneous", cu importanta DEFAULT (fara
+          #     heads-up) si cu un nume pe care utilizatorul nu il poate lega de
+          #     Suzeta. `system` este creat de notification-channels.ts.
+          #     Fara default_notification_icon, Android foloseste icon-ul de
+          #     launcher si il reduce la o silueta - de obicei un patrat alb.
+          #     ic_launcher_monochrome este deja o silueta pe fundal transparent.
+          FCM_META = (
+              ('com.google.firebase.messaging.default_notification_channel_id',
+               'android:value="system"'),
+              ('com.google.firebase.messaging.default_notification_icon',
+               'android:resource="@drawable/ic_launcher_monochrome"'),
+          )
+          for name, value_attr in FCM_META:
+              if name in s:
+                  continue
+              s = s.replace(
+                  '</application>',
+                  '        <meta-data android:name="%s" %s/>\n    </application>' % (name, value_attr),
+                  1,
+              )
           # d2) tools:replace — impune valorile noastre peste cele din biblioteci.
           #     io.ionic.libs:ioncamera-android:1.0.1 (dependenta nativa a
           #     @capacitor/camera) declara requestLegacyExternalStorage="true".
