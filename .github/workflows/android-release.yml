@@ -888,7 +888,18 @@ jobs:
               echo "✓ $OUT/whatsnew-$LOC (din $SRC)"
             fi
           done
-          ls -la "$OUT"
+      - name: Detectează mapping.txt (R8)
+        id: mapping
+        run: |
+          set -euo pipefail
+          M=android/app/build/outputs/mapping/release/mapping.txt
+          if [ -s "$M" ]; then
+            echo "path=$M" >> "$GITHUB_OUTPUT"
+            echo "✓ mapping.txt găsit (deobfuscare crash-uri activă)"
+          else
+            echo "path=" >> "$GITHUB_OUTPUT"
+            echo "::warning::mapping.txt lipsește (minifyEnabled=false) — urcăm AAB-ul fără fișier de deobfuscare."
+          fi
 
       - name: Publish în Google Play
         if: ${{ github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true' }}
@@ -900,7 +911,8 @@ jobs:
           track: ${{ github.event.inputs.track || 'internal' }}
           status: ${{ github.event.inputs.release_status || 'draft' }}
           whatsNewDirectory: distribution/whatsnew
-          mappingFile: android/app/build/outputs/mapping/release/mapping.txt
+          mappingFile: ${{ steps.mapping.outputs.path }}
+
           changesNotSentForReview: false
 
       - name: Curăță secretele de pe runner
