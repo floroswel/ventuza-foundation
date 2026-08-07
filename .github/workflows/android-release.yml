@@ -888,7 +888,10 @@ jobs:
               echo "✓ $OUT/whatsnew-$LOC (din $SRC)"
             fi
           done
+          ls -la "$OUT"
+
       - name: Detectează mapping.txt (R8)
+
         id: mapping
         run: |
           set -euo pipefail
