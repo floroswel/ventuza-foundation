@@ -15,6 +15,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      # Rezolvă configurația publică o singură dată: Secret → Variable → `.env`
+      # versionat. Scrie rezultatul în $GITHUB_ENV pentru pașii următori, deci
+      # aceste variabile NU trebuie declarate la nivel de job: un `env:` din
+      # workflow are prioritate față de $GITHUB_ENV și o valoare goală ar
+      # suprascrie exact ce am rezolvat aici.
+      - name: Resolve public Supabase env
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID || vars.VITE_SUPABASE_PROJECT_ID }}
+        run: node scripts/resolve-public-env.mjs
+
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: latest
@@ -22,16 +35,40 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile
 
+      - name: Resurse Android XML valide (blocking)
+        # `android-overrides/res/*` este copiat direct în proiectul Android, iar
+        # AAPT respinge orice XML malformat. Până acum eroarea apărea abia în
+        # Android Release, după ~10 minute de build. Un `--` într-un comentariu
+        # (interzis de XML 1.0 §2.5) a blocat exact așa un release.
+        # `AndroidManifest.additions.xml` e exclus intenționat: e un fragment de
+        # documentație, fără rădăcină, care nu se copiază niciodată în android/.
+        run: |
+          python3 - <<'PY'
+          import glob, sys
+          import xml.etree.ElementTree as ET
+          bad = []
+          files = sorted(glob.glob("android-overrides/res/**/*.xml", recursive=True))
+          for f in files:
+              try:
+                  ET.parse(f)
+              except Exception as e:
+                  bad.append(f"{f}: {e}")
+          for b in bad:
+              print(f"::error::XML Android invalid — {b}")
+          if bad:
+              sys.exit(1)
+          print(f"✓ {len(files)} fișiere XML din android-overrides/res sunt valide.")
+          PY
+
       - name: TypeScript (blocking)
-        run: bunx tsgo --noEmit
+        run: bunx tsc --noEmit
 
       - name: Unit + critical tests (blocking)
+        # Variabilele vin din `env` la nivel de job (vezi mai sus).
+        # vitest.config.ts le citește din `process.env`.
         run: bunx vitest run
 
       - name: Build (blocking)
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
         run: bun run build:mobile
 
       - name: Critical vulnerabilities (blocking)

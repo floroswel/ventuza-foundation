@@ -26,9 +26,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
-      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID }}
+      # Supabase: NU se declară aici — vezi pasul „Resolve public Supabase env".
+      # Valorile ajung prin $GITHUB_ENV; un `env:` la nivel de job ar avea
+      # prioritate și o valoare goală ar anula rezolvarea.
       VITE_TURNSTILE_SITE_KEY: ${{ vars.E2E_TURNSTILE_SITE_KEY || '1x00000000000000000000AA' }}
       VR_BASE_URL: http://localhost:8080
       # Sesiune de test opțională: fără ea, suita de onboarding se omite.
@@ -38,6 +38,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # Înainte de „Write .env for Vite", care suprascrie `.env`-ul versionat.
+      - name: Resolve public Supabase env
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID || vars.VITE_SUPABASE_PROJECT_ID }}
+        run: node scripts/resolve-public-env.mjs
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -53,7 +61,11 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          # Lockfile-ul proiectului este `bun.lock` (text), nu `bun.lockb`.
+          # Cu `bun.lockb` inexistent, cheia era constantă și restaura un
+          # node_modules vechi → dev serverul cădea cu
+          # „Cannot find package '@babel/code-frame'".
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
 
       - name: Install deps
         run: bun install --frozen-lockfile

@@ -50,10 +50,17 @@ const config: CapacitorConfig = {
       overlaysWebView: true,
     },
     Keyboard: {
-      // `body`/`native` rescriu înălțimea documentului și blochează scroll-ul
-      // vertical în WebView. Gestionăm noi spațiul prin --keyboard-height.
+      // `resize` este documentat ca "Only available on iOS" în @capacitor/keyboard 8.
+      // Pe iOS `none` înseamnă că nu se rescrie înălțimea documentului; spațiul
+      // pentru tastatură îl rezervăm noi, prin `--keyboard-inset` în CSS.
       resize: "none",
-      resizeOnFullScreen: true,
+      // Pe Android acest flag făcea `possiblyResizeChildOfContent()` să scrie
+      // direct `frameLayoutParams.height` (Keyboard.java:151-161), adică micșora
+      // nativ WebView-ul. Peste asta, `pb-bar` adăuga ÎNCĂ O DATĂ înălțimea
+      // tastaturii — două compensări suprapuse pe același spațiu, iar composer-ul
+      // ieșea din containerul cu `overflow-hidden`. Îl oprim: singura compensare
+      // rămâne cea din CSS, alimentată de insetul IME citit în MainActivity.
+      resizeOnFullScreen: false,
     },
     PrivacyScreen: {
       enable: true,

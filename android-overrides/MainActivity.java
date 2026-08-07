@@ -145,13 +145,29 @@ public class MainActivity extends BridgeActivity {
               final int bottom = Math.round(bars.bottom / density);
               final int left = Math.round(bars.left / density);
               final int right = Math.round(bars.right / density);
+              // Tastatura: `Type.ime()` este sursa autoritara pe API 30+. In modul
+              // edge-to-edge (setDecorFitsSystemWindows(false)) fereastra NU se mai
+              // redimensioneaza pentru IME, deci nici `adjustResize` nu ajuta si nici
+              // `100dvh` nu scade. Singurul mod corect de a sti cat ocupa tastatura
+              // este acest inset, raportat la fiecare cadru al animatiei.
+              // Scadem partea suprapusa cu bara de navigatie: inset-ul IME include
+              // deja zona acesteia, iar composer-ul compenseaza separat safe-bottom.
+              Insets ime = insets.getInsets(WindowInsetsCompat.Type.ime());
+              final int keyboard = Math.max(0, Math.round((ime.bottom - bars.bottom) / density));
               final String js =
                 "(function(){var s=document.documentElement.style;"
                 + "s.setProperty('--android-inset-top','" + top + "px');"
                 + "s.setProperty('--android-inset-bottom','" + bottom + "px');"
                 + "s.setProperty('--android-inset-left','" + left + "px');"
                 + "s.setProperty('--android-inset-right','" + right + "px');"
-                + "try{window.dispatchEvent(new CustomEvent('safeareaupdate'));}catch(e){}})();";
+                + "s.setProperty('--android-keyboard-height','" + keyboard + "px');"
+                + "if(" + keyboard + ">0){document.documentElement.dataset.keyboardOpen='true';}"
+                + "else{delete document.documentElement.dataset.keyboardOpen;}"
+                + "try{window.dispatchEvent(new CustomEvent('safeareaupdate'));}catch(e){}"
+                // Acelasi eveniment pe care il emite si native-runtime: chatul
+                // reancoreaza ultimul mesaj chiar daca pluginul Keyboard tace.
+                + "try{window.dispatchEvent(new CustomEvent('suzeta:keyboard',"
+                + "{detail:{height:" + keyboard + "}}));}catch(e){}})();";
               view.post(new Runnable() {
                 @Override
                 public void run() {

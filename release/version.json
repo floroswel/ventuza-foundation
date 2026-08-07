@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.12",
-  "versionCode": 12,
+  "versionName": "1.0.13",
+  "versionCode": 22,
   "track": "internal",
-  "notes": "Build 12: reparații de stabilitate — pipeline de release aliniat la o singură sursă de versiune (fără versionCode duplicat la urcarea în Play), verificări de manifest corectate și upload tolerant când fișierul de deobfuscare lipsește."
+  "notes": "Build 22: tastatura Android nu mai acopera casuta de scris din conversatie - composer-ul urca deasupra tastaturii, textul tastat si butonul Trimite ramane vizibile, iar ultimul mesaj se vede deasupra composer-ului. Prima apasare pe Back inchide tastatura fara sa iasa din conversatie. Panoul de diagnostic al autentificarii a fost scos din interfata."
 }

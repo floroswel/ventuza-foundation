@@ -41,7 +41,14 @@ OPTIONAL_KINDS = [
 
 # Cuvinte-cheie așteptate pe /legal/data-safety per kind
 KEYWORDS = {
-    "internal_verification": ["Selfie verificare vârstă", "liveness"],
+    # Cheia era `internal_verification`, dar tipul de consimțământ a fost
+    # redenumit `age_verification` (vezi consent-registry.ts și consent_kinds()
+    # din DB) fără să fie actualizat aici — de unde `KeyError: 'age_verification'`
+    # la T5, care oprea suita cu Traceback.
+    # „liveness" a fost scos din listă: nu apare pe /legal/data-safety (verificat
+    # în src/routes/legal.data-safety.tsx), deci era o așteptare falsă. Mențiunea
+    # care există efectiv rămâne asertată.
+    "age_verification": ["Selfie verificare vârstă"],
     "ai_features": ["funcții AI", "Lovable AI"],
     "push_notifications": ["Notificări push", "FCM"],
     "background_location": ["Locație în fundal", "geofencing"],
@@ -101,7 +108,11 @@ def consents_section(page):
 
 
 async def set_toggle(page, kind: str, desired: bool):
-    cb = consents_section(page).locator("input[type=checkbox]").nth(OPTIONAL_KINDS.index(kind))
+    # Selectăm după `data-consent-kind`, nu după poziție. ConsentsCard randează
+    # 6 consimțăminte (partner_announcements este al 5-lea), iar lista din test
+    # are 5 — indexarea pe poziție comuta `partner_announcements` și apoi verifica
+    # `marketing`, de unde „has_active_consent=False" și „consent_log=None".
+    cb = page.locator(f'[data-consent-kind="{kind}"] input[type=checkbox]').first
     await cb.wait_for(state="visible", timeout=5000)
     if await cb.is_checked() == desired:
         return
@@ -109,13 +120,12 @@ async def set_toggle(page, kind: str, desired: bool):
     try:
         await page.wait_for_function(
             """(args) => {
-                const secs = Array.from(document.querySelectorAll('section'));
-                const sec = secs.find(s => s.textContent && s.textContent.includes('Consimțăminte GDPR'));
-                if (!sec) return false;
-                const boxes = sec.querySelectorAll('input[type=checkbox]');
-                return boxes[args.idx] && boxes[args.idx].checked === args.desired;
+                const row = document.querySelector('[data-consent-kind="' + args.kind + '"]');
+                if (!row) return false;
+                const box = row.querySelector('input[type=checkbox]');
+                return box && box.checked === args.desired;
             }""",
-            arg={"idx": OPTIONAL_KINDS.index(kind), "desired": desired},
+            arg={"kind": kind, "desired": desired},
             timeout=8000,
         )
     except Exception:
@@ -168,7 +178,13 @@ async def main() -> int:
                 # reload și verifică că checkbox persistă (T1/T3)
                 await page.reload(wait_until="networkidle")
                 await page.locator("section:has-text('Consimțăminte GDPR')").wait_for(timeout=8000)
-                cb = consents_section(page).locator("input[type=checkbox]").nth(OPTIONAL_KINDS.index(kind))
+                # Aceeași adresare stabilă ca în `set_toggle`. Aici rămăsese
+                # indexarea pe poziție: `set_toggle` comuta corect `marketing`
+                # (index 5 în UI), dar verificarea citea index 4, adică
+                # `partner_announcements`, care e off — de unde
+                # „checkbox după reload=False, așteptat True", deși scrierea
+                # reușise (has_active_consent întorcea true).
+                cb = page.locator(f'[data-consent-kind="{kind}"] input[type=checkbox]').first
                 actual = await cb.is_checked()
                 if actual != desired:
                     await fail(f"[{kind}] checkbox după reload={actual}, așteptat {desired}")

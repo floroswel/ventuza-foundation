@@ -467,6 +467,9 @@ function DiscoverPage() {
   const handleDecision = useCallback(
     async (target: DiscoverProfile, action: "like" | "pass" | "super") => {
       if (!user) return;
+      // Închide profilul deschis. Poziția din grilă este memorată la deschidere
+      // și restaurată de efectul de mai jos, deci utilizatorul revine exact
+      // unde era, fără reîncărcarea listei.
       setSelected(null);
 
       // O relație swiper/target este unică în DB. Repetarea unei decizii în
@@ -552,6 +555,27 @@ function DiscoverPage() {
     },
     [user, view],
   );
+
+  // Grid: păstrează poziția de derulare la închiderea profilului.
+  // Modalul e `fixed inset-0`, deci grila din spate rămâne montată, dar
+  // documentul poate fi derulat sau reașezat cât timp modalul e deschis
+  // (reordonare după distanță/online, refresh realtime). Memorăm poziția la
+  // deschidere și o restaurăm după ce grila s-a re-randat.
+  const gridScrollYRef = useRef(0);
+  const modalWasOpenRef = useRef(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (selected && !modalWasOpenRef.current) {
+      modalWasOpenRef.current = true;
+      gridScrollYRef.current = window.scrollY;
+      return;
+    }
+    if (!selected && modalWasOpenRef.current) {
+      modalWasOpenRef.current = false;
+      const y = gridScrollYRef.current;
+      requestAnimationFrame(() => window.scrollTo(0, y));
+    }
+  }, [selected]);
 
   if (countryGate.isDiscoverDisabled || countryGate.forceStealth || countryGate.isBlocked) {
     return (
@@ -1352,7 +1376,7 @@ function ProfileSheet({
         onClick={(e) => e.stopPropagation()}
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        className="relative flex h-[100dvh] min-h-0 w-full flex-col border-border bg-surface sm:h-[92dvh] sm:max-w-md sm:rounded-t-3xl sm:border"
+        className="relative flex h-[100dvh] min-h-0 w-full flex-col border-border bg-surface pt-safe sm:h-[92dvh] sm:max-w-md sm:rounded-t-3xl sm:border sm:pt-0"
       >
         {/* Prev / Next desktop arrows */}
         {prev && (

@@ -32,10 +32,20 @@ Pentru a testa complet ramura cu Turnstile activ:
 
 Presupune dev server pe http://localhost:8080.
 Testele NU necesită sesiune Supabase injectată — folosesc doar suprafața
-publică /auth. Nu creează useri reali în Supabase Auth: adresele generate
-sunt @example.com și sunt respinse de gate-ul de disposable-email (assert_email_allowed)
-înainte de scriere. Pentru a testa signup end-to-end cu user real, folosește
-un email pe un domeniu permis (@gmail.com etc.).
+publică /auth.
+
+STRATEGIE PENTRU S3 (signup) ȘI CLEANUP
+---------------------------------------
+S3 folosește contul dedicat din `E2E_TEST_EMAIL`, care EXISTĂ deja. Supabase
+respinge înscrierea cu „user already registered", aplicația mapează eroarea
+într-un toast, iar testul validează exact acest traseu. **Nu se creează niciun
+utilizator, deci nu există nimic de curățat** — de aceea nu ștergem conturi și
+nu avem nevoie de `service_role`.
+
+Varianta anterioară folosea `e2e-<timestamp>@example.com` și presupunea că
+`assert_email_allowed` respinge domeniul înainte de scriere. Verificat pe acest
+deployment: NU îl respinge — `POST /auth/v1/signup` întoarce 200 și lăsa un
+utilizator real în Supabase Auth la fiecare rulare CI.
 """
 import asyncio, os, re, sys, time
 from pathlib import Path
@@ -44,6 +54,9 @@ from playwright.async_api import async_playwright, Page, expect
 OUT = Path(__file__).parent / "screenshots" / "auth"
 OUT.mkdir(exist_ok=True, parents=True)
 BASE = os.environ.get("E2E_BASE_URL", "http://localhost:8080")
+# Contul dedicat de test. S3 îl refolosește intenționat, ca signup-ul să fie
+# respins („user already registered") în loc să creeze utilizatori noi.
+TEST_EMAIL = os.environ.get("E2E_TEST_EMAIL", "").strip()
 
 PASS: list[str] = []
 FAIL: list[tuple[str, str]] = []
@@ -199,8 +212,15 @@ async def test_signup_underage(page: Page) -> None:
 # ─── S3 · signup valid → check-email ──────────────────────────────────────
 async def test_signup_valid_flow(page: Page) -> None:
     name = "S3 signup — date valide → /auth/check-email"
+    if not TEST_EMAIL:
+        bad(name, "E2E_TEST_EMAIL nu este setat — vezi strategia din docstring")
+        return
     await goto_auth(page, "signup")
-    email = f"e2e-{int(time.time())}@example.com"
+    # Contul dedicat EXISTĂ deja, deci Supabase respinge înscrierea
+    # („user already registered") și nu se creează nimic. Varianta anterioară
+    # folosea e2e-<timestamp>@example.com, care trecea de gate și lăsa un
+    # utilizator real în Supabase Auth la FIECARE rulare CI.
+    email = TEST_EMAIL
     await page.locator("#email").fill(email)
     await page.locator("#password").fill("parola-lunga-123!")
     checkboxes = page.locator("input[type='checkbox']")
@@ -225,21 +245,33 @@ async def test_signup_valid_flow(page: Page) -> None:
         return
     await btn.click()
 
-    # Așteptăm fie /auth/check-email, fie un toast (disposable email / captcha /
-    # rate limit); considerăm testul PASS dacă apare unul din răspunsurile
-    # așteptate — @example.com este blocat de assert_email_allowed pe unele
-    # deployment-uri, ceea ce este comportamentul corect.
-    try:
-        await page.wait_for_url(re.compile(r".*/auth/check-email.*"), timeout=8000)
+    # Trei rezultate sunt corecte, în funcție de configurația proiectului Supabase:
+    #   a) confirmarea pe email e obligatorie → redirect /auth/check-email;
+    #   b) confirmarea e dezactivată → sesiune creată imediat → aplicația rutează
+    #      spre onboarding (/n), pentru că profilul nu are încă birthdate;
+    #   c) cererea e respinsă server-side (email nepermis / captcha / rate limit)
+    #      → rămâne pe /auth și apare un toast.
+    # Verificăm prin polling, nu cu două așteptări în serie: un toast Sonner
+    # dispare în ~4s, deci aștepta 8s după URL rata fereastra lui (cursă de timing).
+    outcome = None
+    for _ in range(32):  # ~8s la 250ms
+        url = page.url
+        if "/auth/check-email" in url:
+            outcome = "redirect check-email"
+            break
+        if "/auth" not in url:
+            outcome = f"sesiune creată → {url.rsplit('/', 1)[-1] or '/'}"
+            break
+        toasts = await page.locator("[data-sonner-toast]").all_inner_texts()
+        if toasts:
+            outcome = f"răspuns server-side: {toasts[0][:80]}"
+            break
+        await page.wait_for_timeout(250)
+    if outcome:
         await page.screenshot(path=str(OUT / "s3_check_email.png"))
-        ok(name + " (redirect check-email)")
+        ok(f"{name} ({outcome})")
         return
-    except Exception:
-        msg = await wait_toast(page, re.compile(r".", re.S), timeout_ms=1500)
-        if msg:
-            ok(name + f" (respins server-side: {msg[:80]})")
-            return
-        bad(name, "nici redirect check-email, nici toast eroare")
+    bad(name, "nici redirect, nici sesiune, nici toast după submit")
 
 
 # ─── S4 · /auth/check-email ────────────────────────────────────────────────
@@ -267,7 +299,10 @@ async def test_forgot_password_empty(page: Page) -> None:
     await goto_auth(page, "login")
     # Lăsăm inputul gol și apăsăm "Am uitat parola"
     await page.locator("#email").fill("")
-    await page.get_by_role("button", name=re.compile(r"AM UITAT|FORGOT", re.I)).click()
+    # Textul RO este „Ai uitat parola?" (i18n `auth.forgot`), EN „Forgot password?".
+    # Regexul anterior cerea „AM UITAT", care nu se potrivea cu niciunul, deci
+    # locatorul expira mereu — fals negativ, nu un defect al aplicației.
+    await page.get_by_role("button", name=re.compile(r"uitat|forgot", re.I)).click()
     msg = await wait_toast(page, re.compile(r"email|introdu|enter", re.I))
     if not msg:
         bad(name, "nu a apărut toast pentru email lipsă")

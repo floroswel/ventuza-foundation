@@ -4,6 +4,22 @@ import { createHash } from "crypto";
 import { z } from "zod";
 import type { Database } from "@/integrations/supabase/types";
 
+// LIMITARE CUNOSCUTĂ (documentată, necorectată aici — vezi mai jos)
+// ------------------------------------------------------------------
+// Handler-ul construiește clientul cu `process.env.SUPABASE_SERVICE_ROLE_KEY!`.
+// În orice mediu fără acea cheie — CI, dev local, orice deployment care nu o
+// setează — `createClient` aruncă ÎNAINTE de RPC, iar ruta răspunde **HTTP 500**.
+// Consecință: throttle-ul anti-bot la signup este inactiv în acele medii, iar
+// clientul continuă înscrierea (fail-open pe client). Confirmat în e2e:
+// `POST /api/public/signup-guard` → 500, urmat de `POST /auth/v1/signup` → 200.
+//
+// Observă asimetria: mai jos există fail-open EXPLICIT pentru erori de RPC
+// („don't lock real users out"), dar nu pentru cheia lipsă.
+//
+// Nu se repară în acest PR (ar însemna modificarea fluxului de autentificare) și
+// NU se adaugă `SUPABASE_SERVICE_ROLE_KEY` în workflow-ul E2E doar ca testele să
+// treacă — ar introduce o cheie privilegiată într-un mediu de test.
+//
 // Anti-bot signup throttle. Called by /auth right before supabase.auth.signUp.
 // Hashes the caller IP server-side (never stored or returned in clear) and
 // records the attempt in public.signup_attempts via the SECURITY DEFINER

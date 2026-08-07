@@ -111,7 +111,25 @@ html {
 
 @layer base {
   :root {
+    /* Raportat de @capacitor/keyboard (keyboardWillShow/DidShow). */
     --keyboard-height: 0px;
+    /* Raportat de MainActivity din WindowInsetsCompat.Type.ime(). În edge-to-edge
+       fereastra nu se mai redimensionează pentru tastatură, deci acesta este
+       singurul semnal fiabil pe API 30+. */
+    --android-keyboard-height: 0px;
+    /* Derivat din `visualViewport` (installViewportKeyboardTracking). Sursa web
+       standard, independentă de Capacitor și de insets — acoperă cazul în care
+       nici pluginul, nici insetul IME nu raportează nimic. */
+    --visual-keyboard-height: 0px;
+    /* O SINGURĂ sursă efectivă pentru compensare. `max`, nu sumă: toate cele trei
+       descriu aceeași tastatură, iar dacă una tace, celelalte acoperă cazul.
+       Utilitarele de composer folosesc exclusiv această variabilă — compensări
+       suprapuse ar ridica input-ul de mai multe ori. */
+    --keyboard-inset: max(
+      var(--keyboard-height, 0px),
+      var(--android-keyboard-height, 0px),
+      var(--visual-keyboard-height, 0px)
+    );
     /* Insets efective: env() dacă WebView-ul le raportează, altfel valorile
        injectate nativ din WindowInsets (MainActivity). */
     --safe-top: max(env(safe-area-inset-top), var(--android-inset-top, 0px));
@@ -467,17 +485,17 @@ html {
    Populated by src/lib/native-runtime.ts via @capacitor/keyboard listeners.
    Utility: <div class="pb-keyboard">  → padding-bottom grows when keyboard is up. */
 @utility pb-keyboard {
-  padding-bottom: calc(var(--safe-bottom) + var(--keyboard-height));
+  padding-bottom: calc(var(--safe-bottom) + var(--keyboard-inset));
 }
 @utility mb-keyboard {
-  margin-bottom: var(--keyboard-height);
+  margin-bottom: var(--keyboard-inset);
 }
 
 /* Bară de acțiuni / composer lipită de jos.
    Garantează un spațiu minim peste bara gestuală Android și urcă odată cu
    tastatura (Keyboard resize = "none", deci CSS-ul face treaba). */
 @utility pb-bar {
-  padding-bottom: calc(max(var(--safe-bottom), 0.875rem) + var(--keyboard-height));
+  padding-bottom: calc(max(var(--safe-bottom), 0.875rem) + var(--keyboard-inset));
 }
 
 /* Listă scrollabilă în interiorul unui flex column (chat, feed-uri).
@@ -527,7 +545,18 @@ html.native-app body {
   touch-action: pan-y;
   height: auto;
   min-height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
-  overflow-y: auto;
+  /* `body` NU trebuie să fie scroll container.
+     Regula de bază (`html, body { overflow-x: hidden }`) pune overflow-x și pe
+     `html`, deci overflow-ul rădăcinii nu mai e `visible` → regula de propagare
+     body→viewport NU se aplică. Astfel `overflow-y: auto` rămânea pe body
+     însuși, iar cu `height: auto` body crește exact cât conținutul:
+     scrollHeight == clientHeight, adică un scroll container cu extent ZERO
+     între conținut și scroller-ul real (html). Gestul de pan e captat de el.
+     `overflow-x: clip` taie orizontala fără a crea scroll container (spre
+     deosebire de `hidden`), iar `overflow-y: visible` rămâne `visible` când
+     celălalt axis e `clip` — deci scroll-ul vertical revine la viewport. */
+  overflow-x: clip;
+  overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
 

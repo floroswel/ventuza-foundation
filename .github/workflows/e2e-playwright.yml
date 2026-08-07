@@ -30,18 +30,18 @@ jobs:
       # fail-open, dar preferăm keia de test ca să exersăm calea reală
       # `captchaToken`. Secretul (server) e opțional în CI — nu îl setăm.
       VITE_TURNSTILE_SITE_KEY: ${{ vars.E2E_TURNSTILE_SITE_KEY || '1x00000000000000000000AA' }}
-      # Supabase — publishable + URL sunt necesare pentru build și pentru
-      # sondele REST din testele e2e. Setate ca Repository Variables (public).
-      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_PUBLISHABLE_KEY: ${{ vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
-      VITE_SUPABASE_PROJECT_ID: ${{ vars.VITE_SUPABASE_PROJECT_ID }}
-      # Sesiunea injectată e OPȚIONALĂ. Fără ea, testele autenticate se
-      # skip-uiesc automat (LOVABLE_BROWSER_AUTH_STATUS=signed_out).
-      LOVABLE_BROWSER_AUTH_STATUS: ${{ secrets.E2E_SUPABASE_SESSION_JSON && 'injected' || 'signed_out' }}
-      LOVABLE_BROWSER_SUPABASE_SESSION_JSON: ${{ secrets.E2E_SUPABASE_SESSION_JSON }}
-      LOVABLE_BROWSER_SUPABASE_STORAGE_KEY: ${{ secrets.E2E_SUPABASE_STORAGE_KEY }}
-      LOVABLE_BROWSER_SUPABASE_ACCESS_TOKEN: ${{ secrets.E2E_SUPABASE_ACCESS_TOKEN }}
-      LOVABLE_BROWSER_SUPABASE_COOKIES_JSON: ${{ secrets.E2E_SUPABASE_COOKIES_JSON }}
+      # Supabase: NU se declară aici. Sunt rezolvate de pasul
+      # „Resolve public Supabase env" (Secret → Variable → `.env` versionat) și
+      # ajung la pașii următori prin $GITHUB_ENV. Declararea lor la nivel de job
+      # ar avea prioritate față de $GITHUB_ENV, iar o valoare goală ar anula
+      # rezolvarea — exact cauza pentru care „Write .env" scria un .env GOL și
+      # toate cele 6 suite e2e cădeau (exit code = numărul de suite eșuate).
+      # Sesiunea NU mai vine dintr-un secret static (`E2E_SUPABASE_SESSION_JSON`
+      # conținea access_token + refresh_token, expira și cerea rotație manuală).
+      # Pasul „Authenticate E2E test account" face un password grant la fiecare
+      # rulare și scrie sesiunea proaspătă într-un fișier din $RUNNER_TEMP, citit
+      # EXCLUSIV de pasul care rulează testele. Nu se declară aici, ca să nu
+      # ajungă în environment-ul tuturor pașilor.
       E2E_BASE_URL: http://localhost:8080
       # Testele care scriu în DB (edit profil, upload real) rămân opt-in.
       E2E_ALLOW_REAL_WRITE: ${{ vars.E2E_ALLOW_REAL_WRITE || '' }}
@@ -49,6 +49,25 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      # Trebuie să ruleze ÎNAINTE de „Write .env for Vite", care suprascrie
+      # `.env`-ul versionat — adică una dintre sursele de rezolvare.
+      - name: Resolve public Supabase env
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY || vars.VITE_SUPABASE_PUBLISHABLE_KEY }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID || vars.VITE_SUPABASE_PROJECT_ID }}
+        run: node scripts/resolve-public-env.mjs
+
+      # Fail-fast ÎNAINTE de instalări lungi: dacă lipsesc credențialele contului
+      # de test, oprim aici cu numele secretului lipsă. Sesiunea proaspătă se
+      # scrie în $RUNNER_TEMP (în afara workspace-ului), nu în $GITHUB_ENV, deci
+      # ajunge doar la pasul de teste. Nu se creează utilizatori automat.
+      - name: Authenticate E2E test account (fresh session)
+        env:
+          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          E2E_TEST_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+        run: node scripts/e2e-login.mjs --out "$RUNNER_TEMP/e2e-session.env"
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
@@ -64,7 +83,12 @@ jobs:
         uses: actions/cache@v4
         with:
           path: node_modules
-          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lockb') }}
+          # Lockfile-ul proiectului este `bun.lock` (text), nu `bun.lockb`.
+          # `hashFiles('bun.lockb')` returna string gol, deci cheia degenera în
+          # constanta `<os>-bun-` și restaura un node_modules vechi peste care
+          # `bun install --frozen-lockfile` nu se reconcilia complet — de aici
+          # „Cannot find package '@babel/code-frame'" la pornirea dev serverului.
+          key: ${{ runner.os }}-bun-${{ hashFiles('bun.lock') }}
 
       - name: Install deps
         run: bun install --frozen-lockfile
@@ -101,18 +125,64 @@ jobs:
 
       - name: Run Playwright e2e
         id: e2e
+        env:
+          # Contul dedicat ajunge la S3 din auth_flow, ca signup-ul să lovească un
+          # email care EXISTĂ deja („user already registered") în loc să creeze un
+          # utilizator nou la fiecare rulare.
+          E2E_TEST_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
         run: |
           set +e
+          # Sesiunea proaspătă e încărcată DOAR aici, în shell-ul acestui pas.
+          # `set -a` o exportă către procesele python; nimic nu ajunge în
+          # $GITHUB_ENV, deci ceilalți pași nu o văd.
+          set -a
+          . "$RUNNER_TEMP/e2e-session.env"
+          set +a
+          # JSON-ul sesiunii vine în base64 tocmai pentru că `. fișier` ar face
+          # quote-removal pe ghilimelele din JSON și l-ar invalida. Decodarea se
+          # face într-o atribuire citată, deci valoarea nu trece prin parserul
+          # shell. Vezi comentariul din scripts/e2e-login.mjs.
+          export LOVABLE_BROWSER_SUPABASE_SESSION_JSON="$(printf '%s' "$LOVABLE_BROWSER_SUPABASE_SESSION_JSON_B64" | base64 -d)"
+          if ! printf '%s' "$LOVABLE_BROWSER_SUPABASE_SESSION_JSON" | python -c 'import json,sys; json.load(sys.stdin)'; then
+            echo "::error::Sesiunea decodată nu este JSON valid — testele autentificate ar rula ca deconectate."
+            exit 1
+          fi
           fails=0
+          failed_names=""
           for f in tests/e2e/*.py; do
-            echo "::group::$f"
-            python "$f"
-            rc=$?
+            name="$(basename "$f")"
+            echo "::group::$name"
+            python "$f" 2>&1 | tee "$RUNNER_TEMP/$name.out"
+            rc=${PIPESTATUS[0]}
             echo "::endgroup::"
-            if [ $rc -ne 0 ]; then fails=$((fails+1)); fi
+            if [ "$rc" -ne 0 ]; then
+              fails=$((fails+1))
+              failed_names="$failed_names $name"
+              # Ridicăm primele linii de eșec ca ADNOTĂRI. Logurile brute ale
+              # jobului cer drepturi de admin pe repo, deci fără asta nu se poate
+              # afla ce suită a picat decât rulând totul din nou local.
+              grep -aE "✗|FAIL|Error|error:|Traceback|Nu s-a încărcat|abort|Missing" "$RUNNER_TEMP/$name.out" \
+                | head -4 \
+                | while IFS= read -r line; do
+                    echo "::error title=$name::${line:0:400}"
+                  done
+              if [ ! -s "$RUNNER_TEMP/$name.out" ]; then
+                echo "::error title=$name::suita a eșuat fără output (rc=$rc)"
+              fi
+            fi
           done
           echo "failed_suites=$fails" >> $GITHUB_OUTPUT
+          if [ "$fails" -ne 0 ]; then
+            echo "::error::Suite eșuate ($fails):$failed_names"
+          fi
           exit $fails
+
+      - name: Shred runtime session
+        if: always()
+        run: |
+          # Sesiunea nu trebuie să supraviețuiască jobului și nu urcă în artifacts
+          # (path-urile de upload sunt doar tests/e2e/screenshots).
+          rm -f "$RUNNER_TEMP/e2e-session.env"
 
       - name: Stop dev server
         if: always()

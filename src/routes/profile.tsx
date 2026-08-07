@@ -824,8 +824,8 @@ function EditDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <header className="flex items-center justify-between border-b border-border/50 px-6 py-4">
+    <div className="fixed inset-0 z-50 flex flex-col bg-background pt-safe pb-safe">
+      <header className="flex shrink-0 items-center justify-between border-b border-border/50 px-6 py-4">
         <button
           onClick={onClose}
           aria-label="Close"
@@ -839,12 +839,19 @@ function EditDrawer({
         </Button>
       </header>
 
-      <div className="flex-1 overflow-y-auto pb-10">
+      {/* `min-h-0` este obligatoriu: fără el, `min-height: auto` (implicit pe
+          itemii flex) împiedică micșorarea sub înălțimea conținutului, deci
+          containerul crește cât toată lista și `overflow-y-auto` nu se activează
+          niciodată — scroll blocat. Aceeași regulă e documentată la .scroll-pane. */}
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain pb-10">
         {/* About */}
         <EditSection>
           <div className="space-y-2">
-            <Label>Display Name</Label>
+            {/* `htmlFor`/`id`: fără ele eticheta nu e asociată inputului, deci nici
+                cititoarele de ecran, nici `getByLabel` nu îl găsesc. */}
+            <Label htmlFor="edit-display-name">Display Name</Label>
             <Input
+              id="edit-display-name"
               value={form.display_name ?? ""}
               onChange={(e) => setForm({ ...form, display_name: e.target.value })}
               placeholder="Everyone will see this on the grid…"
@@ -857,10 +864,11 @@ function EditDrawer({
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label>About Me</Label>
+              <Label htmlFor="edit-bio">About Me</Label>
               <AiBioButton form={form} setForm={setForm} />
             </div>
             <Textarea
+              id="edit-bio"
               value={form.bio ?? ""}
               onChange={(e) => setForm({ ...form, bio: e.target.value })}
               rows={4}

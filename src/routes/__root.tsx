@@ -315,6 +315,31 @@ function RootComponent() {
     void import("@/lib/native-runtime").then(({ bootstrapNativeRuntime }) =>
       bootstrapNativeRuntime(router),
     );
+    // Tastatura: urmărim `visualViewport` pe orice platformă. E a treia sursă
+    // pentru `--keyboard-inset` și singura care funcționează și pe web, deci
+    // composer-ul din chat rămâne vizibil chiar dacă pluginul nativ tace.
+    let stopViewportKeyboard: (() => void) | undefined;
+    void import("@/lib/keyboard-inset").then(({ installViewportKeyboardTracking }) => {
+      stopViewportKeyboard = installViewportKeyboardTracking();
+    });
+    // Panoul „Diagnostic autentificare" a fost eliminat din /auth. Stingem o
+    // singură dată flag-ul pe care butonul lui l-a persistat, ca panoul plutitor
+    // să nu mai apară pe instalările existente.
+    void import("@/lib/debug-logger").then(({ retireLegacyAuthDiagnostic }) =>
+      retireLegacyAuthDiagnostic(),
+    );
+    // Diagnostic scroll — DOAR development. `import.meta.env.DEV` devine `false`
+    // la build, deci importul și apelul dispar din bundle-ul release/AAB.
+    if (import.meta.env.DEV) {
+      void import("@/lib/scroll-diagnostics").then(({ installScrollDiagnostics }) =>
+        installScrollDiagnostics(),
+      );
+    }
+    return () => {
+      // Fără asta, listenerii de visualViewport s-ar acumula la fiecare remontare
+      // (inclusiv la dubla invocare din StrictMode în development).
+      stopViewportKeyboard?.();
+    };
   }, [router]);
 
   useEffect(() => {

@@ -65,6 +65,33 @@ export function setDebugEnabled(on: boolean) {
   window.dispatchEvent(new CustomEvent("suzeta:debug-toggle", { detail: { on } }));
 }
 
+const RETIRED_KEY = "suzeta_debug_auth_panel_retired";
+
+/**
+ * Panoul „Diagnostic autentificare" din /auth era singura cale din interfață de a
+ * porni modul debug, iar butonul lui persista flag-ul în localStorage — de unde
+ * panoul plutitor rămânea vizibil pe TOATE ecranele, la fiecare pornire.
+ *
+ * Panoul a fost eliminat. Aici stingem o singură dată flag-ul rămas pe
+ * instalările existente, altfel utilizatorii care l-au atins vreodată ar continua
+ * să vadă panoul fără să mai aibă de unde să-l opreas. `?debug=1` rămâne
+ * funcțional pentru dezvoltare: `isDebugEnabled()` îl repersistă din URL.
+ */
+export function retireLegacyAuthDiagnostic(): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (window.localStorage.getItem(RETIRED_KEY) === "1") return;
+    window.localStorage.setItem(RETIRED_KEY, "1");
+    if (window.localStorage.getItem(STORAGE_KEY) === "1") {
+      window.localStorage.removeItem(STORAGE_KEY);
+      // DebugPanel ascultă acest eveniment și se re-evaluează imediat.
+      window.dispatchEvent(new CustomEvent("suzeta:debug-toggle", { detail: { on: false } }));
+    }
+  } catch {
+    /* localStorage blocat — nimic de curățat */
+  }
+}
+
 // ————————————————— buffer API —————————————————
 
 export function log(entry: Omit<DebugEntry, "ts">) {

@@ -30,13 +30,17 @@ on:
         required: true
         default: true
         type: boolean
+      # Fără valori implicite hardcodate. Aveau `1.0.10` / `10`, iar cel mai mare
+      # versionCode construit efectiv este 20 — o rulare cu inputurile lăsate
+      # neschimbate ar fi produs un AAB regresiv, respins de Play. Gol =
+      # se citește `release/version.json`, sursa de record a proiectului.
       version:
-        description: "Versiune SemVer (ex: 1.0.12). Gol = citit din release/version.json."
+        description: "Versiune SemVer (ex: 1.0.12). Gol = din release/version.json (sau din tag)."
         required: false
         default: ""
         type: string
       version_code:
-        description: "versionCode explicit. Gol = citit din release/version.json."
+        description: "versionCode explicit (ex: 21). Gol = din release/version.json (sau derivat din tag)."
         required: false
         default: ""
         type: string
@@ -71,10 +75,30 @@ jobs:
             exit 1
           }
           if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
-            echo "::error::Release-ul manual trebuie pornit cu branch-ul main selectat; ref curent: $GITHUB_REF"
-            exit 1
+            # Dintr-un branch de lucru se poate produce DOAR artefactul AAB, pentru
+            # testare pe device înainte de merge. Publicarea în Play rămâne
+            # posibilă exclusiv din main sau prin tag (vezi și gardul de pe pasul
+            # „Publish în Google Play").
+            if [ "${{ inputs.skip_play_upload }}" != "true" ]; then
+              echo "::error::Din alt branch decât main se poate produce doar artefactul AAB. Setează skip_play_upload=true, sau pornește din main pentru publicare."
+              exit 1
+            fi
+            echo "::notice::Build de test din $GITHUB_REF — doar artefact, fără upload în Play."
           fi
           git show -s --format='Commit time: %cI%nSubject: %s' HEAD
+          echo "----- Amprenta surselor Android (fără secrete) -----"
+          LAYOUT=android-overrides/res/layout/activity_main.xml
+          if [ -f "$LAYOUT" ]; then
+            echo "SHA-256 $LAYOUT: $(sha256sum "$LAYOUT" | awk '{print $1}')"
+          else
+            echo "::error::$LAYOUT lipsește din acest commit."
+            exit 1
+          fi
+          # Un dispatch pornit înainte de a împinge un fix construiește HEAD-ul de
+          # ATUNCI. Amprenta de mai sus arată imediat dacă rularea conține fixul
+          # așteptat, în loc să pară o regresie a aceleiași erori.
+          echo "Ultimele 3 commituri împachetate:"
+          git log --oneline -3 | sed 's/^/  /'
 
       - name: Calculează metadatele vizibile ale buildului
         id: buildmeta
@@ -88,8 +112,14 @@ jobs:
             RAW="${GITHUB_REF#refs/tags/v}"
             IFS='.' read -r MAJ MIN PAT <<< "$RAW"
             CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
+          elif [ -f release/version.json ]; then
+            # Sursa de record a proiectului. Până acum era ignorată de workflow,
+            # deci `bun run version:bump` nu avea niciun efect pe build.
+            CODE="$(python3 -c 'import json;print(json.load(open("release/version.json"))["versionCode"])')"
+            echo "versionCode din release/version.json: $CODE"
           else
-            CODE=$(python3 -c "import json;print(json.load(open('release/version.json'))['versionCode'])")
+            echo "::error::versionCode lipsește: nu e dat ca input, nu venim din tag și release/version.json nu există."
+            exit 1
           fi
           [ -n "$CODE" ] || { echo "::error::versionCode nu a putut fi determinat."; exit 1; }
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
@@ -372,6 +402,29 @@ jobs:
                   s = re.sub(rf'({re.escape(attr)}=")[^"]*(")', rf'\g<1>{val}\g<2>', s, count=1)
               else:
                   s = s.replace('<application', f'<application {attr}="{val}"', 1)
+          # d2) tools:replace — impune valorile noastre peste cele din biblioteci.
+          #     io.ionic.libs:ioncamera-android:1.0.1 (dependenta nativa a
+          #     @capacitor/camera) declara requestLegacyExternalStorage="true".
+          #     Fara acest marcaj, manifest merger opreste build-ul la
+          #     :app:processReleaseMainManifest cu "Attribute
+          #     application@requestLegacyExternalStorage value=(false) ... is also
+          #     present at ... value=(true)". Pastram false: nu slabim protectia,
+          #     doar declaram explicit ca a noastra castiga.
+          REPLACE_ATTRS = ['android:requestLegacyExternalStorage']
+          m_app = re.search(r'<application\b[^>]*>', s)
+          if not m_app:
+              raise SystemExit("<application> nu a fost gasit in AndroidManifest.xml")
+          app_tag = m_app.group(0)
+          existing = re.search(r'tools:replace="([^"]*)"', app_tag)
+          if existing:
+              current = [x.strip() for x in existing.group(1).split(',') if x.strip()]
+              merged = current + [a for a in REPLACE_ATTRS if a not in current]
+              new_app = app_tag.replace(existing.group(0), 'tools:replace="%s"' % ','.join(merged))
+          else:
+              new_app = app_tag.replace(
+                  '<application', '<application tools:replace="%s"' % ','.join(REPLACE_ATTRS), 1
+              )
+          s = s.replace(app_tag, new_app, 1)
           # e) hardening MainActivity: singleTask + portrait + adjustPan
           m = re.search(r'<activity\b[^>]*android:name="[^"]*MainActivity"[^>]*>', s)
           if m:
@@ -380,7 +433,14 @@ jobs:
               for attr, val in (
                   ('android:launchMode', 'singleTask'),
                   ('android:screenOrientation', 'portrait'),
-                  ('android:windowSoftInputMode', 'adjustPan'),
+                  # `adjustPan` cerea Android-ului sa mute fereastra, ceea ce
+                  # intra in conflict cu edge-to-edge (decorFitsSystemWindows=false)
+                  # si cu redimensionarea din pluginul Keyboard. `adjustResize`
+                  # este modul in care insetul `Type.ime()` se propaga corect
+                  # catre listenerul din MainActivity; fereastra nu se
+                  # redimensioneaza oricum in edge-to-edge, deci nu apare o a
+                  # doua compensare.
+                  ('android:windowSoftInputMode', 'adjustResize'),
                   ('android:exported', 'true'),
               ):
                   if f'{attr}=' in new_tag:
@@ -397,8 +457,51 @@ jobs:
 
           # 3) Copiere resurse override dacă există (icon monochrome, splash)
           if [ -d android-overrides/res ]; then
+            # 3a) Validare ÎNAINTE de copiere: dacă sursa e malformată, oprim aici,
+            #     nu după ce am contaminat proiectul Android. XML 1.0 §2.5 interzice
+            #     secvența de două liniuțe în comentarii, iar AAPT respinge fișierul.
+            python3 - <<'PY'
+          import glob, sys, re
+          import xml.etree.ElementTree as ET
+          bad = []
+          for f in sorted(glob.glob("android-overrides/res/**/*.xml", recursive=True)):
+              try:
+                  ET.parse(f)
+              except Exception as e:
+                  bad.append(f"{f}: {e}")
+          layout = "android-overrides/res/layout/activity_main.xml"
+          try:
+              src = open(layout, encoding="utf-8").read()
+              for m in re.finditer(r"<!--.*?-->", src, re.S):
+                  if "--" in m.group(0)[4:-3]:
+                      bad.append(f"{layout}: comentariu cu secvența interzisă de XML 1.0 §2.5")
+          except FileNotFoundError:
+              bad.append(f"{layout}: lipsește")
+          for b in bad:
+              print(f"::error::Sursă override invalidă — {b}")
+          if bad:
+              sys.exit(1)
+          print("✓ Sursele XML din android-overrides/res sunt valide (pre-copiere).")
+          PY
             cp -rv android-overrides/res/* android/app/src/main/res/
             echo "✓ Resurse override copiate din android-overrides/res/"
+            # 3b) Validare DUPĂ copiere + amprente identice, ca să excludem orice
+            #     alterare la copiere sau un fișier preexistent rămas necopiat.
+            SRC=android-overrides/res/layout/activity_main.xml
+            DST=android/app/src/main/res/layout/activity_main.xml
+            python3 -c "import xml.etree.ElementTree as ET,sys; ET.parse('$DST')" || {
+              echo "::error::$DST nu parsează după copiere."
+              exit 1
+            }
+            H_SRC="$(sha256sum "$SRC" | awk '{print $1}')"
+            H_DST="$(sha256sum "$DST" | awk '{print $1}')"
+            echo "SHA-256 sursă      : $H_SRC"
+            echo "SHA-256 destinație : $H_DST"
+            if [ "$H_SRC" != "$H_DST" ]; then
+              echo "::error::Layout-ul copiat diferă de sursă — override-ul nu s-a aplicat corect."
+              exit 1
+            fi
+            echo "✓ activity_main.xml parsează și este identic cu sursa."
           fi
 
           # 4) MainActivity override — expune SHA-1/SHA-256 al semnăturii instalate
@@ -596,6 +699,8 @@ jobs:
             RAW="$MANUAL_VERSION"
           elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             RAW="${GITHUB_REF#refs/tags/v}"
+          elif [ -f release/version.json ]; then
+            RAW="$(python3 -c 'import json;print(json.load(open("release/version.json"))["versionName"])')"
           else
             RAW="$JSON_NAME"
           fi
@@ -830,6 +935,15 @@ jobs:
             exit 1
           fi
           echo "✓ ACCESS_BACKGROUND_LOCATION absent din merged manifest"
+          # 4) requestLegacyExternalStorage trebuie să rămână false după merge.
+          #    ioncamera-android îl aduce cu true; `tools:replace` face ca valoarea
+          #    noastră să câștige, iar aici confirmăm rezultatul, nu intenția.
+          RLES=$(grep -oP 'android:requestLegacyExternalStorage="\K[^"]+' "$MERGED" | head -1 || echo "absent")
+          if [ "$RLES" = "true" ]; then
+            echo "::error::requestLegacyExternalStorage=true în merged manifest. Storage-ul legacy trebuie să rămână dezactivat."
+            exit 1
+          fi
+          echo "✓ requestLegacyExternalStorage=$RLES (nu este true)"
           echo "✓✓✓ Compliance Google Play OK"
 
       - name: Build AAB semnat
@@ -894,6 +1008,9 @@ jobs:
           done
           ls -la "$OUT"
 
+      # Gardul suplimentar `github.ref`: un dispatch dintr-un branch de lucru nu
+      # poate publica nici dacă cineva pune skip_play_upload=false. Tag-urile
+      # (refs/tags/v*) rămân neafectate, deci fluxul de release pe tag e intact.
       - name: Detectează mapping.txt (R8)
 
         id: mapping
@@ -909,7 +1026,7 @@ jobs:
           fi
 
       - name: Publish în Google Play
-        if: ${{ github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true' }}
+        if: ${{ (github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true') && (github.event_name == 'push' || github.ref == 'refs/heads/main') }}
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
