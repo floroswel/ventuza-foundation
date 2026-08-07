@@ -45,10 +45,11 @@ describe("Security invariants — introspecție RPC", () => {
 
     const snap = data as Record<string, boolean>;
 
-    // Email confirmation + age gate
+    // Age gate (email confirmation nu mai e verificat în DB: Supabase Auth nu
+    // emite sesiune pentru un email neconfirmat, deci gate-ul e redundant)
     expect(snap.assert_account_usable_present).toBe(true);
-    expect(snap.assert_checks_email_confirmed).toBe(true);
     expect(snap.assert_checks_age).toBe(true);
+
 
     // Discover wiring
     expect(snap.discover_present).toBe(true);

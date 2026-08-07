@@ -1,0 +1,4 @@
+Stability and release fixes:
+- consistent app version on every release;
+- extra safety checks before publishing;
+- minor UI and performance fixes.
