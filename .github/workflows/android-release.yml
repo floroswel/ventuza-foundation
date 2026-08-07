@@ -31,15 +31,16 @@ on:
         default: true
         type: boolean
       version:
-        description: "Versiune SemVer (ex: 1.0.10). Gol = derivat automat din tag/timestamp."
+        description: "Versiune SemVer (ex: 1.0.12). Gol = citit din release/version.json."
         required: false
-        default: "1.0.10"
+        default: ""
         type: string
       version_code:
-        description: "versionCode explicit (ex: 10 pentru build-ul auth-fix). Gol = derivat din SemVer."
+        description: "versionCode explicit. Gol = citit din release/version.json."
         required: false
-        default: "10"
+        default: ""
         type: string
+
 
 concurrency:
   group: android-release
@@ -80,18 +81,20 @@ jobs:
         env:
           MANUAL_CODE: ${{ inputs.version_code }}
         run: |
-          if [ -n "$MANUAL_CODE" ]; then
+          set -euo pipefail
+          if [ -n "${MANUAL_CODE:-}" ]; then
             CODE="$MANUAL_CODE"
           elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             RAW="${GITHUB_REF#refs/tags/v}"
             IFS='.' read -r MAJ MIN PAT <<< "$RAW"
             CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
           else
-            echo "::error::versionCode lipsește pentru buildul manual."
-            exit 1
+            CODE=$(python3 -c "import json;print(json.load(open('release/version.json'))['versionCode'])")
           fi
+          [ -n "$CODE" ] || { echo "::error::versionCode nu a putut fi determinat."; exit 1; }
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
           echo "Marker UI: Android build $CODE · ${GITHUB_SHA:0:7}"
+
 
       - name: Setup JDK 21 (Temurin)
         uses: actions/setup-java@v4
