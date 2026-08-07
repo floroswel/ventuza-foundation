@@ -333,13 +333,13 @@ jobs:
           echo "✓ Iconițe + splash generate din assets/"
 
 
-      - name: Aplică android-overrides (compliance Google Play targetSdk 35 + no AD_ID + no background location)
+      - name: Aplică android-overrides (compliance Google Play targetSdk 36 + no AD_ID + no background location)
         run: |
           set -e
-          # 1) variables.gradle — pin targetSdk/compileSdk 35
+          # 1) variables.gradle — pin targetSdk/compileSdk 36
           if [ -f android-overrides/variables.gradle ]; then
             cp android-overrides/variables.gradle android/variables.gradle
-            echo "✓ variables.gradle override aplicat (targetSdk=35)"
+            echo "✓ variables.gradle override aplicat (targetSdk=36)"
           fi
 
           # 2) AndroidManifest — adaugă xmlns:tools + node="remove" pentru AD_ID + ACCESS_BACKGROUND_LOCATION
@@ -924,7 +924,7 @@ jobs:
           echo "--- build.gradle after ---"
           cat "$GRADLE"
 
-      - name: Verifică merged manifest — compliance Google Play (targetSdk ≥ 34 + no AD_ID + no ACCESS_BACKGROUND_LOCATION)
+      - name: Verifică merged manifest — compliance Google Play (targetSdk ≥ 36 + no AD_ID + no ACCESS_BACKGROUND_LOCATION)
         working-directory: android
         run: |
           chmod +x ./gradlew
@@ -936,10 +936,10 @@ jobs:
           fi
           test -f "$MERGED" || { echo "::error::Merged manifest lipsă"; exit 1; }
           echo "--- merged manifest: $MERGED ---"
-          # 1) targetSdk >= 34
+          # 1) targetSdk >= 36
           TSDK=$(grep -oP 'android:targetSdkVersion="\K[0-9]+' "$MERGED" | head -1 || echo "0")
-          if [ -z "$TSDK" ] || [ "$TSDK" -lt 34 ]; then
-            echo "::error::targetSdk=$TSDK < 34. Google Play cere targetSdk ≥ 34 din 31.08.2025."
+          if [ -z "$TSDK" ] || [ "$TSDK" -lt 36 ]; then
+            echo "::error::targetSdk=$TSDK < 36. Google Play cere targetSdk ≥ 36 (Android 16) pentru încărcări noi."
             exit 1
           fi
           echo "✓ targetSdk=$TSDK"

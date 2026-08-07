@@ -1,9 +1,8 @@
 // Suzeta — Android SDK & version pins (Google Play compliance).
 //
 // Copiază DUPĂ `npx cap add android` în `android/variables.gradle` (peste
-// fișierul generat de Capacitor). Google Play cere `targetSdk >= 34`
-// din 31 august 2025 pentru aplicații existente și de la launch pentru
-// aplicații noi. Compile SDK trebuie să se alinieze.
+// fișierul generat de Capacitor). Google Play cere `targetSdk >= 36`
+// (Android 16) pentru încărcări noi. Compile SDK trebuie să se alinieze.
 //
 // Sursa autoritativă pentru bump: `release/version.json` +
 // `scripts/bump-android-version.mjs`.
@@ -12,7 +11,7 @@ ext {
     // NU folosi tools:overrideLibrary — duce la crash-uri la runtime.
     minSdkVersion = 24
     compileSdkVersion = 36
-    targetSdkVersion = 35
+    targetSdkVersion = 36
     androidxActivityVersion = '1.9.3'
     androidxAppCompatVersion = '1.7.0'
     androidxCoordinatorLayoutVersion = '1.2.0'

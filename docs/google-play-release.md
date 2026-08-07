@@ -41,7 +41,7 @@ android {
   defaultConfig {
     applicationId "app.suzeta"
     minSdkVersion 24            // Android 7.0 — cerință Play 2026 pentru dating
-    targetSdkVersion 35          // Android 15 — cerință Play din august 2026
+    targetSdkVersion 36          // Android 16 — cerință Play pentru încărcări noi
     versionCode 1                // INCREMENTĂ manual la fiecare urcare (număr întreg strict crescător)
     versionName "1.0.0"          // SemVer, vizibil userului
   }
@@ -222,7 +222,7 @@ Toate există în cod (`src/routes/legal.*`).
 - [ ] `versionCode` incrementat + `versionName` bumped.
 - [ ] AAB semnat cu keystore-ul de release (nu debug).
 - [ ] `applicationId = app.suzeta` neschimbat.
-- [ ] `targetSdkVersion = 35`.
+- [ ] `targetSdkVersion = 36`.
 - [ ] `android.allowMixedContent = false` în capacitor.config.ts.
 - [ ] Data safety form completat + salvat.
 - [ ] Content rating IARC 18+ obținut.
