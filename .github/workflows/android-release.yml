@@ -45,6 +45,7 @@ on:
         default: ""
         type: string
 
+
 concurrency:
   group: android-release
   cancel-in-progress: false
@@ -104,7 +105,8 @@ jobs:
         env:
           MANUAL_CODE: ${{ inputs.version_code }}
         run: |
-          if [ -n "$MANUAL_CODE" ]; then
+          set -euo pipefail
+          if [ -n "${MANUAL_CODE:-}" ]; then
             CODE="$MANUAL_CODE"
           elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
             RAW="${GITHUB_REF#refs/tags/v}"
@@ -119,8 +121,10 @@ jobs:
             echo "::error::versionCode lipsește: nu e dat ca input, nu venim din tag și release/version.json nu există."
             exit 1
           fi
+          [ -n "$CODE" ] || { echo "::error::versionCode nu a putut fi determinat."; exit 1; }
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
           echo "Marker UI: Android build $CODE · ${GITHUB_SHA:0:7}"
+
 
       - name: Setup JDK 21 (Temurin)
         uses: actions/setup-java@v4
@@ -185,12 +189,16 @@ jobs:
           }
           echo "✓ Google nativ: online Credential Manager + ID token, fără redirect WebView sau scopes custom."
 
-      - name: Instrumentează diagnosticul nativ Google
+      - name: Instrumentează diagnosticul nativ Google (best effort)
+        continue-on-error: true
         run: |
-          set -euo pipefail
+          set -uo pipefail
           PROVIDER="node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java"
-          test -f "$PROVIDER"
-          python3 <<'PY'
+          if [ ! -f "$PROVIDER" ]; then
+            echo "::warning::GoogleProvider.java lipsește — sar peste instrumentarea diagnosticului (nu blochează release-ul)."
+            exit 0
+          fi
+          python3 <<'PY' || echo "::warning::Instrumentarea diagnosticului Google a eșuat — continuăm fără ea."
           p = "node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java"
           s = open(p, encoding="utf-8").read()
           needle = 'Log.e(LOG_TAG, "Google Sign-In failed", e);'
@@ -219,8 +227,8 @@ jobs:
               s = s.replace(helper_anchor, helper + helper_anchor, 1)
           open(p, "w", encoding="utf-8").write(s)
           PY
-          grep -q 'recordSuzetaDiagnostic(e)' "$PROVIDER"
-          echo "✓ Excepția Credential Manager va fi capturată în diagnosticul din aplicație."
+          echo "Pas de diagnostic terminat (non-blocant)."
+
 
       - name: Build web bundle
         env:
@@ -678,33 +686,41 @@ jobs:
           fi
 
 
-      - name: Derive versionCode & versionName din tag
+      - name: Derive versionCode & versionName (release/version.json = sursa unică)
         id: version
         env:
           MANUAL_VERSION: ${{ inputs.version }}
           MANUAL_CODE: ${{ inputs.version_code }}
         run: |
-          if [[ -n "$MANUAL_VERSION" ]]; then
+          set -euo pipefail
+          JSON_NAME=$(python3 -c "import json;print(json.load(open('release/version.json'))['versionName'])")
+          JSON_CODE=$(python3 -c "import json;print(json.load(open('release/version.json'))['versionCode'])")
+          if [[ -n "${MANUAL_VERSION:-}" ]]; then
             RAW="$MANUAL_VERSION"
           elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             RAW="${GITHUB_REF#refs/tags/v}"
           elif [ -f release/version.json ]; then
             RAW="$(python3 -c 'import json;print(json.load(open("release/version.json"))["versionName"])')"
           else
-            RAW="0.0.$(date +%s | tail -c 6)"
+            RAW="$JSON_NAME"
           fi
-          IFS='.' read -r MAJ MIN PAT <<< "$RAW"
-          if [[ -n "${MANUAL_CODE}" ]]; then
+          if [[ -n "${MANUAL_CODE:-}" ]]; then
             CODE="${MANUAL_CODE}"
           elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            IFS='.' read -r MAJ MIN PAT <<< "$RAW"
             CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
-          elif [ -f release/version.json ]; then
-            CODE="$(python3 -c 'import json;print(json.load(open("release/version.json"))["versionCode"])')"
           else
-            CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
+            CODE="$JSON_CODE"
+          fi
+          # Play respinge un AAB cu versionCode deja folosit — semnalăm devreme
+          # dacă buildul manual rămâne în urma sursei unice de versiune.
+          if [ "$CODE" -lt "$JSON_CODE" ]; then
+            echo "::error::versionCode=$CODE este mai mic decât release/version.json ($JSON_CODE). Google Play va respinge AAB-ul ca duplicat/învechit."
+            exit 1
           fi
           echo "name=${RAW}" >> "$GITHUB_OUTPUT"
           echo "code=${CODE}" >> "$GITHUB_OUTPUT"
+
           echo "Version: ${RAW} (code=${CODE})"
 
       - name: Patch versionCode/versionName în build.gradle
@@ -905,14 +921,13 @@ jobs:
           fi
           echo "✓ targetSdk=$TSDK"
           # 2) AD_ID trebuie să LIPSEASCĂ
-          if grep -q 'com.google.android.gms.permission.AD_ID' "$MERGED" | grep -qv 'tools:node="remove"'; then
-            if grep 'com.google.android.gms.permission.AD_ID' "$MERGED" | grep -qv 'tools:node'; then
-              echo "::error::AD_ID prezent în merged manifest. Data Safety declară 'No advertising' — permisiunea trebuie eliminată."
-              grep 'AD_ID' "$MERGED"
-              exit 1
-            fi
+          if grep 'com.google.android.gms.permission.AD_ID' "$MERGED" | grep -qv 'tools:node'; then
+            echo "::error::AD_ID prezent în merged manifest. Data Safety declară 'No advertising' — permisiunea trebuie eliminată."
+            grep 'AD_ID' "$MERGED"
+            exit 1
           fi
           echo "✓ AD_ID absent din merged manifest"
+
           # 3) ACCESS_BACKGROUND_LOCATION trebuie să LIPSEASCĂ (geofencing dormant)
           if grep 'android.permission.ACCESS_BACKGROUND_LOCATION' "$MERGED" | grep -qv 'tools:node'; then
             echo "::error::ACCESS_BACKGROUND_LOCATION prezent. Geofencing background nu e activ — permisiunea trebuie eliminată."
@@ -996,6 +1011,20 @@ jobs:
       # Gardul suplimentar `github.ref`: un dispatch dintr-un branch de lucru nu
       # poate publica nici dacă cineva pune skip_play_upload=false. Tag-urile
       # (refs/tags/v*) rămân neafectate, deci fluxul de release pe tag e intact.
+      - name: Detectează mapping.txt (R8)
+
+        id: mapping
+        run: |
+          set -euo pipefail
+          M=android/app/build/outputs/mapping/release/mapping.txt
+          if [ -s "$M" ]; then
+            echo "path=$M" >> "$GITHUB_OUTPUT"
+            echo "✓ mapping.txt găsit (deobfuscare crash-uri activă)"
+          else
+            echo "path=" >> "$GITHUB_OUTPUT"
+            echo "::warning::mapping.txt lipsește (minifyEnabled=false) — urcăm AAB-ul fără fișier de deobfuscare."
+          fi
+
       - name: Publish în Google Play
         if: ${{ (github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true') && (github.event_name == 'push' || github.ref == 'refs/heads/main') }}
         uses: r0adkll/upload-google-play@v1.1.5
@@ -1006,7 +1035,8 @@ jobs:
           track: ${{ github.event.inputs.track || 'internal' }}
           status: ${{ github.event.inputs.release_status || 'draft' }}
           whatsNewDirectory: distribution/whatsnew
-          mappingFile: android/app/build/outputs/mapping/release/mapping.txt
+          mappingFile: ${{ steps.mapping.outputs.path }}
+
           changesNotSentForReview: false
 
       - name: Curăță secretele de pe runner

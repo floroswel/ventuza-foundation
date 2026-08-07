@@ -1,0 +1,4 @@
+Reparații de stabilitate și publicare:
+- versiunea aplicației este acum consistentă la fiecare lansare;
+- verificări suplimentare de siguranță înainte de publicare;
+- corecții minore de interfață și performanță.
