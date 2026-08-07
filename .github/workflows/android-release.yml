@@ -425,7 +425,14 @@ jobs:
               for attr, val in (
                   ('android:launchMode', 'singleTask'),
                   ('android:screenOrientation', 'portrait'),
-                  ('android:windowSoftInputMode', 'adjustPan'),
+                  # `adjustPan` cerea Android-ului sa mute fereastra, ceea ce
+                  # intra in conflict cu edge-to-edge (decorFitsSystemWindows=false)
+                  # si cu redimensionarea din pluginul Keyboard. `adjustResize`
+                  # este modul in care insetul `Type.ime()` se propaga corect
+                  # catre listenerul din MainActivity; fereastra nu se
+                  # redimensioneaza oricum in edge-to-edge, deci nu apare o a
+                  # doua compensare.
+                  ('android:windowSoftInputMode', 'adjustResize'),
                   ('android:exported', 'true'),
               ):
                   if f'{attr}=' in new_tag:

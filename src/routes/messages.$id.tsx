@@ -67,6 +67,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { bottomScrollTop, isNearBottom } from "@/lib/keyboard-inset";
 import { uniqueRealtimeTopic } from "@/lib/realtime-topic";
 import { SwipeToReply } from "@/components/SwipeToReply";
 import {
@@ -363,9 +364,26 @@ function ThreadPage() {
   useEffect(() => {
     const el = scrollerRef.current;
     if (!el) return;
-    const nearBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 200;
-    if (nearBottom) el.scrollTop = el.scrollHeight;
+    if (isNearBottom(el)) el.scrollTop = bottomScrollTop(el);
   }, [messages.length]);
+
+  // Tastatura Android: lista se micșorează cu înălțimea tastaturii, deci ultimul
+  // mesaj ar rămâne ascuns sub composer. Reancorăm la bază — dar numai dacă
+  // utilizatorul era deja jos, altfel l-am smuci din istoricul pe care îl citea.
+  // `native-runtime` emite evenimentul la fiecare schimbare de stare a tastaturii.
+  useEffect(() => {
+    const onKeyboard = () => {
+      if (!scrollerRef.current || !isNearBottom(scrollerRef.current)) return;
+      // Un cadru de așteptare: evenimentul poate sosi înainte ca layout-ul să fi
+      // aplicat noua înălțime.
+      requestAnimationFrame(() => {
+        const node = scrollerRef.current;
+        if (node) node.scrollTop = bottomScrollTop(node);
+      });
+    };
+    window.addEventListener("suzeta:keyboard", onKeyboard);
+    return () => window.removeEventListener("suzeta:keyboard", onKeyboard);
+  }, []);
 
   async function loadMore() {
     if (loadingMore || !hasMore || messages.length === 0) return;

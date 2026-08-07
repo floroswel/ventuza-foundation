@@ -111,7 +111,17 @@ html {
 
 @layer base {
   :root {
+    /* Raportat de @capacitor/keyboard (keyboardWillShow/DidShow). */
     --keyboard-height: 0px;
+    /* Raportat de MainActivity din WindowInsetsCompat.Type.ime(). În edge-to-edge
+       fereastra nu se mai redimensionează pentru tastatură, deci acesta este
+       singurul semnal fiabil pe API 30+. */
+    --android-keyboard-height: 0px;
+    /* O SINGURĂ sursă efectivă pentru compensare. `max`, nu sumă: ambele surse
+       raportează aceeași înălțime, iar dacă una tace, cealaltă acoperă cazul.
+       Toate utilitarele de composer folosesc exclusiv această variabilă — două
+       compensări suprapuse ar ridica input-ul de două ori. */
+    --keyboard-inset: max(var(--keyboard-height, 0px), var(--android-keyboard-height, 0px));
     /* Insets efective: env() dacă WebView-ul le raportează, altfel valorile
        injectate nativ din WindowInsets (MainActivity). */
     --safe-top: max(env(safe-area-inset-top), var(--android-inset-top, 0px));
@@ -467,17 +477,17 @@ html {
    Populated by src/lib/native-runtime.ts via @capacitor/keyboard listeners.
    Utility: <div class="pb-keyboard">  → padding-bottom grows when keyboard is up. */
 @utility pb-keyboard {
-  padding-bottom: calc(var(--safe-bottom) + var(--keyboard-height));
+  padding-bottom: calc(var(--safe-bottom) + var(--keyboard-inset));
 }
 @utility mb-keyboard {
-  margin-bottom: var(--keyboard-height);
+  margin-bottom: var(--keyboard-inset);
 }
 
 /* Bară de acțiuni / composer lipită de jos.
    Garantează un spațiu minim peste bara gestuală Android și urcă odată cu
    tastatura (Keyboard resize = "none", deci CSS-ul face treaba). */
 @utility pb-bar {
-  padding-bottom: calc(max(var(--safe-bottom), 0.875rem) + var(--keyboard-height));
+  padding-bottom: calc(max(var(--safe-bottom), 0.875rem) + var(--keyboard-inset));
 }
 
 /* Listă scrollabilă în interiorul unui flex column (chat, feed-uri).
