@@ -1,0 +1,5 @@
+• Derularea funcționează din nou pe ecranele lungi: Setări, Profilul meu și Editare profil se parcurg până la capăt.
+• Butoanele X și Salvează nu mai intră sub bara de status pe telefoanele cu notch.
+• Like și Pass te readuc în grilă exact unde erai.
+• Profilul celuilalt se deschide corect din conversație.
+• Când un profil nu poate fi afișat, vezi motivul real.

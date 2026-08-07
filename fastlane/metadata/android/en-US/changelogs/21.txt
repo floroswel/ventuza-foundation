@@ -1,0 +1,5 @@
+• Scrolling works again on long screens: Settings, My profile and Edit profile can be read all the way down.
+• The X and Save buttons in Edit profile no longer sit under the status bar on notched phones.
+• Like and Pass return you to the grid exactly where you left off, without reloading the list.
+• Opening someone's profile from a conversation now works.
+• When a profile can't be shown, the app states the real reason instead of a generic message.
