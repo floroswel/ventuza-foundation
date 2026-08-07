@@ -204,9 +204,9 @@ export function CommunityEn() {
 
       <h2 className={H2}>Resources</h2>
       <p className={P}>
-        ACCEPT Romania —{" "}
-        <a className="text-primary" href="tel:+40215635209">
-          021 563 52 09
+        Emergencies{" "}
+        <a className="text-primary" href="tel:112">
+          112
         </a>{" "}
         · Anti-violence helpline{" "}
         <a className="text-primary" href="tel:0800500333">
@@ -214,6 +214,7 @@ export function CommunityEn() {
         </a>
         .
       </p>
+
 
       <h2 className={H2}>Operator</h2>
       <div className="mt-2">

@@ -181,10 +181,10 @@ export const BADGES: Record<BadgeCode, BadgeDef> = {
   },
   ngo_partner: {
     code: "ngo_partner", target: "user", isManual: true, effect: "glow",
-    label: { ro: "Partener ONG", en: "NGO Partner" },
+    label: { ro: "Partener verificat", en: "Verified Partner" },
     icon: Heart, colorClass: "text-emerald-500", priority: 150,
-    criteria: { ro: "Reprezentant verificat al unui ONG partener (ACCEPT, ARAS etc.).",
-                en: "Verified representative of a partner NGO." },
+    criteria: { ro: "Reprezentant verificat al unei organizații partenere Suzeta.",
+                en: "Verified representative of a Suzeta partner organisation." },
     expiry: null,
   },
   bar_verified: {
