@@ -394,6 +394,29 @@ jobs:
                   s = re.sub(rf'({re.escape(attr)}=")[^"]*(")', rf'\g<1>{val}\g<2>', s, count=1)
               else:
                   s = s.replace('<application', f'<application {attr}="{val}"', 1)
+          # d2) tools:replace — impune valorile noastre peste cele din biblioteci.
+          #     io.ionic.libs:ioncamera-android:1.0.1 (dependenta nativa a
+          #     @capacitor/camera) declara requestLegacyExternalStorage="true".
+          #     Fara acest marcaj, manifest merger opreste build-ul la
+          #     :app:processReleaseMainManifest cu "Attribute
+          #     application@requestLegacyExternalStorage value=(false) ... is also
+          #     present at ... value=(true)". Pastram false: nu slabim protectia,
+          #     doar declaram explicit ca a noastra castiga.
+          REPLACE_ATTRS = ['android:requestLegacyExternalStorage']
+          m_app = re.search(r'<application\b[^>]*>', s)
+          if not m_app:
+              raise SystemExit("<application> nu a fost gasit in AndroidManifest.xml")
+          app_tag = m_app.group(0)
+          existing = re.search(r'tools:replace="([^"]*)"', app_tag)
+          if existing:
+              current = [x.strip() for x in existing.group(1).split(',') if x.strip()]
+              merged = current + [a for a in REPLACE_ATTRS if a not in current]
+              new_app = app_tag.replace(existing.group(0), 'tools:replace="%s"' % ','.join(merged))
+          else:
+              new_app = app_tag.replace(
+                  '<application', '<application tools:replace="%s"' % ','.join(REPLACE_ATTRS), 1
+              )
+          s = s.replace(app_tag, new_app, 1)
           # e) hardening MainActivity: singleTask + portrait + adjustPan
           m = re.search(r'<activity\b[^>]*android:name="[^"]*MainActivity"[^>]*>', s)
           if m:
@@ -890,6 +913,15 @@ jobs:
             exit 1
           fi
           echo "✓ ACCESS_BACKGROUND_LOCATION absent din merged manifest"
+          # 4) requestLegacyExternalStorage trebuie să rămână false după merge.
+          #    ioncamera-android îl aduce cu true; `tools:replace` face ca valoarea
+          #    noastră să câștige, iar aici confirmăm rezultatul, nu intenția.
+          RLES=$(grep -oP 'android:requestLegacyExternalStorage="\K[^"]+' "$MERGED" | head -1 || echo "absent")
+          if [ "$RLES" = "true" ]; then
+            echo "::error::requestLegacyExternalStorage=true în merged manifest. Storage-ul legacy trebuie să rămână dezactivat."
+            exit 1
+          fi
+          echo "✓ requestLegacyExternalStorage=$RLES (nu este true)"
           echo "✓✓✓ Compliance Google Play OK"
 
       - name: Build AAB semnat
