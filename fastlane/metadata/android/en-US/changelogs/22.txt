@@ -2,3 +2,4 @@
 • What you type and the Send button stay visible.
 • The last message shows above the composer, and the list stays scrollable.
 • The first Back press closes the keyboard without leaving the conversation.
+• The authentication diagnostic panel was removed from the app.

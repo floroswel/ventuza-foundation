@@ -2,3 +2,4 @@
 • Textul tastat și butonul Trimite rămân vizibile.
 • Ultimul mesaj se vede deasupra căsuței de scris, iar lista rămâne derulabilă.
 • Prima apăsare pe Back închide tastatura, fără să ieși din conversație.
+• Panoul de diagnostic al autentificării a fost scos din aplicație.

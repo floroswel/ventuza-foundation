@@ -2,5 +2,5 @@
   "versionName": "1.0.13",
   "versionCode": 22,
   "track": "internal",
-  "notes": "Build 22: tastatura Android nu mai acopera casuta de scris din conversatie. Composer-ul urca deasupra tastaturii, textul tastat si butonul Trimite ramane vizibile, ultimul mesaj se vede deasupra composer-ului, iar prima apasare pe Back inchide tastatura fara sa iasa din conversatie."
+  "notes": "Build 22: tastatura Android nu mai acopera casuta de scris din conversatie - composer-ul urca deasupra tastaturii, textul tastat si butonul Trimite ramane vizibile, iar ultimul mesaj se vede deasupra composer-ului. Prima apasare pe Back inchide tastatura fara sa iasa din conversatie. Panoul de diagnostic al autentificarii a fost scos din interfata."
 }
