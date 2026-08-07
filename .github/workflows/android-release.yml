@@ -579,27 +579,39 @@ jobs:
           fi
 
 
-      - name: Derive versionCode & versionName din tag
+      - name: Derive versionCode & versionName (release/version.json = sursa unică)
         id: version
         env:
           MANUAL_VERSION: ${{ inputs.version }}
           MANUAL_CODE: ${{ inputs.version_code }}
         run: |
-          if [[ -n "$MANUAL_VERSION" ]]; then
+          set -euo pipefail
+          JSON_NAME=$(python3 -c "import json;print(json.load(open('release/version.json'))['versionName'])")
+          JSON_CODE=$(python3 -c "import json;print(json.load(open('release/version.json'))['versionCode'])")
+          if [[ -n "${MANUAL_VERSION:-}" ]]; then
             RAW="$MANUAL_VERSION"
           elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             RAW="${GITHUB_REF#refs/tags/v}"
           else
-            RAW="0.0.$(date +%s | tail -c 6)"
+            RAW="$JSON_NAME"
           fi
-          IFS='.' read -r MAJ MIN PAT <<< "$RAW"
-          if [[ -n "${MANUAL_CODE}" ]]; then
+          if [[ -n "${MANUAL_CODE:-}" ]]; then
             CODE="${MANUAL_CODE}"
-          else
+          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            IFS='.' read -r MAJ MIN PAT <<< "$RAW"
             CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
+          else
+            CODE="$JSON_CODE"
+          fi
+          # Play respinge un AAB cu versionCode deja folosit — semnalăm devreme
+          # dacă buildul manual rămâne în urma sursei unice de versiune.
+          if [ "$CODE" -lt "$JSON_CODE" ]; then
+            echo "::error::versionCode=$CODE este mai mic decât release/version.json ($JSON_CODE). Google Play va respinge AAB-ul ca duplicat/învechit."
+            exit 1
           fi
           echo "name=${RAW}" >> "$GITHUB_OUTPUT"
           echo "code=${CODE}" >> "$GITHUB_OUTPUT"
+
           echo "Version: ${RAW} (code=${CODE})"
 
       - name: Patch versionCode/versionName în build.gradle
