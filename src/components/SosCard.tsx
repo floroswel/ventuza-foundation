@@ -208,10 +208,6 @@ export function SosCard() {
           <a href="tel:112" className="font-semibold text-destructive">
             sună 112
           </a>
-          . Linie ACCEPT LGBTQ+:{" "}
-          <a href="tel:+40213120884" className="font-medium underline">
-            021 312 0884
-          </a>
           .
         </p>
       </div>

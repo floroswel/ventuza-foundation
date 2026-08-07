@@ -115,9 +115,9 @@ function CommunityPage() {
 
               <h2 className="mt-6 text-base font-semibold">Resurse</h2>
               <p>
-                ACCEPT România —{" "}
-                <a className="text-primary" href="tel:+40215635209">
-                  021 563 52 09
+                Urgențe{" "}
+                <a className="text-primary" href="tel:112">
+                  112
                 </a>{" "}
                 · Helpline anti-violență{" "}
                 <a className="text-primary" href="tel:0800500333">
@@ -125,6 +125,7 @@ function CommunityPage() {
                 </a>
                 .
               </p>
+
 
               <h2 className="mt-6 text-base font-semibold">Operator</h2>
               <div className="mt-2">

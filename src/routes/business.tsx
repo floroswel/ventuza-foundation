@@ -380,8 +380,8 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
         <Tier
           name="Community"
           price="În curând"
-          desc="Pentru ONG-uri LGBTQ+, asociații Pride, clinici de testare HIV/ITS, linii de criză."
-          perks={["Profil verificat", "Listare evenimente", "Badge ONG", "Suport email"]}
+          desc="Pentru organizații și asociații care vor prezență în comunitate."
+          perks={["Profil verificat", "Listare evenimente", "Badge partener", "Suport email"]}
         />
         <Tier
           name="Starter"

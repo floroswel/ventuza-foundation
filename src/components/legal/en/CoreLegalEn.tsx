@@ -62,8 +62,7 @@ export function TermsEn() {
       </p>
       <p className={P}>
         <strong>{OPERATOR.brand} does not process HIV status data.</strong> We do not collect,
-        store or display HIV status or testing dates. For free testing and counselling we encourage
-        you to use the public resources (ARAS, Sensiblu Testing) linked from the safety centre.
+        store or display HIV status or testing dates.
       </p>
 
       <h2 className={H2}>5.1. Non-discrimination and protection of LGBTQ+ identity</h2>
@@ -186,8 +185,7 @@ export function PrivacyEn() {
           </ul>
           <p className="mt-2 text-xs text-muted-foreground">
             <strong>We do NOT process HIV status data.</strong> {OPERATOR.brand} has fully removed
-            the collection and storage of HIV data. For testing and information see the public ARAS
-            resources in the safety centre.
+            the collection and storage of HIV data.
           </p>
         </li>
         <li>

@@ -150,48 +150,9 @@ function SafetyCenter() {
               </a>{" "}
               — Telefonul de criză (suport emoțional)
             </li>
-            <li>
-              <a
-                href="https://www.accept-romania.ro"
-                target="_blank"
-                rel="noreferrer"
-                className="underline"
-              >
-                ACCEPT
-              </a>{" "}
-              — Suport LGBTQ+ România
-            </li>
           </ul>
         </div>
 
-        <div className="rounded-2xl border border-border bg-surface p-4">
-          <h2 className="text-sm font-semibold">Sănătate sexuală</h2>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Testarea regulată (HIV, ITS) este parte din grijă, nu rușine. PrEP, PEP și TasP sunt
-            opțiuni reale.
-          </p>
-          <ul className="mt-2 space-y-1 text-xs">
-            <li>
-              •{" "}
-              <a
-                href="https://www.arasnet.ro"
-                target="_blank"
-                rel="noreferrer"
-                className="underline"
-              >
-                ARAS
-              </a>{" "}
-              — Testare gratuită + counseling
-            </li>
-            <li>
-              •{" "}
-              <a href="https://sensiblu.com" target="_blank" rel="noreferrer" className="underline">
-                Sensiblu
-              </a>{" "}
-              — Teste rapide HIV/ITS
-            </li>
-          </ul>
-        </div>
 
         <div className="rounded-2xl border border-border bg-surface p-4">
           <h2 className="text-sm font-semibold">Ai fost hărțuit sau te simți în pericol?</h2>
