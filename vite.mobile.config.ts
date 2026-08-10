@@ -9,6 +9,7 @@
  * NU afectează `bun run build` (web rămâne SSR pe Cloudflare).
  */
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { legacyCssFallbacks } from "./scripts/vite-legacy-css";
 
 export default defineConfig({
   nitro: false,
@@ -20,6 +21,9 @@ export default defineConfig({
     },
   },
   vite: {
+    // Fara asta, bundle-ul din APK/AAB ramane cu oklch()/color-mix() pure,
+    // deci fara culori pe WebView-uri mai vechi de Chrome 111.
+    plugins: [legacyCssFallbacks()],
     build: {
       outDir: "dist",
       emptyOutDir: true,
