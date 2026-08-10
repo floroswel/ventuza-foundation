@@ -168,12 +168,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "manifest", href: "/manifest.webmanifest" },
 
 
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap",
-      },
+      // Fonturi LOCALE. Erau servite de pe Google Fonts CDN, ceea ce însemna:
+      // fără fontul brandului când telefonul e offline, două drumuri către un
+      // domeniu extern înainte de primul text, și IP-ul fiecărui utilizator
+      // trimis la Google — greu de susținut alături de promisiunea „date
+      // procesate în UE”. Vezi public/fonts/fonts.css.
+      { rel: "preload", as: "font", type: "font/woff2", href: "/fonts/inter-400-latin.woff2", crossOrigin: "" },
+      { rel: "stylesheet", href: "/fonts/fonts.css" },
     ],
   }),
   shellComponent: RootShell,
