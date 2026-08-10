@@ -1,0 +1,4 @@
+• Aplicația pornește vizibil mai repede: prima încărcare s-a redus cu o treime.
+• Fonturile sunt incluse în aplicație, deci textul arată corect și fără internet.
+• Pe telefoanele mai vechi culorile se afișează corect — înainte unele ecrane rămâneau fără culori.
+• Modul incognito se citește clar, iar ecranele care nu puteau fi găsite sunt acum accesibile.

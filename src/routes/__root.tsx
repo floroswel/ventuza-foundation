@@ -8,7 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -91,15 +91,42 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
     );
   }, [error]);
 
+  // Cea mai frecventă cauză a acestui ecran este lipsa conexiunii, nu un bug.
+  // Când rețeaua revine, reîncercăm SINGURI, fără să cerem utilizatorului să
+  // apese nimic — și spunem adevărul despre cauză cât timp e offline.
+  const [online, setOnline] = useState(() =>
+    typeof navigator === "undefined" ? true : navigator.onLine,
+  );
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const back = () => {
+      setOnline(true);
+      router.invalidate();
+      reset();
+    };
+    const gone = () => setOnline(false);
+    window.addEventListener("online", back);
+    window.addEventListener("offline", gone);
+    return () => {
+      window.removeEventListener("online", back);
+      window.removeEventListener("offline", gone);
+    };
+  }, [router, reset]);
+
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
+    // Ecranul pe care utilizatorul îl vede în cel mai prost moment posibil.
+    // Era în engleză într-o aplicație în română, iar `pt-safe pb-safe` lipsea,
+    // deci pe Android textul putea intra sub bara de stare.
+    <div className="flex min-h-dvh items-center justify-center bg-background px-4 pb-safe pt-safe">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          Ecranul nu s-a încărcat
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          {online
+            ? "Ceva a mers prost la noi. Încearcă din nou — de obicei se rezolvă."
+            : "Pare că nu ai conexiune la internet. Verifică rețeaua și încearcă din nou."}
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -109,13 +136,13 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
             }}
             className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
-            Try again
+            Încearcă din nou
           </button>
           <a
             href="/"
             className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            Înapoi la început
           </a>
         </div>
       </div>
