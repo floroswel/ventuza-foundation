@@ -248,9 +248,14 @@ function ProfilePage() {
           >
             <Crown className="size-4 text-primary" />
           </Button>
+          {/* `data-testid`: E2E-ul nu trebuie să depindă de textul vizibil.
+              Traducerea etichetelor în română a rupt profile_edit.py, care
+              căuta „Edit profile”. Identificatorul rămâne stabil la orice
+              schimbare de copy sau de limbă. */}
           <Button
             size="icon"
             variant="subtle"
+            data-testid="edit-profile-button"
             onClick={() => setEditing(true)}
             aria-label="Editează profilul"
           >
@@ -323,12 +328,22 @@ function ProfilePage() {
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            {/* `data-verified` poartă starea separat de text, ca E2E-ul să
+                verifice FAPTUL, nu cuvântul afișat. */}
             {profile.verified_at ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur">
+              <span
+                data-testid="verification-badge"
+                data-verified="true"
+                className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur"
+              >
                 <BadgeCheck className="size-3" /> Verificat
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">
+              <span
+                data-testid="verification-badge"
+                data-verified="false"
+                className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface/70 px-2.5 py-1 text-xs backdrop-blur"
+              >
                 <ShieldAlert className="size-3" /> Neverificat
               </span>
             )}
@@ -879,13 +894,22 @@ function EditDrawer({
         <button
           onClick={onClose}
           aria-label="Close"
+          data-testid="edit-profile-close"
           className="text-muted-foreground hover:text-foreground"
         >
           <X className="size-5" />
         </button>
-        <h2 className="font-display text-lg">Editează profilul</h2>
-        <Button onClick={save} variant="hero" size="sm" disabled={saving}>
-          {saving && <Loader2 className="size-3 animate-spin" />} Save
+        <h2 data-testid="edit-profile-heading" className="font-display text-lg">
+          Editează profilul
+        </h2>
+        <Button
+          onClick={save}
+          variant="hero"
+          size="sm"
+          disabled={saving}
+          data-testid="edit-profile-save"
+        >
+          {saving && <Loader2 className="size-3 animate-spin" />} Salvează
         </Button>
       </header>
 
