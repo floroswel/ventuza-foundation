@@ -273,10 +273,19 @@ jobs:
             exit 1
           fi
           echo "✓ $INDEX OK ($SIZE bytes)"
-          test -s dist/client/brand/suzeta-icon.png || {
-            echo "::error::Logo-ul local lipsește din dist/client/brand/."
+          # Numele fișierului se citește din `SUZETA_ICON_URL`, sursa de adevăr.
+          # Hardcodat, verificarea a rămas în urmă când logo-ul a trecut de la
+          # PNG (795 KB) la WebP (5 KB) și a oprit buildul degeaba.
+          LOGO=$(python3 -c "import re,io;m=re.search(r'SUZETA_ICON_URL\s*=\s*\"([^\"]+)\"', io.open('src/lib/brand-assets.ts',encoding='utf-8').read());print(m.group(1) if m else '')")
+          test -n "$LOGO" || {
+            echo "::error::Nu am putut citi SUZETA_ICON_URL din src/lib/brand-assets.ts."
             exit 1
           }
+          test -s "dist/client${LOGO}" || {
+            echo "::error::Logo-ul local ($LOGO) lipsește din dist/client."
+            exit 1
+          }
+          echo "✓ logo local: $LOGO ($(stat -c%s "dist/client${LOGO}") bytes)"
           grep -Rqs "SUZETA_NATIVE_FIX_V3" dist/client || {
             echo "::error::Markerul reparațiilor native lipsește din bundle."
             exit 1
@@ -304,8 +313,9 @@ jobs:
         run: |
           set -euo pipefail
           NATIVE_ASSETS=android/app/src/main/assets/public
-          test -s "$NATIVE_ASSETS/brand/suzeta-icon.png" || {
-            echo "::error::Logo-ul local nu a ajuns în assets/public din Android."
+          LOGO=$(python3 -c "import re,io;m=re.search(r'SUZETA_ICON_URL\s*=\s*\"([^\"]+)\"', io.open('src/lib/brand-assets.ts',encoding='utf-8').read());print(m.group(1) if m else '')")
+          test -s "$NATIVE_ASSETS${LOGO}" || {
+            echo "::error::Logo-ul local ($LOGO) nu a ajuns în assets/public din Android."
             exit 1
           }
           grep -Rqs "SUZETA_NATIVE_FIX_V3" "$NATIVE_ASSETS" || {
@@ -980,8 +990,9 @@ jobs:
           AAB=android/app/build/outputs/bundle/release/app-release.aab
           TMP="$(mktemp -d)"
           unzip -q "$AAB" -d "$TMP"
-          test -s "$TMP/base/assets/public/brand/suzeta-icon.png" || {
-            echo "::error::AAB-ul final nu conține logo-ul Suzeta local."
+          LOGO=$(python3 -c "import re,io;m=re.search(r'SUZETA_ICON_URL\s*=\s*\"([^\"]+)\"', io.open('src/lib/brand-assets.ts',encoding='utf-8').read());print(m.group(1) if m else '')")
+          test -s "$TMP/base/assets/public${LOGO}" || {
+            echo "::error::AAB-ul final nu conține logo-ul Suzeta local ($LOGO)."
             exit 1
           }
           grep -Rqs "SUZETA_NATIVE_FIX_V3" "$TMP/base/assets/public" || {
