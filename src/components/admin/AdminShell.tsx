@@ -130,7 +130,9 @@ export function AdminShell({ items, active, onSelect, roleLabel, children, banne
             </button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto px-2 pb-4 scrollbar-none">
+          {/* `min-h-0`: altfel `flex-1` nu se micșorează sub conținut și lista
+              lungă de secțiuni admin nu se poate derula. */}
+          <nav className="min-h-0 flex-1 overflow-y-auto px-2 pb-4 scrollbar-none">
             {grouped.map(([group, list]) => (
               <div key={group} className="mb-3">
                 {!collapsed && (

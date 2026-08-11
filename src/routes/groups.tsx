@@ -260,8 +260,11 @@ function CreateGroupDrawer({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <header className="flex items-center justify-between border-b border-border/50 px-6 py-4">
+    // `pt-safe pb-safe`: un overlay `fixed inset-0` acoperă tot ecranul, inclusiv
+    // zona barei de stare și a barei gestuale. Fără ele, „Renunță” și „Creează”
+    // ajung sub bara de sus și nu se pot apăsa.
+    <div className="fixed inset-0 z-50 flex flex-col bg-background pb-safe pt-safe">
+      <header className="flex shrink-0 items-center justify-between border-b border-border/50 px-6 py-4">
         <button onClick={onClose} className="text-muted-foreground">
           Renunță
         </button>
@@ -270,7 +273,11 @@ function CreateGroupDrawer({
           {saving && <Loader2 className="size-3 animate-spin" />} Creează
         </Button>
       </header>
-      <div className="flex-1 space-y-5 overflow-y-auto px-6 py-6">
+      {/* `min-h-0` este obligatoriu: într-un flex column, un copil `flex-1` are
+          `min-height: auto`, deci nu se poate micșora sub înălțimea
+          conținutului — `overflow-y-auto` nu primește niciodată o cutie mai
+          mică și derularea rămâne blocată, cu formularul tăiat jos. */}
+      <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain px-6 py-6">
         <div className="space-y-2">
           <Label>Nume</Label>
           <Input

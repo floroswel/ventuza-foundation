@@ -176,12 +176,21 @@ function DiscoverPage() {
     if (!user || incognitoBusy) return;
     const next = !incognito;
     setIncognitoBusy(true);
-    // Optimistic update în cache-ul my-profile.
-    queryClient.setQueryData(["my-profile", user.id], { incognito: next });
+    // Optimistic update — MERGE, nu înlocuire: obiectul din cache mai conține
+    // `profile_slug` și `display_name`, de care depinde push-ul de Like.
+    const patch = (value: boolean) =>
+      queryClient.setQueryData(
+        ["my-profile", user.id],
+        (old: { incognito: boolean | null } | null | undefined) => ({
+          ...(old ?? { profile_slug: null, display_name: null }),
+          incognito: value,
+        }),
+      );
+    patch(next);
     const { error } = await supabase.from("profiles").update({ incognito: next }).eq("id", user.id);
     setIncognitoBusy(false);
     if (error) {
-      queryClient.setQueryData(["my-profile", user.id], { incognito: !next });
+      patch(!next);
       toast.error(error.message);
     } else {
       void myProfileQuery.refetch();
@@ -735,6 +744,26 @@ function DiscoverPage() {
             </button>
           </div>
         </div>
+
+        {/* Incognito se comuta dintr-un buton doar-iconita, iar efectul lui —
+            disparitia din grila ALTORA — nu se vede de pe contul tau. Fara un
+            semnal permanent, singura confirmare era un toast care dispare, deci
+            parea ca butonul nu face nimic. */}
+        {incognito && (
+          <div className="mt-3 flex items-center gap-2 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-xs text-amber-300">
+            <EyeOff className="size-4 shrink-0" />
+            <p className="flex-1">
+              Ești invizibil: profilul tău nu apare în grila celorlalți. Tu poți naviga normal.
+            </p>
+            <button
+              onClick={toggleIncognito}
+              disabled={incognitoBusy}
+              className="shrink-0 rounded-full border border-amber-500/50 px-2.5 py-1 font-medium hover:bg-amber-500/20"
+            >
+              Ieși
+            </button>
+          </div>
+        )}
 
         <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
           <TabBtn active={tab === "nearby"} onClick={() => setTab("nearby")}>

@@ -4,9 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   BadgeCheck,
+  Compass,
   Crown,
   Eye,
   EyeOff,
+  Users,
   Pencil,
   Settings as SettingsIcon,
   ShieldAlert,
@@ -14,6 +16,7 @@ import {
   X,
   Loader2,
 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { generateBio, photoCoach } from "@/lib/ai.functions";
 import { useConsent } from "@/lib/use-consent";
@@ -151,6 +154,7 @@ function ProfilePage() {
   const uiLocale = useUiLocale();
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -244,11 +248,16 @@ function ProfilePage() {
           >
             <Crown className="size-4 text-primary" />
           </Button>
+          {/* `data-testid`: E2E-ul nu trebuie să depindă de textul vizibil.
+              Traducerea etichetelor în română a rupt profile_edit.py, care
+              căuta „Edit profile”. Identificatorul rămâne stabil la orice
+              schimbare de copy sau de limbă. */}
           <Button
             size="icon"
             variant="subtle"
+            data-testid="edit-profile-button"
             onClick={() => setEditing(true)}
-            aria-label="Edit profile"
+            aria-label="Editează profilul"
           >
             <Pencil className="size-4" />
           </Button>
@@ -319,13 +328,23 @@ function ProfilePage() {
           </div>
 
           <div className="mt-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            {/* `data-verified` poartă starea separat de text, ca E2E-ul să
+                verifice FAPTUL, nu cuvântul afișat. */}
             {profile.verified_at ? (
-              <span className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur">
-                <BadgeCheck className="size-3" /> Verified
+              <span
+                data-testid="verification-badge"
+                data-verified="true"
+                className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur"
+              >
+                <BadgeCheck className="size-3" /> Verificat
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface/70 px-2.5 py-1 text-xs backdrop-blur">
-                <ShieldAlert className="size-3" /> Unverified
+              <span
+                data-testid="verification-badge"
+                data-verified="false"
+                className="inline-flex items-center gap-1 rounded-full border border-border/60 bg-surface/70 px-2.5 py-1 text-xs backdrop-blur"
+              >
+                <ShieldAlert className="size-3" /> Neverificat
               </span>
             )}
             {profile.incognito && (
@@ -372,7 +391,7 @@ function ProfilePage() {
             LifestyleFactsCard — reactivabile prin remontare. */}
 
         {profile.bio && (
-          <Section title="About">
+          <Section title="Despre">
             <p className="whitespace-pre-wrap leading-relaxed text-foreground/90">{profile.bio}</p>
           </Section>
         )}
@@ -519,11 +538,11 @@ function ProfilePage() {
               ...(profile.pronouns_custom ? [profile.pronouns_custom] : []),
             ]}
           />
-          <TagRow label="Orientation" values={profile.orientation ?? []} />
-          <TagRow label="Looking for" values={profile.looking_for ?? []} />
+          <TagRow label="Orientare" values={profile.orientation ?? []} />
+          <TagRow label="Caut" values={profile.looking_for ?? []} />
         </Section>
 
-        <Section title="Activity">
+        <Section title="Activitate">
           <Link
             to="/visitors"
             className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4 hover:border-primary/50"
@@ -533,10 +552,46 @@ function ProfilePage() {
                 <Eye className="size-5" />
               </span>
               <div>
-                <p className="text-sm font-medium">Who viewed you</p>
+                <p className="text-sm font-medium">Cine ți-a văzut profilul</p>
                 <p className="text-xs text-muted-foreground">
-                  See everyone who checked your profile
+                  Lista completă a vizitatorilor
                 </p>
+              </div>
+            </div>
+            <span className="text-xs text-muted-foreground">›</span>
+          </Link>
+        </Section>
+
+        {/* /explore și /groups erau pagini complete fără NICIUN link către ele:
+            apăreau doar în listele de rute ale AgeGate și QuickExit, deci nu se
+            putea ajunge la ele apăsând nimic în aplicație. */}
+        <Section title="Comunitate">
+          <Link
+            to="/explore"
+            className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4 hover:border-primary/50"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex size-10 items-center justify-center rounded-full bg-primary/15 text-primary">
+                <Compass className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">Explorează</p>
+                <p className="text-xs text-muted-foreground">Evenimente și locuri din orașul tău</p>
+              </div>
+            </div>
+            <span className="text-xs text-muted-foreground">›</span>
+          </Link>
+          <Link
+            to="/groups"
+            className="flex items-center justify-between rounded-2xl border border-border bg-surface p-4 hover:border-primary/50"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex size-10 items-center justify-center rounded-full bg-primary/15 text-primary">
+                <Users className="size-5" />
+              </span>
+              <div>
+                <p className="text-sm font-medium">Grupuri</p>
+                <p className="text-xs text-muted-foreground">Comunități după interese</p>
               </div>
             </div>
             <span className="text-xs text-muted-foreground">›</span>
@@ -590,14 +645,24 @@ function ProfilePage() {
                 .eq("id", profile.id);
               if (error) return toast.error(error.message);
               setProfile({ ...profile, incognito: next });
-              toast.success(next ? "You're now in Obsidian Vault." : "You're visible again.");
+              // Discover ține aceeași valoare în cache-ul ["my-profile"]. Fără
+              // invalidare, cele două ecrane arătau stări diferite până la
+              // următorul refetch.
+              await queryClient.invalidateQueries({ queryKey: ["my-profile", profile.id] });
+              toast.success(
+                next
+                  ? "Mod incognito activat — nu mai apari în grila celorlalți."
+                  : "Ești din nou vizibil în grilă.",
+              );
             }}
             className="flex w-full items-center justify-between rounded-2xl border border-border bg-surface p-4 text-left hover:border-primary/50"
           >
             <div>
-              <p className="text-sm font-medium">Obsidian Vault</p>
+              {/* Se numea „Obsidian Vault”, cu descriere în engleză: nimeni nu
+                  recunoștea în el modul incognito pe care îl căuta. */}
+              <p className="text-sm font-medium">Mod incognito</p>
               <p className="text-xs text-muted-foreground">
-                Hide your profile from the grid. You can still browse.
+                Îți ascunde profilul din grilă. Tu poți naviga în continuare normal.
               </p>
             </div>
             <span
@@ -829,13 +894,22 @@ function EditDrawer({
         <button
           onClick={onClose}
           aria-label="Close"
+          data-testid="edit-profile-close"
           className="text-muted-foreground hover:text-foreground"
         >
           <X className="size-5" />
         </button>
-        <h2 className="font-display text-lg">Edit Profile</h2>
-        <Button onClick={save} variant="hero" size="sm" disabled={saving}>
-          {saving && <Loader2 className="size-3 animate-spin" />} Save
+        <h2 data-testid="edit-profile-heading" className="font-display text-lg">
+          Editează profilul
+        </h2>
+        <Button
+          onClick={save}
+          variant="hero"
+          size="sm"
+          disabled={saving}
+          data-testid="edit-profile-save"
+        >
+          {saving && <Loader2 className="size-3 animate-spin" />} Salvează
         </Button>
       </header>
 
@@ -849,7 +923,7 @@ function EditDrawer({
           <div className="space-y-2">
             {/* `htmlFor`/`id`: fără ele eticheta nu e asociată inputului, deci nici
                 cititoarele de ecran, nici `getByLabel` nu îl găsesc. */}
-            <Label htmlFor="edit-display-name">Display Name</Label>
+            <Label htmlFor="edit-display-name">Nume afișat</Label>
             <Input
               id="edit-display-name"
               value={form.display_name ?? ""}
@@ -864,7 +938,7 @@ function EditDrawer({
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="edit-bio">About Me</Label>
+              <Label htmlFor="edit-bio">Despre mine</Label>
               <AiBioButton form={form} setForm={setForm} />
             </div>
             <Textarea

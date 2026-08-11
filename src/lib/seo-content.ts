@@ -7,7 +7,9 @@
 export const SITE_URL = "https://suzeta.app";
 export const SUPPORT_EMAIL = "support@suzeta.app";
 export const PRIVACY_EMAIL = "dpo@suzeta.eu";
-export const OG_IMAGE = `${SITE_URL}/og-image.png`;
+// JPEG, nu PNG: 1200x630 ca PNG cântărea 712 KB. Crawlerele de social media
+// acceptă JPEG peste tot, iar previzualizarea se încarcă vizibil mai repede.
+export const OG_IMAGE = `${SITE_URL}/og-image.jpg`;
 export const LOGO_512 = `${SITE_URL}/icon-512.png`;
 
 export const HOME_TITLE = "Suzeta – Gay Dating & LGBTQ+ Chat App";

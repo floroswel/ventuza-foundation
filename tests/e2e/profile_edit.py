@@ -111,8 +111,8 @@ async def rest_get_profile(page: Page) -> dict | None:
 
 async def open_editor(page: Page) -> None:
     await page.goto(BASE + "/profile", wait_until="domcontentloaded")
-    await page.get_by_role("button", name="Edit profile").click()
-    await page.get_by_role("heading", name="Edit Profile").wait_for()
+    await page.get_by_test_id("edit-profile-button").click()
+    await page.get_by_test_id("edit-profile-heading").wait_for()
 
 
 # ---------- G1 --------------------------------------------------------------
@@ -143,18 +143,18 @@ async def test_edit_basics(context: BrowserContext) -> None:
         new_name = f"E2E{stamp}"  # <=15 chars
         new_bio = f"E2E bio {stamp} — autotest edit."
         # Display name
-        name_input = page.get_by_label("Display Name")
+        name_input = page.locator("#edit-display-name")
         await name_input.fill("")
         await name_input.type(new_name)
         # Bio
-        bio_input = page.get_by_label("About Me")
+        bio_input = page.locator("#edit-bio")
         await bio_input.fill("")
         await bio_input.type(new_bio)
         await page.screenshot(path=str(OUT / "e1_before_save.png"))
-        await page.get_by_role("button", name="Save").click()
+        await page.get_by_test_id("edit-profile-save").click()
         # Drawer închide la succes
         await page.get_by_role("heading", name="Your profile").or_(
-            page.get_by_role("button", name="Edit profile")
+            page.get_by_test_id("edit-profile-button")
         ).wait_for(timeout=8000)
         row = await rest_get_profile(page)
         assert row and row.get("display_name") == new_name, f"name not persisted: {row}"
@@ -193,8 +193,8 @@ async def test_edit_chips(context: BrowserContext) -> None:
         if await orient.count():
             await orient.first.click()
         await page.screenshot(path=str(OUT / "e2_chips_before_save.png"))
-        await page.get_by_role("button", name="Save").click()
-        await page.get_by_role("button", name="Edit profile").wait_for(timeout=8000)
+        await page.get_by_test_id("edit-profile-save").click()
+        await page.get_by_test_id("edit-profile-button").wait_for(timeout=8000)
         row = await rest_get_profile(page)
         assert row and len(row.get("interests") or []) >= 3, f"interests not persisted: {row}"
         assert row and len(row.get("pronouns") or []) >= 1, f"pronouns not persisted: {row}"
@@ -216,13 +216,17 @@ async def test_unverified_badge(context: BrowserContext) -> None:
         await restore_session(context, page)
         await page.goto(BASE + "/profile", wait_until="domcontentloaded")
         # Așteaptă header-ul de profil
-        await page.get_by_role("button", name="Edit profile").wait_for(timeout=8000)
+        await page.get_by_test_id("edit-profile-button").wait_for(timeout=8000)
         row = await rest_get_profile(page)
-        expected = "Verified" if (row and row.get("verified_at")) else "Unverified"
-        badge = page.get_by_text(expected, exact=True).first
+        # Verificăm STAREA, nu cuvântul afișat: `data-verified` nu se schimbă
+        # când textul e tradus. Aserțiunea rămâne la fel de strictă.
+        expected = "true" if (row and row.get("verified_at")) else "false"
+        badge = page.get_by_test_id("verification-badge").first
         await badge.wait_for(timeout=5000)
-        await page.screenshot(path=str(OUT / f"e3_{expected.lower()}.png"))
-        ok(f"E3 badge = {expected}")
+        actual = await badge.get_attribute("data-verified")
+        assert actual == expected, f"data-verified={actual}, asteptat {expected}"
+        await page.screenshot(path=str(OUT / f"e3_verified_{expected}.png"))
+        ok(f"E3 badge data-verified={expected}")
     except Exception as e:
         await page.screenshot(path=str(OUT / "e3_fail.png"))
         bad("E3 unverified badge", str(e))
@@ -238,7 +242,7 @@ async def test_char_counters(context: BrowserContext) -> None:
     try:
         await restore_session(context, page)
         await open_editor(page)
-        name_input = page.get_by_label("Display Name")
+        name_input = page.locator("#edit-display-name")
         await name_input.fill("")
         # 25 caractere — maxLength=15 taie la 15
         await name_input.type("ABCDEFGHIJKLMNOPQRSTUVWXY")
@@ -248,12 +252,12 @@ async def test_char_counters(context: BrowserContext) -> None:
         counter = page.get_by_text("15/15", exact=True).first
         await counter.wait_for(timeout=2000)
         # Bio counter
-        bio_input = page.get_by_label("About Me")
+        bio_input = page.locator("#edit-bio")
         await bio_input.fill("test123")
         await page.get_by_text("7/255", exact=True).first.wait_for(timeout=2000)
         await page.screenshot(path=str(OUT / "e4_counters.png"))
         # Nu salvăm — închidem cu X
-        await page.get_by_role("button", name="Close").click()
+        await page.get_by_test_id("edit-profile-close").click()
         ok("E4 char counters + maxLength")
     except Exception as e:
         await page.screenshot(path=str(OUT / "e4_fail.png"))
@@ -280,8 +284,8 @@ async def test_prompts_regression(context: BrowserContext) -> None:
         if await my_tags.count():
             await my_tags.first.click()
             await my_tags.first.click()  # revert
-        await page.get_by_role("button", name="Save").click()
-        await page.get_by_role("button", name="Edit profile").wait_for(timeout=8000)
+        await page.get_by_test_id("edit-profile-save").click()
+        await page.get_by_test_id("edit-profile-button").wait_for(timeout=8000)
         after = await rest_get_profile(page)
         prompts_after = (after or {}).get("prompts") or []
         assert prompts_before == prompts_after, (

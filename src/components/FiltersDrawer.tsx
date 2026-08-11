@@ -43,7 +43,9 @@ export function FiltersDrawer({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-40 flex flex-col bg-background/95 backdrop-blur">
+    // `pt-safe pb-safe`: overlay-ul acoperă tot ecranul, deci fără ele antetul
+    // cu „Resetează” intră sub bara de stare.
+    <div className="fixed inset-0 z-40 flex flex-col bg-background/95 pb-safe pt-safe backdrop-blur">
       <header className="flex items-center justify-between border-b border-border/50 px-6 py-4">
         <button
           onClick={onClose}
@@ -65,7 +67,10 @@ export function FiltersDrawer({
       </header>
 
 
-      <div className="flex-1 space-y-8 overflow-y-auto px-6 py-6">
+      {/* `min-h-0`: fără el, `flex-1` păstrează `min-height: auto`, scroller-ul
+          nu primește o cutie mai mică decât conținutul și filtrele de jos
+          (distanță, vârstă) rămân inaccesibile pe ecrane mici. */}
+      <div className="min-h-0 flex-1 space-y-8 overflow-y-auto overscroll-contain px-6 py-6">
         {/* quick toggles */}
         <section className="flex flex-wrap gap-2">
           <Toggle

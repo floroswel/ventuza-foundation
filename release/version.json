@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.14",
-  "versionCode": 23,
+  "versionName": "1.0.15",
+  "versionCode": 25,
   "track": "internal",
-  "notes": "Build 23: tastatura nu mai acopera casuta de scris din chat (compensare exclusiv nativa, fara dubla ridicare). Notificarile Android au din nou sunet: canalele erau create cu un sunet inexistent si erau mute; canale noi messages_v2/matches_v2. Tap pe notificare deschide destinatia corecta si dupa repornirea aplicatiei. Like nu mai inchide profilul, Pass trece la profilul urmator, iar notificarea de Like arata cine a dat Like si duce la profilul lui. targetSdk 36."
+  "notes": "Build 25: prima incarcare scade de la 2.3 MB la 1.5 MB (imaginile de la 961 KB la 5 KB, fonturi servite local in loc de Google Fonts CDN). Culorile au acum varianta de rezerva pentru WebView-uri mai vechi de Chrome 111, deci aplicatia nu mai ramane fara culori pe telefoane cu WebView neactualizat. Incognito lizibil si ecranele orfane accesibile."
 }

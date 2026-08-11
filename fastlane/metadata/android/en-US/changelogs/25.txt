@@ -1,0 +1,4 @@
+• The app starts noticeably faster: first load is a third smaller.
+• Fonts ship inside the app, so text looks right even without internet.
+• Colors now render correctly on older phones — some screens used to lose them entirely.
+• Incognito mode is legible, and screens that couldn't be reached are now accessible.
