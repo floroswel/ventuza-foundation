@@ -41,26 +41,31 @@ const cssFiles = existsSync(assetsDir)
   ? readdirSync(assetsDir).filter((f) => f.startsWith("styles-") && f.endsWith(".css"))
   : [];
 
-describe.runIf(cssFiles.length > 0)("bundle-ul construit", () => {
-  const css = readFileSync(join(assetsDir, cssFiles[0]), "utf8");
+// Citirea se face DIN interiorul testelor, nu în corpul lui `describe`:
+// `describe.runIf(false)` marchează suita ca sărită, dar corpul callback-ului
+// este oricum evaluat la colectare. Cu build-ul absent, `cssFiles[0]` este
+// `undefined` și `join()` arunca ERR_INVALID_ARG_TYPE — testul pica exact pe
+// mașinile unde ar fi trebuit doar să nu ruleze.
+const readCss = () => readFileSync(join(assetsDir, cssFiles[0]), "utf8");
 
+describe.runIf(cssFiles.length > 0)("bundle-ul construit", () => {
   it("nu conține `oklch()`, pe care motoarele sub Chrome 111 nu îl înțeleg", () => {
-    expect(css).not.toContain("oklch(");
+    expect(readCss()).not.toContain("oklch(");
   });
 
   it("culorile moderne stau în spatele unui `@supports`", () => {
     // Cascada corectă: valoarea simplă întâi, varianta modernă gated după ea.
     // Motoarele vechi nu intră în bloc și rămân cu prima valoare.
-    expect(css).toContain("@supports (color:lab(");
+    expect(readCss()).toContain("@supports (color:lab(");
   });
 
   it("variabilele de temă au o valoare pe care o citește orice motor", () => {
     // `--primary:#de41ff` înainte de `--primary:lab(...)`.
-    expect(css).toMatch(/--primary:#[0-9a-f]{3,8}/i);
+    expect(readCss()).toMatch(/--primary:#[0-9a-f]{3,8}/i);
   });
 
   it("tema nu depinde EXCLUSIV de culori moderne", () => {
-    const hex = (css.match(/:#[0-9a-f]{3,8}/gi) ?? []).length;
+    const hex = (readCss().match(/:#[0-9a-f]{3,8}/gi) ?? []).length;
     expect(hex).toBeGreaterThan(100);
   });
 });
