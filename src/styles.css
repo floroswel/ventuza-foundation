@@ -130,6 +130,15 @@ html {
       var(--android-keyboard-height, 0px),
       var(--visual-keyboard-height, 0px)
     );
+
+    /* Insets efective: env() dacă WebView-ul le raportează, altfel valorile
+       injectate nativ din WindowInsets (MainActivity). Acestea TREBUIE să stea
+       pe :root — sunt consumate de padding-ul din `body`, de `pt-safe`,
+       `pb-safe`, `pb-bar`, `pb-nav` și de toate calculele de înălțime. */
+    --safe-top: max(env(safe-area-inset-top, 0px), var(--android-inset-top, 0px));
+    --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--android-inset-bottom, 0px));
+    --safe-left: max(env(safe-area-inset-left, 0px), var(--android-inset-left, 0px));
+    --safe-right: max(env(safe-area-inset-right, 0px), var(--android-inset-right, 0px));
   }
 
   /* Native Android: @capacitor/keyboard redimensionează efectiv WebView-ul
@@ -148,21 +157,17 @@ html {
      încă o înălțime de navbar deasupra tastaturii. */
   html[data-keyboard-open="true"] {
     --safe-bottom: 0px;
-    /* Insets efective: env() dacă WebView-ul le raportează, altfel valorile
-       injectate nativ din WindowInsets (MainActivity). */
-    --safe-top: max(env(safe-area-inset-top), var(--android-inset-top, 0px));
-    --safe-bottom: max(env(safe-area-inset-bottom), var(--android-inset-bottom, 0px));
-    --safe-left: max(env(safe-area-inset-left), var(--android-inset-left, 0px));
-    --safe-right: max(env(safe-area-inset-right), var(--android-inset-right, 0px));
   }
 
-  /* Fallback pentru WebView-uri vechi fără dvh: doar env(). */
+
+  /* Fallback pentru WebView-uri vechi fără dvh: fără `max()` imbricat, dar tot
+     cu valorile injectate nativ ca rezervă când env() raportează 0. */
   @supports not (height: 100dvh) {
     :root {
-      --safe-top: env(safe-area-inset-top, 0px);
-      --safe-bottom: env(safe-area-inset-bottom, 0px);
-      --safe-left: env(safe-area-inset-left, 0px);
-      --safe-right: env(safe-area-inset-right, 0px);
+      --safe-top: max(env(safe-area-inset-top, 0px), var(--android-inset-top, 0px));
+      --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--android-inset-bottom, 0px));
+      --safe-left: max(env(safe-area-inset-left, 0px), var(--android-inset-left, 0px));
+      --safe-right: max(env(safe-area-inset-right, 0px), var(--android-inset-right, 0px));
     }
   }
 

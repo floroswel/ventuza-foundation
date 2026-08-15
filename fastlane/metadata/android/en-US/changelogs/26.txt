@@ -1,0 +1,3 @@
+• Content is no longer cut off at the top or bottom: screens now respect the status bar and gesture bar on every phone
+• Profile, Settings and Chat lay out correctly on notched and rounded displays
+• Stability and small visual fixes
