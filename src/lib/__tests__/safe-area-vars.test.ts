@@ -11,8 +11,8 @@ import { describe, expect, it } from "vitest";
  */
 const css = readFileSync(resolve(process.cwd(), "src/styles.css"), "utf8");
 
-function blockFor(selector: string): string {
-  const idx = css.indexOf(selector);
+function blockFor(selector: string, from = 0): string {
+  const idx = css.indexOf(selector, from);
   expect(idx, `selector lipsă: ${selector}`).toBeGreaterThan(-1);
   const start = css.indexOf("{", idx);
   let depth = 0;
@@ -27,7 +27,9 @@ function blockFor(selector: string): string {
 }
 
 describe("safe-area CSS variables", () => {
-  const root = blockFor(":root");
+  // Blocul :root din @layer base — cel care conține insets-urile.
+  const root = blockFor(":root", css.indexOf("@layer base"));
+
 
   it.each(["--safe-top", "--safe-bottom", "--safe-left", "--safe-right"])(
     "%s este definit pe :root",
