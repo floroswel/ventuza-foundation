@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.15",
-  "versionCode": 25,
+  "versionName": "1.0.16",
+  "versionCode": 26,
   "track": "internal",
-  "notes": "Build 25: prima incarcare scade de la 2.3 MB la 1.5 MB (imaginile de la 961 KB la 5 KB, fonturi servite local in loc de Google Fonts CDN). Culorile au acum varianta de rezerva pentru WebView-uri mai vechi de Chrome 111, deci aplicatia nu mai ramane fara culori pe telefoane cu WebView neactualizat. Incognito lizibil si ecranele orfane accesibile."
+  "notes": "Build 26: reparat spatiul pentru barele de sistem. Variabilele de safe-area erau active doar cat timp tastatura era deschisa, deci pe Android continutul intra sub bara de stare si sub bara gestuala (profil, setari, chat, tot). Acum ecranele se aseaza corect pe orice telefon, cu sau fara notch."
 }
