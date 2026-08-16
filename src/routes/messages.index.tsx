@@ -1,8 +1,8 @@
 import { safeFormat, safeLocale } from "@/lib/safe-locale";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, MessageCircle, Crown, SquarePen } from "lucide-react";
+import { Loader2, MessageCircle, SquarePen } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
@@ -68,6 +68,8 @@ function MessagesRouteError({ error, reset }: { error: Error; reset: () => void 
 
 function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [onlineOnly, setOnlineOnly] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   // Sursa unică — se hidratează la login și se actualizează în realtime la
@@ -167,7 +169,7 @@ function MessagesPage() {
               Reîncearcă
             </Button>
           </div>
-        ) : items.length === 0 ? (
+        ) : visible.length === 0 ? (
           <EmptyState
             icon={MessageCircle}
             title="Nicio conversație încă"
@@ -175,7 +177,7 @@ function MessagesPage() {
           />
         ) : (
           <ul className="divide-y divide-border/30">
-            {items.map((c) => (
+            {visible.map((c) => (
               <li key={c.id}>
                 <Link
                   to="/messages/$id"
@@ -281,4 +283,29 @@ function formatWhen(iso: string | null | undefined): string {
   }
   return safeFormat(d, {}, "date");
 
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1 rounded-full border px-3 py-1 text-[12px] font-medium transition-colors",
+        active
+          ? "border-primary/60 bg-primary/15 text-primary"
+          : "border-border bg-surface text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
+  );
 }
