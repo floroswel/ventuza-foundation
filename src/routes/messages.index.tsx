@@ -188,11 +188,11 @@ function MessagesPage() {
                   <div className="relative shrink-0">
                     <div
                       className={cn(
-                        "size-14 rounded-full p-[2px]",
+                        "size-14 rounded-2xl p-[2px]",
                         "bg-gradient-to-tr from-primary/70 via-primary to-primary/70",
                       )}
                     >
-                      <div className="size-full overflow-hidden rounded-full bg-surface ring-2 ring-background">
+                      <div className="size-full overflow-hidden rounded-[14px] bg-surface ring-2 ring-background">
                         {c.other_photo ? (
                           <img
                             src={c.other_photo}
@@ -219,7 +219,7 @@ function MessagesPage() {
                     <div className="flex items-baseline gap-2">
                       <p
                         className={cn(
-                          "min-w-0 flex-1 truncate font-serif text-lg leading-tight text-primary",
+                          "min-w-0 flex-1 truncate text-[15px] leading-tight text-foreground",
                           c.unread ? "font-semibold" : "font-medium",
                         )}
                       >
