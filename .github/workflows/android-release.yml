@@ -243,7 +243,7 @@ jobs:
           if [ -z "$APP_SIGNING_SHA256" ]; then
             echo "::warning::ANDROID_APP_SIGNING_SHA256 nu este setat în GitHub vars. assetlinks.json rămâne doar cu fingerprint-ul de upload key. Setează variabila în GitHub → Settings → Secrets and variables → Actions → Variables cu valoarea SHA-256 din Play Console → Setup → App signing."
           else
-            export APP_SIGNING_SHA256
+            export APP_SIGNING_SHA256 FILE
             python3 <<'PY'
           import json, os
           f = os.environ['FILE']
