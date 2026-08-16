@@ -276,6 +276,9 @@ jobs:
           VITE_ANDROID_APP_SIGNING_SHA1: ${{ vars.ANDROID_APP_SIGNING_SHA1 }}
           VITE_ANDROID_UPLOAD_SHA1: ${{ vars.ANDROID_UPLOAD_SHA1 }}
           VITE_ANDROID_IAS_SHA1: ${{ vars.ANDROID_IAS_SHA1 }}
+          # SHA-256 pentru assetlinks.json + diagnostic deep links
+          VITE_ANDROID_APP_SIGNING_SHA256: ${{ vars.ANDROID_APP_SIGNING_SHA256 }}
+          VITE_ANDROID_UPLOAD_SHA256: ${{ vars.ANDROID_UPLOAD_SHA256 }}
           VITE_BUILD_SHA: ${{ github.sha }}
           VITE_BUILD_VERSION_CODE: ${{ steps.buildmeta.outputs.code }}
         run: bun run build:mobile
