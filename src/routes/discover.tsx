@@ -773,7 +773,7 @@ function DiscoverPage() {
           </div>
         )}
 
-        <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
+        <div className="mt-2 flex items-center gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <TabBtn active={tab === "nearby"} onClick={() => setTab("nearby")}>
             Nearby
           </TabBtn>
@@ -782,6 +782,7 @@ function DiscoverPage() {
           </TabBtn>
           <GoldenHourBadge className="ml-1 flex-shrink-0" />
         </div>
+
 
         <QuickFiltersStrip value={filters} onChange={setFilters} />
       </header>
