@@ -104,6 +104,8 @@ function ThreadPage() {
     interests?: string[] | null;
   } | null>(null);
   const [loading, setLoading] = useState(!cachedInitial);
+  // Conversație inexistentă / ID invalid în URL → ecran clar, nu chat gol.
+  const [convMissing, setConvMissing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [text, setText] = useState("");
@@ -250,7 +252,10 @@ function ThreadPage() {
           .eq("id", id)
           .maybeSingle();
         if (error) throw error;
-        if (!conv) throw new Error("Conversation not found");
+        if (!conv) {
+          if (alive) setConvMissing(true);
+          return;
+        }
         const oid = conv.user_a === userId ? conv.user_b : conv.user_a;
         const [msgs, prof, extraRes] = await Promise.all([
           fetchMessages(id),
@@ -277,7 +282,13 @@ function ThreadPage() {
         await markDelivered(id);
         await markRead(id, userId);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Couldn't open chat");
+        const msg = e instanceof Error ? e.message : "Couldn't open chat";
+        // 22P02 = ID care nu e UUID (link stricat), tratat ca „nu există".
+        if (alive && /invalid input syntax for type uuid/i.test(msg)) {
+          setConvMissing(true);
+          return;
+        }
+        toast.error(msg);
       } finally {
         if (alive) setLoading(false);
       }
@@ -677,6 +688,20 @@ function ThreadPage() {
       }))
     : [];
   const renderedMessages: UiMessage[] = [...messages, ...outboxAsMessages];
+
+  if (convMissing) {
+    return (
+      <div className="mx-auto flex h-dvh-safe max-w-md flex-col items-center justify-center gap-3 px-6 text-center">
+        <p className="text-lg font-semibold">Conversația nu există</p>
+        <p className="text-sm text-muted-foreground">
+          Link-ul nu mai este valid sau conversația a fost ștearsă.
+        </p>
+        <Link to="/messages" className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+          Înapoi la mesaje
+        </Link>
+      </div>
+    );
+  }
 
   return (
 

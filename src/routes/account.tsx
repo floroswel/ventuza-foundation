@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { signPhotos } from "@/lib/discover";
 import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/account")({
@@ -50,17 +51,36 @@ function AccountPage() {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
 
+  const [avatar, setAvatar] = useState<string | null>(null);
+
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("profiles")
-      .select(
-        "display_name, photos, age_status, hide_online, discrete_mode, boost_until, looking_now_until",
-      )
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => setProfile(data as ProfileSummary | null));
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select(
+          "display_name, photos, age_status, hide_online, discrete_mode, boost_until, looking_now_until",
+        )
+        .eq("id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      const row = data as ProfileSummary | null;
+      setProfile(row);
+      const first = row?.photos?.[0];
+      if (!first) {
+        setAvatar(null);
+        return;
+      }
+      // Pozele sunt căi din bucket privat — au nevoie de URL semnat.
+      const signed = await signPhotos([first]);
+      if (!cancelled) setAvatar(signed[first] ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
+
 
   async function toggle(field: "hide_online" | "discrete_mode", value: boolean) {
     if (!user || !profile) return;
@@ -119,8 +139,8 @@ function AccountPage() {
             className="flex min-w-0 flex-1 items-center gap-4 rounded-xl transition-transform active:scale-[0.98]"
           >
             <div className="relative size-16 shrink-0 overflow-hidden rounded-full bg-muted ring-2 ring-primary/30">
-              {profile?.photos?.[0] ? (
-                <img src={profile.photos[0]} alt="" className="h-full w-full object-cover" />
+              {avatar ? (
+                <img src={avatar} alt="" className="h-full w-full object-cover" />
               ) : (
                 <div className="grid h-full w-full place-items-center text-2xl">
                   {(profile?.display_name ?? user.email ?? "?").slice(0, 1).toUpperCase()}

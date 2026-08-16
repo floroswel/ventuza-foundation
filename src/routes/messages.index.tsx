@@ -1,3 +1,4 @@
+import { safeFormat, safeLocale } from "@/lib/safe-locale";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -257,14 +258,14 @@ function formatWhen(iso: string | null | undefined): string {
     d.getFullYear() === now.getFullYear() &&
     d.getMonth() === now.getMonth() &&
     d.getDate() === now.getDate();
-  const locale =
-    (typeof navigator !== "undefined" && navigator.language) || "ro-RO";
+  const locale = safeLocale();
   if (sameDay) {
-    return d.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
+    return safeFormat(d, { hour: "2-digit", minute: "2-digit" }, "time");
   }
   if (diff < 2 * day) return locale.startsWith("ro") ? "Ieri" : "Yesterday";
   if (diff < 7 * day) {
-    return d.toLocaleDateString(locale, { weekday: "long" });
+    return safeFormat(d, { weekday: "long" }, "date");
   }
-  return d.toLocaleDateString(locale);
+  return safeFormat(d, {}, "date");
+
 }
