@@ -668,12 +668,20 @@ function DiscoverPage() {
 
   return (
     <main className="relative min-h-dvh bg-background pb-nav">
-      <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 px-4 pb-2 pt-4 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 px-3 pb-1 pt-3 backdrop-blur">
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 flex-1 items-center gap-2">
             <QuickProfileDrawer />
-            <h1 className="wordmark truncate text-2xl font-medium leading-none">Nearby</h1>
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(true)}
+              className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-border bg-surface px-3 py-2 text-left text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <MapPin className="size-4 shrink-0 text-primary" aria-hidden />
+              <span className="truncate">Locația curentă</span>
+            </button>
           </div>
+
           <div className="flex flex-shrink-0 items-center gap-1">
             <div className="mr-1 flex items-center rounded-full border border-border bg-surface p-0.5">
               <button
@@ -765,7 +773,7 @@ function DiscoverPage() {
           </div>
         )}
 
-        <div className="mt-3 flex items-center gap-2 overflow-x-auto pb-1">
+        <div className="mt-2 flex items-center gap-2 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <TabBtn active={tab === "nearby"} onClick={() => setTab("nearby")}>
             Nearby
           </TabBtn>
@@ -774,6 +782,7 @@ function DiscoverPage() {
           </TabBtn>
           <GoldenHourBadge className="ml-1 flex-shrink-0" />
         </div>
+
 
         <QuickFiltersStrip value={filters} onChange={setFilters} />
       </header>

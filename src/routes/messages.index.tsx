@@ -1,8 +1,8 @@
 import { safeFormat, safeLocale } from "@/lib/safe-locale";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, MessageCircle, Crown, SquarePen } from "lucide-react";
+import { Loader2, MessageCircle, SquarePen } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { BottomNav } from "@/components/BottomNav";
@@ -68,6 +68,8 @@ function MessagesRouteError({ error, reset }: { error: Error; reset: () => void 
 
 function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
+  const [unreadOnly, setUnreadOnly] = useState(false);
+  const [onlineOnly, setOnlineOnly] = useState(false);
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   // Sursa unică — se hidratează la login și se actualizează în realtime la
@@ -115,26 +117,39 @@ function MessagesPage() {
     );
   }
 
+  const visible = items.filter(
+    (c) => (!unreadOnly || c.unread) && (!onlineOnly || c.other_online),
+  );
+
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-nav">
-      <header className="sticky top-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-border/40 bg-background/85 px-5 py-4 backdrop-blur">
-        <Crown className="size-6 text-primary" aria-hidden />
-        <h1 className="text-center font-serif text-2xl tracking-wide text-primary">
-          Mesaje
-        </h1>
-        <button
-          type="button"
-          onClick={() => navigate({ to: "/discover" })}
-          aria-label="Conversație nouă"
-          className="text-primary/90 transition-colors hover:text-primary"
-        >
-          <SquarePen className="size-5" />
-        </button>
+      <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 px-4 pt-3 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">Inbox</h1>
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/discover" })}
+            aria-label="Conversație nouă"
+            className="text-primary/90 transition-colors hover:text-primary"
+          >
+            <SquarePen className="size-5" />
+          </button>
+        </div>
+
+        <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <FilterChip active={unreadOnly} onClick={() => setUnreadOnly((v) => !v)}>
+            Necitite
+          </FilterChip>
+          <FilterChip active={onlineOnly} onClick={() => setOnlineOnly((v) => !v)}>
+            Online
+          </FilterChip>
+        </div>
       </header>
 
       <StoriesStrip />
 
       <div className="flex-1 px-2 py-2">
+
         {loading ? (
           <div className="flex items-center justify-center py-24 text-muted-foreground">
             <Loader2 className="size-5 animate-spin" />
@@ -154,7 +169,7 @@ function MessagesPage() {
               Reîncearcă
             </Button>
           </div>
-        ) : items.length === 0 ? (
+        ) : visible.length === 0 ? (
           <EmptyState
             icon={MessageCircle}
             title="Nicio conversație încă"
@@ -162,7 +177,7 @@ function MessagesPage() {
           />
         ) : (
           <ul className="divide-y divide-border/30">
-            {items.map((c) => (
+            {visible.map((c) => (
               <li key={c.id}>
                 <Link
                   to="/messages/$id"
@@ -173,11 +188,11 @@ function MessagesPage() {
                   <div className="relative shrink-0">
                     <div
                       className={cn(
-                        "size-14 rounded-full p-[2px]",
+                        "size-14 rounded-2xl p-[2px]",
                         "bg-gradient-to-tr from-primary/70 via-primary to-primary/70",
                       )}
                     >
-                      <div className="size-full overflow-hidden rounded-full bg-surface ring-2 ring-background">
+                      <div className="size-full overflow-hidden rounded-[14px] bg-surface ring-2 ring-background">
                         {c.other_photo ? (
                           <img
                             src={c.other_photo}
@@ -204,7 +219,7 @@ function MessagesPage() {
                     <div className="flex items-baseline gap-2">
                       <p
                         className={cn(
-                          "min-w-0 flex-1 truncate font-serif text-lg leading-tight text-primary",
+                          "min-w-0 flex-1 truncate text-[15px] leading-tight text-foreground",
                           c.unread ? "font-semibold" : "font-medium",
                         )}
                       >
@@ -268,4 +283,29 @@ function formatWhen(iso: string | null | undefined): string {
   }
   return safeFormat(d, {}, "date");
 
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex shrink-0 items-center gap-1 rounded-full border px-3 py-1 text-[12px] font-medium transition-colors",
+        active
+          ? "border-primary/60 bg-primary/15 text-primary"
+          : "border-border bg-surface text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {children}
+    </button>
+  );
 }
