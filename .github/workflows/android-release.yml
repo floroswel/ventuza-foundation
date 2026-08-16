@@ -893,6 +893,30 @@ jobs:
           } > android/keystore.properties
           echo "keystore.properties scris (valori mascate)."
 
+          # Extrage SHA-256 fingerprint-ul upload key din keystore și patch-uiește
+          # assetlinks.json în dist/client (dacă nu e deja acolo) pentru consistență.
+          UPLOAD_SHA256="$(keytool -list -v -keystore android/app/release.keystore \
+            -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" 2>/dev/null \
+            | grep -i 'SHA256:' | head -1 | awk '{print $2}' || true)"
+          if [ -n "$UPLOAD_SHA256" ]; then
+            echo "Upload key SHA-256: $UPLOAD_SHA256"
+            ASSET_DIST="dist/client/.well-known/assetlinks.json"
+            if [ -f "$ASSET_DIST" ]; then
+              python3 -c "
+          import json
+          f = '$ASSET_DIST'
+          data = json.load(open(f))
+          fps = data[0]['target']['sha256_cert_fingerprints']
+          v = '$UPLOAD_SHA256'.strip().upper()
+          if v and v not in fps:
+              fps.append(v)
+          data[0]['target']['sha256_cert_fingerprints'] = fps
+          json.dump(data, open(f, 'w'), indent=2)
+          print('assetlinks.json (dist) patchat cu upload key SHA-256')
+          " || true
+            fi
+          fi
+
 
       - name: Injectează signing config în build.gradle (dacă lipsește)
         run: |
