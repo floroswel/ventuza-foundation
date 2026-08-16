@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { isUuid } from "@/lib/is-uuid";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,8 +15,11 @@ export const Route = createFileRoute("/venues/$id")({
 
 function VenueDetailPage() {
   const { id } = Route.useParams();
+  const validId = isUuid(id);
   const { data: venue, isLoading } = useQuery({
     queryKey: ["venue", id],
+    enabled: validId,
+    retry: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("venues")
@@ -42,6 +46,7 @@ function VenueDetailPage() {
     },
   });
 
+  if (!validId) return <div className="p-6">Localul nu există sau nu e publicat.</div>;
   if (isLoading) return <div className="p-6">Se încarcă…</div>;
   if (!venue) return <div className="p-6">Localul nu există sau nu e publicat.</div>;
 
