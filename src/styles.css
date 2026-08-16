@@ -636,3 +636,19 @@ html.native-app .page-transition {
 @media (prefers-reduced-motion: reduce) {
   .page-transition { animation: none; }
 }
+
+/* Animație de deschidere a aplicației (AppSplash): logo pulse + fade. */
+@keyframes splash-pulse {
+  0% { opacity: 0; transform: scale(0.9); }
+  35% { opacity: 1; transform: scale(1.04); }
+  60% { transform: scale(0.99); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.splash-logo {
+  animation: splash-pulse 900ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  will-change: transform, opacity;
+  filter: drop-shadow(0 12px 40px color-mix(in oklab, var(--color-primary) 35%, transparent));
+}
+@media (prefers-reduced-motion: reduce) {
+  .splash-logo { animation: none; }
+}
