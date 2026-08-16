@@ -115,26 +115,39 @@ function MessagesPage() {
     );
   }
 
+  const visible = items.filter(
+    (c) => (!unreadOnly || c.unread) && (!onlineOnly || c.other_online),
+  );
+
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-nav">
-      <header className="sticky top-0 z-20 grid grid-cols-[auto_1fr_auto] items-center gap-3 border-b border-border/40 bg-background/85 px-5 py-4 backdrop-blur">
-        <Crown className="size-6 text-primary" aria-hidden />
-        <h1 className="text-center font-serif text-2xl tracking-wide text-primary">
-          Mesaje
-        </h1>
-        <button
-          type="button"
-          onClick={() => navigate({ to: "/discover" })}
-          aria-label="Conversație nouă"
-          className="text-primary/90 transition-colors hover:text-primary"
-        >
-          <SquarePen className="size-5" />
-        </button>
+      <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 px-4 pt-3 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">Inbox</h1>
+          <button
+            type="button"
+            onClick={() => navigate({ to: "/discover" })}
+            aria-label="Conversație nouă"
+            className="text-primary/90 transition-colors hover:text-primary"
+          >
+            <SquarePen className="size-5" />
+          </button>
+        </div>
+
+        <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <FilterChip active={unreadOnly} onClick={() => setUnreadOnly((v) => !v)}>
+            Necitite
+          </FilterChip>
+          <FilterChip active={onlineOnly} onClick={() => setOnlineOnly((v) => !v)}>
+            Online
+          </FilterChip>
+        </div>
       </header>
 
       <StoriesStrip />
 
       <div className="flex-1 px-2 py-2">
+
         {loading ? (
           <div className="flex items-center justify-center py-24 text-muted-foreground">
             <Loader2 className="size-5 animate-spin" />
