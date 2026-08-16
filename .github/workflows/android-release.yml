@@ -230,6 +230,35 @@ jobs:
           echo "Pas de diagnostic terminat (non-blocant)."
 
 
+      - name: Patch assetlinks.json cu SHA-256 app signing
+        env:
+          APP_SIGNING_SHA256: ${{ vars.ANDROID_APP_SIGNING_SHA256 }}
+        run: |
+          set -euo pipefail
+          FILE="public/.well-known/assetlinks.json"
+          if [ ! -f "$FILE" ]; then
+            echo "::error::$FILE lipsește."
+            exit 1
+          fi
+          if [ -z "$APP_SIGNING_SHA256" ]; then
+            echo "::warning::ANDROID_APP_SIGNING_SHA256 nu este setat în GitHub vars. assetlinks.json rămâne doar cu fingerprint-ul de upload key. Setează variabila în GitHub → Settings → Secrets and variables → Actions → Variables cu valoarea SHA-256 din Play Console → Setup → App signing."
+          else
+            python3 -c "
+          import json, sys
+            f = '$FILE'
+            data = json.load(open(f))
+            fps = data[0]['target']['sha256_cert_fingerprints']
+            v = '$APP_SIGNING_SHA256'.strip().upper()
+            if v and v not in fps:
+                fps.append(v)
+            data[0]['target']['sha256_cert_fingerprints'] = fps
+            json.dump(data, open(f, 'w'), indent=2)
+            print('assetlinks.json actualizat cu', len(fps), 'fingerprint-uri:')
+            for fp in fps: print(' ', fp)
+          "
+          fi
+
+
       - name: Build web bundle
         env:
           # Publishable keys (safe în bundle). Fallback la valorile din .env dacă lipsesc secretele repo.
