@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { isUuid } from "@/lib/is-uuid";
 import { claimOffer } from "@/lib/nearby.functions";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,8 +21,11 @@ function OfferDetailPage() {
   const { id } = Route.useParams();
   const [code, setCode] = useState<string | null>(null);
 
+  const validId = isUuid(id);
   const { data: offer, isLoading } = useQuery({
     queryKey: ["offer", id],
+    enabled: validId,
+    retry: false,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("offers")
@@ -50,6 +54,7 @@ function OfferDetailPage() {
     },
   });
 
+  if (!validId) return <div className="p-6">Oferta nu mai este disponibilă.</div>;
   if (isLoading) return <div className="p-6">Se încarcă…</div>;
   if (!offer) return <div className="p-6">Oferta nu mai este disponibilă.</div>;
 
