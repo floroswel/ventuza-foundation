@@ -5813,6 +5813,15 @@ export type Database = {
           xp_reward: number
         }[]
       }
+      get_notification_actors: {
+        Args: { _ids: string[] }
+        Returns: {
+          display_name: string
+          id: string
+          photo: string
+          profile_slug: string
+        }[]
+      }
       get_or_create_conversation: { Args: { _other: string }; Returns: string }
       get_profile_by_slug: {
         Args: { _slug: string }
