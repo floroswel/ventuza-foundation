@@ -50,17 +50,36 @@ function AccountPage() {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
 
+  const [avatar, setAvatar] = useState<string | null>(null);
+
   useEffect(() => {
     if (!user) return;
-    supabase
-      .from("profiles")
-      .select(
-        "display_name, photos, age_status, hide_online, discrete_mode, boost_until, looking_now_until",
-      )
-      .eq("id", user.id)
-      .maybeSingle()
-      .then(({ data }) => setProfile(data as ProfileSummary | null));
+    let cancelled = false;
+    void (async () => {
+      const { data } = await supabase
+        .from("profiles")
+        .select(
+          "display_name, photos, age_status, hide_online, discrete_mode, boost_until, looking_now_until",
+        )
+        .eq("id", user.id)
+        .maybeSingle();
+      if (cancelled) return;
+      const row = data as ProfileSummary | null;
+      setProfile(row);
+      const first = row?.photos?.[0];
+      if (!first) {
+        setAvatar(null);
+        return;
+      }
+      // Pozele sunt căi din bucket privat — au nevoie de URL semnat.
+      const signed = await signPhotos([first]);
+      if (!cancelled) setAvatar(signed[first] ?? null);
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
+
 
   async function toggle(field: "hide_online" | "discrete_mode", value: boolean) {
     if (!user || !profile) return;
