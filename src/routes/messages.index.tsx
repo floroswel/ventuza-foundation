@@ -138,19 +138,40 @@ function MessagesPage() {
           </button>
         </div>
 
-        <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          <FilterChip active={unreadOnly} onClick={() => setUnreadOnly((v) => !v)}>
-            Necitite
-          </FilterChip>
-          <FilterChip active={onlineOnly} onClick={() => setOnlineOnly((v) => !v)}>
-            Online
-          </FilterChip>
+        <div className="mt-2 flex items-center gap-5">
+          <TabButton active={tab === "messages"} onClick={() => setTab("messages")}>
+            Mesaje
+          </TabButton>
+          <TabButton active={tab === "interest"} onClick={() => setTab("interest")}>
+            Interes
+          </TabButton>
         </div>
+
+        {tab === "messages" ? (
+          <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <FilterChip active={unreadOnly} onClick={() => setUnreadOnly((v) => !v)}>
+              Necitite
+            </FilterChip>
+            <FilterChip active={onlineOnly} onClick={() => setOnlineOnly((v) => !v)}>
+              Online
+            </FilterChip>
+          </div>
+        ) : (
+          <div className="pb-2" />
+        )}
       </header>
 
+      {tab === "interest" ? (
+        <div className="flex-1">
+          <InterestTab />
+          <BottomNav />
+        </div>
+      ) : (
+        <>
       <StoriesStrip />
 
       <div className="flex-1 px-2 py-2">
+
 
         {loading ? (
           <div className="flex items-center justify-center py-24 text-muted-foreground">
