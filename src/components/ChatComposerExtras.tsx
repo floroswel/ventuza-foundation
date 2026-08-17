@@ -412,6 +412,41 @@ export function ChatComposerExtras({
         </div>
       )}
 
+      {variant === "row" ? (
+        <>
+          <IconAction
+            label="Cameră"
+            disabled={disabled || busy}
+            onClick={() => pickPhoto("camera")}
+            icon={<Camera className="size-5" />}
+          />
+          <IconAction
+            label="Galerie"
+            disabled={disabled || busy}
+            onClick={() => pickPhoto("gallery")}
+            icon={<ImageIcon className="size-5" />}
+          />
+          <IconAction
+            label="Foto o singură vizualizare"
+            disabled={disabled || busy}
+            onClick={() => pickPhoto("gallery-once")}
+            icon={<Timer className="size-5" />}
+          />
+          <IconAction
+            label="Voice note"
+            disabled={disabled || busy}
+            onClick={startRecording}
+            icon={<Mic className="size-5" />}
+          />
+          <IconAction
+            label={liveLocationId ? "Oprește locația live" : "Locație live"}
+            disabled={disabled || busy}
+            onClick={shareLocation}
+            active={!!liveLocationId}
+            icon={<MapPin className="size-5" />}
+          />
+        </>
+      ) : (
       <div className="relative">
 
         <button
