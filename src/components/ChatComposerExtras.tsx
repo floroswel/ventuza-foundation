@@ -54,9 +54,17 @@ type Props = {
   onSent: (m: MessageRow) => void;
   onUpdated?: (m: MessageRow) => void;
   disabled?: boolean;
+  /** "menu" = buton + cu meniu (default); "row" = iconițe inline sub input (stil nativ). */
+  variant?: "menu" | "row";
 };
 
-export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled }: Props) {
+export function ChatComposerExtras({
+  conversationId,
+  onSent,
+  onUpdated,
+  disabled,
+  variant = "menu",
+}: Props) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
