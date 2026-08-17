@@ -16,6 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { getMyAdvertiser, listMyCampaigns, type Advertiser, type AdCampaign } from "@/lib/ads";
 import { BottomNav } from "@/components/BottomNav";
+import {
+  fetchPartnerPricing,
+  formatPlanPrice,
+  type PartnerPricingRow,
+} from "@/lib/partner-pricing";
 
 export const Route = createFileRoute("/advertise")({
   ssr: false,
