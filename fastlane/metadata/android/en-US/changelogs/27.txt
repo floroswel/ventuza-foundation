@@ -1,0 +1,2 @@
+Redesigned inbox: no empty gap under Stories, real last-message previews (text, photo, voice note, location), Unread / Online / Recent filters and an unread counter badge.
+Chat: the composer now grows to multiple lines and follows your cursor, and the empty gap between the conversation and the keyboard is gone. New messages appear instantly and stay anchored.
