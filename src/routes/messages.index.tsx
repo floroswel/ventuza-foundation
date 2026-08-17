@@ -68,6 +68,7 @@ function MessagesRouteError({ error, reset }: { error: Error; reset: () => void 
 
 function MessagesPage() {
   const { user, loading: authLoading } = useAuth();
+  const [tab, setTab] = useState<"messages" | "interest">("messages");
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [onlineOnly, setOnlineOnly] = useState(false);
   const navigate = useNavigate();
@@ -76,6 +77,7 @@ function MessagesPage() {
   // schimbarea toggle-ului din Settings (fără refresh).
   const { prefs } = useNotificationPrefs();
   const showPreview = prefs.show_preview;
+
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
