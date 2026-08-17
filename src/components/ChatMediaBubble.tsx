@@ -276,6 +276,8 @@ function ImageBubble({ m, mine }: Props) {
   const [fullscreen, setFullscreen] = useState(false);
   const [viewedOnce, setViewedOnce] = useState(alreadyBurned);
   const [retryTick, setRetryTick] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+
 
   // Recipient burned this view-once photo permanently once opened.
   const burned = alreadyBurned || (isViewOnceRecipient && viewedOnce);
@@ -290,6 +292,8 @@ function ImageBubble({ m, mine }: Props) {
     let cancelled = false;
     setUrlError(null);
     setUrl(null);
+    setLoaded(false);
+
     signChatMedia(m.media_url)
       .then((u) => {
         if (cancelled) return;
@@ -387,20 +391,32 @@ function ImageBubble({ m, mine }: Props) {
         data-private-media
       >
         {url ? (
-          <img
-            key={url}
-            src={url}
-            alt=""
-            draggable={false}
-            onContextMenu={(e) => e.preventDefault()}
-            onClick={openFullscreen}
-            onError={() => {
-              setUrl(null);
-              setUrlError("Poza nu s-a încărcat");
-            }}
-            className="block max-h-80 w-full cursor-zoom-in select-none object-cover"
-            style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
-          />
+          <div className="relative w-56 min-h-32">
+            {!loaded && (
+              <div className="absolute inset-0 aspect-[4/5] animate-pulse bg-background/30" />
+            )}
+            <img
+              key={url}
+              src={url}
+              alt=""
+              draggable={false}
+              onContextMenu={(e) => e.preventDefault()}
+              onClick={openFullscreen}
+              onLoad={() => {
+                setLoaded(true);
+                window.dispatchEvent(new Event("suzeta:chat-media-ready"));
+              }}
+              onError={() => {
+                setUrl(null);
+                setUrlError("Poza nu s-a încărcat");
+              }}
+              className={cn(
+                "block max-h-80 w-full cursor-zoom-in select-none object-cover transition-opacity",
+                loaded ? "opacity-100" : "opacity-0",
+              )}
+              style={{ WebkitTouchCallout: "none", WebkitUserSelect: "none" }}
+            />
+          </div>
         ) : urlError ? (
           <button
             type="button"
@@ -413,7 +429,7 @@ function ImageBubble({ m, mine }: Props) {
             </span>
           </button>
         ) : (
-          <div className="h-48 w-56 animate-pulse bg-background/30" />
+          <div className="aspect-[4/5] w-56 animate-pulse bg-background/30" />
         )}
         {m.view_once && (
           <div className="flex items-center gap-1 px-2 py-1 text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -421,6 +437,7 @@ function ImageBubble({ m, mine }: Props) {
           </div>
         )}
       </div>
+
       {fullscreen && url && (
         <FullscreenImage
           src={url}
