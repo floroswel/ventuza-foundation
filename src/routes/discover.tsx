@@ -1213,7 +1213,7 @@ function Cascade({
                 {p.display_name?.[0]?.toUpperCase() ?? "?"}
               </div>
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/0 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
             {unread > 0 && (
               <span className="absolute left-1.5 top-1.5 z-10 flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white shadow-[0_0_10px_rgba(244,63,94,0.75)] ring-2 ring-black/40">
                 <MessageCircle className="mr-0.5 size-2.5" />
@@ -1258,9 +1258,9 @@ function Cascade({
                 <Plane className="size-2.5" /> {p.travel_city}
               </span>
             )}
-            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 p-1.5 text-left">
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 px-1.5 pb-1 text-left">
               <div className="min-w-0">
-                <p className="flex items-center gap-1 truncate text-[11px] font-medium leading-tight text-white">
+                <p className="flex items-center gap-1 truncate text-[12px] font-semibold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                   {online && (
                     <span
                       aria-label="online"
@@ -1269,22 +1269,18 @@ function Cascade({
                   )}
                   <span className="truncate">
                     {p.display_name}
-                    {age ? <span className="text-white/70">, {age}</span> : null}
+                    {age ? <span className="font-normal text-white/75">, {age}</span> : null}
                   </span>
                 </p>
-                <PositionTag value={p.position} size="sm" />
-                {p.tribes && p.tribes.length > 0 && (
-                  <p className="truncate text-[10px] text-white/70">
-                    {p.tribes.slice(0, 2).join(" · ")}
+                {p.distance_m != null && (
+                  <p className="truncate text-[10px] leading-tight text-white/75 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                    {formatDistance(p.distance_m)}
                   </p>
                 )}
               </div>
-              {p.distance_m != null && (
-                <span className="shrink-0 text-[10px] text-white/70">
-                  {formatDistance(p.distance_m)}
-                </span>
-              )}
+              <PositionTag value={p.position} size="sm" />
             </div>
+
           </button>
         );
       })}
