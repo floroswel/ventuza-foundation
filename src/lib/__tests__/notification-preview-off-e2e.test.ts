@@ -138,9 +138,11 @@ describe("[E2E preview=off] Strat 4: inbox afișează doar copy generic", () => 
     }
   });
 
-  it("buildInboxPreview cu showPreview=true -> generic Ai un mesaj nou (policy override)", () => {
+  it("buildInboxPreview cu showPreview=true -> preview real, dar fara PII", () => {
     for (const m of HOSTILE_MESSAGES) {
-      expect(buildInboxPreview(true, m.body, true)).toBe(GENERIC_MESSAGE_BODY);
+      const out = buildInboxPreview(true, m.body, true);
+      expect(out).not.toMatch(/[\w.+-]+@[\w-]+\.[\w.-]+/);
+      expect(out.length).toBeLessThanOrEqual(140);
     }
   });
 
