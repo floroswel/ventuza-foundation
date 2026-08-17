@@ -17,7 +17,6 @@ import {
   type ConversationListItem,
 } from "@/lib/chat";
 import { buildInboxPreview } from "@/lib/notification-privacy";
-import { useNotificationPrefs } from "@/lib/notification-prefs-context";
 import { StoriesStrip } from "@/components/StoriesStrip";
 import { cn } from "@/lib/utils";
 import { subscribeConversationChanges } from "@/hooks/useUnreadMessages";
@@ -80,8 +79,10 @@ function MessagesPage() {
   const queryClient = useQueryClient();
   // Sursa unică — se hidratează la login și se actualizează în realtime la
   // schimbarea toggle-ului din Settings (fără refresh).
-  const { prefs } = useNotificationPrefs();
-  const showPreview = prefs.show_preview;
+  // Inbox-ul este o suprafață autentificată, deja deschisă intenționat de user.
+  // `show_preview` rămâne exclusiv pentru notificări/toast-uri care pot apărea
+  // pe lock-screen; nu ascundem conținutul în propria listă de conversații.
+  const showPreview = true;
 
 
   useEffect(() => {

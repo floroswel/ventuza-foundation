@@ -122,6 +122,8 @@ function ThreadPage() {
   const [otherTyping, setOtherTyping] = useState(false);
   const [connected, setConnected] = useState(true);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const virtualScrollerRef = useRef<VirtualizedMessagesHandle>(null);
+  const wasNearBottomRef = useRef(true);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   /** Composer multiline: crește până la max-height, apoi devine scrollabil. */
   const autoGrow = useCallback(() => {
@@ -143,9 +145,16 @@ function ThreadPage() {
   const anchorToBottom = useCallback((force = false) => {
     requestAnimationFrame(() => {
       const node = scrollerRef.current;
-      if (!node) return;
-      if (!force && !isNearBottom(node)) return;
-      node.scrollTop = bottomScrollTop(node);
+      if (node) {
+        if (!force && !wasNearBottomRef.current) return;
+        node.scrollTop = bottomScrollTop(node);
+        wasNearBottomRef.current = true;
+        return;
+      }
+      const virtual = virtualScrollerRef.current;
+      if (!virtual || (!force && !wasNearBottomRef.current)) return;
+      virtual.scrollToBottom();
+      wasNearBottomRef.current = true;
     });
   }, []);
 
@@ -398,11 +407,11 @@ function ThreadPage() {
 
 
 
-  // Auto scroll to bottom on new messages (only when near bottom)
+  // Auto-scroll folosește starea de DINAINTE de append. Dacă verificăm după
+  // append, noul rând mărește scrollHeight și poate face un user aflat jos să
+  // pară artificial „departe de final”.
   useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    if (isNearBottom(el)) el.scrollTop = bottomScrollTop(el);
+    anchorToBottom();
   }, [messages.length]);
 
   // Tastatura Android: lista se micșorează cu înălțimea tastaturii, deci ultimul
@@ -439,6 +448,7 @@ function ThreadPage() {
   function onScroll() {
     const el = scrollerRef.current;
     if (!el) return;
+    wasNearBottomRef.current = isNearBottom(el);
     if (el.scrollTop < 60 && hasMore && !loadingMore) void loadMore();
   }
 
@@ -727,7 +737,7 @@ function ThreadPage() {
 
   return (
 
-    <div className="mx-auto flex h-dvh-safe w-full min-h-0 min-w-0 max-w-md flex-col overflow-hidden bg-background">
+    <div className="chat-viewport mx-auto flex w-full min-h-0 min-w-0 max-w-md flex-col overflow-hidden bg-background">
       <header className="z-20 flex shrink-0 items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
         <Link
           to="/messages"
@@ -857,6 +867,10 @@ function ThreadPage() {
         otherName={other?.name ?? null}
         otherTyping={otherTyping}
         scrollerRef={scrollerRef}
+        virtualScrollerRef={virtualScrollerRef}
+        onNearBottomChange={(value) => {
+          wasNearBottomRef.current = value;
+        }}
         onScroll={onScroll}
         onReachTop={() => {
           if (hasMore && !loadingMore) void loadMore();
@@ -1232,7 +1246,7 @@ function ThreadPage() {
             }}
             onFocus={() => {
               autoGrow();
-              anchorToBottom();
+              anchorToBottom(true);
             }}
             onKeyDown={(e) => {
               if (e.key === "Enter" && !e.shiftKey) {
@@ -1314,6 +1328,8 @@ function MessagesScroller({
   otherName,
   otherTyping,
   scrollerRef,
+  virtualScrollerRef,
+  onNearBottomChange,
   onScroll,
   onReachTop,
   renderRow,
@@ -1324,13 +1340,15 @@ function MessagesScroller({
   otherName: string | null;
   otherTyping: boolean;
   scrollerRef: React.RefObject<HTMLDivElement | null>;
+  virtualScrollerRef: React.RefObject<VirtualizedMessagesHandle | null>;
+  onNearBottomChange: (value: boolean) => void;
   onScroll: () => void;
   onReachTop: () => void;
   renderRow: (m: UiMessage) => React.ReactNode;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState(0);
-  const virtualHandle = useRef<VirtualizedMessagesHandle>(null);
+  const virtualHandle = virtualScrollerRef;
   const prevLenRef = useRef(messages.length);
   const prevFirstIdRef = useRef<string | null>(messages[0]?.id ?? null);
   const virtualize = messages.length >= VIRTUALIZATION_THRESHOLD;
@@ -1387,6 +1405,7 @@ function MessagesScroller({
               onReachTop={onReachTop}
               stickToBottom
               prevLength={prevLenRef.current}
+              onNearBottomChange={onNearBottomChange}
             />
           </>
         ) : null}
