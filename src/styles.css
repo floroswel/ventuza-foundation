@@ -121,6 +121,7 @@ html {
        standard, independentă de Capacitor și de insets — acoperă cazul în care
        nici pluginul, nici insetul IME nu raportează nimic. */
     --visual-keyboard-height: 0px;
+    --visual-viewport-height: 100dvh;
     /* O SINGURĂ sursă efectivă pentru compensare. `max`, nu sumă: toate cele trei
        descriu aceeași tastatură, iar dacă una tace, celelalte acoperă cazul.
        Utilitarele de composer folosesc exclusiv această variabilă — compensări
@@ -503,6 +504,13 @@ html {
   height: calc(100dvh - var(--safe-top) - var(--safe-bottom));
 }
 
+/* Chatul folosește viewport-ul vizual real: pe Android acesta este spațiul
+   rămas deasupra IME, iar în browser urmărește tastatura fără compensări
+   aditive. Body-ul consumă deja safe-area, deci o scădem o singură dată. */
+@utility chat-viewport {
+  height: calc(var(--visual-viewport-height, 100dvh) - var(--safe-top) - var(--safe-bottom));
+}
+
 
 /* Native Android — Keyboard aware bottom padding.
    Populated by src/lib/native-runtime.ts via @capacitor/keyboard listeners.
@@ -519,6 +527,9 @@ html {
    tastatura (Keyboard resize = "none", deci CSS-ul face treaba). */
 @utility pb-bar {
   padding-bottom: calc(max(var(--safe-bottom), 0.875rem) + var(--keyboard-inset));
+  html[data-keyboard-open="true"] & {
+    padding-bottom: 0.5rem;
+  }
 }
 
 /* Listă scrollabilă în interiorul unui flex column (chat, feed-uri).

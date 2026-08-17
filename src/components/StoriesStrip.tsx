@@ -57,13 +57,16 @@ export function StoriesStrip() {
 
   const ownGroup = groups.find((g) => g.user_id === user?.id);
   const others = groups.filter((g) => g.user_id !== user?.id);
-  const ordered = ownGroup ? [ownGroup, ...others] : others;
+  // Story-ul propriu este deja reprezentat de butonul „Adaugă”; nu îl randăm
+  // încă o dată în listă. Astfel, când nu există story-uri de la alte persoane,
+  // strip-ul rămâne un singur rând compact.
+  const ordered = others;
 
   if (!user) return null;
 
   // Fără story-uri de la alții → strip compact, ca să nu ocupe un bloc gol
   // mare deasupra listei de conversații.
-  const compact = ordered.length === 0;
+  const compact = others.length === 0;
 
   return (
     <div className={cn("border-b border-border/40 px-3", compact ? "py-2" : "py-3")}>

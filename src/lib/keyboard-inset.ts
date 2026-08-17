@@ -82,6 +82,7 @@ export function installViewportKeyboardTracking(): () => void {
   if (!viewport) return () => {};
   let last = -1;
   const apply = () => {
+    document.documentElement.style.setProperty("--visual-viewport-height", `${Math.round(viewport.height)}px`);
     const px = keyboardHeightFromViewport({
       innerHeight: window.innerHeight,
       viewportHeight: viewport.height,
@@ -102,5 +103,6 @@ export function installViewportKeyboardTracking(): () => void {
   return () => {
     viewport.removeEventListener("resize", apply);
     viewport.removeEventListener("scroll", apply);
+    document.documentElement.style.removeProperty("--visual-viewport-height");
   };
 }
