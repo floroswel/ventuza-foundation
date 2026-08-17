@@ -31,21 +31,27 @@ export function buildMessageNotificationBody(
 }
 
 /**
- * Preview-ul afișat în lista de conversații. Diferențiază starea:
+ * Preview-ul afișat în lista de conversații (suprafață IN-APP, vizibilă doar
+ * după autentificare — spre deosebire de push, care apare pe ecranul blocat).
+ * Stări:
  *   - nicio conversație activă → invitație generică (`Say hi 👋`)
  *   - show_preview OFF explicit → „Previzualizare dezactivată"
- *   - orice altă stare → „Ai un mesaj nou"
- * Nu expune niciodată textul real, indiferent de preferință.
+ *   - altfel → ultimul mesaj real, cu PII (email/telefon/IBAN/CNP/coordonate)
+ *     redactat și lungime limitată.
  */
 export function buildInboxPreview(
   showPreview: boolean | null | undefined,
-  _lastMessagePreview: string | null | undefined,
+  lastMessagePreview: string | null | undefined,
   hasAnyMessage: boolean,
 ): string {
   if (!hasAnyMessage) return GENERIC_INBOX_FALLBACK;
   if (showPreview === false) return PREVIEW_DISABLED_BODY;
-  return GENERIC_MESSAGE_BODY;
+  const raw = (lastMessagePreview ?? "").toString().replace(/\s+/g, " ").trim();
+  if (!raw) return GENERIC_MESSAGE_BODY;
+  const clean = scrubString(raw);
+  return clean.length > MAX_PREVIEW_LEN ? `${clean.slice(0, MAX_PREVIEW_LEN - 1)}…` : clean;
 }
+
 
 /**
  * Copy pentru toast in-app.
