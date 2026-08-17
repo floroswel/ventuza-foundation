@@ -364,55 +364,10 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
         />
       </div>
 
-      {/* COMING SOON — fără prețuri */}
       <h3 className="mt-10 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Ce pregătim
+        Pachete și prețuri
       </h3>
-      <div className="mt-3 space-y-3">
-        <Tier
-          name="Community"
-          price="În curând"
-          desc="Pentru organizații și asociații care vor prezență în comunitate."
-          perks={["Profil verificat", "Listare evenimente", "Badge partener", "Suport email"]}
-        />
-        <Tier
-          name="Starter"
-          price="În curând"
-          highlight
-          desc="Pentru baruri, cluburi, branduri locale gay-friendly."
-          perks={[
-            "Banner Discover (city-targeted)",
-            "Evenimente promovate lunar",
-            "Statistici impresii",
-            "Factură cu TVA",
-          ]}
-        />
-        <Tier
-          name="Growth"
-          price="În curând"
-          desc="Pentru branduri naționale și organizatori Pride."
-          perks={[
-            "Banner național + city",
-            "Evenimente boost multiple",
-            "Stories sponsorizate",
-            "Account manager dedicat",
-          ]}
-        />
-        <Tier
-          name="Custom"
-          price="În curând"
-          desc="Campanii Pride Month, lansări produs, parteneriate UE."
-          perks={[
-            "Briefing comun",
-            "Co-creație content",
-            "Reporting săptămânal",
-            "Contract-cadru anual",
-          ]}
-        />
-      </div>
-      <p className="mt-3 text-[11px] text-muted-foreground">
-        Prețurile finale se comunică la lansare. Momentan poți doar lăsa o cerere de interes.
-      </p>
+      <PricingTiers />
 
       {/* WHAT YOU NEED */}
       <h3 className="mt-10 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
