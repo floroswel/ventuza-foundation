@@ -132,6 +132,13 @@ function ThreadPage() {
     // Cursorul rămâne vizibil: ultima linie scrisă e mereu în câmp.
     el.scrollTop = el.scrollHeight;
   }, []);
+  /** După trimitere: golește înălțimea crescută și păstrează focusul/tastatura. */
+  const resetComposer = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.focus({ preventScroll: true });
+  }, []);
   /** Ancorează lista la ultimul mesaj — doar dacă utilizatorul era deja jos. */
   const anchorToBottom = useCallback((force = false) => {
     requestAnimationFrame(() => {
@@ -403,18 +410,10 @@ function ThreadPage() {
   // utilizatorul era deja jos, altfel l-am smuci din istoricul pe care îl citea.
   // `native-runtime` emite evenimentul la fiecare schimbare de stare a tastaturii.
   useEffect(() => {
-    const onKeyboard = () => {
-      if (!scrollerRef.current || !isNearBottom(scrollerRef.current)) return;
-      // Un cadru de așteptare: evenimentul poate sosi înainte ca layout-ul să fi
-      // aplicat noua înălțime.
-      requestAnimationFrame(() => {
-        const node = scrollerRef.current;
-        if (node) node.scrollTop = bottomScrollTop(node);
-      });
-    };
+    const onKeyboard = () => anchorToBottom();
     window.addEventListener("suzeta:keyboard", onKeyboard);
     return () => window.removeEventListener("suzeta:keyboard", onKeyboard);
-  }, []);
+  }, [anchorToBottom]);
 
   async function loadMore() {
     if (loadingMore || !hasMore || messages.length === 0) return;
@@ -513,6 +512,7 @@ function ThreadPage() {
       try {
         await enqueueMessage({ conversation_id: id, body, reply_to_id: replyId });
         setText("");
+        resetComposer();
         setReplyTo(null);
         toast.message("Ești offline — mesajul va pleca la reconectare.");
       } catch {
@@ -533,7 +533,9 @@ function ThreadPage() {
     };
     setMessages((prev) => [...prev, optimistic]);
     setText("");
+    resetComposer();
     setReplyTo(null);
+    anchorToBottom(true);
     try {
       const real = await sendMessage(id, body, replyId);
       setMessages((prev) => {
@@ -1396,7 +1398,7 @@ function MessagesScroller({
     <div
       ref={scrollerRef as React.RefObject<HTMLDivElement>}
       onScroll={onScroll}
-      className="scroll-pane px-4 py-4 pb-keyboard"
+      className="scroll-pane px-4 pb-3 pt-4"
     >
       {loading ? (
         <div className="flex items-center justify-center py-16 text-muted-foreground">
