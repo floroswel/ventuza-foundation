@@ -48,10 +48,9 @@ export function QuickProfileDrawer() {
       setMe(d);
       const first = d.photos?.[0];
       if (first) {
-        const { data: s } = await supabase.storage
-          .from("profile-photos")
-          .createSignedUrl(first, 3600);
-        if (!cancel) setSignedAvatar(s?.signedUrl ?? null);
+        const { getSignedUrl } = await import("@/lib/signed-url-cache");
+        const url = await getSignedUrl("profile-photos", first, 3600);
+        if (!cancel) setSignedAvatar(url);
       }
     })();
     return () => {
