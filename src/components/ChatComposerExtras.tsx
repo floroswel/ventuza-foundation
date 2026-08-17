@@ -54,9 +54,17 @@ type Props = {
   onSent: (m: MessageRow) => void;
   onUpdated?: (m: MessageRow) => void;
   disabled?: boolean;
+  /** "menu" = buton + cu meniu (default); "row" = iconițe inline sub input (stil nativ). */
+  variant?: "menu" | "row";
 };
 
-export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled }: Props) {
+export function ChatComposerExtras({
+  conversationId,
+  onSent,
+  onUpdated,
+  disabled,
+  variant = "menu",
+}: Props) {
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [recording, setRecording] = useState(false);
@@ -404,6 +412,41 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
         </div>
       )}
 
+      {variant === "row" ? (
+        <>
+          <IconAction
+            label="Cameră"
+            disabled={disabled || busy}
+            onClick={() => pickPhoto("camera")}
+            icon={<Camera className="size-5" />}
+          />
+          <IconAction
+            label="Galerie"
+            disabled={disabled || busy}
+            onClick={() => pickPhoto("gallery")}
+            icon={<ImageIcon className="size-5" />}
+          />
+          <IconAction
+            label="Foto o singură vizualizare"
+            disabled={disabled || busy}
+            onClick={() => pickPhoto("gallery-once")}
+            icon={<Timer className="size-5" />}
+          />
+          <IconAction
+            label="Voice note"
+            disabled={disabled || busy}
+            onClick={startRecording}
+            icon={<Mic className="size-5" />}
+          />
+          <IconAction
+            label={liveLocationId ? "Oprește locația live" : "Locație live"}
+            disabled={disabled || busy}
+            onClick={shareLocation}
+            active={!!liveLocationId}
+            icon={<MapPin className="size-5" />}
+          />
+        </>
+      ) : (
       <div className="relative">
 
         <button
@@ -449,8 +492,37 @@ export function ChatComposerExtras({ conversationId, onSent, onUpdated, disabled
           </div>
         )}
       </div>
-
+      )}
     </>
+  );
+}
+
+function IconAction({
+  icon,
+  label,
+  onClick,
+  disabled,
+  active,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  active?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className={cn(
+        "flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors disabled:opacity-40",
+        active ? "text-primary" : "hover:text-foreground",
+      )}
+    >
+      {icon}
+    </button>
   );
 }
 
