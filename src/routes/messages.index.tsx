@@ -74,6 +74,8 @@ function MessagesPage() {
   const [tab, setTab] = useState<"messages" | "interest">("messages");
   const [unreadOnly, setUnreadOnly] = useState(false);
   const [onlineOnly, setOnlineOnly] = useState(false);
+  const [recentOnly, setRecentOnly] = useState(false);
+
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   // Sursa unică — se hidratează la login și se actualizează în realtime la
