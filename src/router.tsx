@@ -70,7 +70,21 @@ function installPreloadRejectionGuard() {
 
 export const getRouter = () => {
   installPreloadRejectionGuard();
-  const queryClient = new QueryClient();
+  // Cache agresiv dar sigur: datele rămân „proaspete" 60s, deci re-montarea
+  // unei rute (navigare înainte/înapoi, tab switch) nu re-cere nimic.
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60_000,
+        gcTime: 30 * 60_000,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchOnReconnect: true,
+        retry: 1,
+        networkMode: "offlineFirst",
+      },
+    },
+  });
 
 
   const router = createRouter({
@@ -81,7 +95,7 @@ export const getRouter = () => {
     // percepută la navigare fără a plăti cost până când userul arată intenția.
     defaultPreload: "intent",
     defaultPreloadDelay: 50,
-    defaultPreloadStaleTime: 0,
+    defaultPreloadStaleTime: 30_000,
     defaultErrorComponent: DefaultErrorComponent,
     // Nicio ecran alb la navigare: dacă o rută lazy întârzie >150ms afișăm un
     // indicator nativ, minim 300ms ca să nu clipească.

@@ -13,6 +13,9 @@ export type CountryRisk = {
 
 let cache: { at: number; country: string | null; risk: CountryRisk } | null = null;
 const CACHE_TTL = 15 * 60 * 1000;
+// Mai multe componente montează hook-ul în același tick; fără promisiune
+// partajată fiecare trimitea propriul RPC identic.
+let inflight: Promise<{ country: string | null; risk: CountryRisk }> | null = null;
 
 async function detectCountry(): Promise<string | null> {
   try {
@@ -46,16 +49,22 @@ export function useCountryRisk(): { loading: boolean; country: string | null; ri
         if (alive) setState({ loading: false, country: cache.country, risk: cache.risk });
         return;
       }
-      const cc = await detectCountry();
-      if (!cc) {
-        cache = { at: Date.now(), country: null, risk: null };
-        if (alive) setState({ loading: false, country: null, risk: null });
-        return;
-      }
-      const { data } = await supabase.rpc("get_country_risk", { _country_code: cc });
-      const row = Array.isArray(data) && data.length > 0 ? (data[0] as any) : null;
-      cache = { at: Date.now(), country: cc, risk: row };
-      if (alive) setState({ loading: false, country: cc, risk: row });
+      inflight ??= (async () => {
+        const cc = await detectCountry();
+        if (!cc) return { country: null, risk: null as CountryRisk };
+        const { data } = await supabase.rpc("get_country_risk", { _country_code: cc });
+        const row = Array.isArray(data) && data.length > 0 ? (data[0] as CountryRisk) : null;
+        return { country: cc, risk: row };
+      })().then((res) => {
+        cache = { at: Date.now(), ...res };
+        inflight = null;
+        return res;
+      }).catch((e) => {
+        inflight = null;
+        throw e;
+      });
+      const res = await inflight;
+      if (alive) setState({ loading: false, country: res.country, risk: res.risk });
     })();
     return () => {
       alive = false;
