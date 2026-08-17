@@ -438,6 +438,28 @@ function ThreadPage() {
     };
   }, [anchorToBottom]);
 
+  // Doar gesturile reale (deget, rotiță, taste de navigație) contează drept
+  // „utilizatorul derulează”. Restul sunt derulări programatice.
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const mark = () => {
+      userScrolledRef.current = true;
+      wasNearBottomRef.current = isNearBottom(el);
+    };
+    const opts = { passive: true } as AddEventListenerOptions;
+    el.addEventListener("wheel", mark, opts);
+    el.addEventListener("touchmove", mark, opts);
+    el.addEventListener("pointerdown", mark, opts);
+    el.addEventListener("keydown", mark, opts);
+    return () => {
+      el.removeEventListener("wheel", mark);
+      el.removeEventListener("touchmove", mark);
+      el.removeEventListener("pointerdown", mark);
+      el.removeEventListener("keydown", mark);
+    };
+  }, [loading]);
+
   // Geometria ecranului de chat vine dintr-o singură sursă (min dintre
   // innerHeight și visualViewport), scrisă în `--app-vh`.
   useEffect(() => installAppViewportTracking(), []);
@@ -492,7 +514,11 @@ function ThreadPage() {
   function onScroll() {
     const el = scrollerRef.current;
     if (!el) return;
-    userScrolledRef.current = true;
+    // `scroll` se emite și pentru derulările NOASTRE (ancorare, imagini care se
+    // încarcă). Dacă am lua fiecare eveniment drept intenție a utilizatorului,
+    // o măsurătoare făcută la mijlocul unui relayout ar bloca definitiv
+    // ancorarea — exact bug-ul „nu se mai duce la ultimul mesaj”.
+    if (!userScrolledRef.current) return;
     wasNearBottomRef.current = isNearBottom(el);
     if (el.scrollTop < 60 && hasMore && !loadingMore) void loadMore();
   }
