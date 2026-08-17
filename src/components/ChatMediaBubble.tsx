@@ -292,6 +292,8 @@ function ImageBubble({ m, mine }: Props) {
     let cancelled = false;
     setUrlError(null);
     setUrl(null);
+    setLoaded(false);
+
     signChatMedia(m.media_url)
       .then((u) => {
         if (cancelled) return;
