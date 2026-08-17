@@ -100,9 +100,8 @@ const MESSAGE_SELECT = [
 
 async function signPhoto(path: string | null): Promise<string | null> {
   if (!path) return null;
-  if (path.startsWith("http://") || path.startsWith("https://")) return path;
-  const { data } = await supabase.storage.from("profile-photos").createSignedUrl(path, 3600);
-  return data?.signedUrl ?? null;
+  const { getSignedUrl } = await import("@/lib/signed-url-cache");
+  return getSignedUrl("profile-photos", path, 3600);
 }
 
 async function pushNewMessageNotification(
