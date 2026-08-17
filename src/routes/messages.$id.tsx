@@ -438,6 +438,19 @@ function ThreadPage() {
     };
   }, [anchorToBottom]);
 
+  // Imaginile din conversație se încarcă asincron: după ce una își ocupă
+  // înălțimea reală, remăsurăm rândul virtualizat și reancorăm — dar NUMAI dacă
+  // utilizatorul era deja la finalul conversației (fără force).
+  useEffect(() => {
+    const onMediaReady = () => {
+      virtualScrollerRef.current?.remeasure(0);
+      anchorToBottom();
+    };
+    window.addEventListener("suzeta:chat-media-ready", onMediaReady);
+    return () => window.removeEventListener("suzeta:chat-media-ready", onMediaReady);
+  }, [anchorToBottom]);
+
+
   // Doar gesturile reale (deget, rotiță, taste de navigație) contează drept
   // „utilizatorul derulează”. Restul sunt derulări programatice.
   useEffect(() => {
