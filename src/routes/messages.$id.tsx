@@ -1,7 +1,7 @@
 import { setActiveConversation } from "@/lib/active-conversation";
 import { withGuardian } from "@/components/with-guardian";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   enqueueMessage,
