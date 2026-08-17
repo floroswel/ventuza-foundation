@@ -227,7 +227,11 @@ function MessagesPage() {
                 <Link
                   to="/messages/$id"
                   params={{ id: c.id }}
-                  className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-muted/30"
+                  className={cn(
+                    "flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-muted/30",
+                    c.unread && "bg-primary/5",
+                  )}
+
                 >
                   {/* Avatar — mereu în stânga, cu inel auriu */}
                   <div className="relative shrink-0">
