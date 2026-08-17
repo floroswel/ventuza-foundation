@@ -95,7 +95,7 @@ export const getRouter = () => {
     // percepută la navigare fără a plăti cost până când userul arată intenția.
     defaultPreload: "intent",
     defaultPreloadDelay: 50,
-    defaultPreloadStaleTime: 0,
+    defaultPreloadStaleTime: 30_000,
     defaultErrorComponent: DefaultErrorComponent,
     // Nicio ecran alb la navigare: dacă o rută lazy întârzie >150ms afișăm un
     // indicator nativ, minim 300ms ca să nu clipească.
