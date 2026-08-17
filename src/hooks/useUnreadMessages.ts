@@ -156,11 +156,11 @@ export function useUnreadMessages() {
       return;
     }
     ensureChannel(user.id);
-    void doRefresh(user.id);
+    void refreshDeduped(user.id);
   }, [user]);
 
   const refresh = useCallback(async () => {
-    if (user) await doRefresh(user.id);
+    if (user) await refreshDeduped(user.id, 0);
   }, [user]);
 
   return { ...snap, refresh };
