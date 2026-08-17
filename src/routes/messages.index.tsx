@@ -281,9 +281,12 @@ function MessagesPage() {
       </div>
 
       <BottomNav />
+        </>
+      )}
     </div>
   );
 }
+
 
 function formatWhen(iso: string | null | undefined): string {
   if (!iso) return "";
