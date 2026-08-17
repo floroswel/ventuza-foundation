@@ -28,6 +28,24 @@ function emitConversationChange() {
   for (const listener of conversationListeners) listener();
 }
 
+let lastRefreshAt = 0;
+
+/**
+ * Deduplicare: mai multe componente montează hook-ul simultan (BottomNav +
+ * carduri Discover). Fără gardă, fiecare montare declanșa aceleași două
+ * cereri. Reutilizăm promisiunea în zbor și sărim peste refresh-urile
+ * repetate în intervalul minim.
+ */
+function refreshDeduped(userId: string, minIntervalMs = 15_000): Promise<void> {
+  if (inflight) return inflight;
+  if (Date.now() - lastRefreshAt < minIntervalMs) return Promise.resolve();
+  inflight = doRefresh(userId).finally(() => {
+    inflight = null;
+    lastRefreshAt = Date.now();
+  });
+  return inflight;
+}
+
 async function doRefresh(userId: string) {
   const { data: convs } = await supabase
     .from("conversations")
