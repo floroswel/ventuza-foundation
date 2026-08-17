@@ -511,6 +511,32 @@ html {
   height: calc(var(--visual-viewport-height, 100dvh) - var(--safe-top) - var(--safe-bottom));
 }
 
+/* Shell-ul de chat: singurul element care deține geometria ecranului.
+   `position: fixed` îl scoate din padding-ul body-ului, iar înălțimea vine
+   EXCLUSIV din `--app-vh` (min(innerHeight, visualViewport.height), scris de
+   installAppViewportTracking). Așa nu contează dacă tastatura redimensionează
+   fereastra sau doar viewportul vizual: rezultatul e același, o singură dată. */
+@utility chat-shell {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--app-vh, 100dvh);
+  transform: translateY(var(--app-vt, 0px));
+  padding-top: var(--safe-top);
+  overflow: hidden;
+}
+
+/* Composer în interiorul shell-ului: doar safe-area, niciun keyboard inset —
+   shell-ul s-a micșorat deja cu înălțimea tastaturii. */
+@utility pb-composer {
+  padding-bottom: max(var(--safe-bottom), 0.5rem);
+  html[data-keyboard-open="true"] & {
+    padding-bottom: 0.375rem;
+  }
+}
+
+
 
 /* Native Android — Keyboard aware bottom padding.
    Populated by src/lib/native-runtime.ts via @capacitor/keyboard listeners.

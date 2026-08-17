@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { installAppViewportTracking } from "@/lib/keyboard-inset";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { ChevronLeft, Loader2, LogOut, Send, Users } from "lucide-react";
@@ -149,8 +150,10 @@ function GroupChatPage() {
       </main>
     );
 
+  useEffect(() => installAppViewportTracking(), []);
+
   return (
-    <div className="flex h-dvh-safe w-full min-h-0 min-w-0 flex-col overflow-hidden bg-background">
+    <div className="chat-shell mx-auto flex w-full min-h-0 min-w-0 max-w-md flex-col bg-background">
       <header className="flex shrink-0 items-center justify-between border-b border-border/60 bg-background/95 px-3 py-3 backdrop-blur">
         <div className="flex items-center gap-2">
           <button
@@ -236,7 +239,7 @@ function GroupChatPage() {
       {isMember && (
         <form
           onSubmit={handleSend}
-          className="sticky bottom-0 z-10 flex shrink-0 items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-3 pb-bar backdrop-blur"
+          className="sticky bottom-0 z-10 flex shrink-0 items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-3 pb-composer backdrop-blur"
         >
           <input
             value={text}

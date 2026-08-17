@@ -1,0 +1,5 @@
+Suzeta 1.0.18
+
+• Tastatura nu mai acopera campul de scris: conversatia se redimensioneaza corect, fara zona goala.
+• Conversatia se deschide direct la ultimul mesaj.
+• Derularea in istoric nu mai este intrerupta de sarituri automate.

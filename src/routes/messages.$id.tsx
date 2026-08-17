@@ -67,7 +67,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { bottomScrollTop, isNearBottom } from "@/lib/keyboard-inset";
+import { bottomScrollTop, isNearBottom, installAppViewportTracking } from "@/lib/keyboard-inset";
 import { uniqueRealtimeTopic } from "@/lib/realtime-topic";
 import { SwipeToReply } from "@/components/SwipeToReply";
 import {
@@ -124,6 +124,8 @@ function ThreadPage() {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const virtualScrollerRef = useRef<VirtualizedMessagesHandle>(null);
   const wasNearBottomRef = useRef(true);
+  /** A derulat utilizatorul manual? Blochează reancorarea inițială. */
+  const userScrolledRef = useRef(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   /** Composer multiline: crește până la max-height, apoi devine scrollabil. */
   const autoGrow = useCallback(() => {
@@ -419,10 +421,74 @@ function ThreadPage() {
   // utilizatorul era deja jos, altfel l-am smuci din istoricul pe care îl citea.
   // `native-runtime` emite evenimentul la fiecare schimbare de stare a tastaturii.
   useEffect(() => {
-    const onKeyboard = () => anchorToBottom();
+    const onKeyboard = () => {
+      anchorToBottom();
+      // A doua trecere după ce layoutul s-a așezat pe noua înălțime.
+      setTimeout(() => anchorToBottom(), 120);
+    };
     window.addEventListener("suzeta:keyboard", onKeyboard);
-    return () => window.removeEventListener("suzeta:keyboard", onKeyboard);
+    // Nu toate WebView-urile emit evenimentul: dacă tastatura redimensionează
+    // fereastra, singurul semnal e resize-ul. Reancorăm și atunci.
+    window.addEventListener("resize", onKeyboard);
+    window.visualViewport?.addEventListener("resize", onKeyboard);
+    return () => {
+      window.removeEventListener("suzeta:keyboard", onKeyboard);
+      window.removeEventListener("resize", onKeyboard);
+      window.visualViewport?.removeEventListener("resize", onKeyboard);
+    };
   }, [anchorToBottom]);
+
+  // Doar gesturile reale (deget, rotiță, taste de navigație) contează drept
+  // „utilizatorul derulează”. Restul sunt derulări programatice.
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const mark = () => {
+      userScrolledRef.current = true;
+      wasNearBottomRef.current = isNearBottom(el);
+    };
+    const opts = { passive: true } as AddEventListenerOptions;
+    el.addEventListener("wheel", mark, opts);
+    el.addEventListener("touchmove", mark, opts);
+    el.addEventListener("pointerdown", mark, opts);
+    el.addEventListener("keydown", mark, opts);
+    return () => {
+      el.removeEventListener("wheel", mark);
+      el.removeEventListener("touchmove", mark);
+      el.removeEventListener("pointerdown", mark);
+      el.removeEventListener("keydown", mark);
+    };
+  }, [loading]);
+
+  // Geometria ecranului de chat vine dintr-o singură sursă (min dintre
+  // innerHeight și visualViewport), scrisă în `--app-vh`.
+  useEffect(() => installAppViewportTracking(), []);
+
+  // La DESCHIDEREA conversației pornim mereu la ultimul mesaj. Imaginile și
+  // bulele care se măsoară asincron cresc înălțimea după primul paint, deci
+  // reancorăm de câteva ori — dar doar până când utilizatorul derulează singur.
+  const initialAnchoredRef = useRef(false);
+  useEffect(() => {
+    initialAnchoredRef.current = false;
+  }, [id]);
+  useEffect(() => {
+    if (loading || messages.length === 0 || initialAnchoredRef.current) return;
+    initialAnchoredRef.current = true;
+    const timers = [0, 60, 200, 500, 900].map((delay) =>
+      setTimeout(() => {
+        if (!userScrolledRef.current) anchorToBottom(true);
+      }, delay),
+    );
+    const node = scrollerRef.current;
+    const onMediaLoad = () => {
+      if (!userScrolledRef.current) anchorToBottom(true);
+    };
+    node?.addEventListener("load", onMediaLoad, true);
+    return () => {
+      timers.forEach(clearTimeout);
+      node?.removeEventListener("load", onMediaLoad, true);
+    };
+  }, [loading, messages.length, anchorToBottom, id]);
 
   async function loadMore() {
     if (loadingMore || !hasMore || messages.length === 0) return;
@@ -448,6 +514,11 @@ function ThreadPage() {
   function onScroll() {
     const el = scrollerRef.current;
     if (!el) return;
+    // `scroll` se emite și pentru derulările NOASTRE (ancorare, imagini care se
+    // încarcă). Dacă am lua fiecare eveniment drept intenție a utilizatorului,
+    // o măsurătoare făcută la mijlocul unui relayout ar bloca definitiv
+    // ancorarea — exact bug-ul „nu se mai duce la ultimul mesaj”.
+    if (!userScrolledRef.current) return;
     wasNearBottomRef.current = isNearBottom(el);
     if (el.scrollTop < 60 && hasMore && !loadingMore) void loadMore();
   }
@@ -737,7 +808,7 @@ function ThreadPage() {
 
   return (
 
-    <div className="chat-viewport mx-auto flex w-full min-h-0 min-w-0 max-w-md flex-col overflow-hidden bg-background">
+    <div className="chat-shell mx-auto flex w-full min-h-0 min-w-0 max-w-md flex-col bg-background">
       <header className="z-20 flex shrink-0 items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
         <Link
           to="/messages"
@@ -1231,7 +1302,7 @@ function ThreadPage() {
 
       <form
         onSubmit={handleSend}
-        className="sticky bottom-0 z-10 flex shrink-0 flex-col gap-1 border-t border-border/60 bg-background/95 px-3 py-2 pb-bar backdrop-blur"
+        className="sticky bottom-0 z-10 flex shrink-0 flex-col gap-1 border-t border-border/60 bg-background/95 px-3 py-2 pb-composer backdrop-blur"
       >
         {/* Rând 1 — pilulă full-width cu send în interior (stil nativ) */}
         <div className="relative flex items-end">
