@@ -122,6 +122,26 @@ function ThreadPage() {
   const [otherTyping, setOtherTyping] = useState(false);
   const [connected, setConnected] = useState(true);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  /** Composer multiline: crește până la max-height, apoi devine scrollabil. */
+  const autoGrow = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+    // Cursorul rămâne vizibil: ultima linie scrisă e mereu în câmp.
+    el.scrollTop = el.scrollHeight;
+  }, []);
+  /** Ancorează lista la ultimul mesaj — doar dacă utilizatorul era deja jos. */
+  const anchorToBottom = useCallback((force = false) => {
+    requestAnimationFrame(() => {
+      const node = scrollerRef.current;
+      if (!node) return;
+      if (!force && !isNearBottom(node)) return;
+      node.scrollTop = bottomScrollTop(node);
+    });
+  }, []);
+
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
