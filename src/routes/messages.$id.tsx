@@ -427,7 +427,15 @@ function ThreadPage() {
       setTimeout(() => anchorToBottom(), 120);
     };
     window.addEventListener("suzeta:keyboard", onKeyboard);
-    return () => window.removeEventListener("suzeta:keyboard", onKeyboard);
+    // Nu toate WebView-urile emit evenimentul: dacă tastatura redimensionează
+    // fereastra, singurul semnal e resize-ul. Reancorăm și atunci.
+    window.addEventListener("resize", onKeyboard);
+    window.visualViewport?.addEventListener("resize", onKeyboard);
+    return () => {
+      window.removeEventListener("suzeta:keyboard", onKeyboard);
+      window.removeEventListener("resize", onKeyboard);
+      window.visualViewport?.removeEventListener("resize", onKeyboard);
+    };
   }, [anchorToBottom]);
 
   // Geometria ecranului de chat vine dintr-o singură sursă (min dintre
