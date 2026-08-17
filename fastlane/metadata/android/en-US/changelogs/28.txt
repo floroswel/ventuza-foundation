@@ -1,0 +1,5 @@
+Suzeta 1.0.18
+
+- Keyboard no longer covers the composer: the chat resizes correctly, with no empty gap.
+- Conversations now open at the latest message.
+- Scrolling through history is no longer interrupted by auto-scroll.

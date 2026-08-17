@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.17",
-  "versionCode": 27,
+  "versionName": "1.0.18",
+  "versionCode": 28,
   "track": "internal",
-  "notes": "Build 27: Inbox mai dens (fara spatiu gol sub Story), previzualizarea reala a ultimului mesaj, filtre Necitite/Online/Recente cu badge de necitite, camp de scris pe mai multe randuri care creste odata cu textul si urmareste cursorul, plus spatiul gol dintre chat si tastatura eliminat."
+  "notes": "Build 28: chat cu geometrie unica pentru tastatura Android (fara zona goala, composer mereu deasupra tastaturii) si deschiderea conversatiei direct la ultimul mesaj."
 }
