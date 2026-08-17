@@ -29,5 +29,5 @@ export function SmartImage(props: ImgHTMLAttributes<HTMLImageElement>) {
     };
   }, [src]);
 
-  return <img {...rest} src={resolved} />;
+  return <img loading="lazy" decoding="async" {...rest} src={resolved} />;
 }
