@@ -492,8 +492,37 @@ export function ChatComposerExtras({
           </div>
         )}
       </div>
-
+      )}
     </>
+  );
+}
+
+function IconAction({
+  icon,
+  label,
+  onClick,
+  disabled,
+  active,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  active?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={label}
+      className={cn(
+        "flex size-10 items-center justify-center rounded-full text-muted-foreground transition-colors disabled:opacity-40",
+        active ? "text-primary" : "hover:text-foreground",
+      )}
+    >
+      {icon}
+    </button>
   );
 }
 
