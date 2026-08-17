@@ -147,6 +147,7 @@ function ThreadPage() {
   const anchorToBottom = useCallback((force = false) => {
     requestAnimationFrame(() => {
       const node = scrollerRef.current;
+      console.log("DBG anchor", { force, node: !!node, near: wasNearBottomRef.current, top: node?.scrollTop, target: node ? node.scrollHeight - node.clientHeight : null });
       if (node) {
         if (!force && !wasNearBottomRef.current) return;
         node.scrollTop = bottomScrollTop(node);
