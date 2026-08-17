@@ -24,6 +24,12 @@ import {
 import { lookupAnafCui } from "@/lib/anaf.functions";
 import { submitBusinessApplication } from "@/lib/business-apply.functions";
 import { linkOrphanBusinessApps } from "@/lib/business.functions";
+import {
+  fetchPartnerPricing,
+  formatPlanPrice,
+  planPerks,
+  type PartnerPricingRow,
+} from "@/lib/partner-pricing";
 
 export const Route = createFileRoute("/business")({
   head: () => ({
