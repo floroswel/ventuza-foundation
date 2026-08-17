@@ -122,13 +122,21 @@ function MessagesPage() {
     );
   }
 
-  const visible = items.filter(
-    (c) => (!unreadOnly || c.unread) && (!onlineOnly || c.other_online),
-  );
+  const DAY_MS = 24 * 60 * 60 * 1000;
+  const visible = items.filter((c) => {
+    if (unreadOnly && !c.unread) return false;
+    if (onlineOnly && !c.other_online) return false;
+    if (recentOnly) {
+      const t = c.last_message_at ? new Date(c.last_message_at).getTime() : 0;
+      if (!t || Date.now() - t > DAY_MS) return false;
+    }
+    return true;
+  });
+  const unreadTotal = items.reduce((sum, c) => sum + (c.unread_count || 0), 0);
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-nav">
-      <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 px-4 pt-3 backdrop-blur">
+      <header className="sticky top-0 z-20 border-b border-border/40 bg-background/85 px-4 pt-2 backdrop-blur">
         <div className="flex items-center justify-between gap-3">
           <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground">Inbox</h1>
           <button
@@ -141,7 +149,7 @@ function MessagesPage() {
           </button>
         </div>
 
-        <div className="mt-2 flex items-center gap-5">
+        <div className="mt-1.5 flex items-center gap-5">
           <TabButton active={tab === "messages"} onClick={() => setTab("messages")}>
             Mesaje
           </TabButton>
@@ -151,16 +159,24 @@ function MessagesPage() {
         </div>
 
         {tab === "messages" ? (
-          <div className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <div className="mt-1.5 flex items-center gap-1.5 overflow-x-auto pb-1.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <FilterChip active={unreadOnly} onClick={() => setUnreadOnly((v) => !v)}>
               Necitite
+              {unreadTotal > 0 ? (
+                <span className="ml-0.5 rounded-full bg-primary px-1.5 text-[10px] font-semibold leading-4 text-primary-foreground">
+                  {unreadTotal > 99 ? "99+" : unreadTotal}
+                </span>
+              ) : null}
             </FilterChip>
             <FilterChip active={onlineOnly} onClick={() => setOnlineOnly((v) => !v)}>
               Online
             </FilterChip>
+            <FilterChip active={recentOnly} onClick={() => setRecentOnly((v) => !v)}>
+              Recente
+            </FilterChip>
           </div>
         ) : (
-          <div className="pb-2" />
+          <div className="pb-1.5" />
         )}
       </header>
 
@@ -173,7 +189,8 @@ function MessagesPage() {
         <>
       <StoriesStrip />
 
-      <div className="flex-1 px-2 py-2">
+      <div className="flex-1 px-2 pb-2 pt-1">
+
 
 
         {loading ? (
