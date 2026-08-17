@@ -106,3 +106,52 @@ export function installViewportKeyboardTracking(): () => void {
     document.documentElement.style.removeProperty("--visual-viewport-height");
   };
 }
+
+/**
+ * Sursa UNICĂ de geometrie pentru ecranul de chat.
+ *
+ * Pe Android, în funcție de build/WebView, tastatura poate:
+ *  - redimensiona fereastra (`resizeOnFullScreen`) → `innerHeight` scade;
+ *  - NU redimensiona nimic (edge-to-edge, API 30+) → doar `visualViewport` scade.
+ *
+ * Nu putem alege una singură, dar nici să le însumăm. Luăm minimul dintre cele
+ * două: este exact spațiul rămas deasupra tastaturii, indiferent care mecanism
+ * a raportat. Rezultatul ajunge în `--app-vh` (+ `--app-vt` pentru derulările
+ * viewportului vizual pe web), iar shell-ul de chat este `position: fixed` pe
+ * aceste valori — deci nicio compensare suplimentară din padding.
+ */
+export function installAppViewportTracking(): () => void {
+  if (typeof window === "undefined") return () => {};
+  const root = document.documentElement;
+  let raf = 0;
+  const apply = () => {
+    raf = 0;
+    const vv = window.visualViewport;
+    const inner = window.innerHeight || 0;
+    const visual = vv?.height ?? inner;
+    const height = Math.max(0, Math.round(Math.min(inner || visual, visual || inner)));
+    const offset = Math.max(0, Math.round(vv?.offsetTop ?? 0));
+    root.style.setProperty("--app-vh", `${height}px`);
+    root.style.setProperty("--app-vt", `${offset}px`);
+  };
+  const schedule = () => {
+    if (raf) return;
+    raf = requestAnimationFrame(apply);
+  };
+  apply();
+  window.addEventListener("resize", schedule);
+  window.addEventListener("orientationchange", schedule);
+  window.addEventListener("suzeta:keyboard", schedule as EventListener);
+  window.visualViewport?.addEventListener("resize", schedule);
+  window.visualViewport?.addEventListener("scroll", schedule);
+  return () => {
+    if (raf) cancelAnimationFrame(raf);
+    window.removeEventListener("resize", schedule);
+    window.removeEventListener("orientationchange", schedule);
+    window.removeEventListener("suzeta:keyboard", schedule as EventListener);
+    window.visualViewport?.removeEventListener("resize", schedule);
+    window.visualViewport?.removeEventListener("scroll", schedule);
+    root.style.removeProperty("--app-vh");
+    root.style.removeProperty("--app-vt");
+  };
+}
