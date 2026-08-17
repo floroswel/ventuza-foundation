@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.16",
-  "versionCode": 26,
+  "versionName": "1.0.17",
+  "versionCode": 27,
   "track": "internal",
-  "notes": "Build 26: reparat spatiul pentru barele de sistem. Variabilele de safe-area erau active doar cat timp tastatura era deschisa, deci pe Android continutul intra sub bara de stare si sub bara gestuala (profil, setari, chat, tot). Acum ecranele se aseaza corect pe orice telefon, cu sau fara notch."
+  "notes": "Build 27: Inbox mai dens (fara spatiu gol sub Story), previzualizarea reala a ultimului mesaj, filtre Necitite/Online/Recente cu badge de necitite, camp de scris pe mai multe randuri care creste odata cu textul si urmareste cursorul, plus spatiul gol dintre chat si tastatura eliminat."
 }
