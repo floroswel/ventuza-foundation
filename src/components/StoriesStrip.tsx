@@ -92,11 +92,16 @@ export function StoriesStrip() {
                 className="size-full rounded-full object-cover opacity-80"
               />
             ) : null}
-            <span className="absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full bg-primary text-primary-foreground shadow-lg">
-              <Plus className="size-3.5" strokeWidth={3} />
+            <span
+              className={cn(
+                "absolute -bottom-1 -right-1 grid place-items-center rounded-full bg-primary text-primary-foreground shadow-lg",
+                compact ? "size-4" : "size-6",
+              )}
+            >
+              <Plus className={compact ? "size-2.5" : "size-3.5"} strokeWidth={3} />
             </span>
           </span>
-          <span className="text-[10px] text-foreground/80">
+          <span className={cn("text-foreground/80", compact ? "text-xs" : "text-[10px]")}>
             {ownGroup ? "Adaugă" : "Story nou"}
           </span>
         </button>
