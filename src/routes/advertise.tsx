@@ -16,6 +16,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { getMyAdvertiser, listMyCampaigns, type Advertiser, type AdCampaign } from "@/lib/ads";
 import { BottomNav } from "@/components/BottomNav";
+import {
+  fetchPartnerPricing,
+  formatPlanPrice,
+  type PartnerPricingRow,
+} from "@/lib/partner-pricing";
 
 export const Route = createFileRoute("/advertise")({
   ssr: false,
@@ -393,20 +398,60 @@ function AdvertiserDashboard({ adv, campaigns }: { adv: Advertiser; campaigns: A
         )}
       </section>
 
-      <section className="rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4">
-        <p className="text-xs font-semibold text-amber-200">Prețuri — în curând</p>
-        <p className="mt-1 text-xs text-amber-100/80">
-          Grila de tarife pentru bannere Discover, Events și Map se comunică la lansarea programului
-          B2B. Momentan echipa Suzeta îți răspunde pe email cu ofertă personalizată.
-        </p>
-        <a
-          href="mailto:ads@suzeta.app"
-          className="mt-2 inline-flex items-center gap-1 text-xs text-primary"
-        >
-          Contact direct: ads@suzeta.app
-        </a>
-      </section>
+      <AdsPricing />
     </>
+  );
+}
+
+/** Tarife reale (aceleași planuri ca la parteneri), citite din backend. */
+function AdsPricing() {
+  const [rows, setRows] = useState<PartnerPricingRow[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await fetchPartnerPricing();
+        if (!cancelled) setRows(data);
+      } catch (e) {
+        if (!cancelled) setErr((e as Error).message);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return (
+    <section className="rounded-2xl border border-border bg-surface p-4">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+        Tarife plan partener
+      </p>
+      {err ? (
+        <p className="mt-2 text-xs text-destructive">Nu am putut încărca tarifele. {err}</p>
+      ) : !rows ? (
+        <div className="mt-2 h-16 animate-pulse rounded-xl bg-muted/40" />
+      ) : (
+        <ul className="mt-2 space-y-1.5">
+          {rows.map((r) => (
+            <li key={r.code} className="flex items-baseline justify-between gap-2 text-sm">
+              <span className="font-medium">{r.name}</span>
+              <span className="text-primary">{formatPlanPrice(r)}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+      <p className="mt-2 text-[11px] text-muted-foreground">
+        Prețuri fără TVA ({rows?.[0]?.vat_rate ?? 19}%). Facturare prin transfer bancar.
+      </p>
+      <a
+        href="mailto:ads@suzeta.app"
+        className="mt-2 inline-flex items-center gap-1 text-xs text-primary"
+      >
+        Ofertă personalizată: ads@suzeta.app
+      </a>
+    </section>
   );
 }
 

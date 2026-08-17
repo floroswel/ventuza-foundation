@@ -24,6 +24,12 @@ import {
 import { lookupAnafCui } from "@/lib/anaf.functions";
 import { submitBusinessApplication } from "@/lib/business-apply.functions";
 import { linkOrphanBusinessApps } from "@/lib/business.functions";
+import {
+  fetchPartnerPricing,
+  formatPlanPrice,
+  planPerks,
+  type PartnerPricingRow,
+} from "@/lib/partner-pricing";
 
 export const Route = createFileRoute("/business")({
   head: () => ({
@@ -300,14 +306,6 @@ function BusinessPage() {
 function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart: () => void }) {
   return (
     <section className="mx-auto max-w-2xl px-4 py-8">
-      <div className="mb-6 rounded-2xl border border-amber-400/40 bg-amber-500/10 p-4">
-        <p className="text-sm font-semibold text-amber-200">În curând</p>
-        <p className="mt-1 text-xs text-amber-100/80">
-          Programul pentru parteneri B2B (localuri, evenimente, oferte, reclamă) este în pregătire.
-          Pachetele și prețurile de mai jos sunt orientative și se pot schimba până la lansare.
-          Poți lăsa o cerere de interes ca să te contactăm primul când deschidem înscrierile.
-        </p>
-      </div>
       {savedStatus && (
         <div className="mb-6 flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4">
           <Clock className="size-5 shrink-0 text-primary" />
@@ -372,55 +370,10 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
         />
       </div>
 
-      {/* COMING SOON — fără prețuri */}
       <h3 className="mt-10 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Ce pregătim
+        Pachete și prețuri
       </h3>
-      <div className="mt-3 space-y-3">
-        <Tier
-          name="Community"
-          price="În curând"
-          desc="Pentru organizații și asociații care vor prezență în comunitate."
-          perks={["Profil verificat", "Listare evenimente", "Badge partener", "Suport email"]}
-        />
-        <Tier
-          name="Starter"
-          price="În curând"
-          highlight
-          desc="Pentru baruri, cluburi, branduri locale gay-friendly."
-          perks={[
-            "Banner Discover (city-targeted)",
-            "Evenimente promovate lunar",
-            "Statistici impresii",
-            "Factură cu TVA",
-          ]}
-        />
-        <Tier
-          name="Growth"
-          price="În curând"
-          desc="Pentru branduri naționale și organizatori Pride."
-          perks={[
-            "Banner național + city",
-            "Evenimente boost multiple",
-            "Stories sponsorizate",
-            "Account manager dedicat",
-          ]}
-        />
-        <Tier
-          name="Custom"
-          price="În curând"
-          desc="Campanii Pride Month, lansări produs, parteneriate UE."
-          perks={[
-            "Briefing comun",
-            "Co-creație content",
-            "Reporting săptămânal",
-            "Contract-cadru anual",
-          ]}
-        />
-      </div>
-      <p className="mt-3 text-[11px] text-muted-foreground">
-        Prețurile finale se comunică la lansare. Momentan poți doar lăsa o cerere de interes.
-      </p>
+      <PricingTiers />
 
       {/* WHAT YOU NEED */}
       <h3 className="mt-10 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
@@ -488,6 +441,66 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
         </a>
       </p>
     </section>
+  );
+}
+
+/** Prețuri reale, citite din backend (app_settings.billing_settings). */
+function PricingTiers() {
+  const [rows, setRows] = useState<PartnerPricingRow[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await fetchPartnerPricing();
+        if (!cancelled) setRows(data);
+      } catch (e) {
+        if (!cancelled) setErr((e as Error).message);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (err) {
+    return (
+      <p className="mt-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+        Nu am putut încărca prețurile. {err}
+      </p>
+    );
+  }
+  if (!rows) {
+    return (
+      <div className="mt-3 space-y-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-24 animate-pulse rounded-2xl border border-border bg-surface/40" />
+        ))}
+      </div>
+    );
+  }
+
+  const vat = rows[0]?.vat_rate ?? 19;
+  return (
+    <>
+      <div className="mt-3 space-y-3">
+        {rows.map((r) => (
+          <Tier
+            key={r.code}
+            name={r.name}
+            price={formatPlanPrice(r)}
+            highlight={r.code === "Pro"}
+            desc={r.description ?? ""}
+            perks={planPerks(r)}
+          />
+        ))}
+      </div>
+      <p className="mt-3 text-[11px] text-muted-foreground">
+        Prețurile sunt fără TVA ({vat}% se adaugă pe factură). Facturare prin transfer bancar,
+        factură emisă automat după activare.
+      </p>
+    </>
   );
 }
 
