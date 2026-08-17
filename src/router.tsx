@@ -70,7 +70,21 @@ function installPreloadRejectionGuard() {
 
 export const getRouter = () => {
   installPreloadRejectionGuard();
-  const queryClient = new QueryClient();
+  // Cache agresiv dar sigur: datele rămân „proaspete" 60s, deci re-montarea
+  // unei rute (navigare înainte/înapoi, tab switch) nu re-cere nimic.
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        staleTime: 60_000,
+        gcTime: 30 * 60_000,
+        refetchOnWindowFocus: false,
+        refetchOnMount: false,
+        refetchOnReconnect: true,
+        retry: 1,
+        networkMode: "offlineFirst",
+      },
+    },
+  });
 
 
   const router = createRouter({
