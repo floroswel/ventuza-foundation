@@ -61,18 +61,30 @@ export function StoriesStrip() {
 
   if (!user) return null;
 
+  // Fără story-uri de la alții → strip compact, ca să nu ocupe un bloc gol
+  // mare deasupra listei de conversații.
+  const compact = ordered.length === 0;
+
   return (
-    <div className="border-b border-border/40 px-3 py-3">
+    <div className={cn("border-b border-border/40 px-3", compact ? "py-2" : "py-3")}>
       <input ref={fileRef} type="file" accept="image/*,video/mp4" hidden onChange={handleUpload} />
       <div className="-mx-1 flex gap-3 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {/* Add button */}
         <button
           onClick={() => fileRef.current?.click()}
           disabled={uploading}
-          className="group flex shrink-0 flex-col items-center gap-1"
+          className={cn(
+            "group flex shrink-0 items-center gap-2",
+            compact ? "flex-row" : "flex-col gap-1",
+          )}
           aria-label="Adaugă story"
         >
-          <span className="relative grid size-[66px] place-items-center rounded-full border border-dashed border-primary/60 bg-surface text-primary">
+          <span
+            className={cn(
+              "relative grid place-items-center rounded-full border border-dashed border-primary/60 bg-surface text-primary",
+              compact ? "size-10" : "size-[66px]",
+            )}
+          >
             {ownGroup ? (
               <img
                 src={ownGroup.photos?.[0] ? avatarUrls[ownGroup.photos[0]] : ""}
