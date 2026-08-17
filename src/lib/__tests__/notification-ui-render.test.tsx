@@ -199,14 +199,31 @@ function renderInboxPreview(
 }
 
 describe("UI inbox preview rendering — never shows sensitive fields", () => {
-  for (const showPreview of [true, false, null, undefined] as const) {
-    it(`renders only allowed strings (show_preview=${showPreview}, hasMessage=true)`, () => {
+  it("show_preview=false → doar copy generic, niciodată conținut", () => {
+    for (const body of HOSTILE_BODIES) {
+      expectSafe(renderInboxPreview(false, body, true), body);
+    }
+  });
+
+  // Cu preview activ, inbox-ul (suprafață in-app, după autentificare) arată
+  // ultimul mesaj real — dar PII-ul rămâne redactat de `scrubString`.
+  for (const showPreview of [true, null, undefined] as const) {
+    it(`arată mesajul real fără PII (show_preview=${showPreview})`, () => {
       for (const body of HOSTILE_BODIES) {
         const rendered = renderInboxPreview(showPreview, body, true);
-        expectSafe(rendered, body);
+        for (const pat of [
+          /\+?\d[\d\s().-]{7,}\d/,
+          /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i,
+          /RO\d{2}[A-Z0-9]{10,}/,
+          /-?\d{1,3}\.\d{4,}\s*,\s*-?\d{1,3}\.\d{4,}/,
+        ]) {
+          expect(pat.test(rendered), `leaked ${pat} for ${JSON.stringify(body)}`).toBe(false);
+        }
+        expect(rendered.length).toBeLessThanOrEqual(200);
       }
     });
   }
+
 
   it("renders the empty-inbox invitation when there is no message", () => {
     for (const body of HOSTILE_BODIES) {

@@ -181,7 +181,7 @@ function GroupChatPage() {
         )}
       </header>
 
-      <div ref={scrollerRef} className="scroll-pane px-3 py-4 pb-keyboard">
+      <div ref={scrollerRef} className="scroll-pane px-3 pb-3 pt-4">
         {!isMember ? (
           <div className="flex h-full flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground">
             <p>Nu ești membru. Alătură-te ca să citești și să scrii.</p>

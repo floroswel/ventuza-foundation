@@ -1,7 +1,7 @@
 import { setActiveConversation } from "@/lib/active-conversation";
 import { withGuardian } from "@/components/with-guardian";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   enqueueMessage,
@@ -122,6 +122,33 @@ function ThreadPage() {
   const [otherTyping, setOtherTyping] = useState(false);
   const [connected, setConnected] = useState(true);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  /** Composer multiline: crește până la max-height, apoi devine scrollabil. */
+  const autoGrow = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+    // Cursorul rămâne vizibil: ultima linie scrisă e mereu în câmp.
+    el.scrollTop = el.scrollHeight;
+  }, []);
+  /** După trimitere: golește înălțimea crescută și păstrează focusul/tastatura. */
+  const resetComposer = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.focus({ preventScroll: true });
+  }, []);
+  /** Ancorează lista la ultimul mesaj — doar dacă utilizatorul era deja jos. */
+  const anchorToBottom = useCallback((force = false) => {
+    requestAnimationFrame(() => {
+      const node = scrollerRef.current;
+      if (!node) return;
+      if (!force && !isNearBottom(node)) return;
+      node.scrollTop = bottomScrollTop(node);
+    });
+  }, []);
+
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -383,18 +410,10 @@ function ThreadPage() {
   // utilizatorul era deja jos, altfel l-am smuci din istoricul pe care îl citea.
   // `native-runtime` emite evenimentul la fiecare schimbare de stare a tastaturii.
   useEffect(() => {
-    const onKeyboard = () => {
-      if (!scrollerRef.current || !isNearBottom(scrollerRef.current)) return;
-      // Un cadru de așteptare: evenimentul poate sosi înainte ca layout-ul să fi
-      // aplicat noua înălțime.
-      requestAnimationFrame(() => {
-        const node = scrollerRef.current;
-        if (node) node.scrollTop = bottomScrollTop(node);
-      });
-    };
+    const onKeyboard = () => anchorToBottom();
     window.addEventListener("suzeta:keyboard", onKeyboard);
     return () => window.removeEventListener("suzeta:keyboard", onKeyboard);
-  }, []);
+  }, [anchorToBottom]);
 
   async function loadMore() {
     if (loadingMore || !hasMore || messages.length === 0) return;
@@ -493,6 +512,7 @@ function ThreadPage() {
       try {
         await enqueueMessage({ conversation_id: id, body, reply_to_id: replyId });
         setText("");
+        resetComposer();
         setReplyTo(null);
         toast.message("Ești offline — mesajul va pleca la reconectare.");
       } catch {
@@ -513,7 +533,9 @@ function ThreadPage() {
     };
     setMessages((prev) => [...prev, optimistic]);
     setText("");
+    resetComposer();
     setReplyTo(null);
+    anchorToBottom(true);
     try {
       const real = await sendMessage(id, body, replyId);
       setMessages((prev) => {
@@ -1198,29 +1220,43 @@ function ThreadPage() {
         className="sticky bottom-0 z-10 flex shrink-0 flex-col gap-1 border-t border-border/60 bg-background/95 px-3 py-2 pb-bar backdrop-blur"
       >
         {/* Rând 1 — pilulă full-width cu send în interior (stil nativ) */}
-        <div className="relative flex items-center">
-          <input
+        <div className="relative flex items-end">
+          <textarea
+            ref={textareaRef}
             value={text}
+            rows={1}
             onChange={(e) => {
               setText(e.target.value);
               sendTypingPing();
+              autoGrow();
+            }}
+            onFocus={() => {
+              autoGrow();
+              anchorToBottom();
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void handleSend(e as unknown as FormEvent);
+              }
             }}
             placeholder={
               blockedFirstMessage ? "Nu poți trimite mesaje acestui utilizator" : "Scrie un mesaj…"
             }
             maxLength={4000}
             disabled={blockedFirstMessage}
-            className="w-full min-w-0 rounded-full border border-border bg-muted/40 py-3 pl-4 pr-14 text-[15px] outline-none focus:border-primary disabled:opacity-60"
+            className="max-h-[7.5rem] w-full min-w-0 resize-none overflow-y-auto rounded-3xl border border-border bg-muted/40 py-3 pl-4 pr-14 text-[15px] leading-5 outline-none focus:border-primary disabled:opacity-60"
           />
           <button
             type="submit"
             disabled={!text.trim() || blockedFirstMessage}
             aria-label="Trimite"
-            className="absolute right-1.5 flex size-10 items-center justify-center rounded-full text-primary transition-opacity disabled:opacity-30"
+            className="absolute bottom-1 right-1.5 flex size-10 shrink-0 items-center justify-center rounded-full text-primary transition-opacity disabled:opacity-30"
           >
             <Send className="size-5" />
           </button>
         </div>
+
 
         {/* Rând 2 — acțiuni rapide, fără meniu ascuns */}
         <div className="flex items-center justify-around">
@@ -1362,7 +1398,7 @@ function MessagesScroller({
     <div
       ref={scrollerRef as React.RefObject<HTMLDivElement>}
       onScroll={onScroll}
-      className="scroll-pane px-4 py-4 pb-keyboard"
+      className="scroll-pane px-4 pb-3 pt-4"
     >
       {loading ? (
         <div className="flex items-center justify-center py-16 text-muted-foreground">

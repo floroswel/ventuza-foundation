@@ -1,0 +1,2 @@
+Inbox reproiectat: fara spatiu gol sub Story, previzualizarea reala a ultimului mesaj (text, foto, mesaj vocal, locatie), filtre Necitite / Online / Recente si badge cu numarul de mesaje necitite.
+Chat: campul de scris creste pe mai multe randuri si urmareste cursorul, iar spatiul gol dintre conversatie si tastatura a disparut. Mesajele noi apar instant si raman ancorate corect.
