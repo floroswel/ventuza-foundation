@@ -1195,51 +1195,60 @@ function ThreadPage() {
 
       <form
         onSubmit={handleSend}
-        className="sticky bottom-0 z-10 flex shrink-0 items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-2 pb-bar backdrop-blur"
+        className="sticky bottom-0 z-10 flex shrink-0 flex-col gap-1 border-t border-border/60 bg-background/95 px-3 py-2 pb-bar backdrop-blur"
       >
-        <button
-          type="button"
-          onClick={handleWingman}
-          disabled={wingmanLoading || blockedFirstMessage}
-          aria-label="Wingman AI"
-          className="flex size-11 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary disabled:opacity-50"
-        >
-          {wingmanLoading ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Sparkles className="size-4" />
-          )}
-        </button>
-        <ChatComposerExtras
-          conversationId={id}
-          disabled={blockedFirstMessage}
-          onSent={(m) =>
-            setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))
-          }
-          onUpdated={(m) =>
-            setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)))
-          }
-        />
-        <input
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            sendTypingPing();
-          }}
-          placeholder={
-            blockedFirstMessage ? "Nu poți trimite mesaje acestui utilizator" : "Type a message…"
-          }
-          maxLength={4000}
-          disabled={blockedFirstMessage}
-          className="w-full min-w-0 flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary disabled:opacity-60"
-        />
-        <button
-          type="submit"
-          disabled={!text.trim() || blockedFirstMessage}
-          className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
-        >
-          <Send className="size-4" />
-        </button>
+        {/* Rând 1 — pilulă full-width cu send în interior (stil nativ) */}
+        <div className="relative flex items-center">
+          <input
+            value={text}
+            onChange={(e) => {
+              setText(e.target.value);
+              sendTypingPing();
+            }}
+            placeholder={
+              blockedFirstMessage ? "Nu poți trimite mesaje acestui utilizator" : "Scrie un mesaj…"
+            }
+            maxLength={4000}
+            disabled={blockedFirstMessage}
+            className="w-full min-w-0 rounded-full border border-border bg-muted/40 py-3 pl-4 pr-14 text-[15px] outline-none focus:border-primary disabled:opacity-60"
+          />
+          <button
+            type="submit"
+            disabled={!text.trim() || blockedFirstMessage}
+            aria-label="Trimite"
+            className="absolute right-1.5 flex size-10 items-center justify-center rounded-full text-primary transition-opacity disabled:opacity-30"
+          >
+            <Send className="size-5" />
+          </button>
+        </div>
+
+        {/* Rând 2 — acțiuni rapide, fără meniu ascuns */}
+        <div className="flex items-center justify-around">
+          <ChatComposerExtras
+            variant="row"
+            conversationId={id}
+            disabled={blockedFirstMessage}
+            onSent={(m) =>
+              setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))
+            }
+            onUpdated={(m) =>
+              setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)))
+            }
+          />
+          <button
+            type="button"
+            onClick={handleWingman}
+            disabled={wingmanLoading || blockedFirstMessage}
+            aria-label="Wingman AI"
+            className="flex size-10 items-center justify-center rounded-full text-primary disabled:opacity-40"
+          >
+            {wingmanLoading ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Sparkles className="size-5" />
+            )}
+          </button>
+        </div>
       </form>
 
       <AlertDialog open={!!unsendTarget} onOpenChange={(o) => !o && setUnsendTarget(null)}>
