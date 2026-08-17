@@ -148,7 +148,6 @@ function ThreadPage() {
     requestAnimationFrame(() => {
       const node = scrollerRef.current;
       if (node) {
-        console.log("DBG2", force, wasNearBottomRef.current, node.scrollTop);
         if (!force && !wasNearBottomRef.current) return;
         node.scrollTop = bottomScrollTop(node);
         wasNearBottomRef.current = true;
