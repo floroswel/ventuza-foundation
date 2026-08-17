@@ -276,6 +276,8 @@ function ImageBubble({ m, mine }: Props) {
   const [fullscreen, setFullscreen] = useState(false);
   const [viewedOnce, setViewedOnce] = useState(alreadyBurned);
   const [retryTick, setRetryTick] = useState(0);
+  const [loaded, setLoaded] = useState(false);
+
 
   // Recipient burned this view-once photo permanently once opened.
   const burned = alreadyBurned || (isViewOnceRecipient && viewedOnce);
