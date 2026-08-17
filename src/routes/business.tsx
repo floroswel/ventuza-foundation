@@ -438,6 +438,66 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
   );
 }
 
+/** Prețuri reale, citite din backend (app_settings.billing_settings). */
+function PricingTiers() {
+  const [rows, setRows] = useState<PartnerPricingRow[] | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const data = await fetchPartnerPricing();
+        if (!cancelled) setRows(data);
+      } catch (e) {
+        if (!cancelled) setErr((e as Error).message);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (err) {
+    return (
+      <p className="mt-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
+        Nu am putut încărca prețurile. {err}
+      </p>
+    );
+  }
+  if (!rows) {
+    return (
+      <div className="mt-3 space-y-3">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-24 animate-pulse rounded-2xl border border-border bg-surface/40" />
+        ))}
+      </div>
+    );
+  }
+
+  const vat = rows[0]?.vat_rate ?? 19;
+  return (
+    <>
+      <div className="mt-3 space-y-3">
+        {rows.map((r) => (
+          <Tier
+            key={r.code}
+            name={r.name}
+            price={formatPlanPrice(r)}
+            highlight={r.code === "Pro"}
+            desc={r.description ?? ""}
+            perks={planPerks(r)}
+          />
+        ))}
+      </div>
+      <p className="mt-3 text-[11px] text-muted-foreground">
+        Prețurile sunt fără TVA ({vat}% se adaugă pe factură). Facturare prin transfer bancar,
+        factură emisă automat după activare.
+      </p>
+    </>
+  );
+}
+
 function Tier({
   name,
   price,
