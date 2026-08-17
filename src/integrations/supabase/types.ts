@@ -6206,6 +6206,19 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      public_partner_pricing: {
+        Args: never
+        Returns: {
+          code: string
+          currency: string
+          description: string
+          entitlements: Json
+          monthly_minor: number
+          name: string
+          sort_order: number
+          vat_rate: number
+        }[]
+      }
       purge_admin_audit_log: { Args: never; Returns: number }
       purge_notification_dispatch_log: { Args: never; Returns: number }
       purge_scheduled_deletions: { Args: never; Returns: number }
