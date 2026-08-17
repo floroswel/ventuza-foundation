@@ -455,24 +455,13 @@ export async function getMessageLocationBucket(messageId: string): Promise<Locat
 
 export async function signChatMedia(path: string | null | undefined): Promise<string | null> {
   if (!path) return null;
-  const { reportSignedUrlError, reportSignedUrlMissing } = await import("@/lib/media-telemetry");
-  try {
-    const { data, error } = await supabase.storage
-      .from("chat-media")
-      .createSignedUrl(path, 3600);
-    if (error) {
-      reportSignedUrlError({ bucket: "chat-media", path, context: "chat-bubble", error });
-      return null;
-    }
-    if (!data?.signedUrl) {
-      reportSignedUrlMissing({ bucket: "chat-media", path, context: "chat-bubble" });
-      return null;
-    }
-    return data.signedUrl;
-  } catch (error) {
-    reportSignedUrlError({ bucket: "chat-media", path, context: "chat-bubble", error });
-    return null;
+  const { getSignedUrl } = await import("@/lib/signed-url-cache");
+  const url = await getSignedUrl("chat-media", path, 3600);
+  if (!url) {
+    const { reportSignedUrlMissing } = await import("@/lib/media-telemetry");
+    reportSignedUrlMissing({ bucket: "chat-media", path, context: "chat-bubble" });
   }
+  return url;
 }
 
 
