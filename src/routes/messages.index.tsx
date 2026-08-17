@@ -335,3 +335,148 @@ function FilterChip({
     </button>
   );
 }
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "relative pb-2 text-[15px] font-semibold transition-colors",
+        active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+      )}
+    >
+      {children}
+      {active ? (
+        <span className="absolute inset-x-0 -bottom-[1px] h-[2px] rounded-full bg-primary" />
+      ) : null}
+    </button>
+  );
+}
+
+type InterestActor = { display_name: string | null; photo: string | null; profile_slug: string | null };
+
+const INTEREST_KINDS = new Set(["tap", "like", "favorite", "profile_view", "match"]);
+
+const INTEREST_LABEL: Record<string, string> = {
+  tap: "Ți-a dat tap",
+  like: "Te-a plăcut",
+  favorite: "Te-a adăugat la favorite",
+  profile_view: "Ți-a văzut profilul",
+  match: "Match nou",
+};
+
+/** Tab „Interes" — cine a interacționat cu tine (tap / like / favorite / vizite). */
+function InterestTab() {
+  const { notifications, loading } = useNotifications();
+  const rows = useMemo(
+    () => notifications.filter((n) => INTEREST_KINDS.has(n.type as string)).slice(0, 60),
+    [notifications],
+  );
+  const actorIds = useMemo(
+    () => [...new Set(rows.map((n) => n.actor_id).filter((v): v is string => !!v))].sort(),
+    [rows],
+  );
+  const [actors, setActors] = useState<Record<string, InterestActor>>({});
+
+  useEffect(() => {
+    if (actorIds.length === 0) {
+      setActors({});
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const { data, error } = await supabase.rpc("get_notification_actors" as never, {
+        _ids: actorIds,
+      } as never);
+      if (error || !data || cancelled) return;
+      const list = data as unknown as Array<{ id: string } & InterestActor>;
+      const paths = list.map((r) => r.photo).filter((p): p is string => !!p);
+      const signed = paths.length ? await signPhotos(paths) : {};
+      if (cancelled) return;
+      setActors(
+        Object.fromEntries(
+          list.map((r) => [
+            r.id,
+            {
+              display_name: r.display_name,
+              photo: r.photo ? (signed[r.photo] ?? null) : null,
+              profile_slug: r.profile_slug,
+            },
+          ]),
+        ),
+      );
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [actorIds]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24 text-muted-foreground">
+        <Loader2 className="size-5 animate-spin" />
+      </div>
+    );
+  }
+
+  if (rows.length === 0) {
+    return (
+      <EmptyState
+        icon={Sparkles}
+        title="Niciun interes încă"
+        body="Când cineva îți dă tap, like sau te adaugă la favorite, apare aici."
+      />
+    );
+  }
+
+  return (
+    <ul className="divide-y divide-border/30 px-2 py-2">
+      {rows.map((n) => {
+        const actor = n.actor_id ? actors[n.actor_id] : undefined;
+        const name = actor?.display_name ?? "Cineva";
+        const body = (
+          <div className="flex items-center gap-3 rounded-xl px-3 py-3 transition-colors hover:bg-muted/30">
+            <div className="size-14 shrink-0 overflow-hidden rounded-2xl bg-surface ring-1 ring-border">
+              {actor?.photo ? (
+                <img src={actor.photo} alt="" className="size-full object-cover" />
+              ) : (
+                <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
+                  {name.slice(0, 1)}
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[15px] font-semibold leading-tight text-foreground">{name}</p>
+              <p className="mt-0.5 truncate text-sm text-muted-foreground">
+                {INTEREST_LABEL[n.type as string] ?? "Interacțiune nouă"}
+              </p>
+            </div>
+            <span className="shrink-0 text-[11px] tabular-nums text-muted-foreground">
+              {formatWhen(n.created_at)}
+            </span>
+          </div>
+        );
+        return (
+          <li key={n.id}>
+            {actor?.profile_slug ? (
+              <Link to="/u/$slug" params={{ slug: actor.profile_slug }}>
+                {body}
+              </Link>
+            ) : (
+              body
+            )}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
