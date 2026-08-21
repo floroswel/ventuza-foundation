@@ -2,5 +2,5 @@
   "versionName": "1.0.19",
   "versionCode": 29,
   "track": "internal",
-  "notes": "Build 28: chat cu geometrie unica pentru tastatura Android (fara zona goala, composer mereu deasupra tastaturii) si deschiderea conversatiei direct la ultimul mesaj."
+  "notes": "Build 29: incarcare rapida a imaginilor, inbox cu previzualizari reale si filtre functionale, chat stabil peste tastatura, preturi parteneri reale."
 }

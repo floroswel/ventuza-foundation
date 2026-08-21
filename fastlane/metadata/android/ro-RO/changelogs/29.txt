@@ -1,5 +1,7 @@
 Suzeta 1.0.19
 
-- Îmbunătățiri și corectări de bug-uri.
-
-Completează înainte de upload pe Play Console.
+- Încărcare mult mai rapidă a pozelor din Discover și din conversații.
+- Inbox: previzualizare reală a ultimului mesaj, filtre și status online corecte.
+- Chat: composer mereu deasupra tastaturii, deschidere direct la ultimul mesaj.
+- Prețuri parteneri reale, fără secțiuni „în curând".
+- Corectări de stabilitate și build pentru Android 15/16.
