@@ -104,7 +104,6 @@ export const exportMyData = createServerFn({ method: "GET" })
       supabase.from("notifications").select("*").eq("user_id", userId),
       supabase.from("consent_log").select("*").eq("user_id", userId),
       supabase.from("blocks").select("*").eq("blocker_id", userId),
-      supabase.from("photos").select("*").eq("user_id", userId),
       supabase.from("reports").select("*").eq("reporter_id", userId),
     ]);
 
@@ -129,7 +128,6 @@ export const exportMyData = createServerFn({ method: "GET" })
         swipes: swipes.data ?? [],
         matches: matches.data ?? [],
         messages_sent: messages.data ?? [],
-        photos: photos.data ?? [],
         blocks: blocks.data ?? [],
         reports_filed: reports.data ?? [],
         events_hosted: events.data ?? [],
