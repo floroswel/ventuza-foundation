@@ -102,26 +102,18 @@ jobs:
 
       - name: Calculează metadatele vizibile ale buildului
         id: buildmeta
-        env:
-          MANUAL_CODE: ${{ inputs.version_code }}
         run: |
           set -euo pipefail
-          if [ -n "${MANUAL_CODE:-}" ]; then
-            CODE="$MANUAL_CODE"
-          elif [[ "$GITHUB_REF" == refs/tags/v* ]]; then
-            RAW="${GITHUB_REF#refs/tags/v}"
-            IFS='.' read -r MAJ MIN PAT <<< "$RAW"
-            CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
-          elif [ -f release/version.json ]; then
-            # Sursa de record a proiectului. Până acum era ignorată de workflow,
-            # deci `bun run version:bump` nu avea niciun efect pe build.
-            CODE="$(python3 -c 'import json;print(json.load(open("release/version.json"))["versionCode"])')"
-            echo "versionCode din release/version.json: $CODE"
-          else
-            echo "::error::versionCode lipsește: nu e dat ca input, nu venim din tag și release/version.json nu există."
+          # versionCode vine ÎNTOTDEAUNA din release/version.json (increment simplu,
+          # 24→25→26...). Nu se derivează din tag cu formula MAJ*10000+... — acea
+          # schemă intra în conflict cu codurile deja urcate pe Play și declanșa
+          # respingeri "duplicat/învechit".
+          if [ ! -f release/version.json ]; then
+            echo "::error::release/version.json lipsește. Rulează `bun run version:bump`."
             exit 1
           fi
-          [ -n "$CODE" ] || { echo "::error::versionCode nu a putut fi determinat."; exit 1; }
+          CODE="$(python3 -c 'import json;print(json.load(open("release/version.json"))["versionCode"])')"
+          [ -n "$CODE" ] || { echo "::error::versionCode nu a putut fi citit din release/version.json."; exit 1; }
           echo "code=$CODE" >> "$GITHUB_OUTPUT"
           echo "Marker UI: Android build $CODE · ${GITHUB_SHA:0:7}"
 
