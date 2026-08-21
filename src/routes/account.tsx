@@ -21,6 +21,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { signPhotos } from "@/lib/discover";
+import { setIncognito } from "@/lib/incognito";
+
 import { BottomNav } from "@/components/BottomNav";
 
 export const Route = createFileRoute("/account")({
