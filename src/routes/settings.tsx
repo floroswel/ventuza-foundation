@@ -188,12 +188,22 @@ function SettingsPage() {
 
   async function savePrivacy(next: typeof privacy) {
     if (!user) return;
+    const wasHidden = privacy.hide_online;
     setPrivacy(next);
     setSavingPrivacy(true);
     const { error } = await supabase.from("profiles").update(next).eq("id", user.id);
+    if (!error && wasHidden !== next.hide_online) {
+      // Reapari/dispari instant (touch_last_seen + heartbeat).
+      try {
+        await setIncognito(user.id, next.hide_online);
+      } catch {
+        /* deja salvat mai sus */
+      }
+    }
     setSavingPrivacy(false);
     if (error) toast.error(error.message);
   }
+
 
   async function activateLookingNow(hours: number) {
     setBusyNow(true);
