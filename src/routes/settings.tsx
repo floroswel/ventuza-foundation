@@ -295,16 +295,60 @@ function SettingsPage() {
           <div className="mt-4 border-t border-border pt-3">
             <button
               onClick={downloadMyData}
-              className="w-full rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground hover:bg-surface"
+              disabled={exportState.status === "running"}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground hover:bg-surface disabled:opacity-60"
             >
-              📥 Exportă datele mele (GDPR)
+              {exportState.status === "running" ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Download className="size-3.5" />
+              )}
+              Descarcă datele mele
             </button>
             <p className="mt-2 text-[10px] text-muted-foreground">
               Fișier JSON structurat (Art. 20 GDPR): profil, consimțăminte, swipes, matches, mesaje
               trimise, blocări, rapoarte, evenimente, RSVP-uri, abonamente, notificări.
             </p>
 
+            {exportState.status !== "idle" && (
+              <div
+                role="status"
+                aria-live="polite"
+                className={`mt-3 rounded-xl border p-3 text-[11px] ${
+                  exportState.status === "error"
+                    ? "border-destructive/40 bg-destructive/5 text-destructive"
+                    : "border-border bg-background text-muted-foreground"
+                }`}
+              >
+                {exportState.status === "running" && (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="size-3 animate-spin" /> Se pregătește exportul…
+                  </span>
+                )}
+                {exportState.status === "done" && (
+                  <div className="flex flex-col gap-2">
+                    <span className="flex items-center gap-2 text-foreground">
+                      <CheckCircle2 className="size-3.5 text-primary" /> Export finalizat (
+                      {exportState.sizeKb} KB)
+                    </span>
+                    <a
+                      href={exportState.url}
+                      download={exportState.filename}
+                      className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-3 py-1.5 text-[11px] font-medium text-primary-foreground"
+                    >
+                      <Download className="size-3" /> Descarcă din nou
+                    </a>
+                  </div>
+                )}
+                {exportState.status === "error" && (
+                  <span className="flex items-center gap-2">
+                    <AlertTriangle className="size-3.5" /> Export eșuat: {exportState.message}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
+
         </section>
 
         {/* Notifications */}
