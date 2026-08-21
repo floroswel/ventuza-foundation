@@ -789,24 +789,129 @@ function SettingsPage() {
           </h2>
           <p className="mt-2 text-xs text-muted-foreground">
             Acțiune permanentă. Profilul, pozele, mesajele, match-urile și toate datele vor fi
-            șterse imediat și definitiv. Scrie <strong className="text-foreground">ȘTERGE</strong>{" "}
-            pentru a confirma.
+            șterse imediat și definitiv. Îți recomandăm să îți descarci întâi datele.
           </p>
-          <input
-            value={confirmDelete}
-            onChange={(e) => setConfirmDelete(e.target.value)}
-            placeholder="ȘTERGE"
-            className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-destructive"
-          />
           <button
-            onClick={handleDelete}
-            disabled={confirmDelete !== "ȘTERGE" || deleting}
-            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-destructive px-3 py-2 text-xs font-medium text-destructive-foreground disabled:opacity-50"
+            onClick={() => {
+              setDeleteStep("warn");
+              setDeleteError(null);
+              setConfirmDelete("");
+              setDeleteEmail("");
+              setDeleteOpen(true);
+            }}
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-destructive px-3 py-2 text-xs font-medium text-destructive-foreground"
           >
-            {deleting ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
-            Șterge contul definitiv
+            <Trash2 className="size-3" /> Șterge contul definitiv
           </button>
         </section>
+
+        <Dialog
+          open={deleteOpen}
+          onOpenChange={(o) => {
+            if (deleting || deleteStep === "done") return;
+            setDeleteOpen(o);
+          }}
+        >
+          <DialogContent className="max-w-md">
+            {deleteStep === "warn" && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-destructive">
+                    <AlertTriangle className="size-4" /> Ștergi contul definitiv?
+                  </DialogTitle>
+                  <DialogDescription className="text-left">
+                    Se șterg: profilul, pozele, albumele private, mesajele, match-urile,
+                    consimțămintele și abonamentele. Acțiunea nu poate fi anulată.
+                  </DialogDescription>
+                </DialogHeader>
+                <button
+                  onClick={() => void downloadMyData()}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium"
+                >
+                  <Download className="size-3.5" /> Descarcă întâi datele mele
+                </button>
+                <DialogFooter className="gap-2 sm:gap-2">
+                  <button
+                    onClick={() => setDeleteOpen(false)}
+                    className="rounded-full border border-border bg-background px-4 py-2 text-xs font-medium"
+                  >
+                    Renunț
+                  </button>
+                  <button
+                    onClick={() => setDeleteStep("verify")}
+                    className="rounded-full bg-destructive px-4 py-2 text-xs font-medium text-destructive-foreground"
+                  >
+                    Continuă
+                  </button>
+                </DialogFooter>
+              </>
+            )}
+
+            {deleteStep === "verify" && (
+              <>
+                <DialogHeader>
+                  <DialogTitle>Verificare finală</DialogTitle>
+                  <DialogDescription className="text-left">
+                    Confirmă emailul contului și scrie{" "}
+                    <strong className="text-foreground">ȘTERGE</strong> pentru a continua.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2">
+                  <input
+                    value={deleteEmail}
+                    onChange={(e) => setDeleteEmail(e.target.value)}
+                    placeholder={user?.email ?? "email@exemplu.com"}
+                    autoComplete="off"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-destructive"
+                  />
+                  <input
+                    value={confirmDelete}
+                    onChange={(e) => setConfirmDelete(e.target.value)}
+                    placeholder="ȘTERGE"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-destructive"
+                  />
+                  {deleteError && (
+                    <p className="flex items-center gap-2 text-[11px] text-destructive">
+                      <AlertTriangle className="size-3.5" /> {deleteError}
+                    </p>
+                  )}
+                </div>
+                <DialogFooter className="gap-2 sm:gap-2">
+                  <button
+                    onClick={() => setDeleteStep("warn")}
+                    disabled={deleting}
+                    className="rounded-full border border-border bg-background px-4 py-2 text-xs font-medium disabled:opacity-50"
+                  >
+                    Înapoi
+                  </button>
+                  <button
+                    onClick={() => void handleDelete()}
+                    disabled={confirmDelete !== "ȘTERGE" || !deleteEmail || deleting}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-destructive px-4 py-2 text-xs font-medium text-destructive-foreground disabled:opacity-50"
+                  >
+                    {deleting ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <Trash2 className="size-3" />
+                    )}
+                    Șterge definitiv
+                  </button>
+                </DialogFooter>
+              </>
+            )}
+
+            {deleteStep === "done" && (
+              <div className="py-4 text-center">
+                <CheckCircle2 className="mx-auto size-8 text-primary" />
+                <p className="mt-3 text-sm font-medium">Contul a fost șters</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Te deconectăm și te redirecționăm către pagina principală…
+                </p>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
       </div>
 
       <BottomNav />
