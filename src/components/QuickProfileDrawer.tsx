@@ -16,6 +16,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { setLookingNow } from "@/lib/social";
+import { setIncognito } from "@/lib/incognito";
+
 import { cn } from "@/lib/utils";
 
 type Me = {
