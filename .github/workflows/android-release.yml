@@ -735,42 +735,33 @@ jobs:
           fi
 
 
-      - name: Derive versionCode & versionName (release/version.json = sursa unică)
+      - name: Derive versionCode & versionName (release/version.json = sursă unică)
         id: version
         env:
           MANUAL_VERSION: ${{ inputs.version }}
-          MANUAL_CODE: ${{ inputs.version_code }}
         run: |
           set -euo pipefail
+          if [ ! -f release/version.json ]; then
+            echo "::error::release/version.json lipsește. Rulează \`bun run version:bump\`."
+            exit 1
+          fi
           JSON_NAME=$(python3 -c "import json;print(json.load(open('release/version.json'))['versionName'])")
           JSON_CODE=$(python3 -c "import json;print(json.load(open('release/version.json'))['versionCode'])")
           if [[ -n "${MANUAL_VERSION:-}" ]]; then
             RAW="$MANUAL_VERSION"
           elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             RAW="${GITHUB_REF#refs/tags/v}"
-          elif [ -f release/version.json ]; then
-            RAW="$(python3 -c 'import json;print(json.load(open("release/version.json"))["versionName"])')"
           else
             RAW="$JSON_NAME"
           fi
-          if [[ -n "${MANUAL_CODE:-}" ]]; then
-            CODE="${MANUAL_CODE}"
-          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
-            IFS='.' read -r MAJ MIN PAT <<< "$RAW"
-            CODE=$(( MAJ * 10000 + MIN * 100 + PAT ))
-          else
-            CODE="$JSON_CODE"
-          fi
-          # Play respinge un AAB cu versionCode deja folosit — semnalăm devreme
-          # dacă buildul manual rămâne în urma sursei unice de versiune.
-          if [ "$CODE" -lt "$JSON_CODE" ]; then
-            echo "::error::versionCode=$CODE este mai mic decât release/version.json ($JSON_CODE). Google Play va respinge AAB-ul ca duplicat/învechit."
-            exit 1
-          fi
+          # versionCode vine ÎNTOTDEAUNA din version.json (increment simplu,
+          # 24→25→26...). Nu se derivează din tag cu formula MAJ*10000+MIN*100+PAT
+          # — acea schemă intra în conflict cu codurile deja urcate pe Play și
+          # declanșa respingeri "duplicat/învechit".
+          CODE="$JSON_CODE"
           echo "name=${RAW}" >> "$GITHUB_OUTPUT"
           echo "code=${CODE}" >> "$GITHUB_OUTPUT"
-
-          echo "Version: ${RAW} (code=${CODE})"
+          echo "Version: ${RAW} (code=${CODE}, din version.json)"
 
       - name: Patch versionCode/versionName în build.gradle
         run: |
