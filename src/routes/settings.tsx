@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  AlertTriangle,
+  CheckCircle2,
   ChevronLeft,
+  Download,
   EyeOff,
   Flame,
   Loader2,
@@ -15,6 +18,15 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -64,21 +76,49 @@ function SettingsPage() {
   } = useNotificationPrefs();
 
 
+  type ExportState =
+    | { status: "idle" }
+    | { status: "running" }
+    | { status: "done"; url: string; filename: string; sizeKb: number }
+    | { status: "error"; message: string };
+  const [exportState, setExportState] = useState<ExportState>({ status: "idle" });
+
+  useEffect(() => {
+    return () => {
+      if (exportState.status === "done") URL.revokeObjectURL(exportState.url);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exportState]);
+
   async function downloadMyData() {
+    if (exportState.status === "running") return;
+    if (exportState.status === "done") URL.revokeObjectURL(exportState.url);
+    setExportState({ status: "running" });
+    const toastId = toast.loading("Se pregătește exportul datelor…");
     try {
       const data = await exportData({});
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
       const url = URL.createObjectURL(blob);
+      const filename = `suzeta-data-${new Date().toISOString().split("T")[0]}.json`;
       const a = document.createElement("a");
       a.href = url;
-      a.download = `suzeta-data-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = filename;
       a.click();
-      URL.revokeObjectURL(url);
-      toast.success("Datele tale au fost exportate (GDPR)");
+      setExportState({
+        status: "done",
+        url,
+        filename,
+        sizeKb: Math.max(1, Math.round(blob.size / 1024)),
+      });
+      toast.success("Export finalizat — fișierul a fost descărcat.", { id: toastId });
     } catch (e) {
-      toast.error((e as Error).message);
+      const message = e instanceof Error ? e.message : "Eroare necunoscută";
+      setExportState({ status: "error", message });
+      toast.error(`Export eșuat: ${message}`, { id: toastId });
     }
   }
+
 
   // `prefs` vine din context; păstrăm doar flag-ul de saving pentru UI.
   const [savingPrefs, setSavingPrefs] = useState(false);
@@ -86,7 +126,12 @@ function SettingsPage() {
   const [newEmail, setNewEmail] = useState("");
   const [newPwd, setNewPwd] = useState("");
   const [confirmDelete, setConfirmDelete] = useState("");
+  const [deleteEmail, setDeleteEmail] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteStep, setDeleteStep] = useState<"warn" | "verify" | "done">("warn");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+
   const [privacy, setPrivacy] = useState({
     hide_age: false,
     hide_distance: false,
@@ -209,18 +254,31 @@ function SettingsPage() {
 
   async function handleDelete() {
     if (confirmDelete !== "ȘTERGE") return;
+    if (deleteEmail.trim().toLowerCase() !== (user?.email ?? "").toLowerCase()) {
+      setDeleteError("Emailul introdus nu corespunde contului tău.");
+      return;
+    }
+    setDeleteError(null);
     setDeleting(true);
     try {
       await deleteAcct({});
-      await signOut();
-      toast.success("Cont șters.");
-      navigate({ to: "/" });
+      setDeleteStep("done");
+      toast.success("Contul a fost șters definitiv.");
+      setTimeout(() => {
+        void (async () => {
+          await signOut();
+          navigate({ to: "/" });
+        })();
+      }, 2200);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Eroare la ștergere");
+      const msg = e instanceof Error ? e.message : "Eroare la ștergere";
+      setDeleteError(msg);
+      toast.error(msg);
     } finally {
       setDeleting(false);
     }
   }
+
 
   if (loading || !user) {
     return (
@@ -295,16 +353,60 @@ function SettingsPage() {
           <div className="mt-4 border-t border-border pt-3">
             <button
               onClick={downloadMyData}
-              className="w-full rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground hover:bg-surface"
+              disabled={exportState.status === "running"}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-foreground hover:bg-surface disabled:opacity-60"
             >
-              📥 Exportă datele mele (GDPR)
+              {exportState.status === "running" ? (
+                <Loader2 className="size-3.5 animate-spin" />
+              ) : (
+                <Download className="size-3.5" />
+              )}
+              Descarcă datele mele
             </button>
             <p className="mt-2 text-[10px] text-muted-foreground">
               Fișier JSON structurat (Art. 20 GDPR): profil, consimțăminte, swipes, matches, mesaje
               trimise, blocări, rapoarte, evenimente, RSVP-uri, abonamente, notificări.
             </p>
 
+            {exportState.status !== "idle" && (
+              <div
+                role="status"
+                aria-live="polite"
+                className={`mt-3 rounded-xl border p-3 text-[11px] ${
+                  exportState.status === "error"
+                    ? "border-destructive/40 bg-destructive/5 text-destructive"
+                    : "border-border bg-background text-muted-foreground"
+                }`}
+              >
+                {exportState.status === "running" && (
+                  <span className="flex items-center gap-2">
+                    <Loader2 className="size-3 animate-spin" /> Se pregătește exportul…
+                  </span>
+                )}
+                {exportState.status === "done" && (
+                  <div className="flex flex-col gap-2">
+                    <span className="flex items-center gap-2 text-foreground">
+                      <CheckCircle2 className="size-3.5 text-primary" /> Export finalizat (
+                      {exportState.sizeKb} KB)
+                    </span>
+                    <a
+                      href={exportState.url}
+                      download={exportState.filename}
+                      className="inline-flex w-fit items-center gap-2 rounded-full bg-primary px-3 py-1.5 text-[11px] font-medium text-primary-foreground"
+                    >
+                      <Download className="size-3" /> Descarcă din nou
+                    </a>
+                  </div>
+                )}
+                {exportState.status === "error" && (
+                  <span className="flex items-center gap-2">
+                    <AlertTriangle className="size-3.5" /> Export eșuat: {exportState.message}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
+
         </section>
 
         {/* Notifications */}
@@ -699,24 +801,129 @@ function SettingsPage() {
           </h2>
           <p className="mt-2 text-xs text-muted-foreground">
             Acțiune permanentă. Profilul, pozele, mesajele, match-urile și toate datele vor fi
-            șterse imediat și definitiv. Scrie <strong className="text-foreground">ȘTERGE</strong>{" "}
-            pentru a confirma.
+            șterse imediat și definitiv. Îți recomandăm să îți descarci întâi datele.
           </p>
-          <input
-            value={confirmDelete}
-            onChange={(e) => setConfirmDelete(e.target.value)}
-            placeholder="ȘTERGE"
-            className="mt-3 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-destructive"
-          />
           <button
-            onClick={handleDelete}
-            disabled={confirmDelete !== "ȘTERGE" || deleting}
-            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-destructive px-3 py-2 text-xs font-medium text-destructive-foreground disabled:opacity-50"
+            onClick={() => {
+              setDeleteStep("warn");
+              setDeleteError(null);
+              setConfirmDelete("");
+              setDeleteEmail("");
+              setDeleteOpen(true);
+            }}
+            className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-full bg-destructive px-3 py-2 text-xs font-medium text-destructive-foreground"
           >
-            {deleting ? <Loader2 className="size-3 animate-spin" /> : <Trash2 className="size-3" />}
-            Șterge contul definitiv
+            <Trash2 className="size-3" /> Șterge contul definitiv
           </button>
         </section>
+
+        <Dialog
+          open={deleteOpen}
+          onOpenChange={(o) => {
+            if (deleting || deleteStep === "done") return;
+            setDeleteOpen(o);
+          }}
+        >
+          <DialogContent className="max-w-md">
+            {deleteStep === "warn" && (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2 text-destructive">
+                    <AlertTriangle className="size-4" /> Ștergi contul definitiv?
+                  </DialogTitle>
+                  <DialogDescription className="text-left">
+                    Se șterg: profilul, pozele, albumele private, mesajele, match-urile,
+                    consimțămintele și abonamentele. Acțiunea nu poate fi anulată.
+                  </DialogDescription>
+                </DialogHeader>
+                <button
+                  onClick={() => void downloadMyData()}
+                  className="inline-flex items-center justify-center gap-2 rounded-full border border-border bg-background px-4 py-2 text-xs font-medium"
+                >
+                  <Download className="size-3.5" /> Descarcă întâi datele mele
+                </button>
+                <DialogFooter className="gap-2 sm:gap-2">
+                  <button
+                    onClick={() => setDeleteOpen(false)}
+                    className="rounded-full border border-border bg-background px-4 py-2 text-xs font-medium"
+                  >
+                    Renunț
+                  </button>
+                  <button
+                    onClick={() => setDeleteStep("verify")}
+                    className="rounded-full bg-destructive px-4 py-2 text-xs font-medium text-destructive-foreground"
+                  >
+                    Continuă
+                  </button>
+                </DialogFooter>
+              </>
+            )}
+
+            {deleteStep === "verify" && (
+              <>
+                <DialogHeader>
+                  <DialogTitle>Verificare finală</DialogTitle>
+                  <DialogDescription className="text-left">
+                    Confirmă emailul contului și scrie{" "}
+                    <strong className="text-foreground">ȘTERGE</strong> pentru a continua.
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="space-y-2">
+                  <input
+                    value={deleteEmail}
+                    onChange={(e) => setDeleteEmail(e.target.value)}
+                    placeholder={user?.email ?? "email@exemplu.com"}
+                    autoComplete="off"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-destructive"
+                  />
+                  <input
+                    value={confirmDelete}
+                    onChange={(e) => setConfirmDelete(e.target.value)}
+                    placeholder="ȘTERGE"
+                    className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-destructive"
+                  />
+                  {deleteError && (
+                    <p className="flex items-center gap-2 text-[11px] text-destructive">
+                      <AlertTriangle className="size-3.5" /> {deleteError}
+                    </p>
+                  )}
+                </div>
+                <DialogFooter className="gap-2 sm:gap-2">
+                  <button
+                    onClick={() => setDeleteStep("warn")}
+                    disabled={deleting}
+                    className="rounded-full border border-border bg-background px-4 py-2 text-xs font-medium disabled:opacity-50"
+                  >
+                    Înapoi
+                  </button>
+                  <button
+                    onClick={() => void handleDelete()}
+                    disabled={confirmDelete !== "ȘTERGE" || !deleteEmail || deleting}
+                    className="inline-flex items-center justify-center gap-2 rounded-full bg-destructive px-4 py-2 text-xs font-medium text-destructive-foreground disabled:opacity-50"
+                  >
+                    {deleting ? (
+                      <Loader2 className="size-3 animate-spin" />
+                    ) : (
+                      <Trash2 className="size-3" />
+                    )}
+                    Șterge definitiv
+                  </button>
+                </DialogFooter>
+              </>
+            )}
+
+            {deleteStep === "done" && (
+              <div className="py-4 text-center">
+                <CheckCircle2 className="mx-auto size-8 text-primary" />
+                <p className="mt-3 text-sm font-medium">Contul a fost șters</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Te deconectăm și te redirecționăm către pagina principală…
+                </p>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
       </div>
 
       <BottomNav />
