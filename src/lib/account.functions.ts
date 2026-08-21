@@ -91,7 +91,6 @@ export const exportMyData = createServerFn({ method: "GET" })
       notifications,
       consents,
       blocks,
-      photos,
       reports,
     ] = await Promise.all([
       supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
