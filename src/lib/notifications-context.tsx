@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { saveFcmSubscription } from "@/lib/push.functions";
+import { saveFcmSubscription, savePushSubscription } from "@/lib/push.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import {
