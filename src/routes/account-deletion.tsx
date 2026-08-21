@@ -118,7 +118,7 @@ function AccountDeletionPage() {
           <p className="text-sm text-muted-foreground">
             VOMIX GENIUS S.R.L. · CUI RO43025661 · Str. Constructorilor 39, Voievoda, Teleorman
             <br />
-            DPO:{" "}
+            Contact protecția datelor:{" "}
             <a className="text-primary underline" href="mailto:dpo@suzeta.eu">
               dpo@suzeta.eu
             </a>

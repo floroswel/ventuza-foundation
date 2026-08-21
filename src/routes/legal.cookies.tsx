@@ -194,7 +194,7 @@ function CookiesPage() {
                 <a className="text-primary" href={`mailto:${OPERATOR.emails.privacy}`}>
                   {OPERATOR.emails.privacy}
                 </a>{" "}
-                · DPO:{" "}
+                · Contact protecția datelor:{" "}
                 <a className="text-primary" href={`mailto:${OPERATOR.emails.dpo}`}>
                   {OPERATOR.emails.dpo}
                 </a>

@@ -300,9 +300,10 @@ function SettingsPage() {
               📥 Exportă datele mele (GDPR)
             </button>
             <p className="mt-2 text-[10px] text-muted-foreground">
-              Primești un fișier JSON cu toate datele tale: profil, swipes, matches, mesaje,
-              RSVP-uri, abonamente.
+              Fișier JSON structurat (Art. 20 GDPR): profil, consimțăminte, swipes, matches, mesaje
+              trimise, blocări, rapoarte, evenimente, RSVP-uri, abonamente, notificări.
             </p>
+
           </div>
         </section>
 
@@ -669,7 +670,7 @@ function SettingsPage() {
               href="mailto:privacy@suzeta.app"
               className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
             >
-              <Mail className="size-4" /> Contact privacy / DPO
+              <Mail className="size-4" /> Contact protecția datelor
             </a>
             <a
               href="mailto:support@suzeta.app"

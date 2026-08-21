@@ -72,31 +72,63 @@ export const recordGooglePlayPurchase = createServerFn({ method: "POST" })
   });
 
 /**
- * GDPR Right to Data Portability — export all user data as JSON.
+ * GDPR Right to Data Portability (Art. 20) — export all user data as
+ * structured, machine-readable JSON. Nu include date despre alți useri
+ * (doar propriile mesaje trimise) și nici coloane sensibile criptate.
  */
 export const exportMyData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    const [profile, swipes, matches, messages, events, rsvps, subs, notifications] =
-      await Promise.all([
-        supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
-        supabase.from("swipes").select("*").eq("swiper_id", userId),
-        supabase.from("matches").select("*").or(`user_a.eq.${userId},user_b.eq.${userId}`),
-        supabase.from("messages").select("*").eq("sender_id", userId),
-        supabase.from("events").select("*").eq("host_id", userId),
-        supabase.from("event_rsvps").select("*").eq("user_id", userId),
-        supabase.from("subscriptions").select("*").eq("user_id", userId),
-        supabase.from("notifications").select("*").eq("user_id", userId),
-      ]);
+    const [
+      profile,
+      swipes,
+      matches,
+      messages,
+      events,
+      rsvps,
+      subs,
+      notifications,
+      consents,
+      blocks,
+      reports,
+    ] = await Promise.all([
+      supabase.from("profiles").select("*").eq("id", userId).maybeSingle(),
+      supabase.from("swipes").select("*").eq("swiper_id", userId),
+      supabase.from("matches").select("*").or(`user_a.eq.${userId},user_b.eq.${userId}`),
+      supabase.from("messages").select("*").eq("sender_id", userId),
+      supabase.from("events").select("*").eq("host_id", userId),
+      supabase.from("event_rsvps").select("*").eq("user_id", userId),
+      supabase.from("subscriptions").select("*").eq("user_id", userId),
+      supabase.from("notifications").select("*").eq("user_id", userId),
+      supabase.from("consent_log").select("*").eq("user_id", userId),
+      supabase.from("blocks").select("*").eq("blocker_id", userId),
+      supabase.from("reports").select("*").eq("reporter_id", userId),
+    ]);
+
+    // Nu exportăm coloane criptate / interne.
+    const p = (profile.data ?? null) as Record<string, unknown> | null;
+    if (p) {
+      for (const k of Object.keys(p)) {
+        if (k.endsWith("_enc") || k === "pin_hash" || k === "location" || k === "prev_location") {
+          delete p[k];
+        }
+      }
+    }
+
     return JSON.parse(
       JSON.stringify({
+        format: "suzeta-gdpr-export/v2",
+        legal_basis: "GDPR Art. 20 — dreptul la portabilitatea datelor",
         exported_at: new Date().toISOString(),
         user_id: userId,
-        profile: profile.data,
+        profile: p,
+        consents: consents.data ?? [],
         swipes: swipes.data ?? [],
         matches: matches.data ?? [],
         messages_sent: messages.data ?? [],
+        blocks: blocks.data ?? [],
+        reports_filed: reports.data ?? [],
         events_hosted: events.data ?? [],
         event_rsvps: rsvps.data ?? [],
         subscriptions: subs.data ?? [],
@@ -104,3 +136,4 @@ export const exportMyData = createServerFn({ method: "GET" })
       }),
     ) as { exported_at: string; user_id: string };
   });
+

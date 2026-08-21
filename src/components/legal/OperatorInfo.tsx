@@ -82,7 +82,7 @@ export function OperatorIdentificationBlock({
           </li>
         )}
         <li>
-          <span className="text-muted-foreground">DPO / GDPR:</span>{" "}
+          <span className="text-muted-foreground">Contact protecția datelor (GDPR):</span>{" "}
           <a className="text-primary" href={`mailto:${OPERATOR.emails.dpo}`}>
             {OPERATOR.emails.dpo}
           </a>
