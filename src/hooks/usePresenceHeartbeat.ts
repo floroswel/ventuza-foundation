@@ -9,6 +9,8 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { INCOGNITO_EVENT } from "@/lib/incognito";
+
 
 const HEARTBEAT_MS = 45_000;
 
