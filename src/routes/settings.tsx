@@ -37,6 +37,8 @@ import {
 import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
 import { BottomNav } from "@/components/BottomNav";
 import { setLookingNow } from "@/lib/social";
+import { setIncognito } from "@/lib/incognito";
+
 import { UniquesCard } from "@/components/UniquesCard";
 import { SosCard } from "@/components/SosCard";
 import { EnablePushButton } from "@/components/EnablePushButton";
