@@ -131,8 +131,20 @@ export async function fetchActiveStoryGroups(): Promise<StoryGroup[]> {
   );
   const seenSet = new Set((seenRows ?? []).map((r) => r.story_id as string));
 
+  // Incognito: nu arătăm story-urile utilizatorilor invizibili (în afară de ale mele).
+  const hiddenUsers = new Set(
+    (profs ?? [])
+      .filter(
+        (p) =>
+          (p as { incognito: boolean | null }).incognito === true &&
+          (p as { id: string }).id !== u.user!.id,
+      )
+      .map((p) => (p as { id: string }).id),
+  );
+
   const grouped = new Map<string, StoryGroup>();
   for (const s of stories) {
+    if (hiddenUsers.has(s.user_id)) continue;
     const meta =
       profMap.get(s.user_id) ?? { display_name: null, photos: null, profile_slug: null };
     let g = grouped.get(s.user_id);
