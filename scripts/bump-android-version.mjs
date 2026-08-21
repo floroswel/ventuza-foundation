@@ -39,12 +39,10 @@ const flags = Object.fromEntries(
 const current = JSON.parse(readFileSync(VERSION_FILE, "utf8"));
 let [maj, min, pat] = current.versionName.split(".").map((n) => parseInt(n, 10));
 let nextName = current.versionName;
-// Formula identică cu .github/workflows/android-release.yml, ca upload-ul CI și
-// Fastlane să folosească exact același versionCode.
-const codeFor = (name) => {
-  const [a, b, c] = name.split(".").map((n) => parseInt(n, 10) || 0);
-  return a * 10000 + b * 100 + c;
-};
+// versionCode este un întreg crescător strict (24, 25, 26...), sursa unică
+// fiind release/version.json. NU se derivează din formula MAJ*10000+MIN*100+PAT
+// — acea schemă intra în conflict cu versionCode-urile deja urcate pe Play
+// (ex. 28) și declanșa respingeri "duplicat/învechit".
 let nextCode = current.versionCode + 1;
 
 switch (mode) {
@@ -59,7 +57,6 @@ switch (mode) {
     console.error(`Mod necunoscut: ${mode}`);
     process.exit(1);
 }
-nextCode = codeFor(nextName);
 if (flags.code) nextCode = parseInt(String(flags.code), 10);
 
 if (!/^\d+\.\d+\.\d+$/.test(nextName)) {
