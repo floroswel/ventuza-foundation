@@ -114,7 +114,12 @@ function SettingsPage() {
   const [newEmail, setNewEmail] = useState("");
   const [newPwd, setNewPwd] = useState("");
   const [confirmDelete, setConfirmDelete] = useState("");
+  const [deleteEmail, setDeleteEmail] = useState("");
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteStep, setDeleteStep] = useState<"warn" | "verify" | "done">("warn");
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+
   const [privacy, setPrivacy] = useState({
     hide_age: false,
     hide_distance: false,
