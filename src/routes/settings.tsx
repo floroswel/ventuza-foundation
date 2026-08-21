@@ -237,18 +237,31 @@ function SettingsPage() {
 
   async function handleDelete() {
     if (confirmDelete !== "ȘTERGE") return;
+    if (deleteEmail.trim().toLowerCase() !== (user?.email ?? "").toLowerCase()) {
+      setDeleteError("Emailul introdus nu corespunde contului tău.");
+      return;
+    }
+    setDeleteError(null);
     setDeleting(true);
     try {
       await deleteAcct({});
-      await signOut();
-      toast.success("Cont șters.");
-      navigate({ to: "/" });
+      setDeleteStep("done");
+      toast.success("Contul a fost șters definitiv.");
+      setTimeout(() => {
+        void (async () => {
+          await signOut();
+          navigate({ to: "/" });
+        })();
+      }, 2200);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Eroare la ștergere");
+      const msg = e instanceof Error ? e.message : "Eroare la ștergere";
+      setDeleteError(msg);
+      toast.error(msg);
     } finally {
       setDeleting(false);
     }
   }
+
 
   if (loading || !user) {
     return (
