@@ -3,7 +3,10 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import {
+  AlertTriangle,
+  CheckCircle2,
   ChevronLeft,
+  Download,
   EyeOff,
   Flame,
   Loader2,
@@ -15,6 +18,15 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import {
