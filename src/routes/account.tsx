@@ -88,14 +88,24 @@ function AccountPage() {
     if (!user || !profile) return;
     setSaving(true);
     setProfile({ ...profile, [field]: value });
-    const patch = { [field]: value } as { hide_online?: boolean; discrete_mode?: boolean };
-    const { error } = await supabase.from("profiles").update(patch).eq("id", user.id);
-    setSaving(false);
-    if (error) {
-      toast.error(error.message);
+    try {
+      if (field === "hide_online") {
+        await setIncognito(user.id, value);
+      } else {
+        const { error } = await supabase
+          .from("profiles")
+          .update({ discrete_mode: value })
+          .eq("id", user.id);
+        if (error) throw error;
+      }
+    } catch (e) {
+      toast.error((e as Error).message);
       setProfile((p) => (p ? { ...p, [field]: !value } : p));
+    } finally {
+      setSaving(false);
     }
   }
+
 
   if (authLoading || !user) {
     return (
