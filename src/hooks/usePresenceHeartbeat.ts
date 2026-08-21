@@ -9,6 +9,8 @@
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
+import { INCOGNITO_EVENT } from "@/lib/incognito";
+
 
 const HEARTBEAT_MS = 45_000;
 
@@ -67,6 +69,16 @@ export function usePresenceHeartbeat() {
         },
       )
       .subscribe();
+    // Toggle local (Settings / Cont / Quick profile) — reacționăm instant,
+    // fără să depindem de realtime.
+    function onIncognito(e: Event) {
+      hideOnline = !!(e as CustomEvent<{ hidden: boolean }>).detail?.hidden;
+      if (!hideOnline) {
+        start();
+        void tick();
+      }
+    }
+    window.addEventListener(INCOGNITO_EVENT, onIncognito);
 
     void loadHidePref().then(() => {
       if (document.visibilityState === "visible") start();
@@ -77,7 +89,9 @@ export function usePresenceHeartbeat() {
       cancelled = true;
       stop();
       document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener(INCOGNITO_EVENT, onIncognito);
       supabase.removeChannel(ch);
     };
   }, [user]);
 }
+

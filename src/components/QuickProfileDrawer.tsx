@@ -16,6 +16,8 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { setLookingNow } from "@/lib/social";
+import { setIncognito } from "@/lib/incognito";
+
 import { cn } from "@/lib/utils";
 
 type Me = {
@@ -62,18 +64,17 @@ export function QuickProfileDrawer() {
     if (!user || !me) return;
     setSavingHide(true);
     setMe({ ...me, hide_online: next });
-    const { error } = await supabase
-      .from("profiles")
-      .update({ hide_online: next })
-      .eq("id", user.id);
-    setSavingHide(false);
-    if (error) {
-      toast.error(error.message);
-      setMe({ ...me, hide_online: !next });
-    } else {
+    try {
+      await setIncognito(user.id, next);
       toast.success(next ? "Incognito activat" : "Online vizibil");
+    } catch (e) {
+      toast.error((e as Error).message);
+      setMe({ ...me, hide_online: !next });
+    } finally {
+      setSavingHide(false);
     }
   }
+
 
   async function activate(hours: number) {
     setBusyNow(true);
