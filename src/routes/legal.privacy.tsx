@@ -77,8 +77,7 @@ function PrivacyPage() {
                   </ul>
                   <p className="mt-2 text-xs text-muted-foreground">
                     <strong>NU procesăm date despre statutul HIV.</strong> {OPERATOR.brand} a
-                    eliminat complet colectarea și stocarea datelor despre HIV. Pentru testare și
-                    informații vezi resursele publice ARAS din centrul de siguranță.
+                    eliminat complet colectarea și stocarea datelor despre HIV.
                   </p>
                 </li>
                 <li>

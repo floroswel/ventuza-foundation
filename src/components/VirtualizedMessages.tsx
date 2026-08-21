@@ -12,6 +12,7 @@ import { VariableSizeList, type ListChildComponentProps } from "react-window";
 
 export type VirtualizedMessagesHandle = {
   scrollToBottom: (behavior?: "auto" | "smooth") => void;
+  isNearBottom: () => boolean;
   /** Trigger a fresh measurement of the item at index (e.g. after content grows). */
   remeasure: (index?: number) => void;
 };
@@ -31,6 +32,7 @@ type Props<T> = {
   onPrependAnchor?: (addedCount: number) => void;
   /** Previous items reference to detect prepends (older messages loaded at top). */
   prevLength?: number;
+  onNearBottomChange?: (value: boolean) => void;
 };
 
 /**
@@ -52,6 +54,7 @@ function VirtualizedMessagesInner<T>(
     onReachTop,
     stickToBottom = true,
     prevLength,
+    onNearBottomChange,
   }: Props<T>,
   ref: React.Ref<VirtualizedMessagesHandle>,
 ) {
@@ -90,6 +93,7 @@ function VirtualizedMessagesInner<T>(
         void behavior;
         list.scrollToItem(items.length - 1, "end");
       },
+      isNearBottom: () => nearBottomRef.current,
       remeasure: (index) => {
         listRef.current?.resetAfterIndex(index ?? 0, true);
       },
@@ -160,9 +164,10 @@ function VirtualizedMessagesInner<T>(
       visibleStopIndex: number;
     }) => {
       nearBottomRef.current = visibleStopIndex >= items.length - 2;
+      onNearBottomChange?.(nearBottomRef.current);
       if (visibleStartIndex <= 1 && onReachTop) onReachTop();
     },
-    [items.length, onReachTop],
+    [items.length, onReachTop, onNearBottomChange],
   );
 
   return (

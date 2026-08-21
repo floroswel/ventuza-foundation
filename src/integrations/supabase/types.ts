@@ -5813,6 +5813,15 @@ export type Database = {
           xp_reward: number
         }[]
       }
+      get_notification_actors: {
+        Args: { _ids: string[] }
+        Returns: {
+          display_name: string
+          id: string
+          photo: string
+          profile_slug: string
+        }[]
+      }
       get_or_create_conversation: { Args: { _other: string }; Returns: string }
       get_profile_by_slug: {
         Args: { _slug: string }
@@ -6197,6 +6206,19 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      public_partner_pricing: {
+        Args: never
+        Returns: {
+          code: string
+          currency: string
+          description: string
+          entitlements: Json
+          monthly_minor: number
+          name: string
+          sort_order: number
+          vat_rate: number
+        }[]
+      }
       purge_admin_audit_log: { Args: never; Returns: number }
       purge_notification_dispatch_log: { Args: never; Returns: number }
       purge_scheduled_deletions: { Args: never; Returns: number }

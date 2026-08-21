@@ -99,9 +99,7 @@ function TermsPage() {
               </p>
               <p className="mt-2 text-foreground/85">
                 <strong>Suzeta nu procesează date despre statutul HIV.</strong> Nu colectăm, nu
-                stocăm și nu afișăm statutul HIV sau data testării. Pentru testare gratuită și
-                consiliere te încurajăm să folosești resursele publice (ARAS, Sensiblu Testing)
-                accesibile din centrul de siguranță.
+                stocăm și nu afișăm statutul HIV sau data testării.
               </p>
 
               <h2 className="mt-6 text-base font-semibold">

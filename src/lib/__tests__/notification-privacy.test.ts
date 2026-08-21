@@ -48,9 +48,10 @@ describe("buildInboxPreview — listă conversații", () => {
     expect(buildInboxPreview(false, "📷 Photo caption", true)).toBe("Previzualizare dezactivată");
   });
 
-  it("show_preview=true/undefined + are mesaje → generic Ai un mesaj nou", () => {
-    expect(buildInboxPreview(true, "salut", true)).toBe(GENERIC_MESSAGE_BODY);
-    expect(buildInboxPreview(undefined, "salut", true)).toBe(GENERIC_MESSAGE_BODY);
+  it("show_preview=true/undefined + are mesaje → ultimul mesaj real", () => {
+    expect(buildInboxPreview(true, "salut", true)).toBe("salut");
+    expect(buildInboxPreview(undefined, "salut", true)).toBe("salut");
+    expect(buildInboxPreview(true, "   ", true)).toBe(GENERIC_MESSAGE_BODY);
   });
 
   it("fără mesaje → fallback neutru, indiferent de show_preview", () => {

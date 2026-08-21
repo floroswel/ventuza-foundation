@@ -351,30 +351,15 @@ export async function fetchDiscover(
 }
 
 export async function signPhotos(paths: string[]): Promise<Record<string, string>> {
-  const { reportSignedUrlError, reportSignedUrlMissing } = await import("@/lib/media-telemetry");
-  const out: Record<string, string> = {};
-  await Promise.all(
-    paths.map(async (p) => {
-      // Passthrough for full http(s) URLs (demo seed photos)
-      if (/^https?:\/\//i.test(p)) {
-        out[p] = p;
-        return;
-      }
-      try {
-        const { data, error } = await supabase.storage
-          .from("profile-photos")
-          .createSignedUrl(p, 3600);
-        if (error) {
-          reportSignedUrlError({ bucket: "profile-photos", path: p, context: "discover", error });
-          return;
-        }
-        if (data?.signedUrl) out[p] = data.signedUrl;
-        else reportSignedUrlMissing({ bucket: "profile-photos", path: p, context: "discover" });
-      } catch (error) {
-        reportSignedUrlError({ bucket: "profile-photos", path: p, context: "discover", error });
-      }
-    }),
-  );
+  const { getSignedUrls } = await import("@/lib/signed-url-cache");
+  const out = await getSignedUrls("profile-photos", paths, 3600);
+  const missing = paths.filter((p) => !out[p]);
+  if (missing.length) {
+    const { reportSignedUrlMissing } = await import("@/lib/media-telemetry");
+    for (const p of missing) {
+      reportSignedUrlMissing({ bucket: "profile-photos", path: p, context: "discover" });
+    }
+  }
   return out;
 }
 

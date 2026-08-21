@@ -1,0 +1,3 @@
+• Conținutul nu mai este tăiat sus sau jos: ecranele respectă acum bara de stare și bara gestuală pe toate telefoanele
+• Profil, Setări și Chat se așază corect pe ecrane cu notch sau colțuri rotunjite
+• Stabilitate și mici corecții vizuale

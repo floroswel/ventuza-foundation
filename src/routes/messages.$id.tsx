@@ -1,7 +1,7 @@
 import { setActiveConversation } from "@/lib/active-conversation";
 import { withGuardian } from "@/components/with-guardian";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   enqueueMessage,
@@ -67,7 +67,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
-import { bottomScrollTop, isNearBottom } from "@/lib/keyboard-inset";
+import { bottomScrollTop, isNearBottom, installAppViewportTracking } from "@/lib/keyboard-inset";
 import { uniqueRealtimeTopic } from "@/lib/realtime-topic";
 import { SwipeToReply } from "@/components/SwipeToReply";
 import {
@@ -104,6 +104,8 @@ function ThreadPage() {
     interests?: string[] | null;
   } | null>(null);
   const [loading, setLoading] = useState(!cachedInitial);
+  // Conversație inexistentă / ID invalid în URL → ecran clar, nu chat gol.
+  const [convMissing, setConvMissing] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [text, setText] = useState("");
@@ -120,6 +122,44 @@ function ThreadPage() {
   const [otherTyping, setOtherTyping] = useState(false);
   const [connected, setConnected] = useState(true);
   const scrollerRef = useRef<HTMLDivElement>(null);
+  const virtualScrollerRef = useRef<VirtualizedMessagesHandle>(null);
+  const wasNearBottomRef = useRef(true);
+  /** A derulat utilizatorul manual? Blochează reancorarea inițială. */
+  const userScrolledRef = useRef(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  /** Composer multiline: crește până la max-height, apoi devine scrollabil. */
+  const autoGrow = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 120)}px`;
+    // Cursorul rămâne vizibil: ultima linie scrisă e mereu în câmp.
+    el.scrollTop = el.scrollHeight;
+  }, []);
+  /** După trimitere: golește înălțimea crescută și păstrează focusul/tastatura. */
+  const resetComposer = useCallback(() => {
+    const el = textareaRef.current;
+    if (!el) return;
+    el.style.height = "auto";
+    el.focus({ preventScroll: true });
+  }, []);
+  /** Ancorează lista la ultimul mesaj — doar dacă utilizatorul era deja jos. */
+  const anchorToBottom = useCallback((force = false) => {
+    requestAnimationFrame(() => {
+      const node = scrollerRef.current;
+      if (node) {
+        if (!force && !wasNearBottomRef.current) return;
+        node.scrollTop = bottomScrollTop(node);
+        wasNearBottomRef.current = true;
+        return;
+      }
+      const virtual = virtualScrollerRef.current;
+      if (!virtual || (!force && !wasNearBottomRef.current)) return;
+      virtual.scrollToBottom();
+      wasNearBottomRef.current = true;
+    });
+  }, []);
+
   const typingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const lastTypingSentRef = useRef(0);
   const channelRef = useRef<ReturnType<typeof supabase.channel> | null>(null);
@@ -250,7 +290,10 @@ function ThreadPage() {
           .eq("id", id)
           .maybeSingle();
         if (error) throw error;
-        if (!conv) throw new Error("Conversation not found");
+        if (!conv) {
+          if (alive) setConvMissing(true);
+          return;
+        }
         const oid = conv.user_a === userId ? conv.user_b : conv.user_a;
         const [msgs, prof, extraRes] = await Promise.all([
           fetchMessages(id),
@@ -277,7 +320,13 @@ function ThreadPage() {
         await markDelivered(id);
         await markRead(id, userId);
       } catch (e) {
-        toast.error(e instanceof Error ? e.message : "Couldn't open chat");
+        const msg = e instanceof Error ? e.message : "Couldn't open chat";
+        // 22P02 = ID care nu e UUID (link stricat), tratat ca „nu există".
+        if (alive && /invalid input syntax for type uuid/i.test(msg)) {
+          setConvMissing(true);
+          return;
+        }
+        toast.error(msg);
       } finally {
         if (alive) setLoading(false);
       }
@@ -360,11 +409,11 @@ function ThreadPage() {
 
 
 
-  // Auto scroll to bottom on new messages (only when near bottom)
+  // Auto-scroll folosește starea de DINAINTE de append. Dacă verificăm după
+  // append, noul rând mărește scrollHeight și poate face un user aflat jos să
+  // pară artificial „departe de final”.
   useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    if (isNearBottom(el)) el.scrollTop = bottomScrollTop(el);
+    anchorToBottom();
   }, [messages.length]);
 
   // Tastatura Android: lista se micșorează cu înălțimea tastaturii, deci ultimul
@@ -373,17 +422,86 @@ function ThreadPage() {
   // `native-runtime` emite evenimentul la fiecare schimbare de stare a tastaturii.
   useEffect(() => {
     const onKeyboard = () => {
-      if (!scrollerRef.current || !isNearBottom(scrollerRef.current)) return;
-      // Un cadru de așteptare: evenimentul poate sosi înainte ca layout-ul să fi
-      // aplicat noua înălțime.
-      requestAnimationFrame(() => {
-        const node = scrollerRef.current;
-        if (node) node.scrollTop = bottomScrollTop(node);
-      });
+      anchorToBottom();
+      // A doua trecere după ce layoutul s-a așezat pe noua înălțime.
+      setTimeout(() => anchorToBottom(), 120);
     };
     window.addEventListener("suzeta:keyboard", onKeyboard);
-    return () => window.removeEventListener("suzeta:keyboard", onKeyboard);
-  }, []);
+    // Nu toate WebView-urile emit evenimentul: dacă tastatura redimensionează
+    // fereastra, singurul semnal e resize-ul. Reancorăm și atunci.
+    window.addEventListener("resize", onKeyboard);
+    window.visualViewport?.addEventListener("resize", onKeyboard);
+    return () => {
+      window.removeEventListener("suzeta:keyboard", onKeyboard);
+      window.removeEventListener("resize", onKeyboard);
+      window.visualViewport?.removeEventListener("resize", onKeyboard);
+    };
+  }, [anchorToBottom]);
+
+  // Imaginile din conversație se încarcă asincron: după ce una își ocupă
+  // înălțimea reală, remăsurăm rândul virtualizat și reancorăm — dar NUMAI dacă
+  // utilizatorul era deja la finalul conversației (fără force).
+  useEffect(() => {
+    const onMediaReady = () => {
+      virtualScrollerRef.current?.remeasure(0);
+      anchorToBottom();
+    };
+    window.addEventListener("suzeta:chat-media-ready", onMediaReady);
+    return () => window.removeEventListener("suzeta:chat-media-ready", onMediaReady);
+  }, [anchorToBottom]);
+
+
+  // Doar gesturile reale (deget, rotiță, taste de navigație) contează drept
+  // „utilizatorul derulează”. Restul sunt derulări programatice.
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const mark = () => {
+      userScrolledRef.current = true;
+      wasNearBottomRef.current = isNearBottom(el);
+    };
+    const opts = { passive: true } as AddEventListenerOptions;
+    el.addEventListener("wheel", mark, opts);
+    el.addEventListener("touchmove", mark, opts);
+    el.addEventListener("pointerdown", mark, opts);
+    el.addEventListener("keydown", mark, opts);
+    return () => {
+      el.removeEventListener("wheel", mark);
+      el.removeEventListener("touchmove", mark);
+      el.removeEventListener("pointerdown", mark);
+      el.removeEventListener("keydown", mark);
+    };
+  }, [loading]);
+
+  // Geometria ecranului de chat vine dintr-o singură sursă (min dintre
+  // innerHeight și visualViewport), scrisă în `--app-vh`.
+  useEffect(() => installAppViewportTracking(), []);
+
+  // La DESCHIDEREA conversației pornim mereu la ultimul mesaj. Imaginile și
+  // bulele care se măsoară asincron cresc înălțimea după primul paint, deci
+  // reancorăm de câteva ori — dar doar până când utilizatorul derulează singur.
+  const initialAnchoredRef = useRef(false);
+  useEffect(() => {
+    initialAnchoredRef.current = false;
+  }, [id]);
+  useEffect(() => {
+    if (loading || messages.length === 0 || initialAnchoredRef.current) return;
+    initialAnchoredRef.current = true;
+    const timers = [0, 60, 200, 500, 900].map((delay) =>
+      setTimeout(() => {
+        if (!userScrolledRef.current) anchorToBottom(true);
+      }, delay),
+    );
+    const node = scrollerRef.current;
+    const onMediaLoad = () => {
+      if (!userScrolledRef.current) anchorToBottom(true);
+    };
+    node?.addEventListener("load", onMediaLoad, true);
+    return () => {
+      timers.forEach(clearTimeout);
+      node?.removeEventListener("load", onMediaLoad, true);
+    };
+  }, [loading, messages.length, anchorToBottom, id]);
 
   async function loadMore() {
     if (loadingMore || !hasMore || messages.length === 0) return;
@@ -409,6 +527,12 @@ function ThreadPage() {
   function onScroll() {
     const el = scrollerRef.current;
     if (!el) return;
+    // `scroll` se emite și pentru derulările NOASTRE (ancorare, imagini care se
+    // încarcă). Dacă am lua fiecare eveniment drept intenție a utilizatorului,
+    // o măsurătoare făcută la mijlocul unui relayout ar bloca definitiv
+    // ancorarea — exact bug-ul „nu se mai duce la ultimul mesaj”.
+    if (!userScrolledRef.current) return;
+    wasNearBottomRef.current = isNearBottom(el);
     if (el.scrollTop < 60 && hasMore && !loadingMore) void loadMore();
   }
 
@@ -482,6 +606,7 @@ function ThreadPage() {
       try {
         await enqueueMessage({ conversation_id: id, body, reply_to_id: replyId });
         setText("");
+        resetComposer();
         setReplyTo(null);
         toast.message("Ești offline — mesajul va pleca la reconectare.");
       } catch {
@@ -502,7 +627,9 @@ function ThreadPage() {
     };
     setMessages((prev) => [...prev, optimistic]);
     setText("");
+    resetComposer();
     setReplyTo(null);
+    anchorToBottom(true);
     try {
       const real = await sendMessage(id, body, replyId);
       setMessages((prev) => {
@@ -678,9 +805,23 @@ function ThreadPage() {
     : [];
   const renderedMessages: UiMessage[] = [...messages, ...outboxAsMessages];
 
+  if (convMissing) {
+    return (
+      <div className="mx-auto flex h-dvh-safe max-w-md flex-col items-center justify-center gap-3 px-6 text-center">
+        <p className="text-lg font-semibold">Conversația nu există</p>
+        <p className="text-sm text-muted-foreground">
+          Link-ul nu mai este valid sau conversația a fost ștearsă.
+        </p>
+        <Link to="/messages" className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-primary-foreground">
+          Înapoi la mesaje
+        </Link>
+      </div>
+    );
+  }
+
   return (
 
-    <div className="mx-auto flex h-dvh-safe w-full min-h-0 min-w-0 max-w-md flex-col overflow-hidden bg-background">
+    <div className="chat-shell mx-auto flex w-full min-h-0 min-w-0 max-w-md flex-col bg-background">
       <header className="z-20 flex shrink-0 items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
         <Link
           to="/messages"
@@ -810,6 +951,10 @@ function ThreadPage() {
         otherName={other?.name ?? null}
         otherTyping={otherTyping}
         scrollerRef={scrollerRef}
+        virtualScrollerRef={virtualScrollerRef}
+        onNearBottomChange={(value) => {
+          wasNearBottomRef.current = value;
+        }}
         onScroll={onScroll}
         onReachTop={() => {
           if (hasMore && !loadingMore) void loadMore();
@@ -1170,51 +1315,74 @@ function ThreadPage() {
 
       <form
         onSubmit={handleSend}
-        className="sticky bottom-0 z-10 flex shrink-0 items-center gap-2 border-t border-border/60 bg-background/95 px-3 py-2 pb-bar backdrop-blur"
+        className="sticky bottom-0 z-10 flex shrink-0 flex-col gap-1 border-t border-border/60 bg-background/95 px-3 py-2 pb-composer backdrop-blur"
       >
-        <button
-          type="button"
-          onClick={handleWingman}
-          disabled={wingmanLoading || blockedFirstMessage}
-          aria-label="Wingman AI"
-          className="flex size-11 items-center justify-center rounded-full border border-primary/40 bg-primary/10 text-primary disabled:opacity-50"
-        >
-          {wingmanLoading ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Sparkles className="size-4" />
-          )}
-        </button>
-        <ChatComposerExtras
-          conversationId={id}
-          disabled={blockedFirstMessage}
-          onSent={(m) =>
-            setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))
-          }
-          onUpdated={(m) =>
-            setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)))
-          }
-        />
-        <input
-          value={text}
-          onChange={(e) => {
-            setText(e.target.value);
-            sendTypingPing();
-          }}
-          placeholder={
-            blockedFirstMessage ? "Nu poți trimite mesaje acestui utilizator" : "Type a message…"
-          }
-          maxLength={4000}
-          disabled={blockedFirstMessage}
-          className="w-full min-w-0 flex-1 rounded-full border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary disabled:opacity-60"
-        />
-        <button
-          type="submit"
-          disabled={!text.trim() || blockedFirstMessage}
-          className="flex size-11 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-50"
-        >
-          <Send className="size-4" />
-        </button>
+        {/* Rând 1 — pilulă full-width cu send în interior (stil nativ) */}
+        <div className="relative flex items-end">
+          <textarea
+            ref={textareaRef}
+            value={text}
+            rows={1}
+            onChange={(e) => {
+              setText(e.target.value);
+              sendTypingPing();
+              autoGrow();
+            }}
+            onFocus={() => {
+              autoGrow();
+              anchorToBottom(true);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                void handleSend(e as unknown as FormEvent);
+              }
+            }}
+            placeholder={
+              blockedFirstMessage ? "Nu poți trimite mesaje acestui utilizator" : "Scrie un mesaj…"
+            }
+            maxLength={4000}
+            disabled={blockedFirstMessage}
+            className="max-h-[7.5rem] w-full min-w-0 resize-none overflow-y-auto rounded-3xl border border-border bg-muted/40 py-3 pl-4 pr-14 text-[15px] leading-5 outline-none focus:border-primary disabled:opacity-60"
+          />
+          <button
+            type="submit"
+            disabled={!text.trim() || blockedFirstMessage}
+            aria-label="Trimite"
+            className="absolute bottom-1 right-1.5 flex size-10 shrink-0 items-center justify-center rounded-full text-primary transition-opacity disabled:opacity-30"
+          >
+            <Send className="size-5" />
+          </button>
+        </div>
+
+
+        {/* Rând 2 — acțiuni rapide, fără meniu ascuns */}
+        <div className="flex items-center justify-around">
+          <ChatComposerExtras
+            variant="row"
+            conversationId={id}
+            disabled={blockedFirstMessage}
+            onSent={(m) =>
+              setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))
+            }
+            onUpdated={(m) =>
+              setMessages((prev) => prev.map((x) => (x.id === m.id ? { ...x, ...m } : x)))
+            }
+          />
+          <button
+            type="button"
+            onClick={handleWingman}
+            disabled={wingmanLoading || blockedFirstMessage}
+            aria-label="Wingman AI"
+            className="flex size-10 items-center justify-center rounded-full text-primary disabled:opacity-40"
+          >
+            {wingmanLoading ? (
+              <Loader2 className="size-5 animate-spin" />
+            ) : (
+              <Sparkles className="size-5" />
+            )}
+          </button>
+        </div>
       </form>
 
       <AlertDialog open={!!unsendTarget} onOpenChange={(o) => !o && setUnsendTarget(null)}>
@@ -1244,6 +1412,8 @@ function MessagesScroller({
   otherName,
   otherTyping,
   scrollerRef,
+  virtualScrollerRef,
+  onNearBottomChange,
   onScroll,
   onReachTop,
   renderRow,
@@ -1254,13 +1424,15 @@ function MessagesScroller({
   otherName: string | null;
   otherTyping: boolean;
   scrollerRef: React.RefObject<HTMLDivElement | null>;
+  virtualScrollerRef: React.RefObject<VirtualizedMessagesHandle | null>;
+  onNearBottomChange: (value: boolean) => void;
   onScroll: () => void;
   onReachTop: () => void;
   renderRow: (m: UiMessage) => React.ReactNode;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [containerHeight, setContainerHeight] = useState(0);
-  const virtualHandle = useRef<VirtualizedMessagesHandle>(null);
+  const virtualHandle = virtualScrollerRef;
   const prevLenRef = useRef(messages.length);
   const prevFirstIdRef = useRef<string | null>(messages[0]?.id ?? null);
   const virtualize = messages.length >= VIRTUALIZATION_THRESHOLD;
@@ -1317,6 +1489,7 @@ function MessagesScroller({
               onReachTop={onReachTop}
               stickToBottom
               prevLength={prevLenRef.current}
+              onNearBottomChange={onNearBottomChange}
             />
           </>
         ) : null}
@@ -1328,7 +1501,7 @@ function MessagesScroller({
     <div
       ref={scrollerRef as React.RefObject<HTMLDivElement>}
       onScroll={onScroll}
-      className="scroll-pane px-4 py-4 pb-keyboard"
+      className="scroll-pane px-4 pb-3 pt-4"
     >
       {loading ? (
         <div className="flex items-center justify-center py-16 text-muted-foreground">

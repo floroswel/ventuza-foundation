@@ -230,6 +230,37 @@ jobs:
           echo "Pas de diagnostic terminat (non-blocant)."
 
 
+      - name: Patch assetlinks.json cu SHA-256 app signing
+        env:
+          APP_SIGNING_SHA256: ${{ vars.ANDROID_APP_SIGNING_SHA256 }}
+        run: |
+          set -euo pipefail
+          FILE="public/.well-known/assetlinks.json"
+          if [ ! -f "$FILE" ]; then
+            echo "::error::$FILE lipsește."
+            exit 1
+          fi
+          if [ -z "$APP_SIGNING_SHA256" ]; then
+            echo "::warning::ANDROID_APP_SIGNING_SHA256 nu este setat în GitHub vars. assetlinks.json rămâne doar cu fingerprint-ul de upload key. Setează variabila în GitHub → Settings → Secrets and variables → Actions → Variables cu valoarea SHA-256 din Play Console → Setup → App signing."
+          else
+            export APP_SIGNING_SHA256 FILE
+            python3 <<'PY'
+          import json, os
+          f = os.environ['FILE']
+          data = json.load(open(f))
+          fps = data[0]['target']['sha256_cert_fingerprints']
+          v = os.environ['APP_SIGNING_SHA256'].strip().upper()
+          if v and v not in fps:
+              fps.append(v)
+          data[0]['target']['sha256_cert_fingerprints'] = fps
+          json.dump(data, open(f, 'w'), indent=2)
+          print('assetlinks.json actualizat cu', len(fps), 'fingerprint-uri:')
+          for fp in fps:
+              print(' ', fp)
+          PY
+          fi
+
+
       - name: Build web bundle
         env:
           # Publishable keys (safe în bundle). Fallback la valorile din .env dacă lipsesc secretele repo.
@@ -247,6 +278,9 @@ jobs:
           VITE_ANDROID_APP_SIGNING_SHA1: ${{ vars.ANDROID_APP_SIGNING_SHA1 }}
           VITE_ANDROID_UPLOAD_SHA1: ${{ vars.ANDROID_UPLOAD_SHA1 }}
           VITE_ANDROID_IAS_SHA1: ${{ vars.ANDROID_IAS_SHA1 }}
+          # SHA-256 pentru assetlinks.json + diagnostic deep links
+          VITE_ANDROID_APP_SIGNING_SHA256: ${{ vars.ANDROID_APP_SIGNING_SHA256 }}
+          VITE_ANDROID_UPLOAD_SHA256: ${{ vars.ANDROID_UPLOAD_SHA256 }}
           VITE_BUILD_SHA: ${{ github.sha }}
           VITE_BUILD_VERSION_CODE: ${{ steps.buildmeta.outputs.code }}
         run: bun run build:mobile
@@ -873,6 +907,31 @@ jobs:
             echo "keyPassword=$(esc "$EFFECTIVE_KEY_PASSWORD")"
           } > android/keystore.properties
           echo "keystore.properties scris (valori mascate)."
+
+          # Extrage SHA-256 fingerprint-ul upload key din keystore și patch-uiește
+          # assetlinks.json în dist/client (dacă nu e deja acolo) pentru consistență.
+          UPLOAD_SHA256="$(keytool -list -v -keystore android/app/release.keystore \
+            -storepass "$STORE_PASSWORD" -alias "$KEY_ALIAS" 2>/dev/null \
+            | grep -i 'SHA256:' | head -1 | awk '{print $2}' || true)"
+          if [ -n "$UPLOAD_SHA256" ]; then
+            echo "Upload key SHA-256: $UPLOAD_SHA256"
+            ASSET_DIST="dist/client/.well-known/assetlinks.json"
+            if [ -f "$ASSET_DIST" ]; then
+              export UPLOAD_SHA256 ASSET_DIST
+              python3 <<'PY' || true
+          import json, os
+          f = os.environ['ASSET_DIST']
+          data = json.load(open(f))
+          fps = data[0]['target']['sha256_cert_fingerprints']
+          v = os.environ['UPLOAD_SHA256'].strip().upper()
+          if v and v not in fps:
+              fps.append(v)
+          data[0]['target']['sha256_cert_fingerprints'] = fps
+          json.dump(data, open(f, 'w'), indent=2)
+          print('assetlinks.json (dist) patchat cu upload key SHA-256')
+          PY
+            fi
+          fi
 
 
       - name: Injectează signing config în build.gradle (dacă lipsește)
