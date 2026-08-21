@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { saveFcmSubscription } from "@/lib/push.functions";
+import { saveFcmSubscription, savePushSubscription } from "@/lib/push.functions";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -105,6 +105,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
    * ajungea niciodată în `push_subscriptions`.
    */
   const saveFcm = useServerFn(saveFcmSubscription);
+  const saveWebPush = useServerFn(savePushSubscription);
   useEffect(() => {
     if (!user) return;
     void (async () => {
@@ -125,8 +126,16 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
       } catch (e) {
         console.warn("[notifications] resumeNativePush failed", e);
       }
+      // Web: re-salvăm abonamentul push la fiecare start (permisiune deja
+      // acordată), ca notificările să sosească și cu aplicația închisă.
+      try {
+        const { resumeWebPush } = await import("@/lib/web-push-resume");
+        await resumeWebPush((d) => saveWebPush({ data: d }));
+      } catch (e) {
+        console.warn("[notifications] resumeWebPush failed", e);
+      }
     })();
-  }, [user, saveFcm]);
+  }, [user, saveFcm, saveWebPush]);
 
   // Realtime subscription
   useEffect(() => {
