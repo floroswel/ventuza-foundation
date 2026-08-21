@@ -64,21 +64,49 @@ function SettingsPage() {
   } = useNotificationPrefs();
 
 
+  type ExportState =
+    | { status: "idle" }
+    | { status: "running" }
+    | { status: "done"; url: string; filename: string; sizeKb: number }
+    | { status: "error"; message: string };
+  const [exportState, setExportState] = useState<ExportState>({ status: "idle" });
+
+  useEffect(() => {
+    return () => {
+      if (exportState.status === "done") URL.revokeObjectURL(exportState.url);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [exportState]);
+
   async function downloadMyData() {
+    if (exportState.status === "running") return;
+    if (exportState.status === "done") URL.revokeObjectURL(exportState.url);
+    setExportState({ status: "running" });
+    const toastId = toast.loading("Se pregătește exportul datelor…");
     try {
       const data = await exportData({});
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
       const url = URL.createObjectURL(blob);
+      const filename = `suzeta-data-${new Date().toISOString().split("T")[0]}.json`;
       const a = document.createElement("a");
       a.href = url;
-      a.download = `suzeta-data-${new Date().toISOString().split("T")[0]}.json`;
+      a.download = filename;
       a.click();
-      URL.revokeObjectURL(url);
-      toast.success("Datele tale au fost exportate (GDPR)");
+      setExportState({
+        status: "done",
+        url,
+        filename,
+        sizeKb: Math.max(1, Math.round(blob.size / 1024)),
+      });
+      toast.success("Export finalizat — fișierul a fost descărcat.", { id: toastId });
     } catch (e) {
-      toast.error((e as Error).message);
+      const message = e instanceof Error ? e.message : "Eroare necunoscută";
+      setExportState({ status: "error", message });
+      toast.error(`Export eșuat: ${message}`, { id: toastId });
     }
   }
+
 
   // `prefs` vine din context; păstrăm doar flag-ul de saving pentru UI.
   const [savingPrefs, setSavingPrefs] = useState(false);
