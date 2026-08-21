@@ -1,0 +1,7 @@
+Suzeta 1.0.19
+
+- Much faster photo loading in Discover and chats.
+- Inbox: real last-message previews, working filters and online status.
+- Chat: composer always above the keyboard, opens at the latest message.
+- Real partner pricing, no more "coming soon" sections.
+- Stability and Android 15/16 build fixes.
