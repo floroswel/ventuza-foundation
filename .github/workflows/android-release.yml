@@ -307,7 +307,7 @@ jobs:
             exit 1
           fi
           echo "✓ $INDEX OK ($SIZE bytes)"
-          test -s dist/client/brand/suzeta-icon.png || {
+          test -s dist/client/brand/suzeta-icon.webp || {
             echo "::error::Logo-ul local lipsește din dist/client/brand/."
             exit 1
           }
@@ -338,7 +338,7 @@ jobs:
         run: |
           set -euo pipefail
           NATIVE_ASSETS=android/app/src/main/assets/public
-          test -s "$NATIVE_ASSETS/brand/suzeta-icon.png" || {
+          test -s "$NATIVE_ASSETS/brand/suzeta-icon.webp" || {
             echo "::error::Logo-ul local nu a ajuns în assets/public din Android."
             exit 1
           }
@@ -1039,7 +1039,7 @@ jobs:
           AAB=android/app/build/outputs/bundle/release/app-release.aab
           TMP="$(mktemp -d)"
           unzip -q "$AAB" -d "$TMP"
-          test -s "$TMP/base/assets/public/brand/suzeta-icon.png" || {
+          test -s "$TMP/base/assets/public/brand/suzeta-icon.webp" || {
             echo "::error::AAB-ul final nu conține logo-ul Suzeta local."
             exit 1
           }
