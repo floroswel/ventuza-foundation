@@ -113,7 +113,7 @@ export function CookiesEn({
         <a className="text-primary" href={`mailto:${OPERATOR.emails.privacy}`}>
           {OPERATOR.emails.privacy}
         </a>{" "}
-        · DPO:{" "}
+        · Data protection contact:{" "}
         <a className="text-primary" href={`mailto:${OPERATOR.emails.dpo}`}>
           {OPERATOR.emails.dpo}
         </a>
@@ -407,7 +407,7 @@ export function DmcaEn() {
         <a className="text-primary" href={`mailto:${OPERATOR.emails.copyright}`}>
           {OPERATOR.emails.copyright}
         </a>{" "}
-        · DPO:{" "}
+        · Data protection contact:{" "}
         <a className="text-primary" href={`mailto:${OPERATOR.emails.dpo}`}>
           {OPERATOR.emails.dpo}
         </a>{" "}
