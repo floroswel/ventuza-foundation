@@ -154,6 +154,19 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           }
         }
 
+        // Redimensionare + recompresie înainte de upload: pozele direct din
+        // cameră au 3–6 MB / 4000px și încetineau vizibil Discover și profilul.
+        try {
+          const compressed = await compressImageForChat(file, { maxDim: 1440, quality: 0.8 });
+          if (compressed && compressed.size > 0 && compressed.size < (file as Blob).size) {
+            file = compressed;
+            ext = "jpg";
+            contentType = "image/jpeg";
+          }
+        } catch {
+          /* păstrăm originalul dacă recompresia eșuează */
+        }
+
         const path = `${userId}/${crypto.randomUUID()}.${ext}`;
         const { error: upErr } = await supabase.storage
           .from("profile-photos")
