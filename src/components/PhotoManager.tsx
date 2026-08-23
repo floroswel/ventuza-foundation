@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { moderatePhoto } from "@/lib/verification.functions";
 import { cn } from "@/lib/utils";
 import { computePhash } from "@/lib/phash";
+import { compressImageForChat } from "@/lib/image-compress";
 
 const MAX_PHOTOS = 6;
 const MAX_SIZE_MB = 8;
