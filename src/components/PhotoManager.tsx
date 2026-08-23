@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { moderatePhoto } from "@/lib/verification.functions";
 import { cn } from "@/lib/utils";
 import { computePhash } from "@/lib/phash";
+import { compressImageForChat } from "@/lib/image-compress";
 
 const MAX_PHOTOS = 6;
 const MAX_SIZE_MB = 8;
@@ -152,6 +153,19 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
             updateQueue(item.id, { status: "error", error: `HEIC neconvertibil: ${(convErr as Error).message}` });
             continue;
           }
+        }
+
+        // Redimensionare + recompresie înainte de upload: pozele direct din
+        // cameră au 3–6 MB / 4000px și încetineau vizibil Discover și profilul.
+        try {
+          const compressed = await compressImageForChat(file, { maxDim: 1440, quality: 0.8 });
+          if (compressed && compressed.size > 0 && compressed.size < (file as Blob).size) {
+            file = compressed;
+            ext = "jpg";
+            contentType = "image/jpeg";
+          }
+        } catch {
+          /* păstrăm originalul dacă recompresia eșuează */
         }
 
         const path = `${userId}/${crypto.randomUUID()}.${ext}`;
