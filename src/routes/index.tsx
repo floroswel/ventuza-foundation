@@ -153,6 +153,18 @@ function Landing() {
   // Google e disponibil DOAR pe web. În app-ul nativ (Play Store) fluxul OAuth
   // prin webview nu e suportat, deci butonul nu se randează deloc.
   const [googleAvailable, setGoogleAvailable] = useState(!isNativePlatformSync());
+  // `null` = necunoscut (API indisponibil). Doar `true` schimbă CTA-ul.
+  const [appInstalled, setAppInstalled] = useState<boolean | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void isAndroidAppInstalled().then((v) => {
+      if (!cancelled) setAppInstalled(v);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
     void (async () => {
