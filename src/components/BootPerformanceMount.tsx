@@ -21,6 +21,11 @@ export function BootPerformanceMount() {
   useEffect(() => {
     markFirstRender();
     scheduleInteractiveFallback();
+    void import("@/lib/runtime-settings").then(({ refreshPerformanceSettings }) =>
+      refreshPerformanceSettings().then(() =>
+        import("@/lib/motion-pref").then(({ applyMotionPref }) => applyMotionPref()),
+      ),
+    );
     void import("@/lib/motion-pref").then(({ applyMotionPref }) => applyMotionPref());
     void import("@/lib/crash-reporting").then(({ initCrashReporting }) => initCrashReporting());
     void import("@/lib/image-cache-sw").then(({ registerImageCacheSw }) =>
@@ -51,6 +56,8 @@ export function BootPerformanceMount() {
         .maybeSingle();
       if (cancelled) return;
       const photos = (data?.photos ?? []) as string[];
+      const { performanceSettings } = await import("@/lib/runtime-settings");
+      if (!performanceSettings().photo_reoptimize_enabled) return;
       const { schedulephotoOptimization } = await import("@/lib/photo-optimizer");
       schedulephotoOptimization(photos);
     })();

@@ -34,9 +34,14 @@ async function report(phase: Phase, value: number) {
   if (reported.has(phase)) return;
   reported.add(phase);
 
+  const { performanceSettings } = await import("@/lib/runtime-settings");
+  const rate = performanceSettings().perf_sampling_rate;
+
   const label = `[perf] ${phase}=${value}ms`;
   // Vizibil în DevTools și în logcat (WebView → console).
   console.info(label);
+
+  if (!(rate > 0) || Math.random() > rate) return;
 
   try {
     const { supabase } = await import("@/integrations/supabase/client");
