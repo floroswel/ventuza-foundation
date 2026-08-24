@@ -425,6 +425,7 @@ function AuthPage() {
   // deja „Continuă cu Google” în app, nu trebuie să mai apese încă o dată.
   const bridgeAutoStarted = useRef(false);
   useEffect(() => {
+    if (!googleAvailable) return; // Google dezactivat: nu porni niciun flux OAuth.
     if (bridgeAutoStarted.current) return;
     if (authLoading || user) return;
     if (search.native_bridge !== "1" || search.auto !== "google") return;
