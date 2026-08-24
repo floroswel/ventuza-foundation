@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Gift, Copy, Share2, Check } from "lucide-react";
 import { getMyReferralCode, referralLink, redeemReferral } from "@/lib/referrals";
 import { toast } from "sonner";
@@ -66,7 +67,11 @@ export function ReferralCard() {
         <h3 className="text-base font-semibold">Invită prieteni · primești 100 XP</h3>
       </div>
       <p className="mb-3 text-xs text-muted-foreground">
-        Pentru fiecare prieten care intră cu codul tău, primiți amândoi 100 XP.
+        Pentru fiecare prieten care intră cu codul tău primiți amândoi XP și dolari în portofel —
+        îi transformi în produse cu logo Suzeta.{" "}
+        <Link to="/wallet" className="font-medium text-primary underline">
+          Vezi portofelul
+        </Link>
       </p>
       {code && (
         <div className="mb-3 flex items-center gap-2 rounded-lg bg-background/80 p-2">

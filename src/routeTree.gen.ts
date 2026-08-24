@@ -47,6 +47,7 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatusRouteImport } from './routes/status'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as VisitorsRouteImport } from './routes/visitors'
+import { Route as WalletRouteImport } from './routes/wallet'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as AdminGuardianRouteImport } from './routes/admin.guardian'
@@ -281,6 +282,11 @@ const VerifyRoute = VerifyRouteImport.update({
 const VisitorsRoute = VisitorsRouteImport.update({
   id: '/visitors',
   path: '/visitors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const WalletRoute = WalletRouteImport.update({
+  id: '/wallet',
+  path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
 const Char91DotmcpChar93ListToolsRoute =
@@ -555,6 +561,7 @@ export interface FileRoutesByFullPath {
   '/status': typeof StatusRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
+  '/wallet': typeof WalletRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/guardian': typeof AdminGuardianRoute
@@ -639,6 +646,7 @@ export interface FileRoutesByTo {
   '/status': typeof StatusRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
+  '/wallet': typeof WalletRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/guardian': typeof AdminGuardianRoute
@@ -725,6 +733,7 @@ export interface FileRoutesById {
   '/status': typeof StatusRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
+  '/wallet': typeof WalletRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/admin/guardian': typeof AdminGuardianRoute
@@ -812,6 +821,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/verify'
     | '/visitors'
+    | '/wallet'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin/guardian'
@@ -896,6 +906,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/verify'
     | '/visitors'
+    | '/wallet'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin/guardian'
@@ -981,6 +992,7 @@ export interface FileRouteTypes {
     | '/status'
     | '/verify'
     | '/visitors'
+    | '/wallet'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/admin/guardian'
@@ -1067,6 +1079,7 @@ export interface RootRouteChildren {
   StatusRoute: typeof StatusRoute
   VerifyRoute: typeof VerifyRouteWithChildren
   VisitorsRoute: typeof VisitorsRoute
+  WalletRoute: typeof WalletRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   AuthCheckEmailRoute: typeof AuthCheckEmailRoute
@@ -1367,6 +1380,13 @@ declare module '@tanstack/react-router' {
       path: '/visitors'
       fullPath: '/visitors'
       preLoaderRoute: typeof VisitorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/wallet': {
+      id: '/wallet'
+      path: '/wallet'
+      fullPath: '/wallet'
+      preLoaderRoute: typeof WalletRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/.mcp/list-tools': {
@@ -1836,6 +1856,7 @@ const rootRouteChildren: RootRouteChildren = {
   StatusRoute: StatusRoute,
   VerifyRoute: VerifyRouteWithChildren,
   VisitorsRoute: VisitorsRoute,
+  WalletRoute: WalletRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
