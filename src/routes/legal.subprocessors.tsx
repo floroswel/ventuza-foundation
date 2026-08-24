@@ -2,6 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+import {
+  SUBPROCESSOR_CHANGELOG,
+  SUBPROCESSORS_LAST_UPDATED,
+  SUBPROCESSORS_VERSION,
+  formatLegalDate,
+} from "@/lib/legal-versions";
+
 
 
 export const Route = createFileRoute("/legal/subprocessors")({
@@ -160,7 +167,32 @@ function SubsPage() {
         <h1 className="text-base font-semibold">Subprocesatori</h1>
       </header>
       <article className="mx-auto max-w-3xl px-4 py-6 text-sm leading-relaxed">
-        <p className="text-xs text-muted-foreground">Ultima actualizare: 5 iulie 2026</p>
+        <p className="text-xs text-muted-foreground">
+          Ultima actualizare: {formatLegalDate(SUBPROCESSORS_LAST_UPDATED)} · versiunea listei{" "}
+          {SUBPROCESSORS_VERSION}
+        </p>
+
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Link
+            to="/legal/transfers"
+            className="inline-flex items-center rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium hover:bg-surface/70"
+          >
+            Transferuri extra-UE (SCC / DPF)
+          </Link>
+          <Link
+            to="/legal/dpa"
+            className="inline-flex items-center rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium hover:bg-surface/70"
+          >
+            Acord de prelucrare (DPA)
+          </Link>
+          <Link
+            to="/legal/gdpr-request"
+            className="inline-flex items-center rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium hover:bg-surface/70"
+          >
+            Cerere GDPR
+          </Link>
+        </div>
+
 
         <div className="mt-4">
           <OperatorIdentificationBlock compact />
@@ -268,6 +300,30 @@ function SubsPage() {
             de distanță.
           </li>
         </ul>
+
+        <h2 className="mt-8 text-base font-semibold">Istoricul modificărilor</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Fiecare adăugare, înlocuire sau eliminare a unui subprocesator este consemnată aici, cu
+          data și versiunea listei.
+        </p>
+        <ol className="mt-3 space-y-3">
+          {SUBPROCESSOR_CHANGELOG.map((entry) => (
+            <li
+              key={entry.version}
+              className="rounded-xl border border-border bg-surface/40 px-3 py-2 text-xs"
+            >
+              <p className="font-semibold">
+                v{entry.version} · {formatLegalDate(entry.date)}
+              </p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-5 text-muted-foreground">
+                {entry.changes.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ol>
+
 
         <p className="mt-6 text-xs text-muted-foreground">
           Modificările listei sunt anunțate cu minim 30 de zile înainte. Poți obiecta la{" "}

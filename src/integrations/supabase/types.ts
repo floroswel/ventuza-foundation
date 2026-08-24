@@ -1933,6 +1933,54 @@ export type Database = {
         }
         Relationships: []
       }
+      gdpr_requests: {
+        Row: {
+          assigned_team: string
+          contact_email: string
+          created_at: string
+          details: string | null
+          full_name: string | null
+          id: string
+          internal_notes: string | null
+          kind: string
+          resolved_at: string | null
+          status: string
+          ticket_code: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          assigned_team?: string
+          contact_email: string
+          created_at?: string
+          details?: string | null
+          full_name?: string | null
+          id?: string
+          internal_notes?: string | null
+          kind: string
+          resolved_at?: string | null
+          status?: string
+          ticket_code: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          assigned_team?: string
+          contact_email?: string
+          created_at?: string
+          details?: string | null
+          full_name?: string | null
+          id?: string
+          internal_notes?: string | null
+          kind?: string
+          resolved_at?: string | null
+          status?: string
+          ticket_code?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       group_members: {
         Row: {
           group_id: string
@@ -7297,6 +7345,18 @@ export type Database = {
       st_wrapx: {
         Args: { geom: unknown; move: number; wrap: number }
         Returns: unknown
+      }
+      submit_gdpr_request: {
+        Args: {
+          _contact_email: string
+          _details?: string
+          _full_name?: string
+          _kind: string
+        }
+        Returns: {
+          created_at: string
+          ticket_code: string
+        }[]
       }
       submit_ticket_csat: {
         Args: { _feedback?: string; _score: number; _ticket_id: string }

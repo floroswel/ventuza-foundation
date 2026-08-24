@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Download, Globe2 } from "lucide-react";
 
 import { LegalHeader, useLegalLang } from "@/components/legal/LegalLang";
 import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+import { CURRENT_DPA, DPA_VERSIONS, formatLegalDate } from "@/lib/legal-versions";
 
 export const Route = createFileRoute("/legal/dpa")({
   head: () => ({
@@ -50,8 +52,37 @@ function DpaPage() {
       />
       <article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
         <p className="text-xs text-muted-foreground">
-          {en ? "Version 1.0 — last updated 25 August 2026" : "Versiunea 1.0 — ultima actualizare: 25 august 2026"}
+          {en
+            ? `Version ${CURRENT_DPA.version} — last updated ${formatLegalDate(CURRENT_DPA.date, "en")}`
+            : `Versiunea ${CURRENT_DPA.version} — ultima actualizare: ${formatLegalDate(CURRENT_DPA.date)}`}
         </p>
+
+        <div className="mt-4 flex flex-wrap gap-2 not-prose">
+          <a
+            href={CURRENT_DPA.file}
+            download
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium hover:bg-surface/70"
+          >
+            <Download className="size-4" />
+            {en
+              ? `Download PDF (v${CURRENT_DPA.version})`
+              : `Descarcă PDF (v${CURRENT_DPA.version})`}
+          </a>
+          <Link
+            to="/legal/transfers"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium hover:bg-surface/70"
+          >
+            <Globe2 className="size-4" />
+            {en ? "Non-EU transfers (SCC / DPF)" : "Transferuri extra-UE (SCC / DPF)"}
+          </Link>
+          <Link
+            to="/legal/subprocessors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium hover:bg-surface/70"
+          >
+            {en ? "Subprocessors" : "Subprocesatori"}
+          </Link>
+        </div>
+
 
         <p className="mt-4">
           {en ? (
@@ -275,9 +306,35 @@ function DpaPage() {
           )}
         </p>
 
+        <h2 className="mt-8 text-base font-semibold">
+          {en ? "Version history (PDF)" : "Istoricul versiunilor (PDF)"}
+        </h2>
+        <ul className="mt-2 space-y-2 text-xs not-prose">
+          {DPA_VERSIONS.map((v) => (
+            <li
+              key={v.version}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface/40 px-3 py-2"
+            >
+              <span>
+                <strong>v{v.version}</strong> · {formatLegalDate(v.date, en ? "en" : "ro")}
+                {v.current && (
+                  <span className="ml-2 rounded bg-emerald-500/15 px-1 py-0.5 text-[10px] font-semibold uppercase text-emerald-600">
+                    {en ? "In force" : "În vigoare"}
+                  </span>
+                )}
+                <span className="block text-muted-foreground">{v.notes}</span>
+              </span>
+              <a className="text-primary underline" href={v.file} download>
+                PDF
+              </a>
+            </li>
+          ))}
+        </ul>
+
         <div className="mt-6">
           <OperatorIdentificationBlock includeIban />
         </div>
+
       </article>
     </div>
   );

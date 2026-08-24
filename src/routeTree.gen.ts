@@ -69,11 +69,13 @@ import { Route as LegalDataSafetyRouteImport } from './routes/legal.data-safety'
 import { Route as LegalDmcaRouteImport } from './routes/legal.dmca'
 import { Route as LegalDpaRouteImport } from './routes/legal.dpa'
 import { Route as LegalDsaRouteImport } from './routes/legal.dsa'
+import { Route as LegalGdprRequestRouteImport } from './routes/legal.gdpr-request'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalRecordsOfProcessingRouteImport } from './routes/legal.records-of-processing'
 import { Route as LegalSecurityIncidentsRouteImport } from './routes/legal.security-incidents'
 import { Route as LegalSubprocessorsRouteImport } from './routes/legal.subprocessors'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalTransfersRouteImport } from './routes/legal.transfers'
 import { Route as LegalWalletTermsRouteImport } from './routes/legal.wallet-terms'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
@@ -402,6 +404,11 @@ const LegalDsaRoute = LegalDsaRouteImport.update({
   path: '/legal/dsa',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalGdprRequestRoute = LegalGdprRequestRouteImport.update({
+  id: '/legal/gdpr-request',
+  path: '/legal/gdpr-request',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   id: '/legal/privacy',
   path: '/legal/privacy',
@@ -426,6 +433,11 @@ const LegalSubprocessorsRoute = LegalSubprocessorsRouteImport.update({
 const LegalTermsRoute = LegalTermsRouteImport.update({
   id: '/legal/terms',
   path: '/legal/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalTransfersRoute = LegalTransfersRouteImport.update({
+  id: '/legal/transfers',
+  path: '/legal/transfers',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalWalletTermsRoute = LegalWalletTermsRouteImport.update({
@@ -619,11 +631,13 @@ export interface FileRoutesByFullPath {
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
+  '/legal/gdpr-request': typeof LegalGdprRequestRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/legal/transfers': typeof LegalTransfersRoute
   '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
@@ -710,11 +724,13 @@ export interface FileRoutesByTo {
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
+  '/legal/gdpr-request': typeof LegalGdprRequestRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/legal/transfers': typeof LegalTransfersRoute
   '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
@@ -803,11 +819,13 @@ export interface FileRoutesById {
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
+  '/legal/gdpr-request': typeof LegalGdprRequestRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/legal/transfers': typeof LegalTransfersRoute
   '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
@@ -897,11 +915,13 @@ export interface FileRouteTypes {
     | '/legal/dmca'
     | '/legal/dpa'
     | '/legal/dsa'
+    | '/legal/gdpr-request'
     | '/legal/privacy'
     | '/legal/records-of-processing'
     | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
+    | '/legal/transfers'
     | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
@@ -988,11 +1008,13 @@ export interface FileRouteTypes {
     | '/legal/dmca'
     | '/legal/dpa'
     | '/legal/dsa'
+    | '/legal/gdpr-request'
     | '/legal/privacy'
     | '/legal/records-of-processing'
     | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
+    | '/legal/transfers'
     | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
@@ -1080,11 +1102,13 @@ export interface FileRouteTypes {
     | '/legal/dmca'
     | '/legal/dpa'
     | '/legal/dsa'
+    | '/legal/gdpr-request'
     | '/legal/privacy'
     | '/legal/records-of-processing'
     | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
+    | '/legal/transfers'
     | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
@@ -1168,11 +1192,13 @@ export interface RootRouteChildren {
   LegalDmcaRoute: typeof LegalDmcaRoute
   LegalDpaRoute: typeof LegalDpaRoute
   LegalDsaRoute: typeof LegalDsaRoute
+  LegalGdprRequestRoute: typeof LegalGdprRequestRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRecordsOfProcessingRoute: typeof LegalRecordsOfProcessingRoute
   LegalSecurityIncidentsRoute: typeof LegalSecurityIncidentsRoute
   LegalSubprocessorsRoute: typeof LegalSubprocessorsRoute
   LegalTermsRoute: typeof LegalTermsRoute
+  LegalTransfersRoute: typeof LegalTransfersRoute
   LegalWalletTermsRoute: typeof LegalWalletTermsRoute
   OffersIdRoute: typeof OffersIdRoute
   USlugRoute: typeof USlugRoute
@@ -1614,6 +1640,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalDsaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/gdpr-request': {
+      id: '/legal/gdpr-request'
+      path: '/legal/gdpr-request'
+      fullPath: '/legal/gdpr-request'
+      preLoaderRoute: typeof LegalGdprRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/privacy': {
       id: '/legal/privacy'
       path: '/legal/privacy'
@@ -1647,6 +1680,13 @@ declare module '@tanstack/react-router' {
       path: '/legal/terms'
       fullPath: '/legal/terms'
       preLoaderRoute: typeof LegalTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/transfers': {
+      id: '/legal/transfers'
+      path: '/legal/transfers'
+      fullPath: '/legal/transfers'
+      preLoaderRoute: typeof LegalTransfersRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/wallet-terms': {
@@ -1994,11 +2034,13 @@ const rootRouteChildren: RootRouteChildren = {
   LegalDmcaRoute: LegalDmcaRoute,
   LegalDpaRoute: LegalDpaRoute,
   LegalDsaRoute: LegalDsaRoute,
+  LegalGdprRequestRoute: LegalGdprRequestRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRecordsOfProcessingRoute: LegalRecordsOfProcessingRoute,
   LegalSecurityIncidentsRoute: LegalSecurityIncidentsRoute,
   LegalSubprocessorsRoute: LegalSubprocessorsRoute,
   LegalTermsRoute: LegalTermsRoute,
+  LegalTransfersRoute: LegalTransfersRoute,
   LegalWalletTermsRoute: LegalWalletTermsRoute,
   OffersIdRoute: OffersIdRoute,
   USlugRoute: USlugRoute,
