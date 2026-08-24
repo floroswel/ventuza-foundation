@@ -5555,6 +5555,19 @@ export type Database = {
       }
       admin_funnel_stats: { Args: { _days?: number }; Returns: Json }
       admin_get_my_role: { Args: never; Returns: string }
+      admin_grant_abuse_alerts: {
+        Args: { _days?: number }
+        Returns: {
+          actor_id: string
+          code: string
+          last_at: string
+          message: string
+          observed: number
+          severity: string
+          target_user_id: string
+          threshold: number
+        }[]
+      }
       admin_grant_badge: {
         Args: {
           _code: string
