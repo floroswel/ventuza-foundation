@@ -190,6 +190,35 @@ export function InstallFunnelPanel() {
     }
   }
 
+  async function exportRawCsv() {
+    setExporting(true);
+    setExportError(null);
+    try {
+      const { data, error: err } = await supabase.rpc("admin_store_funnel_export_raw", {
+        _from: from,
+        _to: to,
+        _limit: 20000,
+      });
+      if (err) throw err;
+      const list = (data ?? []) as RawExportRow[];
+      if (!list.length) {
+        setExportError("Empty legitim: niciun eveniment în intervalul selectat.");
+        return;
+      }
+      const blob = new Blob([toRawCsv(list)], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `suzeta-install-funnel-detaliat_${from}_${to}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setExportError(describe(e));
+    } finally {
+      setExporting(false);
+    }
+  }
+
   const total = rows.reduce(
     (acc, r) => ({
       clicks: acc.clicks + Number(r.clicks || 0),
