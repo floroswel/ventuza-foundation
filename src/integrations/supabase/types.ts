@@ -6518,6 +6518,10 @@ export type Database = {
       set_looking_now:
         | { Args: { _hours: number; _intent?: string }; Returns: undefined }
         | { Args: { _hours: number; _intent: string }; Returns: undefined }
+      shares_conversation_with: {
+        Args: { _a: string; _b: string }
+        Returns: boolean
+      }
       st_3dclosestpoint: {
         Args: { geom1: unknown; geom2: unknown }
         Returns: unknown
