@@ -34,6 +34,7 @@ import {
 } from "@/lib/admin-badges.functions";
 import { adminGetUserTimeline } from "@/lib/admin-timeline.functions";
 import { adminGrantPartnerRole, adminRevokePartnerRole } from "@/lib/admin-partners.functions";
+import { UserSessionsCard } from "./UserSessionsCard";
 
 export function EnterpriseUser360Panel({ userId }: { userId: string }) {
   return (
@@ -49,6 +50,7 @@ export function EnterpriseUser360Panel({ userId }: { userId: string }) {
         <OfficialMessageSection userId={userId} />
       </div>
       <PartnerRoleSection userId={userId} />
+      <UserSessionsCard userId={userId} />
     </div>
   );
 }

@@ -154,3 +154,95 @@ export const adminRevokePushSub = createServerFn({ method: "POST" })
     );
     return { ok: true };
   });
+
+/* ------------------------------------------------------------------ *
+ * Dispozitive per user — GDPR-safe (date minimizate).
+ * Nu returnăm fingerprint brut, user agent complet sau endpoint push:
+ * doar platformă derivată, referință hash-uită și timestamps.
+ * ------------------------------------------------------------------ */
+
+export type AdminUserDevice = {
+  id: string;
+  kind: "device" | "push";
+  label: string;
+  ref: string;
+  firstSeenAt: string | null;
+  lastSeenAt: string | null;
+  disabledAt: string | null;
+};
+
+async function shortHash(value: string): Promise<string> {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(buf))
+    .slice(0, 4)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function coarseDevice(ua: string | null): string {
+  if (!ua) return "necunoscut";
+  const os = /Android/i.test(ua)
+    ? "Android"
+    : /iPhone|iPad|iPod/i.test(ua)
+      ? "iOS"
+      : /Windows/i.test(ua)
+        ? "Windows"
+        : /Mac OS X|Macintosh/i.test(ua)
+          ? "macOS"
+          : /Linux/i.test(ua)
+            ? "Linux"
+            : "necunoscut";
+  const app = /Capacitor|Suzeta|; wv\)/i.test(ua) ? "aplicație" : "browser";
+  return `${os} · ${app}`;
+}
+
+export const adminListUserDevices = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => z.object({ userId: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertAdmin(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const sa = supabaseAdmin as any;
+
+    const [fps, pushes] = await Promise.all([
+      sa
+        .from("device_fingerprints")
+        .select("id, fingerprint, user_agent, first_seen_at, last_seen_at")
+        .eq("user_id", data.userId)
+        .order("last_seen_at", { ascending: false })
+        .limit(50),
+      sa
+        .from("push_subscriptions")
+        .select("id, endpoint, created_at, updated_at, platform, disabled_at")
+        .eq("user_id", data.userId)
+        .order("created_at", { ascending: false })
+        .limit(50),
+    ]);
+    if (fps.error) throw new Error(fps.error.message);
+    if (pushes.error) throw new Error(pushes.error.message);
+
+    const devices: AdminUserDevice[] = [];
+    for (const r of fps.data ?? []) {
+      devices.push({
+        id: r.id,
+        kind: "device",
+        label: coarseDevice(r.user_agent ?? null),
+        ref: `fp:${await shortHash(String(r.fingerprint ?? r.id))}`,
+        firstSeenAt: r.first_seen_at ?? null,
+        lastSeenAt: r.last_seen_at ?? null,
+        disabledAt: null,
+      });
+    }
+    for (const r of pushes.data ?? []) {
+      devices.push({
+        id: r.id,
+        kind: "push",
+        label: `push · ${r.platform ?? "web"}`,
+        ref: `push:${await shortHash(String(r.endpoint ?? r.id))}`,
+        firstSeenAt: r.created_at ?? null,
+        lastSeenAt: r.updated_at ?? r.created_at ?? null,
+        disabledAt: r.disabled_at ?? null,
+      });
+    }
+    return { devices };
+  });

@@ -1,5 +1,6 @@
 import { InstallFunnelPanel } from "@/components/admin/InstallFunnelPanel";
 import { GrantsPanel } from "@/components/admin/GrantsPanel";
+import { GrantAbuseAlertsPanel } from "@/components/admin/GrantAbuseAlertsPanel";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -647,7 +648,12 @@ function AdminDashboard() {
       {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
       {section === "billing" && <BillingAdminPanel isAdmin={!!isAdmin} />}
       {section === "merch" && <MerchOrdersPanel />}
-      {section === "grants" && isAdmin && <GrantsPanel />}
+      {section === "grants" && isAdmin && (
+        <div className="space-y-6">
+          <GrantsPanel />
+          <GrantAbuseAlertsPanel />
+        </div>
+      )}
       {section === "security" && <SecurityPanel />}
       
       {section === "health" && <SystemHealthPanel />}
