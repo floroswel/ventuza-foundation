@@ -36,7 +36,7 @@ export function BootPerformanceMount() {
       import("@/lib/native-runtime"),
       import("@/lib/store-analytics"),
     ]).then(([native, analytics]) => {
-      if (native.isNative?.()) analytics.trackNativeFirstOpen();
+      if (native.isNativeAndroid()) analytics.trackNativeFirstOpen();
     });
 
   }, []);
