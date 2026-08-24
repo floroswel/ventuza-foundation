@@ -219,6 +219,94 @@ function QuotasForm({
   );
 }
 
+function PerformanceForm({
+  row,
+  onSave,
+}: {
+  row: Setting;
+  onSave: (val: any, reason: string) => Promise<void>;
+}) {
+  const [v, setV] = useState<any>(row.value ?? {});
+  const toggle = (k: string, label: string, def: boolean) => (
+    <label className="col-span-2 flex items-center justify-between rounded-lg border border-border px-3 py-2 text-xs">
+      <span>{label}</span>
+      <Switch checked={v[k] ?? def} onCheckedChange={(c) => setV({ ...v, [k]: c })} />
+    </label>
+  );
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <NumberEditor
+        label="Splash puls"
+        suffix="ms"
+        value={v.splash_pulse_ms ?? 420}
+        onChange={(x) => setV({ ...v, splash_pulse_ms: x })}
+        min={0}
+        max={2000}
+        step={10}
+      />
+      <NumberEditor
+        label="Splash fade"
+        suffix="ms"
+        value={v.splash_fade_ms ?? 220}
+        onChange={(x) => setV({ ...v, splash_fade_ms: x })}
+        min={0}
+        max={2000}
+        step={10}
+      />
+      <NumberEditor
+        label="Dimensiune max imagine"
+        suffix="px"
+        value={v.image_max_dim ?? 1440}
+        onChange={(x) => setV({ ...v, image_max_dim: x })}
+        min={480}
+        max={4096}
+        step={10}
+      />
+      <NumberEditor
+        label="Calitate JPEG"
+        suffix="0–1"
+        value={v.image_quality ?? 0.8}
+        onChange={(x) => setV({ ...v, image_quality: x })}
+        min={0.4}
+        max={1}
+        step={0.05}
+      />
+      <NumberEditor
+        label="TTL URL semnate"
+        suffix="ore"
+        value={v.signed_url_ttl_hours ?? 8}
+        onChange={(x) => setV({ ...v, signed_url_ttl_hours: x })}
+        min={1}
+        max={24}
+      />
+      <NumberEditor
+        label="Sampling metrici"
+        suffix="0–1"
+        value={v.perf_sampling_rate ?? 1}
+        onChange={(x) => setV({ ...v, perf_sampling_rate: x })}
+        min={0}
+        max={1}
+        step={0.05}
+      />
+      {toggle("reduce_motion_default", "Mișcare redusă implicită (toți userii)", false)}
+      {toggle("crash_reporting_enabled", "Raportare erori client (crash reporting)", true)}
+      {toggle("photo_reoptimize_enabled", "Recompresie automată poze vechi", true)}
+      <div className="col-span-2 flex justify-end">
+        <ReasonDialog
+          trigger={
+            <Button size="sm">
+              <Save className="h-4 w-4 mr-1" /> Salvează
+            </Button>
+          }
+          title="Salvează performance_settings"
+          confirmLabel="Salvează"
+          onConfirm={(r) => onSave(v, r)}
+        />
+      </div>
+    </div>
+  );
+}
+
 function ScoreWeightsForm({
   row,
   onSave,
@@ -461,6 +549,7 @@ export function SettingsAndFlagsPanel() {
     if (row.key === "proximity_notifications") return <ProximityForm row={row} onSave={onSave} />;
     if (row.key === "partner_quotas") return <QuotasForm row={row} onSave={onSave} />;
     if (row.key === "discover.score_weights") return <ScoreWeightsForm row={row} onSave={onSave} />;
+    if (row.key === "performance_settings") return <PerformanceForm row={row} onSave={onSave} />;
     if (typeof row.value === "number")
       return <ScalarForm row={row} onSave={onSave} type="number" />;
     if (typeof row.value === "string") return <ScalarForm row={row} onSave={onSave} type="text" />;
