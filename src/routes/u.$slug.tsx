@@ -231,6 +231,12 @@ function PublicProfilePage() {
       </section>
 
       <div className="space-y-6 px-6 pt-6">
+        {/* Acțiuni pentru vizitatori logați. Gate-ul 18+ e server-side; aici doar
+            traducem eroarea în mesaj clar + link la verificare. */}
+        {user && profile.id && user.id !== profile.id && (
+          <ProfileActions targetId={profile.id} name={profile.display_name ?? "profil"} />
+        )}
+
         {(translating || translation) && canTranslate && (
           <div className="flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1.5 text-[11px] text-muted-foreground">
             <Languages className="size-3.5 text-primary" />
