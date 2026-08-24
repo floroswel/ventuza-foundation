@@ -11,6 +11,7 @@
 // siguranță de 60s.
 
 import { supabase } from "@/integrations/supabase/client";
+import { performanceSettings } from "@/lib/runtime-settings";
 
 type Entry = { url: string; expiresAt: number };
 
@@ -23,6 +24,12 @@ const SAFETY_MS = 60_000;
  * se mai re-descarcă la fiecare sesiune. Marja de siguranță rămâne 60s.
  */
 export const DEFAULT_TTL_SEC = 8 * 3600;
+
+/** TTL efectiv, administrabil din /admin (`performance_settings`). */
+export function ttlSeconds(): number {
+  const h = performanceSettings().signed_url_ttl_hours;
+  return Math.round(Math.max(1, Math.min(24, h)) * 3600);
+}
 const STORE_KEY = "suzeta:signed-urls:v2";
 
 function isRemote(path: string) {
@@ -86,7 +93,7 @@ function store(bucket: string, path: string, url: string, ttlSec: number) {
 export async function getSignedUrl(
   bucket: string,
   path: string | null | undefined,
-  ttlSec = DEFAULT_TTL_SEC,
+  ttlSec = ttlSeconds(),
 ): Promise<string | null> {
   if (!path) return null;
   if (isRemote(path)) return path;
@@ -118,7 +125,7 @@ export async function getSignedUrl(
 export async function getSignedUrls(
   bucket: string,
   paths: string[],
-  ttlSec = DEFAULT_TTL_SEC,
+  ttlSec = ttlSeconds(),
 ): Promise<Record<string, string>> {
   const out: Record<string, string> = {};
   const missing: string[] = [];

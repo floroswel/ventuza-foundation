@@ -1,3 +1,4 @@
+import { performanceSettings } from "@/lib/runtime-settings";
 /**
  * Preferință „Reduced Motion" controlată de utilizator, peste preferința de
  * sistem (`prefers-reduced-motion`). Setarea se aplică prin clasa
@@ -34,6 +35,7 @@ export function isReducedMotion(): boolean {
   const pref = getMotionPref();
   if (pref === "on") return true;
   if (pref === "off") return false;
+  if (performanceSettings().reduce_motion_default) return true;
   return systemPrefersReducedMotion();
 }
 

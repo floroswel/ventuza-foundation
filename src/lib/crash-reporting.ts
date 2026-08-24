@@ -13,6 +13,7 @@
  */
 import { logCrash, type CrashEntry } from "@/lib/crash-log";
 import { APP_VERSION } from "@/lib/app-version";
+import { performanceSettings } from "@/lib/runtime-settings";
 
 let installed = false;
 const recent = new Map<string, number>();
@@ -85,6 +86,8 @@ export function reportError(
 
 export function initCrashReporting() {
   if (installed || typeof window === "undefined") return;
+  // Kill-switch administrabil din /admin → Setări & Flags.
+  if (!performanceSettings().crash_reporting_enabled) return;
   installed = true;
 
   window.addEventListener("error", (event) => {

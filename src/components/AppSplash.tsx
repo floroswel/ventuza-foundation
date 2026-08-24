@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import { isReducedMotion } from "@/lib/motion-pref";
+import { performanceSettings } from "@/lib/runtime-settings";
 
 /**
  * Animație de deschidere: logo-ul apare din centru, „respiră" (scale 0.9 → 1)
@@ -35,8 +36,11 @@ export function AppSplash() {
 
 
     setMounted(true);
-    const fadeAt = window.setTimeout(() => setLeaving(true), reduce ? 150 : 420);
-    const doneAt = window.setTimeout(() => setMounted(false), reduce ? 320 : 640);
+    const cfg = performanceSettings();
+    const pulse = reduce ? Math.min(150, cfg.splash_pulse_ms) : cfg.splash_pulse_ms;
+    const fade = reduce ? Math.min(170, cfg.splash_fade_ms) : cfg.splash_fade_ms;
+    const fadeAt = window.setTimeout(() => setLeaving(true), pulse);
+    const doneAt = window.setTimeout(() => setMounted(false), pulse + fade);
     return () => {
       window.clearTimeout(fadeAt);
       window.clearTimeout(doneAt);
