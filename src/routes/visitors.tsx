@@ -92,9 +92,11 @@ function VisitorsPage() {
           return;
         }
 
-        const { data: profs, error: pErr } = await supabase.rpc("get_public_profiles", {
-          _ids: ids,
-        });
+        // Vizitatorii blocați (ambele direcții) sau în incognito nu mai apar.
+        const { data: profs, error: pErr } = await (supabase.rpc as any)(
+          "list_visible_profiles",
+          { _ids: ids },
+        );
         if (pErr) throw pErr;
         type Prow = {
           id: string;
@@ -109,13 +111,14 @@ function VisitorsPage() {
         for (const id of ids) {
           const info = map.get(id)!;
           const p = profMap.get(id);
+          if (!p) continue;
           out.push({
             viewer_id: id,
             last_viewed_at: info.last,
             view_count: info.count,
-            display_name: p?.display_name ?? null,
-            photo: await signPhoto(p?.photos?.[0] ?? null),
-            age: age(p?.birthdate),
+            display_name: p.display_name ?? null,
+            photo: await signPhoto(p.photos?.[0] ?? null),
+            age: age(p.birthdate),
           });
         }
         out.sort(
