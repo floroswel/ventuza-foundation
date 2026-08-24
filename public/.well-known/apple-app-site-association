@@ -1,0 +1,22 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appIDs": ["APPLE_TEAM_ID.app.suzeta"],
+        "components": [
+          { "/": "/u/*", "comment": "profil public" },
+          { "/": "/discover*", "comment": "grila" },
+          { "/": "/messages*", "comment": "mesaje" },
+          { "/": "/venue/*" },
+          { "/": "/event/*" },
+          { "/": "/invite*" },
+          { "/": "/*", "comment": "restul aplicatiei" }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["APPLE_TEAM_ID.app.suzeta"]
+  }
+}
