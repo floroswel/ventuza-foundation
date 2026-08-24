@@ -54,3 +54,58 @@ self.addEventListener("notificationclick", (event) => {
   );
 });
 
+
+/* ---------------------------------------------------------------------------
+ * Cache persistent pentru imaginile din Supabase Storage.
+ *
+ * URL-urile semnate conțin un token în query string care se schimbă la fiecare
+ * re-semnare, deci potrivim cache-ul ignorând query-ul (`ignoreSearch`) și
+ * cheia devine calea obiectului. Strategie: cache-first + revalidare în fundal,
+ * cu plafon de intrări ca să nu umplem device-ul.
+ * ------------------------------------------------------------------------ */
+const IMG_CACHE = "suzeta-img-v1";
+const IMG_CACHE_MAX = 220;
+
+function isStorageImage(url) {
+  return (
+    /\/storage\/v1\/object\/(sign|public)\//.test(url.pathname) &&
+    /\.(jpe?g|png|webp|gif|avif)$/i.test(url.pathname)
+  );
+}
+
+async function trimImageCache(cache) {
+  const keys = await cache.keys();
+  if (keys.length <= IMG_CACHE_MAX) return;
+  await Promise.all(keys.slice(0, keys.length - IMG_CACHE_MAX).map((k) => cache.delete(k)));
+}
+
+self.addEventListener("fetch", (event) => {
+  const req = event.request;
+  if (req.method !== "GET") return;
+  let url;
+  try {
+    url = new URL(req.url);
+  } catch {
+    return;
+  }
+  if (!isStorageImage(url)) return;
+
+  event.respondWith(
+    (async () => {
+      const cache = await caches.open(IMG_CACHE);
+      const cached = await cache.match(req, { ignoreSearch: true });
+      const network = fetch(req)
+        .then((res) => {
+          if (res && res.ok) {
+            cache.put(req, res.clone()).then(() => trimImageCache(cache));
+          }
+          return res;
+        })
+        .catch(() => null);
+
+      if (cached) return cached;
+      const fresh = await network;
+      return fresh || new Response("", { status: 504 });
+    })(),
+  );
+});
