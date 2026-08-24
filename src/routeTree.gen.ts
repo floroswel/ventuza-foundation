@@ -73,6 +73,7 @@ import { Route as LegalRecordsOfProcessingRouteImport } from './routes/legal.rec
 import { Route as LegalSecurityIncidentsRouteImport } from './routes/legal.security-incidents'
 import { Route as LegalSubprocessorsRouteImport } from './routes/legal.subprocessors'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
+import { Route as LegalWalletTermsRouteImport } from './routes/legal.wallet-terms'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
 import { Route as OffersIdRouteImport } from './routes/offers.$id'
@@ -421,6 +422,11 @@ const LegalTermsRoute = LegalTermsRouteImport.update({
   path: '/legal/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalWalletTermsRoute = LegalWalletTermsRouteImport.update({
+  id: '/legal/wallet-terms',
+  path: '/legal/wallet-terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const MessagesIndexRoute = MessagesIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -611,6 +617,7 @@ export interface FileRoutesByFullPath {
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
   '/partner/billing': typeof PartnerBillingRoute
@@ -700,6 +707,7 @@ export interface FileRoutesByTo {
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
   '/partner/billing': typeof PartnerBillingRoute
@@ -791,6 +799,7 @@ export interface FileRoutesById {
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
+  '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
   '/partner/billing': typeof PartnerBillingRoute
@@ -883,6 +892,7 @@ export interface FileRouteTypes {
     | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
+    | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
     | '/partner/billing'
@@ -972,6 +982,7 @@ export interface FileRouteTypes {
     | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
+    | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
     | '/partner/billing'
@@ -1062,6 +1073,7 @@ export interface FileRouteTypes {
     | '/legal/security-incidents'
     | '/legal/subprocessors'
     | '/legal/terms'
+    | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
     | '/partner/billing'
@@ -1148,6 +1160,7 @@ export interface RootRouteChildren {
   LegalSecurityIncidentsRoute: typeof LegalSecurityIncidentsRoute
   LegalSubprocessorsRoute: typeof LegalSubprocessorsRoute
   LegalTermsRoute: typeof LegalTermsRoute
+  LegalWalletTermsRoute: typeof LegalWalletTermsRoute
   OffersIdRoute: typeof OffersIdRoute
   USlugRoute: typeof USlugRoute
   VenuesIdRoute: typeof VenuesIdRoute
@@ -1616,6 +1629,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalTermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/wallet-terms': {
+      id: '/legal/wallet-terms'
+      path: '/legal/wallet-terms'
+      fullPath: '/legal/wallet-terms'
+      preLoaderRoute: typeof LegalWalletTermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/messages/': {
       id: '/messages/'
       path: '/'
@@ -1958,6 +1978,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalSecurityIncidentsRoute: LegalSecurityIncidentsRoute,
   LegalSubprocessorsRoute: LegalSubprocessorsRoute,
   LegalTermsRoute: LegalTermsRoute,
+  LegalWalletTermsRoute: LegalWalletTermsRoute,
   OffersIdRoute: OffersIdRoute,
   USlugRoute: USlugRoute,
   VenuesIdRoute: VenuesIdRoute,
