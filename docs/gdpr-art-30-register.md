@@ -6,8 +6,9 @@
 > cerere (control / investigație). Se actualizează la fiecare schimbare
 > de activitate, scop, procesator sau categorie de date.
 
-- **Versiune:** 2.1
-- **Data:** 2026-06-27
+- **Versiune:** 2.2
+- **Data:** 2026-08-24
+
 - **Generat din:** schema reală DB (`src/integrations/supabase/types.ts`) + inventar procesatori (`src/routes/legal.subprocessors.tsx`) + cod server (`src/lib/*.functions.ts`, `*.server.ts`).
 - **Responsabil:** _de completat — administrator Suzeta_
 - **DPO:** _de completat (obligatoriu — Art. 37(1)(b)(c): date sănătate + orientare + monitorizare sistematică)_
