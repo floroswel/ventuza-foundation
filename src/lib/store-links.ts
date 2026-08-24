@@ -210,7 +210,7 @@ export function openAppOrStore(
   }
 
   if (isIosWebBrowser()) {
-    trackStoreFunnel("app_link_open", { source, path, appInstalled, variant, referrer });
+    trackAppLinkOpen(path, { source, appInstalled, variant, referrer });
     const startedAt = Date.now();
     const store = appStoreUrl(source, path);
     const timer = window.setTimeout(() => {
