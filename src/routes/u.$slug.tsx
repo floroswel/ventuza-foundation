@@ -1,8 +1,20 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, useRouter, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useServerFn } from "@tanstack/react-start";
-import { BadgeCheck, Languages, Loader2, Mic, Music, ArrowLeft, Heart, Video } from "lucide-react";
+import {
+  BadgeCheck,
+  Languages,
+  Loader2,
+  Mic,
+  Music,
+  ArrowLeft,
+  Heart,
+  Video,
+  MessageCircle,
+  Star,
+} from "lucide-react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Chip } from "@/components/Chip";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
