@@ -28,7 +28,7 @@ export function ProfileBadgesRow({ profile }: { profile: ProfileLike }) {
       out.push({ key: "founder", label: "Founder", icon: Crown, tone: "gold" });
     }
     if (profile.verified_at) {
-      out.push({ key: "verified", label: "Verified", icon: BadgeCheck, tone: "primary" });
+      out.push({ key: "verified", label: "Verified", icon: BadgeCheck, tone: "verified" });
     }
     if ((profile.vaccinations?.length ?? 0) >= 2 || (profile.safety_practices?.length ?? 0) >= 3) {
       out.push({ key: "safe", label: "Safe play", icon: Shield, tone: "emerald" });
