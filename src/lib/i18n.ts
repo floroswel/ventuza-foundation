@@ -2,652 +2,22 @@ import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 
-const ro = {
-  common: {
-    cancel: "Anulează",
-    save: "Salvează",
-    delete: "Șterge",
-    confirm: "Confirmă",
-    close: "Închide",
-    loading: "Se încarcă...",
-    error: "Eroare",
-    back: "Înapoi",
-    next: "Următorul",
-    yes: "Da",
-    no: "Nu",
-    search: "Caută",
-    settings: "Setări",
-    profile: "Profil",
-    messages: "Mesaje",
-    discover: "Descoperă",
-    favorites: "Favorite",
-    notifications: "Notificări",
-  },
-  age: {
-    title: "Confirmă-ți vârsta",
-    desc: "Pentru siguranța comunității, trebuie să confirmi că ai peste 18 ani.",
-    cta: "Verifică vârsta",
-    opening: "Se deschide...",
-    pending: "Verificare în curs...",
-    resume: "Reia verificarea",
-    failed: "Verificarea anterioară nu a reușit. Încearcă din nou.",
-    check: "Am terminat — verifică statusul",
-  },
-  quickExit: { label: "Ieșire rapidă" },
-  language: {
-    title: "Limbă",
-    ro: "Română",
-    en: "English",
-    auto: "Detectată automat",
-  },
-  auth: {
-    back: "← Înapoi",
-    tagline: "Suzeta",
-    createAccount: "Creează-ți contul",
-    welcomeBack: "Bine ai revenit",
-    tabLogin: "Autentificare",
-    tabSignup: "Înregistrare",
-    continueGoogle: "Continuă cu Google",
-    continueApple: "Continuă cu Apple",
-    orEmail: "sau cu email",
-    email: "Email",
-    emailPlaceholder: "tu@domeniu.com",
-    password: "Parolă",
-    passwordPlaceholderSignup: "Minim 8 caractere",
-    passwordPlaceholderLogin: "Parola ta",
-    showPassword: "Arată parola",
-    hidePassword: "Ascunde parola",
-    forgot: "Ai uitat parola?",
-    birthdate: "Data nașterii",
-    minAge: "Trebuie să ai cel puțin 18 ani.",
-    over18: "Confirm că am <1>18 ani sau mai mult</1>.",
-    acceptTerms: "Sunt de acord cu <1>Termenii</1> și <3>Politica de confidențialitate</3>.",
-    submitSignup: "Creează cont",
-    submitLogin: "Autentifică-te",
-    retryIn: "Așteaptă {{s}}s",
-    haveAccount: "Ai deja cont?",
-    noAccount: "Nu ai cont încă?",
-    switchLogin: "Autentifică-te",
-    switchSignup: "Înregistrează-te",
-    footer: "Continuând, ești de acord cu <1>Termenii</1> și <3>Politica de confidențialitate</3>.",
-    resend: "Retrimite emailul",
-    retryCountdown: "Mai poți încerca în {{s}}s.",
-    errors: {
-      confirmChecks: "Confirmă cele două bife (18+ și Termeni) înainte de a continua.",
-      needBirthdate: "Introdu data nașterii înainte de a continua.",
-      needBirthdateOAuth: "Introdu data nașterii înainte de a continua cu Google/Apple.",
-      tooYoung: "Trebuie să ai cel puțin 18 ani pentru a folosi Suzeta.",
-      welcome: "Bun venit pe Suzeta.",
-      invalidEmail: "Adresa de email nu pare validă.",
-      passwordMin: "Parola trebuie să aibă minim 8 caractere.",
-      passwordMax: "Parola poate avea maxim 72 caractere.",
-      enterEmailFirst: "Introdu adresa de email mai sus.",
-      resetSent: "Email cu link de resetare trimis.",
-      oauthFailed: "Autentificarea cu {{provider}} a eșuat.",
-      passwordsDontMatch: "Parolele nu se potrivesc.",
-      passwordUpdated: "Parola a fost actualizată.",
-      missingEmailBack: "Lipsește adresa de email — întoarce-te la pasul de înregistrare.",
-      resendSent: "Trimis. Verifică inbox + spam.",
-    },
-    resetPassword: {
-      title: "Alege o parolă nouă",
-      subtitle: "Introdu o parolă nouă pentru contul tău.",
-      validating: "Validăm link-ul de resetare…",
-      newPassword: "Parolă nouă",
-      confirm: "Confirmă parola",
-      submit: "Actualizează parola",
-    },
-    checkEmail: {
-      pageTitle: "Verifică-ți emailul",
-      sentLink: "Ți-am trimis un link de confirmare",
-      sentLinkTo: "la",
-      openToActivate: "Deschide-l pentru a-ți activa contul.",
-      spamHint: "Nu vezi emailul? Verifică folderul Spam / Promoții.",
-      resendIn: "Retrimite în {{s}}s",
-      resend: "Retrimite emailul",
-      backToLogin: "Înapoi la autentificare",
-    },
-  },
-  authErrors: {
-    captchaMissing: "Verificarea anti-bot lipsește.",
-    captchaFailed: "Verificarea anti-bot a eșuat.",
-    rateLimited_one: "Prea multe încercări. Așteaptă {{s}} secundă.",
-    rateLimited_other: "Prea multe încercări. Așteaptă {{s}} secunde.",
-    rateLimited: "Prea multe încercări. Așteaptă {{s}} secunde.",
-    emailNotConfirmed: "Emailul nu e confirmat.",
-    invalidCredentials: "Email sau parolă incorectă.",
-    userAlreadyExists: "Există deja un cont cu acest email.",
-    weakPassword: "Parolă prea slabă.",
-    weakPasswordPwned: "Această parolă a fost expusă în scurgeri publice.",
-    samePassword: "Parola nouă e identică cu cea veche.",
-    emailInvalid: "Adresa de email nu pare validă.",
-    emailBounced: "Nu am putut trimite emailul la această adresă.",
-    disposableEmail: "Email temporar nepermis.",
-    ageRequired: "Trebuie să-ți verifici vârsta.",
-    signupThrottledIp: "Prea multe conturi create de pe această conexiune.",
-    signupThrottledDevice: "Prea multe conturi create de pe acest dispozitiv.",
-    signupDisabled: "Înregistrările sunt momentan închise.",
-    sessionExpired: "Sesiunea a expirat.",
-    otpExpired: "Codul a expirat.",
-    otpInvalid: "Cod incorect.",
-    phoneInvalid: "Număr de telefon invalid.",
-    providerError: "Autentificarea cu contul extern a eșuat.",
-    healthConsentRequired: "Consimțământul pentru date de sănătate lipsește.",
-    consentRequired: "Consimțământul lipsește.",
-    storageTooBig: "Fișierul e prea mare.",
-    storageBadType: "Format de fișier nesuportat.",
-    storageGeneric: "Nu am putut salva fișierul.",
-    network: "Conexiune instabilă.",
-    unknown: "A apărut o eroare.",
-    actions: {
-      retry: "Reîncearcă. Dacă problema persistă, contactează suportul.",
-      captchaMissing: "Bifează caseta „Nu sunt robot” din partea de jos a formularului.",
-      captchaFailed: "Reîmprospătează pagina și încearcă din nou. Dezactivează VPN-ul dacă folosești unul.",
-      rateLimited: "Contorul se resetează automat. Nu apăsa butonul repetat.",
-      emailNotConfirmed: "Deschide inboxul (și folderul Spam) și dă click pe linkul de confirmare.",
-      invalidCredentials: "Verifică majuscule și caractere speciale. Dacă ai uitat parola, folosește „Am uitat parola”.",
-      userAlreadyExists: "Autentifică-te cu parola pe care ai setat-o, sau folosește „Am uitat parola”.",
-      weakPassword: "Folosește minim 8 caractere, cu litere mari și mici, cifre și un simbol.",
-      samePassword: "Alege o parolă diferită de cea folosită anterior.",
-      emailInvalid: "Verifică formatul (ex: nume@domeniu.ro) și dacă nu ai spații.",
-      emailBounced: "Verifică că adresa există, sau încearcă cu un alt email.",
-      disposableEmail: "Folosește un email real: Gmail, Outlook, Yahoo, ProtonMail sau propriul tău domeniu.",
-      ageRequired: "Mergi la „Verificare vârstă” din meniu și urmează pașii.",
-      signupThrottled: "Așteaptă o oră sau conectează-te la alt Wi-Fi/date mobile.",
-      signupDisabled: "Revino mai târziu sau înscrie-te pe lista de așteptare.",
-      sessionExpired: "Autentifică-te din nou pentru a continua.",
-      otpExpired: "Cere un cod nou și introdu-l în maxim 5 minute.",
-      otpInvalid: "Verifică cele 6 cifre din email/SMS. Fără spații.",
-      phoneInvalid: "Folosește formatul internațional: +40 7XX XXX XXX.",
-      providerError: "Închide popup-ul dacă e deschis și reîncearcă. Sau folosește email + parolă.",
-      healthConsentRequired: "Bifează opțiunea „Sunt de acord cu prelucrarea datelor de sănătate”.",
-      consentRequired: "Bifează Termeni și Confidențialitate înainte de a continua.",
-      storageTooBig: "Maxim 8 MB per poză. Comprimă imaginea sau alege alta.",
-      storageBadType: "Folosește JPG, PNG sau WebP.",
-      storageGeneric: "Verifică internetul și reîncearcă.",
-      network: "Verifică internetul. Dacă ești pe date mobile, treci pe Wi-Fi (sau invers).",
-    },
-  },
-  notif: {
-    title: "Notificări",
-    markAllRead: "Marchează tot ca citit",
-    emptyTitle: "Nicio notificare încă.",
-    emptyDesc: "Te anunțăm când se întâmplă ceva interesant.",
-  },
-  cookies: {
-    intro:
-      "Folosim cookie-uri esențiale pentru autentificare și siguranță. Cu acordul tău, adăugăm analytics anonime și măsurători de marketing pentru îmbunătățirea aplicației.",
-    details: "Detalii",
-    reject: "Refuz",
-    customize: "Personalizează",
-    acceptAll: "Accept tot",
-    pickTitle: "Alege ce permiți",
-    essential: "Esențiale",
-    essentialDesc: "Login, sesiune, securitate. Necesare.",
-    analytics: "Analytics",
-    analyticsDesc: "Statistici anonime de utilizare.",
-    marketing: "Marketing",
-    marketingDesc: "Măsurători campanii și recomandări.",
-    back: "Înapoi",
-    save: "Salvează",
-    ariaLabel: "Setări cookie-uri",
-  },
-  landing: {
-    badge: "18+ · Dating premium",
-    tagline: "Dating, la alt nivel. Cunoaște oameni pe măsura ta — nu doar a swipe-ului tău.",
-    createAccount: "Creează cont",
-    login: "Autentificare",
-    terms: "Termeni",
-    privacy: "Politica de confidențialitate",
-    footer: "Continuând, ești de acord cu <1>Termenii</1> și <3>Politica de confidențialitate</3>.",
-    b2bTitle: "Pentru parteneri B2B",
-    b2bSubtitle: "Locuri · evenimente · oferte pentru parteneri",
-    safety: "Siguranță & resurse",
-  },
+import {
+  APP_LANGUAGE_CODES,
+  RESOURCES,
+  normalizeLanguage,
+  type AppLanguage,
+} from "@/locales";
 
-  onboarding: {
-    back: "Înapoi",
-    continue: "Continuă",
-    finish: "Termină",
-    stepLabel: "{{name}} · {{n}}/{{total}}",
-    autosave: { saving: "Se salvează…", saved: "Salvat" },
-    step: {
-      basics: "Despre tine",
-      identity: "Identitate",
-      intent: "Ce cauți",
-      stats: "Profil fizic",
-      personality: "Personalitate",
-      photos: "Poze",
-    },
-    basics: {
-      title: "Să te cunoaștem",
-      hint: "Numele și data nașterii. Trebuie să ai 18+.",
-      nameLabel: "Cum te numești?",
-      namePlaceholder: "Numele tău",
-      birthLabel: "Data nașterii",
-      birthLocked: "Am preluat data nașterii de la înscriere. Pentru schimbări, contactează suportul.",
-      minAge: "Trebuie să ai cel puțin 18 ani.",
-      birthRequired: "Introdu data nașterii pentru a continua.",
-      birthInvalid: "Data nașterii nu este validă.",
-      birthFuture: "Data nașterii nu poate fi în viitor.",
-      birthTooOld: "Data nașterii pare incorectă (mai mult de 120 de ani).",
-      nameRequired: "Numele trebuie să aibă cel puțin 2 caractere.",
-    },
-    identity: {
-      title: "Identitatea ta",
-      hint: "Gen, pronume și orientare. Alege orice ți se potrivește.",
-      gender: "Gen",
-      genderCustom: "Personalizat (opțional)",
-      pronouns: "Pronume",
-      pronounsCustom: "ex: ze/zir (opțional)",
-      orientation: "Orientare",
-    },
-    intent: {
-      title: "Ce cauți?",
-      hint: "Alege orice se potrivește. Triburile sunt opționale.",
-      looking: "Caut",
-      tribes: "Triburi",
-      optional: "(opțional)",
-    },
-    stats: {
-      title: "Profilul tău fizic",
-      hint: "Totul este opțional. Arată doar ce vrei tu.",
-      body: "Tip corp",
-      position: "Poziție",
-      height: "Înălțime (cm)",
-      weight: "Greutate (kg)",
-      ethnicity: "Etnie",
-      relationship: "Status relație",
-    },
-    personality: {
-      title: "Cine ești",
-      hint: "Interese și o scurtă bio.",
-      interests: "Interese",
-      min3: "(min. 3)",
-      bio: "Bio scurt",
-      bioPlaceholder: "Câteva rânduri despre tine…",
-      optional: "(opțional)",
-    },
-    photos: {
-      title: "Adaugă pozele",
-      hint: "Maxim 6 poze. Prima este principală.",
-      add: "Adaugă poză",
-      main: "Principală",
-      remove: "Șterge poza",
-      terms: "Am citit și accept",
-      termsLink: "Termenii",
-      privacyLink: "Confidențialitatea",
-      communityLink: "Regulile Comunității",
-      termsAnd: "și",
-      termsConfirm: ". Confirm că am cel puțin 18 ani.",
-      tooMany: "Maxim 6 poze.",
-      tooBig: "{{name}} depășește 8MB.",
-      rejected: "Poză respinsă: {{reason}}.",
-      rejectedDefault: "conținut nepermis pe profilul public",
-      pending: "Poză adăugată — verificare manuală în curs",
-      pendingDesc: "Va fi vizibilă public după ce un moderator o aprobă.",
-      uploadFailed: "Încărcarea a eșuat",
-    },
-    prompts: {
-      title: "3 prompts în cuvintele tale",
-      choose: "Alege un prompt…",
-      answer: "Răspunsul tău…",
-    },
-    done: {
-      title: "Aproape gata",
-      hint: "Activează notificările ca să afli imediat când ai un match nou sau un mesaj. Mod discret implicit — nimeni nu vede preview-ul.",
-      skip: "Continuă fără notificări",
-    },
-    toast: {
-      ready: "Profilul tău e gata.",
-    },
-    validation: {
-      title: "Câteva lucruri de completat înainte de a continua",
-      genderRequired: "Alege cel puțin o opțiune de gen sau scrie una personalizată.",
-      pronounsRequired: "Alege cel puțin un pronume sau scrie unul personalizat.",
-      orientationRequired: "Alege cel puțin o orientare.",
-      lookingRequired: "Spune-ne ce cauți (bifează cel puțin o opțiune).",
-      interestsCount: "{{count}}/3 selectate",
-      interestsNeedMore: "Mai selectează încă {{count}} pentru a continua.",
-      photosRequired: "Adaugă cel puțin o poză.",
-      termsRequired: "Confirmă că ai citit Termenii, Confidențialitatea și Regulile Comunității.",
-    },
-    empty: {
-      photos: "Fără poze încă. Adaugă prima ca să pornim.",
-      interests: "Nimic ales încă — alege minim 3 interese ca să te potrivim.",
-    },
-  },
-};
+export type { AppLanguage };
+export { APP_LANGUAGES, APP_LANGUAGE_CODES, languageMeta, normalizeLanguage } from "@/locales";
 
-const en: typeof ro = {
-  common: {
-    cancel: "Cancel",
-    save: "Save",
-    delete: "Delete",
-    confirm: "Confirm",
-    close: "Close",
-    loading: "Loading...",
-    error: "Error",
-    back: "Back",
-    next: "Next",
-    yes: "Yes",
-    no: "No",
-    search: "Search",
-    settings: "Settings",
-    profile: "Profile",
-    messages: "Messages",
-    discover: "Discover",
-    favorites: "Favorites",
-    notifications: "Notifications",
-  },
-  age: {
-    title: "Confirm your age",
-    desc: "For community safety, please confirm you are over 18.",
-    cta: "Verify age",
-    opening: "Opening...",
-    pending: "Verification in progress...",
-    resume: "Resume verification",
-    failed: "Previous verification failed. Try again.",
-    check: "I'm done — check status",
-  },
-  quickExit: { label: "Quick exit" },
-  language: {
-    title: "Language",
-    ro: "Română",
-    en: "English",
-    auto: "Auto-detected",
-  },
-  auth: {
-    back: "← Back",
-    tagline: "Suzeta",
-    createAccount: "Create your account",
-    welcomeBack: "Welcome back",
-    tabLogin: "Log in",
-    tabSignup: "Sign up",
-    continueGoogle: "Continue with Google",
-    continueApple: "Continue with Apple",
-    orEmail: "or with email",
-    email: "Email",
-    emailPlaceholder: "you@domain.com",
-    password: "Password",
-    passwordPlaceholderSignup: "At least 8 characters",
-    passwordPlaceholderLogin: "Your password",
-    showPassword: "Show password",
-    hidePassword: "Hide password",
-    forgot: "Forgot password?",
-    birthdate: "Birthdate",
-    minAge: "You must be at least 18.",
-    over18: "I confirm I am <1>18 years or older</1>.",
-    acceptTerms: "I accept the <1>Terms</1> & <3>Privacy Policy</3>.",
-    submitSignup: "Create account",
-    submitLogin: "Log in",
-    retryIn: "Wait {{s}}s",
-    haveAccount: "Already a member?",
-    noAccount: "No account yet?",
-    switchLogin: "Log in",
-    switchSignup: "Sign up",
-    footer: "By continuing you agree to our <1>Terms</1> and <3>Privacy Policy</3>.",
-    resend: "Resend email",
-    retryCountdown: "You can retry in {{s}}s.",
-    errors: {
-      confirmChecks: "Please confirm both checkboxes (18+ and Terms) before continuing.",
-      needBirthdate: "Enter your birthdate before continuing.",
-      needBirthdateOAuth: "Enter your birthdate before continuing with Google/Apple.",
-      tooYoung: "You must be at least 18 to use Suzeta.",
-      welcome: "Welcome to Suzeta.",
-      invalidEmail: "Enter a valid email.",
-      passwordMin: "Password must be at least 8 characters.",
-      passwordMax: "Password can be at most 72 characters.",
-      enterEmailFirst: "Enter your email above first.",
-      resetSent: "Password reset link sent.",
-      oauthFailed: "{{provider}} sign-in failed.",
-      passwordsDontMatch: "Passwords don't match.",
-      passwordUpdated: "Password updated.",
-      missingEmailBack: "Missing email address — go back to the sign-up step.",
-      resendSent: "Sent. Check your inbox and spam folder.",
-    },
-    resetPassword: {
-      title: "Choose a new password",
-      subtitle: "Enter a new password for your account.",
-      validating: "Validating your reset link…",
-      newPassword: "New password",
-      confirm: "Confirm password",
-      submit: "Update password",
-    },
-    checkEmail: {
-      pageTitle: "Check your email",
-      sentLink: "We sent you a confirmation link",
-      sentLinkTo: "to",
-      openToActivate: "Open it to activate your account.",
-      spamHint: "Don't see it? Check your Spam / Promotions folder.",
-      resendIn: "Resend in {{s}}s",
-      resend: "Resend email",
-      backToLogin: "Back to sign in",
-    },
-  },
-  authErrors: {
-    captchaMissing: "Anti-bot check missing.",
-    captchaFailed: "Anti-bot check failed.",
-    rateLimited_one: "Too many attempts. Wait {{s}} second.",
-    rateLimited_other: "Too many attempts. Wait {{s}} seconds.",
-    rateLimited: "Too many attempts. Wait {{s}} seconds.",
-    emailNotConfirmed: "Email not confirmed.",
-    invalidCredentials: "Incorrect email or password.",
-    userAlreadyExists: "An account with this email already exists.",
-    weakPassword: "Password too weak.",
-    weakPasswordPwned: "This password appeared in public data breaches.",
-    samePassword: "New password is identical to the old one.",
-    emailInvalid: "This email doesn't look valid.",
-    emailBounced: "We couldn't deliver an email to this address.",
-    disposableEmail: "Disposable email not allowed.",
-    ageRequired: "You need to verify your age.",
-    signupThrottledIp: "Too many accounts created from this connection.",
-    signupThrottledDevice: "Too many accounts created from this device.",
-    signupDisabled: "Sign-ups are currently closed.",
-    sessionExpired: "Session expired.",
-    otpExpired: "Code expired.",
-    otpInvalid: "Wrong code.",
-    phoneInvalid: "Invalid phone number.",
-    providerError: "External sign-in failed.",
-    healthConsentRequired: "Missing consent for health data.",
-    consentRequired: "Missing consent.",
-    storageTooBig: "File too large.",
-    storageBadType: "Unsupported file type.",
-    storageGeneric: "Couldn't save the file.",
-    network: "Unstable connection.",
-    unknown: "Something went wrong.",
-    actions: {
-      retry: "Try again. If it persists, contact support.",
-      captchaMissing: 'Tick the "I\'m not a robot" box at the bottom of the form.',
-      captchaFailed: "Refresh the page and try again. Disable your VPN if you use one.",
-      rateLimited: "The counter resets automatically. Don't hammer the button.",
-      emailNotConfirmed: "Open your inbox (and Spam folder) and click the confirmation link.",
-      invalidCredentials: 'Check uppercase and special characters. If you forgot your password, use "Forgot password".',
-      userAlreadyExists: 'Sign in with your password, or use "Forgot password".',
-      weakPassword: "Use at least 8 characters, with mixed case, digits and a symbol.",
-      samePassword: "Choose a different password than the previous one.",
-      emailInvalid: "Check the format (e.g. name@domain.com) and make sure there are no spaces.",
-      emailBounced: "Verify the address exists, or try a different email.",
-      disposableEmail: "Use a real email: Gmail, Outlook, Yahoo, ProtonMail or your own domain.",
-      ageRequired: 'Go to "Age verification" in the menu and follow the steps.',
-      signupThrottled: "Wait an hour or switch to another Wi-Fi/mobile network.",
-      signupDisabled: "Come back later or join the waitlist.",
-      sessionExpired: "Sign in again to continue.",
-      otpExpired: "Request a new code and enter it within 5 minutes.",
-      otpInvalid: "Check the 6 digits from your email/SMS. No spaces.",
-      phoneInvalid: "Use the international format: +40 7XX XXX XXX.",
-      providerError: "Close the popup if open and retry. Or use email + password.",
-      healthConsentRequired: 'Tick "I agree to health data processing" before saving.',
-      consentRequired: "Tick Terms and Privacy before continuing.",
-      storageTooBig: "Max 8 MB per photo. Compress the image or pick another.",
-      storageBadType: "Use JPG, PNG or WebP.",
-      storageGeneric: "Check your internet and retry.",
-      network: "Check your internet. Switch between Wi-Fi and mobile data.",
-    },
-  },
-  notif: {
-    title: "Notifications",
-    markAllRead: "Mark all read",
-    emptyTitle: "No notifications yet.",
-    emptyDesc: "We'll ping you when something interesting happens.",
-  },
-  cookies: {
-    intro:
-      "We use essential cookies for authentication and safety. With your consent, we add anonymous analytics and marketing measurements to improve the app.",
-    details: "Details",
-    reject: "Reject",
-    customize: "Customize",
-    acceptAll: "Accept all",
-    pickTitle: "Choose what you allow",
-    essential: "Essential",
-    essentialDesc: "Login, session, security. Required.",
-    analytics: "Analytics",
-    analyticsDesc: "Anonymous usage statistics.",
-    marketing: "Marketing",
-    marketingDesc: "Campaign measurements and recommendations.",
-    back: "Back",
-    save: "Save",
-    ariaLabel: "Cookie settings",
-  },
-  landing: {
-    badge: "18+ · Premium dating",
-    tagline: "Dating, elevated. Meet people who match your depth — not just your swipe.",
-    createAccount: "Create account",
-    login: "Log in",
-    terms: "Terms",
-    privacy: "Privacy Policy",
-    footer: "By continuing you agree to our <1>Terms</1> and <3>Privacy Policy</3>.",
-    b2bTitle: "For B2B partners",
-    b2bSubtitle: "Venues · events · offers for partners",
-    safety: "Safety & resources",
-  },
-
-  onboarding: {
-    back: "Back",
-    continue: "Continue",
-    finish: "Finish",
-    stepLabel: "{{name}} · {{n}}/{{total}}",
-    autosave: { saving: "Saving…", saved: "Saved" },
-    step: {
-      basics: "About you",
-      identity: "Identity",
-      intent: "What you're looking for",
-      stats: "Physical",
-      personality: "Personality",
-      photos: "Photos",
-    },
-    basics: {
-      title: "Let's get to know you",
-      hint: "Your name and birthdate. You must be 18+.",
-      nameLabel: "What's your name?",
-      namePlaceholder: "Your name",
-      birthLabel: "Birthdate",
-      birthLocked: "We took your birthdate from sign-up. Contact support to change it.",
-      minAge: "You must be at least 18.",
-      birthRequired: "Enter your birthdate to continue.",
-      birthInvalid: "Birthdate is not valid.",
-      birthFuture: "Birthdate cannot be in the future.",
-      birthTooOld: "Birthdate looks incorrect (over 120 years).",
-      nameRequired: "Name must have at least 2 characters.",
-    },
-    identity: {
-      title: "Your identity",
-      hint: "Gender, pronouns and orientation. Pick anything that fits.",
-      gender: "Gender",
-      genderCustom: "Custom (optional)",
-      pronouns: "Pronouns",
-      pronounsCustom: "e.g. ze/zir (optional)",
-      orientation: "Orientation",
-    },
-    intent: {
-      title: "What are you looking for?",
-      hint: "Pick anything that fits. Tribes are optional.",
-      looking: "Looking for",
-      tribes: "Tribes",
-      optional: "(optional)",
-    },
-    stats: {
-      title: "Your physical profile",
-      hint: "Everything is optional. Show only what you want.",
-      body: "Body type",
-      position: "Position",
-      height: "Height (cm)",
-      weight: "Weight (kg)",
-      ethnicity: "Ethnicity",
-      relationship: "Relationship status",
-    },
-    personality: {
-      title: "Who you are",
-      hint: "Interests and a short bio.",
-      interests: "Interests",
-      min3: "(min. 3)",
-      bio: "Short bio",
-      bioPlaceholder: "A few lines about you…",
-      optional: "(optional)",
-    },
-    photos: {
-      title: "Add your photos",
-      hint: "Up to 6 photos. First one is primary.",
-      add: "Add photo",
-      main: "Main",
-      remove: "Remove photo",
-      terms: "I've read and accept the",
-      termsLink: "Terms",
-      privacyLink: "Privacy",
-      communityLink: "Community Rules",
-      termsAnd: "and",
-      termsConfirm: ". I confirm I'm at least 18.",
-      tooMany: "Max 6 photos.",
-      tooBig: "{{name}} exceeds 8MB.",
-      rejected: "Photo rejected: {{reason}}.",
-      rejectedDefault: "content not allowed on a public profile",
-      pending: "Photo added — manual review in progress",
-      pendingDesc: "It will be publicly visible after a moderator approves it.",
-      uploadFailed: "Upload failed",
-    },
-    prompts: {
-      title: "3 prompts in your own words",
-      choose: "Pick a prompt…",
-      answer: "Your answer…",
-    },
-    done: {
-      title: "Almost there",
-      hint: "Turn on notifications so you know instantly when you have a new match or message. Discreet mode by default — no preview.",
-      skip: "Continue without notifications",
-    },
-    toast: {
-      ready: "Your profile is ready.",
-    },
-    validation: {
-      title: "A few things to complete before continuing",
-      genderRequired: "Pick at least one gender option or write a custom one.",
-      pronounsRequired: "Pick at least one pronoun or write a custom one.",
-      orientationRequired: "Pick at least one orientation.",
-      lookingRequired: "Tell us what you're looking for (pick at least one).",
-      interestsCount: "{{count}}/3 selected",
-      interestsNeedMore: "Pick {{count}} more to continue.",
-      photosRequired: "Add at least one photo.",
-      termsRequired: "Confirm you've read the Terms, Privacy and Community Rules.",
-    },
-    empty: {
-      photos: "No photos yet. Add the first one to get started.",
-      interests: "Nothing picked yet — pick at least 3 interests so we can match you.",
-    },
-  },
-};
-
-
-// Smart fallback map: when the device locale isn't a fully-translated shell
-// language, pick the closest sibling instead of dropping to English blindly.
-// Keeps the UI in a SINGLE language (no ro+en mixing on the same screen).
-//   - md (Moldovan) → ro (same language, different ISO code)
-//   - Romance/Germanic/Slavic without a translation → en
-//   - anything else → en
-// When we add a full translation later (e.g. de/fr), move the code into
-// `supportedLngs` and drop it from this map.
+// Lanț de fallback: orice cheie netradusă cade pe engleză, iar variantele
+// regionale ("de-AT", "pt-BR", "ro-MD") sunt normalizate la limba de bază.
 const SMART_FALLBACKS: Record<string, string[]> = {
   md: ["ro", "en"],
   "ro-md": ["ro", "en"],
+  "pt-br": ["pt", "en"],
   default: ["en"],
 };
 
@@ -656,31 +26,22 @@ if (!i18n.isInitialized) {
     .use(LanguageDetector)
     .use(initReactI18next)
     .init({
-      resources: { ro: { translation: ro }, en: { translation: en } },
-      // Object form → per-language fallback chain. i18next walks the chain
-      // until it finds a resource, so we never render half-translated screens.
+      resources: RESOURCES as never,
       fallbackLng: SMART_FALLBACKS,
-      supportedLngs: ["ro", "en"],
-      // Match "en-US"/"en-GB" → "en", "ro-RO" → "ro" so region variants of a
-      // supported language don't get pushed to the default fallback.
+      supportedLngs: APP_LANGUAGE_CODES,
+      // "en-US"/"de-AT"/"ro-RO" → limba de bază, fără să sară la default.
       nonExplicitSupportedLngs: true,
       load: "languageOnly",
 
       interpolation: { escapeValue: false },
       detection: {
-        // First launch: read navigator.language (browser locale from OS).
-        // We intentionally DROP `htmlTag` from the chain — SSR renders
-        // <html lang="ro"> as a sensible default, but if we include htmlTag
-        // here, any browser locale that isn't in supportedLngs (e.g. de-DE,
-        // fr-FR, ja-JP) short-circuits to "ro" instead of hitting the
-        // fallback chain, and non-Romanian users are stuck in Romanian.
-        // Without htmlTag, unsupported locales fall through to fallbackLng
-        // (→ "en"), which is what we want.
+        // Prima lansare: citim navigator.language (locale-ul OS-ului).
+        // `htmlTag` e scos intenționat din lanț: SSR randează <html lang="ro">,
+        // iar dacă l-am include, orice locale nesuportat ar ateriza în română.
         order: ["localStorage", "navigator"],
         lookupLocalStorage: "vz-lang",
         caches: ["localStorage"],
       },
-
     })
     .then(() => {
       if (typeof document !== "undefined") {
@@ -688,7 +49,6 @@ if (!i18n.isInitialized) {
       }
     });
 
-  // Keep <html lang> in sync when the user switches language later.
   i18n.on("languageChanged", (lng) => {
     if (typeof document !== "undefined") {
       document.documentElement.lang = lng;
@@ -698,34 +58,37 @@ if (!i18n.isInitialized) {
 
 export default i18n;
 
+/** Limba activă, normalizată la un cod din registru. */
+export function currentLanguage(): AppLanguage {
+  return normalizeLanguage(i18n.resolvedLanguage ?? i18n.language);
+}
 
-
-export async function setLanguage(lng: "ro" | "en") {
-  await i18n.changeLanguage(lng);
+export async function setLanguage(lng: AppLanguage) {
+  const target = normalizeLanguage(lng);
+  await i18n.changeLanguage(target);
   if (typeof document !== "undefined") {
-    document.documentElement.lang = lng;
+    document.documentElement.lang = target;
     try {
-      window.localStorage.setItem("vz-lang", lng);
+      window.localStorage.setItem("vz-lang", target);
     } catch {
       /* storage blocked */
     }
   }
-  // Persist to the user's profile so viewers in other countries auto-translate
-  // this account's public text to their own language.
+  // Persistăm în profil ca vizitatorii din alte țări să primească textele
+  // publice ale acestui cont traduse automat în limba lor.
   try {
     const { supabase } = await import("@/integrations/supabase/client");
     const { data: auth } = await supabase.auth.getUser();
     if (auth?.user?.id) {
       await supabase
         .from("profiles")
-        .update({ preferred_language: lng })
+        .update({ preferred_language: target })
         .eq("id", auth.user.id);
     }
   } catch {
-    /* offline / not signed in — best effort */
+    /* offline / neautentificat — best effort */
   }
 }
-
 
 /**
  * Pe Capacitor nativ, `navigator.language` din WebView poate rămâne blocat pe
@@ -741,8 +104,7 @@ export async function syncNativeDeviceLanguage(): Promise<void> {
     if (window.localStorage.getItem("vz-lang")) return; // alegere manuală
     const { Device } = await import("@capacitor/device");
     const { value } = await Device.getLanguageCode();
-    const code = (value || "").toLowerCase();
-    const target = code.startsWith("ro") || code.startsWith("md") ? "ro" : "en";
+    const target = normalizeLanguage(value);
     if (i18n.resolvedLanguage !== target) await i18n.changeLanguage(target);
     if (typeof document !== "undefined") document.documentElement.lang = target;
   } catch {
