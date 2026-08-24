@@ -284,7 +284,9 @@ export async function fetchDiscover(
   if (offset === 0 && !options?.forceRefresh) {
     const cached = readDiscoverCache(cacheKey);
     if (cached && Date.now() - cached.at < DISCOVER_CACHE_TTL_MS) {
-      return cached.data;
+      // Blocurile trebuie să aibă efect INSTANT, chiar dacă rezultatul vine din
+      // cache (ambele direcții: cine am blocat + cine m-a blocat).
+      return filterBlocked(cached.data);
     }
   }
 
