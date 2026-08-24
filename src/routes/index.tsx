@@ -25,8 +25,6 @@ import { GetAppBanner } from "@/components/GetAppBanner";
 
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable";
-import { oauthOrigin } from "@/lib/canonical-origin";
 import { PublicFooter } from "@/components/PublicFooter";
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 import { isNativePlatformSync } from "@/lib/native-platform-sync";
@@ -139,7 +137,7 @@ const FEATURES = [
 const STEPS = [
   {
     title: "1. Create your account",
-    body: "Sign up with email or Google, confirm you are 18 or over and complete age verification.",
+    body: "Sign up with your email address, confirm you are 18 or over and complete age verification.",
   },
   {
     title: "2. Build your profile",
@@ -158,10 +156,7 @@ const STEPS = [
 function Landing() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [googleBusy, setGoogleBusy] = useState(false);
-  // Google e disponibil DOAR pe web. În app-ul nativ (Play Store) fluxul OAuth
-  // prin webview nu e suportat, deci butonul nu se randează deloc.
-  const [googleAvailable, setGoogleAvailable] = useState(!isNativePlatformSync());
+  // Logarea cu Google este DEZACTIVATĂ complet (web + nativ).
   // `null` = necunoscut (API indisponibil). Doar `true` schimbă CTA-ul.
   const [appInstalled, setAppInstalled] = useState<boolean | null>(null);
   // Variantă A/B pe CTA-ul de instalare (stabilă per device).
@@ -172,21 +167,6 @@ function Landing() {
     void isAndroidAppInstalled().then((v) => {
       if (!cancelled) setAppInstalled(v);
     });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const { Capacitor } = await import("@capacitor/core");
-        if (!cancelled) setGoogleAvailable(!Capacitor.isNativePlatform());
-      } catch {
-        /* web */
-      }
-    })();
     return () => {
       cancelled = true;
     };
@@ -206,16 +186,6 @@ function Landing() {
     })();
   }, [user, loading, navigate]);
 
-  async function handleGoogle() {
-    setGoogleBusy(true);
-    try {
-      await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${oauthOrigin()}/auth`,
-      });
-    } finally {
-      setGoogleBusy(false);
-    }
-  }
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
@@ -282,16 +252,6 @@ function Landing() {
             >
               Sign in
             </Link>
-            {googleAvailable && (
-              <button
-                type="button"
-                onClick={() => void handleGoogle()}
-                disabled={googleBusy}
-                className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-surface text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-60"
-              >
-                Continue with Google
-              </button>
-            )}
           </div>
         </section>
 
