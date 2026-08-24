@@ -9,6 +9,11 @@
  */
 
 import {
+  readUtmParams,
+  sanitizeDeepLinkPath,
+  stashDeferredDeepLink,
+} from "@/lib/deferred-deeplink";
+import {
   UTM_CAMPAIGN,
   UTM_MEDIUM,
   trackStoreFunnel,
@@ -26,13 +31,33 @@ export const APP_STORE_URL = APPLE_APP_ID
 
 export const SITE_ORIGIN = "https://suzeta.app";
 
-/** Referrer-ul UTM efectiv trimis către magazin (afișat și în modul debug). */
-export function storeReferrer(source: StoreClickSource | string = "web"): string {
-  return new URLSearchParams({
-    utm_source: source,
-    utm_medium: UTM_MEDIUM,
-    utm_campaign: UTM_CAMPAIGN,
-  }).toString();
+/**
+ * Referrer-ul UTM efectiv trimis către magazin (afișat și în modul debug).
+ *
+ * Când primim o cale țintă, o codificăm în `dl` ca deep link-ul să supraviețuiască
+ * instalării: Google Play livrează acest referrer aplicației prin Install Referrer.
+ * UTM-urile cu care a venit vizitatorul pe site au prioritate față de valorile
+ * implicite, ca atribuirea campaniei externe să nu se piardă.
+ */
+export function storeReferrer(
+  source: StoreClickSource | string = "web",
+  path?: string,
+): string {
+  const inbound = readUtmParams();
+  const params = new URLSearchParams({
+    utm_source: inbound['utm_source'] ?? source,
+    utm_medium: inbound['utm_medium'] ?? UTM_MEDIUM,
+    utm_campaign: inbound['utm_campaign'] ?? UTM_CAMPAIGN,
+  });
+  for (const key of ["utm_content", "utm_term", "gclid", "ref"]) {
+    const v = inbound[key];
+    if (v) params.set(key, v);
+  }
+  // Sursa butonului rămâne mereu vizibilă, chiar dacă utm_source vine din campanie.
+  params.set("cta", String(source));
+  const target = sanitizeDeepLinkPath(path ?? null);
+  if (target) params.set("dl", target);
+  return params.toString();
 }
 
 /**
@@ -41,14 +66,24 @@ export function storeReferrer(source: StoreClickSource | string = "web"): string
  * raportează în „Acquisition → Traffic sources”, iar Install Referrer API îl
  * expune aplicației după instalare.
  */
-export function playStoreUrl(source: StoreClickSource | string = "web"): string {
-  return `${PLAY_STORE_URL}&referrer=${encodeURIComponent(storeReferrer(source))}`;
+export function playStoreUrl(
+  source: StoreClickSource | string = "web",
+  path?: string,
+): string {
+  return `${PLAY_STORE_URL}&referrer=${encodeURIComponent(storeReferrer(source, path))}`;
 }
 
 /** App Store cu parametrii de campanie (Apple: `pt`/`ct`/`mt`). */
-export function appStoreUrl(source: StoreClickSource | string = "web"): string {
+export function appStoreUrl(
+  source: StoreClickSource | string = "web",
+  path?: string,
+): string {
   const sep = APP_STORE_URL.includes("?") ? "&" : "?";
-  const params = new URLSearchParams({ ct: `${UTM_CAMPAIGN}_${source}`, mt: "8" });
+  const target = sanitizeDeepLinkPath(path ?? null);
+  const params = new URLSearchParams({
+    ct: `${UTM_CAMPAIGN}_${source}${target ? `_${target.replace(/\//g, "-")}` : ""}`.slice(0, 100),
+    mt: "8",
+  });
   return `${APP_STORE_URL}${sep}${params.toString()}`;
 }
 
@@ -90,8 +125,11 @@ export function isMobileWebBrowser(): boolean {
 }
 
 /** Magazinul potrivit platformei curente. */
-export function storeUrlForPlatform(source: StoreClickSource | string = "web"): string {
-  return isIosWebBrowser() ? appStoreUrl(source) : playStoreUrl(source);
+export function storeUrlForPlatform(
+  source: StoreClickSource | string = "web",
+  path?: string,
+): string {
+  return isIosWebBrowser() ? appStoreUrl(source, path) : playStoreUrl(source, path);
 }
 
 type RelatedApp = { platform?: string; id?: string; url?: string };
@@ -125,7 +163,7 @@ export async function isAndroidAppInstalled(): Promise<boolean | null> {
  */
 export function androidIntentUrl(path = "/", source: StoreClickSource | string = "web"): string {
   const clean = path.startsWith("/") ? path : `/${path}`;
-  const fallback = encodeURIComponent(playStoreUrl(source));
+  const fallback = encodeURIComponent(playStoreUrl(source, clean));
   return (
     `intent://suzeta.app${clean}#Intent;scheme=https;package=${ANDROID_PACKAGE};` +
     `S.browser_fallback_url=${fallback};end`
@@ -154,7 +192,10 @@ export function openAppOrStore(
   variant: string | null = null,
 ): void {
   if (typeof window === "undefined") return;
-  const referrer = storeReferrer(source);
+  const referrer = storeReferrer(source, path);
+  // Deferred deep link: dacă userul instalează acum, prima deschidere a
+  // aplicației trebuie să aterizeze pe aceeași pagină, cu aceleași UTM-uri.
+  stashDeferredDeepLink(path, readUtmParams(), "web_click");
 
   if (isAndroidWebBrowser()) {
     trackStoreFunnel(appInstalled ? "intent_open" : "store_click", {
@@ -171,7 +212,7 @@ export function openAppOrStore(
   if (isIosWebBrowser()) {
     trackStoreFunnel("app_link_open", { source, path, appInstalled, variant, referrer });
     const startedAt = Date.now();
-    const store = appStoreUrl(source);
+    const store = appStoreUrl(source, path);
     const timer = window.setTimeout(() => {
       // Dacă suntem încă în pagină (aplicația nu a preluat Universal Link-ul),
       // trimitem userul în App Store.
@@ -188,5 +229,5 @@ export function openAppOrStore(
   }
 
   trackStoreFunnel("store_click", { source, path, appInstalled, variant, referrer });
-  window.open(storeUrlForPlatform(source), "_blank", "noopener,noreferrer");
+  window.open(storeUrlForPlatform(source, path), "_blank", "noopener,noreferrer");
 }
