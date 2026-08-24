@@ -158,10 +158,7 @@ const STEPS = [
 function Landing() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
-  const [googleBusy, setGoogleBusy] = useState(false);
-  // Google e disponibil DOAR pe web. În app-ul nativ (Play Store) fluxul OAuth
-  // prin webview nu e suportat, deci butonul nu se randează deloc.
-  const [googleAvailable, setGoogleAvailable] = useState(!isNativePlatformSync());
+  // Logarea cu Google este DEZACTIVATĂ complet (web + nativ).
   // `null` = necunoscut (API indisponibil). Doar `true` schimbă CTA-ul.
   const [appInstalled, setAppInstalled] = useState<boolean | null>(null);
   // Variantă A/B pe CTA-ul de instalare (stabilă per device).
@@ -172,21 +169,6 @@ function Landing() {
     void isAndroidAppInstalled().then((v) => {
       if (!cancelled) setAppInstalled(v);
     });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const { Capacitor } = await import("@capacitor/core");
-        if (!cancelled) setGoogleAvailable(!Capacitor.isNativePlatform());
-      } catch {
-        /* web */
-      }
-    })();
     return () => {
       cancelled = true;
     };
@@ -206,16 +188,6 @@ function Landing() {
     })();
   }, [user, loading, navigate]);
 
-  async function handleGoogle() {
-    setGoogleBusy(true);
-    try {
-      await lovable.auth.signInWithOAuth("google", {
-        redirect_uri: `${oauthOrigin()}/auth`,
-      });
-    } finally {
-      setGoogleBusy(false);
-    }
-  }
 
   return (
     <div className="min-h-dvh bg-background text-foreground">
