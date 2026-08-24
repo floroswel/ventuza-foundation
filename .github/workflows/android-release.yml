@@ -1071,8 +1071,28 @@ jobs:
             echo "::error::AAB-ul final nu conține Google Sign-In nativ."
             exit 1
           }
-          echo "✓ AAB verificat: versionCode=${{ steps.version.outputs.code }}, commit=$GITHUB_SHA, marker=SUZETA_NATIVE_FIX_V3"
+          # versionCode real din manifestul împachetat (protobuf) — nu doar intenția din build.gradle.
+          AAPT2=$(find "$ANDROID_HOME/build-tools" -name aapt2 | sort -r | head -n1 || true)
+          EXPECTED=${{ steps.version.outputs.code }}
+          if [ -n "$AAPT2" ]; then
+            FOUND=$("$AAPT2" dump xmltree --file base/manifest/AndroidManifest.xml "$AAB" 2>/dev/null \
+              | grep -oP 'versionCode\)?=\(?[a-zA-Z0-9]*\)?0x0*\K[0-9a-f]+' | head -n1 || true)
+            if [ -n "$FOUND" ]; then
+              FOUND_DEC=$((16#$FOUND))
+              if [ "$FOUND_DEC" != "$EXPECTED" ]; then
+                echo "::error::versionCode din AAB ($FOUND_DEC) diferă de cel așteptat ($EXPECTED)."
+                exit 1
+              fi
+              echo "✓ versionCode în AAB = $FOUND_DEC"
+            else
+              echo "::warning::Nu am putut citi versionCode din AAB cu aapt2 — rămâne valid gardul din build.gradle."
+            fi
+          else
+            echo "::warning::aapt2 indisponibil — sar peste citirea versionCode din AAB."
+          fi
+          echo "✓ AAB verificat: versionCode=$EXPECTED, commit=$GITHUB_SHA, marker=SUZETA_NATIVE_FIX_V3"
           rm -rf "$TMP"
+
 
       - name: Redenumește AAB-ul pentru livrare
         run: |
