@@ -10,10 +10,11 @@
 // dictionary can't drift ahead of the shell.
 
 import { useEffect, useState } from "react";
-import i18n from "@/lib/i18n";
+import i18n, { APP_LANGUAGE_CODES, type AppLanguage } from "@/lib/i18n";
 
-export const SUPPORTED_UI_LOCALES = ["ro", "en", "de", "fr", "es", "it", "pt", "nl", "pl"] as const;
-export type UiLocale = (typeof SUPPORTED_UI_LOCALES)[number];
+// Sursa unică a limbilor: registrul din `src/locales/index.ts`.
+export const SUPPORTED_UI_LOCALES = APP_LANGUAGE_CODES as readonly AppLanguage[];
+export type UiLocale = AppLanguage;
 
 export function detectDeviceLocale(): UiLocale {
   if (typeof navigator === "undefined") return "en";
