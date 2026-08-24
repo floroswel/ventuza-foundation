@@ -114,9 +114,9 @@ function GdprCenterPage() {
         .order("created_at", { ascending: false }),
       supabase
         .from("deletion_requests")
-        .select("id, status, created_at")
+        .select("id, status, requested_at, processed_at")
         .eq("user_id", user.id)
-        .order("created_at", { ascending: false }),
+        .order("requested_at", { ascending: false }),
     ]);
     if (gdpr.error || del.error) {
       setLoadError(gdpr.error?.message ?? del.error?.message ?? "Eroare necunoscută");
@@ -139,8 +139,8 @@ function GdprCenterPage() {
         ticket: `DEL-${String(r.id).slice(0, 8).toUpperCase()}`,
         kind: "deletion",
         status: (r.status as string) ?? "pending",
-        createdAt: r.created_at as string,
-        resolvedAt: null,
+        createdAt: r.requested_at as string,
+        resolvedAt: (r.processed_at as string | null) ?? null,
       })),
     ].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
     setRows(merged);
