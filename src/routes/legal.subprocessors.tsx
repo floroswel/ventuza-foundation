@@ -53,16 +53,18 @@ const ROWS: Row[] = [
     codeRef: "src/lib/google-play.server.ts",
   },
   {
-    name: "Google LLC — Google Sign-In (OAuth)",
-    purpose: "Autentificare cu cont Google (broker prin Lovable)",
-    data: "Email, nume afișat, sub (ID Google), avatar URL. Fără orientare, fără sănătate, fără locație.",
+    name: "Google LLC — Google Sign-In (OAuth) — DEZACTIVAT",
+    purpose:
+      "Autentificarea cu cont Google a fost eliminată din aplicație în august 2026. Nu mai transmitem date către acest serviciu; intrarea rămâne listată pentru trasabilitate istorică.",
+    data: "Niciun transfer activ. Istoric: email, nume afișat, ID Google, avatar URL.",
     sensitive: false,
     region: "Extra-UE (SUA)",
     extraEU: true,
-    transfer: "SCC 2021/914 + EU-US DPF.",
+    transfer: "N/A — flux oprit. Istoric: SCC 2021/914 + EU-US DPF.",
     dpa: "https://privacy.google.com/businesses/processorterms/",
-    codeRef: "src/lib/auth-context.tsx (lovable.auth.signInWithOAuth)",
+    codeRef: "eliminat din src/routes/auth.tsx și src/routes/index.tsx",
   },
+
   {
     name: "Push services (Google FCM / Mozilla autopush / Apple APNs)",
     purpose: "Livrare notificări push web/PWA prin protocol VAPID",

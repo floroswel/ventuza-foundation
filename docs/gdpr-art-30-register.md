@@ -6,8 +6,9 @@
 > cerere (control / investigație). Se actualizează la fiecare schimbare
 > de activitate, scop, procesator sau categorie de date.
 
-- **Versiune:** 2.1
-- **Data:** 2026-06-27
+- **Versiune:** 2.2
+- **Data:** 2026-08-24
+
 - **Generat din:** schema reală DB (`src/integrations/supabase/types.ts`) + inventar procesatori (`src/routes/legal.subprocessors.tsx`) + cod server (`src/lib/*.functions.ts`, `*.server.ts`).
 - **Responsabil:** _de completat — administrator Suzeta_
 - **DPO:** _de completat (obligatoriu — Art. 37(1)(b)(c): date sănătate + orientare + monitorizare sistematică)_
@@ -56,8 +57,8 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 | **🟥 Categorii Art. 9** | `orientation`, `tribes`, `looking_for`, `scenes`, `position`, `accept_nsfw_photos` (orientare sexuală + viață sexuală). `religion`, `politics` (convingeri). |
 | **Temei Art. 6** | 6(1)(b) executarea contractului. |
 | **Temei Art. 9** | **9(2)(a) consimțământ explicit** — înregistrat în `consent_log` (kind `terms`, `privacy`) la onboarding, în `src/routes/n.tsx`. |
-| **Destinatari** | P1 (storage primar), P3 (autentificare Google), P8 (runtime). |
-| **Transfer extra-UE** | P3, P8 — SCC + DPF. |
+| **Destinatari** | P1 (storage primar), P8 (runtime). Autentificarea Google a fost eliminată din aplicație (august 2026) — doar email/parolă. |
+| **Transfer extra-UE** | P8 — SCC + DPF. |
 | **Retenție** | Pe durata existenței contului. **24 luni inactivitate → mark_inactive_for_deletion**; 30 zile grace → `purge_scheduled_deletions` (pg_cron zilnic). |
 | **Măsuri tehnice** | RLS scoped pe `auth.uid()` pe toate tabelele `profiles`/`auth`-derivate. Encryption-at-rest AES-256. Secrets server-only. PIN lock + biometric pe mobil. |
 
@@ -334,6 +335,41 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 | **Transfer extra-UE** | P7 (dacă model US), P8 — SCC + DPF. |
 | **Retenție** | Nu păstrăm noi; politica Lovable AI Gateway (zero retention pentru modelele suportate). |
 | **Măsuri tehnice** | `src/lib/ai.server.ts` — gateway pe server, niciodată cheie client. |
+
+---
+
+## A18. Portofel, recomandări și misiuni (program ambasador)
+
+| | |
+|---|---|
+| **Scop** | Acordarea creditului de fidelitate pentru recomandări/misiuni, clasament ambasadori, prevenirea fraudei (conturi duplicate). |
+| **Persoane vizate** | Utilizatori care participă la program (invitator și invitat). |
+| **Categorii date — normale** | `wallet_*` (sold, tranzacții), cod referral, relația invitator–invitat, indicii antifraudă (device fingerprint hash, timestamp înregistrare). |
+| **🟥 Categorii Art. 9** | Niciuna — nu se folosesc atribute de profil în calculul creditului. |
+| **Temei Art. 6** | 6(1)(b) executarea regulamentului programului (`/legal/wallet-terms`) + 6(1)(f) prevenirea fraudei. |
+| **Temei Art. 9** | N/A. |
+| **Destinatari** | P1 Supabase, P8 Cloudflare. |
+| **Transfer extra-UE** | P8 — SCC + DPF. |
+| **Retenție** | Registru credite 5 ani (obligații contabile); cod referral cât timp contul e activ. |
+| **Măsuri tehnice** | Credit în stare „pending” până la validarea antifraudă; clasamentul afișează doar nume public. |
+
+---
+
+## A19. Comenzi merch din portofel
+
+| | |
+|---|---|
+| **Scop** | Procesarea, expedierea și facturarea comenzilor plătite din credit. |
+| **Persoane vizate** | Utilizatori care plasează comenzi. |
+| **Categorii date — normale** | Nume destinatar, adresă de livrare, telefon de contact, conținut comandă, status livrare. |
+| **🟥 Categorii Art. 9** | Niciuna. Ambalaj și documente de transport neutre (fără marcaj care să dezvăluie orientarea). |
+| **Temei Art. 6** | 6(1)(b) contract la distanță + 6(1)(c) obligații fiscale/contabile. |
+| **Temei Art. 9** | N/A. |
+| **Destinatari** | P1, P8, curier + producător merch (operatori/persoane împuternicite distincte — se adaugă în `/legal/subprocessors` la contractare). |
+| **Transfer extra-UE** | Niciun transfer suplimentar dacă furnizorii sunt din UE. |
+| **Retenție** | 5 ani de la finalizarea comenzii (arhivare contabilă). |
+| **Măsuri tehnice** | Adresa de livrare vizibilă doar pentru staff cu rol de fulfillment; acțiunile sunt auditate. |
+
 
 ---
 

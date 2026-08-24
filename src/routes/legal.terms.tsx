@@ -171,21 +171,23 @@ function TermsPage() {
                 <a className="text-primary" href={`mailto:${OPERATOR.emails.support}`}>
                   {OPERATOR.emails.support}
                 </a>
-                . Pentru soluționarea alternativă a litigiilor consumatorilor: ANPC —{" "}
+                . Pentru soluționarea alternativă a litigiilor consumatorilor (OG 38/2015): ANPC —{" "}
                 <a className="text-primary" href="https://anpc.ro" target="_blank" rel="noreferrer">
                   anpc.ro
                 </a>{" "}
-                și platforma UE de soluționare online a litigiilor —{" "}
+                și structura SAL din cadrul ANPC —{" "}
                 <a
                   className="text-primary"
-                  href="https://ec.europa.eu/consumers/odr"
+                  href="https://anpc.ro/ce-este-sal/"
                   target="_blank"
                   rel="noreferrer"
                 >
-                  ec.europa.eu/consumers/odr
+                  anpc.ro/ce-este-sal/
                 </a>
-                .
+                . Platforma europeană SOL/ODR a Comisiei Europene și-a încetat activitatea la 20
+                iulie 2025, deci reclamațiile se depun direct la ANPC.
               </p>
+
             </article>
           }
         />

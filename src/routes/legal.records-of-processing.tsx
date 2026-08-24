@@ -44,7 +44,7 @@ const ACTIVITIES: Activity[] = [
     art9: true,
     legalBasis: "6(1)(b) contract",
     art9Basis: "9(2)(a) consimțământ explicit (orientare, convingeri)",
-    processors: "P1 Supabase, P3 Google OAuth, P8 Cloudflare",
+    processors: "P1 Supabase, P8 Cloudflare",
     retention: "Cont activ + 24 luni inactivitate → ștergere automată",
   },
   {
@@ -209,7 +209,29 @@ const ACTIVITIES: Activity[] = [
     processors: "P1, P7 AI Gateway, P8",
     retention: "Zero-retention la model",
   },
+  {
+    id: "A18",
+    name: "Portofel, recomandări și misiuni (program ambasador)",
+    purpose:
+      "Atribuire credit în portofel pentru recomandări/misiuni, prevenirea fraudei (conturi multiple), clasament ambasadori.",
+    art9: false,
+    legalBasis: "6(1)(b) contract (regulamentul programului) + 6(1)(f) antifraudă",
+    art9Basis: "—",
+    processors: "P1, P8",
+    retention: "Registru credite 5 ani (obligații fiscale/contabile); cod referral cât contul",
+  },
+  {
+    id: "A19",
+    name: "Comenzi merch din portofel",
+    purpose: "Procesarea și livrarea produselor comandate cu credit din portofel.",
+    art9: false,
+    legalBasis: "6(1)(b) contract la distanță + 6(1)(c) obligații fiscale",
+    art9Basis: "—",
+    processors: "P1, P8, curier/producător merch (destinatar, adresă de livrare)",
+    retention: "Date comandă și livrare 5 ani (arhivare contabilă)",
+  },
 ];
+
 
 const TODOS = [
   "A4 — consent_log dedicat kind='internal_verification' înainte de captarea selfie-urilor.",

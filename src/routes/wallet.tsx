@@ -174,8 +174,14 @@ function WalletPage() {
             <ShoppingBag className="size-4 text-primary" /> Produse Suzeta
           </h2>
           <p className="mb-2 text-xs text-muted-foreground">
-            Comenzile se pot plasa de la un sold minim de {formatUsd(MIN_REDEEM_CENTS)}.
+            Comenzile se pot plasa de la un sold minim de {formatUsd(MIN_REDEEM_CENTS)}. Creditul
+            nu se poate retrage în bani.{" "}
+            <Link className="text-primary underline" to="/legal/wallet-terms">
+              Regulamentul programului
+            </Link>{" "}
+            · drept de retragere 14 zile.
           </p>
+
           {items.length === 0 && !loading ? (
             <p className="text-sm text-muted-foreground">Catalogul se completează în curând.</p>
           ) : (

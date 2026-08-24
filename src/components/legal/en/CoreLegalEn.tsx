@@ -135,16 +135,18 @@ export function TermsEn() {
         <a className="text-primary" href="https://anpc.ro" target="_blank" rel="noreferrer">
           anpc.ro
         </a>{" "}
-        and the EU online dispute resolution platform —{" "}
+        and the ANPC alternative dispute resolution body —{" "}
         <a
           className="text-primary"
-          href="https://ec.europa.eu/consumers/odr"
+          href="https://anpc.ro/ce-este-sal/"
           target="_blank"
           rel="noreferrer"
         >
-          ec.europa.eu/consumers/odr
+          anpc.ro/ce-este-sal/
         </a>
-        .
+        . The European ODR platform was discontinued on 20 July 2025, so complaints go directly
+        to ANPC.
+
       </p>
     </article>
   );
