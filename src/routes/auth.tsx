@@ -12,21 +12,8 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isCaptchaMandatory, isTurnstileMisconfiguredInProd } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
-import { lovable } from "@/integrations/lovable";
 import { oauthOrigin } from "@/lib/canonical-origin";
-import {
-  nativeGoogleSignIn,
-  isNativeAndroid,
-  isNativePlatform,
-  hasNativeGoogleConfig,
-  hasNativeGoogleConfigAsync,
-  resolveWebClientId,
-  getNativeGoogleRuntimeState,
-  type NativeGoogleRuntimeState,
-  type NativeGoogleDiagnostic,
-} from "@/lib/native-google-auth";
-import { classifySigningCertificate, describeInstallSource, readAndroidSignature, readNativeGoogleLogs, readNativeLogcat, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
-import { browserGoogleSignIn, NATIVE_BRIDGE_CALLBACK } from "@/lib/native-oauth-browser";
+import { classifySigningCertificate, describeInstallSource, readAndroidSignature, type AndroidSignatureInfo } from "@/lib/android-signature";
 import { isNativePlatformSync } from "@/lib/native-platform-sync";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
@@ -71,7 +58,7 @@ const passwordSchema = z.string().min(8, "password_min").max(72, "password_max")
 
 type AuthDiagnosticLine = {
   at: string;
-  flow: "sistem" | "google" | "email";
+  flow: "sistem" | "email" | "legacy";
   status: string;
   detail?: string;
 };
@@ -227,35 +214,20 @@ function AuthPage() {
   const [retryCountdown, setRetryCountdown] = useState(0);
   const captchaRequired = isCaptchaMandatory();
   const captchaMisconfigured = isTurnstileMisconfiguredInProd();
-  const [googleBusy, setGoogleBusy] = useState(false);
   const [isNative, setIsNative] = useState(isNativePlatformSync());
   const [nativeChecked, setNativeChecked] = useState(false);
-  const [nativeGoogleReady, setNativeGoogleReady] = useState(hasNativeGoogleConfig());
   const [diagnosticEnabled, setDiagnosticEnabled] = useState(false);
-  const [runtimeClientId, setRuntimeClientId] = useState<string | null>(null);
   const [signatureInfo, setSignatureInfo] = useState<AndroidSignatureInfo | null>(null);
-  const [nativeGoogleLogs, setNativeGoogleLogs] = useState<NativeGoogleLog[]>([]);
-  const [nativeLogcat, setNativeLogcat] = useState<string[]>([]);
-  const [googleRuntime, setGoogleRuntime] = useState<NativeGoogleRuntimeState | null>(null);
   const [diagnosticLines, setDiagnosticLines] = useState<AuthDiagnosticLine[]>([]);
-  const googleRequestActive = useRef(false);
+  /** Banner pentru linkuri/callback-uri vechi de Google OAuth. */
+  const [legacyOauthNotice, setLegacyOauthNotice] = useState(false);
+  const [resetSentTo, setResetSentTo] = useState<string | null>(null);
+  const [resetBusy, setResetBusy] = useState(false);
 
   function addDiagnostic(flow: AuthDiagnosticLine["flow"], status: string, detail?: string) {
     const line = { at: new Date().toISOString(), flow, status, detail };
     setDiagnosticLines((current) => [...current.slice(-29), line]);
     debugLog({ level: status.includes("ERROR") || status.includes("TIMEOUT") ? "error" : "event", source: `auth.${flow}`, message: status, details: detail });
-  }
-
-  function formatGoogleDiagnostic(diagnostic?: NativeGoogleDiagnostic): string {
-    if (!diagnostic) return "SDK-ul nu a furnizat detalii suplimentare.";
-    return [
-      `pas=${diagnostic.stage}`,
-      `cod=${diagnostic.code ?? "necomunicat"}`,
-      `HTTP=${diagnostic.httpStatus ?? "necomunicat"}`,
-      `URL=${diagnostic.url ?? "necomunicat de Google SDK"}`,
-      `durată=${diagnostic.elapsedMs !== undefined ? `${diagnostic.elapsedMs} ms` : "necronometrat"}`,
-      diagnostic.message ? `mesaj=${diagnostic.message}` : null,
-    ].filter(Boolean).join(" · ");
   }
 
   useEffect(() => {
@@ -264,134 +236,18 @@ function AuthPage() {
     setDiagnosticEnabled(debugOn);
     if (debugOn) installOnce();
     void (async () => {
-      // Orice platformă nativă (nu doar Android) ascunde butonul Google.
-      const native = (await isNativePlatform()) || (await isNativeAndroid());
+      const native = isNativePlatformSync();
       if (cancelled) return;
       setIsNative(native);
       setSignatureInfo(readAndroidSignature());
-      // Sondăm Client ID-ul DOAR pe nativ. Pe web nu e nevoie (folosim brokerul
-      // managed) și fetch-ul suplimentar întârzia inutil randarea formularului.
-      if (native) {
-        const [ready, clientId] = await Promise.all([
-          hasNativeGoogleConfigAsync(),
-          resolveWebClientId(),
-        ]);
-        if (!cancelled) setRuntimeClientId(clientId);
-        if (!cancelled) setNativeGoogleReady(ready);
-      }
-      if (!cancelled) setNativeChecked(true);
+      setNativeChecked(true);
     })();
     return () => {
       cancelled = true;
     };
   }, []);
-// Logarea cu Google este DEZACTIVATĂ complet (web + nativ). Autentificarea
-  // se face exclusiv cu email + parolă. Codul rămâne în fișier ca schelet
-  // dormant, dar butonul nu se randează niciodată.
-  const googleAvailable = false;
 
   const certificateMatch = classifySigningCertificate(signatureInfo?.sha1);
-
-
-
-  async function onGoogleSignIn() {
-    if (googleRequestActive.current) return;
-    if (countryGate.isBlocked) {
-      navigate({ to: "/blocked-region", replace: true });
-      return;
-    }
-    if (mode === "signup" && birthDate) {
-      // Persist pentru completare profil post-OAuth (SessionGuards → /n).
-      try {
-        sessionStorage.setItem("vz_pending_birthdate", birthDate);
-        localStorage.setItem("vz_pending_birthdate", birthDate);
-      } catch { /* ignore */ }
-    }
-    googleRequestActive.current = true;
-    setAuthError(null);
-    setGoogleBusy(true);
-    addDiagnostic("google", "REQUEST_STARTED", `platform=${isNative ? "android-native" : "web"}`);
-    try {
-      // ANDROID: Chrome Custom Tabs mai întâi. Nu depinde de clientul OAuth
-      // Android (package + SHA-1), deci funcționează inclusiv când amprenta
-      // build-ului din Play nu e trecută în Google Cloud. SDK-ul nativ
-      // (Credential Manager) rămâne fallback.
-      if (await isNativePlatform()) {
-        const pressedAt = Date.now();
-        addDiagnostic("google", "CUSTOM_TAB_STARTED", `mode=${mode}`);
-        const viaBrowser = await browserGoogleSignIn(180_000, mode === "signup" ? "signup" : "login");
-        addDiagnostic("google", "CUSTOM_TAB_RETURNED", `durată=${Date.now() - pressedAt} ms`);
-        if (viaBrowser.ok) {
-          addDiagnostic("google", "DEEP_LINK_RECEIVED");
-          addDiagnostic("google", "SUPABASE_SESSION_CREATED");
-          return;
-        }
-        addDiagnostic("google", "CUSTOM_TAB_FAILED", viaBrowser.message ?? viaBrowser.code);
-
-        // Fallback: SDK nativ (Credential Manager).
-        authLog("CREDENTIAL_REQUEST_STARTED", { clientIdPresent: !!runtimeClientId });
-        addDiagnostic("google", "CREDENTIAL_REQUEST_STARTED", `clientId=${runtimeClientId ? "prezent" : "în curs"}`);
-        const res = await nativeGoogleSignIn();
-        setNativeGoogleLogs(readNativeGoogleLogs());
-        setNativeLogcat(readNativeLogcat());
-        setGoogleRuntime(getNativeGoogleRuntimeState());
-        addDiagnostic("google", "CREDENTIAL_RETURNED", `durată=${Date.now() - pressedAt} ms`);
-        if (res.ok) {
-          addDiagnostic("google", "ID_TOKEN_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
-          authLog("SUPABASE_SESSION_CREATED", { via: "native_sdk" });
-          addDiagnostic("google", "SUPABASE_SESSION_CREATED");
-          authLog("NAVIGATION_FINISHED", { via: "native_sdk" });
-          return;
-        }
-
-        const label = {
-          cancelled: "GOOGLE_USER_CANCELLED",
-          no_credential: "GOOGLE_NO_CREDENTIAL_AVAILABLE",
-          reauth_failed: "GOOGLE_ACCOUNT_REAUTH_FAILED",
-          no_id_token: "GOOGLE_NO_ID_TOKEN",
-          unsupported: "GOOGLE_SDK_UNSUPPORTED",
-          error: "GOOGLE_SDK_ERROR",
-        }[res.code];
-        addDiagnostic("google", label, formatGoogleDiagnostic(res.diagnostic));
-        if (viaBrowser.code === "cancelled" || res.code === "cancelled") {
-          handleAuthError(new Error("Autentificarea Google a fost anulată."), {
-            message: "Autentificarea Google a fost anulată.",
-            action: "Apasă din nou și alege contul Google.",
-          });
-          return;
-        }
-        handleAuthError(new Error(res.message ?? viaBrowser.message ?? "Google sign-in failed"), {
-          message:
-            res.code === "reauth_failed"
-              ? "Contul Google de pe telefon cere reautentificare (Setări → Conturi → Google)."
-              : "Nu am putut finaliza autentificarea cu Google.",
-          action: "Încearcă din nou sau folosește email și parolă.",
-        });
-        return;
-
-      } else {
-
-
-
-        addDiagnostic("google", "OAUTH_BROKER_STARTED", `redirect=${oauthOrigin()}/auth`);
-        const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: `${oauthOrigin()}/auth`,
-        });
-        if (result?.error) {
-          addDiagnostic("google", "ERROR", result.error.message);
-          handleAuthError(result.error);
-          return;
-        }
-        addDiagnostic("google", result.redirected ? "REDIRECT_STARTED" : "RESPONSE_RECEIVED");
-        // if redirected, browser leaves this page
-      }
-
-    } finally {
-      googleRequestActive.current = false;
-      setGoogleBusy(false);
-      addDiagnostic("google", "REQUEST_FINISHED");
-    }
-  }
 
 
 
@@ -412,54 +268,35 @@ function AuthPage() {
     toast.error(mapped.message, { description: mapped.action, duration: mapped.retryAfterSec && mapped.retryAfterSec > 30 ? 8000 : 5500 });
   }
 
-  // Pagina web servește și ca „punte” pentru aplicația Android: când e
-  // deschisă în Chrome Custom Tabs cu ?native_bridge=1, după autentificare
-  // trimite sesiunea înapoi în app prin deep link în loc să navigheze intern.
+  // Linkuri/callback-uri vechi de Google OAuth: `?native_bridge=1&auto=google`
+  // sau un hash `#...provider=google` / `#error=...`. Nu mai există niciun flux
+  // OAuth — afișăm un mesaj clar și lăsăm userul pe email + parolă.
   useEffect(() => {
-    if (search.native_bridge === "1") {
-      try { sessionStorage.setItem("vz_native_bridge", "1"); } catch { /* ignore */ }
+    let legacy = search.auto === "google" || search.native_bridge !== undefined;
+    try {
+      const hash = window.location.hash ?? "";
+      if (/provider=google|providerToken|access_token|error_description/i.test(hash)) legacy = true;
+      // curățăm resturile de OAuth din URL ca să nu rămână la refresh
+      if (legacy && hash) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+      sessionStorage.removeItem("vz_native_bridge");
+    } catch { /* ignore */ }
+    if (legacy) {
+      setLegacyOauthNotice(true);
+      addDiagnostic("legacy", "GOOGLE_OAUTH_LINK_BLOCKED", "Google OAuth eliminat — redirect către email + parolă");
     }
-  }, [search.native_bridge]);
-
-  // Auto-pornire OAuth când puntea e deschisă din aplicație: userul a apăsat
-  // deja „Continuă cu Google” în app, nu trebuie să mai apese încă o dată.
-  const bridgeAutoStarted = useRef(false);
-  useEffect(() => {
-    if (!googleAvailable) return; // Google dezactivat: nu porni niciun flux OAuth.
-    if (bridgeAutoStarted.current) return;
-    if (authLoading || user) return;
-    if (search.native_bridge !== "1" || search.auto !== "google") return;
-    bridgeAutoStarted.current = true;
-    void onGoogleSignIn();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user, search.native_bridge, search.auto]);
-
-
+  }, [search.auto, search.native_bridge]);
 
   useEffect(() => {
     if (!authLoading && user) {
       void (async () => {
-        // Catch OAuth round-trips that landed back on /auth.
         await persistPendingBirthdate(user.id);
-        let bridge = search.native_bridge === "1";
-        try { bridge = bridge || sessionStorage.getItem("vz_native_bridge") === "1"; } catch { /* ignore */ }
-        if (bridge) {
-          try { sessionStorage.removeItem("vz_native_bridge"); } catch { /* ignore */ }
-          const { data } = await supabase.auth.getSession();
-          const session = data.session;
-          if (session?.access_token && session?.refresh_token) {
-            const params = new URLSearchParams({
-              access_token: session.access_token,
-              refresh_token: session.refresh_token,
-            });
-            window.location.href = `${NATIVE_BRIDGE_CALLBACK}#${params.toString()}`;
-            return;
-          }
-        }
         await routeAfterAuth(user.id, navigate, search.redirect);
       })();
     }
-  }, [authLoading, user, navigate, search.redirect, search.native_bridge]);
+  }, [authLoading, user, navigate, search.redirect]);
 
   function ageFromBirthDate(iso: string): number | null {
     if (!iso) return null;
@@ -559,7 +396,7 @@ function AuthPage() {
               : "TURNSTILE_FAILED"
             : "TURNSTILE_SKIPPED_ANDROID",
         );
-        const nativeRuntime = await isNativePlatform();
+        const nativeRuntime = isNativePlatformSync();
         const guardUrl = nativeRuntime
           ? "https://suzeta.app/api/public/signup-guard"
           : "/api/public/signup-guard";
@@ -852,14 +689,22 @@ function AuthPage() {
       return;
     }
     setAuthError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(emailParsed.data, {
-      redirectTo: `${oauthOrigin()}/reset-password`,
-      captchaToken: captchaToken ?? undefined,
-    });
-    if (error) {
-      handleAuthError(error);
-    } else {
+    setResetBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(emailParsed.data, {
+        redirectTo: `${oauthOrigin()}/reset-password`,
+        captchaToken: captchaToken ?? undefined,
+      });
+      if (error) {
+        handleAuthError(error);
+        return;
+      }
+      setResetSentTo(maskEmail(emailParsed.data));
       toast.success(t("auth.errors.resetSent"));
+    } finally {
+      setResetBusy(false);
+      setCaptchaToken(null);
+      setCaptchaNonce((n) => n + 1);
     }
   }
 
@@ -921,38 +766,19 @@ function AuthPage() {
           ))}
         </div>
 
-        {googleAvailable && (
-          <div className="mt-6 space-y-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-11 gap-2"
-              onClick={onGoogleSignIn}
-              disabled={googleBusy || submitting}
-            >
-              {googleBusy ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
-                  <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 3l5.7-5.7C33.9 6.1 29.2 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z" />
-                  <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C33.9 6.1 29.2 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
-                  <path fill="#4CAF50" d="M24 44c5.2 0 9.8-2 13.3-5.2l-6.1-5.2C29.2 35.5 26.7 36 24 36c-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39.7 16.2 44 24 44z" />
-                  <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.6l6.1 5.2C40.2 36.6 44 30.9 44 24c0-1.2-.1-2.4-.4-3.5z" />
-                </svg>
-              )}
-              <span>{t("auth.continueWithGoogle", { defaultValue: "Continue with Google" })}</span>
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                {t("auth.or", { defaultValue: "or" })}
-              </span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
+        {legacyOauthNotice && (
+          <div
+            role="status"
+            className="mt-6 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-600"
+          >
+            <p className="font-semibold">Autentificarea cu Google nu mai este disponibilă</p>
+            <p className="mt-1 text-xs">
+              Ai deschis un link vechi de conectare cu Google. Contul Suzeta funcționează acum
+              exclusiv cu email și parolă. Dacă ți-ai creat contul cu Google, folosește aceeași
+              adresă de email și apasă „Ai uitat parola?” pentru a-ți seta o parolă.
+            </p>
           </div>
         )}
-
-
 
         {/* Email form */}
         <form onSubmit={onSubmit} className="space-y-4">
@@ -1012,13 +838,22 @@ function AuthPage() {
               </button>
             </div>
             {mode === "login" && (
-              <button
-                type="button"
-                onClick={onForgotPassword}
-                className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary"
-              >
-                {t("auth.forgot")}
-              </button>
+              <div className="space-y-1 pt-1">
+                <button
+                  type="button"
+                  onClick={onForgotPassword}
+                  disabled={resetBusy}
+                  className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary underline underline-offset-4 disabled:opacity-60"
+                >
+                  {resetBusy ? "Se trimite…" : t("auth.forgot")}
+                </button>
+                {resetSentTo && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Ți-am trimis un link de resetare a parolei la {resetSentTo}. Verifică și folderul
+                    Spam; linkul expiră în scurt timp.
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
