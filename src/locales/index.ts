@@ -1,0 +1,87 @@
+// Registru unic de limbi al aplicației.
+//
+// REGULĂ: o limbă nouă se adaugă DOAR aici — un fișier `src/locales/<cod>.ts`
+// + o linie în `APP_LANGUAGES`. Restul aplicației (i18n init, selectorul din
+// Setări, toggle-ul din auth, detecția device-ului) citește din acest registru,
+// deci nu există liste de limbi hardcodate în altă parte.
+//
+// Traducerile pot fi parțiale: i18next cade pe engleză cheie-cu-cheie
+// (`fallbackLng: "en"`), deci nu apar niciodată chei brute în UI.
+
+import { ro } from "./ro";
+import { en } from "./en";
+import de from "./de";
+import fr from "./fr";
+import es from "./es";
+import it from "./it";
+import pt from "./pt";
+import nl from "./nl";
+import pl from "./pl";
+import hu from "./hu";
+
+import type { PartialDict } from "./types";
+
+export type AppLanguage = "ro" | "en" | "de" | "fr" | "es" | "it" | "pt" | "nl" | "pl" | "hu";
+
+export type LanguageMeta = {
+  code: AppLanguage;
+  /** Numele limbii scris în limba respectivă (nu se traduce). */
+  nativeName: string;
+  /** Etichetă în engleză, pentru admin / loguri. */
+  englishName: string;
+  flag: string;
+  /** true = dicționar complet (toate ecranele). */
+  complete: boolean;
+};
+
+export const APP_LANGUAGES: readonly LanguageMeta[] = [
+  { code: "ro", nativeName: "Română", englishName: "Romanian", flag: "🇷🇴", complete: true },
+  { code: "en", nativeName: "English", englishName: "English", flag: "🇬🇧", complete: true },
+  { code: "de", nativeName: "Deutsch", englishName: "German", flag: "🇩🇪", complete: false },
+  { code: "fr", nativeName: "Français", englishName: "French", flag: "🇫🇷", complete: false },
+  { code: "es", nativeName: "Español", englishName: "Spanish", flag: "🇪🇸", complete: false },
+  { code: "it", nativeName: "Italiano", englishName: "Italian", flag: "🇮🇹", complete: false },
+  { code: "pt", nativeName: "Português", englishName: "Portuguese", flag: "🇵🇹", complete: false },
+  { code: "nl", nativeName: "Nederlands", englishName: "Dutch", flag: "🇳🇱", complete: false },
+  { code: "pl", nativeName: "Polski", englishName: "Polish", flag: "🇵🇱", complete: false },
+  { code: "hu", nativeName: "Magyar", englishName: "Hungarian", flag: "🇭🇺", complete: false },
+];
+
+export const APP_LANGUAGE_CODES = APP_LANGUAGES.map((l) => l.code) as AppLanguage[];
+
+export function isAppLanguage(code: unknown): code is AppLanguage {
+  return typeof code === "string" && (APP_LANGUAGE_CODES as string[]).includes(code);
+}
+
+/** "en-GB" → "en"; "ro-MD"/"md" → "ro"; necunoscut → "en". */
+export function normalizeLanguage(code: string | null | undefined): AppLanguage {
+  if (!code) return "en";
+  const short = String(code).toLowerCase().split(/[-_]/)[0];
+  if (short === "md") return "ro";
+  return isAppLanguage(short) ? short : "en";
+}
+
+export function languageMeta(code: AppLanguage): LanguageMeta {
+  return APP_LANGUAGES.find((l) => l.code === code) ?? APP_LANGUAGES[1]!;
+}
+
+const PARTIALS: Record<Exclude<AppLanguage, "ro" | "en">, PartialDict> = {
+  de,
+  fr,
+  es,
+  it,
+  pt,
+  nl,
+  pl,
+  hu,
+};
+
+export const RESOURCES: Record<AppLanguage, { translation: unknown }> = {
+  ro: { translation: ro },
+  en: { translation: en },
+  ...(Object.fromEntries(
+    Object.entries(PARTIALS).map(([code, dict]) => [code, { translation: dict }]),
+  ) as Record<Exclude<AppLanguage, "ro" | "en">, { translation: unknown }>),
+};
+
+export { ro, en };
