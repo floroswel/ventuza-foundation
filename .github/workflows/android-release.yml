@@ -760,6 +760,18 @@ jobs:
             sed -i 's|<application |<application android:allowBackup="false" |' "$MANIFEST"
             echo "✓ allowBackup=false injectat"
           fi
+          # App Links obligatorii: suzeta.app trebuie să deschidă aplicația.
+          if ! grep -q 'android:host="suzeta.app"' "$MANIFEST"; then
+            echo "::error::Intent filter App Links pentru suzeta.app lipsește din AndroidManifest."
+            exit 1
+          fi
+          if ! grep -q 'android:autoVerify="true"' "$MANIFEST"; then
+            echo "::error::autoVerify lipsește din intent filter-ul App Links."
+            exit 1
+          fi
+          echo "✓ App Links (suzeta.app, autoVerify) prezente"
+
+
 
 
       - name: Derive versionCode & versionName (release/version.json = sursă unică)
