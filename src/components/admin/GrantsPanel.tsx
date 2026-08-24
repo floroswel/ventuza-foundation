@@ -162,7 +162,7 @@ export function GrantsPanel() {
         <AdminErrorBanner
           error={error}
           onRetry={() => void load()}
-          hint="Ai nevoie de rol admin/super_admin și MFA înrolat."
+          forbiddenHint="Ai nevoie de rol admin/super_admin și MFA înrolat."
         />
       )}
 

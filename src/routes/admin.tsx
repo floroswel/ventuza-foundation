@@ -1,4 +1,5 @@
 import { InstallFunnelPanel } from "@/components/admin/InstallFunnelPanel";
+import { GrantsPanel } from "@/components/admin/GrantsPanel";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -198,7 +199,8 @@ type Section =
   | "verifqueue"
   | "crashlog"
   | "perfmetrics"
-  | "installfunnel";
+  | "installfunnel"
+  | "grants";
 
 type Report = {
   id: string;
@@ -558,6 +560,14 @@ function AdminDashboard() {
     { id: "partners", label: "Parteneri & Moderare", icon: ShieldCheck, group: "Business" },
     { id: "billing", label: "Facturare parteneri", icon: FileText, group: "Business" },
     { id: "merch", label: "Comenzi merch", icon: FileText, group: "Business" },
+    {
+      id: "grants",
+      label: "Acordări & compensații",
+      icon: Gift,
+      group: "Business",
+      adminOnly: true,
+      hint: "Premium, credit wallet, XP, insigne, boost, plan partener, discount factură",
+    },
 
     // System
     { id: "health", label: "System Health", icon: Activity, group: "System" },
@@ -636,6 +646,7 @@ function AdminDashboard() {
       {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
       {section === "billing" && <BillingAdminPanel isAdmin={!!isAdmin} />}
       {section === "merch" && <MerchOrdersPanel />}
+      {section === "grants" && isAdmin && <GrantsPanel />}
       {section === "security" && <SecurityPanel />}
       
       {section === "health" && <SystemHealthPanel />}
