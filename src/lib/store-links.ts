@@ -5,11 +5,34 @@
  * nativă din Google Play, nu să folosească varianta din browser / PWA.
  */
 
+import {
+  UTM_CAMPAIGN,
+  UTM_MEDIUM,
+  trackStoreFunnel,
+  type StoreClickSource,
+} from "@/lib/store-analytics";
+
 export const ANDROID_PACKAGE = "app.suzeta";
 export const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
 
+/**
+ * Linkul Play Store cu atribuire. Google Play acceptă un singur parametru
+ * `referrer`, care conține la rândul lui un query-string UTM; Play Console îl
+ * raportează în „Acquisition → Traffic sources”, iar Install Referrer API îl
+ * expune aplicației după instalare.
+ */
+export function playStoreUrl(source: StoreClickSource | string = "web"): string {
+  const referrer = new URLSearchParams({
+    utm_source: source,
+    utm_medium: UTM_MEDIUM,
+    utm_campaign: UTM_CAMPAIGN,
+  }).toString();
+  return `${PLAY_STORE_URL}&referrer=${encodeURIComponent(referrer)}`;
+}
+
 /** Intent Android care deschide direct aplicația Play Store (fallback pe web). */
 export const PLAY_STORE_MARKET_URL = `market://details?id=${ANDROID_PACKAGE}`;
+
 
 /** True doar în browser pe Android (nu în wrapper-ul nativ Capacitor). */
 export function isAndroidWebBrowser(): boolean {
@@ -60,9 +83,9 @@ export async function isAndroidAppInstalled(): Promise<boolean | null> {
  * cade automat pe Google Play (`S.browser_fallback_url`). Un singur click,
  * fără timere fragile.
  */
-export function androidIntentUrl(path = "/"): string {
+export function androidIntentUrl(path = "/", source: StoreClickSource | string = "web"): string {
   const clean = path.startsWith("/") ? path : `/${path}`;
-  const fallback = encodeURIComponent(PLAY_STORE_URL);
+  const fallback = encodeURIComponent(playStoreUrl(source));
   return (
     `intent://suzeta.app${clean}#Intent;scheme=https;package=${ANDROID_PACKAGE};` +
     `S.browser_fallback_url=${fallback};end`
@@ -70,15 +93,26 @@ export function androidIntentUrl(path = "/"): string {
 }
 
 /**
- * Deschide aplicația instalată (prin intent) sau Google Play.
- * Pe non-Android / desktop merge direct la Play Store.
+ * Deschide aplicația instalată (prin intent) sau Google Play, măsurând
+ * evenimentul de funnel înainte de navigare.
  */
-export function openAppOrStore(path = "/"): void {
+export function openAppOrStore(
+  path = "/",
+  source: StoreClickSource | string = "web",
+  appInstalled: boolean | null = null,
+): void {
   if (typeof window === "undefined") return;
   if (isAndroidWebBrowser()) {
-    window.location.href = androidIntentUrl(path);
+    trackStoreFunnel(appInstalled ? "app_open_intent" : "store_click", {
+      source,
+      path,
+      appInstalled,
+    });
+    window.location.href = androidIntentUrl(path, source);
     return;
   }
-  window.open(PLAY_STORE_URL, "_blank", "noopener,noreferrer");
+  trackStoreFunnel("store_click", { source, path, appInstalled });
+  window.open(playStoreUrl(source), "_blank", "noopener,noreferrer");
 }
+
 

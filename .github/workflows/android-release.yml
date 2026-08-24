@@ -509,8 +509,25 @@ jobs:
               s = s.replace(tag, new_tag, 1)
           else:
               raise SystemExit("MainActivity nu a fost găsit în AndroidManifest.xml")
+          # f) Android App Links: suzeta.app + www.suzeta.app deschid aplicația
+          #    direct (autoVerify pe /.well-known/assetlinks.json).
+          if 'android:host="suzeta.app"' not in s:
+              APP_LINKS = (
+                  '\n            <intent-filter android:autoVerify="true">\n'
+                  '                <action android:name="android.intent.action.VIEW"/>\n'
+                  '                <category android:name="android.intent.category.DEFAULT"/>\n'
+                  '                <category android:name="android.intent.category.BROWSABLE"/>\n'
+                  '                <data android:scheme="https" android:host="suzeta.app"/>\n'
+                  '                <data android:scheme="https" android:host="www.suzeta.app"/>\n'
+                  '            </intent-filter>\n'
+              )
+              m2 = re.search(r'(<activity\b[^>]*android:name="[^"]*MainActivity"[^>]*>)', s)
+              if not m2:
+                  raise SystemExit("MainActivity (app links) nu a fost găsit")
+              s = s.replace(m2.group(1), m2.group(1) + APP_LINKS, 1)
           open(p, 'w').write(s)
-          print("✓ AndroidManifest.xml patched (security attrs + activity hardening + networkSecurityConfig)")
+          print("✓ AndroidManifest.xml patched (security attrs + activity hardening + app links + networkSecurityConfig)")
+
 
           PY
 
@@ -743,6 +760,18 @@ jobs:
             sed -i 's|<application |<application android:allowBackup="false" |' "$MANIFEST"
             echo "✓ allowBackup=false injectat"
           fi
+          # App Links obligatorii: suzeta.app trebuie să deschidă aplicația.
+          if ! grep -q 'android:host="suzeta.app"' "$MANIFEST"; then
+            echo "::error::Intent filter App Links pentru suzeta.app lipsește din AndroidManifest."
+            exit 1
+          fi
+          if ! grep -q 'android:autoVerify="true"' "$MANIFEST"; then
+            echo "::error::autoVerify lipsește din intent filter-ul App Links."
+            exit 1
+          fi
+          echo "✓ App Links (suzeta.app, autoVerify) prezente"
+
+
 
 
       - name: Derive versionCode & versionName (release/version.json = sursă unică)

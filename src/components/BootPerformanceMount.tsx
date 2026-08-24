@@ -31,6 +31,14 @@ export function BootPerformanceMount() {
     void import("@/lib/image-cache-sw").then(({ registerImageCacheSw }) =>
       registerImageCacheSw(),
     );
+    // Conversia de instalare: prima deschidere a aplicației native.
+    void Promise.all([
+      import("@/lib/native-runtime"),
+      import("@/lib/store-analytics"),
+    ]).then(([native, analytics]) => {
+      if (native.isNativeAndroid()) analytics.trackNativeFirstOpen();
+    });
+
   }, []);
 
 
