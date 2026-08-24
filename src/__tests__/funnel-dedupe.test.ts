@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-const rpc = vi.fn(() => Promise.resolve({ data: 1, error: null }));
-vi.mock("@/integrations/supabase/client", () => ({ supabase: { rpc } }));
+vi.mock("@/integrations/supabase/client", () => ({
+  supabase: { rpc: vi.fn(() => Promise.resolve({ data: 1, error: null })) },
+}));
+import { supabase } from "@/integrations/supabase/client";
+const rpc = supabase.rpc as unknown as ReturnType<typeof vi.fn>;
 
 import { trackStoreFunnelOnce, trackNativeFirstOpen, trackAppLinkOpen } from "@/lib/store-analytics";
 
