@@ -64,11 +64,13 @@ import { Route as LegalBadgesRouteImport } from './routes/legal.badges'
 import { Route as LegalBusinessTermsRouteImport } from './routes/legal.business-terms'
 import { Route as LegalChildSafetyRouteImport } from './routes/legal.child-safety'
 import { Route as LegalCommunityRouteImport } from './routes/legal.community'
+import { Route as LegalComplianceReportRouteImport } from './routes/legal.compliance-report'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalDataSafetyRouteImport } from './routes/legal.data-safety'
 import { Route as LegalDmcaRouteImport } from './routes/legal.dmca'
 import { Route as LegalDpaRouteImport } from './routes/legal.dpa'
 import { Route as LegalDsaRouteImport } from './routes/legal.dsa'
+import { Route as LegalGdprCenterRouteImport } from './routes/legal.gdpr-center'
 import { Route as LegalGdprRequestRouteImport } from './routes/legal.gdpr-request'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalRecordsOfProcessingRouteImport } from './routes/legal.records-of-processing'
@@ -378,6 +380,11 @@ const LegalCommunityRoute = LegalCommunityRouteImport.update({
   path: '/legal/community',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalComplianceReportRoute = LegalComplianceReportRouteImport.update({
+  id: '/legal/compliance-report',
+  path: '/legal/compliance-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalCookiesRoute = LegalCookiesRouteImport.update({
   id: '/legal/cookies',
   path: '/legal/cookies',
@@ -401,6 +408,11 @@ const LegalDpaRoute = LegalDpaRouteImport.update({
 const LegalDsaRoute = LegalDsaRouteImport.update({
   id: '/legal/dsa',
   path: '/legal/dsa',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalGdprCenterRoute = LegalGdprCenterRouteImport.update({
+  id: '/legal/gdpr-center',
+  path: '/legal/gdpr-center',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalGdprRequestRoute = LegalGdprRequestRouteImport.update({
@@ -620,11 +632,13 @@ export interface FileRoutesByFullPath {
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/child-safety': typeof LegalChildSafetyRoute
   '/legal/community': typeof LegalCommunityRoute
+  '/legal/compliance-report': typeof LegalComplianceReportRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
+  '/legal/gdpr-center': typeof LegalGdprCenterRoute
   '/legal/gdpr-request': typeof LegalGdprRequestRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
@@ -712,11 +726,13 @@ export interface FileRoutesByTo {
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/child-safety': typeof LegalChildSafetyRoute
   '/legal/community': typeof LegalCommunityRoute
+  '/legal/compliance-report': typeof LegalComplianceReportRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
+  '/legal/gdpr-center': typeof LegalGdprCenterRoute
   '/legal/gdpr-request': typeof LegalGdprRequestRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
@@ -806,11 +822,13 @@ export interface FileRoutesById {
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/child-safety': typeof LegalChildSafetyRoute
   '/legal/community': typeof LegalCommunityRoute
+  '/legal/compliance-report': typeof LegalComplianceReportRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
+  '/legal/gdpr-center': typeof LegalGdprCenterRoute
   '/legal/gdpr-request': typeof LegalGdprRequestRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
@@ -901,11 +919,13 @@ export interface FileRouteTypes {
     | '/legal/business-terms'
     | '/legal/child-safety'
     | '/legal/community'
+    | '/legal/compliance-report'
     | '/legal/cookies'
     | '/legal/data-safety'
     | '/legal/dmca'
     | '/legal/dpa'
     | '/legal/dsa'
+    | '/legal/gdpr-center'
     | '/legal/gdpr-request'
     | '/legal/privacy'
     | '/legal/records-of-processing'
@@ -993,11 +1013,13 @@ export interface FileRouteTypes {
     | '/legal/business-terms'
     | '/legal/child-safety'
     | '/legal/community'
+    | '/legal/compliance-report'
     | '/legal/cookies'
     | '/legal/data-safety'
     | '/legal/dmca'
     | '/legal/dpa'
     | '/legal/dsa'
+    | '/legal/gdpr-center'
     | '/legal/gdpr-request'
     | '/legal/privacy'
     | '/legal/records-of-processing'
@@ -1086,11 +1108,13 @@ export interface FileRouteTypes {
     | '/legal/business-terms'
     | '/legal/child-safety'
     | '/legal/community'
+    | '/legal/compliance-report'
     | '/legal/cookies'
     | '/legal/data-safety'
     | '/legal/dmca'
     | '/legal/dpa'
     | '/legal/dsa'
+    | '/legal/gdpr-center'
     | '/legal/gdpr-request'
     | '/legal/privacy'
     | '/legal/records-of-processing'
@@ -1175,11 +1199,13 @@ export interface RootRouteChildren {
   LegalBusinessTermsRoute: typeof LegalBusinessTermsRoute
   LegalChildSafetyRoute: typeof LegalChildSafetyRoute
   LegalCommunityRoute: typeof LegalCommunityRoute
+  LegalComplianceReportRoute: typeof LegalComplianceReportRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
   LegalDataSafetyRoute: typeof LegalDataSafetyRoute
   LegalDmcaRoute: typeof LegalDmcaRoute
   LegalDpaRoute: typeof LegalDpaRoute
   LegalDsaRoute: typeof LegalDsaRoute
+  LegalGdprCenterRoute: typeof LegalGdprCenterRoute
   LegalGdprRequestRoute: typeof LegalGdprRequestRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRecordsOfProcessingRoute: typeof LegalRecordsOfProcessingRoute
@@ -1592,6 +1618,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalCommunityRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/compliance-report': {
+      id: '/legal/compliance-report'
+      path: '/legal/compliance-report'
+      fullPath: '/legal/compliance-report'
+      preLoaderRoute: typeof LegalComplianceReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/cookies': {
       id: '/legal/cookies'
       path: '/legal/cookies'
@@ -1625,6 +1658,13 @@ declare module '@tanstack/react-router' {
       path: '/legal/dsa'
       fullPath: '/legal/dsa'
       preLoaderRoute: typeof LegalDsaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/gdpr-center': {
+      id: '/legal/gdpr-center'
+      path: '/legal/gdpr-center'
+      fullPath: '/legal/gdpr-center'
+      preLoaderRoute: typeof LegalGdprCenterRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/gdpr-request': {
@@ -2009,11 +2049,13 @@ const rootRouteChildren: RootRouteChildren = {
   LegalBusinessTermsRoute: LegalBusinessTermsRoute,
   LegalChildSafetyRoute: LegalChildSafetyRoute,
   LegalCommunityRoute: LegalCommunityRoute,
+  LegalComplianceReportRoute: LegalComplianceReportRoute,
   LegalCookiesRoute: LegalCookiesRoute,
   LegalDataSafetyRoute: LegalDataSafetyRoute,
   LegalDmcaRoute: LegalDmcaRoute,
   LegalDpaRoute: LegalDpaRoute,
   LegalDsaRoute: LegalDsaRoute,
+  LegalGdprCenterRoute: LegalGdprCenterRoute,
   LegalGdprRequestRoute: LegalGdprRequestRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRecordsOfProcessingRoute: LegalRecordsOfProcessingRoute,

@@ -19,7 +19,9 @@ export type ConsentKind =
   | "push_notifications"
   | "background_location"
   | "marketing"
-  | "partner_announcements";
+  | "partner_announcements"
+  | "cookies_analytics"
+  | "cookies_marketing";
 
 export interface ConsentMeta {
   kind: ConsentKind;
@@ -137,6 +139,26 @@ export const CONSENT_REGISTRY: Record<ConsentKind, ConsentMeta> = {
     description:
       "Primești ocazional notificări de la parteneri Premium aprobați (evenimente, oferte, promoții) — filtrate după oraș, distanță sau participare la evenimentele lor. Opt-in explicit (implicit oprit). Se aplică plafoane săptămânale per partener și un cooldown de 24h per user. Poți retrage oricând.",
     gates: ["partner_send_broadcast"],
+  },
+  cookies_analytics: {
+    kind: "cookies_analytics",
+    currentVersion: "2026-08-25",
+    required: false,
+    art9: false,
+    label: "Cookie-uri / stocare analitică",
+    description:
+      "Statistici agregate de utilizare (ecrane vizitate, erori, performanță) pentru a îmbunătăți aplicația. Opt-in explicit, retragere oricând din bannerul de cookies sau din Setări. Temei: Art. 6(1)(a) GDPR.",
+    gates: ["web_vitals", "analytics_events"],
+  },
+  cookies_marketing: {
+    kind: "cookies_marketing",
+    currentVersion: "2026-08-25",
+    required: false,
+    art9: false,
+    label: "Cookie-uri / stocare de marketing",
+    description:
+      "Măsurarea campaniilor și atribuirea instalărilor (UTM, referrer de instalare). Opt-in explicit, retragere oricând. Temei: Art. 6(1)(a) GDPR.",
+    gates: ["store_funnel_events", "utm_attribution"],
   },
 };
 

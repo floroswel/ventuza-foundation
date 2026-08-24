@@ -35,6 +35,7 @@ import {
   type NotificationPrefs,
 } from "@/lib/notification-prefs-context";
 import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
+import { openCookieSettings } from "@/components/CookieBanner";
 import { BottomNav } from "@/components/BottomNav";
 import { setLookingNow } from "@/lib/social";
 import { setIncognito } from "@/lib/incognito";
@@ -828,11 +829,30 @@ function SettingsPage() {
               <Shield className="size-4" /> Transferuri extra-UE (SCC / DPF)
             </Link>
             <Link
+              to="/legal/gdpr-center"
+              className="flex items-center gap-2 py-1.5 text-primary hover:text-primary/80"
+            >
+              <Shield className="size-4" /> Centru cereri GDPR (export, ștergere, status) →
+            </Link>
+            <Link
               to="/legal/gdpr-request"
               className="flex items-center gap-2 py-1.5 text-primary hover:text-primary/80"
             >
               <Shield className="size-4" /> Trimite o cerere GDPR →
             </Link>
+            <Link
+              to="/legal/compliance-report"
+              className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
+            >
+              <Shield className="size-4" /> Raport conformitate ANPC / GDPR
+            </Link>
+            <button
+              type="button"
+              onClick={openCookieSettings}
+              className="flex items-center gap-2 py-1.5 text-left text-foreground hover:text-primary"
+            >
+              <Shield className="size-4" /> Setări cookies (analitice / marketing)
+            </button>
 
 
 
