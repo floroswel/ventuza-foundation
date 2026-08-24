@@ -4259,6 +4259,42 @@ export type Database = {
         }
         Relationships: []
       }
+      store_funnel_events: {
+        Row: {
+          app_installed: boolean | null
+          campaign: string | null
+          created_at: string
+          id: number
+          kind: string
+          medium: string | null
+          path: string | null
+          platform: string | null
+          source: string | null
+        }
+        Insert: {
+          app_installed?: boolean | null
+          campaign?: string | null
+          created_at?: string
+          id?: number
+          kind: string
+          medium?: string | null
+          path?: string | null
+          platform?: string | null
+          source?: string | null
+        }
+        Update: {
+          app_installed?: boolean | null
+          campaign?: string | null
+          created_at?: string
+          id?: number
+          kind?: string
+          medium?: string | null
+          path?: string | null
+          platform?: string | null
+          source?: string | null
+        }
+        Relationships: []
+      }
       stories: {
         Row: {
           caption: string | null
@@ -5592,6 +5628,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_store_funnel_summary: {
+        Args: { _days?: number }
+        Returns: {
+          app_opens: number
+          clicks: number
+          installs: number
+          source: string
+        }[]
+      }
       admin_suspend_partner: {
         Args: { p_reason: string; p_user_id: string }
         Returns: Json
@@ -6229,6 +6274,18 @@ export type Database = {
           _kind: string
           _message_id?: string
           _target: string
+        }
+        Returns: undefined
+      }
+      log_store_funnel_event: {
+        Args: {
+          _app_installed?: boolean
+          _campaign?: string
+          _kind: string
+          _medium?: string
+          _path?: string
+          _platform?: string
+          _source?: string
         }
         Returns: undefined
       }
