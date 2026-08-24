@@ -53,6 +53,7 @@ import { MatchModal } from "@/components/MatchModal";
 import { GoldenHourBadge } from "@/components/GoldenHourBadge";
 import { QuickFiltersStrip } from "@/components/QuickFiltersStrip";
 import { NotificationBell } from "@/components/NotificationBell";
+import { LocationOnboarding } from "@/components/LocationOnboarding";
 import {
   DEFAULT_FILTERS,
   DISCOVER_PAGE_SIZE,
