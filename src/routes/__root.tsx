@@ -47,6 +47,7 @@ import { VersionGate } from "@/components/VersionGate";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { DebugPanel } from "@/components/DebugPanel";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { GetTheAppBanner } from "@/components/GetTheAppBanner";
 import { LocationPermissionPrompt } from "@/components/LocationPermissionPrompt";
 import { NativePushNavigatorMount } from "@/components/NativePushNavigatorMount";
 
@@ -418,6 +419,10 @@ function RootComponent() {
             <LocationPermissionPromptMount />
             <AppSplash />
             <AgeGate />
+            {/* Doar pentru vizitatorii de pe Android, în browser: aplicația
+                nativă are notificări, tastatură corectă și deep link-uri, pe
+                care varianta din browser nu le are. */}
+            <GetTheAppBanner />
             <CookieBanner />
             <TravelWarning />
             <PinLockGate />

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { SUPPORT_EMAIL } from "@/lib/seo-content";
+import { PLAY_STORE_URL } from "@/lib/app-store-link";
 
 const LINKS: { to: string; label: string }[] = [
   { to: "/", label: "Home" },
@@ -23,6 +24,20 @@ export function PublicFooter() {
           Support:{" "}
           <a className="text-primary hover:underline" href={`mailto:${SUPPORT_EMAIL}`}>
             {SUPPORT_EMAIL}
+          </a>
+        </p>
+        {/* Link permanent către aplicație. Bannerul de sus apare doar pe
+            Android și se poate închide; aici rămâne găsibil de oriunde,
+            inclusiv de pe desktop, de unde oamenii caută des aplicația. */}
+        <p className="mt-3">
+          <a
+            className="inline-flex items-center gap-2 text-primary hover:underline"
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="footer-play-link"
+          >
+            Descarcă aplicația Android din Google Play
           </a>
         </p>
         <nav aria-label="Footer" className="mt-4">

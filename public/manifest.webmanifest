@@ -27,5 +27,13 @@
     }
   ],
   "scope": "/",
-  "lang": "ro"
+  "lang": "ro",
+  "related_applications": [
+    {
+      "platform": "play",
+      "id": "app.suzeta",
+      "url": "https://play.google.com/store/apps/details?id=app.suzeta"
+    }
+  ],
+  "prefer_related_applications": true
 }
