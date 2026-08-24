@@ -48,6 +48,8 @@ async function report(phase: Phase, value: number) {
       rating: value < 1500 ? "good" : value < 3500 ? "needs-improvement" : "poor",
       path: window.location.pathname,
       user_agent: navigator.userAgent.slice(0, 200),
+      app_version: (await import("@/lib/app-version")).APP_VERSION,
+      platform: document.documentElement.classList.contains("native-app") ? "android" : "web",
     });
   } catch {
     /* metricile nu trebuie să spargă nimic */
