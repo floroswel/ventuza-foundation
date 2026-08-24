@@ -91,6 +91,8 @@ export function trackStoreFunnel(
     appInstalled?: boolean | null;
     variant?: string | null;
     referrer?: string | null;
+    /** Cheie de idempotență: același eveniment nu se contorizează de două ori. */
+    dedupeKey?: string | null;
   },
 ): void {
   const base: LastFunnelEvent = {
@@ -116,6 +118,7 @@ export function trackStoreFunnel(
       _app_installed: opts?.appInstalled ?? null,
       _variant: base.variant,
       _referrer: base.referrer,
+      _dedupe_key: opts?.dedupeKey ?? null,
     };
     void supabase.rpc("log_store_funnel_event", payload as never).then(
       (res: { data?: unknown; error?: { message: string } | null }) => {
@@ -133,20 +136,126 @@ export function trackStoreFunnel(
   }
 }
 
+/* ------------------------------------------------------------------ *
+ * Idempotency: conversiile (install_first_open, app_link_open) nu se
+ * dublează nici la retry-uri de rețea, nici la remount / dublu-click,
+ * nici la relansarea aplicației. Trei straturi:
+ *   1. gardă în memorie (același tick / remount),
+ *   2. gardă persistentă în localStorage (relansare, refresh),
+ *   3. cheie unică server-side (`dedupe_key`) — sursa de adevăr.
+ * ------------------------------------------------------------------ */
+
+const INSTALL_ID_KEY = "suzeta.install_id.v1";
+const DEDUPE_STORE_KEY = "suzeta.funnel_dedupe.v1";
+const DEDUPE_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30 zile
+
+const memoryDedupe = new Set<string>();
+
+/** ID aleator per instalare (nu identifică userul, dispare la dezinstalare). */
+export function installId(): string {
+  if (typeof window === "undefined") return "ssr";
+  try {
+    let id = window.localStorage.getItem(INSTALL_ID_KEY);
+    if (!id) {
+      id =
+        typeof crypto !== "undefined" && "randomUUID" in crypto
+          ? crypto.randomUUID()
+          : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+      window.localStorage.setItem(INSTALL_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return "anon";
+  }
+}
+
+function readDedupeStore(): Record<string, number> {
+  try {
+    const raw = window.localStorage.getItem(DEDUPE_STORE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as Record<string, number>) : {};
+    const cutoff = Date.now() - DEDUPE_TTL_MS;
+    const fresh: Record<string, number> = {};
+    for (const [k, ts] of Object.entries(parsed)) {
+      if (typeof ts === "number" && ts > cutoff) fresh[k] = ts;
+    }
+    return fresh;
+  } catch {
+    return {};
+  }
+}
+
+function markDedupe(key: string, store: Record<string, number>): void {
+  store[key] = Date.now();
+  try {
+    window.localStorage.setItem(DEDUPE_STORE_KEY, JSON.stringify(store));
+  } catch {
+    /* storage plin / blocat — rămâne garda de memorie + cea din DB */
+  }
+}
+
+/**
+ * Trimite un eveniment o singură dată pentru cheia dată.
+ * Returnează `true` dacă evenimentul a fost trimis acum, `false` dacă era deja
+ * contorizat.
+ */
+export function trackStoreFunnelOnce(
+  kind: StoreFunnelKind,
+  dedupeKey: string,
+  opts?: Parameters<typeof trackStoreFunnel>[1],
+): boolean {
+  if (typeof window === "undefined") return false;
+  const key = `${kind}:${dedupeKey}`;
+  if (memoryDedupe.has(key)) return false;
+  const store = readDedupeStore();
+  if (store[key]) {
+    memoryDedupe.add(key);
+    return false;
+  }
+  memoryDedupe.add(key);
+  markDedupe(key, store);
+  trackStoreFunnel(kind, { ...opts, dedupeKey: key.slice(0, 120) });
+  return true;
+}
+
 const FIRST_OPEN_KEY = "suzeta.install_first_open.v1";
 
 /**
  * Marchează conversia de instalare: prima deschidere a aplicației native.
- * Rulează o singură dată per instalare (flag în localStorage, șters la
- * dezinstalare împreună cu datele aplicației).
+ * O singură dată per instalare — garantat și server-side prin `dedupe_key`.
  */
 export function trackNativeFirstOpen(): void {
   if (typeof window === "undefined") return;
   try {
+    // compatibilitate cu flagul vechi (instalări existente)
     if (window.localStorage.getItem(FIRST_OPEN_KEY)) return;
-    window.localStorage.setItem(FIRST_OPEN_KEY, new Date().toISOString());
   } catch {
     return;
   }
-  trackStoreFunnel("install_first_open", { source: "native_first_open" });
+  const sent = trackStoreFunnelOnce("install_first_open", installId(), {
+    source: "native_first_open",
+  });
+  if (!sent) return;
+  try {
+    window.localStorage.setItem(FIRST_OPEN_KEY, new Date().toISOString());
+  } catch {
+    /* ignore */
+  }
 }
+
+/**
+ * Deschidere prin App Link / Universal Link. Se contorizează o singură dată
+ * per (instalare, cale, fereastră de 30s) — protejează împotriva dublei
+ * declanșări din `appUrlOpen` + fallback-ul web.
+ */
+export function trackAppLinkOpen(
+  path: string,
+  opts?: Parameters<typeof trackStoreFunnel>[1],
+): boolean {
+  const bucket = Math.floor(Date.now() / 30_000);
+  return trackStoreFunnelOnce(
+    "app_link_open",
+    `${installId()}:${path}:${bucket}`,
+    { ...opts, path },
+  );
+}
+
