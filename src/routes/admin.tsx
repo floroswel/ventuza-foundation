@@ -47,6 +47,7 @@ import {
   TrendingUp,
   PowerOff,
   Scale,
+  Gift,
 } from "lucide-react";
 import { AdminShell, type NavItem } from "@/components/admin/AdminShell";
 import {
