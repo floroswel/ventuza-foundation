@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { Gift, Copy, Share2, Check } from "lucide-react";
 import { getMyReferralCode, referralLink, redeemReferral } from "@/lib/referrals";
 import { toast } from "sonner";
