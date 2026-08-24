@@ -56,6 +56,8 @@ export function BootPerformanceMount() {
         .maybeSingle();
       if (cancelled) return;
       const photos = (data?.photos ?? []) as string[];
+      const { performanceSettings } = await import("@/lib/runtime-settings");
+      if (!performanceSettings().photo_reoptimize_enabled) return;
       const { schedulephotoOptimization } = await import("@/lib/photo-optimizer");
       schedulephotoOptimization(photos);
     })();
