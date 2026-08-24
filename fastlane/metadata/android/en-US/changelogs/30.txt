@@ -1,5 +1,1 @@
-Suzeta 1.0.20
-
-- Improvements and bug fixes.
-
-Completează înainte de upload pe Play Console.
+Build 30: faster startup, automatic image optimization, admin-managed performance settings, correct incognito on/off behavior, more reliable push notifications.

@@ -1,5 +1,1 @@
-Suzeta 1.0.20
-
-- Îmbunătățiri și corectări de bug-uri.
-
-Completează înainte de upload pe Play Console.
+Build 30: pornire mai rapida, imagini optimizate automat, setari de performanta gestionate din admin, mod incognito corect la activare si dezactivare, notificari push mai fiabile.
