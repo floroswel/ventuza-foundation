@@ -176,6 +176,7 @@ function AccountPage() {
               <p className="truncate text-lg font-semibold">
                 {profile?.display_name ?? user.email?.split("@")[0]}
               </p>
+              <StaffRoleBadge className="mt-1" />
               {verified ? (
                 <p className="mt-1 inline-flex items-center gap-1 text-xs text-emerald-400">
                   <BadgeCheck className="size-3.5" /> Verificat
