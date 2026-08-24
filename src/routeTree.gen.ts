@@ -24,6 +24,8 @@ import { Route as CommunityGuidelinesRouteImport } from './routes/community-guid
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CruiseRouteImport } from './routes/cruise'
 import { Route as DiscoverRouteImport } from './routes/discover'
+import { Route as EditorialPitchEnRouteImport } from './routes/editorial-pitch-en'
+import { Route as EditorialPitchRoRouteImport } from './routes/editorial-pitch-ro'
 import { Route as EventsRouteImport } from './routes/events'
 import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as FaqRouteImport } from './routes/faq'
@@ -169,6 +171,16 @@ const CruiseRoute = CruiseRouteImport.update({
 const DiscoverRoute = DiscoverRouteImport.update({
   id: '/discover',
   path: '/discover',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditorialPitchEnRoute = EditorialPitchEnRouteImport.update({
+  id: '/editorial-pitch-en',
+  path: '/editorial-pitch-en',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EditorialPitchRoRoute = EditorialPitchRoRouteImport.update({
+  id: '/editorial-pitch-ro',
+  path: '/editorial-pitch-ro',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EventsRoute = EventsRouteImport.update({
@@ -550,6 +562,8 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
+  '/editorial-pitch-en': typeof EditorialPitchEnRoute
+  '/editorial-pitch-ro': typeof EditorialPitchRoRoute
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
   '/faq': typeof FaqRoute
@@ -638,6 +652,8 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
+  '/editorial-pitch-en': typeof EditorialPitchEnRoute
+  '/editorial-pitch-ro': typeof EditorialPitchRoRoute
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
   '/faq': typeof FaqRoute
@@ -726,6 +742,8 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/cruise': typeof CruiseRoute
   '/discover': typeof DiscoverRoute
+  '/editorial-pitch-en': typeof EditorialPitchEnRoute
+  '/editorial-pitch-ro': typeof EditorialPitchRoRoute
   '/events': typeof EventsRouteWithChildren
   '/explore': typeof ExploreRoute
   '/faq': typeof FaqRoute
@@ -816,6 +834,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cruise'
     | '/discover'
+    | '/editorial-pitch-en'
+    | '/editorial-pitch-ro'
     | '/events'
     | '/explore'
     | '/faq'
@@ -904,6 +924,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cruise'
     | '/discover'
+    | '/editorial-pitch-en'
+    | '/editorial-pitch-ro'
     | '/events'
     | '/explore'
     | '/faq'
@@ -991,6 +1013,8 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cruise'
     | '/discover'
+    | '/editorial-pitch-en'
+    | '/editorial-pitch-ro'
     | '/events'
     | '/explore'
     | '/faq'
@@ -1080,6 +1104,8 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CruiseRoute: typeof CruiseRoute
   DiscoverRoute: typeof DiscoverRoute
+  EditorialPitchEnRoute: typeof EditorialPitchEnRoute
+  EditorialPitchRoRoute: typeof EditorialPitchRoRoute
   EventsRoute: typeof EventsRouteWithChildren
   ExploreRoute: typeof ExploreRoute
   FaqRoute: typeof FaqRoute
@@ -1245,6 +1271,20 @@ declare module '@tanstack/react-router' {
       path: '/discover'
       fullPath: '/discover'
       preLoaderRoute: typeof DiscoverRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/editorial-pitch-en': {
+      id: '/editorial-pitch-en'
+      path: '/editorial-pitch-en'
+      fullPath: '/editorial-pitch-en'
+      preLoaderRoute: typeof EditorialPitchEnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/editorial-pitch-ro': {
+      id: '/editorial-pitch-ro'
+      path: '/editorial-pitch-ro'
+      fullPath: '/editorial-pitch-ro'
+      preLoaderRoute: typeof EditorialPitchRoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/events': {
@@ -1873,6 +1913,8 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CruiseRoute: CruiseRoute,
   DiscoverRoute: DiscoverRoute,
+  EditorialPitchEnRoute: EditorialPitchEnRoute,
+  EditorialPitchRoRoute: EditorialPitchRoRoute,
   EventsRoute: EventsRouteWithChildren,
   ExploreRoute: ExploreRoute,
   FaqRoute: FaqRoute,
