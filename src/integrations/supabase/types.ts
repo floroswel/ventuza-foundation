@@ -268,6 +268,48 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_grants: {
+        Row: {
+          actor_id: string
+          amount_cents: number | null
+          code: string | null
+          created_at: string
+          days: number | null
+          id: string
+          kind: string
+          meta: Json
+          reason: string
+          target_user_id: string
+          xp: number | null
+        }
+        Insert: {
+          actor_id: string
+          amount_cents?: number | null
+          code?: string | null
+          created_at?: string
+          days?: number | null
+          id?: string
+          kind: string
+          meta?: Json
+          reason: string
+          target_user_id: string
+          xp?: number | null
+        }
+        Update: {
+          actor_id?: string
+          amount_cents?: number | null
+          code?: string | null
+          created_at?: string
+          days?: number | null
+          id?: string
+          kind?: string
+          meta?: Json
+          reason?: string
+          target_user_id?: string
+          xp?: number | null
+        }
+        Relationships: []
+      }
       admin_impersonation_log: {
         Row: {
           actor_id: string
@@ -5459,6 +5501,20 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_grant_perk: {
+        Args: {
+          _amount_cents?: number
+          _code?: string
+          _days?: number
+          _invoice_id?: string
+          _kind: string
+          _percent?: number
+          _reason: string
+          _target: string
+          _xp?: number
+        }
+        Returns: Json
+      }
       admin_legal_document_history: {
         Args: { _slug: string }
         Returns: {
@@ -5478,6 +5534,24 @@ export type Database = {
           isOneToOne: false
           isSetofReturn: true
         }
+      }
+      admin_list_grants: {
+        Args: { _limit?: number; _target?: string }
+        Returns: {
+          actor_id: string
+          actor_name: string
+          amount_cents: number
+          code: string
+          created_at: string
+          days: number
+          id: string
+          kind: string
+          meta: Json
+          reason: string
+          target_name: string
+          target_user_id: string
+          xp: number
+        }[]
       }
       admin_list_legal_documents: {
         Args: never
