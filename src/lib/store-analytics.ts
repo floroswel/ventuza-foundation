@@ -17,6 +17,8 @@ export type StoreFunnelKind =
   | "intent_open"
   /** păstrat pentru compatibilitate cu evenimentele deja înregistrate */
   | "app_open_intent"
+  /** prima deschidere după instalare a aterizat pe pagina cerută din web (deferred deep link) */
+  | "deferred_deeplink_open"
   | "install_first_open";
 
 /** Sursele posibile de click — folosite și ca `utm_source` în linkul de store. */
@@ -25,7 +27,10 @@ export type StoreClickSource =
   | "smart_banner"
   | "footer"
   | "profile_share"
-  | "native_first_open";
+  | "native_first_open"
+  | "web_click"
+  | "install_referrer"
+  | "app_link";
 
 export const UTM_MEDIUM = "web_app";
 export const UTM_CAMPAIGN = "install_funnel";
