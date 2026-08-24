@@ -64,6 +64,7 @@ import { Route as LegalBadgesRouteImport } from './routes/legal.badges'
 import { Route as LegalBusinessTermsRouteImport } from './routes/legal.business-terms'
 import { Route as LegalChildSafetyRouteImport } from './routes/legal.child-safety'
 import { Route as LegalCommunityRouteImport } from './routes/legal.community'
+import { Route as LegalComplianceReportRouteImport } from './routes/legal.compliance-report'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalDataSafetyRouteImport } from './routes/legal.data-safety'
 import { Route as LegalDmcaRouteImport } from './routes/legal.dmca'
@@ -379,6 +380,11 @@ const LegalCommunityRoute = LegalCommunityRouteImport.update({
   path: '/legal/community',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalComplianceReportRoute = LegalComplianceReportRouteImport.update({
+  id: '/legal/compliance-report',
+  path: '/legal/compliance-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalCookiesRoute = LegalCookiesRouteImport.update({
   id: '/legal/cookies',
   path: '/legal/cookies',
@@ -626,6 +632,7 @@ export interface FileRoutesByFullPath {
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/child-safety': typeof LegalChildSafetyRoute
   '/legal/community': typeof LegalCommunityRoute
+  '/legal/compliance-report': typeof LegalComplianceReportRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
@@ -719,6 +726,7 @@ export interface FileRoutesByTo {
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/child-safety': typeof LegalChildSafetyRoute
   '/legal/community': typeof LegalCommunityRoute
+  '/legal/compliance-report': typeof LegalComplianceReportRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
@@ -814,6 +822,7 @@ export interface FileRoutesById {
   '/legal/business-terms': typeof LegalBusinessTermsRoute
   '/legal/child-safety': typeof LegalChildSafetyRoute
   '/legal/community': typeof LegalCommunityRoute
+  '/legal/compliance-report': typeof LegalComplianceReportRoute
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
@@ -910,6 +919,7 @@ export interface FileRouteTypes {
     | '/legal/business-terms'
     | '/legal/child-safety'
     | '/legal/community'
+    | '/legal/compliance-report'
     | '/legal/cookies'
     | '/legal/data-safety'
     | '/legal/dmca'
@@ -1003,6 +1013,7 @@ export interface FileRouteTypes {
     | '/legal/business-terms'
     | '/legal/child-safety'
     | '/legal/community'
+    | '/legal/compliance-report'
     | '/legal/cookies'
     | '/legal/data-safety'
     | '/legal/dmca'
@@ -1097,6 +1108,7 @@ export interface FileRouteTypes {
     | '/legal/business-terms'
     | '/legal/child-safety'
     | '/legal/community'
+    | '/legal/compliance-report'
     | '/legal/cookies'
     | '/legal/data-safety'
     | '/legal/dmca'
@@ -1187,6 +1199,7 @@ export interface RootRouteChildren {
   LegalBusinessTermsRoute: typeof LegalBusinessTermsRoute
   LegalChildSafetyRoute: typeof LegalChildSafetyRoute
   LegalCommunityRoute: typeof LegalCommunityRoute
+  LegalComplianceReportRoute: typeof LegalComplianceReportRoute
   LegalCookiesRoute: typeof LegalCookiesRoute
   LegalDataSafetyRoute: typeof LegalDataSafetyRoute
   LegalDmcaRoute: typeof LegalDmcaRoute
@@ -1603,6 +1616,13 @@ declare module '@tanstack/react-router' {
       path: '/legal/community'
       fullPath: '/legal/community'
       preLoaderRoute: typeof LegalCommunityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/compliance-report': {
+      id: '/legal/compliance-report'
+      path: '/legal/compliance-report'
+      fullPath: '/legal/compliance-report'
+      preLoaderRoute: typeof LegalComplianceReportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/cookies': {
@@ -2029,6 +2049,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalBusinessTermsRoute: LegalBusinessTermsRoute,
   LegalChildSafetyRoute: LegalChildSafetyRoute,
   LegalCommunityRoute: LegalCommunityRoute,
+  LegalComplianceReportRoute: LegalComplianceReportRoute,
   LegalCookiesRoute: LegalCookiesRoute,
   LegalDataSafetyRoute: LegalDataSafetyRoute,
   LegalDmcaRoute: LegalDmcaRoute,
