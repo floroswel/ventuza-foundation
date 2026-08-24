@@ -301,6 +301,30 @@ function SubsPage() {
           </li>
         </ul>
 
+        <h2 className="mt-8 text-base font-semibold">Istoricul modificărilor</h2>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Fiecare adăugare, înlocuire sau eliminare a unui subprocesator este consemnată aici, cu
+          data și versiunea listei.
+        </p>
+        <ol className="mt-3 space-y-3">
+          {SUBPROCESSOR_CHANGELOG.map((entry) => (
+            <li
+              key={entry.version}
+              className="rounded-xl border border-border bg-surface/40 px-3 py-2 text-xs"
+            >
+              <p className="font-semibold">
+                v{entry.version} · {formatLegalDate(entry.date)}
+              </p>
+              <ul className="mt-1 list-disc space-y-0.5 pl-5 text-muted-foreground">
+                {entry.changes.map((c) => (
+                  <li key={c}>{c}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ol>
+
+
         <p className="mt-6 text-xs text-muted-foreground">
           Modificările listei sunt anunțate cu minim 30 de zile înainte. Poți obiecta la{" "}
           <a className="text-primary" href={`mailto:${OPERATOR.emails.dpo}`}>
