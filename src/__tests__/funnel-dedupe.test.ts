@@ -1,5 +1,16 @@
-// @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach } from "vitest";
+
+// mediu browser minimal (fără jsdom)
+const store = new Map<string, string>();
+const ls = {
+  getItem: (k: string) => store.get(k) ?? null,
+  setItem: (k: string, v: string) => void store.set(k, v),
+  removeItem: (k: string) => void store.delete(k),
+  clear: () => store.clear(),
+};
+(globalThis as any).window = { localStorage: ls, location: { pathname: "/" } };
+(globalThis as any).localStorage = ls;
+(globalThis as any).navigator = { userAgent: "android" };
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: { rpc: vi.fn(() => Promise.resolve({ data: 1, error: null })) },
