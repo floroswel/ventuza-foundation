@@ -34,6 +34,10 @@ type Row = {
   transfer: string;
   dpa: string;
   codeRef: string;
+  /** "activ" = primește date azi; "nominal" = contractat/planificat, fără flux activ. */
+  status?: "activ" | "nominal";
+  /** Data contractării (ISO) sau null dacă nu e încă semnat contractul/DPA. */
+  contractedAt?: string | null;
 };
 
 const ROWS: Row[] = [
@@ -152,6 +156,34 @@ const ROWS: Row[] = [
     dpa: "https://wiki.osmfoundation.org/wiki/Privacy_Policy",
     codeRef: "src/components/nearby/NearbyMap.tsx (MapLibre GL + tile.openstreetmap.org)",
   },
+  {
+    name: "Producător merch (print-on-demand) — entitate nominală",
+    purpose:
+      "Producția și personalizarea articolelor de merch comandate din aplicație. Datele se transmit exclusiv la momentul plasării unei comenzi reale.",
+    data: "Nume destinatar, articol și mărime comandată, ID comandă. Fără orientare, fără date de sănătate, fără locație precisă, fără istoric de chat.",
+    sensitive: false,
+    region: "UE (a se completa cu sediul furnizorului la contractare)",
+    extraEU: false,
+    transfer: "Intra-UE. Dacă furnizorul selectat este extra-UE: SCC 2021/914 + verificare DPF.",
+    dpa: "https://suzeta.ro/legal/dpa",
+    codeRef: "src/routes/legal.subprocessors.tsx (merch_orders — flux inactiv până la contractare)",
+    status: "nominal",
+    contractedAt: null,
+  },
+  {
+    name: "Curier livrare merch — entitate nominală",
+    purpose:
+      "Livrarea coletelor de merch la adresa indicată de utilizator. Datele se transmit exclusiv pentru comenzile expediate.",
+    data: "Nume destinatar, adresă de livrare, telefon de contact, ID comandă (AWB). Fără email de cont, fără orientare, fără date de sănătate, fără date de profil.",
+    sensitive: false,
+    region: "RO/UE (a se completa cu curierul selectat la contractare)",
+    extraEU: false,
+    transfer: "Intra-UE/RO. Curierul acționează ca împuternicit pe baza DPA semnat la contractare.",
+    dpa: "https://suzeta.ro/legal/dpa",
+    codeRef: "src/routes/legal.subprocessors.tsx (merch_orders — flux inactiv până la contractare)",
+    status: "nominal",
+    contractedAt: null,
+  },
 ];
 
 function SubsPage() {
@@ -232,6 +264,19 @@ function SubsPage() {
                 <tr key={r.name} className="border-t border-border align-top">
                   <td className="px-3 py-2 font-medium">
                     {r.name}
+                    {r.status === "nominal" && (
+                      <div className="mt-1">
+                        <span className="rounded bg-muted px-1 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">
+                          Nominal — fără flux activ
+                        </span>
+                      </div>
+                    )}
+                    {r.status === "nominal" && (
+                      <div className="mt-1 text-[10px] text-muted-foreground">
+                        Contractat la: {r.contractedAt ? formatLegalDate(r.contractedAt) : "—"} ·
+                        DPA se semnează și această linie se completează în momentul contractării.
+                      </div>
+                    )}
                     <div className="mt-1 font-mono text-[10px] text-muted-foreground">
                       {r.codeRef}
                     </div>
