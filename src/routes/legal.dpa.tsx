@@ -306,9 +306,35 @@ function DpaPage() {
           )}
         </p>
 
+        <h2 className="mt-8 text-base font-semibold">
+          {en ? "Version history (PDF)" : "Istoricul versiunilor (PDF)"}
+        </h2>
+        <ul className="mt-2 space-y-2 text-xs not-prose">
+          {DPA_VERSIONS.map((v) => (
+            <li
+              key={v.version}
+              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-surface/40 px-3 py-2"
+            >
+              <span>
+                <strong>v{v.version}</strong> · {formatLegalDate(v.date, en ? "en" : "ro")}
+                {v.current && (
+                  <span className="ml-2 rounded bg-emerald-500/15 px-1 py-0.5 text-[10px] font-semibold uppercase text-emerald-600">
+                    {en ? "In force" : "În vigoare"}
+                  </span>
+                )}
+                <span className="block text-muted-foreground">{v.notes}</span>
+              </span>
+              <a className="text-primary underline" href={v.file} download>
+                PDF
+              </a>
+            </li>
+          ))}
+        </ul>
+
         <div className="mt-6">
           <OperatorIdentificationBlock includeIban />
         </div>
+
       </article>
     </div>
   );
