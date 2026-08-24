@@ -5408,6 +5408,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_list_merch_orders: { Args: { _status?: string }; Returns: Json }
       admin_log_notification_access: {
         Args: { _count: number; _justification?: string; _target_user: string }
         Returns: undefined
@@ -5517,6 +5518,10 @@ export type Database = {
       admin_set_legal_hold: {
         Args: { _enable: boolean; _reason: string; _target: string }
         Returns: undefined
+      }
+      admin_set_merch_order_status: {
+        Args: { _id: string; _note?: string; _status: string }
+        Returns: Json
       }
       admin_set_risk_flag_status: {
         Args: { _flag_id: string; _note?: string; _status: string }
@@ -5630,6 +5635,7 @@ export type Database = {
           stolen: boolean
         }[]
       }
+      claim_wallet_quest: { Args: { _key: string }; Returns: Json }
       cleanup_expired_queue_claims: { Args: never; Returns: number }
       cleanup_rate_limit_log: { Args: never; Returns: number }
       cleanup_signup_attempts: { Args: never; Returns: undefined }
@@ -5897,6 +5903,7 @@ export type Database = {
           severity: number
         }[]
       }
+      get_ambassador_leaderboard: { Args: { _limit?: number }; Returns: Json }
       get_country_risk: {
         Args: { _country_code: string }
         Returns: {
@@ -5951,6 +5958,7 @@ export type Database = {
         }[]
       }
       get_my_wallet: { Args: never; Returns: Json }
+      get_my_wallet_quests: { Args: never; Returns: Json }
       get_notification_actors: {
         Args: { _ids: string[] }
         Returns: {
