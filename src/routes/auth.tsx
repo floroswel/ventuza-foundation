@@ -230,152 +230,24 @@ function AuthPage() {
     debugLog({ level: status.includes("ERROR") || status.includes("TIMEOUT") ? "error" : "event", source: `auth.${flow}`, message: status, details: detail });
   }
 
-  function formatGoogleDiagnostic(diagnostic?: NativeGoogleDiagnostic): string {
-    if (!diagnostic) return "SDK-ul nu a furnizat detalii suplimentare.";
-    return [
-      `pas=${diagnostic.stage}`,
-      `cod=${diagnostic.code ?? "necomunicat"}`,
-      `HTTP=${diagnostic.httpStatus ?? "necomunicat"}`,
-      `URL=${diagnostic.url ?? "necomunicat de Google SDK"}`,
-      `durată=${diagnostic.elapsedMs !== undefined ? `${diagnostic.elapsedMs} ms` : "necronometrat"}`,
-      diagnostic.message ? `mesaj=${diagnostic.message}` : null,
-    ].filter(Boolean).join(" · ");
-  }
-
   useEffect(() => {
     let cancelled = false;
     const debugOn = isDebugEnabled();
     setDiagnosticEnabled(debugOn);
     if (debugOn) installOnce();
     void (async () => {
-      // Orice platformă nativă (nu doar Android) ascunde butonul Google.
-      const native = (await isNativePlatform()) || (await isNativeAndroid());
+      const native = isNativePlatformSync();
       if (cancelled) return;
       setIsNative(native);
       setSignatureInfo(readAndroidSignature());
-      // Sondăm Client ID-ul DOAR pe nativ. Pe web nu e nevoie (folosim brokerul
-      // managed) și fetch-ul suplimentar întârzia inutil randarea formularului.
-      if (native) {
-        const [ready, clientId] = await Promise.all([
-          hasNativeGoogleConfigAsync(),
-          resolveWebClientId(),
-        ]);
-        if (!cancelled) setRuntimeClientId(clientId);
-        if (!cancelled) setNativeGoogleReady(ready);
-      }
-      if (!cancelled) setNativeChecked(true);
+      setNativeChecked(true);
     })();
     return () => {
       cancelled = true;
     };
   }, []);
-// Logarea cu Google este DEZACTIVATĂ complet (web + nativ). Autentificarea
-  // se face exclusiv cu email + parolă. Codul rămâne în fișier ca schelet
-  // dormant, dar butonul nu se randează niciodată.
-  const googleAvailable = false;
 
   const certificateMatch = classifySigningCertificate(signatureInfo?.sha1);
-
-
-
-  async function onGoogleSignIn() {
-    if (googleRequestActive.current) return;
-    if (countryGate.isBlocked) {
-      navigate({ to: "/blocked-region", replace: true });
-      return;
-    }
-    if (mode === "signup" && birthDate) {
-      // Persist pentru completare profil post-OAuth (SessionGuards → /n).
-      try {
-        sessionStorage.setItem("vz_pending_birthdate", birthDate);
-        localStorage.setItem("vz_pending_birthdate", birthDate);
-      } catch { /* ignore */ }
-    }
-    googleRequestActive.current = true;
-    setAuthError(null);
-    setGoogleBusy(true);
-    addDiagnostic("google", "REQUEST_STARTED", `platform=${isNative ? "android-native" : "web"}`);
-    try {
-      // ANDROID: Chrome Custom Tabs mai întâi. Nu depinde de clientul OAuth
-      // Android (package + SHA-1), deci funcționează inclusiv când amprenta
-      // build-ului din Play nu e trecută în Google Cloud. SDK-ul nativ
-      // (Credential Manager) rămâne fallback.
-      if (await isNativePlatform()) {
-        const pressedAt = Date.now();
-        addDiagnostic("google", "CUSTOM_TAB_STARTED", `mode=${mode}`);
-        const viaBrowser = await browserGoogleSignIn(180_000, mode === "signup" ? "signup" : "login");
-        addDiagnostic("google", "CUSTOM_TAB_RETURNED", `durată=${Date.now() - pressedAt} ms`);
-        if (viaBrowser.ok) {
-          addDiagnostic("google", "DEEP_LINK_RECEIVED");
-          addDiagnostic("google", "SUPABASE_SESSION_CREATED");
-          return;
-        }
-        addDiagnostic("google", "CUSTOM_TAB_FAILED", viaBrowser.message ?? viaBrowser.code);
-
-        // Fallback: SDK nativ (Credential Manager).
-        authLog("CREDENTIAL_REQUEST_STARTED", { clientIdPresent: !!runtimeClientId });
-        addDiagnostic("google", "CREDENTIAL_REQUEST_STARTED", `clientId=${runtimeClientId ? "prezent" : "în curs"}`);
-        const res = await nativeGoogleSignIn();
-        setNativeGoogleLogs(readNativeGoogleLogs());
-        setNativeLogcat(readNativeLogcat());
-        setGoogleRuntime(getNativeGoogleRuntimeState());
-        addDiagnostic("google", "CREDENTIAL_RETURNED", `durată=${Date.now() - pressedAt} ms`);
-        if (res.ok) {
-          addDiagnostic("google", "ID_TOKEN_RECEIVED", formatGoogleDiagnostic(res.diagnostic));
-          authLog("SUPABASE_SESSION_CREATED", { via: "native_sdk" });
-          addDiagnostic("google", "SUPABASE_SESSION_CREATED");
-          authLog("NAVIGATION_FINISHED", { via: "native_sdk" });
-          return;
-        }
-
-        const label = {
-          cancelled: "GOOGLE_USER_CANCELLED",
-          no_credential: "GOOGLE_NO_CREDENTIAL_AVAILABLE",
-          reauth_failed: "GOOGLE_ACCOUNT_REAUTH_FAILED",
-          no_id_token: "GOOGLE_NO_ID_TOKEN",
-          unsupported: "GOOGLE_SDK_UNSUPPORTED",
-          error: "GOOGLE_SDK_ERROR",
-        }[res.code];
-        addDiagnostic("google", label, formatGoogleDiagnostic(res.diagnostic));
-        if (viaBrowser.code === "cancelled" || res.code === "cancelled") {
-          handleAuthError(new Error("Autentificarea Google a fost anulată."), {
-            message: "Autentificarea Google a fost anulată.",
-            action: "Apasă din nou și alege contul Google.",
-          });
-          return;
-        }
-        handleAuthError(new Error(res.message ?? viaBrowser.message ?? "Google sign-in failed"), {
-          message:
-            res.code === "reauth_failed"
-              ? "Contul Google de pe telefon cere reautentificare (Setări → Conturi → Google)."
-              : "Nu am putut finaliza autentificarea cu Google.",
-          action: "Încearcă din nou sau folosește email și parolă.",
-        });
-        return;
-
-      } else {
-
-
-
-        addDiagnostic("google", "OAUTH_BROKER_STARTED", `redirect=${oauthOrigin()}/auth`);
-        const result = await lovable.auth.signInWithOAuth("google", {
-          redirect_uri: `${oauthOrigin()}/auth`,
-        });
-        if (result?.error) {
-          addDiagnostic("google", "ERROR", result.error.message);
-          handleAuthError(result.error);
-          return;
-        }
-        addDiagnostic("google", result.redirected ? "REDIRECT_STARTED" : "RESPONSE_RECEIVED");
-        // if redirected, browser leaves this page
-      }
-
-    } finally {
-      googleRequestActive.current = false;
-      setGoogleBusy(false);
-      addDiagnostic("google", "REQUEST_FINISHED");
-    }
-  }
 
 
 
@@ -396,54 +268,35 @@ function AuthPage() {
     toast.error(mapped.message, { description: mapped.action, duration: mapped.retryAfterSec && mapped.retryAfterSec > 30 ? 8000 : 5500 });
   }
 
-  // Pagina web servește și ca „punte” pentru aplicația Android: când e
-  // deschisă în Chrome Custom Tabs cu ?native_bridge=1, după autentificare
-  // trimite sesiunea înapoi în app prin deep link în loc să navigheze intern.
+  // Linkuri/callback-uri vechi de Google OAuth: `?native_bridge=1&auto=google`
+  // sau un hash `#...provider=google` / `#error=...`. Nu mai există niciun flux
+  // OAuth — afișăm un mesaj clar și lăsăm userul pe email + parolă.
   useEffect(() => {
-    if (search.native_bridge === "1") {
-      try { sessionStorage.setItem("vz_native_bridge", "1"); } catch { /* ignore */ }
+    let legacy = search.auto === "google" || search.native_bridge !== undefined;
+    try {
+      const hash = window.location.hash ?? "";
+      if (/provider=google|providerToken|access_token|error_description/i.test(hash)) legacy = true;
+      // curățăm resturile de OAuth din URL ca să nu rămână la refresh
+      if (legacy && hash) {
+        window.history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+      sessionStorage.removeItem("vz_native_bridge");
+    } catch { /* ignore */ }
+    if (legacy) {
+      setLegacyOauthNotice(true);
+      addDiagnostic("legacy", "GOOGLE_OAUTH_LINK_BLOCKED", "Google OAuth eliminat — redirect către email + parolă");
     }
-  }, [search.native_bridge]);
-
-  // Auto-pornire OAuth când puntea e deschisă din aplicație: userul a apăsat
-  // deja „Continuă cu Google” în app, nu trebuie să mai apese încă o dată.
-  const bridgeAutoStarted = useRef(false);
-  useEffect(() => {
-    if (!googleAvailable) return; // Google dezactivat: nu porni niciun flux OAuth.
-    if (bridgeAutoStarted.current) return;
-    if (authLoading || user) return;
-    if (search.native_bridge !== "1" || search.auto !== "google") return;
-    bridgeAutoStarted.current = true;
-    void onGoogleSignIn();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authLoading, user, search.native_bridge, search.auto]);
-
-
+  }, [search.auto, search.native_bridge]);
 
   useEffect(() => {
     if (!authLoading && user) {
       void (async () => {
-        // Catch OAuth round-trips that landed back on /auth.
         await persistPendingBirthdate(user.id);
-        let bridge = search.native_bridge === "1";
-        try { bridge = bridge || sessionStorage.getItem("vz_native_bridge") === "1"; } catch { /* ignore */ }
-        if (bridge) {
-          try { sessionStorage.removeItem("vz_native_bridge"); } catch { /* ignore */ }
-          const { data } = await supabase.auth.getSession();
-          const session = data.session;
-          if (session?.access_token && session?.refresh_token) {
-            const params = new URLSearchParams({
-              access_token: session.access_token,
-              refresh_token: session.refresh_token,
-            });
-            window.location.href = `${NATIVE_BRIDGE_CALLBACK}#${params.toString()}`;
-            return;
-          }
-        }
         await routeAfterAuth(user.id, navigate, search.redirect);
       })();
     }
-  }, [authLoading, user, navigate, search.redirect, search.native_bridge]);
+  }, [authLoading, user, navigate, search.redirect]);
 
   function ageFromBirthDate(iso: string): number | null {
     if (!iso) return null;
