@@ -6,7 +6,7 @@ import { SUZETA_ICON_URL } from "@/lib/brand-assets";
  * și se topește în aplicație. Rulează o singură dată per lansare de aplicație
  * (sessionStorage), ca navigarea internă să nu o reafișeze.
  *
- * Durată totală ~1.2s: 900ms puls + 300ms fade-out.
+ * Durată totală ~0.64s: 420ms puls + 220ms fade-out (era 1.2s).
  */
 const SEEN_KEY = "suzeta_splash_shown";
 
@@ -35,8 +35,8 @@ export function AppSplash() {
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
     setMounted(true);
-    const fadeAt = window.setTimeout(() => setLeaving(true), reduce ? 250 : 900);
-    const doneAt = window.setTimeout(() => setMounted(false), reduce ? 500 : 1200);
+    const fadeAt = window.setTimeout(() => setLeaving(true), reduce ? 150 : 420);
+    const doneAt = window.setTimeout(() => setMounted(false), reduce ? 320 : 640);
     return () => {
       window.clearTimeout(fadeAt);
       window.clearTimeout(doneAt);
