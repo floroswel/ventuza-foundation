@@ -33,13 +33,18 @@ export async function prefetchEssentials(userId: string): Promise<void> {
       .eq("id", userId)
       .maybeSingle();
 
-    // Pornim în paralel cu profilul, nu după el.
-    const unreadP = supabase.rpc("get_unread_counts").then(
-      (r) => r,
-      () => null,
-    );
+    // Pornim în paralel cu profilul, nu după el: lista de conversații e
+    // necesară pentru badge-ul de mesaje de pe primul ecran.
+    const convP = supabase
+      .from("conversations")
+      .select("id, user_a, user_b")
+      .or(`user_a.eq.${userId},user_b.eq.${userId}`)
+      .then(
+        (r) => r,
+        () => null,
+      );
 
-    const [{ data: profile }] = await Promise.all([profileP, unreadP]);
+    const [{ data: profile }] = await Promise.all([profileP, convP]);
 
     const photos = (profile?.photos ?? []) as string[];
     if (photos.length) {
