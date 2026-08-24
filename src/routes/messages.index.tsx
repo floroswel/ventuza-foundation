@@ -1,4 +1,5 @@
 import { safeFormat, safeLocale } from "@/lib/safe-locale";
+import { ConversationListSkeleton } from "@/components/skeletons/FirstScreenSkeletons";
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -197,9 +198,7 @@ function MessagesPage() {
 
 
         {loading ? (
-          <div className="flex items-center justify-center py-24 text-muted-foreground">
-            <Loader2 className="size-5 animate-spin" />
-          </div>
+          <ConversationListSkeleton />
         ) : loadError ? (
           <div className="mx-4 my-8 rounded-md border border-destructive/30 bg-destructive/10 px-4 py-5 text-center">
             <p className="text-sm font-medium text-foreground">Conversațiile nu s-au putut încărca.</p>
@@ -448,11 +447,7 @@ function InterestTab() {
   }, [actorIds]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center py-24 text-muted-foreground">
-        <Loader2 className="size-5 animate-spin" />
-      </div>
-    );
+    return <ConversationListSkeleton count={5} />;
   }
 
   if (rows.length === 0) {

@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { DiscoverSkeleton } from "@/components/skeletons/FirstScreenSkeletons";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
@@ -830,10 +831,9 @@ function DiscoverPage() {
       )}
 
       {loading ? (
-        <CenterMessage
-          icon={<Loader2 className="size-6 animate-spin text-primary" />}
-          title="Finding people…"
-        />
+        // Skeleton cu aceeași formă ca grila reală: layoutul e vizibil instant
+        // și nu mai sare când sosesc datele.
+        <DiscoverSkeleton />
       ) : loadError ? (
         <CenterMessage
           icon={<Compass className="size-8 text-destructive" />}
