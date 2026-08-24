@@ -30,3 +30,55 @@ export function isMobileWebBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
   return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
 }
+
+type RelatedApp = { platform?: string; id?: string; url?: string };
+
+/**
+ * Detectează dacă aplicația Android e deja instalată pe device.
+ *
+ * Folosește `navigator.getInstalledRelatedApps()` (Chrome Android), care
+ * funcționează pe baza `related_applications` din manifest + Digital Asset
+ * Links (`/.well-known/assetlinks.json`). Dacă API-ul nu există, întoarce
+ * `null` = necunoscut (nu „nu e instalată”).
+ */
+export async function isAndroidAppInstalled(): Promise<boolean | null> {
+  if (typeof navigator === "undefined") return null;
+  const nav = navigator as Navigator & {
+    getInstalledRelatedApps?: () => Promise<RelatedApp[]>;
+  };
+  if (typeof nav.getInstalledRelatedApps !== "function") return null;
+  try {
+    const apps = await nav.getInstalledRelatedApps();
+    return apps.some((a) => a.platform === "play" && a.id === ANDROID_PACKAGE);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * URL `intent://` care deschide aplicația nativă dacă e instalată, iar dacă nu,
+ * cade automat pe Google Play (`S.browser_fallback_url`). Un singur click,
+ * fără timere fragile.
+ */
+export function androidIntentUrl(path = "/"): string {
+  const clean = path.startsWith("/") ? path : `/${path}`;
+  const fallback = encodeURIComponent(PLAY_STORE_URL);
+  return (
+    `intent://suzeta.app${clean}#Intent;scheme=https;package=${ANDROID_PACKAGE};` +
+    `S.browser_fallback_url=${fallback};end`
+  );
+}
+
+/**
+ * Deschide aplicația instalată (prin intent) sau Google Play.
+ * Pe non-Android / desktop merge direct la Play Store.
+ */
+export function openAppOrStore(path = "/"): void {
+  if (typeof window === "undefined") return;
+  if (isAndroidWebBrowser()) {
+    window.location.href = androidIntentUrl(path);
+    return;
+  }
+  window.open(PLAY_STORE_URL, "_blank", "noopener,noreferrer");
+}
+
