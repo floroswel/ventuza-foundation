@@ -32,8 +32,9 @@ export async function detectCountryCode(): Promise<string | null> {
   if (hint) return hint;
   inflight ??= (async () => {
     try {
-      const { apiUrl } = await import("@/lib/native-api-origin");
-      const res = await fetch(apiUrl("/api/public/geo-country"), { cache: "force-cache" });
+      // installNativeApiOrigin() rewrites relative /api/* calls to the
+      // production origin when running inside the native shell.
+      const res = await fetch("/api/public/geo-country", { cache: "force-cache" });
       if (!res.ok) return null;
       const json = (await res.json()) as { country?: string | null };
       const cc = String(json?.country ?? "").toUpperCase();
