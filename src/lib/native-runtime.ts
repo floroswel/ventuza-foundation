@@ -91,6 +91,16 @@ export async function bootstrapNativeRuntime(router: Router<any, any, any, any, 
         // Query-ul (inclusiv utm_*) este păstrat intact la navigare.
         const path = `${u.pathname}${u.search}${u.hash}`;
         if (path && path !== "/") router.navigate({ to: path, replace: false });
+        // Atribuire App Link, deduplicată (același link poate genera mai multe
+        // evenimente de sistem la o singură deschidere).
+        void (async () => {
+          const { trackAppLinkOpen } = await import("@/lib/store-analytics");
+          trackAppLinkOpen(u.pathname || "/", {
+            source: "app_link",
+            appInstalled: true,
+            referrer: u.search ? u.search.replace(/^\?/, "") : null,
+          });
+        })();
       } catch {
         /* ignore invalid url */
       }
