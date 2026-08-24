@@ -6163,6 +6163,7 @@ export type Database = {
         Args: { _delta?: number; _metric: string; _user_id: string }
         Returns: undefined
       }
+      is_account_usable: { Args: never; Returns: boolean }
       is_admin_or_above: { Args: { _user_id: string }; Returns: boolean }
       is_blocked_between: { Args: { a: string; b: string }; Returns: boolean }
       is_conversation_participant: {
@@ -6546,6 +6547,7 @@ export type Database = {
       set_looking_now:
         | { Args: { _hours: number; _intent?: string }; Returns: undefined }
         | { Args: { _hours: number; _intent: string }; Returns: undefined }
+      set_my_profile_link: { Args: { _slug: string }; Returns: string }
       shares_conversation_with: {
         Args: { _a: string; _b: string }
         Returns: boolean
