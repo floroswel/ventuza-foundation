@@ -821,6 +821,18 @@ function SettingsPage() {
             >
               <Shield className="size-4" /> Acord prelucrare date (DPA)
             </Link>
+            <Link
+              to="/legal/transfers"
+              className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
+            >
+              <Shield className="size-4" /> Transferuri extra-UE (SCC / DPF)
+            </Link>
+            <Link
+              to="/legal/gdpr-request"
+              className="flex items-center gap-2 py-1.5 text-primary hover:text-primary/80"
+            >
+              <Shield className="size-4" /> Trimite o cerere GDPR →
+            </Link>
 
 
 
