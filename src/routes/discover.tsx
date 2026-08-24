@@ -1805,12 +1805,8 @@ function EmptyState({
       <CenterMessage
         icon={<Compass className="size-8 text-primary" />}
         title="Activează locația"
-        desc="Avem nevoie de zonă (aproximativă) ca să-ți arătăm cine e prin apropiere. Locația ta exactă rămâne pe device. Fără locație nu îți putem arăta oameni potriviți, dar îți putem trimite notificare când apar."
-        action={
-          <Button variant="hero" onClick={onRefresh}>
-            Permite locația
-          </Button>
-        }
+        desc="Avem nevoie de zonă (aproximativă) ca să-ți arătăm cine e prin apropiere. Dacă n-ai GPS sau ai refuzat permisiunea, poți alege manual orașul — Discover funcționează oricum."
+        action={<LocationOnboarding compact onDone={onRefresh} />}
       />
     );
   }
