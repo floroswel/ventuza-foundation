@@ -88,12 +88,37 @@ export async function bootstrapNativeRuntime(router: Router<any, any, any, any, 
     App.addListener("appUrlOpen", ({ url }) => {
       try {
         const u = new URL(url);
+        // Query-ul (inclusiv utm_*) este păstrat intact la navigare.
         const path = `${u.pathname}${u.search}${u.hash}`;
         if (path && path !== "/") router.navigate({ to: path, replace: false });
       } catch {
         /* ignore invalid url */
       }
     });
+
+    // Deferred deep link: dacă instalarea a pornit dintr-un link web
+    // (Install Referrer Play sau intenția salvată în storage), aterizăm pe
+    // pagina cerută, cu parametrii UTM păstrați în URL.
+    void (async () => {
+      try {
+        const { resolveDeferredDeepLink, deferredTarget } = await import(
+          "@/lib/deferred-deeplink"
+        );
+        const link = await resolveDeferredDeepLink();
+        if (!link || link.path === "/") return;
+        const target = deferredTarget(link);
+        router.navigate({ to: target, replace: true });
+        const { trackStoreFunnel } = await import("@/lib/store-analytics");
+        trackStoreFunnel("deferred_deeplink_open", {
+          source: link.origin,
+          path: link.path,
+          referrer: new URLSearchParams(link.utm).toString() || null,
+        });
+      } catch {
+        /* deep link amânat indisponibil — pornim normal */
+      }
+    })();
+
   } catch (err) {
     console.warn("[native] back button unavailable", err);
   }
