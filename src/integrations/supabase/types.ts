@@ -4269,7 +4269,9 @@ export type Database = {
           medium: string | null
           path: string | null
           platform: string | null
+          referrer: string | null
           source: string | null
+          variant: string | null
         }
         Insert: {
           app_installed?: boolean | null
@@ -4280,7 +4282,9 @@ export type Database = {
           medium?: string | null
           path?: string | null
           platform?: string | null
+          referrer?: string | null
           source?: string | null
+          variant?: string | null
         }
         Update: {
           app_installed?: boolean | null
@@ -4291,7 +4295,9 @@ export type Database = {
           medium?: string | null
           path?: string | null
           platform?: string | null
+          referrer?: string | null
           source?: string | null
+          variant?: string | null
         }
         Relationships: []
       }
@@ -5628,13 +5634,39 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_store_funnel_alerts: {
+        Args: never
+        Returns: {
+          code: string
+          message: string
+          observed: number
+          severity: string
+          threshold: number
+        }[]
+      }
+      admin_store_funnel_export: {
+        Args: { _from: string; _to: string }
+        Returns: {
+          app_link_opens: number
+          clicks: number
+          day: string
+          installs: number
+          intent_opens: number
+          platform: string
+          source: string
+          variant: string
+        }[]
+      }
       admin_store_funnel_summary: {
         Args: { _days?: number }
         Returns: {
-          app_opens: number
+          app_link_opens: number
           clicks: number
           installs: number
+          intent_opens: number
+          platform: string
           source: string
+          variant: string
         }[]
       }
       admin_suspend_partner: {
@@ -6285,9 +6317,11 @@ export type Database = {
           _medium?: string
           _path?: string
           _platform?: string
+          _referrer?: string
           _source?: string
+          _variant?: string
         }
-        Returns: undefined
+        Returns: number
       }
       longtransactionsenabled: { Args: never; Returns: boolean }
       mark_inactive_for_deletion: { Args: never; Returns: number }
