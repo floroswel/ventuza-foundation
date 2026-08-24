@@ -4354,6 +4354,7 @@ export type Database = {
           app_installed: boolean | null
           campaign: string | null
           created_at: string
+          dedupe_key: string | null
           id: number
           kind: string
           medium: string | null
@@ -4367,6 +4368,7 @@ export type Database = {
           app_installed?: boolean | null
           campaign?: string | null
           created_at?: string
+          dedupe_key?: string | null
           id?: number
           kind: string
           medium?: string | null
@@ -4380,6 +4382,7 @@ export type Database = {
           app_installed?: boolean | null
           campaign?: string | null
           created_at?: string
+          dedupe_key?: string | null
           id?: number
           kind?: string
           medium?: string | null
@@ -6435,6 +6438,7 @@ export type Database = {
         Args: {
           _app_installed?: boolean
           _campaign?: string
+          _dedupe_key?: string
           _kind: string
           _medium?: string
           _path?: string
