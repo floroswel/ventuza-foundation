@@ -1,0 +1,1 @@
+Build 30: faster startup, automatic image optimization, admin-managed performance settings, correct incognito on/off behavior, more reliable push notifications.
