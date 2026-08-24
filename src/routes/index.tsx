@@ -254,16 +254,6 @@ function Landing() {
             >
               Sign in
             </Link>
-            {googleAvailable && (
-              <button
-                type="button"
-                onClick={() => void handleGoogle()}
-                disabled={googleBusy}
-                className="inline-flex h-12 items-center justify-center rounded-full border border-border bg-surface text-sm font-medium text-foreground transition-colors hover:bg-muted/40 disabled:opacity-60"
-              >
-                Continue with Google
-              </button>
-            )}
           </div>
         </section>
 
