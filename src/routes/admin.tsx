@@ -196,7 +196,8 @@ type Section =
   | "macros"
   | "verifqueue"
   | "crashlog"
-  | "perfmetrics";
+  | "perfmetrics"
+  | "installfunnel";
 
 type Report = {
   id: string;
@@ -290,6 +291,7 @@ function AdminDashboard() {
       "verifqueue",
       "crashlog",
       "perfmetrics",
+      "installfunnel",
     ];
     const applyHash = () => {
       const next = window.location.hash.replace("#", "") as Section;
@@ -560,6 +562,7 @@ function AdminDashboard() {
     { id: "health", label: "System Health", icon: Activity, group: "System" },
     { id: "crashlog", label: "Crash log (device)", icon: ShieldAlert, group: "System", hint: "Erori JS locale, fără terți" },
     { id: "perfmetrics", label: "Performanță (TTI)", icon: Activity, group: "System", hint: "TTFR/TTI per versiune de build" },
+    { id: "installfunnel", label: "Funnel instalări", icon: Activity, group: "System", hint: "Click store → instalare, pe sursă UTM" },
     { id: "security", label: "Securitate", icon: KeyRound, group: "System" },
     { id: "ratelimit", label: "Rate limit", icon: Activity, group: "System" },
     { id: "signupthrottle", label: "Signup throttling", icon: ShieldAlert, group: "System" },
@@ -637,6 +640,7 @@ function AdminDashboard() {
       {section === "health" && <SystemHealthPanel />}
       {section === "crashlog" && <CrashLogPanel />}
       {section === "perfmetrics" && <PerfMetricsPanel />}
+      {section === "installfunnel" && <InstallFunnelPanel />}
       {section === "ratelimit" && <RateLimitPanel />}
       {section === "signupthrottle" && <SignupThrottlePanel />}
       {section === "settings" && isAdmin && <SettingsAndFlagsPanel />}
