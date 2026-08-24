@@ -432,6 +432,8 @@ function Landing() {
       </main>
 
       <PublicFooter />
+      <GetAppBanner />
+
     </div>
   );
 }
