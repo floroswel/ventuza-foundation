@@ -185,9 +185,9 @@ function PrivacyPage() {
               </h2>
               <p className="mt-2 text-foreground/85">
                 Punct unic de contact pentru autorități și utilizatori conform DSA Art. 11-12:
-                <a className="text-primary" href="mailto:dsa@suzeta.app">
+                <a className="text-primary" href="mailto:dsa@suzeta.ro">
                   {" "}
-                  dsa@suzeta.app
+                  dsa@suzeta.ro
                 </a>
                 . Răspundem în limba română și engleză. Vezi și{" "}
                 <Link className="text-primary" to="/legal/dsa">
@@ -199,7 +199,7 @@ function PrivacyPage() {
               <h2 className="mt-6 text-base font-semibold">5. Drepturile tale GDPR</h2>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
                 <li>
-                  <strong>Acces</strong> — copie a datelor tale (cerere la support@suzeta.app,
+                  <strong>Acces</strong> — copie a datelor tale (cerere la support@suzeta.ro,
                   răspuns în 30 de zile).
                 </li>
                 <li>
@@ -247,8 +247,8 @@ function PrivacyPage() {
                 Aplicația este interzisă sub 18 ani. Verificăm vârsta prin data nașterii la
                 onboarding. Dacă descoperim un cont minor, îl ștergem imediat. Raportează suspiciuni
                 la{" "}
-                <a className="text-primary" href="mailto:abuse@suzeta.app">
-                  abuse@suzeta.app
+                <a className="text-primary" href="mailto:abuse@suzeta.ro">
+                  abuse@suzeta.ro
                 </a>
                 .
               </p>

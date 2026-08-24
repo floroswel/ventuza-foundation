@@ -150,7 +150,7 @@ ${b.containment_actions ?? "(de completat)"}
 ${b.root_cause ?? "(în investigație)"}
 
 7. DPO / PUNCT CONTACT
-${b.dpo_contact ?? "dpo@suzeta.eu"}
+${b.dpo_contact ?? "dpo@suzeta.ro"}
 
 8. NOTIFICARE PERSOANE VIZATE (Art. 34)
 [Da / Nu — motiv]
@@ -178,7 +178,7 @@ CE POȚI FACE TU
 - Fii vigilent la mesaje de phishing
 
 Ne pare rău pentru neplăceri și îți mulțumim pentru încrederea acordată.
-Echipa Suzeta | dpo@suzeta.eu`;
+Echipa Suzeta | dpo@suzeta.ro`;
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     await (supabaseAdmin as any)
       .from("breach_incidents")

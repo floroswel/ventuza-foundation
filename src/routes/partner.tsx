@@ -249,7 +249,7 @@ function PartnerPortal() {
     }
     if (pendingApp) {
       const fullId = pendingApp.id;
-      const mailto = `mailto:business@suzeta.app?subject=${encodeURIComponent(`Cerere partener ${fullId}`)}&body=${encodeURIComponent(`Bună,\n\nID cerere: ${fullId}\nDenumire: ${pendingApp.legal_name ?? "—"}\n\n[descrie aici clarificarea]\n\nMulțumesc.`)}`;
+      const mailto = `mailto:business@suzeta.ro?subject=${encodeURIComponent(`Cerere partener ${fullId}`)}&body=${encodeURIComponent(`Bună,\n\nID cerere: ${fullId}\nDenumire: ${pendingApp.legal_name ?? "—"}\n\n[descrie aici clarificarea]\n\nMulțumesc.`)}`;
       const statusLabels: Record<string, { label: string; cls: string; desc: string }> = {
         pending: {
           label: "În așteptare",
@@ -269,7 +269,7 @@ function PartnerPortal() {
         rejected: {
           label: "Respinsă",
           cls: "border-red-500/40 bg-red-500/5",
-          desc: "Cererea a fost respinsă. Pentru clarificări scrie la business@suzeta.app.",
+          desc: "Cererea a fost respinsă. Pentru clarificări scrie la business@suzeta.ro.",
         },
         approved: {
           label: "Aprobată",

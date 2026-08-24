@@ -1,6 +1,6 @@
 # Suzeta — Editorial Nomination for Google Play
 
-Contact: contact@suzeta.eu · DPO: dpo@suzeta.app
+Contact: contact@suzeta.ro · DPO: dpo@suzeta.ro
 Package: `app.suzeta` · Website: https://www.suzeta.app
 Category: Dating · Content rating: 18+ · Country of origin: Romania
 

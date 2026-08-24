@@ -53,8 +53,8 @@ function Page() {
               <li>Alerte automate pentru queries anormale și escaladări de privilegii.</li>
               <li>
                 Raportare comunitate la{" "}
-                <a className="text-primary" href="mailto:security@suzeta.app">
-                  security@suzeta.app
+                <a className="text-primary" href="mailto:security@suzeta.ro">
+                  security@suzeta.ro
                 </a>
                 .
               </li>

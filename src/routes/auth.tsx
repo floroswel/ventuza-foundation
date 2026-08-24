@@ -500,7 +500,7 @@ function AuthPage() {
     }
 
     if (captchaMisconfigured) {
-      handleAuthError(new Error("Verificarea anti-bot nu este configurată pentru acest domeniu. Contactează suportul (dpo@suzeta.eu)."));
+      handleAuthError(new Error("Verificarea anti-bot nu este configurată pentru acest domeniu. Contactează suportul (dpo@suzeta.ro)."));
       return;
     }
     if (captchaRequired && !captchaToken) {
@@ -844,7 +844,7 @@ function AuthPage() {
       return;
     }
     if (captchaMisconfigured) {
-      handleAuthError(new Error("Verificarea anti-bot nu este configurată. Contactează suportul (dpo@suzeta.eu)."));
+      handleAuthError(new Error("Verificarea anti-bot nu este configurată. Contactează suportul (dpo@suzeta.ro)."));
       return;
     }
     if (captchaRequired && !captchaToken) {

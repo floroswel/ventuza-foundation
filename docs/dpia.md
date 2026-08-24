@@ -4,7 +4,7 @@
 **Versiune:** 1.0.0
 **Data:** 2026-07-13
 **Operator:** VOMIX GENIUS S.R.L., CUI 43025661, România
-**DPO:** dpo@suzeta.eu
+**DPO:** dpo@suzeta.ro
 **Bază legală DPIA:** GDPR Art. 35 (prelucrare la scară largă de date Art. 9 —
 orientare sexuală + date sănătate opționale).
 
@@ -215,7 +215,7 @@ cu consimțământ explicit.
 
 ### 4.2 Organizatorice
 
-- DPO desemnat (dpo@suzeta.eu).
+- DPO desemnat (dpo@suzeta.ro).
 - Registru Art. 30 actualizat la fiecare feature nou (`docs/gdpr-art-30-register.md`).
 - Plan incident response (`docs/incident-response-plan.md`).
 - Testare backup-restore documentată (`docs/backup-restore-procedure.md`).

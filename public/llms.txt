@@ -16,7 +16,7 @@ Canonical site: https://suzeta.app/
 - Price: free, no subscriptions, no paywalls
 - Languages: Romanian and English
 - Operator region: European Union (Romania), GDPR compliant
-- Contact: support@suzeta.app
+- Contact: support@suzeta.ro
 
 ## What makes it different
 

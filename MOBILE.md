@@ -97,7 +97,7 @@ Sau Google Play Billing direct prin `@capacitor-community/in-app-purchases`. Spu
 - [ ] Icon 512×512 PNG
 - [ ] Descriere lungă + scurtă (RO + EN recomandat)
 - [ ] Politica privind conținutul sexual / dating respectată (NO nudity, NO escort)
-- [ ] Email suport activ: `support@suzeta.app`
+- [ ] Email suport activ: `support@suzeta.ro`
 
 ---
 

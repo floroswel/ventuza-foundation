@@ -22,10 +22,10 @@ Checklist final de urcat prima versiune la Google Play (track: internal → alph
 
 - [ ] **All or some functionality restricted → Provide test credentials**
 - Cont test dedicat pentru reviewer Play:
-  - Email: `play-review@suzeta.eu` (creat pre-submisie)
+  - Email: `play-review@suzeta.ro` (creat pre-submisie)
   - Parola: (doar în submisie, nu în repo)
   - Instrucțiuni: "Login cu email/parolă. Age verification: reviewer poate cere
-    override — contactează dev@suzeta.eu pentru cont pre-verificat."
+    override — contactează dev@suzeta.ro pentru cont pre-verificat."
 
 ## 4. App content → Content ratings (IARC)
 
@@ -118,7 +118,7 @@ Chestionar IARC standard. Răspunsuri recomandate pentru dating LGBTQ+ 18+:
 ## 15. Store listing → Contact details
 
 - [ ] Website: `https://www.suzeta.app`
-- [ ] Email: `contact@suzeta.eu`
+- [ ] Email: `contact@suzeta.ro`
 - [ ] Phone: opțional (recomandat gol dacă nu ai număr business dedicat).
 - [ ] Privacy policy: `https://www.suzeta.app/legal/privacy`
 
@@ -132,7 +132,7 @@ Chestionar IARC standard. Răspunsuri recomandate pentru dating LGBTQ+ 18+:
 ## 17. App releases → Internal testing → First upload
 
 - [ ] AAB build via GitHub Actions (`Android Release` workflow).
-- [ ] Adaugă cont test `play-review@suzeta.eu` la testeri interni.
+- [ ] Adaugă cont test `play-review@suzeta.ro` la testeri interni.
 - [ ] Rollout la 100% internal.
 - [ ] Verifică review reviewer intern (Florin + max 5 useri de încredere) 3-7
       zile.

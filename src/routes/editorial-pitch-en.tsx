@@ -34,7 +34,7 @@ function EditorialPitchEn() {
             Suzeta — Editorial Nomination for Google Play
           </h1>
           <p className="text-xs text-muted-foreground">
-            Contact: contact@suzeta.eu · DPO: dpo@suzeta.app
+            Contact: contact@suzeta.ro · DPO: dpo@suzeta.ro
             <br />
             Package: <code>app.suzeta</code> · Website: https://www.suzeta.app
             <br />

@@ -132,7 +132,7 @@ function BusinessGate({ pendingApp }: { pendingApp: { status: string } | null })
   const statusLabel: Record<string, string> = {
     pending: "În așteptare — evaluăm cererea ta",
     reviewing: "În analiză de echipa Suzeta",
-    rejected: "Respinsă — contactează business@suzeta.app",
+    rejected: "Respinsă — contactează business@suzeta.ro",
   };
   return (
     <section className="rounded-2xl border border-border bg-gradient-to-br from-primary/15 via-surface to-surface p-5">
@@ -165,8 +165,8 @@ function BusinessGate({ pendingApp }: { pendingApp: { status: string } | null })
 
       <p className="mt-3 text-center text-[10px] text-muted-foreground">
         Sau scrie la{" "}
-        <a href="mailto:business@suzeta.app" className="text-primary">
-          business@suzeta.app
+        <a href="mailto:business@suzeta.ro" className="text-primary">
+          business@suzeta.ro
         </a>
       </p>
     </section>
@@ -446,10 +446,10 @@ function AdsPricing() {
         Prețuri fără TVA ({rows?.[0]?.vat_rate ?? 19}%). Facturare prin transfer bancar.
       </p>
       <a
-        href="mailto:ads@suzeta.app"
+        href="mailto:ads@suzeta.ro"
         className="mt-2 inline-flex items-center gap-1 text-xs text-primary"
       >
-        Ofertă personalizată: ads@suzeta.app
+        Ofertă personalizată: ads@suzeta.ro
       </a>
     </section>
   );
