@@ -44,7 +44,7 @@ const ACTIVITIES: Activity[] = [
     art9: true,
     legalBasis: "6(1)(b) contract",
     art9Basis: "9(2)(a) consimțământ explicit (orientare, convingeri)",
-    processors: "P1 Supabase, P3 Google OAuth, P8 Cloudflare",
+    processors: "P1 Supabase, P8 Cloudflare",
     retention: "Cont activ + 24 luni inactivitate → ștergere automată",
   },
   {

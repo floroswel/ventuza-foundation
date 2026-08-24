@@ -57,8 +57,8 @@ Inventarul complet și DPA-urile sunt în `/legal/subprocessors`.
 | **🟥 Categorii Art. 9** | `orientation`, `tribes`, `looking_for`, `scenes`, `position`, `accept_nsfw_photos` (orientare sexuală + viață sexuală). `religion`, `politics` (convingeri). |
 | **Temei Art. 6** | 6(1)(b) executarea contractului. |
 | **Temei Art. 9** | **9(2)(a) consimțământ explicit** — înregistrat în `consent_log` (kind `terms`, `privacy`) la onboarding, în `src/routes/n.tsx`. |
-| **Destinatari** | P1 (storage primar), P3 (autentificare Google), P8 (runtime). |
-| **Transfer extra-UE** | P3, P8 — SCC + DPF. |
+| **Destinatari** | P1 (storage primar), P8 (runtime). Autentificarea Google a fost eliminată din aplicație (august 2026) — doar email/parolă. |
+| **Transfer extra-UE** | P8 — SCC + DPF. |
 | **Retenție** | Pe durata existenței contului. **24 luni inactivitate → mark_inactive_for_deletion**; 30 zile grace → `purge_scheduled_deletions` (pg_cron zilnic). |
 | **Măsuri tehnice** | RLS scoped pe `auth.uid()` pe toate tabelele `profiles`/`auth`-derivate. Encryption-at-rest AES-256. Secrets server-only. PIN lock + biometric pe mobil. |
 
