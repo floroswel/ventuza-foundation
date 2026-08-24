@@ -17,7 +17,13 @@ type Entry = { url: string; expiresAt: number };
 const memory = new Map<string, Entry>();
 const inflight = new Map<string, Promise<string | null>>();
 const SAFETY_MS = 60_000;
-const STORE_KEY = "suzeta:signed-urls:v1";
+/**
+ * TTL lung intenționat (8h): URL-urile semnate sunt cache-uite persistent în
+ * localStorage și în Cache Storage (service worker), deci pozele de profil nu
+ * se mai re-descarcă la fiecare sesiune. Marja de siguranță rămâne 60s.
+ */
+export const DEFAULT_TTL_SEC = 8 * 3600;
+const STORE_KEY = "suzeta:signed-urls:v2";
 
 function isRemote(path: string) {
   return /^https?:\/\//i.test(path);
@@ -32,7 +38,7 @@ function hydrate() {
   if (hydrated || typeof window === "undefined") return;
   hydrated = true;
   try {
-    const raw = window.sessionStorage.getItem(STORE_KEY);
+    const raw = window.localStorage.getItem(STORE_KEY);
     if (!raw) return;
     const parsed = JSON.parse(raw) as Record<string, Entry>;
     const now = Date.now();
@@ -54,7 +60,7 @@ function persistSoon() {
       const now = Date.now();
       const obj: Record<string, Entry> = {};
       for (const [k, v] of memory) if (v.expiresAt > now) obj[k] = v;
-      window.sessionStorage.setItem(STORE_KEY, JSON.stringify(obj));
+      window.localStorage.setItem(STORE_KEY, JSON.stringify(obj));
     } catch {
       /* noop */
     }
@@ -80,7 +86,7 @@ function store(bucket: string, path: string, url: string, ttlSec: number) {
 export async function getSignedUrl(
   bucket: string,
   path: string | null | undefined,
-  ttlSec = 3600,
+  ttlSec = DEFAULT_TTL_SEC,
 ): Promise<string | null> {
   if (!path) return null;
   if (isRemote(path)) return path;
@@ -112,7 +118,7 @@ export async function getSignedUrl(
 export async function getSignedUrls(
   bucket: string,
   paths: string[],
-  ttlSec = 3600,
+  ttlSec = DEFAULT_TTL_SEC,
 ): Promise<Record<string, string>> {
   const out: Record<string, string> = {};
   const missing: string[] = [];
