@@ -12,21 +12,8 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isCaptchaMandatory, isTurnstileMisconfiguredInProd } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
-import { lovable } from "@/integrations/lovable";
 import { oauthOrigin } from "@/lib/canonical-origin";
-import {
-  nativeGoogleSignIn,
-  isNativeAndroid,
-  isNativePlatform,
-  hasNativeGoogleConfig,
-  hasNativeGoogleConfigAsync,
-  resolveWebClientId,
-  getNativeGoogleRuntimeState,
-  type NativeGoogleRuntimeState,
-  type NativeGoogleDiagnostic,
-} from "@/lib/native-google-auth";
-import { classifySigningCertificate, describeInstallSource, readAndroidSignature, readNativeGoogleLogs, readNativeLogcat, type AndroidSignatureInfo, type NativeGoogleLog } from "@/lib/android-signature";
-import { browserGoogleSignIn, NATIVE_BRIDGE_CALLBACK } from "@/lib/native-oauth-browser";
+import { classifySigningCertificate, describeInstallSource, readAndroidSignature, type AndroidSignatureInfo } from "@/lib/android-signature";
 import { isNativePlatformSync } from "@/lib/native-platform-sync";
 
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
@@ -71,7 +58,7 @@ const passwordSchema = z.string().min(8, "password_min").max(72, "password_max")
 
 type AuthDiagnosticLine = {
   at: string;
-  flow: "sistem" | "google" | "email";
+  flow: "sistem" | "email" | "legacy";
   status: string;
   detail?: string;
 };
@@ -227,18 +214,15 @@ function AuthPage() {
   const [retryCountdown, setRetryCountdown] = useState(0);
   const captchaRequired = isCaptchaMandatory();
   const captchaMisconfigured = isTurnstileMisconfiguredInProd();
-  const [googleBusy, setGoogleBusy] = useState(false);
   const [isNative, setIsNative] = useState(isNativePlatformSync());
   const [nativeChecked, setNativeChecked] = useState(false);
-  const [nativeGoogleReady, setNativeGoogleReady] = useState(hasNativeGoogleConfig());
   const [diagnosticEnabled, setDiagnosticEnabled] = useState(false);
-  const [runtimeClientId, setRuntimeClientId] = useState<string | null>(null);
   const [signatureInfo, setSignatureInfo] = useState<AndroidSignatureInfo | null>(null);
-  const [nativeGoogleLogs, setNativeGoogleLogs] = useState<NativeGoogleLog[]>([]);
-  const [nativeLogcat, setNativeLogcat] = useState<string[]>([]);
-  const [googleRuntime, setGoogleRuntime] = useState<NativeGoogleRuntimeState | null>(null);
   const [diagnosticLines, setDiagnosticLines] = useState<AuthDiagnosticLine[]>([]);
-  const googleRequestActive = useRef(false);
+  /** Banner pentru linkuri/callback-uri vechi de Google OAuth. */
+  const [legacyOauthNotice, setLegacyOauthNotice] = useState(false);
+  const [resetSentTo, setResetSentTo] = useState<string | null>(null);
+  const [resetBusy, setResetBusy] = useState(false);
 
   function addDiagnostic(flow: AuthDiagnosticLine["flow"], status: string, detail?: string) {
     const line = { at: new Date().toISOString(), flow, status, detail };
