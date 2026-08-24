@@ -108,8 +108,11 @@ export async function bootstrapNativeRuntime(router: Router<any, any, any, any, 
         if (!link || link.path === "/") return;
         const target = deferredTarget(link);
         router.navigate({ to: target, replace: true });
-        const { trackStoreFunnel } = await import("@/lib/store-analytics");
-        trackStoreFunnel("deferred_deeplink_open", {
+        const { trackStoreFunnelOnce, installId } = await import(
+          "@/lib/store-analytics"
+        );
+        // O singură conversie „deferred" per instalare.
+        trackStoreFunnelOnce("deferred_deeplink_open", installId(), {
           source: link.origin,
           path: link.path,
           referrer: new URLSearchParams(link.utm).toString() || null,
