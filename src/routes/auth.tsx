@@ -285,10 +285,10 @@ function AuthPage() {
       cancelled = true;
     };
   }, []);
-  // Butonul Google: ASCUNS pe Android nativ (fluxul nativ nu e stabil în
-  // producție — Credential Manager / Custom Tabs), VIZIBIL pe web unde
-  // brokerul managed OAuth funcționează corect.
-  const googleAvailable = !isNative;
+// Logarea cu Google este DEZACTIVATĂ complet (web + nativ). Autentificarea
+  // se face exclusiv cu email + parolă. Codul rămâne în fișier ca schelet
+  // dormant, dar butonul nu se randează niciodată.
+  const googleAvailable = false;
 
   const certificateMatch = classifySigningCertificate(signatureInfo?.sha1);
 
@@ -425,6 +425,7 @@ function AuthPage() {
   // deja „Continuă cu Google” în app, nu trebuie să mai apese încă o dată.
   const bridgeAutoStarted = useRef(false);
   useEffect(() => {
+    if (!googleAvailable) return; // Google dezactivat: nu porni niciun flux OAuth.
     if (bridgeAutoStarted.current) return;
     if (authLoading || user) return;
     if (search.native_bridge !== "1" || search.auto !== "google") return;
