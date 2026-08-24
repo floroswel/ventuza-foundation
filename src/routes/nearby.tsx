@@ -235,6 +235,28 @@ function NearbyPage() {
               Înapoi la Discover
             </Button>
           </div>
+
+          {/* Fallback fără GPS: alegi orașul, folosim centrul lui ca zonă aproximativă. */}
+          <div className="mt-4 rounded-md border border-border bg-muted/30 p-3">
+            <p className="mb-2 text-xs text-muted-foreground">
+              Nu ai GPS? Alege orașul — folosim doar centrul orașului ca zonă aproximativă.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {CITY_CENTERS.map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  onClick={() => {
+                    setGeoError(null);
+                    setCoords({ lat: c.lat, lng: c.lng });
+                  }}
+                  className="rounded-full border border-border px-3 py-1.5 text-xs hover:border-primary/60"
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
+          </div>
         </Card>
       </div>
     );
