@@ -2,6 +2,13 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ChevronLeft } from "lucide-react";
 
 import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+import {
+  SUBPROCESSOR_CHANGELOG,
+  SUBPROCESSORS_LAST_UPDATED,
+  SUBPROCESSORS_VERSION,
+  formatLegalDate,
+} from "@/lib/legal-versions";
+
 
 
 export const Route = createFileRoute("/legal/subprocessors")({
