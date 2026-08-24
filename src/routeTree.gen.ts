@@ -69,6 +69,7 @@ import { Route as LegalDataSafetyRouteImport } from './routes/legal.data-safety'
 import { Route as LegalDmcaRouteImport } from './routes/legal.dmca'
 import { Route as LegalDpaRouteImport } from './routes/legal.dpa'
 import { Route as LegalDsaRouteImport } from './routes/legal.dsa'
+import { Route as LegalGdprRequestRouteImport } from './routes/legal.gdpr-request'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalRecordsOfProcessingRouteImport } from './routes/legal.records-of-processing'
 import { Route as LegalSecurityIncidentsRouteImport } from './routes/legal.security-incidents'
@@ -403,6 +404,11 @@ const LegalDsaRoute = LegalDsaRouteImport.update({
   path: '/legal/dsa',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalGdprRequestRoute = LegalGdprRequestRouteImport.update({
+  id: '/legal/gdpr-request',
+  path: '/legal/gdpr-request',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalPrivacyRoute = LegalPrivacyRouteImport.update({
   id: '/legal/privacy',
   path: '/legal/privacy',
@@ -625,6 +631,7 @@ export interface FileRoutesByFullPath {
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
+  '/legal/gdpr-request': typeof LegalGdprRequestRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
@@ -717,6 +724,7 @@ export interface FileRoutesByTo {
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
+  '/legal/gdpr-request': typeof LegalGdprRequestRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
@@ -811,6 +819,7 @@ export interface FileRoutesById {
   '/legal/dmca': typeof LegalDmcaRoute
   '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
+  '/legal/gdpr-request': typeof LegalGdprRequestRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
   '/legal/security-incidents': typeof LegalSecurityIncidentsRoute
@@ -906,6 +915,7 @@ export interface FileRouteTypes {
     | '/legal/dmca'
     | '/legal/dpa'
     | '/legal/dsa'
+    | '/legal/gdpr-request'
     | '/legal/privacy'
     | '/legal/records-of-processing'
     | '/legal/security-incidents'
@@ -998,6 +1008,7 @@ export interface FileRouteTypes {
     | '/legal/dmca'
     | '/legal/dpa'
     | '/legal/dsa'
+    | '/legal/gdpr-request'
     | '/legal/privacy'
     | '/legal/records-of-processing'
     | '/legal/security-incidents'
@@ -1091,6 +1102,7 @@ export interface FileRouteTypes {
     | '/legal/dmca'
     | '/legal/dpa'
     | '/legal/dsa'
+    | '/legal/gdpr-request'
     | '/legal/privacy'
     | '/legal/records-of-processing'
     | '/legal/security-incidents'
@@ -1180,6 +1192,7 @@ export interface RootRouteChildren {
   LegalDmcaRoute: typeof LegalDmcaRoute
   LegalDpaRoute: typeof LegalDpaRoute
   LegalDsaRoute: typeof LegalDsaRoute
+  LegalGdprRequestRoute: typeof LegalGdprRequestRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRecordsOfProcessingRoute: typeof LegalRecordsOfProcessingRoute
   LegalSecurityIncidentsRoute: typeof LegalSecurityIncidentsRoute
@@ -1627,6 +1640,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalDsaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/gdpr-request': {
+      id: '/legal/gdpr-request'
+      path: '/legal/gdpr-request'
+      fullPath: '/legal/gdpr-request'
+      preLoaderRoute: typeof LegalGdprRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/privacy': {
       id: '/legal/privacy'
       path: '/legal/privacy'
@@ -2014,6 +2034,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalDmcaRoute: LegalDmcaRoute,
   LegalDpaRoute: LegalDpaRoute,
   LegalDsaRoute: LegalDsaRoute,
+  LegalGdprRequestRoute: LegalGdprRequestRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRecordsOfProcessingRoute: LegalRecordsOfProcessingRoute,
   LegalSecurityIncidentsRoute: LegalSecurityIncidentsRoute,
