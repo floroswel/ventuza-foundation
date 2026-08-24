@@ -815,6 +815,13 @@ function SettingsPage() {
             >
               <Shield className="size-4" /> Termeni B2B (advertiseri)
             </Link>
+            <Link
+              to="/legal/dpa"
+              className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
+            >
+              <Shield className="size-4" /> Acord prelucrare date (DPA)
+            </Link>
+
 
 
             <Link

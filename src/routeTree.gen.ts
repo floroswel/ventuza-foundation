@@ -67,6 +67,7 @@ import { Route as LegalCommunityRouteImport } from './routes/legal.community'
 import { Route as LegalCookiesRouteImport } from './routes/legal.cookies'
 import { Route as LegalDataSafetyRouteImport } from './routes/legal.data-safety'
 import { Route as LegalDmcaRouteImport } from './routes/legal.dmca'
+import { Route as LegalDpaRouteImport } from './routes/legal.dpa'
 import { Route as LegalDsaRouteImport } from './routes/legal.dsa'
 import { Route as LegalPrivacyRouteImport } from './routes/legal.privacy'
 import { Route as LegalRecordsOfProcessingRouteImport } from './routes/legal.records-of-processing'
@@ -391,6 +392,11 @@ const LegalDmcaRoute = LegalDmcaRouteImport.update({
   path: '/legal/dmca',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalDpaRoute = LegalDpaRouteImport.update({
+  id: '/legal/dpa',
+  path: '/legal/dpa',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalDsaRoute = LegalDsaRouteImport.update({
   id: '/legal/dsa',
   path: '/legal/dsa',
@@ -611,6 +617,7 @@ export interface FileRoutesByFullPath {
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
+  '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
@@ -701,6 +708,7 @@ export interface FileRoutesByTo {
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
+  '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
@@ -793,6 +801,7 @@ export interface FileRoutesById {
   '/legal/cookies': typeof LegalCookiesRoute
   '/legal/data-safety': typeof LegalDataSafetyRoute
   '/legal/dmca': typeof LegalDmcaRoute
+  '/legal/dpa': typeof LegalDpaRoute
   '/legal/dsa': typeof LegalDsaRoute
   '/legal/privacy': typeof LegalPrivacyRoute
   '/legal/records-of-processing': typeof LegalRecordsOfProcessingRoute
@@ -886,6 +895,7 @@ export interface FileRouteTypes {
     | '/legal/cookies'
     | '/legal/data-safety'
     | '/legal/dmca'
+    | '/legal/dpa'
     | '/legal/dsa'
     | '/legal/privacy'
     | '/legal/records-of-processing'
@@ -976,6 +986,7 @@ export interface FileRouteTypes {
     | '/legal/cookies'
     | '/legal/data-safety'
     | '/legal/dmca'
+    | '/legal/dpa'
     | '/legal/dsa'
     | '/legal/privacy'
     | '/legal/records-of-processing'
@@ -1067,6 +1078,7 @@ export interface FileRouteTypes {
     | '/legal/cookies'
     | '/legal/data-safety'
     | '/legal/dmca'
+    | '/legal/dpa'
     | '/legal/dsa'
     | '/legal/privacy'
     | '/legal/records-of-processing'
@@ -1154,6 +1166,7 @@ export interface RootRouteChildren {
   LegalCookiesRoute: typeof LegalCookiesRoute
   LegalDataSafetyRoute: typeof LegalDataSafetyRoute
   LegalDmcaRoute: typeof LegalDmcaRoute
+  LegalDpaRoute: typeof LegalDpaRoute
   LegalDsaRoute: typeof LegalDsaRoute
   LegalPrivacyRoute: typeof LegalPrivacyRoute
   LegalRecordsOfProcessingRoute: typeof LegalRecordsOfProcessingRoute
@@ -1587,6 +1600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalDmcaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/dpa': {
+      id: '/legal/dpa'
+      path: '/legal/dpa'
+      fullPath: '/legal/dpa'
+      preLoaderRoute: typeof LegalDpaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/dsa': {
       id: '/legal/dsa'
       path: '/legal/dsa'
@@ -1972,6 +1992,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalCookiesRoute: LegalCookiesRoute,
   LegalDataSafetyRoute: LegalDataSafetyRoute,
   LegalDmcaRoute: LegalDmcaRoute,
+  LegalDpaRoute: LegalDpaRoute,
   LegalDsaRoute: LegalDsaRoute,
   LegalPrivacyRoute: LegalPrivacyRoute,
   LegalRecordsOfProcessingRoute: LegalRecordsOfProcessingRoute,
