@@ -75,13 +75,11 @@ export function TravelWarning() {
       try {
         const dismissed = sessionStorage.getItem(DISMISS_KEY);
         if (dismissed) return;
-        const res = await fetch("https://ipapi.co/json/", { cache: "force-cache" });
-        if (!res.ok) return;
-        const j = await res.json();
-        const cc = String(j?.country_code || j?.country || "").toUpperCase();
+        const { detectCountryCode } = await import("@/lib/geo-country");
+        const cc = await detectCountryCode();
         if (!active) return;
         if (cc && HOSTILE_COUNTRIES.has(cc)) {
-          setCountry(j?.country_name || cc);
+          setCountry(cc);
           setVisible(true);
         }
       } catch {}

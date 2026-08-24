@@ -1,9 +1,9 @@
 /**
- * Country gate — consumă `useCountryRisk` (ipapi.co + `get_country_risk`) și
+ * Country gate — consumă `useCountryRisk` (/api/public/geo-country + `get_country_risk`) și
  * expune boolean-uri stabile pentru enforcement în UI/logică.
  *
  * REGULĂ DE SIGURANȚĂ:
- * - Detectarea eșuată (IP nerezolvat, ofline, ipapi down) => TOATE gate-urile
+ * - Detectarea eșuată (IP nerezolvat, offline, header lipsă) => TOATE gate-urile
  *   întorc `false`. Nu blocăm useri legitimi din cauza unei detecții ratate.
  * - Nu stocăm istoricul locației (doar cache TTL 15 min din useCountryRisk).
  * - Nu trimitem coordonatele userului la server pentru asta.

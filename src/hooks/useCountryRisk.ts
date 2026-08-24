@@ -18,17 +18,8 @@ const CACHE_TTL = 15 * 60 * 1000;
 let inflight: Promise<{ country: string | null; risk: CountryRisk }> | null = null;
 
 async function detectCountry(): Promise<string | null> {
-  try {
-    const stored = typeof localStorage !== "undefined" ? localStorage.getItem("cc_hint") : null;
-    if (stored) return stored;
-    const res = await fetch("https://ipapi.co/country/", { cache: "force-cache" });
-    if (!res.ok) return null;
-    const cc = (await res.text()).trim().toUpperCase();
-    if (cc.length === 2 && typeof localStorage !== "undefined") localStorage.setItem("cc_hint", cc);
-    return cc.length === 2 ? cc : null;
-  } catch {
-    return null;
-  }
+  const { detectCountryCode } = await import("@/lib/geo-country");
+  return detectCountryCode();
 }
 
 export function useCountryRisk(): { loading: boolean; country: string | null; risk: CountryRisk } {
