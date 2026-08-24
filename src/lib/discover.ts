@@ -246,6 +246,20 @@ export function clearDiscoverCache() {
 
 export const DISCOVER_PAGE_SIZE = 50;
 
+/** Elimină din listă profilurile blocate (oricare direcție). Fail-open la eroare. */
+async function filterBlocked(rows: DiscoverProfile[]): Promise<DiscoverProfile[]> {
+  if (!rows.length) return rows;
+  try {
+    const { data, error } = await supabase.rpc("list_my_block_relations");
+    if (error || !Array.isArray(data)) return rows;
+    const blocked = new Set(data as unknown as string[]);
+    if (!blocked.size) return rows;
+    return rows.filter((r) => !blocked.has(r.id));
+  } catch {
+    return rows;
+  }
+}
+
 export async function fetchDiscover(
   filters: DiscoverFilters,
   orderMode: "score" | "distance",
@@ -284,7 +298,9 @@ export async function fetchDiscover(
   if (offset === 0 && !options?.forceRefresh) {
     const cached = readDiscoverCache(cacheKey);
     if (cached && Date.now() - cached.at < DISCOVER_CACHE_TTL_MS) {
-      return cached.data;
+      // Blocurile trebuie să aibă efect INSTANT, chiar dacă rezultatul vine din
+      // cache (ambele direcții: cine am blocat + cine m-a blocat).
+      return filterBlocked(cached.data);
     }
   }
 

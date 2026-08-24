@@ -86,23 +86,27 @@ export async function listFavorites(): Promise<FavoriteRow[]> {
   if (error) throw error;
   const ids = (favs ?? []).map((f) => f.favorite_id);
   if (!ids.length) return [];
-  const { data: profs } = await supabase.rpc("get_public_profiles", { _ids: ids });
+  // `list_visible_profiles` exclude blocurile (ambele direcții) și profilurile
+  // în incognito → favoritul dispare din listă, nu rămâne ca „Anonim".
+  const { data: profs } = await (supabase.rpc as any)("list_visible_profiles", { _ids: ids });
   const map = new Map<
     string,
     { display_name: string | null; photos: string[] | null; last_seen: string | null }
   >();
-  (profs ?? []).forEach((p) =>
+  (profs ?? []).forEach((p: unknown) =>
     map.set((p as { id: string }).id, {
       display_name: (p as { display_name: string | null }).display_name,
       photos: (p as { photos: string[] | null }).photos,
       last_seen: (p as { last_seen: string | null }).last_seen,
     }),
   );
-  return (favs ?? []).map((f) => ({
-    favorite_id: f.favorite_id,
-    created_at: f.created_at,
-    ...(map.get(f.favorite_id) ?? { display_name: null, photos: null, last_seen: null }),
-  }));
+  return (favs ?? [])
+    .filter((f) => map.has(f.favorite_id))
+    .map((f) => ({
+      favorite_id: f.favorite_id,
+      created_at: f.created_at,
+      ...map.get(f.favorite_id)!,
+    }));
 }
 
 export async function setLookingNow(hours: number, intent?: string) {
@@ -164,4 +168,7 @@ export async function unblock(targetId: string) {
     .eq("blocker_id", u.user.id)
     .eq("blocked_id", targetId);
   if (error) throw error;
+  // La deblocare persoana trebuie să REAPARĂ imediat în grilă → invalidăm cache-ul.
+  const { clearDiscoverCache } = await import("@/lib/discover");
+  clearDiscoverCache();
 }

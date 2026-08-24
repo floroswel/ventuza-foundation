@@ -6192,6 +6192,34 @@ export type Database = {
           item_id: string
         }[]
       }
+      list_visible_profiles: {
+        Args: { _ids: string[] }
+        Returns: {
+          bio: string
+          birthdate: string
+          body_type: string
+          boost_until: string
+          display_name: string
+          gender: string
+          height_cm: number
+          hide_age: boolean
+          hide_distance: boolean
+          hide_online: boolean
+          id: string
+          incognito: boolean
+          interests: string[]
+          last_seen: string
+          looking_now_until: string
+          photos: string[]
+          position: string
+          profile_slug: string
+          pronouns: string
+          travel_city: string
+          travel_until: string
+          tribes: string[]
+          verified: boolean
+        }[]
+      }
       log_notification_dispatch: {
         Args: {
           _actor: string
