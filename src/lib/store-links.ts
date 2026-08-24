@@ -83,9 +83,9 @@ export async function isAndroidAppInstalled(): Promise<boolean | null> {
  * cade automat pe Google Play (`S.browser_fallback_url`). Un singur click,
  * fără timere fragile.
  */
-export function androidIntentUrl(path = "/"): string {
+export function androidIntentUrl(path = "/", source: StoreClickSource | string = "web"): string {
   const clean = path.startsWith("/") ? path : `/${path}`;
-  const fallback = encodeURIComponent(PLAY_STORE_URL);
+  const fallback = encodeURIComponent(playStoreUrl(source));
   return (
     `intent://suzeta.app${clean}#Intent;scheme=https;package=${ANDROID_PACKAGE};` +
     `S.browser_fallback_url=${fallback};end`
@@ -93,15 +93,26 @@ export function androidIntentUrl(path = "/"): string {
 }
 
 /**
- * Deschide aplicația instalată (prin intent) sau Google Play.
- * Pe non-Android / desktop merge direct la Play Store.
+ * Deschide aplicația instalată (prin intent) sau Google Play, măsurând
+ * evenimentul de funnel înainte de navigare.
  */
-export function openAppOrStore(path = "/"): void {
+export function openAppOrStore(
+  path = "/",
+  source: StoreClickSource | string = "web",
+  appInstalled: boolean | null = null,
+): void {
   if (typeof window === "undefined") return;
   if (isAndroidWebBrowser()) {
-    window.location.href = androidIntentUrl(path);
+    trackStoreFunnel(appInstalled ? "app_open_intent" : "store_click", {
+      source,
+      path,
+      appInstalled,
+    });
+    window.location.href = androidIntentUrl(path, source);
     return;
   }
-  window.open(PLAY_STORE_URL, "_blank", "noopener,noreferrer");
+  trackStoreFunnel("store_click", { source, path, appInstalled });
+  window.open(playStoreUrl(source), "_blank", "noopener,noreferrer");
 }
+
 
