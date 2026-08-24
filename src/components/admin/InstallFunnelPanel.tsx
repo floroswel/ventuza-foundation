@@ -348,9 +348,24 @@ export function InstallFunnelPanel() {
                 ) : (
                   <Download className="size-3.5" />
                 )}
-                Descarcă CSV
+                Descarcă CSV (agregat)
+              </button>
+              <button
+                type="button"
+                disabled={exporting}
+                onClick={() => void exportRawCsv()}
+                title="Un rând per eveniment: referrer brut, user agent, OS și browser"
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3 text-xs font-semibold text-foreground disabled:opacity-60"
+              >
+                {exporting ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Download className="size-3.5" />
+                )}
+                CSV detaliat (referrer/UA/OS)
               </button>
             </div>
+
             {exportError && (
               <p className="mt-2 break-words text-xs text-destructive">{exportError}</p>
             )}
