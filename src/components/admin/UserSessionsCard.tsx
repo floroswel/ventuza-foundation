@@ -8,7 +8,11 @@ import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Loader2, ShieldOff, Smartphone } from "lucide-react";
-import { adminListUserDevices, adminRevokeUserSessions } from "@/lib/admin-sessions.functions";
+import {
+  adminListUserDevices,
+  adminRevokePushSub,
+  adminRevokeUserSessions,
+} from "@/lib/admin-sessions.functions";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -37,11 +41,23 @@ export function UserSessionsCard({ userId }: { userId: string }) {
     queryFn: async () => listFn({ data: { userId } }),
   });
 
+  const revokePushFn = useServerFn(adminRevokePushSub);
+
+  const revokePush = useMutation({
+    mutationFn: async (subscriptionId: string) =>
+      revokePushFn({ data: { userId, subscriptionId, reason: "admin device revoke" } }),
+    onSuccess: () => {
+      toast.success("Dispozitiv push revocat");
+      void qc.invalidateQueries({ queryKey: ["admin", "user-devices", userId] });
+    },
+    onError: (e: unknown) =>
+      toast.error(e instanceof Error ? e.message : "Revocarea a eșuat"),
+  });
+
   const revoke = useMutation({
-    mutationFn: async () =>
-      revokeFn({ data: { userId, justification: reason, revokePush: true } }),
-    onSuccess: (r) => {
-      toast.success(`Sesiuni revocate. Abonamente push șterse: ${r.pushRemoved}`);
+    mutationFn: async () => revokeFn({ data: { userId, reason } }),
+    onSuccess: () => {
+      toast.success("Toate sesiunile au fost revocate");
       setOpen(false);
       setReason("");
       void qc.invalidateQueries({ queryKey: ["admin", "user-devices", userId] });
@@ -91,6 +107,7 @@ export function UserSessionsCard({ userId }: { userId: string }) {
                 <th className="px-2 py-1 text-left">Referință</th>
                 <th className="px-2 py-1 text-left">Prima dată</th>
                 <th className="px-2 py-1 text-left">Ultima activitate</th>
+                <th className="px-2 py-1 text-left">Stare</th>
               </tr>
             </thead>
             <tbody>
@@ -100,6 +117,22 @@ export function UserSessionsCard({ userId }: { userId: string }) {
                   <td className="px-2 py-1 font-mono">{d.ref}</td>
                   <td className="px-2 py-1">{fmt(d.firstSeenAt)}</td>
                   <td className="px-2 py-1">{fmt(d.lastSeenAt)}</td>
+                  <td className="px-2 py-1">
+                    {d.disabledAt ? (
+                      <span className="text-muted-foreground">revocat</span>
+                    ) : d.kind === "push" ? (
+                      <button
+                        type="button"
+                        className="text-destructive underline disabled:opacity-50"
+                        disabled={revokePush.isPending}
+                        onClick={() => revokePush.mutate(d.id)}
+                      >
+                        revocă
+                      </button>
+                    ) : (
+                      <span className="text-muted-foreground">activ</span>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -113,7 +146,7 @@ export function UserSessionsCard({ userId }: { userId: string }) {
             <DialogTitle>Revocă toate sesiunile</DialogTitle>
             <DialogDescription>
               Userul va fi deconectat de pe toate dispozitivele, iar abonamentele push vor fi
-              șterse. Acțiunea se loghează în audit (severitate critică).
+              dezactivate. Acțiunea se loghează în audit.
             </DialogDescription>
           </DialogHeader>
           <Textarea
