@@ -2295,6 +2295,83 @@ export type Database = {
         }
         Relationships: []
       }
+      merch_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          name: string
+          price_cents: number
+          slug: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name: string
+          price_cents: number
+          slug: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          name?: string
+          price_cents?: number
+          slug?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      merch_orders: {
+        Row: {
+          created_at: string
+          id: string
+          item_id: string
+          qty: number
+          shipping: Json | null
+          status: string
+          total_cents: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          item_id: string
+          qty?: number
+          shipping?: Json | null
+          status?: string
+          total_cents: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          item_id?: string
+          qty?: number
+          shipping?: Json | null
+          status?: string
+          total_cents?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "merch_orders_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "merch_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       message_locations: {
         Row: {
           lat: number
@@ -4901,6 +4978,66 @@ export type Database = {
           },
         ]
       }
+      wallet_accounts: {
+        Row: {
+          balance_cents: number
+          currency: string
+          lifetime_cents: number
+          pending_cents: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance_cents?: number
+          currency?: string
+          lifetime_cents?: number
+          pending_cents?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance_cents?: number
+          currency?: string
+          lifetime_cents?: number
+          pending_cents?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wallet_ledger: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          id: number
+          kind: string
+          note: string | null
+          ref_id: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount_cents: number
+          created_at?: string
+          id?: number
+          kind: string
+          note?: string | null
+          ref_id?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          id?: number
+          kind?: string
+          note?: string | null
+          ref_id?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       web_vitals: {
         Row: {
           created_at: string
@@ -5813,6 +5950,7 @@ export type Database = {
           xp_reward: number
         }[]
       }
+      get_my_wallet: { Args: never; Returns: Json }
       get_notification_actors: {
         Args: { _ids: string[] }
         Returns: {
@@ -6126,6 +6264,10 @@ export type Database = {
           p_title: string
           p_venue_id?: string
         }
+        Returns: Json
+      }
+      place_merch_order: {
+        Args: { _qty: number; _shipping: Json; _slug: string }
         Returns: Json
       }
       policy_evaluate: {
@@ -7040,6 +7182,22 @@ export type Database = {
         }
         Returns: string
       }
+      wallet_credit: {
+        Args: {
+          _amount: number
+          _kind: string
+          _note?: string
+          _ref?: string
+          _status?: string
+          _uid: string
+        }
+        Returns: undefined
+      }
+      wallet_qualify_referral: {
+        Args: { _referred: string }
+        Returns: undefined
+      }
+      wallet_recalc: { Args: { _uid: string }; Returns: undefined }
       wipe_seed_admin_appendonly: { Args: never; Returns: Json }
     }
     Enums: {

@@ -517,7 +517,7 @@ function Onboarding() {
           <EnablePushButton className="w-full" enableOnly />
           <Button
             size="lg"
-            onClick={() => navigate({ to: "/discover", replace: true })}
+            onClick={() => navigate({ to: "/invite", replace: true })}
           >
             {t("onboarding.continue")}
           </Button>

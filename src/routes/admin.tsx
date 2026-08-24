@@ -86,6 +86,7 @@ import {
   PartnersModerationPanel,
   BillingAdminPanel,
   ExperimentsPanel,
+  MerchOrdersPanel,
   RateLimitPanel,
   SecuritySignalsPanel,
   RiskDashboardPanel,
@@ -174,6 +175,7 @@ type Section =
   | "health"
   | "copilot"
   | "billing"
+  | "merch"
   | "ratelimit"
   | "signals"
   | "signupthrottle"
@@ -265,6 +267,7 @@ function AdminDashboard() {
       "health",
       "copilot",
       "billing",
+      "merch",
       "ratelimit",
       "signals",
       "signupthrottle",
@@ -548,6 +551,7 @@ function AdminDashboard() {
     { id: "biz", label: "B2B", icon: Building2, group: "Business" },
     { id: "partners", label: "Parteneri & Moderare", icon: ShieldCheck, group: "Business" },
     { id: "billing", label: "Facturare parteneri", icon: FileText, group: "Business" },
+    { id: "merch", label: "Comenzi merch", icon: FileText, group: "Business" },
 
     // System
     { id: "health", label: "System Health", icon: Activity, group: "System" },
@@ -623,6 +627,7 @@ function AdminDashboard() {
       {section === "broadcast" && isAdmin && <BroadcastPanel />}
       {section === "partners" && <PartnersModerationPanel canAdmin={!!isAdmin} />}
       {section === "billing" && <BillingAdminPanel isAdmin={!!isAdmin} />}
+      {section === "merch" && <MerchOrdersPanel />}
       {section === "security" && <SecurityPanel />}
       
       {section === "health" && <SystemHealthPanel />}

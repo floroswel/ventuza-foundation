@@ -29,6 +29,7 @@ import { Route as ExploreRouteImport } from './routes/explore'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FavoritesRouteImport } from './routes/favorites'
 import { Route as GroupsRouteImport } from './routes/groups'
+import { Route as InviteRouteImport } from './routes/invite'
 import { Route as MatchesRouteImport } from './routes/matches'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as MessagesRouteImport } from './routes/messages'
@@ -192,6 +193,11 @@ const FavoritesRoute = FavoritesRouteImport.update({
 const GroupsRoute = GroupsRouteImport.update({
   id: '/groups',
   path: '/groups',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InviteRoute = InviteRouteImport.update({
+  id: '/invite',
+  path: '/invite',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MatchesRoute = MatchesRouteImport.update({
@@ -543,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/faq': typeof FaqRoute
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/invite': typeof InviteRoute
   '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRouteWithChildren
@@ -629,6 +636,7 @@ export interface FileRoutesByTo {
   '/faq': typeof FaqRoute
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/invite': typeof InviteRoute
   '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
   '/n': typeof NRoute
@@ -715,6 +723,7 @@ export interface FileRoutesById {
   '/faq': typeof FaqRoute
   '/favorites': typeof FavoritesRoute
   '/groups': typeof GroupsRouteWithChildren
+  '/invite': typeof InviteRoute
   '/matches': typeof MatchesRoute
   '/mcp': typeof McpRoute
   '/messages': typeof MessagesRouteWithChildren
@@ -803,6 +812,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/favorites'
     | '/groups'
+    | '/invite'
     | '/matches'
     | '/mcp'
     | '/messages'
@@ -889,6 +899,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/favorites'
     | '/groups'
+    | '/invite'
     | '/matches'
     | '/mcp'
     | '/n'
@@ -974,6 +985,7 @@ export interface FileRouteTypes {
     | '/faq'
     | '/favorites'
     | '/groups'
+    | '/invite'
     | '/matches'
     | '/mcp'
     | '/messages'
@@ -1061,6 +1073,7 @@ export interface RootRouteChildren {
   FaqRoute: typeof FaqRoute
   FavoritesRoute: typeof FavoritesRoute
   GroupsRoute: typeof GroupsRouteWithChildren
+  InviteRoute: typeof InviteRoute
   MatchesRoute: typeof MatchesRoute
   McpRoute: typeof McpRoute
   MessagesRoute: typeof MessagesRouteWithChildren
@@ -1254,6 +1267,13 @@ declare module '@tanstack/react-router' {
       path: '/groups'
       fullPath: '/groups'
       preLoaderRoute: typeof GroupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/invite': {
+      id: '/invite'
+      path: '/invite'
+      fullPath: '/invite'
+      preLoaderRoute: typeof InviteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/matches': {
@@ -1838,6 +1858,7 @@ const rootRouteChildren: RootRouteChildren = {
   FaqRoute: FaqRoute,
   FavoritesRoute: FavoritesRoute,
   GroupsRoute: GroupsRouteWithChildren,
+  InviteRoute: InviteRoute,
   MatchesRoute: MatchesRoute,
   McpRoute: McpRoute,
   MessagesRoute: MessagesRouteWithChildren,

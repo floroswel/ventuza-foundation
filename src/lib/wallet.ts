@@ -102,4 +102,57 @@ export const ORDER_ERRORS: Record<string, string> = {
   invalid_item: "Produsul nu mai este disponibil.",
   shipping_incomplete: "Completează datele de livrare.",
   insufficient_funds: "Nu ai suficienți dolari în portofel.",
+  below_min_redeem: "Ai nevoie de minim $25.00 în portofel ca să comanzi.",
+  not_completed: "Misiunea nu e finalizată încă.",
+  already_claimed: "Ai revendicat deja recompensa.",
+  invalid_quest: "Misiune inexistentă.",
 };
+
+// ===== Misiuni cu credite =====
+export type WalletQuest = {
+  key: string;
+  label: string;
+  cents: number;
+  done: boolean;
+  claimed: boolean;
+};
+
+export async function fetchWalletQuests(): Promise<WalletQuest[]> {
+  const { data, error } = await db.rpc("get_my_wallet_quests");
+  if (error) return [];
+  return (data ?? []) as WalletQuest[];
+}
+
+export async function claimWalletQuest(
+  key: string,
+): Promise<{ ok: boolean; cents?: number; error?: string }> {
+  const { data, error } = await db.rpc("claim_wallet_quest", { _key: key });
+  if (error) return { ok: false, error: error.message };
+  return data as { ok: boolean; cents?: number; error?: string };
+}
+
+// ===== Leaderboard ambasadori =====
+export type AmbassadorRow = {
+  rank: number;
+  invites: number;
+  is_me: boolean;
+  display_name: string;
+  photo: string | null;
+};
+
+export async function fetchAmbassadors(
+  limit = 20,
+): Promise<{ rows: AmbassadorRow[]; me: { rank: number | null; invites: number } }> {
+  const { data, error } = await db.rpc("get_ambassador_leaderboard", { _limit: limit });
+  if (error) return { rows: [], me: { rank: null, invites: 0 } };
+  return data as { rows: AmbassadorRow[]; me: { rank: number | null; invites: number } };
+}
+
+export const MIN_REDEEM_CENTS = 2500;
+
+export function ambassadorTier(invites: number): { label: string; next: number | null } {
+  if (invites >= 25) return { label: "Ambasador de oraș", next: null };
+  if (invites >= 10) return { label: "Ambasador Gold", next: 25 };
+  if (invites >= 5) return { label: "Ambasador", next: 10 };
+  return { label: "Membru", next: 5 };
+}

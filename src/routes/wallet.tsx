@@ -4,6 +4,8 @@ import { ChevronLeft, Wallet, Gift, Copy, Share2, Check, ShoppingBag, Clock } fr
 import { toast } from "sonner";
 import { BottomNav } from "@/components/BottomNav";
 import { getMyReferralCode, referralLink } from "@/lib/referrals";
+import { WalletQuests } from "@/components/wallet/WalletQuests";
+import { AmbassadorLeaderboard } from "@/components/wallet/AmbassadorLeaderboard";
 import {
   fetchWallet,
   fetchMerch,
@@ -16,6 +18,7 @@ import {
   type MerchItem,
   type MerchOrder,
   type Shipping,
+  MIN_REDEEM_CENTS,
 } from "@/lib/wallet";
 
 export const Route = createFileRoute("/wallet")({
@@ -162,10 +165,17 @@ function WalletPage() {
           )}
         </section>
 
+        <WalletQuests onClaimed={reload} />
+
+        <AmbassadorLeaderboard />
+
         <section>
           <h2 className="mb-2 flex items-center gap-2 text-base font-semibold">
             <ShoppingBag className="size-4 text-primary" /> Produse Suzeta
           </h2>
+          <p className="mb-2 text-xs text-muted-foreground">
+            Comenzile se pot plasa de la un sold minim de {formatUsd(MIN_REDEEM_CENTS)}.
+          </p>
           {items.length === 0 && !loading ? (
             <p className="text-sm text-muted-foreground">Catalogul se completează în curând.</p>
           ) : (
@@ -182,7 +192,9 @@ function WalletPage() {
                   <span className="text-sm font-semibold">{formatUsd(it.price_cents)}</span>
                   <button
                     onClick={() => setSelected(it)}
-                    disabled={(wallet?.balance_cents ?? 0) < it.price_cents}
+                    disabled={
+                      (wallet?.balance_cents ?? 0) < Math.max(it.price_cents, MIN_REDEEM_CENTS)
+                    }
                     className="rounded-full bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-40"
                   >
                     Comandă
