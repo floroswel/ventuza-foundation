@@ -1,7 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { Download, Globe2 } from "lucide-react";
 
 import { LegalHeader, useLegalLang } from "@/components/legal/LegalLang";
 import { OPERATOR, OperatorIdentificationBlock } from "@/components/legal/OperatorInfo";
+import { CURRENT_DPA, DPA_VERSIONS, formatLegalDate } from "@/lib/legal-versions";
 
 export const Route = createFileRoute("/legal/dpa")({
   head: () => ({
