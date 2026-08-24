@@ -24,7 +24,49 @@ type Row = {
   installs: number;
 };
 
-type ExportRow = Row & { day: string };
+type ExportRow = Row & { day: string; os_name: string; browser: string };
+
+type RawExportRow = {
+  created_at: string;
+  kind: string;
+  source: string;
+  medium: string | null;
+  campaign: string | null;
+  variant: string;
+  platform: string;
+  os_name: string;
+  browser: string;
+  user_agent: string | null;
+  referrer: string | null;
+  referrer_url: string | null;
+  path: string | null;
+  app_installed: boolean | null;
+};
+
+function csvEscape(v: unknown): string {
+  return `"${String(v ?? "").replace(/"/g, '""')}"`;
+}
+
+function toRawCsv(rows: RawExportRow[]): string {
+  const head = [
+    "created_at",
+    "kind",
+    "source",
+    "medium",
+    "campaign",
+    "variant",
+    "platform",
+    "os_name",
+    "browser",
+    "user_agent",
+    "referrer",
+    "referrer_url",
+    "path",
+    "app_installed",
+  ];
+  const body = rows.map((r) => head.map((k) => csvEscape((r as Record<string, unknown>)[k])).join(","));
+  return [head.join(","), ...body].join("\n");
+}
 
 type Alert = {
   code: string;
@@ -50,6 +92,8 @@ function toCsv(rows: ExportRow[]): string {
     "source",
     "variant",
     "platform",
+    "os_name",
+    "browser",
     "clicks",
     "app_link_opens",
     "intent_opens",
@@ -63,6 +107,8 @@ function toCsv(rows: ExportRow[]): string {
       r.source,
       r.variant,
       r.platform,
+      r.os_name,
+      r.browser,
       r.clicks,
       r.app_link_opens,
       r.intent_opens,
@@ -135,6 +181,35 @@ export function InstallFunnelPanel() {
       const a = document.createElement("a");
       a.href = url;
       a.download = `suzeta-install-funnel_${from}_${to}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      setExportError(describe(e));
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  async function exportRawCsv() {
+    setExporting(true);
+    setExportError(null);
+    try {
+      const { data, error: err } = await supabase.rpc("admin_store_funnel_export_raw", {
+        _from: from,
+        _to: to,
+        _limit: 20000,
+      });
+      if (err) throw err;
+      const list = (data ?? []) as RawExportRow[];
+      if (!list.length) {
+        setExportError("Empty legitim: niciun eveniment în intervalul selectat.");
+        return;
+      }
+      const blob = new Blob([toRawCsv(list)], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `suzeta-install-funnel-detaliat_${from}_${to}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (e) {
@@ -273,9 +348,24 @@ export function InstallFunnelPanel() {
                 ) : (
                   <Download className="size-3.5" />
                 )}
-                Descarcă CSV
+                Descarcă CSV (agregat)
+              </button>
+              <button
+                type="button"
+                disabled={exporting}
+                onClick={() => void exportRawCsv()}
+                title="Un rând per eveniment: referrer brut, user agent, OS și browser"
+                className="inline-flex h-9 items-center gap-2 rounded-lg border border-border bg-surface px-3 text-xs font-semibold text-foreground disabled:opacity-60"
+              >
+                {exporting ? (
+                  <Loader2 className="size-3.5 animate-spin" />
+                ) : (
+                  <Download className="size-3.5" />
+                )}
+                CSV detaliat (referrer/UA/OS)
               </button>
             </div>
+
             {exportError && (
               <p className="mt-2 break-words text-xs text-destructive">{exportError}</p>
             )}

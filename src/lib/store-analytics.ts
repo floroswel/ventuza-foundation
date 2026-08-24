@@ -80,6 +80,45 @@ function publish(e: LastFunnelEvent) {
 }
 
 /**
+ * Context tehnic anonim pentru atribuție: referrer brut, user agent trunchiat,
+ * sistem de operare și browser. Fără IP, fără identificator de utilizator.
+ */
+function clientEnv(): {
+  referrerUrl: string | null;
+  userAgent: string | null;
+  osName: string | null;
+  browser: string | null;
+} {
+  if (typeof navigator === "undefined") {
+    return { referrerUrl: null, userAgent: null, osName: null, browser: null };
+  }
+  const ua = navigator.userAgent || "";
+  const osName =
+    /Android/i.test(ua) ? "Android"
+    : /iPhone|iPad|iPod/i.test(ua) ? "iOS"
+    : /Windows/i.test(ua) ? "Windows"
+    : /Mac OS X|Macintosh/i.test(ua) ? "macOS"
+    : /CrOS/i.test(ua) ? "ChromeOS"
+    : /Linux/i.test(ua) ? "Linux"
+    : "unknown";
+  const browser =
+    /EdgA?\//i.test(ua) ? "Edge"
+    : /OPR\/|Opera/i.test(ua) ? "Opera"
+    : /SamsungBrowser/i.test(ua) ? "Samsung Internet"
+    : /Firefox\//i.test(ua) ? "Firefox"
+    : /Chrome\//i.test(ua) ? "Chrome"
+    : /Safari\//i.test(ua) ? "Safari"
+    : "unknown";
+  let referrerUrl: string | null = null;
+  try {
+    referrerUrl = typeof document !== "undefined" && document.referrer ? document.referrer : null;
+  } catch {
+    referrerUrl = null;
+  }
+  return { referrerUrl, userAgent: ua.slice(0, 200) || null, osName, browser };
+}
+
+/**
  * Trimite un eveniment de funnel. Nu blochează niciodată navigarea:
  * erorile sunt înghițite intenționat (analytics best-effort).
  */
@@ -108,6 +147,7 @@ export function trackStoreFunnel(
   };
   publish(base);
   try {
+    const env = clientEnv();
     const payload = {
       _kind: kind,
       _source: base.source,
@@ -119,7 +159,12 @@ export function trackStoreFunnel(
       _variant: base.variant,
       _referrer: base.referrer,
       _dedupe_key: opts?.dedupeKey ?? null,
+      _referrer_url: env.referrerUrl,
+      _user_agent: env.userAgent,
+      _os_name: env.osName,
+      _browser: env.browser,
     };
+
     void supabase.rpc("log_store_funnel_event", payload as never).then(
       (res: { data?: unknown; error?: { message: string } | null }) => {
         if (res?.error) {

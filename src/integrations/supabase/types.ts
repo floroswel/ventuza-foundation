@@ -4352,44 +4352,56 @@ export type Database = {
       store_funnel_events: {
         Row: {
           app_installed: boolean | null
+          browser: string | null
           campaign: string | null
           created_at: string
           dedupe_key: string | null
           id: number
           kind: string
           medium: string | null
+          os_name: string | null
           path: string | null
           platform: string | null
           referrer: string | null
+          referrer_url: string | null
           source: string | null
+          user_agent: string | null
           variant: string | null
         }
         Insert: {
           app_installed?: boolean | null
+          browser?: string | null
           campaign?: string | null
           created_at?: string
           dedupe_key?: string | null
           id?: number
           kind: string
           medium?: string | null
+          os_name?: string | null
           path?: string | null
           platform?: string | null
           referrer?: string | null
+          referrer_url?: string | null
           source?: string | null
+          user_agent?: string | null
           variant?: string | null
         }
         Update: {
           app_installed?: boolean | null
+          browser?: string | null
           campaign?: string | null
           created_at?: string
           dedupe_key?: string | null
           id?: number
           kind?: string
           medium?: string | null
+          os_name?: string | null
           path?: string | null
           platform?: string | null
           referrer?: string | null
+          referrer_url?: string | null
           source?: string | null
+          user_agent?: string | null
           variant?: string | null
         }
         Relationships: []
@@ -5773,12 +5785,33 @@ export type Database = {
         Args: { _from: string; _to: string }
         Returns: {
           app_link_opens: number
+          browser: string
           clicks: number
           day: string
           installs: number
           intent_opens: number
+          os_name: string
           platform: string
           source: string
+          variant: string
+        }[]
+      }
+      admin_store_funnel_export_raw: {
+        Args: { _from: string; _limit?: number; _to: string }
+        Returns: {
+          app_installed: boolean
+          browser: string
+          campaign: string
+          created_at: string
+          kind: string
+          medium: string
+          os_name: string
+          path: string
+          platform: string
+          referrer: string
+          referrer_url: string
+          source: string
+          user_agent: string
           variant: string
         }[]
       }
@@ -6437,14 +6470,18 @@ export type Database = {
       log_store_funnel_event: {
         Args: {
           _app_installed?: boolean
+          _browser?: string
           _campaign?: string
           _dedupe_key?: string
           _kind: string
           _medium?: string
+          _os_name?: string
           _path?: string
           _platform?: string
           _referrer?: string
+          _referrer_url?: string
           _source?: string
+          _user_agent?: string
           _variant?: string
         }
         Returns: number
