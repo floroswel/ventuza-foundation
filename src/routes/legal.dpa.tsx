@@ -52,8 +52,37 @@ function DpaPage() {
       />
       <article className="prose prose-invert mx-auto max-w-2xl px-4 py-6 text-sm leading-relaxed">
         <p className="text-xs text-muted-foreground">
-          {en ? "Version 1.0 — last updated 25 August 2026" : "Versiunea 1.0 — ultima actualizare: 25 august 2026"}
+          {en
+            ? `Version ${CURRENT_DPA.version} — last updated ${formatLegalDate(CURRENT_DPA.date, "en")}`
+            : `Versiunea ${CURRENT_DPA.version} — ultima actualizare: ${formatLegalDate(CURRENT_DPA.date)}`}
         </p>
+
+        <div className="mt-4 flex flex-wrap gap-2 not-prose">
+          <a
+            href={CURRENT_DPA.file}
+            download
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium hover:bg-surface/70"
+          >
+            <Download className="size-4" />
+            {en
+              ? `Download PDF (v${CURRENT_DPA.version})`
+              : `Descarcă PDF (v${CURRENT_DPA.version})`}
+          </a>
+          <Link
+            to="/legal/transfers"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium hover:bg-surface/70"
+          >
+            <Globe2 className="size-4" />
+            {en ? "Non-EU transfers (SCC / DPF)" : "Transferuri extra-UE (SCC / DPF)"}
+          </Link>
+          <Link
+            to="/legal/subprocessors"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs font-medium hover:bg-surface/70"
+          >
+            {en ? "Subprocessors" : "Subprocesatori"}
+          </Link>
+        </div>
+
 
         <p className="mt-4">
           {en ? (
