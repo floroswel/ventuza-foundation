@@ -1,5 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { SUPPORT_EMAIL } from "@/lib/seo-content";
+import { PLAY_STORE_URL } from "@/lib/store-links";
+
 
 const LINKS: { to: string; label: string }[] = [
   { to: "/", label: "Home" },
@@ -19,12 +21,23 @@ export function PublicFooter() {
     <footer className="border-t border-border bg-surface/40">
       <div className="mx-auto w-full max-w-3xl px-6 py-10 text-sm text-muted-foreground">
         <p className="text-base font-semibold text-foreground">Suzeta</p>
-        <p className="mt-1">
+        <p className="mt-3">
+          <a
+            className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-xs font-semibold uppercase tracking-wider text-primary-foreground hover:bg-primary/90"
+            href={PLAY_STORE_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Get it on Google Play
+          </a>
+        </p>
+        <p className="mt-3">
           Support:{" "}
           <a className="text-primary hover:underline" href={`mailto:${SUPPORT_EMAIL}`}>
             {SUPPORT_EMAIL}
           </a>
         </p>
+
         <nav aria-label="Footer" className="mt-4">
           <ul className="grid gap-2 sm:grid-cols-2">
             {LINKS.map((l) => (

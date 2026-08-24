@@ -8,7 +8,11 @@ import {
   EyeOff,
   Trash2,
   ShieldCheck,
+  Smartphone,
 } from "lucide-react";
+import { PLAY_STORE_URL } from "@/lib/store-links";
+import { GetAppBanner } from "@/components/GetAppBanner";
+
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
@@ -208,13 +212,26 @@ function Landing() {
           </p>
 
           <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
+            <a
+              href={PLAY_STORE_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary text-sm font-medium uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              <Smartphone className="size-4" />
+              Get it on Google Play
+            </a>
+            <p className="text-xs text-muted-foreground">
+              Free Android app · or continue in your browser below
+            </p>
             <Link
               to="/auth"
               search={{ mode: "signup" }}
-              className="inline-flex h-12 items-center justify-center rounded-full bg-primary text-sm font-medium uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 bg-surface text-sm font-medium uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary/10"
             >
               Create account
             </Link>
+
             <Link
               to="/auth"
               search={{ mode: "login" }}
@@ -415,6 +432,8 @@ function Landing() {
       </main>
 
       <PublicFooter />
+      <GetAppBanner />
+
     </div>
   );
 }
