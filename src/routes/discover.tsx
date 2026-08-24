@@ -1377,7 +1377,7 @@ function PosterRow({
               </div>
               {p.verified && !p.boost_until && (
                 <span className="absolute left-2 top-2 rounded-full bg-black/60 p-0.5 backdrop-blur">
-                  <BadgeCheck className="size-3.5 text-primary" />
+                  <BadgeCheck className="size-3.5 text-[var(--verified)]" />
                 </span>
               )}
             </button>
@@ -1519,7 +1519,7 @@ function ProfileSheet({
                 <h2 className="flex items-center gap-2 font-display text-3xl font-medium text-white">
                   {profile.display_name}
                   {age ? <span className="text-white/70">, {age}</span> : null}
-                  {profile.verified && <BadgeCheck className="size-5 text-primary" />}
+                  {profile.verified && <BadgeCheck className="size-5 text-[var(--verified)]" />}
                 </h2>
                 <PositionTag value={profile.position} />
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85">

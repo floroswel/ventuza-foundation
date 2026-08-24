@@ -74,7 +74,7 @@ function VerificationCard({ userId, mainPhotoPath, verificationStatus, onUpdate 
     <div className="rounded-2xl border border-border bg-surface p-4">
       <div className="flex items-start gap-3">
         <span
-          className={`flex size-10 shrink-0 items-center justify-center rounded-full ${verified ? "bg-primary/15 text-primary" : "bg-surface-elevated text-muted-foreground"}`}
+          className={`flex size-10 shrink-0 items-center justify-center rounded-full ${verified ? "bg-[var(--verified)]/15 text-[var(--verified)]" : "bg-surface-elevated text-muted-foreground"}`}
         >
           {verified ? <BadgeCheck className="size-5" /> : <ShieldAlert className="size-5" />}
         </span>

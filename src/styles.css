@@ -20,6 +20,8 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-glow: var(--primary-glow);
+  --color-verified: var(--verified);
+  --color-verified-foreground: var(--verified-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -57,6 +59,10 @@
   --primary: oklch(0.68 0.28 320);
   --primary-foreground: oklch(1 0 0);
   --primary-glow: oklch(0.76 0.24 315);
+
+  /* Verified badge — distinct blue (not the magenta brand primary) */
+  --verified: oklch(0.62 0.18 240);
+  --verified-foreground: oklch(1 0 0);
 
   --secondary: oklch(0.24 0.014 275);
   --secondary-foreground: oklch(1 0 0);

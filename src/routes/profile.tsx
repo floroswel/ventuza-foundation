@@ -334,7 +334,7 @@ function ProfilePage() {
               <span
                 data-testid="verification-badge"
                 data-verified="true"
-                className="inline-flex items-center gap-1 rounded-full border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary backdrop-blur"
+                className="inline-flex items-center gap-1 rounded-full border border-[var(--verified)]/40 bg-[var(--verified)]/10 px-2.5 py-1 text-xs text-[var(--verified)] backdrop-blur"
               >
                 <BadgeCheck className="size-3" /> Verificat
               </span>

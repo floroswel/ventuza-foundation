@@ -618,7 +618,7 @@ function Content({ data, onOpenUser }: { data: Dashboard; onOpenUser: (id: strin
                       <td className="p-1">
                         <div className="flex items-center gap-1">
                           {u.display_name ?? "(fără nume)"}
-                          {u.verified && <BadgeCheck className="size-3 text-primary" />}
+                          {u.verified && <BadgeCheck className="size-3 text-[var(--verified)]" />}
                         </div>
                         <div className="font-mono text-[9px] text-muted-foreground">
                           {u.user_id.slice(0, 12)}…

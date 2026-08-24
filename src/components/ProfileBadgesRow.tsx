@@ -28,7 +28,7 @@ export function ProfileBadgesRow({ profile }: { profile: ProfileLike }) {
       out.push({ key: "founder", label: "Founder", icon: Crown, tone: "gold" });
     }
     if (profile.verified_at) {
-      out.push({ key: "verified", label: "Verified", icon: BadgeCheck, tone: "primary" });
+      out.push({ key: "verified", label: "Verified", icon: BadgeCheck, tone: "verified" });
     }
     if ((profile.vaccinations?.length ?? 0) >= 2 || (profile.safety_practices?.length ?? 0) >= 3) {
       out.push({ key: "safe", label: "Safe play", icon: Shield, tone: "emerald" });
@@ -67,8 +67,8 @@ export function ProfileBadgesRow({ profile }: { profile: ProfileLike }) {
         const cls =
           b.tone === "gold"
             ? "border-amber-400/50 bg-amber-400/10 text-amber-300"
-            : b.tone === "primary"
-              ? "border-primary/40 bg-primary/10 text-primary"
+            : b.tone === "verified"
+              ? "border-[var(--verified)]/40 bg-[var(--verified)]/10 text-[var(--verified)]"
               : b.tone === "emerald"
                 ? "border-emerald-400/40 bg-emerald-400/10 text-emerald-300"
                 : b.tone === "violet"
