@@ -108,6 +108,7 @@ export function trackStoreFunnel(
   };
   publish(base);
   try {
+    const env = clientEnv();
     const payload = {
       _kind: kind,
       _source: base.source,
@@ -119,7 +120,12 @@ export function trackStoreFunnel(
       _variant: base.variant,
       _referrer: base.referrer,
       _dedupe_key: opts?.dedupeKey ?? null,
+      _referrer_url: env.referrerUrl,
+      _user_agent: env.userAgent,
+      _os_name: env.osName,
+      _browser: env.browser,
     };
+
     void supabase.rpc("log_store_funnel_event", payload as never).then(
       (res: { data?: unknown; error?: { message: string } | null }) => {
         if (res?.error) {
