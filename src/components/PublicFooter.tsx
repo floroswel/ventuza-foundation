@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { SUPPORT_EMAIL } from "@/lib/seo-content";
-import { PLAY_STORE_URL } from "@/lib/store-links";
+import { playStoreUrl } from "@/lib/store-links";
+import { trackStoreFunnel } from "@/lib/store-analytics";
 
 
 const LINKS: { to: string; label: string }[] = [
@@ -24,7 +25,8 @@ export function PublicFooter() {
         <p className="mt-3">
           <a
             className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-xs font-semibold uppercase tracking-wider text-primary-foreground hover:bg-primary/90"
-            href={PLAY_STORE_URL}
+            href={playStoreUrl("footer")}
+            onClick={() => trackStoreFunnel("store_click", { source: "footer" })}
             target="_blank"
             rel="noopener noreferrer"
           >

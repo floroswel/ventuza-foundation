@@ -59,7 +59,7 @@ export function GetAppBanner({ path = "/" }: { path?: string }) {
         </div>
         <button
           type="button"
-          onClick={() => openAppOrStore(path)}
+          onClick={() => openAppOrStore(path, "smart_banner", installed)}
           className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-primary px-4 text-xs font-semibold uppercase tracking-wider text-primary-foreground"
         >
           {installed ? "Deschide" : "Instalează"}

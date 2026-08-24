@@ -10,7 +10,8 @@ import {
   ShieldCheck,
   Smartphone,
 } from "lucide-react";
-import { PLAY_STORE_URL, isAndroidAppInstalled, isAndroidWebBrowser, openAppOrStore } from "@/lib/store-links";
+import { trackStoreFunnel } from "@/lib/store-analytics";
+import { playStoreUrl, isAndroidAppInstalled, isAndroidWebBrowser, openAppOrStore } from "@/lib/store-links";
 import { GetAppBanner } from "@/components/GetAppBanner";
 
 
@@ -226,14 +227,16 @@ function Landing() {
 
           <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
             <a
-              href={PLAY_STORE_URL}
+              href={playStoreUrl("hero_cta")}
               onClick={(e) => {
                 // Pe Android deschidem aplicația instalată prin intent; dacă nu
                 // e instalată, intent-ul cade automat pe Google Play.
                 if (isAndroidWebBrowser()) {
                   e.preventDefault();
-                  openAppOrStore("/");
+                  openAppOrStore("/", "hero_cta", appInstalled);
+                  return;
                 }
+                trackStoreFunnel("store_click", { source: "hero_cta", appInstalled });
               }}
               target="_blank"
               rel="noopener noreferrer"
