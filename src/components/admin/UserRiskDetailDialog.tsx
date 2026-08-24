@@ -127,7 +127,7 @@ export function UserRiskDetailDialog({
               <h3 className="truncate text-base font-semibold">
                 {p?.display_name ?? "(fără nume)"}
               </h3>
-              {p?.age_status === "verified" && <BadgeCheck className="size-4 text-primary" />}
+              {p?.age_status === "verified" && <BadgeCheck className="size-4 text-[var(--verified)]" />}
               {p?.banned_at && (
                 <span className="rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] text-red-300">
                   banat
