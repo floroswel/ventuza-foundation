@@ -44,6 +44,7 @@ import { SosCard } from "@/components/SosCard";
 import { EnablePushButton } from "@/components/EnablePushButton";
 
 import { ReferralCard } from "@/components/ReferralCard";
+import { PublicLinkCard } from "@/components/settings/PublicLinkCard";
 import { AmbassadorWelcomeCard } from "@/components/AmbassadorWelcomeCard";
 import { ConsentsCard } from "@/components/settings/ConsentsCard";
 import { ConsentsHistoryCard } from "@/components/settings/ConsentsHistoryCard";
@@ -318,6 +319,8 @@ function SettingsPage() {
       <div className="mx-auto max-w-md space-y-6 px-4 py-6">
         <AmbassadorWelcomeCard />
         <ReferralCard />
+
+        <PublicLinkCard />
 
         {/* Account */}
         <section className="rounded-2xl border border-border bg-surface p-4">

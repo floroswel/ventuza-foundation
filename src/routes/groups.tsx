@@ -161,7 +161,9 @@ function GroupsPage() {
               if (filtered.length === 0) {
                 return (
                   <p className="text-sm text-muted-foreground">
-                    {q ? "Niciun rezultat." : "Niciun squad public momentan."}
+                    {q
+                      ? "Niciun rezultat pentru căutarea ta."
+                      : "Încă nu există squad-uri publice. Creează primul — apasă „Creează” sus."}
                   </p>
                 );
               }
