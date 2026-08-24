@@ -10,8 +10,9 @@ import {
   ShieldCheck,
   Smartphone,
 } from "lucide-react";
-import { PLAY_STORE_URL } from "@/lib/store-links";
+import { PLAY_STORE_URL, isAndroidAppInstalled, isAndroidWebBrowser, openAppOrStore } from "@/lib/store-links";
 import { GetAppBanner } from "@/components/GetAppBanner";
+
 
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
@@ -214,16 +215,27 @@ function Landing() {
           <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
             <a
               href={PLAY_STORE_URL}
+              onClick={(e) => {
+                // Pe Android deschidem aplicația instalată prin intent; dacă nu
+                // e instalată, intent-ul cade automat pe Google Play.
+                if (isAndroidWebBrowser()) {
+                  e.preventDefault();
+                  openAppOrStore("/");
+                }
+              }}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary text-sm font-medium uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Smartphone className="size-4" />
-              Get it on Google Play
+              {appInstalled ? "Open in the app" : "Get it on Google Play"}
             </a>
             <p className="text-xs text-muted-foreground">
-              Free Android app · or continue in your browser below
+              {appInstalled
+                ? "The Android app is already installed on this device"
+                : "Free Android app · or continue in your browser below"}
             </p>
+
             <Link
               to="/auth"
               search={{ mode: "signup" }}
