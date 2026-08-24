@@ -161,17 +161,11 @@ function Page() {
                 ).
               </li>
               <li>
-                <strong>Platforma UE SOL (Soluționare Online Litigii)</strong>:{" "}
-                <a
-                  className="text-primary"
-                  href="https://ec.europa.eu/consumers/odr"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  ec.europa.eu/consumers/odr
-                </a>
-                .
+                <strong>Platforma UE SOL/ODR</strong>: și-a încetat activitatea la 20 iulie 2025
+                (Regulamentul (UE) 2024/3228). Reclamațiile se depun direct la ANPC sau la o
+                entitate SAL înscrisă în registrul ANPC.
               </li>
+
             </ul>
             <p className="mt-2 text-foreground/85">
               Adresa de email pentru comunicarea cu ANPC / SAL:{" "}
