@@ -5,11 +5,34 @@
  * nativă din Google Play, nu să folosească varianta din browser / PWA.
  */
 
+import {
+  UTM_CAMPAIGN,
+  UTM_MEDIUM,
+  trackStoreFunnel,
+  type StoreClickSource,
+} from "@/lib/store-analytics";
+
 export const ANDROID_PACKAGE = "app.suzeta";
 export const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
 
+/**
+ * Linkul Play Store cu atribuire. Google Play acceptă un singur parametru
+ * `referrer`, care conține la rândul lui un query-string UTM; Play Console îl
+ * raportează în „Acquisition → Traffic sources”, iar Install Referrer API îl
+ * expune aplicației după instalare.
+ */
+export function playStoreUrl(source: StoreClickSource | string = "web"): string {
+  const referrer = new URLSearchParams({
+    utm_source: source,
+    utm_medium: UTM_MEDIUM,
+    utm_campaign: UTM_CAMPAIGN,
+  }).toString();
+  return `${PLAY_STORE_URL}&referrer=${encodeURIComponent(referrer)}`;
+}
+
 /** Intent Android care deschide direct aplicația Play Store (fallback pe web). */
 export const PLAY_STORE_MARKET_URL = `market://details?id=${ANDROID_PACKAGE}`;
+
 
 /** True doar în browser pe Android (nu în wrapper-ul nativ Capacitor). */
 export function isAndroidWebBrowser(): boolean {
