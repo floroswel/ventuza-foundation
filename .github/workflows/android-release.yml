@@ -976,50 +976,72 @@ jobs:
           echo "--- build.gradle after ---"
           cat "$GRADLE"
 
-      - name: Verifică merged manifest — compliance Google Play (targetSdk ≥ 36 + no AD_ID + no ACCESS_BACKGROUND_LOCATION)
+      - name: Verifică merged manifest (debug + release) — compliance Google Play
         working-directory: android
         run: |
+          set -euo pipefail
           chmod +x ./gradlew
-          ./gradlew :app:processReleaseManifest --no-daemon
-          MERGED=app/build/intermediates/merged_manifests/release/AndroidManifest.xml
-          if [ ! -f "$MERGED" ]; then
-            # Path variază între versiuni AGP; caută recursiv
-            MERGED=$(find app/build/intermediates -name AndroidManifest.xml -path "*merged*release*" | head -n1)
-          fi
-          test -f "$MERGED" || { echo "::error::Merged manifest lipsă"; exit 1; }
-          echo "--- merged manifest: $MERGED ---"
-          # 1) targetSdk >= 36
-          TSDK=$(grep -oP 'android:targetSdkVersion="\K[0-9]+' "$MERGED" | head -1 || echo "0")
-          if [ -z "$TSDK" ] || [ "$TSDK" -lt 36 ]; then
-            echo "::error::targetSdk=$TSDK < 36. Google Play cere targetSdk ≥ 36 (Android 16) pentru încărcări noi."
-            exit 1
-          fi
-          echo "✓ targetSdk=$TSDK"
-          # 2) AD_ID trebuie să LIPSEASCĂ
-          if grep 'com.google.android.gms.permission.AD_ID' "$MERGED" | grep -qv 'tools:node'; then
-            echo "::error::AD_ID prezent în merged manifest. Data Safety declară 'No advertising' — permisiunea trebuie eliminată."
-            grep 'AD_ID' "$MERGED"
-            exit 1
-          fi
-          echo "✓ AD_ID absent din merged manifest"
+          # Ambele variante: manifestul de debug poate primi AD_ID din librării
+          # (FCM / Play Services) fără să fie observat, iar Play Console
+          # avertizează pe baza artefactelor active.
+          ./gradlew :app:processDebugManifest :app:processReleaseManifest --no-daemon
+          FAIL=0
+          for VARIANT in debug release; do
+            MERGED="app/build/intermediates/merged_manifests/$VARIANT/AndroidManifest.xml"
+            if [ ! -f "$MERGED" ]; then
+              MERGED=$(find app/build/intermediates -name AndroidManifest.xml -path "*merged*$VARIANT*" | head -n1)
+            fi
+            test -f "$MERGED" || { echo "::error::Merged manifest lipsă pentru varianta $VARIANT"; exit 1; }
+            echo "--- [$VARIANT] merged manifest: $MERGED ---"
 
-          # 3) ACCESS_BACKGROUND_LOCATION trebuie să LIPSEASCĂ (geofencing dormant)
-          if grep 'android.permission.ACCESS_BACKGROUND_LOCATION' "$MERGED" | grep -qv 'tools:node'; then
-            echo "::error::ACCESS_BACKGROUND_LOCATION prezent. Geofencing background nu e activ — permisiunea trebuie eliminată."
-            grep 'ACCESS_BACKGROUND_LOCATION' "$MERGED"
-            exit 1
-          fi
-          echo "✓ ACCESS_BACKGROUND_LOCATION absent din merged manifest"
-          # 4) requestLegacyExternalStorage trebuie să rămână false după merge.
-          #    ioncamera-android îl aduce cu true; `tools:replace` face ca valoarea
-          #    noastră să câștige, iar aici confirmăm rezultatul, nu intenția.
-          RLES=$(grep -oP 'android:requestLegacyExternalStorage="\K[^"]+' "$MERGED" | head -1 || echo "absent")
-          if [ "$RLES" = "true" ]; then
-            echo "::error::requestLegacyExternalStorage=true în merged manifest. Storage-ul legacy trebuie să rămână dezactivat."
-            exit 1
-          fi
-          echo "✓ requestLegacyExternalStorage=$RLES (nu este true)"
-          echo "✓✓✓ Compliance Google Play OK"
+            # 1) AD_ID trebuie să LIPSEASCĂ (Play Console: "app doesn't use advertising ID")
+            if grep 'com.google.android.gms.permission.AD_ID' "$MERGED" | grep -qv 'tools:node'; then
+              echo "::error::[$VARIANT] AD_ID prezent în merged manifest. Declarația Play este 'No advertising ID' — permisiunea trebuie eliminată."
+              grep 'AD_ID' "$MERGED"
+              FAIL=1
+            else
+              echo "✓ [$VARIANT] AD_ID absent din merged manifest"
+            fi
+
+            # 2) ACCESS_BACKGROUND_LOCATION trebuie să LIPSEASCĂ (geofencing dormant)
+            if grep 'android.permission.ACCESS_BACKGROUND_LOCATION' "$MERGED" | grep -qv 'tools:node'; then
+              echo "::error::[$VARIANT] ACCESS_BACKGROUND_LOCATION prezent. Geofencing background nu e activ — permisiunea trebuie eliminată."
+              grep 'ACCESS_BACKGROUND_LOCATION' "$MERGED"
+              FAIL=1
+            else
+              echo "✓ [$VARIANT] ACCESS_BACKGROUND_LOCATION absent din merged manifest"
+            fi
+
+            if [ "$VARIANT" = "release" ]; then
+              # 3) targetSdk >= 36
+              TSDK=$(grep -oP 'android:targetSdkVersion="\K[0-9]+' "$MERGED" | head -1 || echo "0")
+              if [ -z "$TSDK" ] || [ "$TSDK" -lt 36 ]; then
+                echo "::error::targetSdk=$TSDK < 36. Google Play cere targetSdk ≥ 36 (Android 16) pentru încărcări noi."
+                FAIL=1
+              else
+                echo "✓ targetSdk=$TSDK"
+              fi
+              # 4) requestLegacyExternalStorage trebuie să rămână false după merge.
+              #    ioncamera-android îl aduce cu true; `tools:replace` face ca valoarea
+              #    noastră să câștige, iar aici confirmăm rezultatul, nu intenția.
+              RLES=$(grep -oP 'android:requestLegacyExternalStorage="\K[^"]+' "$MERGED" | head -1 || echo "absent")
+              if [ "$RLES" = "true" ]; then
+                echo "::error::requestLegacyExternalStorage=true în merged manifest. Storage-ul legacy trebuie să rămână dezactivat."
+                FAIL=1
+              else
+                echo "✓ requestLegacyExternalStorage=$RLES (nu este true)"
+              fi
+            fi
+          done
+          [ "$FAIL" = "0" ] || exit 1
+          echo "✓✓✓ Compliance Google Play OK (debug + release)"
+
+      - name: Verifică în Play că versionCode-ul este liber (anti "no new app bundles")
+        if: ${{ (github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true') && (github.event_name == 'push' || github.ref == 'refs/heads/main') }}
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: node scripts/check-play-version-code.mjs --package app.suzeta --code ${{ steps.version.outputs.code }}
+
 
       - name: Build AAB semnat
         working-directory: android
