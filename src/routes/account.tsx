@@ -24,6 +24,7 @@ import { signPhotos } from "@/lib/discover";
 import { setIncognito } from "@/lib/incognito";
 
 import { BottomNav } from "@/components/BottomNav";
+import { StaffRoleBadge } from "@/components/StaffRoleBadge";
 
 export const Route = createFileRoute("/account")({
   ssr: false,
