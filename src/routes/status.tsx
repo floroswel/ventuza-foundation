@@ -178,8 +178,8 @@ function StatusPage() {
 
       <p className="mt-8 text-xs text-muted-foreground">
         Pentru raportarea unui incident de securitate scrie la{" "}
-        <a href="mailto:security@suzeta.app" className="text-primary underline">
-          security@suzeta.app
+        <a href="mailto:security@suzeta.ro" className="text-primary underline">
+          security@suzeta.ro
         </a>{" "}
         sau consultă{" "}
         <a href="/.well-known/security.txt" className="text-primary underline">

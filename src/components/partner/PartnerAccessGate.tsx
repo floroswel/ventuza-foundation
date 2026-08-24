@@ -118,7 +118,7 @@ export function PartnerAccessGate({
         actions={
           <>
             <Button asChild>
-              <a href="mailto:business@suzeta.eu?subject=Cont%20partener%20suspendat">
+              <a href="mailto:business@suzeta.ro?subject=Cont%20partener%20suspendat">
                 <Mail className="size-4 mr-1" /> Contactează moderarea
               </a>
             </Button>
@@ -158,7 +158,7 @@ export function PartnerAccessGate({
       rejected: {
         icon: <XCircle className="size-6 text-red-500" />,
         headline: "Cererea a fost respinsă",
-        body: "Momentan contul de partener nu e activ, așa că nu putem încărca această pagină. Pentru clarificări scrie-ne la business@suzeta.eu.",
+        body: "Momentan contul de partener nu e activ, așa că nu putem încărca această pagină. Pentru clarificări scrie-ne la business@suzeta.ro.",
       },
     };
     const s = map[app.status ?? "pending"] ?? map.pending;
@@ -176,7 +176,7 @@ export function PartnerAccessGate({
             </Button>
             {app.status === "rejected" && (
               <Button variant="outline" asChild>
-                <a href="mailto:business@suzeta.eu">
+                <a href="mailto:business@suzeta.ro">
                   <Mail className="size-4 mr-1" /> Contactează echipa
                 </a>
               </Button>

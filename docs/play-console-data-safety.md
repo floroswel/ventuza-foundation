@@ -12,7 +12,7 @@ Ultima actualizare: 2026-07-13. Sursa de adevăr pentru procesatori:
 - **Is all of the user data collected by your app encrypted in transit?** → **Yes** (HTTPS/TLS 1.2+ end-to-end; storage cifrată la coloană pentru date sănătate — vezi `HEALTH_COL_KEY`).
 - **Do you provide a way for users to request that their data be deleted?** → **Yes**
   - In-app: `/account-deletion` (declanșează `deletion_requests` → purge automat).
-  - Email: `dpo@suzeta.eu` (răspuns ≤ 30 zile, GDPR Art. 17).
+  - Email: `dpo@suzeta.ro` (răspuns ≤ 30 zile, GDPR Art. 17).
 - **Has your app been independently validated against a global security standard?** → **No** (planificat: audit extern Q4 2026).
 
 ---

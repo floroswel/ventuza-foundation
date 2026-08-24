@@ -339,7 +339,7 @@ function SalePitch() {
         <section className="rounded-xl border border-primary/40 bg-primary/5 p-5">
           <div className="text-sm font-semibold mb-1">Contact LOI / due diligence</div>
           <div className="text-xs text-muted-foreground">
-            VOMIX GENIUS S.R.L. · contact@suzeta.eu · NDA + data room disponibile la cerere (cod
+            VOMIX GENIUS S.R.L. · contact@suzeta.ro · NDA + data room disponibile la cerere (cod
             sursă, registru Art. 30, DPIA, RLS audit, demo flow B2B end-to-end).
           </div>
         </section>

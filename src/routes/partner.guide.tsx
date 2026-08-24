@@ -177,7 +177,7 @@ function PartnerGuide() {
         <ol className="list-decimal pl-4 space-y-1">
           <li>Vezi motivul exact în portal, la postarea respectivă.</li>
           <li>Editează și corectează — la salvare retrimitem automat la moderare.</li>
-          <li>Pentru ajutor: scrie la support@suzeta.app.</li>
+          <li>Pentru ajutor: scrie la support@suzeta.ro.</li>
         </ol>
       </Section>
 

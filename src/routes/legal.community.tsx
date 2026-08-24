@@ -89,8 +89,8 @@ function CommunityPage() {
                 Dacă ți s-a restricționat contul sau conținutul, primești o notificare cu motivul și
                 ai la dispoziție <strong>14 zile</strong> să contești decizia răspunzând email-ului
                 sau scriindu-ne la{" "}
-                <a className="text-primary" href="mailto:appeals@suzeta.app">
-                  appeals@suzeta.app
+                <a className="text-primary" href="mailto:appeals@suzeta.ro">
+                  appeals@suzeta.ro
                 </a>
                 . O persoană umană (nu un algoritm) revizuiește contestația în maximum 7 zile.
               </p>
@@ -98,8 +98,8 @@ function CommunityPage() {
               <h2 className="mt-6 text-base font-semibold">Raportare</h2>
               <p>
                 Folosește butonul de raportare pe orice profil sau mesaj. Pentru abuz grav:{" "}
-                <a className="text-primary" href="mailto:trust@suzeta.app">
-                  trust@suzeta.app
+                <a className="text-primary" href="mailto:trust@suzeta.ro">
+                  trust@suzeta.ro
                 </a>
                 . Pentru CSAM (conținut cu minori): raportăm direct la{" "}
                 <a

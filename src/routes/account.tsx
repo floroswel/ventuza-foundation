@@ -355,7 +355,7 @@ function AccountPage() {
               Chat direct
             </a>
             <a
-              href={`mailto:support@suzeta.eu?subject=${encodeURIComponent("Suport Suzeta")}&body=${encodeURIComponent(`\n\n---\nUser: ${user.email ?? ""}\nID: ${user.id}`)}`}
+              href={`mailto:support@suzeta.ro?subject=${encodeURIComponent("Suport Suzeta")}&body=${encodeURIComponent(`\n\n---\nUser: ${user.email ?? ""}\nID: ${user.id}`)}`}
               className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-medium hover:bg-surface"
             >
               <Mail className="size-4 text-rose-500" />

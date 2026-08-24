@@ -34,7 +34,7 @@ function EditorialPitchRo() {
             Suzeta — dosar de nominalizare editorială pentru Google Play
           </h1>
           <p className="text-xs text-muted-foreground">
-            Contact: contact@suzeta.eu · DPO: dpo@suzeta.app
+            Contact: contact@suzeta.ro · DPO: dpo@suzeta.ro
             <br />
             Pachet: <code>app.suzeta</code> · Site: https://www.suzeta.app
             <br />

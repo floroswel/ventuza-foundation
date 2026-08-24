@@ -2,7 +2,7 @@
 
 **Operator:** VOMIX GENIUS S.R.L. (CUI 43025661)
 **Persoană responsabilă (primă linie):** Florin, Administrator
-**DPO:** dpo@suzeta.eu
+**DPO:** dpo@suzeta.ro
 **Escaladare externă:** consultant GDPR (contract pe retainer)
 **Versiune:** 1.0.0
 **Data:** 2026-07-13
@@ -92,7 +92,7 @@ Operator: VOMIX GENIUS S.R.L.
 CUI: 43025661
 Sediu: [adresa completă]
 Reprezentant: Florin [nume], Administrator
-DPO: dpo@suzeta.eu
+DPO: dpo@suzeta.ro
 
 1. Natura încălcării:
    [Descriere concisă: ce s-a întâmplat, când, cum a fost descoperit]
@@ -163,7 +163,7 @@ Am notificat Autoritatea Națională de Supraveghere a Prelucrării Datelor
 (ANSPDCP) conform GDPR Art. 33.
 
 Îți poți exercita oricând drepturile GDPR (Art. 15-22) contactând-ne la
-dpo@suzeta.eu.
+dpo@suzeta.ro.
 
 Îmi pare rău că s-a întâmplat. Ne asumăm răspunderea și îmbunătățim procesele.
 

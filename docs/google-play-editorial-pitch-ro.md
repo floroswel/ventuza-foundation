@@ -1,6 +1,6 @@
 # Suzeta — dosar de nominalizare editorială pentru Google Play
 
-Contact: contact@suzeta.eu · DPO: dpo@suzeta.app
+Contact: contact@suzeta.ro · DPO: dpo@suzeta.ro
 Pachet: `app.suzeta` · Site: https://www.suzeta.app
 Categorie: Dating · Clasificare: 18+ · Țara de origine: România
 

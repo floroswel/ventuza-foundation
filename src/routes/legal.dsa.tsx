@@ -64,8 +64,8 @@ function DsaPage() {
               <p>
                 Orice utilizator sau autoritate poate raporta conținut presupus ilegal prin butonul
                 "Raportează" din aplicație sau prin email la{" "}
-                <a className="text-primary" href="mailto:trust@suzeta.app">
-                  trust@suzeta.app
+                <a className="text-primary" href="mailto:trust@suzeta.ro">
+                  trust@suzeta.ro
                 </a>
                 . Confirmăm primirea în 24h și luăm decizia în maximum 7 zile.
               </p>
@@ -73,8 +73,8 @@ function DsaPage() {
               <h2 className="mt-6 text-base font-semibold">Drept de contestare (Art. 20)</h2>
               <p>
                 Deciziile de moderare pot fi contestate gratuit, intern, în termen de 14 zile, la{" "}
-                <a className="text-primary" href="mailto:appeals@suzeta.app">
-                  appeals@suzeta.app
+                <a className="text-primary" href="mailto:appeals@suzeta.ro">
+                  appeals@suzeta.ro
                 </a>
                 . Răspuns uman în maximum 7 zile.
               </p>

@@ -22,7 +22,7 @@
 | Sediu | _de completat_ |
 | CUI / nr. reg. | _de completat_ |
 | Reprezentant legal | _de completat_ |
-| Contact DPO | dpo@suzeta.app |
+| Contact DPO | dpo@suzeta.ro |
 
 ---
 

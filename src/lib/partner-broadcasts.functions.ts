@@ -213,7 +213,7 @@ async function deliverBroadcast(params: {
     }
 
     const SENDER_DOMAIN = "notify.suzeta.app";
-    const FROM = "Suzeta <noreply@suzeta.app>";
+    const FROM = "Suzeta <noreply@suzeta.ro>";
     const subject = `Suzeta: ${broadcast.title}`;
     const safeTitle = escapeHtml(broadcast.title);
     const safeBody = escapeHtml(broadcast.body).replace(/\n/g, "<br/>");

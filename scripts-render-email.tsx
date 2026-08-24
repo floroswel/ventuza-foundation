@@ -53,7 +53,7 @@ async function main() {
           <div class="meta">
             <div class="tag">${it.label}</div>
             <p class="subj">${it.subject}</p>
-            <div class="from">De la: Suzeta &lt;noreply@suzeta.app&gt;</div>
+            <div class="from">De la: Suzeta &lt;noreply@suzeta.ro&gt;</div>
           </div>
           <iframe srcdoc="${it.html.replace(/"/g,'&quot;')}"></iframe>
         </div>`).join('')}

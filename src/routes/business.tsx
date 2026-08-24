@@ -436,8 +436,8 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
       </button>
       <p className="mt-3 text-center text-xs text-muted-foreground">
         Sau scrie la{" "}
-        <a href="mailto:business@suzeta.app" className="text-primary underline">
-          business@suzeta.app
+        <a href="mailto:business@suzeta.ro" className="text-primary underline">
+          business@suzeta.ro
         </a>
       </p>
     </section>
@@ -905,10 +905,10 @@ function DoneScreen({ appId }: { appId: string | null }) {
         </div>
       )}
       <a
-        href={`mailto:business@suzeta.app?subject=${encodeURIComponent(`Cerere partener ${appId ?? ""}`)}`}
+        href={`mailto:business@suzeta.ro?subject=${encodeURIComponent(`Cerere partener ${appId ?? ""}`)}`}
         className="mt-2 inline-flex items-center gap-2 text-xs text-primary hover:underline"
       >
-        <Mail className="size-3.5" /> business@suzeta.app
+        <Mail className="size-3.5" /> business@suzeta.ro
       </a>
 
       <div className="mt-2 w-full space-y-3">
@@ -943,7 +943,7 @@ function DoneScreen({ appId }: { appId: string | null }) {
             <div className="rounded-lg border border-orange-500/40 bg-orange-500/5 p-3 text-left text-[11px] leading-snug text-orange-700 dark:text-orange-300">
               <strong>Important:</strong> creează contul cu <strong>același email</strong> ca în
               cerere (vom lega aplicația automat). Dacă folosești alt email, salvează ID-ul cererii
-              de mai sus și scrie la business@suzeta.app ca să o legăm manual.
+              de mai sus și scrie la business@suzeta.ro ca să o legăm manual.
             </div>
           </>
         )}

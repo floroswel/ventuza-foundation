@@ -8,7 +8,7 @@ export const Route = createFileRoute("/account-deletion")({
       {
         name: "description",
         content:
-          "Cum îți ștergi contul Suzeta și ce date sunt eliminate sau păstrate, conform GDPR. Cerere prin aplicație sau email la dpo@suzeta.eu.",
+          "Cum îți ștergi contul Suzeta și ce date sunt eliminate sau păstrate, conform GDPR. Cerere prin aplicație sau email la dpo@suzeta.ro.",
       },
       { property: "og:title", content: "Ștergere cont — Suzeta" },
       {
@@ -66,10 +66,10 @@ function AccountDeletionPage() {
             Trimite o cerere de la adresa de email asociată contului tău la:
           </p>
           <a
-            href="mailto:dpo@suzeta.eu?subject=Cerere%20%C8%99tergere%20cont%20Suzeta"
+            href="mailto:dpo@suzeta.ro?subject=Cerere%20%C8%99tergere%20cont%20Suzeta"
             className="inline-block rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
           >
-            dpo@suzeta.eu
+            dpo@suzeta.ro
           </a>
           <p className="text-xs text-muted-foreground">
             Răspundem în maximum 30 de zile (Art. 12 GDPR). Pentru verificarea identității putem
@@ -119,8 +119,8 @@ function AccountDeletionPage() {
             VOMIX GENIUS S.R.L. · CUI RO43025661 · Str. Constructorilor 39, Voievoda, Teleorman
             <br />
             Contact protecția datelor:{" "}
-            <a className="text-primary underline" href="mailto:dpo@suzeta.eu">
-              dpo@suzeta.eu
+            <a className="text-primary underline" href="mailto:dpo@suzeta.ro">
+              dpo@suzeta.ro
             </a>
             {" · "}
             Privacy:{" "}

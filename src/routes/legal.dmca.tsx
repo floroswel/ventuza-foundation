@@ -58,8 +58,8 @@ function DmcaPage() {
               </h2>
               <p className="mt-2 text-foreground/85">
                 Trimite o cerere semnată la{" "}
-                <a className="text-primary" href="mailto:copyright@suzeta.app">
-                  copyright@suzeta.app
+                <a className="text-primary" href="mailto:copyright@suzeta.ro">
+                  copyright@suzeta.ro
                 </a>{" "}
                 care să conțină OBLIGATORIU:
               </p>

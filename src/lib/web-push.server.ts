@@ -15,7 +15,7 @@ import webpush from "web-push";
 
 const FALLBACK_PUBLIC =
   "BOO0M7jilN8SYJCuFoiFqzfWYzRdcadEhpZbuhIZG5Iz8fYwGzYLjcqZ1nUGrwX5p4EHDwYNVT5AH5HWfEpABto";
-const FALLBACK_SUBJECT = "mailto:hello@suzeta.app";
+const FALLBACK_SUBJECT = "mailto:hello@suzeta.ro";
 
 let _configured = false;
 let _lastKeyId: string | null = null;
