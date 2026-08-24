@@ -164,3 +164,11 @@ export async function getSignedUrls(
 
   return out;
 }
+
+/** Invalidează o intrare (URL semnat expirat / imagine care nu se încarcă). */
+export function invalidateSignedUrl(bucket: string, path: string) {
+  const k = keyOf(bucket, path);
+  memory.delete(k);
+  inflight.delete(k);
+  persistSoon();
+}

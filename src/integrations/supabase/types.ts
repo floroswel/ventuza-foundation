@@ -1057,6 +1057,48 @@ export type Database = {
         }
         Relationships: []
       }
+      client_errors: {
+        Row: {
+          app_version: string | null
+          boundary: string | null
+          created_at: string
+          id: number
+          kind: string
+          message: string
+          path: string | null
+          platform: string | null
+          stack: string | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          app_version?: string | null
+          boundary?: string | null
+          created_at?: string
+          id?: number
+          kind: string
+          message: string
+          path?: string | null
+          platform?: string | null
+          stack?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          app_version?: string | null
+          boundary?: string | null
+          created_at?: string
+          id?: number
+          kind?: string
+          message?: string
+          path?: string | null
+          platform?: string | null
+          stack?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       consent_log: {
         Row: {
           accepted: boolean
@@ -5040,30 +5082,36 @@ export type Database = {
       }
       web_vitals: {
         Row: {
+          app_version: string | null
           created_at: string
           id: number
           metric: string
           path: string | null
+          platform: string | null
           rating: string | null
           user_agent: string | null
           user_id: string | null
           value: number
         }
         Insert: {
+          app_version?: string | null
           created_at?: string
           id?: number
           metric: string
           path?: string | null
+          platform?: string | null
           rating?: string | null
           user_agent?: string | null
           user_id?: string | null
           value: number
         }
         Update: {
+          app_version?: string | null
           created_at?: string
           id?: number
           metric?: string
           path?: string | null
+          platform?: string | null
           rating?: string | null
           user_agent?: string | null
           user_id?: string | null

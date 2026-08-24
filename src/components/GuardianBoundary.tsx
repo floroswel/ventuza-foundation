@@ -37,6 +37,9 @@ export class GuardianBoundary extends Component<Props, State> {
       severity: this.props.area === "app" ? "critical" : "high",
       context: { boundary: this.props.area },
     });
+    void import("@/lib/crash-reporting").then(({ reportError }) =>
+      reportError(error, { kind: "boundary", boundary: this.props.area }),
+    );
   }
 
   retry = () => {

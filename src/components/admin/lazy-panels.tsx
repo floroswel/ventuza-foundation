@@ -38,6 +38,9 @@ export const SystemHealthPanel = wrap(
 export const CrashLogPanel = wrap(
   lazy(() => import("./CrashLogPanel").then((m) => ({ default: m.CrashLogPanel }))),
 );
+export const PerfMetricsPanel = wrap(
+  lazy(() => import("./PerfMetricsPanel").then((m) => ({ default: m.PerfMetricsPanel }))),
+);
 export const AiCopilotPanel = wrap(
   lazy(() => import("./AiCopilotPanel").then((m) => ({ default: m.AiCopilotPanel }))),
 );

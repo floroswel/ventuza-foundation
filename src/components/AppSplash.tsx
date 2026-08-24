@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
+import { isReducedMotion } from "@/lib/motion-pref";
 
 /**
  * Animație de deschidere: logo-ul apare din centru, „respiră" (scale 0.9 → 1)
@@ -29,10 +30,9 @@ export function AppSplash() {
       /* ignore */
     }
 
-    // Respectăm preferința de sistem pentru mișcare redusă.
-    const reduce =
-      typeof window.matchMedia === "function" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    // Respectăm preferința utilizatorului (Setări) peste cea de sistem.
+    const reduce = isReducedMotion();
+
 
     setMounted(true);
     const fadeAt = window.setTimeout(() => setLeaving(true), reduce ? 150 : 420);

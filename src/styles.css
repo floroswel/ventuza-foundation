@@ -689,3 +689,24 @@ html.native-app .page-transition {
 @media (prefers-reduced-motion: reduce) {
   .splash-logo { animation: none; }
 }
+
+/* ============================================================
+   REDUCED MOTION — toggle controlat de utilizator (Setări → Accesibilitate).
+   Clasa .reduce-motion este pusă pe <html> de src/lib/motion-pref.ts și
+   suprascrie micro-animările, splash-ul și tranzițiile de pagină.
+   ============================================================ */
+html.reduce-motion *,
+html.reduce-motion *::before,
+html.reduce-motion *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+html.reduce-motion .page-transition,
+html.reduce-motion .splash-logo,
+html.reduce-motion .radar-ring,
+html.reduce-motion .snake-border,
+html.reduce-motion .snake-border::before {
+  animation: none !important;
+}

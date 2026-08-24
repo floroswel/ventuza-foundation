@@ -51,6 +51,7 @@ import { ProximityNotificationsCard } from "@/components/settings/ProximityNotif
 import { NotificationSoundCard } from "@/components/settings/NotificationSoundCard";
 import { DebugModeCard } from "@/components/settings/DebugModeCard";
 import { withGuardian } from "@/components/with-guardian";
+import { getMotionPref, setMotionPref, type MotionPref } from "@/lib/motion-pref";
 
 export const Route = createFileRoute("/settings")({
   ssr: false,
@@ -64,6 +65,7 @@ const DEFAULT_PREFS: Prefs = DEFAULT_NOTIFICATION_PREFS;
 
 
 function SettingsPage() {
+  const [motionPref, setMotionPrefState] = useState<MotionPref>(() => getMotionPref());
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const deleteAcct = useServerFn(deleteMyAccount);
@@ -421,6 +423,35 @@ function SettingsPage() {
             )}
           </div>
 
+        </section>
+
+        {/* Accesibilitate */}
+        <section className="rounded-2xl border border-border bg-surface p-4">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.2em] text-muted-foreground">
+            Accesibilitate
+          </h2>
+          <label className="mt-3 flex items-center justify-between gap-3 rounded-xl border border-border bg-background px-3 py-2.5 text-sm">
+            <span>
+              <span className="font-medium">Mișcare redusă</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                Dezactivează micro-animările, animația de deschidere și tranzițiile
+                dintre ecrane.
+              </span>
+            </span>
+            <select
+              value={motionPref}
+              onChange={(e) => {
+                const next = e.target.value as MotionPref;
+                setMotionPrefState(next);
+                setMotionPref(next);
+              }}
+              className="shrink-0 rounded-md border border-input bg-background px-2 py-1.5 text-xs"
+            >
+              <option value="system">Ca în sistem</option>
+              <option value="on">Pornit</option>
+              <option value="off">Oprit</option>
+            </select>
+          </label>
         </section>
 
         {/* Notifications */}

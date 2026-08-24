@@ -21,10 +21,13 @@ export function BootPerformanceMount() {
   useEffect(() => {
     markFirstRender();
     scheduleInteractiveFallback();
+    void import("@/lib/motion-pref").then(({ applyMotionPref }) => applyMotionPref());
+    void import("@/lib/crash-reporting").then(({ initCrashReporting }) => initCrashReporting());
     void import("@/lib/image-cache-sw").then(({ registerImageCacheSw }) =>
       registerImageCacheSw(),
     );
   }, []);
+
 
   useEffect(() => {
     if (loading) return;
