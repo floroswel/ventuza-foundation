@@ -689,14 +689,22 @@ function AuthPage() {
       return;
     }
     setAuthError(null);
-    const { error } = await supabase.auth.resetPasswordForEmail(emailParsed.data, {
-      redirectTo: `${oauthOrigin()}/reset-password`,
-      captchaToken: captchaToken ?? undefined,
-    });
-    if (error) {
-      handleAuthError(error);
-    } else {
+    setResetBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(emailParsed.data, {
+        redirectTo: `${oauthOrigin()}/reset-password`,
+        captchaToken: captchaToken ?? undefined,
+      });
+      if (error) {
+        handleAuthError(error);
+        return;
+      }
+      setResetSentTo(maskEmail(emailParsed.data));
       toast.success(t("auth.errors.resetSent"));
+    } finally {
+      setResetBusy(false);
+      setCaptchaToken(null);
+      setCaptchaNonce((n) => n + 1);
     }
   }
 
@@ -758,38 +766,19 @@ function AuthPage() {
           ))}
         </div>
 
-        {googleAvailable && (
-          <div className="mt-6 space-y-3">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full h-11 gap-2"
-              onClick={onGoogleSignIn}
-              disabled={googleBusy || submitting}
-            >
-              {googleBusy ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden>
-                  <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.9 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.7 1.1 7.8 3l5.7-5.7C33.9 6.1 29.2 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.2-.1-2.4-.4-3.5z" />
-                  <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 18.9 12 24 12c3 0 5.7 1.1 7.8 3l5.7-5.7C33.9 6.1 29.2 4 24 4 16.3 4 9.7 8.3 6.3 14.7z" />
-                  <path fill="#4CAF50" d="M24 44c5.2 0 9.8-2 13.3-5.2l-6.1-5.2C29.2 35.5 26.7 36 24 36c-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39.7 16.2 44 24 44z" />
-                  <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.3 4.3-4.2 5.6l6.1 5.2C40.2 36.6 44 30.9 44 24c0-1.2-.1-2.4-.4-3.5z" />
-                </svg>
-              )}
-              <span>{t("auth.continueWithGoogle", { defaultValue: "Continue with Google" })}</span>
-            </Button>
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-border" />
-              <span className="text-[10px] uppercase tracking-[0.22em] text-muted-foreground">
-                {t("auth.or", { defaultValue: "or" })}
-              </span>
-              <div className="h-px flex-1 bg-border" />
-            </div>
+        {legacyOauthNotice && (
+          <div
+            role="status"
+            className="mt-6 rounded-xl border border-amber-500/40 bg-amber-500/10 p-4 text-sm text-amber-600"
+          >
+            <p className="font-semibold">Autentificarea cu Google nu mai este disponibilă</p>
+            <p className="mt-1 text-xs">
+              Ai deschis un link vechi de conectare cu Google. Contul Suzeta funcționează acum
+              exclusiv cu email și parolă. Dacă ți-ai creat contul cu Google, folosește aceeași
+              adresă de email și apasă „Ai uitat parola?” pentru a-ți seta o parolă.
+            </p>
           </div>
         )}
-
-
 
         {/* Email form */}
         <form onSubmit={onSubmit} className="space-y-4">
@@ -849,13 +838,22 @@ function AuthPage() {
               </button>
             </div>
             {mode === "login" && (
-              <button
-                type="button"
-                onClick={onForgotPassword}
-                className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground hover:text-primary"
-              >
-                {t("auth.forgot")}
-              </button>
+              <div className="space-y-1 pt-1">
+                <button
+                  type="button"
+                  onClick={onForgotPassword}
+                  disabled={resetBusy}
+                  className="text-[11px] font-semibold uppercase tracking-[0.18em] text-primary underline underline-offset-4 disabled:opacity-60"
+                >
+                  {resetBusy ? "Se trimite…" : t("auth.forgot")}
+                </button>
+                {resetSentTo && (
+                  <p className="text-[11px] text-muted-foreground">
+                    Ți-am trimis un link de resetare a parolei la {resetSentTo}. Verifică și folderul
+                    Spam; linkul expiră în scurt timp.
+                  </p>
+                )}
+              </div>
             )}
           </div>
 
