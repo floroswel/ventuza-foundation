@@ -396,7 +396,7 @@ function AuthPage() {
               : "TURNSTILE_FAILED"
             : "TURNSTILE_SKIPPED_ANDROID",
         );
-        const nativeRuntime = await isNativePlatform();
+        const nativeRuntime = isNativePlatformSync();
         const guardUrl = nativeRuntime
           ? "https://suzeta.app/api/public/signup-guard"
           : "/api/public/signup-guard";
