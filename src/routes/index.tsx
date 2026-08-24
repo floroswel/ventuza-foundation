@@ -137,7 +137,7 @@ const FEATURES = [
 const STEPS = [
   {
     title: "1. Create your account",
-    body: "Sign up with email or Google, confirm you are 18 or over and complete age verification.",
+    body: "Sign up with your email address, confirm you are 18 or over and complete age verification.",
   },
   {
     title: "2. Build your profile",
