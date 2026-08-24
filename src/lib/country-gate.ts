@@ -1,5 +1,5 @@
 /**
- * Country gate — consumă `useCountryRisk` (ipapi.co + `get_country_risk`) și
+ * Country gate — consumă `useCountryRisk` (/api/public/geo-country + `get_country_risk`) și
  * expune boolean-uri stabile pentru enforcement în UI/logică.
  *
  * REGULĂ DE SIGURANȚĂ:
