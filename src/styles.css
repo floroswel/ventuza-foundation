@@ -58,6 +58,10 @@
   --primary-foreground: oklch(1 0 0);
   --primary-glow: oklch(0.76 0.24 315);
 
+  /* Verified badge — distinct blue (not the magenta brand primary) */
+  --verified: oklch(0.62 0.18 240);
+  --verified-foreground: oklch(1 0 0);
+
   --secondary: oklch(0.24 0.014 275);
   --secondary-foreground: oklch(1 0 0);
 
