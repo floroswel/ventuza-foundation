@@ -17,6 +17,7 @@ import {
   UTM_CAMPAIGN,
   UTM_MEDIUM,
   trackStoreFunnel,
+  trackAppLinkOpen,
   type StoreClickSource,
 } from "@/lib/store-analytics";
 
