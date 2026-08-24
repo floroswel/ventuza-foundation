@@ -11,7 +11,8 @@
  */
 import { useEffect, useState } from "react";
 import { X } from "lucide-react";
-import { isAndroidAppInstalled, isAndroidWebBrowser, openAppOrStore } from "@/lib/store-links";
+import { isAndroidAppInstalled, isMobileWebBrowser, openAppOrStore } from "@/lib/store-links";
+import { getInstallCtaVariant, installCtaShortLabel } from "@/lib/install-ab-test";
 import { SUZETA_ICON_URL } from "@/lib/brand-assets";
 
 const DISMISS_KEY = "suzeta_play_banner_dismissed_v1";
@@ -19,9 +20,11 @@ const DISMISS_KEY = "suzeta_play_banner_dismissed_v1";
 export function GetAppBanner({ path = "/" }: { path?: string }) {
   const [show, setShow] = useState(false);
   const [installed, setInstalled] = useState<boolean | null>(null);
+  const [variant, setVariant] = useState<"play_badge" | "open_app">("play_badge");
 
   useEffect(() => {
-    if (!isAndroidWebBrowser()) return;
+    if (!isMobileWebBrowser()) return;
+    setVariant(getInstallCtaVariant());
     try {
       if (window.localStorage.getItem(DISMISS_KEY) === "1") return;
     } catch {
@@ -50,19 +53,19 @@ export function GetAppBanner({ path = "/" }: { path?: string }) {
           className="size-10 shrink-0 rounded-xl"
         />
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold text-foreground">Suzeta pentru Android</p>
+          <p className="truncate text-sm font-semibold text-foreground">Aplicația Suzeta</p>
           <p className="truncate text-xs text-muted-foreground">
             {installed
               ? "Ai deja aplicația — deschide-o pentru experiență completă"
-              : "Aplicația oficială, gratuită, din Google Play"}
+              : "Aplicația oficială, gratuită, din magazin"}
           </p>
         </div>
         <button
           type="button"
-          onClick={() => openAppOrStore(path, "smart_banner", installed)}
+          onClick={() => openAppOrStore(path, "smart_banner", installed, variant)}
           className="inline-flex h-9 shrink-0 items-center justify-center rounded-full bg-primary px-4 text-xs font-semibold uppercase tracking-wider text-primary-foreground"
         >
-          {installed ? "Deschide" : "Instalează"}
+          {installCtaShortLabel(variant, installed)}
         </button>
         <button
           type="button"

@@ -11,7 +11,15 @@ import {
   Smartphone,
 } from "lucide-react";
 import { trackStoreFunnel } from "@/lib/store-analytics";
-import { playStoreUrl, isAndroidAppInstalled, isAndroidWebBrowser, openAppOrStore } from "@/lib/store-links";
+import {
+  storeUrlForPlatform,
+  storeReferrer,
+  isAndroidAppInstalled,
+  isMobileWebBrowser,
+  openAppOrStore,
+} from "@/lib/store-links";
+import { getInstallCtaVariant, installCtaLabel } from "@/lib/install-ab-test";
+import { FunnelDebugOverlay } from "@/components/FunnelDebugOverlay";
 import { GetAppBanner } from "@/components/GetAppBanner";
 
 
@@ -156,6 +164,9 @@ function Landing() {
   const [googleAvailable, setGoogleAvailable] = useState(!isNativePlatformSync());
   // `null` = necunoscut (API indisponibil). Doar `true` schimbă CTA-ul.
   const [appInstalled, setAppInstalled] = useState<boolean | null>(null);
+  // Variantă A/B pe CTA-ul de instalare (stabilă per device).
+  const [ctaVariant, setCtaVariant] = useState<"play_badge" | "open_app">("play_badge");
+  useEffect(() => setCtaVariant(getInstallCtaVariant()), []);
   useEffect(() => {
     let cancelled = false;
     void isAndroidAppInstalled().then((v) => {
@@ -227,23 +238,28 @@ function Landing() {
 
           <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
             <a
-              href={playStoreUrl("hero_cta")}
+              href={storeUrlForPlatform("hero_cta")}
               onClick={(e) => {
-                // Pe Android deschidem aplicația instalată prin intent; dacă nu
-                // e instalată, intent-ul cade automat pe Google Play.
-                if (isAndroidWebBrowser()) {
+                // Pe mobil deschidem aplicația instalată (intent Android /
+                // Universal Link iOS); dacă nu e instalată, ajungem în magazin.
+                if (isMobileWebBrowser()) {
                   e.preventDefault();
-                  openAppOrStore("/", "hero_cta", appInstalled);
+                  openAppOrStore("/", "hero_cta", appInstalled, ctaVariant);
                   return;
                 }
-                trackStoreFunnel("store_click", { source: "hero_cta", appInstalled });
+                trackStoreFunnel("store_click", {
+                  source: "hero_cta",
+                  appInstalled,
+                  variant: ctaVariant,
+                  referrer: storeReferrer("hero_cta"),
+                });
               }}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary text-sm font-medium uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Smartphone className="size-4" />
-              {appInstalled ? "Open in the app" : "Get it on Google Play"}
+              {installCtaLabel(ctaVariant, appInstalled)}
             </a>
             <p className="text-xs text-muted-foreground">
               {appInstalled
@@ -460,6 +476,7 @@ function Landing() {
 
       <PublicFooter />
       <GetAppBanner />
+      <FunnelDebugOverlay />
 
     </div>
   );

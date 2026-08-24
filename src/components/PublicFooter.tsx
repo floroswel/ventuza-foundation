@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { SUPPORT_EMAIL } from "@/lib/seo-content";
-import { playStoreUrl } from "@/lib/store-links";
+import { storeUrlForPlatform, storeReferrer } from "@/lib/store-links";
 import { trackStoreFunnel } from "@/lib/store-analytics";
 
 
@@ -25,8 +25,13 @@ export function PublicFooter() {
         <p className="mt-3">
           <a
             className="inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-xs font-semibold uppercase tracking-wider text-primary-foreground hover:bg-primary/90"
-            href={playStoreUrl("footer")}
-            onClick={() => trackStoreFunnel("store_click", { source: "footer" })}
+            href={storeUrlForPlatform("footer")}
+            onClick={() =>
+              trackStoreFunnel("store_click", {
+                source: "footer",
+                referrer: storeReferrer("footer"),
+              })
+            }
             target="_blank"
             rel="noopener noreferrer"
           >
