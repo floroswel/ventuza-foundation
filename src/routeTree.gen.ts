@@ -86,6 +86,7 @@ import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
 import { Route as ApiPublicDiditStartRouteImport } from './routes/api/public/didit-start'
 import { Route as ApiPublicDiditWebhookRouteImport } from './routes/api/public/didit-webhook'
+import { Route as ApiPublicGeoCountryRouteImport } from './routes/api/public/geo-country'
 import { Route as ApiPublicGoogleClientIdRouteImport } from './routes/api/public/google-client-id'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
@@ -484,6 +485,11 @@ const ApiPublicDiditWebhookRoute = ApiPublicDiditWebhookRouteImport.update({
   path: '/api/public/didit-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicGeoCountryRoute = ApiPublicGeoCountryRouteImport.update({
+  id: '/api/public/geo-country',
+  path: '/api/public/geo-country',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicGoogleClientIdRoute = ApiPublicGoogleClientIdRouteImport.update({
   id: '/api/public/google-client-id',
   path: '/api/public/google-client-id',
@@ -606,6 +612,7 @@ export interface FileRoutesByFullPath {
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-start': typeof ApiPublicDiditStartRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
+  '/api/public/geo-country': typeof ApiPublicGeoCountryRoute
   '/api/public/google-client-id': typeof ApiPublicGoogleClientIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -692,6 +699,7 @@ export interface FileRoutesByTo {
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-start': typeof ApiPublicDiditStartRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
+  '/api/public/geo-country': typeof ApiPublicGeoCountryRoute
   '/api/public/google-client-id': typeof ApiPublicGoogleClientIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -780,6 +788,7 @@ export interface FileRoutesById {
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-start': typeof ApiPublicDiditStartRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
+  '/api/public/geo-country': typeof ApiPublicGeoCountryRoute
   '/api/public/google-client-id': typeof ApiPublicGoogleClientIdRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -869,6 +878,7 @@ export interface FileRouteTypes {
     | '/api/public/age-webhook'
     | '/api/public/didit-start'
     | '/api/public/didit-webhook'
+    | '/api/public/geo-country'
     | '/api/public/google-client-id'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -955,6 +965,7 @@ export interface FileRouteTypes {
     | '/api/public/age-webhook'
     | '/api/public/didit-start'
     | '/api/public/didit-webhook'
+    | '/api/public/geo-country'
     | '/api/public/google-client-id'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -1042,6 +1053,7 @@ export interface FileRouteTypes {
     | '/api/public/age-webhook'
     | '/api/public/didit-start'
     | '/api/public/didit-webhook'
+    | '/api/public/geo-country'
     | '/api/public/google-client-id'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -1118,6 +1130,7 @@ export interface RootRouteChildren {
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicDiditStartRoute: typeof ApiPublicDiditStartRoute
   ApiPublicDiditWebhookRoute: typeof ApiPublicDiditWebhookRoute
+  ApiPublicGeoCountryRoute: typeof ApiPublicGeoCountryRoute
   ApiPublicGoogleClientIdRoute: typeof ApiPublicGoogleClientIdRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
   ApiPublicSignupGuardRoute: typeof ApiPublicSignupGuardRoute
@@ -1668,6 +1681,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDiditWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/geo-country': {
+      id: '/api/public/geo-country'
+      path: '/api/public/geo-country'
+      fullPath: '/api/public/geo-country'
+      preLoaderRoute: typeof ApiPublicGeoCountryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/google-client-id': {
       id: '/api/public/google-client-id'
       path: '/api/public/google-client-id'
@@ -1904,6 +1924,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicDiditStartRoute: ApiPublicDiditStartRoute,
   ApiPublicDiditWebhookRoute: ApiPublicDiditWebhookRoute,
+  ApiPublicGeoCountryRoute: ApiPublicGeoCountryRoute,
   ApiPublicGoogleClientIdRoute: ApiPublicGoogleClientIdRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
   ApiPublicSignupGuardRoute: ApiPublicSignupGuardRoute,
