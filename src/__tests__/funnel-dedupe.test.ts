@@ -10,7 +10,7 @@ const ls = {
 };
 (globalThis as any).window = { localStorage: ls, location: { pathname: "/" } };
 (globalThis as any).localStorage = ls;
-(globalThis as any).navigator = { userAgent: "android" };
+
 
 vi.mock("@/integrations/supabase/client", () => ({
   supabase: { rpc: vi.fn(() => Promise.resolve({ data: 1, error: null })) },
