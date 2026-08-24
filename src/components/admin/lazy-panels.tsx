@@ -52,6 +52,9 @@ export const BillingAdminPanel = wrap(
 export const ExperimentsPanel = wrap(
   lazy(() => import("./ExperimentsPanel").then((m) => ({ default: m.ExperimentsPanel }))),
 );
+export const MerchOrdersPanel = wrap(
+  lazy(() => import("./MerchOrdersPanel").then((m) => ({ default: m.MerchOrdersPanel }))),
+);
 export const RateLimitPanel = wrap(
   lazy(() => import("./RateLimitPanel").then((m) => ({ default: m.RateLimitPanel }))),
 );
