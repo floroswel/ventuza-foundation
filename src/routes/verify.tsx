@@ -224,8 +224,8 @@ function VerifyPage() {
     return (
       <main className="min-h-dvh bg-background px-5 pb-10 pt-[max(var(--safe-top),1.25rem)] text-foreground">
         <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center text-center">
-          <div className="grid size-20 place-items-center rounded-full border border-primary/30 bg-primary/10">
-            <BadgeCheck className="size-10 text-primary" />
+          <div className="grid size-20 place-items-center rounded-full border border-[var(--verified)]/30 bg-[var(--verified)]/10">
+            <BadgeCheck className="size-10 text-[var(--verified)]" />
           </div>
           <h1 className="mt-6 text-3xl font-semibold tracking-tight">Cont verificat</h1>
           <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
