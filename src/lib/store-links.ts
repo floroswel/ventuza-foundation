@@ -1,8 +1,11 @@
 /**
  * Linkuri către magazinele de aplicații + detecție platformă pentru web.
  *
- * Scop: vizitatorii de pe suzeta.app (web) sunt trimiși să instaleze aplicația
- * nativă din Google Play, nu să folosească varianta din browser / PWA.
+ * Scop: vizitatorii de pe suzeta.app (web) sunt trimiși în aplicația nativă
+ * dacă e instalată (Android App Links / iOS Universal Links), altfel în
+ * Google Play (Android) sau App Store (iOS). Atribuirea se măsoară separat:
+ * `app_link_open` (link universal) vs `intent_open` (intent Android) vs
+ * `store_click`.
  */
 
 import {
@@ -15,6 +18,23 @@ import {
 export const ANDROID_PACKAGE = "app.suzeta";
 export const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=${ANDROID_PACKAGE}`;
 
+/** ID-ul numeric App Store (setat prin env când aplicația iOS e publicată). */
+export const APPLE_APP_ID = (import.meta.env['VITE_APPLE_APP_ID'] as string | undefined) ?? "";
+export const APP_STORE_URL = APPLE_APP_ID
+  ? `https://apps.apple.com/app/id${APPLE_APP_ID}`
+  : "https://apps.apple.com/search?term=suzeta";
+
+export const SITE_ORIGIN = "https://suzeta.app";
+
+/** Referrer-ul UTM efectiv trimis către magazin (afișat și în modul debug). */
+export function storeReferrer(source: StoreClickSource | string = "web"): string {
+  return new URLSearchParams({
+    utm_source: source,
+    utm_medium: UTM_MEDIUM,
+    utm_campaign: UTM_CAMPAIGN,
+  }).toString();
+}
+
 /**
  * Linkul Play Store cu atribuire. Google Play acceptă un singur parametru
  * `referrer`, care conține la rândul lui un query-string UTM; Play Console îl
@@ -22,24 +42,40 @@ export const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=${A
  * expune aplicației după instalare.
  */
 export function playStoreUrl(source: StoreClickSource | string = "web"): string {
-  const referrer = new URLSearchParams({
-    utm_source: source,
-    utm_medium: UTM_MEDIUM,
-    utm_campaign: UTM_CAMPAIGN,
-  }).toString();
-  return `${PLAY_STORE_URL}&referrer=${encodeURIComponent(referrer)}`;
+  return `${PLAY_STORE_URL}&referrer=${encodeURIComponent(storeReferrer(source))}`;
+}
+
+/** App Store cu parametrii de campanie (Apple: `pt`/`ct`/`mt`). */
+export function appStoreUrl(source: StoreClickSource | string = "web"): string {
+  const sep = APP_STORE_URL.includes("?") ? "&" : "?";
+  const params = new URLSearchParams({ ct: `${UTM_CAMPAIGN}_${source}`, mt: "8" });
+  return `${APP_STORE_URL}${sep}${params.toString()}`;
 }
 
 /** Intent Android care deschide direct aplicația Play Store (fallback pe web). */
 export const PLAY_STORE_MARKET_URL = `market://details?id=${ANDROID_PACKAGE}`;
-
 
 /** True doar în browser pe Android (nu în wrapper-ul nativ Capacitor). */
 export function isAndroidWebBrowser(): boolean {
   if (typeof navigator === "undefined") return false;
   const ua = navigator.userAgent || "";
   if (!/Android/i.test(ua)) return false;
-  // Wrapper-ul Capacitor injectează un UA cu "wv" sau rulează pe capacitor://
+  if (typeof window !== "undefined") {
+    const w = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
+    if (w.Capacitor?.isNativePlatform?.()) return false;
+    if (window.location.protocol === "capacitor:") return false;
+  }
+  return true;
+}
+
+/** True doar în browser pe iOS (nu în wrapper-ul nativ). */
+export function isIosWebBrowser(): boolean {
+  if (typeof navigator === "undefined") return false;
+  const ua = navigator.userAgent || "";
+  const isIos =
+    /iPhone|iPad|iPod/i.test(ua) ||
+    (/Macintosh/i.test(ua) && typeof document !== "undefined" && "ontouchend" in document);
+  if (!isIos) return false;
   if (typeof window !== "undefined") {
     const w = window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } };
     if (w.Capacitor?.isNativePlatform?.()) return false;
@@ -50,19 +86,23 @@ export function isAndroidWebBrowser(): boolean {
 
 /** True pe mobil (Android sau iOS) în browser. */
 export function isMobileWebBrowser(): boolean {
-  if (typeof navigator === "undefined") return false;
-  return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || "");
+  return isAndroidWebBrowser() || isIosWebBrowser();
+}
+
+/** Magazinul potrivit platformei curente. */
+export function storeUrlForPlatform(source: StoreClickSource | string = "web"): string {
+  return isIosWebBrowser() ? appStoreUrl(source) : playStoreUrl(source);
 }
 
 type RelatedApp = { platform?: string; id?: string; url?: string };
 
 /**
- * Detectează dacă aplicația Android e deja instalată pe device.
+ * Detectează dacă aplicația e deja instalată pe device.
  *
  * Folosește `navigator.getInstalledRelatedApps()` (Chrome Android), care
  * funcționează pe baza `related_applications` din manifest + Digital Asset
- * Links (`/.well-known/assetlinks.json`). Dacă API-ul nu există, întoarce
- * `null` = necunoscut (nu „nu e instalată”).
+ * Links (`/.well-known/assetlinks.json`). Dacă API-ul nu există (ex. iOS
+ * Safari), întoarce `null` = necunoscut (nu „nu e instalată”).
  */
 export async function isAndroidAppInstalled(): Promise<boolean | null> {
   if (typeof navigator === "undefined") return null;
@@ -92,27 +132,61 @@ export function androidIntentUrl(path = "/", source: StoreClickSource | string =
   );
 }
 
+/** Universal Link iOS: același URL https, deschis de sistem în aplicație. */
+export function universalLinkUrl(path = "/"): string {
+  const clean = path.startsWith("/") ? path : `/${path}`;
+  return `${SITE_ORIGIN}${clean}`;
+}
+
 /**
- * Deschide aplicația instalată (prin intent) sau Google Play, măsurând
+ * Deschide aplicația instalată sau magazinul potrivit platformei, măsurând
  * evenimentul de funnel înainte de navigare.
+ *
+ * - Android: `intent://` (fallback automat pe Play) → `intent_open` sau `store_click`.
+ * - iOS: Universal Link; dacă sistemul nu preia linkul în ~1.2s, ducem userul
+ *   în App Store → `app_link_open` apoi eventual `store_click`.
+ * - Desktop: direct magazinul.
  */
 export function openAppOrStore(
   path = "/",
   source: StoreClickSource | string = "web",
   appInstalled: boolean | null = null,
+  variant: string | null = null,
 ): void {
   if (typeof window === "undefined") return;
+  const referrer = storeReferrer(source);
+
   if (isAndroidWebBrowser()) {
-    trackStoreFunnel(appInstalled ? "app_open_intent" : "store_click", {
+    trackStoreFunnel(appInstalled ? "intent_open" : "store_click", {
       source,
       path,
       appInstalled,
+      variant,
+      referrer,
     });
     window.location.href = androidIntentUrl(path, source);
     return;
   }
-  trackStoreFunnel("store_click", { source, path, appInstalled });
-  window.open(playStoreUrl(source), "_blank", "noopener,noreferrer");
+
+  if (isIosWebBrowser()) {
+    trackStoreFunnel("app_link_open", { source, path, appInstalled, variant, referrer });
+    const startedAt = Date.now();
+    const store = appStoreUrl(source);
+    const timer = window.setTimeout(() => {
+      // Dacă suntem încă în pagină (aplicația nu a preluat Universal Link-ul),
+      // trimitem userul în App Store.
+      if (document.visibilityState === "visible" && Date.now() - startedAt >= 1100) {
+        trackStoreFunnel("store_click", { source, path, appInstalled, variant, referrer });
+        window.location.href = store;
+      }
+    }, 1200);
+    const cancel = () => window.clearTimeout(timer);
+    window.addEventListener("pagehide", cancel, { once: true });
+    document.addEventListener("visibilitychange", cancel, { once: true });
+    window.location.href = universalLinkUrl(path);
+    return;
+  }
+
+  trackStoreFunnel("store_click", { source, path, appInstalled, variant, referrer });
+  window.open(storeUrlForPlatform(source), "_blank", "noopener,noreferrer");
 }
-
-
