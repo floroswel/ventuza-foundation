@@ -8,6 +8,7 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { BootPerformanceMount } from "@/components/BootPerformanceMount";
 import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
@@ -402,6 +403,7 @@ function RootComponent() {
         <NotificationPrefsProvider>
           <NotificationsProvider>
             <SessionGuards />
+            <BootPerformanceMount />
             <CountryRiskGuard />
             <ProximityWatcherMount />
             <ScreenSecurityMount />
