@@ -1377,7 +1377,7 @@ function PosterRow({
               </div>
               {p.verified && !p.boost_until && (
                 <span className="absolute left-2 top-2 rounded-full bg-black/60 p-0.5 backdrop-blur">
-                  <BadgeCheck className="size-3.5 text-primary" />
+                  <BadgeCheck className="size-3.5 text-[var(--verified)]" />
                 </span>
               )}
             </button>
