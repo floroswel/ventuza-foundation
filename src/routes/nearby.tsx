@@ -15,6 +15,7 @@ import {
 } from "@/lib/geo-bucket";
 
 import { NearbyCard } from "@/components/nearby/NearbyCard";
+import { CITY_CENTERS } from "@/components/LocationOnboarding";
 const NearbyMap = lazy(() =>
   import("@/components/nearby/NearbyMap").then((m) => ({ default: m.NearbyMap })),
 );
