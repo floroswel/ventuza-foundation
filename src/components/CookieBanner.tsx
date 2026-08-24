@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 
+import { supabase } from "@/integrations/supabase/client";
+import { CONSENT_REGISTRY } from "@/lib/consent-registry";
+
 const KEY = "suzeta_cookie_consent_v2";
 const LEGACY_KEY = "ventuza_cookie_consent_v2";
 
@@ -40,6 +43,69 @@ export function getCookieConsent(): Consent | null {
   }
 }
 
+/** Redeschide panoul de setări granulare (folosit din Setări / Centrul GDPR). */
+export function openCookieSettings(): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(new CustomEvent("suzeta:open-cookie-settings"));
+}
+
+const PENDING_KEY = "suzeta_cookie_consent_pending";
+
+/**
+ * Jurnalizează consimțământul pentru cookies în `consent_log` (RPC
+ * `record_consent`). Dacă userul nu e autentificat, alegerea rămâne în
+ * localStorage și se sincronizează la prima autentificare (flushCookieConsentLog).
+ */
+export async function logCookieConsent(c: { analytics: boolean; marketing: boolean }): Promise<void> {
+  const entries: Array<[keyof typeof CONSENT_REGISTRY, boolean]> = [
+    ["cookies_analytics", c.analytics],
+    ["cookies_marketing", c.marketing],
+  ];
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth?.user) {
+    try {
+      localStorage.setItem(PENDING_KEY, JSON.stringify(c));
+    } catch {
+      /* ignore */
+    }
+    return;
+  }
+  for (const [kind, accepted] of entries) {
+    const { error } = await supabase.rpc("record_consent", {
+      _kind: kind,
+      _version: CONSENT_REGISTRY[kind].currentVersion,
+      _accepted: accepted,
+    } as never);
+    if (error) {
+      try {
+        localStorage.setItem(PENDING_KEY, JSON.stringify(c));
+      } catch {
+        /* ignore */
+      }
+      return;
+    }
+  }
+  try {
+    localStorage.removeItem(PENDING_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Sincronizează la login alegerea făcută înainte de autentificare. */
+export async function flushCookieConsentLog(): Promise<void> {
+  if (typeof window === "undefined") return;
+  let pending: { analytics: boolean; marketing: boolean } | null = null;
+  try {
+    const raw = localStorage.getItem(PENDING_KEY) ?? localStorage.getItem(KEY);
+    pending = raw ? (JSON.parse(raw) as { analytics: boolean; marketing: boolean }) : null;
+  } catch {
+    pending = null;
+  }
+  if (!pending) return;
+  await logCookieConsent({ analytics: !!pending.analytics, marketing: !!pending.marketing });
+}
+
 export function CookieBanner() {
   const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
@@ -69,6 +135,19 @@ export function CookieBanner() {
     }
   }, []);
 
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    function onOpen() {
+      const current = getCookieConsent();
+      setAnalytics(!!current?.analytics);
+      setMarketing(!!current?.marketing);
+      setShowCustom(true);
+      setVisible(true);
+    }
+    window.addEventListener("suzeta:open-cookie-settings", onOpen);
+    return () => window.removeEventListener("suzeta:open-cookie-settings", onOpen);
+  }, []);
+
   function save(c: Omit<Consent, "ts" | "v" | "essential">) {
     try {
       const payload: Consent = { essential: true, ...c, ts: Date.now(), v: 2 };
@@ -77,7 +156,9 @@ export function CookieBanner() {
     } catch {
       /* ignore */
     }
+    void logCookieConsent(c);
     setVisible(false);
+    setShowCustom(false);
   }
 
   if (!visible) return null;
