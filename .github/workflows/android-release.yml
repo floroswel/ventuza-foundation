@@ -142,84 +142,20 @@ jobs:
       - name: Install web deps
         run: bun install
 
-      - name: Validează secretele obligatorii pentru release Android
-        env:
-          VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID || secrets.GOOGLE_OAUTH_CLIENT_ID }}
-        run: |
-          MISSING=0
-          if [ -z "$VITE_GOOGLE_WEB_CLIENT_ID" ]; then
-            echo "::error::Secretul VITE_GOOGLE_WEB_CLIENT_ID lipsește. Fără el, Google Sign-In nativ (Capacitor → supabase.auth.signInWithIdToken) NU funcționează pe Android. Adaugă în GitHub → Settings → Secrets and variables → Actions valoarea OAuth Client ID de tip 'Web application' din Google Cloud Console (format: xxxxx.apps.googleusercontent.com)."
-            MISSING=1
-          else
-            case "$VITE_GOOGLE_WEB_CLIENT_ID" in
-              *.apps.googleusercontent.com) ;;
-              *)
-                echo "::error::VITE_GOOGLE_WEB_CLIENT_ID='$VITE_GOOGLE_WEB_CLIENT_ID' nu are formatul așteptat (*.apps.googleusercontent.com). Verifică că ai copiat Client ID-ul de tip 'Web application', nu 'Android' sau alt tip."
-                MISSING=1
-                ;;
-            esac
-          fi
-          if [ "$MISSING" != "0" ]; then
-            exit 1
-          fi
-          echo "✓ VITE_GOOGLE_WEB_CLIENT_ID prezent și cu format valid."
+      # Google Sign-In nativ a fost ELIMINAT din aplicație (autentificare doar
+      # email + parolă). Pașii de validare / instrumentare a pluginului
+      # @capgo/capacitor-social-login au fost șterși: refereau fișiere
+      # inexistente și blocau orice release.
 
-      - name: Validează implementarea Google Sign-In nativ
+      - name: Verifică absența Google OAuth nativ (regresie)
         run: |
           set -euo pipefail
-          grep -q 'mode: "online"' src/lib/native-google-auth.ts || {
-            echo "::error::Google Sign-In trebuie să folosească modul online nativ, nu redirect browser/WebView."
-            exit 1
-          }
-          if grep -A12 'SocialLogin.login' src/lib/native-google-auth.ts | grep -q 'scopes:'; then
-            echo "::error::Nu trimite scopes custom pe Android: pluginul le respinge fără callback MainActivity; scope-urile standard sunt incluse automat."
+          if grep -rn "capacitor-social-login" package.json src 2>/dev/null; then
+            echo "::error::Pluginul social-login a reapărut. Autentificarea este exclusiv email+parolă."
             exit 1
           fi
-          grep -q 'signInWithIdToken' src/lib/native-google-auth.ts || {
-            echo "::error::Schimbul tokenului Google în sesiune lipsește din fluxul nativ."
-            exit 1
-          }
-          echo "✓ Google nativ: online Credential Manager + ID token, fără redirect WebView sau scopes custom."
+          echo "✓ Fără plugin nativ Google."
 
-      - name: Instrumentează diagnosticul nativ Google (best effort)
-        continue-on-error: true
-        run: |
-          set -uo pipefail
-          PROVIDER="node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java"
-          if [ ! -f "$PROVIDER" ]; then
-            echo "::warning::GoogleProvider.java lipsește — sar peste instrumentarea diagnosticului (nu blochează release-ul)."
-            exit 0
-          fi
-          python3 <<'PY' || echo "::warning::Instrumentarea diagnosticului Google a eșuat — continuăm fără ea."
-          p = "node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java"
-          s = open(p, encoding="utf-8").read()
-          needle = 'Log.e(LOG_TAG, "Google Sign-In failed", e);'
-          replacement = needle + '\n        recordSuzetaDiagnostic(e);'
-          if replacement not in s:
-              if needle not in s:
-                  raise SystemExit("GoogleProvider s-a schimbat: punctul de instrumentare lipsește")
-              s = s.replace(needle, replacement, 1)
-          helper_anchor = '    private void handleSignInError(GetCredentialException e, PluginCall call, JSONObject config) {'
-          helper = "\n".join([
-              '    private void recordSuzetaDiagnostic(Throwable error) {',
-              '        try {',
-              '            Class<?> activityClass = Class.forName("app.suzeta.MainActivity");',
-              '            java.lang.reflect.Method method = activityClass.getMethod("recordGoogleDiagnostic", String.class, Throwable.class);',
-              '            method.invoke(null, "credential_error", error);',
-              '        } catch (Throwable ignored) {',
-              '            // Diagnosticul nu trebuie sa afecteze autentificarea.',
-              '        }',
-              '    }',
-              '',
-              '',
-          ])
-          if helper not in s:
-              if helper_anchor not in s:
-                  raise SystemExit("GoogleProvider s-a schimbat: ancora helper-ului lipsește")
-              s = s.replace(helper_anchor, helper + helper_anchor, 1)
-          open(p, "w", encoding="utf-8").write(s)
-          PY
-          echo "Pas de diagnostic terminat (non-blocant)."
 
 
       - name: Patch assetlinks.json cu SHA-256 app signing
