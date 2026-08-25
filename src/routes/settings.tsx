@@ -563,7 +563,10 @@ function SettingsPage() {
             <p className="text-[11px] text-muted-foreground mb-2">
               Notificări push pe acest dispozitiv (mesaje, taps, woofs, match-uri).
             </p>
-            <EnablePushButton />
+            <div className="flex flex-wrap items-center gap-2">
+              <EnablePushButton />
+              <TestPushButton />
+            </div>
           </div>
         </section>
 
