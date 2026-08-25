@@ -1,0 +1,6 @@
+{
+  "versionName": "1.0.21",
+  "versionCode": 31,
+  "notes": "Build 31: reparat crash-ul la pornire dupa instalarea din Google Play (pinning TLS invalid + plugin Google ramas fara utilizare).",
+  "updatedAt": "2026-08-25T01:12:27.037Z"
+}
