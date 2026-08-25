@@ -569,7 +569,12 @@ function SettingsPage() {
               <TestPushButton />
             </div>
           </div>
+
+          <div className="mt-4">
+            <AppVersionCard />
+          </div>
         </section>
+
 
         {/* Right Now */}
         <section className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4">
