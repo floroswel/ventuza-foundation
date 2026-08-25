@@ -1186,8 +1186,6 @@ jobs:
           set -euo pipefail
           TRACK="$(python3 -c 'import json;print(json.load(open("release/version.json")).get("track","internal"))')"
           STATUS="$(python3 -c 'import json;print(json.load(open("release/version.json")).get("status","completed"))')"
-          echo "track=${{ github.event.inputs.track || '' }}" > /tmp/t
-          echo "track=${{ github.event.inputs.track }}" >/dev/null || true
           IN_TRACK="${{ github.event.inputs.track }}"
           IN_STATUS="${{ github.event.inputs.release_status }}"
           echo "track=${IN_TRACK:-$TRACK}" >> "$GITHUB_OUTPUT"
