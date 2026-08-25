@@ -110,19 +110,37 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     if (!user) return;
     void (async () => {
       try {
-        const { resumeNativePush } = await import("@/lib/native-push");
-        await resumeNativePush({
-          saveToken: async (token) => {
-            await saveFcm({
-              data: {
-                token,
-                platform: "android",
-                userAgent:
-                  typeof navigator === "undefined" ? "" : navigator.userAgent.slice(0, 500),
-              },
-            });
-          },
-        });
+        const { resumeNativePush, initNativePush } = await import("@/lib/native-push");
+        const saveToken = async (token: string) => {
+          await saveFcm({
+            data: {
+              token,
+              platform: "android",
+              userAgent: typeof navigator === "undefined" ? "" : navigator.userAgent.slice(0, 500),
+            },
+          });
+        };
+        const resumed = await resumeNativePush({ saveToken });
+        // Prima pornire după login pe nativ: cerem o singură dată permisiunea
+        // Android 13+, altfel userul nu primește niciodată push cu aplicația
+        // închisă (dialogul nu apare de la sine).
+        if (!resumed.ok && resumed.reason === "not_granted") {
+          const ASKED_KEY = "suzeta.native_push_asked";
+          let asked = false;
+          try {
+            asked = localStorage.getItem(ASKED_KEY) === "1";
+          } catch {
+            /* noop */
+          }
+          if (!asked) {
+            try {
+              localStorage.setItem(ASKED_KEY, "1");
+            } catch {
+              /* noop */
+            }
+            await initNativePush({ saveToken });
+          }
+        }
       } catch (e) {
         console.warn("[notifications] resumeNativePush failed", e);
       }
