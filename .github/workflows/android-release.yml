@@ -1177,6 +1177,23 @@ jobs:
             echo "::warning::mapping.txt lipsește (minifyEnabled=false) — urcăm AAB-ul fără fișier de deobfuscare."
           fi
 
+      # Track/status pentru publicarea AUTOMATĂ (push în main / tag):
+      # se citesc din release/version.json, ca versionCode-ul. La
+      # workflow_dispatch câștigă inputurile alese manual.
+      - name: Determină track & status Play
+        id: playtarget
+        run: |
+          set -euo pipefail
+          TRACK="$(python3 -c 'import json;print(json.load(open("release/version.json")).get("track","internal"))')"
+          STATUS="$(python3 -c 'import json;print(json.load(open("release/version.json")).get("status","completed"))')"
+          echo "track=${{ github.event.inputs.track || '' }}" > /tmp/t
+          echo "track=${{ github.event.inputs.track }}" >/dev/null || true
+          IN_TRACK="${{ github.event.inputs.track }}"
+          IN_STATUS="${{ github.event.inputs.release_status }}"
+          echo "track=${IN_TRACK:-$TRACK}" >> "$GITHUB_OUTPUT"
+          echo "status=${IN_STATUS:-$STATUS}" >> "$GITHUB_OUTPUT"
+          echo "Publicare pe track=${IN_TRACK:-$TRACK}, status=${IN_STATUS:-$STATUS}"
+
       - name: Publish în Google Play
         if: ${{ (github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true') && (github.event_name == 'push' || github.ref == 'refs/heads/main') }}
         uses: r0adkll/upload-google-play@v1.1.5
@@ -1184,8 +1201,9 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: app.suzeta
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
-          track: ${{ github.event.inputs.track || 'internal' }}
-          status: ${{ github.event.inputs.release_status || 'draft' }}
+          track: ${{ steps.playtarget.outputs.track }}
+          status: ${{ steps.playtarget.outputs.status }}
+
           whatsNewDirectory: distribution/whatsnew
           mappingFile: ${{ steps.mapping.outputs.path }}
 
