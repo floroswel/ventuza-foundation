@@ -183,6 +183,17 @@ export async function sendFcmOne(
         priority: channel === "system" ? "NORMAL" : "HIGH",
         notification: {
           channel_id: channel,
+          // Icon monocrom din `res/drawable` + culoarea de brand pe status bar.
+          // Fără el Android folosește icon-ul de lansare, care apare ca pătrat
+          // alb pe unele lansatoare.
+          icon: "ic_launcher_monochrome",
+          color: "#E11D48",
+          // Sunetul și vibrația implicite ale canalului (canalul are ultimul
+          // cuvânt pe Android 8+, dar pe 7.x aceste flag-uri contează).
+          sound: "default",
+          default_vibrate_timings: true,
+          default_light_settings: true,
+          notification_priority: channel === "system" || channel === "updates_v1" ? "PRIORITY_DEFAULT" : "PRIORITY_HIGH",
           // Același `tag` pentru același eveniment → notificarea se ÎNLOCUIEȘTE
           // în loc să se adune (o conversație = un singur rând în shade).
           tag: payload.tag,
