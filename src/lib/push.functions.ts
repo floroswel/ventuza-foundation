@@ -310,3 +310,79 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     return { delivered };
   });
 
+
+// ────────────────────────────────────────────────────────────────────────────
+// Test de livrare — trimis EXPLICIT de utilizator către propriul device.
+//
+// De ce nu refolosim `sendPushToUser`: acela refuză self ("Don't ping
+// yourself") și aplică preferințele destinatarului. Aici vrem exact opusul:
+// o verificare deterministă că tokenul FCM / abonarea webpush există și că
+// handler-ele de pe device primesc payload-ul (aplicație închisă sau deschisă).
+// Nu conține date personale, deci nu trece prin gate-ul de preview.
+// ────────────────────────────────────────────────────────────────────────────
+
+const TestInput = z.object({
+  /** Canalul verificat: `message` → messages_v2, `update` → updates_v1. */
+  kind: z.enum(["message", "update", "system"]).default("message"),
+});
+
+export const sendTestPush = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => TestInput.parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { sendOne } = await import("./web-push.server");
+    const { sendFcmOne, isFcmConfigured } = await import("./fcm-push.server");
+
+    const { data: subs } = await supabaseAdmin
+      .from("push_subscriptions")
+      .select("id,endpoint,p256dh,auth,kind")
+      .eq("user_id", context.userId);
+
+    if (!subs?.length) {
+      return { delivered: 0, fcm: 0, webpush: 0, subscriptions: 0, fcmConfigured: isFcmConfigured() };
+    }
+
+    const payload = {
+      title: data.kind === "update" ? "Actualizare disponibilă" : "Test notificare Suzeta",
+      body:
+        data.kind === "update"
+          ? "Așa arată o notificare de actualizare."
+          : "Dacă vezi asta, notificările funcționează. Atinge ca să deschizi mesajele.",
+      url: data.kind === "update" ? "/settings" : "/messages",
+      tag: `test:${data.kind}`,
+      type: data.kind,
+    };
+
+    let fcm = 0;
+    let webpush = 0;
+    const expired: string[] = [];
+    const fcmConfigured = isFcmConfigured();
+
+    for (const s of subs) {
+      if (!s.endpoint) continue;
+      if (s.kind === "fcm") {
+        if (!fcmConfigured) continue;
+        const r = await sendFcmOne({ id: s.id, endpoint: s.endpoint }, payload);
+        if (r.ok) fcm++;
+        else if (r.gone) expired.push(s.id);
+      } else if (s.kind === "webpush") {
+        const r = await sendOne(
+          { id: s.id, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
+          payload,
+        );
+        if (r.ok) webpush++;
+        else if (r.gone) expired.push(s.id);
+      }
+    }
+    if (expired.length) {
+      await supabaseAdmin.from("push_subscriptions").delete().in("id", expired);
+    }
+    return {
+      delivered: fcm + webpush,
+      fcm,
+      webpush,
+      subscriptions: subs.length,
+      fcmConfigured,
+    };
+  });
