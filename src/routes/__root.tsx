@@ -34,6 +34,7 @@ import { GuardianBoundary } from "@/components/GuardianBoundary";
 import { CountryRiskGuard } from "@/components/CountryRiskGuard";
 import { AgeGate } from "@/components/AgeGate";
 import { AppSplash } from "@/components/AppSplash";
+import { UpdateAvailableBanner } from "@/components/UpdateAvailableBanner";
 import { useProximityForegroundWatcher } from "@/lib/proximity-watcher";
 import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
 import { useLocationWatcher } from "@/hooks/useLocationWatcher";
@@ -426,6 +427,7 @@ function RootComponent() {
             <LanguageToggle />
             <ConsentPromptHost />
             <VersionGate />
+            <UpdateAvailableBanner />
             <DebugPanel />
           </NotificationsProvider>
         </NotificationPrefsProvider>

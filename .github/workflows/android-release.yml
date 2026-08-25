@@ -9,8 +9,19 @@ on:
     # și îl urcă singur în Play pe track-ul din version.json.
     branches:
       - main
+    # Publicare automată la ORICE modificare de aplicație împinsă în main
+    # (inclusiv publicările din Lovable). Versiunea se auto-incrementează în
+    # CI dacă release/version.json nu a fost schimbat manual.
     paths:
+      - "src/**"
+      - "public/**"
+      - "android-overrides/**"
+      - "capacitor.config.ts"
+      - "package.json"
+      - "vite.config.ts"
+      - "vite.mobile.config.ts"
       - "release/version.json"
+      - ".github/workflows/android-release.yml"
 
   workflow_dispatch:
     inputs:
@@ -66,10 +77,15 @@ jobs:
     # Secretele de release sunt citite din environment-ul GitHub "production".
     # Environment secrets au prioritate față de repository secrets cu același nume.
     environment: production
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: true
 
       - name: Trasabilitate sursă release
         run: |
@@ -107,6 +123,33 @@ jobs:
           # așteptat, în loc să pară o regresie a aceleiași erori.
           echo "Ultimele 3 commituri împachetate:"
           git log --oneline -3 | sed 's/^/  /'
+
+      # Publicare automată: dacă commitul din main NU a atins release/version.json
+      # (cazul obișnuit — o publicare din Lovable), incrementăm singuri patch-ul
+      # și versionCode-ul, regenerăm changelog-urile + public/app-version.json și
+      # împingem înapoi în main cu [skip ci] ca să nu se buclează workflow-ul.
+      - name: Auto-bump versiune (publicare automată)
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          set -euo pipefail
+          if git diff --name-only HEAD~1 HEAD 2>/dev/null | grep -qx "release/version.json"; then
+            echo "release/version.json a fost setat manual în acest commit — nu auto-bump."
+            node scripts/write-version-asset.mjs
+          else
+            node scripts/bump-android-version.mjs patch
+          fi
+          NAME=$(python3 -c "import json;print(json.load(open('release/version.json'))['versionName'])")
+          CODE=$(python3 -c "import json;print(json.load(open('release/version.json'))['versionCode'])")
+          git config user.name "suzeta-release-bot"
+          git config user.email "release@suzeta.ro"
+          git add release/version.json src/lib/app-version.ts public/app-version.json fastlane/metadata/android || true
+          if git diff --cached --quiet; then
+            echo "Nimic de commis."
+          else
+            git commit -m "chore(release): ${NAME} (build ${CODE}) [skip ci]"
+            git push origin HEAD:main
+            echo "✓ Versiune împinsă în main: ${NAME} (${CODE})"
+          fi
 
       - name: Calculează metadatele vizibile ale buildului
         id: buildmeta
@@ -629,7 +672,8 @@ jobs:
           GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
         run: |
           if [ -z "$GOOGLE_SERVICES_B64" ]; then
-            echo "::warning::GOOGLE_SERVICES_JSON_BASE64 lipsește — push nativ FCM NU va funcționa pe device. Adaugă secretul în GitHub → Settings → Secrets → Actions."
+            echo "::error::GOOGLE_SERVICES_JSON_BASE64 lipsește — fără el notificările push native (aplicație închisă) NU funcționează. Adaugă secretul în GitHub → Settings → Secrets → Actions (environment production)."
+            exit 1
           else
             echo "$GOOGLE_SERVICES_B64" | base64 -d > android/app/google-services.json
             test -s android/app/google-services.json
