@@ -45,3 +45,10 @@
 -keepclasseswithmembernames class * {
     native <methods>;
 }
+
+# Adnotările Capacitor sunt citite prin reflecție la înregistrarea pluginurilor.
+# Fără păstrarea lor, R8 le șterge și aplicația crapă la pornire.
+-keepattributes *Annotation*, Signature, InnerClasses, EnclosingMethod, Exceptions
+-keep class com.capacitorjs.plugins.** { *; }
+-keep class com.capacitorjs.** { *; }
+-keep class io.ionic.** { *; }

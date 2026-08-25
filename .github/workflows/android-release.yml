@@ -4,6 +4,14 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+    # Publicare automată: orice merge în main care schimbă versiunea
+    # (release/version.json) construiește AAB-ul, îl testează pe emulator
+    # și îl urcă singur în Play pe track-ul din version.json.
+    branches:
+      - main
+    paths:
+      - "release/version.json"
+
   workflow_dispatch:
     inputs:
       track:
@@ -142,84 +150,20 @@ jobs:
       - name: Install web deps
         run: bun install
 
-      - name: Validează secretele obligatorii pentru release Android
-        env:
-          VITE_GOOGLE_WEB_CLIENT_ID: ${{ secrets.VITE_GOOGLE_WEB_CLIENT_ID || secrets.GOOGLE_OAUTH_CLIENT_ID }}
-        run: |
-          MISSING=0
-          if [ -z "$VITE_GOOGLE_WEB_CLIENT_ID" ]; then
-            echo "::error::Secretul VITE_GOOGLE_WEB_CLIENT_ID lipsește. Fără el, Google Sign-In nativ (Capacitor → supabase.auth.signInWithIdToken) NU funcționează pe Android. Adaugă în GitHub → Settings → Secrets and variables → Actions valoarea OAuth Client ID de tip 'Web application' din Google Cloud Console (format: xxxxx.apps.googleusercontent.com)."
-            MISSING=1
-          else
-            case "$VITE_GOOGLE_WEB_CLIENT_ID" in
-              *.apps.googleusercontent.com) ;;
-              *)
-                echo "::error::VITE_GOOGLE_WEB_CLIENT_ID='$VITE_GOOGLE_WEB_CLIENT_ID' nu are formatul așteptat (*.apps.googleusercontent.com). Verifică că ai copiat Client ID-ul de tip 'Web application', nu 'Android' sau alt tip."
-                MISSING=1
-                ;;
-            esac
-          fi
-          if [ "$MISSING" != "0" ]; then
-            exit 1
-          fi
-          echo "✓ VITE_GOOGLE_WEB_CLIENT_ID prezent și cu format valid."
+      # Google Sign-In nativ a fost ELIMINAT din aplicație (autentificare doar
+      # email + parolă). Pașii de validare / instrumentare a pluginului
+      # @capgo/capacitor-social-login au fost șterși: refereau fișiere
+      # inexistente și blocau orice release.
 
-      - name: Validează implementarea Google Sign-In nativ
+      - name: Verifică absența Google OAuth nativ (regresie)
         run: |
           set -euo pipefail
-          grep -q 'mode: "online"' src/lib/native-google-auth.ts || {
-            echo "::error::Google Sign-In trebuie să folosească modul online nativ, nu redirect browser/WebView."
-            exit 1
-          }
-          if grep -A12 'SocialLogin.login' src/lib/native-google-auth.ts | grep -q 'scopes:'; then
-            echo "::error::Nu trimite scopes custom pe Android: pluginul le respinge fără callback MainActivity; scope-urile standard sunt incluse automat."
+          if grep -rn "capacitor-social-login" package.json src 2>/dev/null; then
+            echo "::error::Pluginul social-login a reapărut. Autentificarea este exclusiv email+parolă."
             exit 1
           fi
-          grep -q 'signInWithIdToken' src/lib/native-google-auth.ts || {
-            echo "::error::Schimbul tokenului Google în sesiune lipsește din fluxul nativ."
-            exit 1
-          }
-          echo "✓ Google nativ: online Credential Manager + ID token, fără redirect WebView sau scopes custom."
+          echo "✓ Fără plugin nativ Google."
 
-      - name: Instrumentează diagnosticul nativ Google (best effort)
-        continue-on-error: true
-        run: |
-          set -uo pipefail
-          PROVIDER="node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java"
-          if [ ! -f "$PROVIDER" ]; then
-            echo "::warning::GoogleProvider.java lipsește — sar peste instrumentarea diagnosticului (nu blochează release-ul)."
-            exit 0
-          fi
-          python3 <<'PY' || echo "::warning::Instrumentarea diagnosticului Google a eșuat — continuăm fără ea."
-          p = "node_modules/@capgo/capacitor-social-login/android/src/main/java/ee/forgr/capacitor/social/login/GoogleProvider.java"
-          s = open(p, encoding="utf-8").read()
-          needle = 'Log.e(LOG_TAG, "Google Sign-In failed", e);'
-          replacement = needle + '\n        recordSuzetaDiagnostic(e);'
-          if replacement not in s:
-              if needle not in s:
-                  raise SystemExit("GoogleProvider s-a schimbat: punctul de instrumentare lipsește")
-              s = s.replace(needle, replacement, 1)
-          helper_anchor = '    private void handleSignInError(GetCredentialException e, PluginCall call, JSONObject config) {'
-          helper = "\n".join([
-              '    private void recordSuzetaDiagnostic(Throwable error) {',
-              '        try {',
-              '            Class<?> activityClass = Class.forName("app.suzeta.MainActivity");',
-              '            java.lang.reflect.Method method = activityClass.getMethod("recordGoogleDiagnostic", String.class, Throwable.class);',
-              '            method.invoke(null, "credential_error", error);',
-              '        } catch (Throwable ignored) {',
-              '            // Diagnosticul nu trebuie sa afecteze autentificarea.',
-              '        }',
-              '    }',
-              '',
-              '',
-          ])
-          if helper not in s:
-              if helper_anchor not in s:
-                  raise SystemExit("GoogleProvider s-a schimbat: ancora helper-ului lipsește")
-              s = s.replace(helper_anchor, helper + helper_anchor, 1)
-          open(p, "w", encoding="utf-8").write(s)
-          PY
-          echo "Pas de diagnostic terminat (non-blocant)."
 
 
       - name: Patch assetlinks.json cu SHA-256 app signing
@@ -1155,6 +1099,67 @@ jobs:
           done
           ls -la "$OUT"
 
+      # ---------------------------------------------------------------
+      # SMOKE TEST PE EMULATOR — gardul care lipsea.
+      # Instalăm EXACT AAB-ul semnat (convertit în APK universal cu
+      # bundletool) pe un emulator API 34 și verificăm că activitatea
+      # pornește și RĂMÂNE vie 15 secunde. Orice crash nativ la boot
+      # (plugin lipsă, network security config invalid, resursă ruptă)
+      # oprește release-ul ÎNAINTE de Google Play.
+      # ---------------------------------------------------------------
+      - name: Descarcă bundletool
+        run: |
+          set -euo pipefail
+          curl -sSL -o /tmp/bundletool.jar \
+            https://github.com/google/bundletool/releases/download/1.17.2/bundletool-all-1.17.2.jar
+          java -jar /tmp/bundletool.jar version
+
+      - name: Construiește APK universal din AAB
+        run: |
+          set -euo pipefail
+          java -jar /tmp/bundletool.jar build-apks \
+            --bundle=android/app/build/outputs/bundle/release/app-release.aab \
+            --output=/tmp/app.apks --mode=universal \
+            --ks=android/app/release.keystore \
+            --ks-pass=pass:"${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+            --ks-key-alias="${{ secrets.ANDROID_KEY_ALIAS }}" \
+            --key-pass=pass:"${{ secrets.ANDROID_KEY_PASSWORD }}"
+          unzip -o /tmp/app.apks -d /tmp/apks >/dev/null
+          ls -la /tmp/apks/universal.apk
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Smoke test pornire aplicație (emulator)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            adb install -r /tmp/apks/universal.apk
+            adb logcat -c
+            adb shell am start -n app.suzeta/app.suzeta.MainActivity
+            sleep 15
+            if ! adb shell pidof app.suzeta > /dev/null; then
+              echo "::error::Aplicația s-a închis singură după pornire (crash la boot)."
+              adb logcat -d -t 400 | grep -iE "AndroidRuntime|FATAL|app.suzeta" | tail -80
+              exit 1
+            fi
+            if adb logcat -d | grep -q "FATAL EXCEPTION"; then
+              echo "::error::FATAL EXCEPTION în logcat la pornire."
+              adb logcat -d | grep -A 40 "FATAL EXCEPTION" | tail -80
+              exit 1
+            fi
+            echo "✓ Aplicația pornește și rămâne activă 15s pe emulator API 34."
+
+
       # Gardul suplimentar `github.ref`: un dispatch dintr-un branch de lucru nu
       # poate publica nici dacă cineva pune skip_play_upload=false. Tag-urile
       # (refs/tags/v*) rămân neafectate, deci fluxul de release pe tag e intact.
@@ -1172,6 +1177,21 @@ jobs:
             echo "::warning::mapping.txt lipsește (minifyEnabled=false) — urcăm AAB-ul fără fișier de deobfuscare."
           fi
 
+      # Track/status pentru publicarea AUTOMATĂ (push în main / tag):
+      # se citesc din release/version.json, ca versionCode-ul. La
+      # workflow_dispatch câștigă inputurile alese manual.
+      - name: Determină track & status Play
+        id: playtarget
+        run: |
+          set -euo pipefail
+          TRACK="$(python3 -c 'import json;print(json.load(open("release/version.json")).get("track","internal"))')"
+          STATUS="$(python3 -c 'import json;print(json.load(open("release/version.json")).get("status","completed"))')"
+          IN_TRACK="${{ github.event.inputs.track }}"
+          IN_STATUS="${{ github.event.inputs.release_status }}"
+          echo "track=${IN_TRACK:-$TRACK}" >> "$GITHUB_OUTPUT"
+          echo "status=${IN_STATUS:-$STATUS}" >> "$GITHUB_OUTPUT"
+          echo "Publicare pe track=${IN_TRACK:-$TRACK}, status=${IN_STATUS:-$STATUS}"
+
       - name: Publish în Google Play
         if: ${{ (github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true') && (github.event_name == 'push' || github.ref == 'refs/heads/main') }}
         uses: r0adkll/upload-google-play@v1.1.5
@@ -1179,8 +1199,9 @@ jobs:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           packageName: app.suzeta
           releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
-          track: ${{ github.event.inputs.track || 'internal' }}
-          status: ${{ github.event.inputs.release_status || 'draft' }}
+          track: ${{ steps.playtarget.outputs.track }}
+          status: ${{ steps.playtarget.outputs.status }}
+
           whatsNewDirectory: distribution/whatsnew
           mappingFile: ${{ steps.mapping.outputs.path }}
 
