@@ -71,6 +71,15 @@ export const CHANNELS: readonly ChannelDef[] = [
     lights: true,
   },
   {
+    id: "updates_v1",
+    name: "Actualizări aplicație",
+    description: "Versiuni noi disponibile în Google Play",
+    // DEFAULT: informativ, fără heads-up — nu întrerupe utilizatorul.
+    importance: IMPORTANCE_DEFAULT,
+    visibility: VISIBILITY_PUBLIC,
+    vibration: false,
+  },
+  {
     id: "system",
     name: "Sistem",
     description: "Anunțuri și alerte",
@@ -94,6 +103,7 @@ export const RETIRED_CHANNEL_IDS: readonly string[] = ["messages", "matches"];
 export function channelIdForType(type: string | undefined | null): string {
   const t = (type || "").toLowerCase();
   if (t.includes("message") || t.includes("msg")) return "messages_v2";
+  if (t.includes("update") || t.includes("version")) return "updates_v1";
   if (
     t.includes("match") ||
     t.includes("tap") ||

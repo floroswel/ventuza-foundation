@@ -43,6 +43,7 @@ import { setIncognito } from "@/lib/incognito";
 import { UniquesCard } from "@/components/UniquesCard";
 import { SosCard } from "@/components/SosCard";
 import { EnablePushButton } from "@/components/EnablePushButton";
+import { TestPushButton } from "@/components/TestPushButton";
 
 import { ReferralCard } from "@/components/ReferralCard";
 import { PublicLinkCard } from "@/components/settings/PublicLinkCard";
@@ -563,7 +564,10 @@ function SettingsPage() {
             <p className="text-[11px] text-muted-foreground mb-2">
               Notificări push pe acest dispozitiv (mesaje, taps, woofs, match-uri).
             </p>
-            <EnablePushButton />
+            <div className="flex flex-wrap items-center gap-2">
+              <EnablePushButton />
+              <TestPushButton />
+            </div>
           </div>
         </section>
 
