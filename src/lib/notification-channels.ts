@@ -103,6 +103,7 @@ export const RETIRED_CHANNEL_IDS: readonly string[] = ["messages", "matches"];
 export function channelIdForType(type: string | undefined | null): string {
   const t = (type || "").toLowerCase();
   if (t.includes("message") || t.includes("msg")) return "messages_v2";
+  if (t.includes("update") || t.includes("version")) return "updates_v1";
   if (
     t.includes("match") ||
     t.includes("tap") ||
