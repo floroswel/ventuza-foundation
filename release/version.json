@@ -1,6 +1,7 @@
 {
-  "versionName": "1.0.20",
-  "versionCode": 30,
-  "track": "internal",
-  "notes": "Build 30: pornire mai rapida, imagini optimizate, setari performanta din admin, incognito corect, push mai fiabil."
+  "versionName": "1.0.21",
+  "versionCode": 31,
+  "track": "production",
+  "status": "completed",
+  "notes": "Build 31: reparat crash-ul la pornire dupa instalarea din Google Play (pinning TLS invalid + plugin Google ramas fara utilizare)."
 }

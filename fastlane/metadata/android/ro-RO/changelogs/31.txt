@@ -1,0 +1,2 @@
+Reparat: aplicatia nu mai crapa la pornire dupa instalarea din Google Play.
+Curate: eliminat modulul de login Google nefolosit.

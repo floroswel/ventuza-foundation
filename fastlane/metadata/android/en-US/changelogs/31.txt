@@ -1,0 +1,2 @@
+Fixed: app no longer crashes on launch after installing from Google Play.
+Cleanup: removed unused native Google login module.
