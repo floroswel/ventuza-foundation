@@ -22,9 +22,6 @@ on:
       - "vite.mobile.config.ts"
       - "release/version.json"
       - ".github/workflows/android-release.yml"
-    paths-ignore:
-      - "docs/**"
-      - "**/*.md"
 
   workflow_dispatch:
     inputs:
