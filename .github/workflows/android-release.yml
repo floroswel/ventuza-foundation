@@ -1091,6 +1091,67 @@ jobs:
           done
           ls -la "$OUT"
 
+      # ---------------------------------------------------------------
+      # SMOKE TEST PE EMULATOR — gardul care lipsea.
+      # Instalăm EXACT AAB-ul semnat (convertit în APK universal cu
+      # bundletool) pe un emulator API 34 și verificăm că activitatea
+      # pornește și RĂMÂNE vie 15 secunde. Orice crash nativ la boot
+      # (plugin lipsă, network security config invalid, resursă ruptă)
+      # oprește release-ul ÎNAINTE de Google Play.
+      # ---------------------------------------------------------------
+      - name: Descarcă bundletool
+        run: |
+          set -euo pipefail
+          curl -sSL -o /tmp/bundletool.jar \
+            https://github.com/google/bundletool/releases/download/1.17.2/bundletool-all-1.17.2.jar
+          java -jar /tmp/bundletool.jar version
+
+      - name: Construiește APK universal din AAB
+        run: |
+          set -euo pipefail
+          java -jar /tmp/bundletool.jar build-apks \
+            --bundle=android/app/build/outputs/bundle/release/app-release.aab \
+            --output=/tmp/app.apks --mode=universal \
+            --ks=android/app/release.keystore \
+            --ks-pass=pass:"${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" \
+            --ks-key-alias="${{ secrets.ANDROID_KEY_ALIAS }}" \
+            --key-pass=pass:"${{ secrets.ANDROID_KEY_PASSWORD }}"
+          unzip -o /tmp/app.apks -d /tmp/apks >/dev/null
+          ls -la /tmp/apks/universal.apk
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Smoke test pornire aplicație (emulator)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          disable-animations: true
+          script: |
+            set -euo pipefail
+            adb install -r /tmp/apks/universal.apk
+            adb logcat -c
+            adb shell am start -n app.suzeta/app.suzeta.MainActivity
+            sleep 15
+            if ! adb shell pidof app.suzeta > /dev/null; then
+              echo "::error::Aplicația s-a închis singură după pornire (crash la boot)."
+              adb logcat -d -t 400 | grep -iE "AndroidRuntime|FATAL|app.suzeta" | tail -80
+              exit 1
+            fi
+            if adb logcat -d | grep -q "FATAL EXCEPTION"; then
+              echo "::error::FATAL EXCEPTION în logcat la pornire."
+              adb logcat -d | grep -A 40 "FATAL EXCEPTION" | tail -80
+              exit 1
+            fi
+            echo "✓ Aplicația pornește și rămâne activă 15s pe emulator API 34."
+
+
       # Gardul suplimentar `github.ref`: un dispatch dintr-un branch de lucru nu
       # poate publica nici dacă cineva pune skip_play_upload=false. Tag-urile
       # (refs/tags/v*) rămân neafectate, deci fluxul de release pe tag e intact.
