@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.23",
-  "versionCode": 33,
+  "versionName": "1.0.24",
+  "versionCode": 34,
   "track": "production",
   "status": "completed",
   "notes": "Build 31: reparat crash-ul la pornire dupa instalarea din Google Play (pinning TLS invalid + plugin Google ramas fara utilizare)."

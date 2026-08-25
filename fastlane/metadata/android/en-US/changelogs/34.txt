@@ -1,0 +1,5 @@
+Suzeta 1.0.24
+
+- Improvements and bug fixes.
+
+Completează înainte de upload pe Play Console.
