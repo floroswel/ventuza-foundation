@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Network security config Suzeta (2.3).
+  Network security config Suzeta.
 
-  - Cleartext HTTP INTERZIS global și explicit pe suzeta.app.
-  - Certificate pinning pe suzeta.app: pin-uri REALE, extrase din lanțul TLS
-    curent (SPKI SHA-256, base64):
-      * intermediar  C=US, O=Google Trust Services, CN=WE1
-      * root         C=US, O=Google Trust Services LLC, CN=GTS Root R4
-    Pinăm intermediarul + root-ul (NU certificatul leaf), pentru că leaf-ul
-    se reînnoiește automat la ~90 zile. `expiration` acționează ca supapă de
-    siguranță: după acea dată pinning-ul nu mai este aplicat, deci aplicația
-    nu se blochează dacă emitentul se schimbă și nu am publicat update.
-    ATENȚIE: dacă migrăm hosting/CA, actualizează pin-urile ÎNAINTE de release
-    (openssl s_client -connect suzeta.app:443 -showcerts).
+  - Cleartext HTTP INTERZIS global (inclusiv pe suzeta.app / suzeta.ro).
+  - Certificate pinning DEZACTIVAT intenționat.
+    Motiv: hosting-ul este în spatele unui CDN care rotește CA-ul emitent
+    (Google Trust Services / Cloudflare). Un pin învechit face ca TOATE
+    cererile HTTPS să eșueze pe telefoanele deja actualizate din Play —
+    aplicația pare că „se deschide și se închide”, fără nicio cale de
+    remediere fără un release nou. Riscul MITM real este acoperit de
+    validarea normală a lanțului cu trust store-ul de sistem + HSTS.
+    Dacă se reintroduce pinning, se pinează DOI pini (curent + backup) și
+    se setează `expiration` la maxim 6 luni, cu proces de rotație verificat
+    în CI înainte de fiecare release.
   - debug-overrides permite CA-uri user doar în build-urile debug (proxy local).
 -->
 <network-security-config>
@@ -24,12 +24,7 @@
 
     <domain-config cleartextTrafficPermitted="false">
         <domain includeSubdomains="true">suzeta.app</domain>
-        <pin-set expiration="2027-01-01">
-            <!-- Google Trust Services WE1 (intermediar emitent) -->
-            <pin digest="SHA-256">kIdp6NNEd8wsugYyyIYFsi1ylMCED3hZbSR8ZFsa/A4=</pin>
-            <!-- GTS Root R4 (root, backup pentru rotația intermediarului) -->
-            <pin digest="SHA-256">mEflZT5enoR1FuXLgYYGqnVEoZvmf9c2bVBpiOjYQ0c=</pin>
-        </pin-set>
+        <domain includeSubdomains="true">suzeta.ro</domain>
         <trust-anchors>
             <certificates src="system"/>
         </trust-anchors>
