@@ -76,15 +76,32 @@ console.log(`✓ release/version.json → ${nextName} (code ${nextCode})`);
 const APP_VERSION_FILE = resolve(ROOT, "src/lib/app-version.ts");
 if (existsSync(APP_VERSION_FILE)) {
   const src = readFileSync(APP_VERSION_FILE, "utf8");
-  const patched = src.replace(
-    /export const APP_VERSION = "[^"]*";/,
-    `export const APP_VERSION = "${nextName}";`,
-  );
+  const patched = src
+    .replace(
+      /export const APP_VERSION = "[^"]*";/,
+      `export const APP_VERSION = "${nextName}";`,
+    )
+    .replace(
+      /export const APP_VERSION_CODE = \d+;/,
+      `export const APP_VERSION_CODE = ${nextCode};`,
+    );
   if (patched !== src) {
     writeFileSync(APP_VERSION_FILE, patched);
     console.log(`✓ src/lib/app-version.ts → APP_VERSION="${nextName}"`);
   }
 }
+
+// Fișierul public consumat de aplicația nativă pentru bannerul de actualizare.
+const VERSION_ASSET = resolve(ROOT, "public/app-version.json");
+writeFileSync(
+  VERSION_ASSET,
+  JSON.stringify(
+    { versionName: nextName, versionCode: nextCode, notes: next.notes ?? "", updatedAt: new Date().toISOString() },
+    null,
+    2,
+  ) + "\n",
+);
+console.log(`✓ public/app-version.json → ${nextName} (code ${nextCode})`);
 
 // Pre-generare changelog pentru fiecare locale (max 500 chars conform Play Store).
 const locales = readdirSync(METADATA_DIR, { withFileTypes: true })
