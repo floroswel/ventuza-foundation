@@ -44,6 +44,8 @@ import { UniquesCard } from "@/components/UniquesCard";
 import { SosCard } from "@/components/SosCard";
 import { EnablePushButton } from "@/components/EnablePushButton";
 import { TestPushButton } from "@/components/TestPushButton";
+import { AppVersionCard } from "@/components/AppVersionCard";
+
 
 import { ReferralCard } from "@/components/ReferralCard";
 import { PublicLinkCard } from "@/components/settings/PublicLinkCard";
