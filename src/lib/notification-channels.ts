@@ -71,6 +71,15 @@ export const CHANNELS: readonly ChannelDef[] = [
     lights: true,
   },
   {
+    id: "updates_v1",
+    name: "Actualizări aplicație",
+    description: "Versiuni noi disponibile în Google Play",
+    // DEFAULT: informativ, fără heads-up — nu întrerupe utilizatorul.
+    importance: IMPORTANCE_DEFAULT,
+    visibility: VISIBILITY_PUBLIC,
+    vibration: false,
+  },
+  {
     id: "system",
     name: "Sistem",
     description: "Anunțuri și alerte",
