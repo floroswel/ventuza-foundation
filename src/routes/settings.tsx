@@ -44,6 +44,8 @@ import { UniquesCard } from "@/components/UniquesCard";
 import { SosCard } from "@/components/SosCard";
 import { EnablePushButton } from "@/components/EnablePushButton";
 import { TestPushButton } from "@/components/TestPushButton";
+import { AppVersionCard } from "@/components/AppVersionCard";
+
 
 import { ReferralCard } from "@/components/ReferralCard";
 import { PublicLinkCard } from "@/components/settings/PublicLinkCard";
@@ -569,7 +571,12 @@ function SettingsPage() {
               <TestPushButton />
             </div>
           </div>
+
+          <div className="mt-4">
+            <AppVersionCard />
+          </div>
         </section>
+
 
         {/* Right Now */}
         <section className="rounded-2xl border border-rose-500/30 bg-rose-500/5 p-4">
