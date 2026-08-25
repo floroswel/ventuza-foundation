@@ -4,6 +4,14 @@ on:
   push:
     tags:
       - "v[0-9]+.[0-9]+.[0-9]+"
+    # Publicare automată: orice merge în main care schimbă versiunea
+    # (release/version.json) construiește AAB-ul, îl testează pe emulator
+    # și îl urcă singur în Play pe track-ul din version.json.
+    branches:
+      - main
+    paths:
+      - "release/version.json"
+
   workflow_dispatch:
     inputs:
       track:
