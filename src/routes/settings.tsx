@@ -135,6 +135,11 @@ function SettingsPage() {
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPwd, setNewPwd] = useState("");
+  // Reautentificare prin cod pe email (Supabase cere AAL2 / nonce pentru
+  // schimbarea parolei când contul are MFA activ).
+  const [pwdCodeRequired, setPwdCodeRequired] = useState(false);
+  const [pwdCode, setPwdCode] = useState("");
+  const [pwdBusy, setPwdBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState("");
   const [deleteEmail, setDeleteEmail] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -264,13 +269,49 @@ function SettingsPage() {
       toast.error("Min. 8 caractere.");
       return;
     }
-    const { error } = await supabase.auth.updateUser({ password: newPwd });
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Parolă actualizată.");
-      setNewPwd("");
+    if (pwdCodeRequired && !/^\d{6}$/.test(pwdCode)) {
+      toast.error("Introdu codul de 6 cifre primit pe email.");
+      return;
+    }
+    setPwdBusy(true);
+    try {
+      const { error } = await supabase.auth.updateUser(
+        pwdCodeRequired ? { password: newPwd, nonce: pwdCode } : { password: newPwd },
+      );
+      if (!error) {
+        toast.success("Parolă actualizată.");
+        setNewPwd("");
+        setPwdCode("");
+        setPwdCodeRequired(false);
+        return;
+      }
+      const msg = error.message.toLowerCase();
+      const needsCode =
+        msg.includes("aal2") ||
+        msg.includes("reauthentication") ||
+        msg.includes("nonce") ||
+        msg.includes("mfa");
+      if (needsCode && !pwdCodeRequired) {
+        const { error: sendErr } = await supabase.auth.reauthenticate();
+        if (sendErr) {
+          toast.error(sendErr.message);
+          return;
+        }
+        setPwdCodeRequired(true);
+        toast.success("Ți-am trimis un cod de verificare pe email. Introdu-l mai jos.");
+        return;
+      }
+      if (needsCode && pwdCodeRequired) {
+        setPwdCode("");
+        toast.error("Cod incorect sau expirat. Cere un cod nou și încearcă din nou.");
+        return;
+      }
+      toast.error(error.message);
+    } finally {
+      setPwdBusy(false);
     }
   }
+
 
   async function handleDelete() {
     if (confirmDelete !== "ȘTERGE") return;
@@ -366,12 +407,52 @@ function SettingsPage() {
                 />
                 <button
                   onClick={changePassword}
-                  className="rounded-full bg-primary px-3 py-2 text-xs font-medium text-primary-foreground"
+                  disabled={pwdBusy}
+                  className="rounded-full bg-primary px-3 py-2 text-xs font-medium text-primary-foreground disabled:opacity-60"
                 >
                   Schimbă
                 </button>
               </div>
+              {pwdCodeRequired && (
+                <div className="mt-2 space-y-2 rounded-xl border border-border bg-background/60 p-3">
+                  <p className="text-[11px] text-muted-foreground">
+                    Contul tău are verificare suplimentară. Introdu codul de 6 cifre trimis pe{" "}
+                    {email}.
+                  </p>
+                  <div className="flex gap-2">
+                    <input
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      maxLength={6}
+                      value={pwdCode}
+                      onChange={(e) => setPwdCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      placeholder="123456"
+                      className="flex-1 rounded-xl border border-border bg-background px-3 py-2 text-center text-sm tracking-[0.4em] outline-none focus:border-primary"
+                    />
+                    <button
+                      onClick={changePassword}
+                      disabled={pwdBusy}
+                      className="rounded-full bg-primary px-3 py-2 text-xs font-medium text-primary-foreground disabled:opacity-60"
+                    >
+                      Confirmă
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => {
+                      void supabase.auth.reauthenticate().then(({ error }) =>
+                        error
+                          ? toast.error(error.message)
+                          : toast.success("Cod nou trimis pe email."),
+                      );
+                    }}
+                    className="text-[11px] underline text-muted-foreground"
+                  >
+                    Trimite codul din nou
+                  </button>
+                </div>
+              )}
             </div>
+
           </div>
           <div className="mt-4 border-t border-border pt-3">
             <button
