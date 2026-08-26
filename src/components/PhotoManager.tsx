@@ -62,10 +62,37 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [pending, setPending] = useState<{ id: string; storage_path: string; url: string | null }[]>(
+    [],
+  );
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const moderate = useServerFn(moderatePhoto);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  async function loadPending() {
+    const { data } = await supabase
+      .from("photo_reviews")
+      .select("id,storage_path")
+      .eq("user_id", userId)
+      .eq("status", "pending")
+      .order("created_at", { ascending: true });
+    const rows = (data ?? []) as { id: string; storage_path: string }[];
+    const out: { id: string; storage_path: string; url: string | null }[] = [];
+    for (const r of rows) {
+      const { data: s } = await supabase.storage
+        .from("profile-photos")
+        .createSignedUrl(r.storage_path, 3600);
+      out.push({ ...r, url: s?.signedUrl ?? null });
+    }
+    setPending(out);
+  }
+
+  useEffect(() => {
+    void loadPending();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
 
 
   useEffect(() => {
