@@ -1,5 +1,1 @@
-Suzeta 1.0.35
-
-- Îmbunătățiri și corectări de bug-uri.
-
-Completează înainte de upload pe Play Console.
+Am reparat resetarea parolei, astfel încât codul de verificare primit pe email să fie recunoscut corect. Mesajele disting acum clar între un cod greșit, expirat și o parolă neacceptată. Am inclus și îmbunătățiri de stabilitate pentru aplicația Android.

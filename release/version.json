@@ -3,5 +3,5 @@
   "versionCode": 45,
   "track": "production",
   "status": "completed",
-  "notes": "Resetare parola imbunatatita: mesaj clar la link expirat, suport 2FA cu cod de 6 cifre si erori explicite in formular."
+  "notes": "Resetarea parolei recunoaște corect codul primit pe email și afișează mesaje clare pentru cod invalid sau expirat. Am îmbunătățit stabilitatea și verificările buildului Android."
 }

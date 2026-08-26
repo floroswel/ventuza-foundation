@@ -1,5 +1,1 @@
-Suzeta 1.0.35
-
-- Improvements and bug fixes.
-
-Completează înainte de upload pe Play Console.
+Password reset now correctly accepts the verification code received by email. Messages clearly distinguish an incorrect or expired code from an invalid password. This release also includes Android stability and build verification improvements.
