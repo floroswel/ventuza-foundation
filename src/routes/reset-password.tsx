@@ -146,10 +146,12 @@ function ResetPasswordPage() {
       }
       if ("session" in data && data.session) {
         window.clearTimeout(timeout);
+        setUserEmail(data.session.user?.email ?? null);
         setReady(true);
         setInvalidLink(false);
         if (tokenHash) window.history.replaceState({}, "", "/reset-password");
       }
+
     });
     return () => {
       active = false;
