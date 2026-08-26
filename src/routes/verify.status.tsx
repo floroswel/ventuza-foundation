@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft,
@@ -12,8 +12,13 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { getMyDiditStatus, syncMyDiditStatus } from "@/lib/didit.functions";
+import { computeAccountFlow } from "@/lib/account-flow";
+import { AccountFlowSteps } from "@/components/AccountFlowSteps";
+import { logAccountFlowEvent } from "@/lib/account-flow.functions";
+
 
 export const Route = createFileRoute("/verify/status")({
   ssr: false,
@@ -98,6 +103,58 @@ function VerifyStatusPage() {
   const isVerified = ageStatus === "verified";
   const isFailed = ageStatus === "failed" || ageStatus === "expired";
 
+  // Completare profil (pentru stepper-ul „Stare verificare”).
+  const [profileComplete, setProfileComplete] = useState<boolean>(true);
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    void supabase
+      .from("profiles")
+      .select("birthdate, onboarding_completed")
+      .eq("id", user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled) return;
+        setProfileComplete(Boolean(data?.birthdate && data?.onboarding_completed));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
+  const emailConfirmed = Boolean((user as { email_confirmed_at?: string | null } | null)?.email_confirmed_at);
+  const flow = useMemo(
+    () =>
+      computeAccountFlow({
+        emailConfirmed,
+        profileComplete,
+        ageStatus,
+        hasDiditSession: hasSession,
+      }),
+    [emailConfirmed, profileComplete, ageStatus, hasSession],
+  );
+
+  // Audit: logăm fiecare tranziție de stare Didit văzută de client.
+  const logEvent = useServerFn(logAccountFlowEvent);
+  const lastLogged = useRef<string | null>(null);
+  useEffect(() => {
+    if (!user || loading) return;
+    const key = `${ageStatus}:${status?.lastSession?.status ?? "none"}`;
+    if (lastLogged.current === key) return;
+    lastLogged.current = key;
+    void logEvent({
+      data: {
+        kind: "didit",
+        stage: `client_status_${ageStatus}`,
+        detail: {
+          session_status: status?.lastSession?.status ?? null,
+          reason: (status as { reasonCode?: string } | null)?.reasonCode ?? null,
+        },
+      },
+    }).catch(() => {});
+  }, [user?.id, loading, ageStatus, status?.lastSession?.status, logEvent]);
+
+
   // Polling agresiv la început, apoi mai rar; se oprește când iese din pending.
   useEffect(() => {
     if (!user || !isPending) return;
@@ -154,6 +211,10 @@ function VerifyStatusPage() {
         <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
           {statusAnnouncement}
         </p>
+
+        <AccountFlowSteps summary={flow} email={user.email} className="mt-6" />
+
+
 
         <div
           role="region"
