@@ -1213,7 +1213,7 @@ jobs:
           arch: x86_64
           disable-animations: true
           script: |
-            set -euo pipefail
+            set -eu
             adb install -r /tmp/apks/universal.apk
             adb logcat -c
             adb shell am start -n app.suzeta/app.suzeta.MainActivity
