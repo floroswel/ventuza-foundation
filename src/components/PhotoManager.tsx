@@ -331,6 +331,10 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         {remaining > 0 && photos.length > 0 ? ` · mai poți adăuga ${remaining}` : ""}
       </p>
 
+      <DiscreetAvatarPicker userId={userId} />
+
+
+
       {pending.length > 0 && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
           <p className="mb-2 flex items-center gap-2 text-xs font-medium text-amber-500">
