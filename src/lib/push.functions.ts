@@ -340,15 +340,31 @@ export const sendTestPush = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { sendOne } = await import("./web-push.server");
     const { sendFcmOne, isFcmConfigured } = await import("./fcm-push.server");
+    const { channelIdForType } = await import("./notification-channels");
 
     const { data: subs } = await supabaseAdmin
       .from("push_subscriptions")
       .select("id,endpoint,p256dh,auth,kind")
       .eq("user_id", context.userId);
 
+    const channel = channelIdForType(data.kind);
+
     if (!subs?.length) {
-      return { delivered: 0, fcm: 0, webpush: 0, subscriptions: 0, fcmConfigured: isFcmConfigured() };
+      return {
+        delivered: 0,
+        fcm: 0,
+        webpush: 0,
+        subscriptions: 0,
+        fcmConfigured: isFcmConfigured(),
+        channel,
+        delaySeconds: data.delaySeconds,
+      };
     }
+
+    if (data.delaySeconds > 0) {
+      await new Promise((r) => setTimeout(r, data.delaySeconds * 1000));
+    }
+
 
     const payload = {
       title: data.kind === "update" ? "Actualizare disponibilă" : "Test notificare Suzeta",
