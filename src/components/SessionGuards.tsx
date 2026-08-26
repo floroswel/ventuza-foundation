@@ -46,14 +46,22 @@ export function SessionGuards() {
 
 
 
-  // Gate-ul de confirmare email a fost ELIMINAT: „Confirm email” e dezactivat
-  // în backend, identitatea se verifică prin Didit în onboarding. Un user cu
-  // sesiune validă merge direct la onboarding.
+  // Confirmarea emailului este obligatorie înainte de onboarding/Didit.
+  // Protecția DB verifică aceeași regulă pentru toate RPC-urile sociale.
+  useEffect(() => {
+    if (!user || user.email_confirmed_at) return;
+    if (location.pathname.startsWith("/auth/check-email")) return;
+    navigate({
+      to: "/auth/check-email",
+      search: { email: user.email },
+      replace: true,
+    });
+  }, [user, location.pathname, navigate]);
 
 
   // Birthdate / onboarding guard — must run on every navigation while signed in.
   useEffect(() => {
-    if (!user) return;
+    if (!user || !user.email_confirmed_at) return;
     let cancelled = false;
     void (async () => {
       console.log("[AUTH] GUARD_ONBOARDING_FETCH_STARTED", { path: location.pathname });

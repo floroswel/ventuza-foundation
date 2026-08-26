@@ -7,14 +7,15 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const StartInput = z.object({
-  returnUrl: z.string().url(),
-});
-
 export const startDiditVerification = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => StartInput.parse(d))
+  .inputValidator((d: unknown) => z.object({ returnUrl: z.string().url() }).parse(d))
   .handler(async ({ data, context }) => {
+    const { data: hasConsent, error: consentError } = await context.supabase.rpc(
+      "has_active_consent",
+      { _user_id: context.userId, _kind: "age_verification" },
+    );
+    if (consentError || hasConsent !== true) throw new Error("age_verification_consent_required");
     const { diditCreateSession } = await import("./didit.server");
 
     const session = await diditCreateSession({
