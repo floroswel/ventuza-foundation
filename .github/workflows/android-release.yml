@@ -1292,18 +1292,18 @@ jobs:
       # skip_play_upload=false.
       - name: Publish în Google Play
         if: ${{ github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_play_upload != 'true') }}
-        uses: r0adkll/upload-google-play@v1.1.5
-        with:
-          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
-          packageName: app.suzeta
-          releaseFiles: android/app/build/outputs/bundle/release/app-release.aab
-          track: ${{ steps.playtarget.outputs.track }}
-          status: ${{ steps.playtarget.outputs.status }}
-
-          whatsNewDirectory: distribution/whatsnew
-          mappingFile: ${{ steps.mapping.outputs.path }}
-
-          changesNotSentForReview: false
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PLAY_PACKAGE_NAME: app.suzeta
+          PLAY_AAB: android/app/build/outputs/bundle/release/app-release.aab
+          PLAY_TRACK: ${{ steps.playtarget.outputs.track }}
+          PLAY_STATUS: ${{ steps.playtarget.outputs.status }}
+          PLAY_WHATSNEW_DIR: distribution/whatsnew
+          PLAY_MAPPING: ${{ steps.mapping.outputs.path }}
+        run: |
+          set -euo pipefail
+          pip install --quiet google-auth requests
+          python3 scripts/play-upload.py
 
       - name: Curăță secretele de pe runner
         if: always()
