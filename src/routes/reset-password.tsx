@@ -225,7 +225,7 @@ function ResetPasswordPage() {
   async function requestAuthenticatorCode() {
     const { data, error } = await supabase.auth.mfa.listFactors();
     if (error) throw error;
-    const factor = data.totp.find((item) => item.status === "verified");
+    const factor = data?.totp.find((item) => item.status === "verified");
     if (!factor) {
       throw new Error("Contul cere verificare în doi pași, dar nu are un autentificator activ disponibil.");
     }
@@ -242,6 +242,7 @@ function ResetPasswordPage() {
       factorId: totpFactorId,
     });
     if (challengeError) throw challengeError;
+    if (!challenge) throw new Error("Nu am putut iniția verificarea Authenticator.");
     const { error: verifyError } = await supabase.auth.mfa.verify({
       factorId: totpFactorId,
       challengeId: challenge.id,

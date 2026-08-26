@@ -289,6 +289,10 @@ function SettingsPage() {
           toast.error(challengeError.message);
           return;
         }
+        if (!challenge) {
+          toast.error("Nu am putut iniția verificarea Authenticator.");
+          return;
+        }
         const { error: verifyError } = await supabase.auth.mfa.verify({
           factorId: pwdTotpFactorId,
           challengeId: challenge.id,
