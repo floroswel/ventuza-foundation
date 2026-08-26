@@ -249,7 +249,10 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     const safePayload = sanitizeNotificationPayload({
       title: rawTitle,
       body: rawBody,
-      url: showPreview ? data.url : undefined,
+      // URL-ul rămâne mereu: e o rută internă (ex. /messages/<uuid>), fără
+      // conținut personal, și fără el tap-ul pe notificare nu duce la ecranul
+      // corect când aplicația e închisă.
+      url: data.url,
       tag: data.tag,
       type: data.category,
       category: data.category,
@@ -407,5 +410,7 @@ export const sendTestPush = createServerFn({ method: "POST" })
       webpush,
       subscriptions: subs.length,
       fcmConfigured,
+      channel,
+      delaySeconds: data.delaySeconds,
     };
   });
