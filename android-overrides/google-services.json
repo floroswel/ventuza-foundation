@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "670544339546",
+    "project_id": "ventuza2-41ae4",
+    "storage_bucket": "ventuza2-41ae4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:670544339546:android:7e3c54c8323ab9e66f2e63",
+        "android_client_info": {
+          "package_name": "app.suzeta"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbBJypozMTUfFzVKGvklDs_VuLscAzKe8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

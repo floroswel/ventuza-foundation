@@ -11,7 +11,16 @@ import { Label } from "@/components/ui/label";
 import { showAuthErrorToast } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [{ title: "Reset password — Suzeta" }] }),
+  head: () => ({
+    meta: [
+      { title: "Resetare parolă — Suzeta" },
+      { name: "description", content: "Alege în siguranță o parolă nouă pentru contul Suzeta." },
+      { property: "og:title", content: "Resetare parolă — Suzeta" },
+      { property: "og:description", content: "Alege în siguranță o parolă nouă pentru contul Suzeta." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
   component: ResetPasswordPage,
 });
 
@@ -24,16 +33,43 @@ function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [invalidLink, setInvalidLink] = useState(false);
 
   useEffect(() => {
-    // Supabase puts recovery tokens in the URL hash and the client picks them up automatically.
+    let active = true;
+    const timeout = window.setTimeout(() => {
+      if (active) setInvalidLink(true);
+    }, 8_000);
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") setReady(true);
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+        window.clearTimeout(timeout);
+        setReady(true);
+        setInvalidLink(false);
+      }
     });
-    void supabase.auth.getSession().then(({ data }) => {
-      if (data.session) setReady(true);
+    const tokenHash = new URLSearchParams(window.location.search).get("token_hash");
+    const recovery = tokenHash
+      ? supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" })
+      : supabase.auth.getSession();
+    void recovery.then(({ data, error }) => {
+      if (!active) return;
+      if (error) {
+        window.clearTimeout(timeout);
+        setInvalidLink(true);
+        return;
+      }
+      if ("session" in data && data.session) {
+        window.clearTimeout(timeout);
+        setReady(true);
+        setInvalidLink(false);
+        if (tokenHash) window.history.replaceState({}, "", "/reset-password");
+      }
     });
-    return () => sub.subscription.unsubscribe();
+    return () => {
+      active = false;
+      window.clearTimeout(timeout);
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   async function onSubmit(e: FormEvent) {
@@ -66,6 +102,17 @@ function ResetPasswordPage() {
         <p className="mt-2 text-sm text-muted-foreground">
           {ready ? t("auth.resetPassword.subtitle") : t("auth.resetPassword.validating")}
         </p>
+
+        {invalidLink && !ready && (
+          <div className="mt-6 rounded-md border border-destructive/40 bg-destructive/10 p-4">
+            <p className="text-sm text-foreground">
+              Linkul de resetare a expirat sau a fost deja folosit. Cere un link nou din ecranul de autentificare.
+            </p>
+            <Button className="mt-4" onClick={() => navigate({ to: "/auth", replace: true })}>
+              Înapoi la autentificare
+            </Button>
+          </div>
+        )}
 
         {ready && (
           <form onSubmit={onSubmit} className="mt-8 space-y-4">

@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isCaptchaMandatory, isTurnstileMisconfiguredInProd } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
-import { oauthOrigin } from "@/lib/canonical-origin";
+import { CANONICAL_ORIGIN, oauthOrigin } from "@/lib/canonical-origin";
 import { classifySigningCertificate, describeInstallSource, readAndroidSignature, type AndroidSignatureInfo } from "@/lib/android-signature";
 import { isNativePlatformSync } from "@/lib/native-platform-sync";
 
@@ -695,7 +695,10 @@ function AuthPage() {
     setResetBusy(true);
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(emailParsed.data, {
-        redirectTo: `${oauthOrigin()}/reset-password`,
+        // Recuperarea parolei este un flux sensibil, cross-device. Nu folosim
+        // originea preview-ului/editorului: tokenul trebuie consumat direct pe
+        // domeniul public Suzeta, fără să expună infrastructura de dezvoltare.
+        redirectTo: `${CANONICAL_ORIGIN}/reset-password`,
         captchaToken: captchaToken ?? undefined,
       });
       if (error) {

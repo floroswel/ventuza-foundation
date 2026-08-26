@@ -671,14 +671,26 @@ jobs:
         env:
           GOOGLE_SERVICES_B64: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}
         run: |
+          set -euo pipefail
           if [ -z "$GOOGLE_SERVICES_B64" ]; then
-            echo "::error::GOOGLE_SERVICES_JSON_BASE64 lipsește — fără el notificările push native (aplicație închisă) NU funcționează. Adaugă secretul în GitHub → Settings → Secrets → Actions (environment production)."
-            exit 1
+            echo "GOOGLE_SERVICES_JSON_BASE64 nu este setat; folosesc configurația publică Android versionată."
+            cp android-overrides/google-services.json android/app/google-services.json
           else
-            echo "$GOOGLE_SERVICES_B64" | base64 -d > android/app/google-services.json
-            test -s android/app/google-services.json
-            echo "✓ google-services.json scris ($(stat -c%s android/app/google-services.json) bytes)"
+            printf '%s' "$GOOGLE_SERVICES_B64" | base64 -d > android/app/google-services.json
           fi
+          python3 - <<'PY'
+          import json
+          path = 'android/app/google-services.json'
+          with open(path, encoding='utf-8') as handle:
+              config = json.load(handle)
+          packages = [
+              item.get('client_info', {}).get('android_client_info', {}).get('package_name')
+              for item in config.get('client', [])
+          ]
+          if 'app.suzeta' not in packages:
+              raise SystemExit('google-services.json nu conține package app.suzeta')
+          print('✓ google-services.json valid pentru app.suzeta')
+          PY
 
       - name: Wire Firebase (google-services plugin + firebase-messaging)
         run: |
