@@ -1281,6 +1281,13 @@ jobs:
               *) echo "::notice::track '$TRACK' nu e permis automat — folosesc 'internal'."; TRACK="internal" ;;
             esac
           fi
+          # Google acceptă DOAR draft|completed|inProgress|halted. Orice altceva
+          # (ex. "pending", scris cândva în release/version.json) făcea uploadul
+          # să pice cu "Unknown error occurred.".
+          case "$STATUS" in
+            draft|completed|inProgress|halted) ;;
+            *) echo "::warning::status '$STATUS' invalid pentru Play — folosesc 'completed'."; STATUS="completed" ;;
+          esac
           # Gate automat: uploadul pornește doar dacă smoke test-ul pe emulator
           # a trecut (pasul anterior oprește jobul la eșec).
           echo "track=$TRACK" >> "$GITHUB_OUTPUT"
