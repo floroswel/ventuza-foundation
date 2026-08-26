@@ -264,6 +264,15 @@ function ResetPasswordPage() {
       }
 
       if (error) {
+        if (isSessionExpiredError(error)) {
+          logReset("session_expired_final");
+          failLink("expired");
+          setFormError(
+            "Sesiunea de resetare nu mai este validă. Cere un link nou de resetare și finalizează-l în aceeași fereastră.",
+          );
+          return;
+        }
+
         if (codeRequired && isInvalidEmailCode(error)) {
           const expired = isExpiredEmailCode(error);
           const attempts = codeAttempts + 1;
