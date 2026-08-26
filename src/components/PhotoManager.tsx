@@ -216,13 +216,27 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           /* non-blocking */
         }
 
+        // Coadă de moderare umană — poza NU devine publică acum.
+        const { error: revErr } = await supabase
+          .from("photo_reviews")
+          .insert({ user_id: userId, storage_path: path, status: "pending", ai_allowed: true });
+        if (revErr) {
+          await supabase.storage.from("profile-photos").remove([path]);
+          updateQueue(item.id, { status: "error", error: revErr.message });
+          continue;
+        }
+
         added.push(path);
         updateQueue(item.id, { status: "done" });
       }
 
       if (added.length) {
-        await savePhotos([...photos, ...added]);
-        toast.success(`${added.length} ${added.length > 1 ? "poze urcate" : "poză urcată"}.`);
+        await loadPending();
+        toast.success(
+          added.length > 1
+            ? `${added.length} poze trimise spre verificare. Devin publice după aprobare.`
+            : "Poză trimisă spre verificare. Devine publică după aprobare.",
+        );
       }
       const errored = initial.filter(
         (it) => it.status === "error" || queue.find((q) => q.id === it.id)?.status === "error",
@@ -230,6 +244,7 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
       if (errored > 0 && added.length === 0) {
         toast.error("Nicio poză nu a trecut de validare.");
       }
+
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
