@@ -239,7 +239,7 @@ function ResetPasswordPage() {
             <p className="text-sm text-foreground">{linkMessage}</p>
             <Button
               className="mt-4 w-full rounded-full"
-              onClick={() => navigate({ to: "/auth", search: { mode: "reset" }, replace: true })}
+              onClick={() => navigate({ to: "/auth", search: { mode: "login" }, replace: true })}
             >
               Cere un link nou
             </Button>
@@ -384,7 +384,7 @@ function ResetPasswordPage() {
                 type="button"
                 variant="outline"
                 className="h-12 w-full rounded-full"
-                onClick={() => navigate({ to: "/auth", search: { mode: "reset" }, replace: true })}
+                onClick={() => navigate({ to: "/auth", search: { mode: "login" }, replace: true })}
               >
                 Cere un link nou
               </Button>
