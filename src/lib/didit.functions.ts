@@ -32,11 +32,21 @@ export const startDiditVerification = createServerFn({ method: "POST" })
     });
     if (error) throw new Error(error.message);
 
+    // Audit: pornirea sesiunii de verificare.
+    await context.supabase
+      .rpc("record_account_flow_event", {
+        _kind: "didit",
+        _stage: "session_started",
+        _detail: { has_url: Boolean(session.url) } as never,
+      })
+      .then(() => undefined, () => undefined);
+
     return {
       sessionId: session.session_id,
       url: session.url,
     };
   });
+
 
 export const getMyDiditStatus = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
