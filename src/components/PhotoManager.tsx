@@ -62,10 +62,37 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [pending, setPending] = useState<{ id: string; storage_path: string; url: string | null }[]>(
+    [],
+  );
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
   const moderate = useServerFn(moderatePhoto);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  async function loadPending() {
+    const { data } = await supabase
+      .from("photo_reviews")
+      .select("id,storage_path")
+      .eq("user_id", userId)
+      .eq("status", "pending")
+      .order("created_at", { ascending: true });
+    const rows = (data ?? []) as { id: string; storage_path: string }[];
+    const out: { id: string; storage_path: string; url: string | null }[] = [];
+    for (const r of rows) {
+      const { data: s } = await supabase.storage
+        .from("profile-photos")
+        .createSignedUrl(r.storage_path, 3600);
+      out.push({ ...r, url: s?.signedUrl ?? null });
+    }
+    setPending(out);
+  }
+
+  useEffect(() => {
+    void loadPending();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
+
 
 
   useEffect(() => {
@@ -216,13 +243,27 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           /* non-blocking */
         }
 
+        // Coadă de moderare umană — poza NU devine publică acum.
+        const { error: revErr } = await supabase
+          .from("photo_reviews")
+          .insert({ user_id: userId, storage_path: path, status: "pending", ai_allowed: true });
+        if (revErr) {
+          await supabase.storage.from("profile-photos").remove([path]);
+          updateQueue(item.id, { status: "error", error: revErr.message });
+          continue;
+        }
+
         added.push(path);
         updateQueue(item.id, { status: "done" });
       }
 
       if (added.length) {
-        await savePhotos([...photos, ...added]);
-        toast.success(`${added.length} ${added.length > 1 ? "poze urcate" : "poză urcată"}.`);
+        await loadPending();
+        toast.success(
+          added.length > 1
+            ? `${added.length} poze trimise spre verificare. Devin publice după aprobare.`
+            : "Poză trimisă spre verificare. Devine publică după aprobare.",
+        );
       }
       const errored = initial.filter(
         (it) => it.status === "error" || queue.find((q) => q.id === it.id)?.status === "error",
@@ -230,6 +271,7 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
       if (errored > 0 && added.length === 0) {
         toast.error("Nicio poză nu a trecut de validare.");
       }
+
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -286,6 +328,37 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         JPG, PNG, WEBP sau HEIC · max {MAX_SIZE_MB} MB / poză · maxim {MAX_PHOTOS} poze
         {remaining > 0 && photos.length > 0 ? ` · mai poți adăuga ${remaining}` : ""}
       </p>
+
+      {pending.length > 0 && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+          <p className="mb-2 flex items-center gap-2 text-xs font-medium text-amber-500">
+            <ShieldCheck className="size-3.5" />
+            {pending.length} {pending.length === 1 ? "poză" : "poze"} în verificare · devin publice
+            doar după aprobarea echipei
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {pending.map((p) => (
+              <div
+                key={p.id}
+                className="relative aspect-[3/4] overflow-hidden rounded-lg border border-border/60"
+              >
+                {p.url ? (
+                  <img
+                    src={p.url}
+                    alt="Poză în verificare"
+                    className="size-full object-cover opacity-60"
+                  />
+                ) : null}
+                <span className="absolute inset-x-1 bottom-1 rounded bg-background/80 px-1 py-0.5 text-center text-[10px] text-amber-500">
+                  În verificare
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
 
       <div className="grid grid-cols-3 gap-2">
         {photos.map((p, i) => {

@@ -179,3 +179,9 @@ export const GdprOpsPanel = wrap(
 export const BreakGlassLogPanel = wrap(
   lazy(() => import("./Wave1Sections").then((m) => ({ default: m.BreakGlassLogPanel }))),
 );
+
+export const PhotoModerationPanel = wrap(
+  lazy(() =>
+    import("./PhotoModerationPanel").then((m) => ({ default: m.PhotoModerationPanel })),
+  ),
+);
