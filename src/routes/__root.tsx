@@ -288,13 +288,30 @@ function ScreenSecurityMount() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
-
+  const serverLanguage = (Route.useLoaderData() as { language?: string } | undefined)?.language;
 
   useEffect(() => {
-    // i18n e deja inițializat de import eager; aici doar setăm <html lang>.
-    void import("@/lib/i18n").then((mod) => {
-      document.documentElement.lang = mod.default.language || "ro";
+    // i18n e deja inițializat de import eager. Dacă utilizatorul nu a ales
+    // manual o limbă, aplicăm ce a cerut browserul prin `Accept-Language`.
+    void import("@/lib/i18n").then(async (mod) => {
+      const manual = (() => {
+        try {
+          return window.localStorage.getItem("vz-lang");
+        } catch {
+          return null;
+        }
+      })();
+      if (!manual && serverLanguage) {
+        const target = mod.normalizeLanguage(serverLanguage);
+        if (mod.default.resolvedLanguage !== target) {
+          await mod.default.changeLanguage(target);
+        }
+      }
+      document.documentElement.lang = mod.default.resolvedLanguage || mod.default.language || "ro";
+      // Corecturi de copy publicate din admin, fără build nou.
+      void import("@/lib/i18n/overrides").then(({ loadI18nOverrides }) => loadI18nOverrides());
     });
+
 
     // Privacy screen: ecranul din multitasking/recents este ascuns.
     void import("@capacitor-community/privacy-screen")
