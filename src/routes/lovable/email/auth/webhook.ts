@@ -32,12 +32,12 @@ const EMAIL_TEMPLATES: Record<string, React.ComponentType<any>> = {
 
 // Configuration
 const SITE_NAME = "Suzeta"
-// Domeniul VERIFICAT pentru trimitere. `notify.ventuza.app` nu este verificat
-// la provider (403 no_matching_sender → DLQ), deci folosim domeniul rădăcină
-// verificat `ventuza.app`.
-const SENDER_DOMAIN = "ventuza.app"
+// Domeniul verificat și configurat în infrastructura de email.
+// Expeditorul trebuie să aparțină exact acestui domeniu; altfel furnizorul
+// respinge mesajul cu `no_matching_sender`.
+const SENDER_DOMAIN = "notify.ventuza.app"
 const ROOT_DOMAIN = "suzeta.app"
-const FROM_DOMAIN = "ventuza.app"
+const FROM_DOMAIN = "notify.ventuza.app"
 
 function redactEmail(email: string | null | undefined): string {
   if (!email) return '***'
