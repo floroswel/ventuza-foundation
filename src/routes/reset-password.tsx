@@ -55,6 +55,16 @@ function needsEmailCode(error: unknown) {
   );
 }
 
+function isInvalidEmailCode(error: unknown) {
+  const msg = String((error as { message?: string })?.message ?? error ?? "").toLowerCase();
+  return (
+    (msg.includes("nonce") &&
+      (msg.includes("invalid") || msg.includes("expired") || msg.includes("incorrect"))) ||
+    msg.includes("reauthentication nonce is invalid") ||
+    msg.includes("reauthentication nonce has expired")
+  );
+}
+
 function ResetPasswordPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -192,7 +202,7 @@ function ResetPasswordPage() {
         codeRequired ? { password, nonce: code } : { password },
       );
       if (error) {
-        if (codeRequired) {
+        if (codeRequired && isInvalidEmailCode(error)) {
           const attempts = codeAttempts + 1;
           setCodeAttempts(attempts);
           setCode("");
@@ -208,6 +218,15 @@ function ResetPasswordPage() {
           });
           setFormError("Codul de pe email nu a fost acceptat. Verifică ultimul email primit.");
           codeInputRef.current?.focus();
+          return;
+        }
+        if (codeRequired) {
+          const mapped = translateAuthError(t, error);
+          setFormError(`${mapped.message} ${mapped.action}`);
+          if (mapped.code === "same_password" || mapped.code === "weak_password") {
+            setFieldErrors((current) => ({ ...current, password: mapped.message }));
+          }
+          toast.error(mapped.message, { description: mapped.action });
           return;
         }
         if (needsEmailCode(error)) {
