@@ -8,7 +8,12 @@
 import { useEffect, useState } from "react";
 import { Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { checkForAppUpdate, dismissUpdate, type RemoteVersion } from "@/lib/app-update";
+import {
+  checkForAppUpdate,
+  dismissUpdate,
+  UPDATE_CHECK_EVENT,
+  type RemoteVersion,
+} from "@/lib/app-update";
 import { PLAY_STORE_URL } from "@/lib/store-links";
 
 const RECHECK_MS = 6 * 60 * 60 * 1000; // 6h
@@ -18,11 +23,18 @@ export function UpdateAvailableBanner() {
 
   useEffect(() => {
     let alive = true;
-    const run = () => {
-      void checkForAppUpdate().then((u) => {
+    const run = (force = false) => {
+      void checkForAppUpdate({ force }).then((u) => {
         if (alive) setUpdate(u);
       });
     };
+    // Butonul „Verifică update” din Setări forțează o verificare imediată
+    // (ignoră dismiss + holdback-ul de rollout) ca să poți testa bannerul.
+    const onManual = (e: Event) => {
+      const force = (e as CustomEvent<{ force?: boolean }>).detail?.force !== false;
+      run(force);
+    };
+    window.addEventListener(UPDATE_CHECK_EVENT, onManual);
     // Mic delay ca să nu concureze cu boot-ul / prefetch-ul.
     const t = setTimeout(run, 4000);
     const i = setInterval(run, RECHECK_MS);
@@ -31,6 +43,7 @@ export function UpdateAvailableBanner() {
     };
     document.addEventListener("visibilitychange", onVisible);
     return () => {
+      window.removeEventListener(UPDATE_CHECK_EVENT, onManual);
       alive = false;
       clearTimeout(t);
       clearInterval(i);
