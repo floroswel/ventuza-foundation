@@ -5,9 +5,9 @@
  * din acest modul.
  */
 // Sincronizat automat cu release/version.json de scripts/bump-android-version.mjs.
-export const APP_VERSION = "1.0.38";
+export const APP_VERSION = "1.0.39";
 // versionCode-ul Android al build-ului curent (întreg strict crescător).
-export const APP_VERSION_CODE = 48;
+export const APP_VERSION_CODE = 49;
 
 export function detectPlatform(): "web" | "ios" | "android" {
   if (typeof navigator === "undefined") return "web";

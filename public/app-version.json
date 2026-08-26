@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.38",
-  "versionCode": 48,
+  "versionName": "1.0.39",
+  "versionCode": 49,
   "notes": "Resetarea parolei recunoaște corect codul primit pe email și afișează mesaje clare pentru cod invalid sau expirat. Am îmbunătățit stabilitatea și verificările buildului Android.",
-  "updatedAt": "2026-08-26T12:00:10.036Z"
+  "updatedAt": "2026-08-26T17:34:26.048Z"
 }
