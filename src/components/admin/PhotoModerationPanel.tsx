@@ -1,16 +1,27 @@
 /**
- * Coadă de moderare pentru pozele de profil.
- * Poza devine publică DOAR după aprobare aici (vezi photo-moderation.functions.ts).
+ * Coadă de moderare pentru pozele din aplicație (profil public + album privat).
+ * Poza de profil devine publică DOAR după aprobare aici.
+ * Politica AI: minori / arme / sânge = interzise ORIUNDE; nuditate = doar album privat.
  * Pattern obligatoriu: loading / error / empty legitim.
  */
 import { useCallback, useEffect, useState } from "react";
-import { CheckCircle2, ImageOff, Loader2, RefreshCw, Send, XCircle } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  ImageOff,
+  Loader2,
+  RefreshCw,
+  ScanLine,
+  Send,
+  XCircle,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import {
   adminListPhotoReviews,
   adminReviewPhotos,
   adminInviteVerification,
+  adminScanPhotos,
 } from "@/lib/photo-moderation.functions";
 import { GlassCard, SectionTitle } from "@/components/admin/ui/primitives";
 import { AdminErrorBanner } from "@/components/admin/AdminErrorBanner";
@@ -21,29 +32,50 @@ type Row = {
   user_id: string;
   storage_path: string;
   status: string;
+  surface: "profile" | "album";
+  source: string;
+  severity: "normal" | "high" | "critical";
   ai_reason: string | null;
+  ai_labels: Record<string, unknown> | null;
   created_at: string;
   url: string | null;
-  profile: { display_name: string | null; age_status: string | null; verified: boolean } | null;
+  profile: {
+    display_name: string | null;
+    username?: string | null;
+    age_status: string | null;
+    verified: boolean;
+  } | null;
 };
+
+const LABELS: Array<[string, string]> = [
+  ["minor", "MINOR"],
+  ["weapon", "ARMĂ"],
+  ["blood", "SÂNGE"],
+  ["nudity", "NUD"],
+  ["sexual_act", "SEXUAL"],
+];
 
 export function PhotoModerationPanel() {
   const list = useServerFn(adminListPhotoReviews);
   const review = useServerFn(adminReviewPhotos);
   const invite = useServerFn(adminInviteVerification);
+  const scan = useServerFn(adminScanPhotos);
 
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [scanInfo, setScanInfo] = useState<string | null>(null);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [status, setStatus] = useState<"pending" | "approved" | "rejected">("pending");
+  const [surface, setSurface] = useState<"all" | "profile" | "album">("all");
 
   const load = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const res: any = await list({ data: { status, limit: 60 } });
+      const res: any = await list({ data: { status, surface, limit: 60 } });
       setRows((res?.rows ?? []) as Row[]);
       setSelected({});
     } catch (e) {
@@ -51,7 +83,7 @@ export function PhotoModerationPanel() {
     } finally {
       setLoading(false);
     }
-  }, [list, status]);
+  }, [list, status, surface]);
 
   useEffect(() => {
     void load();
@@ -64,7 +96,7 @@ export function PhotoModerationPanel() {
     if (!use.length) return;
     let reason: string | undefined;
     if (decision === "reject") {
-      const r = window.prompt("Motiv respingere (vizibil userului):", "Conținut nud / sexual");
+      const r = window.prompt("Motiv respingere (vizibil userului):", "Conținut interzis");
       if (r === null) return;
       reason = r;
     }
@@ -77,6 +109,24 @@ export function PhotoModerationPanel() {
       toast.error((e as Error).message);
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function runScan(scope: "both" | "profile" | "album") {
+    setScanning(true);
+    setScanInfo(null);
+    try {
+      const res: any = await scan({ data: { scope, limit: 40 } });
+      setScanInfo(
+        `Scanate ${res.scanned} · semnalate ${res.flagged} · critice ${res.critical} · rămase ${res.remaining}`,
+      );
+      if (res.critical > 0) toast.error(`${res.critical} poze critice (posibil minor) scoase public!`);
+      else toast.success(`Scanare terminată: ${res.flagged} semnalate.`);
+      await load();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setScanning(false);
     }
   }
 
@@ -121,6 +171,46 @@ export function PhotoModerationPanel() {
       {error && <AdminErrorBanner error={error} onRetry={() => void load()} />}
 
       <GlassCard className="flex flex-wrap items-center gap-2 p-3">
+        <span className="text-xs font-medium text-muted-foreground">Suprafață:</span>
+        {(["all", "profile", "album"] as const).map((s) => (
+          <Button
+            key={s}
+            size="sm"
+            variant={surface === s ? "default" : "outline"}
+            onClick={() => setSurface(s)}
+          >
+            {s === "all" ? "Toate" : s === "profile" ? "Profil public" : "Album privat"}
+          </Button>
+        ))}
+        <div className="mx-2 h-5 w-px bg-border" />
+        <Button size="sm" disabled={scanning} onClick={() => void runScan("both")}>
+          {scanning ? (
+            <Loader2 className="mr-1 size-3.5 animate-spin" />
+          ) : (
+            <ScanLine className="mr-1 size-3.5" />
+          )}
+          Scanează pozele existente
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={scanning}
+          onClick={() => void runScan("profile")}
+        >
+          Doar profil
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          disabled={scanning}
+          onClick={() => void runScan("album")}
+        >
+          Doar albume
+        </Button>
+        {scanInfo && <span className="text-xs text-muted-foreground">{scanInfo}</span>}
+      </GlassCard>
+
+      <GlassCard className="flex flex-wrap items-center gap-2 p-3">
         <span className="text-xs text-muted-foreground">
           Selectate: {ids.length} / {rows.length}
         </span>
@@ -129,9 +219,7 @@ export function PhotoModerationPanel() {
           variant="outline"
           onClick={() =>
             setSelected(
-              ids.length === rows.length
-                ? {}
-                : Object.fromEntries(rows.map((r) => [r.id, true])),
+              ids.length === rows.length ? {} : Object.fromEntries(rows.map((r) => [r.id, true])),
             )
           }
         >
@@ -179,52 +267,92 @@ export function PhotoModerationPanel() {
         </GlassCard>
       ) : (
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-5">
-          {rows.map((r) => (
-            <GlassCard key={r.id} className="overflow-hidden p-0">
-              <button
-                type="button"
-                onClick={() => setSelected((s) => ({ ...s, [r.id]: !s[r.id] }))}
-                className={`relative block aspect-[3/4] w-full ${
-                  selected[r.id] ? "ring-2 ring-primary" : ""
+          {rows.map((r) => {
+            const labels = (r.ai_labels ?? {}) as Record<string, boolean>;
+            const hits = LABELS.filter(([k]) => labels[k]).map(([, l]) => l);
+            return (
+              <GlassCard
+                key={r.id}
+                className={`overflow-hidden p-0 ${
+                  r.severity === "critical"
+                    ? "ring-2 ring-destructive"
+                    : r.severity === "high"
+                      ? "ring-1 ring-amber-500"
+                      : ""
                 }`}
               >
-                {r.url ? (
-                  <img src={r.url} alt="Poză profil în verificare" className="size-full object-cover" />
-                ) : (
-                  <div className="grid size-full place-items-center text-xs text-muted-foreground">
-                    fără preview
-                  </div>
-                )}
-              </button>
-              <div className="space-y-1 p-2 text-[11px]">
-                <p className="truncate font-medium">{r.profile?.display_name ?? "—"}</p>
-                <p className="truncate text-muted-foreground">
-                  {r.profile?.age_status ?? "?"} · {new Date(r.created_at).toLocaleDateString("ro-RO")}
-                </p>
-                {status === "pending" && (
-                  <div className="flex gap-1 pt-1">
-                    <Button
-                      size="sm"
-                      className="h-7 flex-1 text-[11px]"
-                      disabled={busy}
-                      onClick={() => void decide("approve", [r.id])}
-                    >
-                      Aprobă
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="h-7 flex-1 text-[11px]"
-                      disabled={busy}
-                      onClick={() => void decide("reject", [r.id])}
-                    >
-                      Respinge
-                    </Button>
-                  </div>
-                )}
-              </div>
-            </GlassCard>
-          ))}
+                <button
+                  type="button"
+                  onClick={() => setSelected((s) => ({ ...s, [r.id]: !s[r.id] }))}
+                  className={`relative block aspect-[3/4] w-full ${
+                    selected[r.id] ? "ring-2 ring-primary" : ""
+                  }`}
+                >
+                  {r.url ? (
+                    <img
+                      src={r.url}
+                      alt="Poză în verificare"
+                      className={`size-full object-cover ${
+                        r.severity === "critical" ? "blur-md" : ""
+                      }`}
+                    />
+                  ) : (
+                    <div className="grid size-full place-items-center text-xs text-muted-foreground">
+                      fără preview
+                    </div>
+                  )}
+                  <span className="absolute left-1 top-1 rounded bg-black/70 px-1 text-[10px] text-white">
+                    {r.surface === "album" ? "album privat" : "profil"} · {r.source}
+                  </span>
+                  {r.severity === "critical" && (
+                    <span className="absolute inset-x-1 bottom-1 flex items-center justify-center gap-1 rounded bg-destructive px-1 py-0.5 text-[10px] font-bold text-destructive-foreground">
+                      <AlertTriangle className="size-3" /> CRITIC
+                    </span>
+                  )}
+                </button>
+                <div className="space-y-1 p-2 text-[11px]">
+                  <a
+                    href={`/admin/users/${r.user_id}`}
+                    className="block truncate font-medium underline-offset-2 hover:underline"
+                  >
+                    {r.profile?.display_name ?? "—"}
+                    {r.profile?.username ? ` @${r.profile.username}` : ""}
+                  </a>
+                  <p className="truncate text-muted-foreground">
+                    {r.profile?.age_status ?? "?"} ·{" "}
+                    {new Date(r.created_at).toLocaleDateString("ro-RO")}
+                  </p>
+                  {hits.length > 0 && (
+                    <p className="font-semibold text-destructive">{hits.join(" · ")}</p>
+                  )}
+                  {r.ai_reason && (
+                    <p className="line-clamp-2 text-muted-foreground">{r.ai_reason}</p>
+                  )}
+                  {status === "pending" && (
+                    <div className="flex gap-1 pt-1">
+                      <Button
+                        size="sm"
+                        className="h-7 flex-1 text-[11px]"
+                        disabled={busy}
+                        onClick={() => void decide("approve", [r.id])}
+                      >
+                        Aprobă
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="h-7 flex-1 text-[11px]"
+                        disabled={busy}
+                        onClick={() => void decide("reject", [r.id])}
+                      >
+                        Respinge
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </GlassCard>
+            );
+          })}
         </div>
       )}
     </div>
