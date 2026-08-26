@@ -196,6 +196,16 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
     };
   }
 
+  if (msg.includes("aal2 session is required") || msg.includes("mfa verification required")) {
+    return {
+      code: "session_expired",
+      i18nKey: "authErrors.sessionExpired",
+      actionKey: "authErrors.actions.sessionExpired",
+      message: "Este necesară confirmarea 2FA.",
+      action: "Introdu codul de 6 cifre din aplicația ta de autentificare.",
+    };
+  }
+
   // ALREADY REGISTERED
   if (
     msg.includes("already registered") ||
