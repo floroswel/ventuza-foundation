@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_flow_events: {
+        Row: {
+          created_at: string
+          detail: Json
+          id: string
+          kind: string
+          stage: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: Json
+          id?: string
+          kind: string
+          stage: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: Json
+          id?: string
+          kind?: string
+          stage?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       ad_campaigns: {
         Row: {
           advertiser_id: string
@@ -6726,6 +6753,15 @@ export type Database = {
       }
       recompute_risk_score: { Args: { _uid: string }; Returns: number }
       recompute_user_risk: { Args: { _user_id: string }; Returns: Json }
+      record_account_flow_event: {
+        Args: {
+          _detail?: Json
+          _kind: string
+          _stage: string
+          _user_id?: string
+        }
+        Returns: string
+      }
       record_consent: {
         Args: {
           _accepted?: boolean
