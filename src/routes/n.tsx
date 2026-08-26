@@ -561,7 +561,10 @@ function Onboarding() {
         </div>
       </header>
 
+      <OnboardingAccountNotice />
+
       <section className="flex flex-1 flex-col px-6 py-10">
+
         <StepView data={data} setData={setData} step={current} user={user?.id} birthdateLocked={birthdateLocked} />
       </section>
 
