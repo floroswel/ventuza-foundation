@@ -118,6 +118,7 @@ import {
   AlertRulesPanel,
   SupportMacrosPanel,
   VerificationQueuePanel,
+  PhotoModerationPanel,
   AnalyticsPanel,
   AuditLogPanel,
   AlertsPanel,
@@ -201,6 +202,7 @@ type Section =
   | "alertrules"
   | "macros"
   | "verifqueue"
+  | "photoqueue"
   | "crashlog"
   | "perfmetrics"
   | "installfunnel"
@@ -297,6 +299,7 @@ function AdminDashboard() {
       "alertrules",
       "macros",
       "verifqueue",
+      "photoqueue",
       "crashlog",
       "perfmetrics",
       "installfunnel",
@@ -514,6 +517,13 @@ function AdminDashboard() {
     { id: "csam", label: "CSAM", icon: ShieldAlert, group: "Trust & Safety", adminOnly: true },
     { id: "dsa", label: "DSA", icon: FileWarning, group: "Trust & Safety" },
     {
+      id: "photoqueue",
+      label: "Poze de verificat",
+      icon: BadgeCheck,
+      group: "Trust & Safety",
+      hint: "Poze de profil în așteptare · devin publice după aprobare",
+    },
+    {
       id: "verifqueue",
       label: "Verificare identitate",
       icon: BadgeCheck,
@@ -647,6 +657,7 @@ function AdminDashboard() {
       {section === "csam" && isAdmin && <CsamPanel />}
       {section === "dsa" && <DsaPanel />}
       {section === "verifqueue" && <VerificationQueuePanel />}
+      {section === "photoqueue" && <PhotoModerationPanel />}
       {section === "gdpr" && isAdmin && <GdprOpsPanel />}
       {section === "breakglass" && isAdmin && <BreakGlassLogPanel />}
       {section === "breach" && isAdmin && <BreachPanel />}
