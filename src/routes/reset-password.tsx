@@ -274,6 +274,7 @@ function ResetPasswordPage() {
         }
         if (needsEmailCode(error)) {
           setCodeRequired(true);
+          logReset("code_required");
           const sent = await sendEmailCode(true);
           setFormError(
             sent
