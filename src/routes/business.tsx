@@ -449,10 +449,16 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
   );
 }
 
-/** Prețuri reale, citite din backend (app_settings.billing_settings). */
+/**
+ * Prețurile NU se afișează public cât timp programul de parteneriat este
+ * „în curând”. Logica de fetch rămâne intactă pentru momentul lansării.
+ */
+const B2B_PRICING_PUBLIC = false;
+
 function PricingTiers() {
   const [rows, setRows] = useState<PartnerPricingRow[] | null>(null);
   const [err, setErr] = useState<string | null>(null);
+
 
   useEffect(() => {
     let cancelled = false;
