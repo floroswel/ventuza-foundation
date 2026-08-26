@@ -1245,12 +1245,29 @@ jobs:
           STATUS="$(python3 -c 'import json;print(json.load(open("release/version.json")).get("status","completed"))')"
           IN_TRACK="${{ github.event.inputs.track }}"
           IN_STATUS="${{ github.event.inputs.release_status }}"
-          echo "track=${IN_TRACK:-$TRACK}" >> "$GITHUB_OUTPUT"
-          echo "status=${IN_STATUS:-$STATUS}" >> "$GITHUB_OUTPUT"
-          echo "Publicare pe track=${IN_TRACK:-$TRACK}, status=${IN_STATUS:-$STATUS}"
+          TRACK="${IN_TRACK:-$TRACK}"
+          STATUS="${IN_STATUS:-$STATUS}"
+          # Publicarea AUTOMATĂ (push în main) nu are voie să atingă
+          # `production`: fiecare versiune intră întâi la testeri (internal /
+          # alpha), iar promovarea în producție se face etapizat, manual, prin
+          # workflow-ul `android-promote.yml` (5% → 25% → 100%).
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            case "$TRACK" in
+              internal|alpha|beta) ;;
+              *) echo "::notice::track '$TRACK' nu e permis automat — folosesc 'internal'."; TRACK="internal" ;;
+            esac
+          fi
+          # Gate automat: uploadul pornește doar dacă smoke test-ul pe emulator
+          # a trecut (pasul anterior oprește jobul la eșec).
+          echo "track=$TRACK" >> "$GITHUB_OUTPUT"
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          echo "Publicare pe track=$TRACK, status=$STATUS"
 
+      # Push în main → urcă automat pe track-ul de test (internal/alpha), DUPĂ
+      # smoke test. workflow_dispatch → track-ul ales manual, dacă
+      # skip_play_upload=false.
       - name: Publish în Google Play
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.skip_play_upload != 'true' && github.ref == 'refs/heads/main' }}
+        if: ${{ github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_play_upload != 'true') }}
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}

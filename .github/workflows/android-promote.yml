@@ -1,0 +1,149 @@
+name: Android Promote (internal → production, rollout etapizat)
+
+# Promovează un versionCode deja urcat pe track-ul de test (internal/alpha)
+# către production, cu rollout etapizat: 5% → 25% → 100%.
+#
+# De ce separat de android-release.yml: build-ul + smoke test-ul rulează acolo
+# și publică DOAR pentru testeri. Producția rămâne o decizie explicită, luată
+# după ce versiunea a stat în internal. Nimic nu ajunge la 100% dintr-un pas.
+#
+# Actualizează și `rolloutPercent` din release/version.json + public/app-version.json,
+# ca bannerul din aplicație („Actualizare disponibilă”) să respecte exact
+# aceeași etapă ca rollout-ul din Play.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_code:
+        description: "versionCode de promovat (gol = din release/version.json)"
+        required: false
+        default: ""
+        type: string
+      from_track:
+        description: "Track sursă"
+        required: true
+        default: "internal"
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+      percent:
+        description: "Etapa de rollout în production"
+        required: true
+        default: "5"
+        type: choice
+        options:
+          - "5"
+          - "25"
+          - "50"
+          - "100"
+
+permissions:
+  contents: write
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install --quiet google-auth requests
+
+      - name: Promovează în production cu rollout etapizat
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          IN_VERSION_CODE: ${{ github.event.inputs.version_code }}
+          FROM_TRACK: ${{ github.event.inputs.from_track }}
+          PERCENT: ${{ github.event.inputs.percent }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, os, sys
+          import requests
+          from google.oauth2 import service_account
+          from google.auth.transport.requests import Request
+
+          PKG = "app.suzeta"
+          raw = os.environ.get("PLAY_SERVICE_ACCOUNT_JSON")
+          if not raw:
+              sys.exit("PLAY_SERVICE_ACCOUNT_JSON lipsește din secretele repo-ului.")
+
+          local = json.load(open("release/version.json"))
+          code = int(os.environ.get("IN_VERSION_CODE") or local["versionCode"])
+          from_track = os.environ["FROM_TRACK"]
+          percent = int(os.environ["PERCENT"])
+
+          creds = service_account.Credentials.from_service_account_info(
+              json.loads(raw), scopes=["https://www.googleapis.com/auth/androidpublisher"]
+          )
+          creds.refresh(Request())
+          h = {"Authorization": f"Bearer {creds.token}", "Content-Type": "application/json"}
+          base = f"https://androidpublisher.googleapis.com/androidpublisher/v3/applications/{PKG}"
+
+          edit = requests.post(f"{base}/edits", headers=h).json()
+          eid = edit["id"]
+
+          # 1) confirmă că versionCode-ul chiar există pe track-ul sursă
+          src = requests.get(f"{base}/edits/{eid}/tracks/{from_track}", headers=h).json()
+          found = any(
+              code in [int(c) for c in r.get("versionCodes", [])]
+              for r in src.get("releases", [])
+          )
+          if not found:
+              sys.exit(f"versionCode {code} nu se află pe track-ul '{from_track}'. Rulează întâi build-ul.")
+
+          # 2) scrie release-ul în production cu userFraction (rollout etapizat)
+          notes = (local.get("notes") or "").strip()[:490]
+          release = {
+              "versionCodes": [str(code)],
+              "status": "completed" if percent >= 100 else "inProgress",
+          }
+          if percent < 100:
+              release["userFraction"] = percent / 100.0
+          if notes:
+              release["releaseNotes"] = [{"language": "ro-RO", "text": notes}]
+
+          r = requests.put(
+              f"{base}/edits/{eid}/tracks/production",
+              headers=h,
+              data=json.dumps({"track": "production", "releases": [release]}),
+          )
+          if r.status_code >= 300:
+              sys.exit(f"Play API a refuzat update-ul de track: {r.status_code} {r.text}")
+
+          c = requests.post(f"{base}/edits/{eid}:commit", headers=h)
+          if c.status_code >= 300:
+              sys.exit(f"Commit eșuat: {c.status_code} {c.text}")
+
+          print(f"✓ build {code} promovat în production la {percent}% (sursă: {from_track})")
+
+          # 3) sincronizează rollout-ul cu bannerul din aplicație
+          local["rolloutPercent"] = percent
+          local["track"] = "production"
+          json.dump(local, open("release/version.json", "w"), indent=2, ensure_ascii=False)
+          open("release/version.json", "a").write("\n")
+          PY
+
+      - name: Regenerează public/app-version.json
+        run: node scripts/write-version-asset.mjs
+
+      - name: Commit rollout state
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet; then
+            echo "Nimic de comis."
+            exit 0
+          fi
+          git add release/version.json public/app-version.json
+          git commit -m "chore(release): rollout production ${{ github.event.inputs.percent }}% [skip ci]"
+          git push origin HEAD:main
