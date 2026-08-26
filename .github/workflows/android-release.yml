@@ -1119,15 +1119,22 @@ jobs:
         run: |
           set -euo pipefail
           SRC=android/app/build/outputs/bundle/release/app-release.aab
-          DST=android/app/build/outputs/bundle/release/suzeta-diagnostic-build-${{ steps.version.outputs.code }}.aab
+          DST=android/app/build/outputs/bundle/release/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production.aab
           cp "$SRC" "$DST"
+          jarsigner -verify -verbose -certs "$DST" > /tmp/aab-signature.txt
+          grep -q "jar verified" /tmp/aab-signature.txt || {
+            echo "::error::Semnătura AAB nu a putut fi verificată."
+            tail -80 /tmp/aab-signature.txt
+            exit 1
+          }
+          echo "✓ AAB semnat și verificat cu upload key-ul configurat pentru production."
           ls -la "$DST"
 
       - name: Upload artefact AAB (pentru inspecție)
         uses: actions/upload-artifact@v4
         with:
-          name: suzeta-diagnostic-build-${{ steps.version.outputs.code }}
-          path: android/app/build/outputs/bundle/release/suzeta-diagnostic-build-${{ steps.version.outputs.code }}.aab
+          name: suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production
+          path: android/app/build/outputs/bundle/release/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production.aab
           if-no-files-found: error
           retention-days: 30
 
