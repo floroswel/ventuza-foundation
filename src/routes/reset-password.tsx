@@ -123,13 +123,15 @@ function ResetPasswordPage() {
         setInvalidLink(true);
       }
     }, 8_000);
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user?.email) setUserEmail(session.user.email);
       if (event === "PASSWORD_RECOVERY") {
         window.clearTimeout(timeout);
         setReady(true);
         setInvalidLink(false);
       }
     });
+
     const tokenHash = new URLSearchParams(window.location.search).get("token_hash");
     const recovery = tokenHash
       ? supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" })
