@@ -1,7 +1,6 @@
 {
-  "versionName": "1.0.50",
-  "versionCode": 60,
+  "versionName": "1.0.51",
+  "versionCode": 61,
   "notes": "Rămâi conectat între deschideri, notificări cu aplicația închisă, hub nou Potriviri (vizite, tap-uri, favoriți), avion verde pentru cei plecați din oraș și opțiunea Persoană discretă.",
-  "rolloutPercent": 100,
-  "updatedAt": "2026-08-26T21:51:24.284Z"
+  "updatedAt": "2026-08-26T22:12:30.171Z"
 }
