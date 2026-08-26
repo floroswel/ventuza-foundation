@@ -18,6 +18,8 @@ import { isNativePlatformSync } from "@/lib/native-platform-sync";
 import { Button } from "@/components/ui/button";
 import { getMyDiditStatus, startDiditVerification, syncMyDiditStatus } from "@/lib/didit.functions";
 import { CONSENT_REGISTRY } from "@/lib/consent-registry";
+import { getNativeDiditStatus, startNativeDiditVerification, syncNativeDiditStatus } from "@/lib/native-didit-client";
+import type { DiditReason, DiditStatusResponse } from "@/lib/didit-types";
 
 
 
@@ -37,34 +39,6 @@ export const Route = createFileRoute("/verify")({
 });
 
 type AgeStatus = "unverified" | "pending" | "verified" | "failed" | "expired" | null;
-
-type DiditReason =
-  | "verified"
-  | "no_session"
-  | "awaiting_user"
-  | "no_webhook_event"
-  | "in_review"
-  | "pending_provider"
-  | "failed"
-  | "expired"
-  | "declined"
-  | "unknown";
-
-type DiditStatus = {
-  profile: { age_status: string | null; age_verified_at: string | null; age_provider: string | null } | null;
-  lastSession: {
-    session_id: string;
-    status: string;
-    result: string | null;
-    estimated_age: number | null;
-    session_url: string | null;
-    created_at: string;
-    resolved_at: string | null;
-    webhook_received: boolean;
-  } | null;
-  reasonCode: DiditReason;
-  lastUpdatedAt: string | null;
-};
 
 const REASON_COPY: Record<DiditReason, string> = {
   verified: "Cont verificat.",
@@ -101,7 +75,7 @@ function VerifyPage() {
   const startSession = useServerFn(startDiditVerification);
   const syncStatus = useServerFn(syncMyDiditStatus);
 
-  const [status, setStatus] = useState<DiditStatus | null>(null);
+  const [status, setStatus] = useState<DiditStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
   const [ageConsent, setAgeConsent] = useState(false);
@@ -115,14 +89,18 @@ function VerifyPage() {
 
   const refresh = useCallback(async (opts?: { force?: boolean }) => {
     try {
+      const native = isNativePlatformSync();
       if (opts?.force) {
         try {
-          await syncStatus();
+          if (native) await syncNativeDiditStatus();
+          else await syncStatus();
         } catch {
           // ignoră — statusul local rămâne disponibil și următorul poll mai încearcă
         }
       }
-      const res = (await fetchStatus()) as DiditStatus;
+      const res = native
+        ? await getNativeDiditStatus()
+        : ((await fetchStatus()) as DiditStatusResponse);
       setStatus(res);
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Nu am putut citi statusul.");
@@ -183,24 +161,9 @@ function VerifyPage() {
         ? "https://suzeta.app/verify/status"
         : `${window.location.origin}/verify/status`;
 
-      let res: { sessionId?: string; url?: string } | null = null;
-      if (native) {
-        const { data: sessionData } = await supabase.auth.getSession();
-        const token = sessionData.session?.access_token ?? "";
-        const r = await fetch("https://suzeta.app/api/public/didit-start", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ returnUrl }),
-        });
-        const json = (await r.json().catch(() => ({}))) as { url?: string; sessionId?: string; error?: string };
-        if (!r.ok) throw new Error(json.error || "Nu am putut porni verificarea.");
-        res = json;
-      } else {
-        res = (await startSession({ data: { returnUrl } })) as { sessionId: string; url: string };
-      }
+      const res = native
+        ? await startNativeDiditVerification(returnUrl)
+        : ((await startSession({ data: { returnUrl } })) as { sessionId: string; url: string });
 
       if (!res?.url) throw new Error("Didit nu a returnat un URL de verificare.");
       const targetUrl = res.url;

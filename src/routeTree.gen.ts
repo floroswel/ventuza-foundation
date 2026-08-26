@@ -93,6 +93,8 @@ import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[
 import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
 import { Route as ApiPublicDiditStartRouteImport } from './routes/api/public/didit-start'
+import { Route as ApiPublicDiditStatusRouteImport } from './routes/api/public/didit-status'
+import { Route as ApiPublicDiditSyncRouteImport } from './routes/api/public/didit-sync'
 import { Route as ApiPublicDiditWebhookRouteImport } from './routes/api/public/didit-webhook'
 import { Route as ApiPublicGeoCountryRouteImport } from './routes/api/public/geo-country'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
@@ -527,6 +529,16 @@ const ApiPublicDiditStartRoute = ApiPublicDiditStartRouteImport.update({
   path: '/api/public/didit-start',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDiditStatusRoute = ApiPublicDiditStatusRouteImport.update({
+  id: '/api/public/didit-status',
+  path: '/api/public/didit-status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDiditSyncRoute = ApiPublicDiditSyncRouteImport.update({
+  id: '/api/public/didit-sync',
+  path: '/api/public/didit-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicDiditWebhookRoute = ApiPublicDiditWebhookRouteImport.update({
   id: '/api/public/didit-webhook',
   path: '/api/public/didit-webhook',
@@ -661,6 +673,8 @@ export interface FileRoutesByFullPath {
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-start': typeof ApiPublicDiditStartRoute
+  '/api/public/didit-status': typeof ApiPublicDiditStatusRoute
+  '/api/public/didit-sync': typeof ApiPublicDiditSyncRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/geo-country': typeof ApiPublicGeoCountryRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -755,6 +769,8 @@ export interface FileRoutesByTo {
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-start': typeof ApiPublicDiditStartRoute
+  '/api/public/didit-status': typeof ApiPublicDiditStatusRoute
+  '/api/public/didit-sync': typeof ApiPublicDiditSyncRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/geo-country': typeof ApiPublicGeoCountryRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -851,6 +867,8 @@ export interface FileRoutesById {
   '/admin/users/$id': typeof AdminUsersIdRouteWithChildren
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-start': typeof ApiPublicDiditStartRoute
+  '/api/public/didit-status': typeof ApiPublicDiditStatusRoute
+  '/api/public/didit-sync': typeof ApiPublicDiditSyncRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
   '/api/public/geo-country': typeof ApiPublicGeoCountryRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
@@ -948,6 +966,8 @@ export interface FileRouteTypes {
     | '/admin/users/$id'
     | '/api/public/age-webhook'
     | '/api/public/didit-start'
+    | '/api/public/didit-status'
+    | '/api/public/didit-sync'
     | '/api/public/didit-webhook'
     | '/api/public/geo-country'
     | '/api/public/google-play-rtdn'
@@ -1042,6 +1062,8 @@ export interface FileRouteTypes {
     | '/admin/users/$id'
     | '/api/public/age-webhook'
     | '/api/public/didit-start'
+    | '/api/public/didit-status'
+    | '/api/public/didit-sync'
     | '/api/public/didit-webhook'
     | '/api/public/geo-country'
     | '/api/public/google-play-rtdn'
@@ -1137,6 +1159,8 @@ export interface FileRouteTypes {
     | '/admin/users/$id'
     | '/api/public/age-webhook'
     | '/api/public/didit-start'
+    | '/api/public/didit-status'
+    | '/api/public/didit-sync'
     | '/api/public/didit-webhook'
     | '/api/public/geo-country'
     | '/api/public/google-play-rtdn'
@@ -1221,6 +1245,8 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicDiditStartRoute: typeof ApiPublicDiditStartRoute
+  ApiPublicDiditStatusRoute: typeof ApiPublicDiditStatusRoute
+  ApiPublicDiditSyncRoute: typeof ApiPublicDiditSyncRoute
   ApiPublicDiditWebhookRoute: typeof ApiPublicDiditWebhookRoute
   ApiPublicGeoCountryRoute: typeof ApiPublicGeoCountryRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
@@ -1821,6 +1847,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDiditStartRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/didit-status': {
+      id: '/api/public/didit-status'
+      path: '/api/public/didit-status'
+      fullPath: '/api/public/didit-status'
+      preLoaderRoute: typeof ApiPublicDiditStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/didit-sync': {
+      id: '/api/public/didit-sync'
+      path: '/api/public/didit-sync'
+      fullPath: '/api/public/didit-sync'
+      preLoaderRoute: typeof ApiPublicDiditSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/didit-webhook': {
       id: '/api/public/didit-webhook'
       path: '/api/public/didit-webhook'
@@ -2071,6 +2111,8 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicDiditStartRoute: ApiPublicDiditStartRoute,
+  ApiPublicDiditStatusRoute: ApiPublicDiditStatusRoute,
+  ApiPublicDiditSyncRoute: ApiPublicDiditSyncRoute,
   ApiPublicDiditWebhookRoute: ApiPublicDiditWebhookRoute,
   ApiPublicGeoCountryRoute: ApiPublicGeoCountryRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,

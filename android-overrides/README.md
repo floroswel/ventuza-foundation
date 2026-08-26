@@ -9,7 +9,7 @@ AUTOMAT de workflow-ul `.github/workflows/android-release.yml` după `cap sync`.
 | Fișier | Destinație | De ce |
 | ------ | ---------- | ----- |
 | `variables.gradle` | `android/variables.gradle` (overwrite) | Forțează `compileSdk=36`, `targetSdk=36`, `minSdk=24` (cerut de pluginul de cameră). Google Play cere targetSdk ≥ 36 (Android 16) pentru încărcări noi. |
-| `AndroidManifest.additions.xml` | Fragmente injectate în `android/app/src/main/AndroidManifest.xml` | Scoate `com.google.android.gms.permission.AD_ID` (nu tracking) și `ACCESS_BACKGROUND_LOCATION` (geofencing dormant). |
+| `AndroidManifest.additions.xml` | Fragmente injectate în `android/app/src/main/AndroidManifest.xml` | Scoate `com.google.android.gms.permission.AD_ID` (nu tracking), `ACCESS_BACKGROUND_LOCATION` (geofencing dormant) și documentează App Links `suzeta.app` / `www.suzeta.app` pentru confirmare email, resetare parolă și Didit. |
 | `res/mipmap-anydpi-v26/ic_launcher.xml` | `android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml` | Icon adaptiv Android 8+ cu layer `monochrome` Android 13+. |
 | `res/mipmap-anydpi-v26/ic_launcher_round.xml` | idem | Varianta round. |
 | `res/drawable/ic_launcher_monochrome.png` | `android/app/src/main/res/drawable/ic_launcher_monochrome.png` | Layer monochrome (heart alb pe negru) pentru themed icons Android 13+. |
@@ -26,6 +26,7 @@ cp -r android-overrides/res/* android/app/src/main/res/
 # 1) adaugă la <manifest ...>: xmlns:tools="http://schemas.android.com/tools"
 # 2) copiază permisiunile din android-overrides/AndroidManifest.additions.xml
 #    ÎNAINTE de </manifest>
+# 3) copiază intent-filter-ul App Links din același fișier în tag-ul <activity MainActivity>
 ```
 
 ## Verificare merged manifest (workflow o face automat, step "Verifică merged manifest")
