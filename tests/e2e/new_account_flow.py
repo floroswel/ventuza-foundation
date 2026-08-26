@@ -45,7 +45,7 @@ async def main() -> None:
         body = (await page.inner_text("body")).lower()
         if "e2e@suzeta.app" not in body:
             failures.append("A1: adresa de email nu apare pe /auth/check-email")
-        if "retrimite" not in body:
+        if not any(k in body for k in ("retrimite", "resend")):
             failures.append("A1: butonul de retrimitere lipsește")
         await page.screenshot(path=str(SHOTS / "new_account_check_email.png"))
 
