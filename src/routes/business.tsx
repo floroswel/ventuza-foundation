@@ -371,7 +371,7 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
       </div>
 
       <h3 className="mt-10 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-        Pachete și prețuri
+        Pachete (în curând)
       </h3>
       <PricingTiers />
 
