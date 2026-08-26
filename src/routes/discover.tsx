@@ -36,6 +36,8 @@ import {
 } from "@/lib/discover-decision";
 import { SwipeCard, SwipeActions } from "@/components/SwipeCard";
 import { SmartImage } from "@/components/SmartImage";
+import { PresenceDot } from "@/components/PresenceDot";
+
 import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
 import { useCachedUserBadges } from "@/lib/badges-cache";
