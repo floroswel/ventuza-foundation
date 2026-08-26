@@ -428,18 +428,23 @@ function Landing({ savedStatus, onStart }: { savedStatus: string | null; onStart
         </Faq>
       </div>
 
-      <button
-        onClick={onStart}
-        className="mt-8 w-full rounded-full bg-primary py-3.5 text-sm font-medium text-primary-foreground glow-gold"
-      >
-        Începe aplicația →
-      </button>
-      <p className="mt-3 text-center text-xs text-muted-foreground">
-        Sau scrie la{" "}
-        <a href="mailto:business@suzeta.ro" className="text-primary underline">
-          business@suzeta.ro
+      {/* Programul de parteneriat nu este încă deschis publicului: nu afișăm
+          prețuri și nu primim aplicații în app — doar interes prin email. */}
+      <div className="mt-8 rounded-2xl border border-primary/40 bg-primary/5 p-4 text-center">
+        <p className="text-sm font-semibold text-primary">În curând</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Programul pentru business și parteneri se deschide în curând. Scrie-ne și te anunțăm
+          primul.
+        </p>
+        <a
+          href="mailto:business@suzeta.ro?subject=Interes%20parteneriat%20Suzeta"
+          className="mt-3 inline-block w-full rounded-full bg-primary py-3 text-sm font-medium text-primary-foreground glow-gold"
+        >
+          Scrie-ne la business@suzeta.ro
         </a>
-      </p>
+      </div>
+      <button type="button" onClick={onStart} className="hidden" aria-hidden="true" />
+
     </section>
   );
 }
