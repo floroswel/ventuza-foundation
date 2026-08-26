@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Culoarea de accent aplicată de FCM pe iconița monocromă de notificare
+  (meta-data com.google.firebase.messaging.default_notification_color).
+  Fără ea, unele lansatoare colorează silueta în gri de sistem.
+-->
+<resources>
+    <color name="notification_accent">#E11D48</color>
+</resources>
