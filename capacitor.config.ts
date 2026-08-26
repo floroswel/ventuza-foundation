@@ -46,7 +46,9 @@ const config: CapacitorConfig = {
     },
     StatusBar: {
       style: "DARK",
-      backgroundColor: "#0B0B10",
+      // FĂRĂ `backgroundColor`: pluginul l-ar aplica prin
+      // Window.setStatusBarColor, API deprecat în Android 15 (semnalat de
+      // Google Play). Edge-to-edge → bara e transparentă peste WebView.
       overlaysWebView: true,
     },
     Keyboard: {

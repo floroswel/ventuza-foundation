@@ -168,10 +168,18 @@ export async function bootstrapNativeRuntime(router: Router<any, any, any, any, 
   }
 
   // 3) StatusBar overlay
+  //
+  // ATENȚIE: NU apela `StatusBar.setBackgroundColor` / `setOverlaysWebView(false)`.
+  // Pluginul le implementează prin `Window.setStatusBarColor` /
+  // `setNavigationBarColor`, API-uri DEPRECATE în Android 15 și semnalate de
+  // Google Play ("deprecated APIs for edge-to-edge"). Aplicația rulează
+  // edge-to-edge: barele sunt transparente, fundalul vine din WebView, iar
+  // insets-urile sunt injectate ca variabile CSS din MainActivity.
+  // Singurul apel permis rămâne `setStyle` (contrastul iconițelor), care
+  // folosește WindowInsetsController, nu API-uri deprecate.
   try {
     const { StatusBar, Style } = await import("@capacitor/status-bar");
     await StatusBar.setStyle({ style: Style.Dark });
-    await StatusBar.setBackgroundColor({ color: "#0B0B10" });
   } catch {
     /* status bar poate fi indisponibil pe unele device-uri; ignore */
   }
