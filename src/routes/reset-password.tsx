@@ -450,6 +450,15 @@ function ResetPasswordPage() {
                       setCode(event.target.value.replace(/\D/g, "").slice(0, 6));
                       if (fieldErrors.code) setFieldErrors((prev) => ({ ...prev, code: undefined }));
                     }}
+                    onPaste={(event) => {
+                      // Lipire din email/SMS: păstrăm doar cifrele și completăm tot câmpul.
+                      const pasted = event.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+                      if (!pasted) return;
+                      event.preventDefault();
+                      setCode(pasted);
+                      setFieldErrors((prev) => ({ ...prev, code: undefined }));
+                      requestAnimationFrame(() => codeInputRef.current?.focus());
+                    }}
                     className="h-12 pl-10 text-center text-lg tracking-[0.4em]"
                     placeholder="000000"
                   />
@@ -461,8 +470,15 @@ function ResetPasswordPage() {
                   className={fieldErrors.code ? "text-xs text-destructive" : "text-xs text-muted-foreground"}
                 >
                   {fieldErrors.code ??
-                    "Deschide emailul primit acum de la Suzeta și introdu codul de 6 cifre."}
+                    "Deschide emailul primit acum de la Suzeta și introdu (sau lipește) codul de 6 cifre."}
                 </p>
+                {!fieldErrors.code && codeSentAt !== null && (
+                  <p className="text-xs text-muted-foreground" aria-live="polite">
+                    {resendCooldown > 0
+                      ? `Poți cere un cod nou în ${resendCooldown}s.`
+                      : "Poți cere un cod nou acum."}
+                  </p>
+                )}
                 <Button
                   type="button"
                   variant="ghost"
