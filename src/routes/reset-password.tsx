@@ -9,6 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { translateAuthError } from "@/lib/auth-errors";
+import { logAccountFlowEvent } from "@/lib/account-flow.functions";
+
+/** Audit backend pentru fluxul de resetare parolă (fără PII, doar coduri de stare). */
+function logReset(stage: string, detail?: Record<string, string | number | boolean | null>) {
+  void logAccountFlowEvent({ data: { kind: "password_reset", stage, detail } }).catch(() => {});
+}
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
