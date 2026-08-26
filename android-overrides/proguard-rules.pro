@@ -52,3 +52,19 @@
 -keep class com.capacitorjs.plugins.** { *; }
 -keep class com.capacitorjs.** { *; }
 -keep class io.ionic.** { *; }
+
+# --- R8 activat pe release (Play: "Improve your app's memory and performance") ---
+# Bridge-ul WebView ↔ nativ folosește reflecție: metodele @JavascriptInterface
+# și clasele de plugin nu au voie să fie redenumite sau eliminate.
+-keepclasseswithmembers class * {
+    @android.webkit.JavascriptInterface <methods>;
+}
+-keepattributes JavascriptInterface,*Annotation*,Signature,InnerClasses,EnclosingMethod
+# Firebase Messaging (servicii instanțiate prin manifest) + modele serializate.
+-keep class com.google.firebase.** { *; }
+-keep class com.google.android.gms.** { *; }
+-dontwarn com.google.firebase.**
+# Păstrăm numele de fișier/linie ca stack trace-urile din Play Console să fie
+# citibile după deobfuscare cu mapping.txt.
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile

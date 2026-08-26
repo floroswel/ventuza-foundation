@@ -1,8 +1,8 @@
 {
-  "versionName": "1.0.37",
-  "versionCode": 47,
+  "versionName": "1.0.38",
+  "versionCode": 48,
   "track": "internal",
   "status": "completed",
-  "notes": "Resetarea parolei recunoaște corect codul primit pe email și afișează mesaje clare pentru cod invalid sau expirat. Am îmbunătățit stabilitatea și verificările buildului Android.",
+  "notes": "Suport complet pentru ecrane mari (foldables, tablete), afișare edge-to-edge conformă cu Android 15/16 și optimizare R8 pentru pornire mai rapidă și consum mai mic de memorie.",
   "rolloutPercent": 100
 }
