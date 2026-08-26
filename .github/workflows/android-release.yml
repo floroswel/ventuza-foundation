@@ -474,9 +474,14 @@ jobs:
           if m:
               tag = m.group(0)
               new_tag = tag
+              # Android 16 ignoră restricțiile de orientare/resizability pe
+              # ecrane mari (foldables, tablete) — Google Play semnalează
+              # `screenOrientation="portrait"` ca problemă de calitate. Îl
+              # eliminăm complet și declarăm activitatea redimensionabilă.
+              new_tag = re.sub(r'\s*android:screenOrientation="[^"]*"', '', new_tag)
               for attr, val in (
                   ('android:launchMode', 'singleTask'),
-                  ('android:screenOrientation', 'portrait'),
+                  ('android:resizeableActivity', 'true'),
                   # `adjustPan` cerea Android-ului sa mute fereastra, ceea ce
                   # intra in conflict cu edge-to-edge (decorFitsSystemWindows=false)
                   # si cu redimensionarea din pluginul Keyboard. `adjustResize`
@@ -1002,6 +1007,48 @@ jobs:
           fi
           echo "--- build.gradle after ---"
           cat "$GRADLE"
+
+      - name: Forțează R8 (minify + shrink) pe buildType release
+        run: |
+          set -euo pipefail
+          python3 <<'PY'
+          import re, sys
+          # Google Play: "Improve your app's memory and performance with R8
+          # optimization". Template-ul Capacitor generează `minifyEnabled false`,
+          # iar pasul de signing injecta R8 doar când blocul `buildTypes`
+          # lipsea complet — deci în practică R8 rămânea OFF. Aici îl forțăm
+          # explicit, indiferent de forma fișierului.
+          p = "android/app/build.gradle"
+          s = open(p).read()
+          m = re.search(r'buildTypes\s*\{\s*release\s*\{', s)
+          if not m:
+              sys.exit("buildTypes.release lipsește din app/build.gradle")
+          block_start = m.end()
+          # normalizează flag-urile existente
+          def force(src, key, val):
+              pat = re.compile(rf'({re.escape(key)}\s+)(true|false)')
+              if pat.search(src):
+                  return pat.sub(rf'\g<1>{val}', src, count=1)
+              return src[:block_start] + f'\n            {key} {val}' + src[block_start:]
+          for key in ("minifyEnabled", "shrinkResources"):
+              s = force(s, key, "true")
+          if 'proguardFiles' not in s:
+              s = s[:block_start] + (
+                  "\n            proguardFiles getDefaultProguardFile("
+                  "'proguard-android-optimize.txt'), 'proguard-rules.pro'"
+              ) + s[block_start:]
+          else:
+              # folosește varianta -optimize (R8 full mode friendly)
+              s = s.replace("getDefaultProguardFile('proguard-android.txt')",
+                            "getDefaultProguardFile('proguard-android-optimize.txt')")
+          open(p, 'w').write(s)
+          print("✓ R8 activat: minifyEnabled true + shrinkResources true")
+          PY
+          # R8 full mode (implicit din AGP 8, dar îl fixăm explicit)
+          GP=android/gradle.properties
+          grep -q 'android.enableR8.fullMode' "$GP" || echo 'android.enableR8.fullMode=true' >> "$GP"
+          grep -qE 'minifyEnabled\s+true' android/app/build.gradle \
+            || { echo "::error::R8 nu a fost activat în app/build.gradle"; exit 1; }
 
       - name: Verifică merged manifest (debug + release) — compliance Google Play
         working-directory: android
