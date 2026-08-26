@@ -35,6 +35,7 @@ import {
   type NotificationPrefs,
 } from "@/lib/notification-prefs-context";
 import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
+import { listMyMfaFactors, disableMyMfa } from "@/lib/mfa.functions";
 import { openCookieSettings } from "@/components/CookieBanner";
 import { BottomNav } from "@/components/BottomNav";
 import { setLookingNow } from "@/lib/social";
@@ -75,6 +76,8 @@ function SettingsPage() {
   const navigate = useNavigate();
   const deleteAcct = useServerFn(deleteMyAccount);
   const exportData = useServerFn(exportMyData);
+  const listFactorsFn = useServerFn(listMyMfaFactors);
+  const disableMfaFn = useServerFn(disableMyMfa);
   // Sursa unică pentru preferințele de notificări + discrete mode. Se
   // hidratează la login și se actualizează în realtime în toate suprafețele
   // (inbox, toast) fără refresh.
@@ -135,6 +138,7 @@ function SettingsPage() {
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPwd, setNewPwd] = useState("");
+  const [currentPwd, setCurrentPwd] = useState("");
   // Confirmarea schimbării parolei poate cere fie nonce email, fie AAL2 real
   // prin aplicația Authenticator când contul are un factor TOTP activ.
   const [pwdCodeRequired, setPwdCodeRequired] = useState(false);
@@ -142,6 +146,10 @@ function SettingsPage() {
   const [pwdCodeKind, setPwdCodeKind] = useState<"email" | "totp">("email");
   const [pwdTotpFactorId, setPwdTotpFactorId] = useState<string | null>(null);
   const [pwdBusy, setPwdBusy] = useState(false);
+  const [mfaFactors, setMfaFactors] = useState<
+    { id: string; type: string; status: string; friendlyName: string | null; createdAt: string }[]
+  >([]);
+  const [mfaBusy, setMfaBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState("");
   const [deleteEmail, setDeleteEmail] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -165,6 +173,12 @@ function SettingsPage() {
   useEffect(() => {
     if (!loading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [loading, user, navigate]);
+
+  useEffect(() => {
+    if (!user) return;
+    void refreshMfa();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   useEffect(() => {
     if (!user) return;
@@ -267,30 +281,46 @@ function SettingsPage() {
   }
 
   async function changePassword() {
+    if (!currentPwd) {
+      toast.error("Introdu parola curentă.");
+      return;
+    }
     if (newPwd.length < 8) {
-      toast.error("Min. 8 caractere.");
+      toast.error("Parola nouă trebuie să aibă min. 8 caractere.");
+      return;
+    }
+    if (newPwd === currentPwd) {
+      toast.error("Parola nouă trebuie să fie diferită de cea curentă.");
       return;
     }
     if (pwdCodeRequired && !/^\d{6}$/.test(pwdCode)) {
-      toast.error("Introdu codul de 6 cifre primit pe email.");
+      toast.error(
+        pwdCodeKind === "totp"
+          ? "Introdu codul de 6 cifre din aplicația Authenticator."
+          : "Introdu codul de 6 cifre primit pe email.",
+      );
       return;
     }
     setPwdBusy(true);
     try {
-      if (pwdCodeRequired && pwdCodeKind === "totp") {
-        if (!pwdTotpFactorId) {
-          toast.error("Factorul Authenticator nu este disponibil. Reîncarcă pagina și încearcă din nou.");
-          return;
-        }
+      // Pasul 1 — dovada de identitate: reautentificare cu parola curentă.
+      // Simplu pentru user, sigur pentru cont, fără coduri inutile.
+      const { error: reauthError } = await supabase.auth.signInWithPassword({
+        email: email || (user?.email ?? ""),
+        password: currentPwd,
+      });
+      if (reauthError) {
+        toast.error("Parola curentă este incorectă.");
+        return;
+      }
+
+      // Pasul 2 — MFA doar dacă Supabase chiar îl cere (cont cu autentificator activ).
+      if (pwdCodeRequired && pwdCodeKind === "totp" && pwdTotpFactorId) {
         const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
           factorId: pwdTotpFactorId,
         });
-        if (challengeError) {
-          toast.error(challengeError.message);
-          return;
-        }
-        if (!challenge) {
-          toast.error("Nu am putut iniția verificarea Authenticator.");
+        if (challengeError || !challenge) {
+          toast.error(challengeError?.message ?? "Nu am putut iniția verificarea Authenticator.");
           return;
         }
         const { error: verifyError } = await supabase.auth.mfa.verify({
@@ -304,39 +334,38 @@ function SettingsPage() {
           return;
         }
       }
-      const attempt = () =>
-        supabase.auth.updateUser(
-          pwdCodeRequired && pwdCodeKind === "email" ? { password: newPwd, nonce: pwdCode } : { password: newPwd },
-        );
-      let { error } = await attempt();
-      // Dacă tokenul de acces a expirat între timp, reîmprospătăm sesiunea și reîncercăm o dată.
-      if (error && /session|jwt/i.test(error.message) && /expired|missing|not exist/i.test(error.message)) {
-        const refreshed = await supabase.auth.refreshSession();
-        if (!refreshed.error && refreshed.data.session) ({ error } = await attempt());
-      }
+
+      const { error } = await supabase.auth.updateUser(
+        pwdCodeRequired && pwdCodeKind === "email"
+          ? { password: newPwd, nonce: pwdCode }
+          : { password: newPwd },
+      );
       if (!error) {
         toast.success("Parolă actualizată.");
         setNewPwd("");
+        setCurrentPwd("");
         setPwdCode("");
         setPwdCodeRequired(false);
         return;
       }
       const msg = error.message.toLowerCase();
-
       const needsAal2 = msg.includes("aal2") || msg.includes("mfa verification required");
       const needsCode = msg.includes("reauthentication") || msg.includes("nonce");
       if (needsAal2) {
-        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+        const { data: factors } = await supabase.auth.mfa.listFactors();
         const factor = factors?.totp.find((item) => item.status === "verified");
-        if (factorsError || !factor) {
-          toast.error(factorsError?.message ?? "Contul cere MFA, dar factorul Authenticator nu este disponibil.");
+        if (!factor) {
+          toast.error(
+            "Contul are 2FA activ, dar autentificatorul nu e disponibil. Dezactivează 2FA mai jos, cu parola curentă.",
+          );
+          void refreshMfa();
           return;
         }
         setPwdTotpFactorId(factor.id);
         setPwdCodeKind("totp");
         setPwdCodeRequired(true);
         setPwdCode("");
-        toast.error("Introdu codul din aplicația Authenticator. Codul email nu poate confirma MFA.");
+        toast.error("Introdu codul din aplicația Authenticator pentru a confirma.");
         return;
       }
       if (needsCode && !pwdCodeRequired) {
@@ -360,6 +389,41 @@ function SettingsPage() {
       setPwdBusy(false);
     }
   }
+
+  async function refreshMfa() {
+    try {
+      const res = await listFactorsFn({});
+      setMfaFactors(res.factors);
+    } catch {
+      setMfaFactors([]);
+    }
+  }
+
+  async function disableMfa() {
+    if (!currentPwd) {
+      toast.error("Introdu parola curentă în câmpul de mai sus pentru a dezactiva 2FA.");
+      return;
+    }
+    setMfaBusy(true);
+    try {
+      await disableMfaFn({ data: { currentPassword: currentPwd } });
+      toast.success("Autentificarea în doi pași a fost dezactivată.");
+      setPwdCodeRequired(false);
+      setPwdCodeKind("email");
+      setPwdTotpFactorId(null);
+      await refreshMfa();
+    } catch (e) {
+      const raw = e instanceof Error ? e.message : String(e);
+      toast.error(
+        raw.includes("invalid_current_password")
+          ? "Parola curentă este incorectă."
+          : "Nu am putut dezactiva 2FA. Reîncearcă.",
+      );
+    } finally {
+      setMfaBusy(false);
+    }
+  }
+
 
 
   async function handleDelete() {
@@ -445,7 +509,16 @@ function SettingsPage() {
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">Parolă nouă</label>
+              <label className="text-xs text-muted-foreground">Parola curentă</label>
+              <input
+                type="password"
+                value={currentPwd}
+                autoComplete="current-password"
+                onChange={(e) => setCurrentPwd(e.target.value)}
+                placeholder="parola ta actuală"
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+              <label className="mt-3 block text-xs text-muted-foreground">Parolă nouă</label>
               <div className="mt-1 flex gap-2">
                 <input
                   type="password"
@@ -502,6 +575,29 @@ function SettingsPage() {
                     </button>
                   )}
                 </div>
+              )}
+            </div>
+
+            <div className="rounded-xl border border-border bg-background/60 p-3">
+              <p className="text-xs font-medium text-foreground">Autentificare în doi pași (2FA)</p>
+              {mfaFactors.some((f) => f.status === "verified") ? (
+                <>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Contul are un autentificator activ. Dacă nu l-ai configurat tu sau nu mai ai
+                    acces la el, îl poți dezactiva cu parola curentă introdusă mai sus.
+                  </p>
+                  <button
+                    onClick={disableMfa}
+                    disabled={mfaBusy}
+                    className="mt-2 rounded-full border border-destructive px-3 py-1.5 text-[11px] font-medium text-destructive disabled:opacity-60"
+                  >
+                    {mfaBusy ? "Se dezactivează…" : "Dezactivează 2FA"}
+                  </button>
+                </>
+              ) : (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Nu este activ niciun autentificator. Schimbarea parolei cere doar parola curentă.
+                </p>
               )}
             </div>
 
