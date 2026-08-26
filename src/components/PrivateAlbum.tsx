@@ -100,6 +100,22 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
           toast.error(error.message);
           continue;
         }
+        // Moderare AI: minori / arme / sânge sunt interzise și în albumul privat.
+        try {
+          const verdict: any = await moderateAlbum({ data: { path } });
+          if (!verdict.allowed) {
+            toast.error(
+              verdict.pending
+                ? "Poza a fost trimisă la verificare umană."
+                : `Poză respinsă: ${verdict.reason || "conținut interzis"}`,
+            );
+            continue;
+          }
+        } catch (e) {
+          await supabase.storage.from("private-albums").remove([path]);
+          toast.error(`Moderare eșuată: ${(e as Error).message}`);
+          continue;
+        }
         added.push(path);
       }
       if (added.length) {
@@ -107,6 +123,7 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
         await load();
         toast.success(`${added.length} adăugate în album`);
       }
+
     } finally {
       setBusy(false);
       if (fileRef.current) fileRef.current.value = "";
