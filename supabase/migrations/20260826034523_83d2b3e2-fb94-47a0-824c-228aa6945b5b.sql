@@ -1,0 +1,2 @@
+ALTER TABLE public.account_flow_events DROP CONSTRAINT IF EXISTS account_flow_events_kind_check;
+ALTER TABLE public.account_flow_events ADD CONSTRAINT account_flow_events_kind_check CHECK (kind = ANY (ARRAY['email_confirmation'::text, 'didit'::text, 'password_reset'::text]));
