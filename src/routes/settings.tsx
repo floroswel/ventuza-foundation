@@ -572,6 +572,29 @@ function SettingsPage() {
               )}
             </div>
 
+            <div className="rounded-xl border border-border bg-background/60 p-3">
+              <p className="text-xs font-medium text-foreground">Autentificare în doi pași (2FA)</p>
+              {mfaFactors.some((f) => f.status === "verified") ? (
+                <>
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    Contul are un autentificator activ. Dacă nu l-ai configurat tu sau nu mai ai
+                    acces la el, îl poți dezactiva cu parola curentă introdusă mai sus.
+                  </p>
+                  <button
+                    onClick={disableMfa}
+                    disabled={mfaBusy}
+                    className="mt-2 rounded-full border border-destructive px-3 py-1.5 text-[11px] font-medium text-destructive disabled:opacity-60"
+                  >
+                    {mfaBusy ? "Se dezactivează…" : "Dezactivează 2FA"}
+                  </button>
+                </>
+              ) : (
+                <p className="mt-1 text-[11px] text-muted-foreground">
+                  Nu este activ niciun autentificator. Schimbarea parolei cere doar parola curentă.
+                </p>
+              )}
+            </div>
+
           </div>
           <div className="mt-4 border-t border-border pt-3">
             <button
