@@ -2,13 +2,13 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { Loader2, Lock } from "lucide-react";
+import { Loader2, Lock, ShieldCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { showAuthErrorToast } from "@/lib/auth-errors";
+import { translateAuthError } from "@/lib/auth-errors";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -34,6 +34,10 @@ function ResetPasswordPage() {
   const [confirm, setConfirm] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [invalidLink, setInvalidLink] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -41,7 +45,7 @@ function ResetPasswordPage() {
       if (active) setInvalidLink(true);
     }, 8_000);
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
+      if (event === "PASSWORD_RECOVERY") {
         window.clearTimeout(timeout);
         setReady(true);
         setInvalidLink(false);
@@ -83,15 +87,62 @@ function ResetPasswordPage() {
       );
     }
     if (password !== confirm) return toast.error(t("auth.errors.passwordsDontMatch"));
+    setFormError(null);
     setSubmitting(true);
-    const { error } = await supabase.auth.updateUser({ password: parsed.data });
-    setSubmitting(false);
-    if (error) {
-      showAuthErrorToast(t, error);
-      return;
+    try {
+      // getUser verifică tokenul la server; getSession singur poate întoarce o
+      // sesiune locală expirată și formularul ar eșua apoi cu o eroare generică.
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError || !userData.user) {
+        setReady(false);
+        setInvalidLink(true);
+        setFormError("Linkul de resetare nu mai este valid. Cere un link nou.");
+        return;
+      }
+
+      if (mfaRequired) {
+        if (!mfaFactorId || !/^\d{6}$/.test(mfaCode)) {
+          setFormError("Introdu codul de 6 cifre din aplicația ta de autentificare.");
+          return;
+        }
+        const { error: mfaError } = await supabase.auth.mfa.challengeAndVerify({
+          factorId: mfaFactorId,
+          code: mfaCode,
+        });
+        if (mfaError) {
+          setFormError("Codul 2FA este incorect sau a expirat. Introdu codul afișat acum în aplicația de autentificare.");
+          return;
+        }
+      }
+
+      const { error } = await supabase.auth.updateUser({ password: parsed.data });
+      if (error) {
+        if (/aal2 session is required|mfa.*required/i.test(error.message)) {
+          const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+          const verifiedFactor = factors?.all.find((factor) => factor.status === "verified");
+          if (!factorsError && verifiedFactor) {
+            setMfaFactorId(verifiedFactor.id);
+            setMfaRequired(true);
+            setFormError("Pentru protecția contului, confirmă schimbarea cu codul 2FA.");
+            return;
+          }
+        }
+        const mapped = translateAuthError(t, error);
+        setFormError(`${mapped.message} ${mapped.action}`);
+        toast.error(mapped.message, { description: mapped.action });
+        return;
+      }
+
+      await supabase.auth.signOut({ scope: "local" });
+      toast.success(t("auth.errors.passwordUpdated"));
+      navigate({ to: "/auth", search: { mode: "login" }, replace: true });
+    } catch (error) {
+      const mapped = translateAuthError(t, error);
+      setFormError(`${mapped.message} ${mapped.action}`);
+      toast.error(mapped.message, { description: mapped.action });
+    } finally {
+      setSubmitting(false);
     }
-    toast.success(t("auth.errors.passwordUpdated"));
-    navigate({ to: "/discover", replace: true });
   }
 
   return (
@@ -116,6 +167,11 @@ function ResetPasswordPage() {
 
         {ready && (
           <form onSubmit={onSubmit} className="mt-8 space-y-4">
+            {formError && (
+              <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-foreground">
+                {formError}
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label
                 htmlFor="pw"
@@ -136,6 +192,29 @@ function ResetPasswordPage() {
                 />
               </div>
             </div>
+            {mfaRequired && (
+              <div className="space-y-1.5">
+                <Label htmlFor="mfa-code" className="text-xs uppercase tracking-[0.18em] text-muted-foreground">
+                  Cod de verificare 2FA
+                </Label>
+                <div className="relative">
+                  <ShieldCheck className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="mfa-code"
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    pattern="[0-9]{6}"
+                    maxLength={6}
+                    required
+                    value={mfaCode}
+                    onChange={(event) => setMfaCode(event.target.value.replace(/\D/g, "").slice(0, 6))}
+                    className="pl-10"
+                    placeholder="000000"
+                  />
+                </div>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label
                 htmlFor="pw2"
