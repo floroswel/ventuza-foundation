@@ -1,7 +1,8 @@
 {
   "versionName": "1.0.37",
   "versionCode": 47,
-  "track": "production",
+  "track": "internal",
   "status": "completed",
-  "notes": "Resetarea parolei recunoaște corect codul primit pe email și afișează mesaje clare pentru cod invalid sau expirat. Am îmbunătățit stabilitatea și verificările buildului Android."
+  "notes": "Resetarea parolei recunoaște corect codul primit pe email și afișează mesaje clare pentru cod invalid sau expirat. Am îmbunătățit stabilitatea și verificările buildului Android.",
+  "rolloutPercent": 100
 }

@@ -17,6 +17,9 @@ const payload = {
   versionName: v.versionName,
   versionCode: v.versionCode,
   notes: v.notes ?? "",
+  // Rollout etapizat pentru bannerul din aplicație (5 → 25 → 100).
+  // Clientul afișează bannerul doar dacă bucket-ul instalării < acest procent.
+  rolloutPercent: Number.isFinite(Number(v.rolloutPercent)) ? Number(v.rolloutPercent) : 100,
   updatedAt: new Date().toISOString(),
 };
 
