@@ -285,15 +285,21 @@ function ResetPasswordPage() {
         }
         if (isExpiredLinkError(error)) {
           failLink("expired");
+          logReset("link_expired");
           setFormError("Linkul de resetare a expirat. Cere un link nou.");
           return;
         }
         const mapped = translateAuthError(t, error);
+        logReset("update_failed", { code: mapped.code });
+        if (mapped.code === "same_password" || mapped.code === "weak_password") {
+          setFieldErrors((current) => ({ ...current, password: mapped.message }));
+        }
         setFormError(`${mapped.message} ${mapped.action}`);
         toast.error(mapped.message, { description: mapped.action });
         return;
       }
 
+      logReset("password_updated", { withCode: codeRequired });
       await supabase.auth.signOut({ scope: "local" });
       toast.success(t("auth.errors.passwordUpdated"));
       navigate({ to: "/auth", search: { mode: "login" }, replace: true });
