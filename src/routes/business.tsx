@@ -475,7 +475,16 @@ function PricingTiers() {
     };
   }, []);
 
+  if (!B2B_PRICING_PUBLIC) {
+    return (
+      <p className="mt-3 rounded-2xl border border-border bg-surface/40 p-4 text-center text-xs text-muted-foreground">
+        Pachetele și tarifele se anunță odată cu lansarea programului de parteneriat.
+      </p>
+    );
+  }
+
   if (err) {
+
     return (
       <p className="mt-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
         Nu am putut încărca prețurile. {err}
