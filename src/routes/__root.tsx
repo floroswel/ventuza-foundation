@@ -226,8 +226,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  // Limba detectată din header-ul browserului (fallback „ro” dacă loader-ul
+  // n-a rulat, ex. prerender static).
+  let lang = "ro";
+  try {
+    lang = (Route.useLoaderData() as { language?: string } | undefined)?.language ?? "ro";
+  } catch {
+    /* shell randat fără loader data */
+  }
   return (
-    <html lang="ro" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
