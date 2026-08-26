@@ -172,16 +172,22 @@ function ResetPasswordPage() {
   }
 
   async function sendEmailCode(silent = false) {
+    if (resendCooldown > 0 || resending) return false;
     setResending(true);
     try {
       const { error } = await supabase.auth.reauthenticate();
       if (error) throw error;
       setResendCooldown(60);
+      setCodeSentAt(Date.now());
+      logReset("code_sent", { silent });
       if (!silent) toast.success("Ți-am trimis un cod de verificare pe email.");
       return true;
     } catch (error) {
       const mapped = translateAuthError(t, error);
       setFormError(`${mapped.message} ${mapped.action}`);
+      logReset("code_send_failed", { code: mapped.code });
+      // Chiar și la eșec ținem un mic cooldown ca să nu spamăm serverul de email.
+      setResendCooldown((c) => (c > 0 ? c : 15));
       return false;
     } finally {
       setResending(false);
