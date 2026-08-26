@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { TurnstileWidget, isCaptchaMandatory, isTurnstileMisconfiguredInProd } from "@/components/TurnstileWidget";
 import { Label } from "@/components/ui/label";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
-import { CANONICAL_ORIGIN } from "@/lib/canonical-origin";
+import { CANONICAL_ORIGIN, oauthOrigin } from "@/lib/canonical-origin";
 import { classifySigningCertificate, describeInstallSource, readAndroidSignature, type AndroidSignatureInfo } from "@/lib/android-signature";
 import { isNativePlatformSync } from "@/lib/native-platform-sync";
 
