@@ -24,6 +24,8 @@ async function logAudit(sa: any, row: Record<string, unknown>) {
 /* ---------------- LIST (staff) ---------------- */
 const ListInput = z.object({
   status: z.enum(["pending", "approved", "rejected"]).default("pending"),
+  surface: z.enum(["profile", "album", "all"]).default("all"),
+  userId: z.string().uuid().optional(),
   limit: z.number().int().min(1).max(200).default(60),
 });
 
@@ -35,10 +37,16 @@ export const adminListPhotoReviews = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const sa = supabaseAdmin as any;
 
-    const { data: rows, error } = await sa
+    let q = sa
       .from("photo_reviews")
-      .select("id,user_id,storage_path,status,ai_allowed,ai_reason,reason,created_at,reviewed_at")
-      .eq("status", data.status)
+      .select(
+        "id,user_id,storage_path,status,surface,source,severity,ai_allowed,ai_reason,ai_labels,reason,created_at,reviewed_at",
+      )
+      .eq("status", data.status);
+    if (data.surface !== "all") q = q.eq("surface", data.surface);
+    if (data.userId) q = q.eq("user_id", data.userId);
+    const { data: rows, error } = await q
+      .order("severity", { ascending: false })
       .order("created_at", { ascending: true })
       .limit(data.limit);
     if (error) throw new Error(error.message);
@@ -48,19 +56,20 @@ export const adminListPhotoReviews = createServerFn({ method: "POST" })
     if (ids.length) {
       const { data: profs } = await sa
         .from("profiles")
-        .select("id,display_name,age_status,verified,created_at,report_count")
+        .select("id,display_name,username,age_status,verified,created_at,report_count")
         .in("id", ids);
       (profs ?? []).forEach((p: any) => (names[p.id] = p));
     }
 
-    const paths = (rows ?? []).map((r: any) => r.storage_path);
-    const urlByPath: Record<string, string> = {};
-    if (paths.length) {
-      const { data: signed } = await sa.storage
-        .from("profile-photos")
-        .createSignedUrls(paths, 900);
+    const urlByKey: Record<string, string> = {};
+    for (const bucket of ["profile-photos", "private-albums"] as const) {
+      const paths = (rows ?? [])
+        .filter((r: any) => (bucket === "private-albums") === (r.surface === "album"))
+        .map((r: any) => r.storage_path);
+      if (!paths.length) continue;
+      const { data: signed } = await sa.storage.from(bucket).createSignedUrls(paths, 900);
       (signed ?? []).forEach((s: any, i: number) => {
-        if (s?.signedUrl) urlByPath[paths[i]] = s.signedUrl;
+        if (s?.signedUrl) urlByKey[`${bucket}:${paths[i]}`] = s.signedUrl;
       });
     }
 
@@ -72,12 +81,16 @@ export const adminListPhotoReviews = createServerFn({ method: "POST" })
     return {
       rows: (rows ?? []).map((r: any) => ({
         ...r,
-        url: urlByPath[r.storage_path] ?? null,
+        url:
+          urlByKey[
+            `${r.surface === "album" ? "private-albums" : "profile-photos"}:${r.storage_path}`
+          ] ?? null,
         profile: names[r.user_id] ?? null,
       })),
       pendingCount: pendingCount ?? 0,
     };
   });
+
 
 /* ---------------- DECIDE (bulk, staff) ---------------- */
 const DecideInput = z.object({
@@ -96,27 +109,71 @@ export const adminReviewPhotos = createServerFn({ method: "POST" })
 
     const { data: rows, error } = await sa
       .from("photo_reviews")
-      .select("id,user_id,storage_path,status")
+      .select("id,user_id,storage_path,status,surface")
       .in("id", data.ids)
       .eq("status", "pending");
     if (error) throw new Error(error.message);
 
     let ok = 0;
     for (const r of rows ?? []) {
+      const isAlbum = r.surface === "album";
       if (data.decision === "approve") {
+        if (isAlbum) {
+          const { data: alb } = await sa
+            .from("private_albums")
+            .select("photos")
+            .eq("owner_id", r.user_id)
+            .maybeSingle();
+          const cur: string[] = Array.isArray(alb?.photos) ? alb.photos : [];
+          if (!cur.includes(r.storage_path)) {
+            await sa
+              .from("private_albums")
+              .upsert(
+                { owner_id: r.user_id, photos: [...cur, r.storage_path] },
+                { onConflict: "owner_id" },
+              );
+          }
+        } else {
+          const { data: prof } = await sa
+            .from("profiles")
+            .select("photos")
+            .eq("id", r.user_id)
+            .maybeSingle();
+          const current: string[] = Array.isArray(prof?.photos) ? prof.photos : [];
+          if (!current.includes(r.storage_path) && current.length < 6) {
+            await sa
+              .from("profiles")
+              .update({ photos: [...current, r.storage_path] })
+              .eq("id", r.user_id);
+          }
+        }
+      } else if (isAlbum) {
+        const { data: alb } = await sa
+          .from("private_albums")
+          .select("photos")
+          .eq("owner_id", r.user_id)
+          .maybeSingle();
+        const cur: string[] = Array.isArray(alb?.photos) ? alb.photos : [];
+        if (cur.includes(r.storage_path)) {
+          await sa
+            .from("private_albums")
+            .update({ photos: cur.filter((p) => p !== r.storage_path) })
+            .eq("owner_id", r.user_id);
+        }
+        await sa.storage.from("private-albums").remove([r.storage_path]);
+      } else {
         const { data: prof } = await sa
           .from("profiles")
           .select("photos")
           .eq("id", r.user_id)
           .maybeSingle();
         const current: string[] = Array.isArray(prof?.photos) ? prof.photos : [];
-        if (!current.includes(r.storage_path) && current.length < 6) {
+        if (current.includes(r.storage_path)) {
           await sa
             .from("profiles")
-            .update({ photos: [...current, r.storage_path] })
+            .update({ photos: current.filter((p) => p !== r.storage_path) })
             .eq("id", r.user_id);
         }
-      } else {
         await sa.storage.from("profile-photos").remove([r.storage_path]);
       }
 
@@ -136,13 +193,16 @@ export const adminReviewPhotos = createServerFn({ method: "POST" })
         title: data.decision === "approve" ? "Poză aprobată" : "Poză respinsă",
         body:
           data.decision === "approve"
-            ? "Poza ta a trecut de verificare și este acum vizibilă pe profil."
+            ? isAlbum
+              ? "Poza ta din albumul privat a trecut de verificare."
+              : "Poza ta a trecut de verificare și este acum vizibilă pe profil."
             : `Poza ta nu respectă regulile comunității${data.reason ? `: ${data.reason}` : "."}`,
         link: "/profile",
       });
 
       ok++;
     }
+
 
     await logAudit(sa, {
       actor_id: context.userId,
@@ -214,4 +274,260 @@ export const adminInviteVerification = createServerFn({ method: "POST" })
     });
 
     return { sent };
+  });
+
+/* ---------------- SCAN AI (staff) ----------------
+ * Re-verifică pozele deja existente (profil + album privat) cu clasificatorul AI.
+ * Orice suspiciune de minor / armă / sânge este scoasă IMEDIAT din vizibilitate
+ * și trimisă la verificare umană. Nuditatea contează doar pe poza de profil.
+ */
+const ScanInput = z.object({
+  scope: z.enum(["profile", "album", "both"]).default("both"),
+  userId: z.string().uuid().optional(),
+  limit: z.number().int().min(1).max(120).default(40),
+  rescan: z.boolean().default(false),
+});
+
+export const adminScanPhotos = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ScanInput.parse(d ?? {}))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { classifyPhoto } = await import("./photo-scan.server");
+    const sa = supabaseAdmin as any;
+
+    // paths deja trecute prin coadă (ca să nu re-plătim AI pe fiecare rulare)
+    const seen = new Set<string>();
+    if (!data.rescan) {
+      let q = sa.from("photo_reviews").select("storage_path");
+      if (data.userId) q = q.eq("user_id", data.userId);
+      const { data: done } = await q.limit(5000);
+      (done ?? []).forEach((r: any) => seen.add(r.storage_path));
+    }
+
+    type Target = { user_id: string; path: string; surface: "profile" | "album" };
+    const targets: Target[] = [];
+
+    if (data.scope !== "album") {
+      let q = sa.from("profiles").select("id,photos").is("deleted_at", null);
+      if (data.userId) q = q.eq("id", data.userId);
+      const { data: profs, error } = await q.limit(2000);
+      if (error) throw new Error(error.message);
+      for (const p of profs ?? []) {
+        for (const path of (Array.isArray(p.photos) ? p.photos : []) as string[]) {
+          if (!seen.has(path)) targets.push({ user_id: p.id, path, surface: "profile" });
+        }
+      }
+    }
+    if (data.scope !== "profile") {
+      let q = sa.from("private_albums").select("owner_id,photos");
+      if (data.userId) q = q.eq("owner_id", data.userId);
+      const { data: albs, error } = await q.limit(2000);
+      if (error) throw new Error(error.message);
+      for (const a of albs ?? []) {
+        for (const path of (Array.isArray(a.photos) ? a.photos : []) as string[]) {
+          if (!seen.has(path)) targets.push({ user_id: a.owner_id, path, surface: "album" });
+        }
+      }
+    }
+
+    const batch = targets.slice(0, data.limit);
+    let scanned = 0;
+    let flagged = 0;
+    let critical = 0;
+    const errors: string[] = [];
+
+    for (const t of batch) {
+      const bucket = t.surface === "album" ? "private-albums" : "profile-photos";
+      const { data: signed } = await sa.storage.from(bucket).createSignedUrl(t.path, 600);
+      if (!signed?.signedUrl) {
+        errors.push(t.path);
+        continue;
+      }
+      let verdict;
+      try {
+        verdict = await classifyPhoto(signed.signedUrl, t.surface);
+      } catch (e) {
+        errors.push((e as Error).message);
+        continue;
+      }
+      scanned++;
+      if (verdict.allowed) {
+        // marcăm ca verificată automat, ca să nu re-scanăm la infinit
+        await sa.from("photo_reviews").upsert(
+          {
+            user_id: t.user_id,
+            storage_path: t.path,
+            surface: t.surface,
+            source: "scan",
+            status: "approved",
+            ai_allowed: true,
+            ai_labels: verdict as any,
+            severity: "normal",
+            scanned_at: new Date().toISOString(),
+            reviewed_by: null,
+          },
+          { onConflict: "storage_path" },
+        );
+        continue;
+      }
+
+      // scoate din vizibilitate imediat
+      if (t.surface === "album") {
+        const { data: alb } = await sa
+          .from("private_albums")
+          .select("photos")
+          .eq("owner_id", t.user_id)
+          .maybeSingle();
+        const cur: string[] = Array.isArray(alb?.photos) ? alb.photos : [];
+        if (cur.includes(t.path)) {
+          await sa
+            .from("private_albums")
+            .update({ photos: cur.filter((p) => p !== t.path) })
+            .eq("owner_id", t.user_id);
+        }
+      } else {
+        const { data: prof } = await sa
+          .from("profiles")
+          .select("photos")
+          .eq("id", t.user_id)
+          .maybeSingle();
+        const cur: string[] = Array.isArray(prof?.photos) ? prof.photos : [];
+        if (cur.includes(t.path)) {
+          await sa
+            .from("profiles")
+            .update({ photos: cur.filter((p) => p !== t.path) })
+            .eq("id", t.user_id);
+        }
+      }
+
+      await sa.from("photo_reviews").upsert(
+        {
+          user_id: t.user_id,
+          storage_path: t.path,
+          surface: t.surface,
+          source: "scan",
+          status: "pending",
+          ai_allowed: false,
+          ai_reason: verdict.reason,
+          ai_labels: verdict as any,
+          severity: verdict.severity,
+          scanned_at: new Date().toISOString(),
+        },
+        { onConflict: "storage_path" },
+      );
+      flagged++;
+      if (verdict.severity === "critical") critical++;
+    }
+
+    await logAudit(sa, {
+      actor_id: context.userId,
+      action: "photo.scan",
+      target_table: "photo_reviews",
+      after_data: {
+        scope: data.scope,
+        user_id: data.userId ?? null,
+        scanned,
+        flagged,
+        critical,
+        remaining: Math.max(0, targets.length - batch.length),
+      },
+      severity: critical > 0 ? "critical" : "info",
+    });
+
+    return {
+      scanned,
+      flagged,
+      critical,
+      remaining: Math.max(0, targets.length - batch.length),
+      errors: errors.slice(0, 5),
+    };
+  });
+
+/* ---------------- MODERARE UPLOAD ALBUM PRIVAT (user) ----------------
+ * Albumul privat permite nuditate adultă, dar NU minori, arme sau sânge.
+ * Poza încărcată e clasificată înainte de a intra în album; la refuz e ștearsă
+ * din storage și rămâne urmă în coada de moderare.
+ */
+const AlbumCheckInput = z.object({ path: z.string().min(3).max(300) });
+
+export const moderateAlbumUpload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => AlbumCheckInput.parse(d))
+  .handler(async ({ data, context }) => {
+    if (!data.path.startsWith(`${context.userId}/`)) {
+      throw new Error("Poza trebuie să fie a ta.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { classifyPhoto } = await import("./photo-scan.server");
+    const sa = supabaseAdmin as any;
+
+    const { data: signed } = await sa.storage
+      .from("private-albums")
+      .createSignedUrl(data.path, 600);
+    if (!signed?.signedUrl) throw new Error("Poza nu a putut fi citită.");
+
+    let verdict;
+    try {
+      verdict = await classifyPhoto(signed.signedUrl, "album");
+    } catch {
+      // fail-closed → trimitem la verificare umană
+      await sa.from("photo_reviews").upsert(
+        {
+          user_id: context.userId,
+          storage_path: data.path,
+          surface: "album",
+          source: "upload",
+          status: "pending",
+          ai_allowed: null,
+          ai_reason: "Clasificare AI indisponibilă",
+        },
+        { onConflict: "storage_path" },
+      );
+      return { allowed: false, pending: true, reason: "Poza a fost trimisă la verificare umană." };
+    }
+
+    if (verdict.allowed) {
+      await sa.from("photo_reviews").upsert(
+        {
+          user_id: context.userId,
+          storage_path: data.path,
+          surface: "album",
+          source: "upload",
+          status: "approved",
+          ai_allowed: true,
+          ai_labels: verdict as any,
+          scanned_at: new Date().toISOString(),
+        },
+        { onConflict: "storage_path" },
+      );
+      return { allowed: true, pending: false, reason: "" };
+    }
+
+    await sa.storage.from("private-albums").remove([data.path]);
+    await sa.from("photo_reviews").upsert(
+      {
+        user_id: context.userId,
+        storage_path: data.path,
+        surface: "album",
+        source: "upload",
+        status: "rejected",
+        ai_allowed: false,
+        ai_reason: verdict.reason,
+        ai_labels: verdict as any,
+        severity: verdict.severity,
+        scanned_at: new Date().toISOString(),
+      },
+      { onConflict: "storage_path" },
+    );
+    await logAudit(sa, {
+      actor_id: context.userId,
+      action: "album.photo.blocked",
+      target_table: "private_albums",
+      target_id: context.userId,
+      after_data: { labels: verdict, surface: "album" },
+      severity: verdict.severity === "critical" ? "critical" : "warning",
+    });
+    return { allowed: false, pending: false, reason: verdict.reason };
   });

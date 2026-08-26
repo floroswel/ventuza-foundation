@@ -3307,38 +3307,53 @@ export type Database = {
       photo_reviews: {
         Row: {
           ai_allowed: boolean | null
+          ai_labels: Json | null
           ai_reason: string | null
           created_at: string
           id: string
           reason: string | null
           reviewed_at: string | null
           reviewed_by: string | null
+          scanned_at: string | null
+          severity: string
+          source: string
           status: string
           storage_path: string
+          surface: string
           user_id: string
         }
         Insert: {
           ai_allowed?: boolean | null
+          ai_labels?: Json | null
           ai_reason?: string | null
           created_at?: string
           id?: string
           reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          scanned_at?: string | null
+          severity?: string
+          source?: string
           status?: string
           storage_path: string
+          surface?: string
           user_id: string
         }
         Update: {
           ai_allowed?: boolean | null
+          ai_labels?: Json | null
           ai_reason?: string | null
           created_at?: string
           id?: string
           reason?: string | null
           reviewed_at?: string | null
           reviewed_by?: string | null
+          scanned_at?: string | null
+          severity?: string
+          source?: string
           status?: string
           storage_path?: string
+          surface?: string
           user_id?: string
         }
         Relationships: []
