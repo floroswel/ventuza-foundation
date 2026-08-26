@@ -673,20 +673,8 @@ jobs:
         run: |
           set -euo pipefail
           if [ -z "$GOOGLE_SERVICES_B64" ]; then
-            echo "GOOGLE_SERVICES_JSON_BASE64 nu este setat; descarc configurația publică din backend-ul Suzeta."
-            for attempt in 1 2 3 4 5; do
-              if curl --fail --silent --show-error \
-                --connect-timeout 15 --max-time 45 \
-                https://suzeta.app/api/public/firebase-android-config \
-                --output android/app/google-services.json; then
-                break
-              fi
-              if [ "$attempt" -eq 5 ]; then
-                echo "::error::Configurația Firebase Android nu a putut fi obținută automat."
-                exit 1
-              fi
-              sleep $((attempt * 5))
-            done
+            echo "GOOGLE_SERVICES_JSON_BASE64 nu este setat; folosesc configurația publică Android versionată."
+            cp android-overrides/google-services.json android/app/google-services.json
           else
             printf '%s' "$GOOGLE_SERVICES_B64" | base64 -d > android/app/google-services.json
           fi

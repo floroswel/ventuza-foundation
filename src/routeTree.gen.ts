@@ -94,7 +94,6 @@ import { Route as AdminUsersIdRouteImport } from './routes/admin.users.$id'
 import { Route as ApiPublicAgeWebhookRouteImport } from './routes/api/public/age-webhook'
 import { Route as ApiPublicDiditStartRouteImport } from './routes/api/public/didit-start'
 import { Route as ApiPublicDiditWebhookRouteImport } from './routes/api/public/didit-webhook'
-import { Route as ApiPublicFirebaseAndroidConfigRouteImport } from './routes/api/public/firebase-android-config'
 import { Route as ApiPublicGeoCountryRouteImport } from './routes/api/public/geo-country'
 import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public/google-play-rtdn'
 import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
@@ -533,12 +532,6 @@ const ApiPublicDiditWebhookRoute = ApiPublicDiditWebhookRouteImport.update({
   path: '/api/public/didit-webhook',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiPublicFirebaseAndroidConfigRoute =
-  ApiPublicFirebaseAndroidConfigRouteImport.update({
-    id: '/api/public/firebase-android-config',
-    path: '/api/public/firebase-android-config',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicGeoCountryRoute = ApiPublicGeoCountryRouteImport.update({
   id: '/api/public/geo-country',
   path: '/api/public/geo-country',
@@ -669,7 +662,6 @@ export interface FileRoutesByFullPath {
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-start': typeof ApiPublicDiditStartRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
-  '/api/public/firebase-android-config': typeof ApiPublicFirebaseAndroidConfigRoute
   '/api/public/geo-country': typeof ApiPublicGeoCountryRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -764,7 +756,6 @@ export interface FileRoutesByTo {
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-start': typeof ApiPublicDiditStartRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
-  '/api/public/firebase-android-config': typeof ApiPublicFirebaseAndroidConfigRoute
   '/api/public/geo-country': typeof ApiPublicGeoCountryRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -861,7 +852,6 @@ export interface FileRoutesById {
   '/api/public/age-webhook': typeof ApiPublicAgeWebhookRoute
   '/api/public/didit-start': typeof ApiPublicDiditStartRoute
   '/api/public/didit-webhook': typeof ApiPublicDiditWebhookRoute
-  '/api/public/firebase-android-config': typeof ApiPublicFirebaseAndroidConfigRoute
   '/api/public/geo-country': typeof ApiPublicGeoCountryRoute
   '/api/public/google-play-rtdn': typeof ApiPublicGooglePlayRtdnRoute
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
@@ -959,7 +949,6 @@ export interface FileRouteTypes {
     | '/api/public/age-webhook'
     | '/api/public/didit-start'
     | '/api/public/didit-webhook'
-    | '/api/public/firebase-android-config'
     | '/api/public/geo-country'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -1054,7 +1043,6 @@ export interface FileRouteTypes {
     | '/api/public/age-webhook'
     | '/api/public/didit-start'
     | '/api/public/didit-webhook'
-    | '/api/public/firebase-android-config'
     | '/api/public/geo-country'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -1150,7 +1138,6 @@ export interface FileRouteTypes {
     | '/api/public/age-webhook'
     | '/api/public/didit-start'
     | '/api/public/didit-webhook'
-    | '/api/public/firebase-android-config'
     | '/api/public/geo-country'
     | '/api/public/google-play-rtdn'
     | '/api/public/signup-guard'
@@ -1235,7 +1222,6 @@ export interface RootRouteChildren {
   ApiPublicAgeWebhookRoute: typeof ApiPublicAgeWebhookRoute
   ApiPublicDiditStartRoute: typeof ApiPublicDiditStartRoute
   ApiPublicDiditWebhookRoute: typeof ApiPublicDiditWebhookRoute
-  ApiPublicFirebaseAndroidConfigRoute: typeof ApiPublicFirebaseAndroidConfigRoute
   ApiPublicGeoCountryRoute: typeof ApiPublicGeoCountryRoute
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
   ApiPublicSignupGuardRoute: typeof ApiPublicSignupGuardRoute
@@ -1842,13 +1828,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDiditWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/firebase-android-config': {
-      id: '/api/public/firebase-android-config'
-      path: '/api/public/firebase-android-config'
-      fullPath: '/api/public/firebase-android-config'
-      preLoaderRoute: typeof ApiPublicFirebaseAndroidConfigRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/geo-country': {
       id: '/api/public/geo-country'
       path: '/api/public/geo-country'
@@ -2093,7 +2072,6 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicAgeWebhookRoute: ApiPublicAgeWebhookRoute,
   ApiPublicDiditStartRoute: ApiPublicDiditStartRoute,
   ApiPublicDiditWebhookRoute: ApiPublicDiditWebhookRoute,
-  ApiPublicFirebaseAndroidConfigRoute: ApiPublicFirebaseAndroidConfigRoute,
   ApiPublicGeoCountryRoute: ApiPublicGeoCountryRoute,
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
   ApiPublicSignupGuardRoute: ApiPublicSignupGuardRoute,
