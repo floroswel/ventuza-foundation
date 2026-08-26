@@ -461,8 +461,9 @@ function SettingsPage() {
               {pwdCodeRequired && (
                 <div className="mt-2 space-y-2 rounded-xl border border-border bg-background/60 p-3">
                   <p className="text-[11px] text-muted-foreground">
-                    Contul tău are verificare suplimentară. Introdu codul de 6 cifre trimis pe{" "}
-                    {email}.
+                    {pwdCodeKind === "totp"
+                      ? "Introdu codul curent de 6 cifre din aplicația Authenticator folosită la activarea MFA."
+                      : `Introdu codul de 6 cifre trimis pe ${email}.`}
                   </p>
                   <div className="flex gap-2">
                     <input
@@ -482,18 +483,20 @@ function SettingsPage() {
                       Confirmă
                     </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      void supabase.auth.reauthenticate().then(({ error }) =>
-                        error
-                          ? toast.error(error.message)
-                          : toast.success("Cod nou trimis pe email."),
-                      );
-                    }}
-                    className="text-[11px] underline text-muted-foreground"
-                  >
-                    Trimite codul din nou
-                  </button>
+                  {pwdCodeKind === "email" && (
+                    <button
+                      onClick={() => {
+                        void supabase.auth.reauthenticate().then(({ error }) =>
+                          error
+                            ? toast.error(error.message)
+                            : toast.success("Cod nou trimis pe email."),
+                        );
+                      }}
+                      className="text-[11px] underline text-muted-foreground"
+                    >
+                      Trimite codul din nou
+                    </button>
+                  )}
                 </div>
               )}
             </div>
