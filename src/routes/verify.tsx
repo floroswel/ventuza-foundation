@@ -17,6 +17,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { isNativePlatformSync } from "@/lib/native-platform-sync";
 import { Button } from "@/components/ui/button";
 import { getMyDiditStatus, startDiditVerification, syncMyDiditStatus } from "@/lib/didit.functions";
+import { CONSENT_REGISTRY } from "@/lib/consent-registry";
 
 
 
@@ -103,6 +104,8 @@ function VerifyPage() {
   const [status, setStatus] = useState<DiditStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
+  const [ageConsent, setAgeConsent] = useState(false);
+  const [hasActiveAgeConsent, setHasActiveAgeConsent] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -131,6 +134,13 @@ function VerifyPage() {
   useEffect(() => {
     if (!user) return;
     void refresh();
+    void supabase
+      .rpc("has_active_consent", { _user_id: user.id, _kind: "age_verification" })
+      .then(({ data }) => {
+        const active = data === true;
+        setHasActiveAgeConsent(active);
+        setAgeConsent(active);
+      });
   }, [user?.id, refresh]);
 
   // Când userul se întoarce din Didit (`?didit=return`), forțează refresh
@@ -150,8 +160,22 @@ function VerifyPage() {
 
   async function beginVerification() {
     if (!user || starting) return;
+    if (!ageConsent) {
+      toast.error("Bifează consimțământul explicit înainte de verificare.");
+      return;
+    }
     setStarting(true);
     try {
+      if (!hasActiveAgeConsent) {
+        const consent = CONSENT_REGISTRY.age_verification;
+        const { error: consentError } = await supabase.rpc("record_consent", {
+          _kind: consent.kind,
+          _version: consent.currentVersion,
+          _accepted: true,
+        });
+        if (consentError) throw consentError;
+        setHasActiveAgeConsent(true);
+      }
       const native = isNativePlatformSync();
       // Pe native bundle-ul rulează de pe `localhost`, deci server functions
       // (same-origin RPC) întorc 404. Folosim ruta publică cu URL absolut.
@@ -255,6 +279,22 @@ function VerifyPage() {
             rezultatul (pass/fail) și o vârstă estimată.
           </p>
         </header>
+
+        {!isPending && (
+          <label className="mt-6 flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-surface/50 p-4 text-left">
+            <input
+              type="checkbox"
+              checked={ageConsent}
+              onChange={(event) => setAgeConsent(event.target.checked)}
+              className="mt-0.5 size-5 accent-primary"
+            />
+            <span className="text-sm leading-relaxed text-muted-foreground">
+              Îmi dau consimțământul explicit pentru capturarea tranzitorie a selfie-ului și
+              estimarea vârstei de către Didit. Imaginea nu este stocată de Suzeta și este
+              ștearsă de Didit după procesare. Pot retrage consimțământul din Setări.
+            </span>
+          </label>
+        )}
 
         {isPending && (
           <section className="mt-6 rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm">

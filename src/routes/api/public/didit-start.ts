@@ -58,6 +58,14 @@ export const Route = createFileRoute("/api/public/didit-start")({
         }
 
         try {
+          const { data: hasConsent, error: consentError } = await supabase.rpc(
+            "has_active_consent",
+            { _user_id: userRes.user.id, _kind: "age_verification" },
+          );
+          if (consentError || hasConsent !== true) {
+            return Response.json({ error: "age_verification_consent_required" }, { status: 403 });
+          }
+
           const { diditCreateSession } = await import("@/lib/didit.server");
           const session = await diditCreateSession({
             vendorData: userRes.user.id,

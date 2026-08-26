@@ -9,6 +9,7 @@ import { moderatePhoto } from "@/lib/verification.functions";
 import { useAuth } from "@/lib/auth-context";
 import { EnablePushButton } from "@/components/EnablePushButton";
 import { showAuthErrorToast } from "@/lib/auth-errors";
+import { CONSENT_REGISTRY } from "@/lib/consent-registry";
 
 
 import { Button } from "@/components/ui/button";
@@ -440,26 +441,26 @@ function Onboarding() {
     }
 
     // Ultimul pas: consents (terms/privacy) + finalizare + marcare onboarding complet.
-    const ua = typeof navigator !== "undefined" ? navigator.userAgent.slice(0, 400) : null;
-    const consents: Array<{ kind: string; version: string; accepted: boolean }> = [
-      { kind: "terms", version: "2026-06-22", accepted: true },
-      { kind: "privacy", version: "2026-06-22", accepted: true },
-    ];
-    const { error: consentError } = await supabase
-      .from("consent_log")
-      .insert(consents.map((c) => ({ user_id: user.id, ...c, user_agent: ua })));
-    if (consentError) {
-      setSaving(false);
-      showAuthErrorToast(t, consentError);
-      return;
+    for (const kind of ["terms", "privacy"] as const) {
+      const consent = CONSENT_REGISTRY[kind];
+      const { error: consentError } = await supabase.rpc("record_consent", {
+        _kind: kind,
+        _version: consent.currentVersion,
+        _accepted: true,
+      });
+      if (consentError) {
+        setSaving(false);
+        showAuthErrorToast(t, consentError);
+        return;
+      }
     }
 
     const { error } = await supabase
       .from("profiles")
       .update({
-        terms_accepted_version: "2026-06-22",
+        terms_accepted_version: CONSENT_REGISTRY.terms.currentVersion,
         terms_accepted_at: new Date().toISOString(),
-        privacy_accepted_version: "2026-06-22",
+        privacy_accepted_version: CONSENT_REGISTRY.privacy.currentVersion,
         privacy_accepted_at: new Date().toISOString(),
         onboarding_completed: true,
       })

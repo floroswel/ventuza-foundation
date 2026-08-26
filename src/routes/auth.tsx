@@ -560,15 +560,18 @@ function AuthPage() {
         if (data.session) {
           toast.success(t("auth.errors.welcome"));
           authLog("AUTH_NAVIGATION_STARTED", { reason: "session_present" });
-          await routeAfterAuth(data.user!.id, navigate);
+          if (data.user) await routeAfterAuth(data.user.id, navigate);
         } else {
-          // Auto-confirm este activ. Lipsa sesiunii este o eroare tranzitorie,
-          // nu un motiv să trimitem utilizatorul la verificarea emailului.
-          authLog("SIGNUP_SESSION_MISSING", { autoConfirmExpected: true });
-          addDiagnostic("email", "SIGNUP_SESSION_MISSING", "auto-confirm activ, fără sesiune în răspuns");
-          handleAuthError(new Error("signup_session_missing"), {
-            message: "Contul a fost creat, dar sesiunea nu a pornit.",
-            action: "Apasă Conectare și intră cu emailul și parola alese.",
+          // Confirmarea emailului este obligatorie înainte de onboarding și
+          // funcțiile sociale. Fără sesiune, signup-ul a reușit și emailul de
+          // activare a fost trimis — nu prezentăm acest caz drept eroare.
+          authLog("EMAIL_CONFIRMATION_REQUIRED", { email: maskEmail(emailParsed.data) });
+          addDiagnostic("email", "EMAIL_CONFIRMATION_REQUIRED", maskEmail(emailParsed.data));
+          toast.success("Cont creat. Verifică emailul pentru activare.");
+          navigate({
+            to: "/auth/check-email",
+            search: { email: emailParsed.data },
+            replace: true,
           });
         }
 
