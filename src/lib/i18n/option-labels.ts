@@ -5,6 +5,7 @@
 
 import { useCallback } from "react";
 import { useUiLocale, type UiLocale } from "./locale";
+import { OPTION_LABELS_EXTRA } from "./option-labels-extra";
 
 type LocaleMap = Partial<Record<UiLocale, string>>;
 
