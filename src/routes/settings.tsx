@@ -269,13 +269,49 @@ function SettingsPage() {
       toast.error("Min. 8 caractere.");
       return;
     }
-    const { error } = await supabase.auth.updateUser({ password: newPwd });
-    if (error) toast.error(error.message);
-    else {
-      toast.success("Parolă actualizată.");
-      setNewPwd("");
+    if (pwdCodeRequired && !/^\d{6}$/.test(pwdCode)) {
+      toast.error("Introdu codul de 6 cifre primit pe email.");
+      return;
+    }
+    setPwdBusy(true);
+    try {
+      const { error } = await supabase.auth.updateUser(
+        pwdCodeRequired ? { password: newPwd, nonce: pwdCode } : { password: newPwd },
+      );
+      if (!error) {
+        toast.success("Parolă actualizată.");
+        setNewPwd("");
+        setPwdCode("");
+        setPwdCodeRequired(false);
+        return;
+      }
+      const msg = error.message.toLowerCase();
+      const needsCode =
+        msg.includes("aal2") ||
+        msg.includes("reauthentication") ||
+        msg.includes("nonce") ||
+        msg.includes("mfa");
+      if (needsCode && !pwdCodeRequired) {
+        const { error: sendErr } = await supabase.auth.reauthenticate();
+        if (sendErr) {
+          toast.error(sendErr.message);
+          return;
+        }
+        setPwdCodeRequired(true);
+        toast.success("Ți-am trimis un cod de verificare pe email. Introdu-l mai jos.");
+        return;
+      }
+      if (needsCode && pwdCodeRequired) {
+        setPwdCode("");
+        toast.error("Cod incorect sau expirat. Cere un cod nou și încearcă din nou.");
+        return;
+      }
+      toast.error(error.message);
+    } finally {
+      setPwdBusy(false);
     }
   }
+
 
   async function handleDelete() {
     if (confirmDelete !== "ȘTERGE") return;
