@@ -1,8 +1,8 @@
 {
-  "versionName": "1.0.49",
-  "versionCode": 59,
+  "versionName": "1.0.50",
+  "versionCode": 60,
   "track": "internal",
   "status": "completed",
-  "notes": "Resetarea parolei recunoaște corect codul primit pe email și afișează mesaje clare pentru cod invalid sau expirat. Am îmbunătățit stabilitatea și verificările buildului Android.",
+  "notes": "Rămâi conectat între deschideri, notificări cu aplicația închisă, hub nou Potriviri (vizite, tap-uri, favoriți), avion verde pentru cei plecați din oraș și opțiunea Persoană discretă.",
   "rolloutPercent": 100
 }

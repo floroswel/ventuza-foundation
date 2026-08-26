@@ -95,13 +95,22 @@ function nativeStorage(): SupportedStorage {
     },
     setItem: async (k, v) => {
       // Supabase așteaptă storage.setItem înainte să rezolve signIn/signUp.
-      // Scriem sincron în WebView și nu ținem autentificarea blocată de I/O-ul
-      // SharedPreferences; copia nativă se persistă best-effort în fundal.
+      // Scriem întâi în WebView (rapid), apoi persistăm nativ.
+      //
+      // Pentru CHEIA DE SESIUNE așteptăm scrierea nativă (cu timeout scurt):
+      // dacă procesul e ucis de Android imediat după login, copia din
+      // SharedPreferences trebuie să existe deja, altfel la următoarea
+      // deschidere userul apare deconectat (WebView-ul își poate pierde
+      // localStorage-ul la evict).
       await fallback.setItem(k, v);
-      void preferencesPromise
-        .then((P) => within(P.set({ key: k, value: v }), undefined))
+      const isSession = k.startsWith("sb-") && k.includes("auth-token");
+      const write = preferencesPromise
+        .then((P) => within(P.set({ key: k, value: v }), undefined, 1500))
         .catch(() => undefined);
+      if (isSession) await write;
+      else void write;
     },
+
     removeItem: async (k) => {
       await fallback.removeItem(k);
       void preferencesPromise

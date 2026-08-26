@@ -121,26 +121,17 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
           });
         };
         const resumed = await resumeNativePush({ saveToken });
-        // Prima pornire după login pe nativ: cerem o singură dată permisiunea
-        // Android 13+, altfel userul nu primește niciodată push cu aplicația
-        // închisă (dialogul nu apare de la sine).
-        if (!resumed.ok && resumed.reason === "not_granted") {
-          const ASKED_KEY = "suzeta.native_push_asked";
-          let asked = false;
-          try {
-            asked = localStorage.getItem(ASKED_KEY) === "1";
-          } catch {
-            /* noop */
-          }
-          if (!asked) {
-            try {
-              localStorage.setItem(ASKED_KEY, "1");
-            } catch {
-              /* noop */
-            }
-            await initNativePush({ saveToken });
-          }
+        // Fără token FCM în `push_subscriptions` NU există notificare cu
+        // aplicația închisă. Flag-ul „am întrebat o dată" din localStorage
+        // bloca definitiv înregistrarea (localStorage se poate goli, iar
+        // permisiunea putea fi acordată ulterior din Setările telefonului).
+        // Încercăm la fiecare pornire: Android limitează singur dialogul de
+        // permisiune, iar dacă permisiunea există deja, apelul doar salvează
+        // tokenul — fără niciun dialog.
+        if (!resumed.ok) {
+          await initNativePush({ saveToken });
         }
+
       } catch (e) {
         console.warn("[notifications] resumeNativePush failed", e);
       }

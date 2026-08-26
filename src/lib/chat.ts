@@ -157,6 +157,11 @@ export type PublicProfileMini = {
   name: string | null;
   photo: string | null;
   online: boolean;
+  /** Călător: e plecat în alt oraș → afișăm avion, nu bulină verde. */
+  traveler: boolean;
+  travelCity: string | null;
+  /** Emoticon ales de user în locul pozei („persoană discretă”). */
+  discreetAvatar: string | null;
 };
 
 export async function fetchPublicProfiles(
@@ -175,6 +180,9 @@ export async function fetchPublicProfiles(
     photos: string[] | null;
     last_seen: string | null;
     hide_online: boolean | null;
+    travel_city?: string | null;
+    travel_until?: string | null;
+    discreet_avatar?: string | null;
   }>;
   const now = Date.now();
   await Promise.all(
@@ -183,15 +191,21 @@ export async function fetchPublicProfiles(
         !p.hide_online &&
         !!p.last_seen &&
         now - new Date(p.last_seen).getTime() < 15 * 60 * 1000;
+      const traveler =
+        !!p.travel_city && (!p.travel_until || new Date(p.travel_until).getTime() > now);
       map.set(p.id, {
         name: p.display_name,
-        photo: await signPhoto(p.photos?.[0] ?? null),
+        photo: p.discreet_avatar ? null : await signPhoto(p.photos?.[0] ?? null),
         online: isOnline,
+        traveler,
+        travelCity: p.travel_city ?? null,
+        discreetAvatar: p.discreet_avatar ?? null,
       });
     }),
   );
   return map;
 }
+
 
 
 export async function fetchConversations(meId: string): Promise<ConversationListItem[]> {

@@ -16,6 +16,8 @@ import {
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { DiscreetAvatarPicker } from "@/components/DiscreetAvatarPicker";
+
 import { moderateProfileUpload } from "@/lib/photo-moderation.functions";
 import { cn } from "@/lib/utils";
 import { computePhash } from "@/lib/phash";
@@ -330,6 +332,10 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         JPG, PNG, WEBP sau HEIC · max {MAX_SIZE_MB} MB / poză · maxim {MAX_PHOTOS} poze
         {remaining > 0 && photos.length > 0 ? ` · mai poți adăuga ${remaining}` : ""}
       </p>
+
+      <DiscreetAvatarPicker userId={userId} />
+
+
 
       {pending.length > 0 && (
         <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
