@@ -9,10 +9,10 @@ import { EmailChangeEmail } from '@/lib/email-templates/email-change'
 import { ReauthenticationEmail } from '@/lib/email-templates/reauthentication'
 
 // Configuration
-const SITE_NAME = "Ventuza Your Foundation"
+const SITE_NAME = "Suzeta"
 const SENDER_DOMAIN = "notify.ventuza.app"
-const ROOT_DOMAIN = "ventuza.app"
-const FROM_DOMAIN = "ventuza.app"
+const ROOT_DOMAIN = "suzeta.app"
+const FROM_DOMAIN = "notify.ventuza.app"
 const SITE_URL = `https://${ROOT_DOMAIN}`
 
 // The SDK handler owns verification, dispatch, and retry semantics; this file
@@ -28,7 +28,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           sendUrl: process.env['LOVABLE_SEND_URL'],
           emails: {
             signup: {
-              subject: 'Confirm your email',
+              subject: 'Confirmă adresa ta de email',
               render: (data) =>
                 React.createElement(SignupEmail, {
                   siteName: SITE_NAME,
@@ -38,7 +38,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
                 }),
             },
             invite: {
-              subject: "You've been invited",
+              subject: 'Ai primit o invitație',
               render: (data) =>
                 React.createElement(InviteEmail, {
                   siteName: SITE_NAME,
@@ -47,7 +47,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
                 }),
             },
             magiclink: {
-              subject: 'Your login link',
+              subject: 'Linkul tău de autentificare',
               render: (data) =>
                 React.createElement(MagicLinkEmail, {
                   siteName: SITE_NAME,
@@ -55,15 +55,24 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
                 }),
             },
             recovery: {
-              subject: 'Reset your password',
-              render: (data) =>
-                React.createElement(RecoveryEmail, {
+              subject: 'Resetează-ți parola',
+              render: (data) => {
+                // Recovery se deschide direct pe Suzeta; clientul consumă
+                // token-ul one-time, fără a expune domeniul de infrastructură.
+                const tokenHash =
+                  (data as { token_hash?: string; hashed_token?: string }).token_hash ??
+                  (data as { hashed_token?: string }).hashed_token
+                const confirmationUrl = tokenHash
+                  ? `${SITE_URL}/reset-password?token_hash=${encodeURIComponent(tokenHash)}`
+                  : data.url
+                return React.createElement(RecoveryEmail, {
                   siteName: SITE_NAME,
-                  confirmationUrl: data.url,
-                }),
+                  confirmationUrl,
+                })
+              },
             },
             email_change: {
-              subject: 'Confirm your new email',
+              subject: 'Confirmă noua adresă de email',
               render: (data) =>
                 React.createElement(EmailChangeEmail, {
                   siteName: SITE_NAME,
@@ -74,7 +83,7 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
                 }),
             },
             reauthentication: {
-              subject: 'Your verification code',
+              subject: 'Codul tău de verificare',
               render: (data) =>
                 React.createElement(ReauthenticationEmail, { token: data.token ?? '' }),
             },
