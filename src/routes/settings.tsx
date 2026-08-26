@@ -176,6 +176,12 @@ function SettingsPage() {
 
   useEffect(() => {
     if (!user) return;
+    void refreshMfa();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
     setEmail(user.email ?? "");
     // Keep tz offset in sync with the device so quiet hours line up with local time.
     // (Date#getTimezoneOffset returns minutes to add to local to get UTC, so negate.)
