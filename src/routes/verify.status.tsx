@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import {
   ArrowLeft,
@@ -12,8 +12,13 @@ import {
 } from "lucide-react";
 
 import { useAuth } from "@/lib/auth-context";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { getMyDiditStatus, syncMyDiditStatus } from "@/lib/didit.functions";
+import { computeAccountFlow } from "@/lib/account-flow";
+import { AccountFlowSteps } from "@/components/AccountFlowSteps";
+import { logAccountFlowEvent } from "@/lib/account-flow.functions";
+
 
 export const Route = createFileRoute("/verify/status")({
   ssr: false,
