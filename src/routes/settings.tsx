@@ -35,6 +35,7 @@ import {
   type NotificationPrefs,
 } from "@/lib/notification-prefs-context";
 import { deleteMyAccount, exportMyData } from "@/lib/account.functions";
+import { listMyMfaFactors, disableMyMfa } from "@/lib/mfa.functions";
 import { openCookieSettings } from "@/components/CookieBanner";
 import { BottomNav } from "@/components/BottomNav";
 import { setLookingNow } from "@/lib/social";
