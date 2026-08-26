@@ -135,6 +135,11 @@ function SettingsPage() {
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPwd, setNewPwd] = useState("");
+  // Reautentificare prin cod pe email (Supabase cere AAL2 / nonce pentru
+  // schimbarea parolei când contul are MFA activ).
+  const [pwdCodeRequired, setPwdCodeRequired] = useState(false);
+  const [pwdCode, setPwdCode] = useState("");
+  const [pwdBusy, setPwdBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState("");
   const [deleteEmail, setDeleteEmail] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
