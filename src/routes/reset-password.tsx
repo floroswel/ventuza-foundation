@@ -71,6 +71,12 @@ function isInvalidEmailCode(error: unknown) {
   );
 }
 
+/** Cod OTP corect ca format, dar expirat (fereastra de valabilitate a trecut). */
+function isExpiredEmailCode(error: unknown) {
+  const msg = String((error as { message?: string })?.message ?? error ?? "").toLowerCase();
+  return msg.includes("nonce") && (msg.includes("expired") || msg.includes("otp_expired"));
+}
+
 function ResetPasswordPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
