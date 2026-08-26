@@ -8,6 +8,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { moderatePhoto } from "@/lib/verification.functions";
 import { useAuth } from "@/lib/auth-context";
 import { EnablePushButton } from "@/components/EnablePushButton";
+import { OnboardingAccountNotice } from "@/components/OnboardingAccountNotice";
+
 import { showAuthErrorToast } from "@/lib/auth-errors";
 import { CONSENT_REGISTRY } from "@/lib/consent-registry";
 
