@@ -16,7 +16,7 @@ import {
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { moderatePhoto } from "@/lib/verification.functions";
+import { moderateProfileUpload } from "@/lib/photo-moderation.functions";
 import { cn } from "@/lib/utils";
 import { computePhash } from "@/lib/phash";
 import { compressImageForChat } from "@/lib/image-compress";
@@ -67,7 +67,7 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
   );
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
-  const moderate = useServerFn(moderatePhoto);
+  const moderateProfile = useServerFn(moderateProfileUpload);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function loadPending() {
@@ -159,6 +159,7 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
 
     setBusy(true);
     const added: string[] = [];
+    let movedToAlbum = 0;
     try {
       for (let idx = 0; idx < list.length; idx++) {
         let file: File | Blob = list[idx];
@@ -246,6 +247,16 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
 
         added.push(path);
         updateQueue(item.id, { status: "done" });
+      }
+
+      if (movedToAlbum > 0) {
+        toast.info(
+          movedToAlbum > 1
+            ? `${movedToAlbum} poze erau prea „hot” pentru profilul public — le-am pus în albumul tău privat. Pentru profil alege o poză normală, cu fața ta; le poți debloca oricând cui vrei.`
+            : "Poza era prea „hot” pentru profilul public — am pus-o în albumul tău privat. Pentru profil alege o poză normală, cu fața ta; albumul îl deblochezi cui vrei.",
+          { duration: 8000 },
+        );
+        await loadPending();
       }
 
       if (added.length) {
