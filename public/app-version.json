@@ -3,5 +3,5 @@
   "versionCode": 47,
   "notes": "Resetarea parolei recunoaște corect codul primit pe email și afișează mesaje clare pentru cod invalid sau expirat. Am îmbunătățit stabilitatea și verificările buildului Android.",
   "rolloutPercent": 100,
-  "updatedAt": "2026-08-26T04:29:16.712Z"
+  "updatedAt": "2026-08-26T04:31:41.900Z"
 }
