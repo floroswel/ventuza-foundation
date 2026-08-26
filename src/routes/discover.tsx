@@ -1262,12 +1262,14 @@ function Cascade({
             <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 px-1.5 pb-1 text-left">
               <div className="min-w-0">
                 <p className="flex items-center gap-1 truncate text-[12px] font-semibold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                  {online && (
-                    <span
-                      aria-label="online"
-                      className="inline-block size-2 shrink-0 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]"
-                    />
-                  )}
+                  <PresenceDot
+                    online={online}
+                    traveler={
+                      !!p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date())
+                    }
+                    className="size-2"
+                  />
+
                   <span className="truncate">
                     {p.display_name}
                     {age ? <span className="font-normal text-white/75">, {age}</span> : null}
