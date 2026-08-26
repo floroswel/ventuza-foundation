@@ -55,10 +55,13 @@ function needsEmailCode(error: unknown) {
   const msg = String((error as { message?: string })?.message ?? error ?? "").toLowerCase();
   return (
     msg.includes("nonce") ||
-    msg.includes("reauthentication") ||
-    msg.includes("aal2 session is required") ||
-    msg.includes("mfa")
+    msg.includes("reauthentication")
   );
+}
+
+function needsAal2(error: unknown) {
+  const msg = String((error as { message?: string })?.message ?? error ?? "").toLowerCase();
+  return msg.includes("aal2 session is required") || msg.includes("mfa verification required");
 }
 
 function isInvalidEmailCode(error: unknown) {
@@ -105,6 +108,8 @@ function ResetPasswordPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [codeRequired, setCodeRequired] = useState(false);
+  const [codeKind, setCodeKind] = useState<"email" | "totp">("email");
+  const [totpFactorId, setTotpFactorId] = useState<string | null>(null);
   const [code, setCode] = useState("");
   const [codeAttempts, setCodeAttempts] = useState(0);
   const [codeLocked, setCodeLocked] = useState(false);
@@ -217,6 +222,34 @@ function ResetPasswordPage() {
     }
   }
 
+  async function requestAuthenticatorCode() {
+    const { data, error } = await supabase.auth.mfa.listFactors();
+    if (error) throw error;
+    const factor = data.totp.find((item) => item.status === "verified");
+    if (!factor) {
+      throw new Error("Contul cere verificare în doi pași, dar nu are un autentificator activ disponibil.");
+    }
+    setTotpFactorId(factor.id);
+    setCodeKind("totp");
+    setCodeRequired(true);
+    setCode("");
+    logReset("totp_required");
+  }
+
+  async function verifyAuthenticatorCode() {
+    if (!totpFactorId) throw new Error("Factorul de autentificare nu este disponibil.");
+    const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
+      factorId: totpFactorId,
+    });
+    if (challengeError) throw challengeError;
+    const { error: verifyError } = await supabase.auth.mfa.verify({
+      factorId: totpFactorId,
+      challengeId: challenge.id,
+      code,
+    });
+    if (verifyError) throw verifyError;
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     if (submitting || codeLocked) return;
@@ -235,8 +268,24 @@ function ResetPasswordPage() {
       // temporar `session expired` chiar dacă nonce-ul primit pe email este valid.
       // updateUser este operația autoritativă și validează atât sesiunea recovery,
       // cât și codul email (nonce) într-o singură cerere atomică.
+      if (codeRequired && codeKind === "totp") {
+        try {
+          await verifyAuthenticatorCode();
+          logReset("totp_verified");
+        } catch (verificationError) {
+          const attempts = codeAttempts + 1;
+          setCodeAttempts(attempts);
+          setCode("");
+          setFieldErrors({ code: "Cod incorect. Folosește codul curent din aplicația Authenticator." });
+          setFormError("Codul Authenticator nu a fost acceptat.");
+          logReset("totp_invalid", { attempts });
+          codeInputRef.current?.focus();
+          return;
+        }
+      }
+
       const attempt = () =>
-        supabase.auth.updateUser(codeRequired ? { password, nonce: code } : { password });
+        supabase.auth.updateUser(codeRequired && codeKind === "email" ? { password, nonce: code } : { password });
 
       let { error } = await attempt();
 
@@ -250,17 +299,6 @@ function ResetPasswordPage() {
         if (!refreshed.error && refreshed.data.session) {
           ({ error } = await attempt());
         }
-        if (error && isSessionExpiredError(error) && userEmail && /^\d{6}$/.test(code)) {
-          const otp = await supabase.auth.verifyOtp({
-            email: userEmail,
-            token: code,
-            type: "recovery",
-          });
-          if (!otp.error && otp.data.session) {
-            logReset("session_recovered_via_otp");
-            ({ error } = await supabase.auth.updateUser({ password }));
-          }
-        }
       }
 
       if (error) {
@@ -273,7 +311,7 @@ function ResetPasswordPage() {
           return;
         }
 
-        if (codeRequired && isInvalidEmailCode(error)) {
+        if (codeRequired && codeKind === "email" && isInvalidEmailCode(error)) {
           const expired = isExpiredEmailCode(error);
           const attempts = codeAttempts + 1;
           setCodeAttempts(attempts);
@@ -303,6 +341,18 @@ function ResetPasswordPage() {
           codeInputRef.current?.focus();
           return;
         }
+        if (needsAal2(error)) {
+          try {
+            await requestAuthenticatorCode();
+            setFormError(
+              "Contul are verificare în doi pași activă. Introdu codul curent din aplicația Authenticator — codul trimis pe email nu poate confirma AAL2.",
+            );
+          } catch (factorError) {
+            const mapped = translateAuthError(t, factorError);
+            setFormError(`${mapped.message} ${mapped.action}`);
+          }
+          return;
+        }
         if (codeRequired) {
           const mapped = translateAuthError(t, error);
           logReset("update_failed", { code: mapped.code });
@@ -326,6 +376,7 @@ function ResetPasswordPage() {
           return;
         }
         if (needsEmailCode(error)) {
+          setCodeKind("email");
           setCodeRequired(true);
           logReset("code_required");
           const sent = await sendEmailCode(true);
@@ -481,7 +532,7 @@ function ResetPasswordPage() {
                   htmlFor="email-code"
                   className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
                 >
-                  Cod de verificare primit pe email
+                  {codeKind === "totp" ? "Cod din aplicația Authenticator" : "Cod de verificare primit pe email"}
                 </Label>
                 <div className="relative">
                   <MailCheck className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -522,30 +573,34 @@ function ResetPasswordPage() {
                   className={fieldErrors.code ? "text-xs text-destructive" : "text-xs text-muted-foreground"}
                 >
                   {fieldErrors.code ??
-                    "Deschide emailul primit acum de la Suzeta și introdu (sau lipește) codul de 6 cifre."}
+                    (codeKind === "totp"
+                      ? "Deschide aplicația Authenticator folosită la activarea MFA și introdu codul curent de 6 cifre."
+                      : "Deschide emailul primit acum de la Suzeta și introdu (sau lipește) codul de 6 cifre.")}
                 </p>
-                {!fieldErrors.code && codeSentAt !== null && (
+                {codeKind === "email" && !fieldErrors.code && codeSentAt !== null && (
                   <p className="text-xs text-muted-foreground" aria-live="polite">
                     {resendCooldown > 0
                       ? `Poți cere un cod nou în ${resendCooldown}s.`
                       : "Poți cere un cod nou acum."}
                   </p>
                 )}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="w-full rounded-full text-xs"
-                  disabled={resending || resendCooldown > 0 || codeLocked}
-                  onClick={() => void sendEmailCode()}
-                >
-                  {resending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : resendCooldown > 0 ? (
-                    `Trimite codul din nou în ${resendCooldown}s`
-                  ) : (
-                    "Trimite codul din nou"
-                  )}
-                </Button>
+                {codeKind === "email" && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    className="w-full rounded-full text-xs"
+                    disabled={resending || resendCooldown > 0 || codeLocked}
+                    onClick={() => void sendEmailCode()}
+                  >
+                    {resending ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : resendCooldown > 0 ? (
+                      `Trimite codul din nou în ${resendCooldown}s`
+                    ) : (
+                      "Trimite codul din nou"
+                    )}
+                  </Button>
+                )}
               </div>
             )}
             <Button
