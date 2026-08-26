@@ -18,14 +18,18 @@ VALUES (
 )
 ON CONFLICT (key) DO NOTHING;
 
--- 3) discover_profiles cu limite citite din app_settings (doar micșorare)
--- (definiția completă a fost aplicată prin tool-ul de migrare; acest fișier documentează schimbarea)
--- Plafoanele absolute rămân: 50 profiluri/cerere, 60 cereri/oră (regula permanentă RATE LIMIT DISCOVER).
+-- 3) discover_profiles cu limite citite din app_settings (doar micșorare).
+-- Plafoanele absolute rămân constante în funcție: 50 profiluri/cerere, 60 cereri/oră
+-- (regula permanentă RATE LIMIT DISCOVER). Definiția completă a funcției este cea
+-- aplicată prin tool-ul de migrare la 2026-07-13 (CREATE OR REPLACE, semnătură neschimbată).
 
--- 4) security_invariants_snapshot actualizat — validează config-ul și plafoanele absolute.
+-- 4) security_invariants_snapshot actualizat — validează config-ul discover_limits
+-- și prezența plafoanelor absolute (service_role only).
 
--- 5) cron_didit_reconcile() — SECURITY DEFINER, GRANT doar service_role.
--- Apelează POST https://ventuza-foundation.lovable.app/api/public/cron/didit-reconcile
--- cu Authorization: Bearer <app_settings.cron_internal.token> via pg_net.
+-- 5) cron_didit_reconcile() — SECURITY DEFINER, REVOKE PUBLIC/anon/authenticated,
+-- GRANT EXECUTE doar service_role. Apelează prin pg_net:
+--   POST https://ventuza-foundation.lovable.app/api/public/cron/didit-reconcile
+--   Authorization: Bearer <app_settings.cron_internal.token>
 
--- 6) pg_cron: job 'didit-reconcile' la fiecare 15 minute (schedule id 181).
+-- 6) pg_cron: job 'didit-reconcile' la fiecare 15 minute (schedule id 181), idempotent
+-- prin DO block cu verificare cron.job înainte de unschedule.
