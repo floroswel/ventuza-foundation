@@ -1062,7 +1062,7 @@ jobs:
           echo "✓✓✓ Compliance Google Play OK (debug + release)"
 
       - name: Verifică în Play că versionCode-ul este liber (anti "no new app bundles")
-        if: ${{ (github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true') && (github.event_name == 'push' || github.ref == 'refs/heads/main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.skip_play_upload != 'true' && github.ref == 'refs/heads/main' }}
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: node scripts/check-play-version-code.mjs --package app.suzeta --code ${{ steps.version.outputs.code }}
@@ -1241,7 +1241,7 @@ jobs:
           echo "Publicare pe track=${IN_TRACK:-$TRACK}, status=${IN_STATUS:-$STATUS}"
 
       - name: Publish în Google Play
-        if: ${{ (github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true') && (github.event_name == 'push' || github.ref == 'refs/heads/main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.skip_play_upload != 'true' && github.ref == 'refs/heads/main' }}
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
