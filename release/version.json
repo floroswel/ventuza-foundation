@@ -2,7 +2,7 @@
   "versionName": "1.0.55",
   "versionCode": 65,
   "track": "internal",
-  "status": "pending",
+  "status": "completed",
   "notes": "Trage de sus în jos pentru a reîmprospăta orice ecran și a verifica instant dacă există o actualizare nouă.",
   "rolloutPercent": 100
 }
