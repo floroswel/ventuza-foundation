@@ -116,7 +116,6 @@ function ResetPasswordPage() {
   const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
   const codeInputRef = useRef<HTMLInputElement>(null);
 
 
@@ -129,7 +128,6 @@ function ResetPasswordPage() {
       }
     }, 8_000);
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session?.user?.email) setUserEmail(session.user.email);
       if (event === "PASSWORD_RECOVERY") {
         window.clearTimeout(timeout);
         setReady(true);
@@ -151,7 +149,6 @@ function ResetPasswordPage() {
       }
       if ("session" in data && data.session) {
         window.clearTimeout(timeout);
-        setUserEmail(data.session.user?.email ?? null);
         setReady(true);
         setInvalidLink(false);
         if (tokenHash) window.history.replaceState({}, "", "/reset-password");
@@ -194,7 +191,10 @@ function ResetPasswordPage() {
     }
     if (password !== confirm) errors.confirm = t("auth.errors.passwordsDontMatch");
     if (codeRequired && !/^\d{6}$/.test(code)) {
-      errors.code = "Introdu codul de 6 cifre primit pe email.";
+      errors.code =
+        codeKind === "totp"
+          ? "Introdu codul curent de 6 cifre din aplicația Authenticator."
+          : "Introdu codul de 6 cifre primit pe email.";
     }
     return errors;
   }
@@ -289,10 +289,8 @@ function ResetPasswordPage() {
 
       let { error } = await attempt();
 
-      // Recuperare permanentă din „Sesiunea a expirat”:
-      // 1) reîmprospătăm tokenul de recovery și reîncercăm,
-      // 2) dacă tot nu merge, folosim codul de 6 cifre ca OTP de recovery
-      //    (verifyOtp creează o sesiune nouă) și scriem parola fără nonce.
+      // O expirare JWT reală se poate recupera prin refresh; eroarea AAL2 este
+      // tratată separat și nu mai este prezentată fals drept sesiune expirată.
       if (error && isSessionExpiredError(error)) {
         logReset("session_expired_retry");
         const refreshed = await supabase.auth.refreshSession();
