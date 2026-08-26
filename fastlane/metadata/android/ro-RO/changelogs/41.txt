@@ -1,0 +1,1 @@
+Resetarea parolei functioneaza corect: mesaj clar cand linkul a expirat, pas dedicat pentru codul 2FA din 6 cifre si erori explicate direct in formular.

@@ -1,7 +1,7 @@
 {
-  "versionName": "1.0.30",
-  "versionCode": 40,
+  "versionName": "1.0.31",
+  "versionCode": 41,
   "track": "production",
   "status": "completed",
-  "notes": "Build 31: reparat crash-ul la pornire dupa instalarea din Google Play (pinning TLS invalid + plugin Google ramas fara utilizare)."
+  "notes": "Resetare parola imbunatatita: mesaj clar la link expirat, suport 2FA cu cod de 6 cifre si erori explicite in formular."
 }
