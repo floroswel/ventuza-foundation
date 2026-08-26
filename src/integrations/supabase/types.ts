@@ -3304,6 +3304,45 @@ export type Database = {
         }
         Relationships: []
       }
+      photo_reviews: {
+        Row: {
+          ai_allowed: boolean | null
+          ai_reason: string | null
+          created_at: string
+          id: string
+          reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          storage_path: string
+          user_id: string
+        }
+        Insert: {
+          ai_allowed?: boolean | null
+          ai_reason?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          storage_path: string
+          user_id: string
+        }
+        Update: {
+          ai_allowed?: boolean | null
+          ai_reason?: string | null
+          created_at?: string
+          id?: string
+          reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          storage_path?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       policy_evaluations: {
         Row: {
           action_taken: string | null
