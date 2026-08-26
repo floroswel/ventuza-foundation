@@ -9,7 +9,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
 const eventSchema = z.object({
-  kind: z.enum(["email_confirmation", "didit"]),
+  kind: z.enum(["email_confirmation", "didit", "password_reset"]),
   stage: z.string().min(1).max(64),
   detail: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.null()])).optional(),
 });
