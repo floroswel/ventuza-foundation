@@ -1153,6 +1153,31 @@ jobs:
           path: android/app/build/outputs/bundle/release/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production.aab
           if-no-files-found: error
           retention-days: 30
+          compression-level: 0
+          overwrite: true
+
+      # Rezumat vizibil în UI-ul rulării: nume artefact + dimensiune + sha256,
+      # ca descărcarea pentru Play Console să poată fi verificată local.
+      - name: Rezumat artefact AAB
+        run: |
+          set -euo pipefail
+          F=android/app/build/outputs/bundle/release/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production.aab
+          SIZE=$(du -h "$F" | cut -f1)
+          SHA=$(sha256sum "$F" | awk '{print $1}')
+          {
+            echo "## AAB gata de descărcare"
+            echo ""
+            echo "| Câmp | Valoare |"
+            echo "|---|---|"
+            echo "| Artefact | \`suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production\` |"
+            echo "| versionName | ${{ steps.version.outputs.name }} |"
+            echo "| versionCode | ${{ steps.version.outputs.code }} |"
+            echo "| Dimensiune | $SIZE |"
+            echo "| SHA-256 | \`$SHA\` |"
+            echo ""
+            echo "Descarcă din secțiunea **Artifacts** a acestei rulări (30 zile)."
+          } >> "$GITHUB_STEP_SUMMARY"
+
 
       - name: Pregătește release notes (din fastlane/metadata)
         id: whatsnew
