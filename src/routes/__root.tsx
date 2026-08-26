@@ -154,6 +154,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  // Limba inițială vine din `Accept-Language` (SSR), deci `<html lang>` și
+  // prima randare sunt deja corecte. Alegerea manuală din localStorage are
+  // prioritate și e aplicată de i18next imediat după hidratare.
+  loader: async () => {
+    try {
+      const { getPreferredLanguage } = await import("@/lib/i18n/language.functions");
+      return await getPreferredLanguage();
+    } catch {
+      return { language: "en" as const };
+    }
+  },
+  staleTime: Infinity,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
