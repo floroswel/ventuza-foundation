@@ -210,13 +210,17 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
 
         // AI moderation — BLOCKING
         updateQueue(item.id, { status: "moderating" });
+        let aiAllowed: boolean | null = null;
+        let aiReason: string | null = null;
         try {
           const { data: signedData } = await supabase.storage
             .from("profile-photos")
             .createSignedUrl(path, 300);
           if (signedData?.signedUrl) {
-            const mod = await moderate({ data: { photoUrl: signedData.signedUrl } });
-            if (!mod.allowed) {
+            const mod: any = await moderate({ data: { photoUrl: signedData.signedUrl } });
+            aiReason = mod.reason || null;
+            if (!mod.allowed && mod.labels) {
+              // verdict clar de refuz (minor / armă / sânge / nud pe profil)
               await supabase.storage.from("profile-photos").remove([path]);
               updateQueue(item.id, {
                 status: "error",
@@ -224,14 +228,11 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
               });
               continue;
             }
+            aiAllowed = mod.labels ? true : null; // null = AI indisponibil → doar om
           }
         } catch (modErr) {
-          await supabase.storage.from("profile-photos").remove([path]);
-          updateQueue(item.id, {
-            status: "error",
-            error: `moderare eșuată: ${(modErr as Error).message}`,
-          });
-          continue;
+          aiAllowed = null;
+          aiReason = `moderare AI indisponibilă: ${(modErr as Error).message}`;
         }
 
         // Perceptual hash → server (catfishing detection) — non-blocking
@@ -244,9 +245,16 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         }
 
         // Coadă de moderare umană — poza NU devine publică acum.
-        const { error: revErr } = await supabase
-          .from("photo_reviews")
-          .insert({ user_id: userId, storage_path: path, status: "pending", ai_allowed: true });
+        const { error: revErr } = await supabase.from("photo_reviews").insert({
+          user_id: userId,
+          storage_path: path,
+          status: "pending",
+          surface: "profile",
+          source: "upload",
+          ai_allowed: aiAllowed,
+          ai_reason: aiReason,
+        });
+
         if (revErr) {
           await supabase.storage.from("profile-photos").remove([path]);
           updateQueue(item.id, { status: "error", error: revErr.message });

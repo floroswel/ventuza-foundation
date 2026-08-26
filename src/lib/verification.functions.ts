@@ -92,30 +92,20 @@ export const verifySelfie = createServerFn({ method: "POST" })
 const ModerateInput = z.object({ photoUrl: z.string().url() });
 
 export const moderatePhoto = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
   .inputValidator((d: unknown) => ModerateInput.parse(d))
   .handler(async ({ data }) => {
-    const sys =
-      'Ești moderator STRICT pentru poze PUBLICE (profil & stories) într-o app gay de dating. RESPINGI orice: nuditate (genitalii, fese goale, sâni/sfârcuri expuși), lenjerie intimă care arată conturul genitalelor, erecție vizibilă chiar prin haine, acte sexuale, minori, violență, screenshot-uri, logo/reclamă comercială. ACCEPȚI: torso fără tricou (gym/plajă/piscină) câtă vreme nu e provocator sexual, selfie-uri normale, poze cu prieteni, peisaje. Conținut nud / sexual e permis DOAR în album privat, nu aici. În dubiu → respinge. Răspunzi DOAR JSON: {"allowed": <true|false>, "reason": "<scurt, română, fără termeni vulgari>"}.';
-    const raw = await aiComplete({
-      model: "google/gemini-2.5-flash-lite",
-      messages: [
-        { role: "system", content: sys },
-        {
-          role: "user",
-          content: [
-            { type: "text", text: "Evaluează poza:" },
-            { type: "image_url", image_url: { url: data.photoUrl } },
-          ],
-        },
-      ],
-      temperature: 0.1,
-      maxTokens: 120,
-      json: true,
-    });
+    const { classifyPhoto } = await import("./photo-scan.server");
     try {
-      const j = JSON.parse(raw) as { allowed: boolean; reason: string };
-      return { allowed: !!j.allowed, reason: String(j.reason ?? "") };
+      const v = await classifyPhoto(data.photoUrl, "profile");
+      return { allowed: v.allowed, reason: v.reason, labels: v };
     } catch {
-      return { allowed: true, reason: "" };
+      // fail-closed: poza nu devine publică, intră la verificare umană
+      return {
+        allowed: false,
+        reason: "Verificare automată indisponibilă — poza merge la moderare umană.",
+        labels: null,
+      };
     }
   });
+
