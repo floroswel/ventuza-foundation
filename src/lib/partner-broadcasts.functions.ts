@@ -20,7 +20,6 @@
  * de la parteneri, indiferent de canal). Consimțământul canalului (push /
  * marketing) e verificat separat pentru fiecare user.
  */
-import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -212,6 +211,8 @@ async function deliverBroadcast(params: {
     for (const u of authUsers?.users ?? []) {
       if (u.id && u.email) emailByUser.set(u.id, u.email);
     }
+
+    const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
 
     const linkAbs = link.startsWith("http")
       ? link
