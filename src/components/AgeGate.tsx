@@ -5,6 +5,8 @@ import { ShieldCheck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { shouldEnforceAgeGate } from "@/lib/age-gate-policy";
+import { isNativePlatformSync } from "@/lib/native-platform-sync";
+import { getNativeDiditStatus, syncNativeDiditStatus } from "@/lib/native-didit-client";
 
 /**
  * AgeGate — VERIFICARE INTERNĂ.
@@ -89,8 +91,10 @@ export function AgeGate() {
   const refresh = async (uid: string) => {
     setChecking(true);
     try {
-      const { getMyDiditStatus, syncMyDiditStatus } = await import("@/lib/didit.functions");
-      const res = await getMyDiditStatus();
+      const native = isNativePlatformSync();
+      const res = native
+        ? await getNativeDiditStatus()
+        : await import("@/lib/didit.functions").then(({ getMyDiditStatus }) => getMyDiditStatus());
       const s = (res.profile?.age_status as Status) ?? "unverified";
       setStatus(s);
       setReason(res.reasonCode as Reason);
@@ -100,9 +104,13 @@ export function AgeGate() {
 
       if (s === "pending" || s === "unverified") {
         try {
-          const sync = await syncMyDiditStatus();
+          const sync = native
+            ? await syncNativeDiditStatus()
+            : await import("@/lib/didit.functions").then(({ syncMyDiditStatus }) => syncMyDiditStatus());
           if (sync && "ok" in sync && sync.ok) {
-            const fresh = await getMyDiditStatus();
+            const fresh = native
+              ? await getNativeDiditStatus()
+              : await import("@/lib/didit.functions").then(({ getMyDiditStatus }) => getMyDiditStatus());
             setStatus((fresh.profile?.age_status as Status) ?? "unverified");
             setReason(fresh.reasonCode as Reason);
             setLastUpdatedAt(fresh.lastUpdatedAt);

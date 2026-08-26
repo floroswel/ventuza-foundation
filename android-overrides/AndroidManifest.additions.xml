@@ -21,3 +21,15 @@
 <!-- Locația foreground este cerută exclusiv după acțiunea explicită a userului. -->
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+<!--
+  App Links pentru email confirmation, reset password și revenirea din Didit.
+  Se injectează în <activity android:name="...MainActivity"> în build-ul Android.
+-->
+<intent-filter android:autoVerify="true">
+  <action android:name="android.intent.action.VIEW"/>
+  <category android:name="android.intent.category.DEFAULT"/>
+  <category android:name="android.intent.category.BROWSABLE"/>
+  <data android:scheme="https" android:host="suzeta.app"/>
+  <data android:scheme="https" android:host="www.suzeta.app"/>
+</intent-filter>

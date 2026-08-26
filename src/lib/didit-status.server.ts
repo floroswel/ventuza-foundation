@@ -104,7 +104,7 @@ export async function syncDiditStatusForUser(
         _session_id: sessionId,
         _status: mapped.status,
         _result: mapped.result,
-        _estimated_age: estimatedAge,
+        _estimated_age: estimatedAge as number,
         _status_raw: statusRaw,
       });
       if (error) {
