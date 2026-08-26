@@ -80,8 +80,47 @@ export async function downloadFirebaseAndroidConfig(): Promise<string> {
   const apps = (await appsResponse.json()) as {
     apps?: Array<{ name?: string; packageName?: string }>;
   };
-  const app = apps.apps?.find((candidate) => candidate.packageName === "app.suzeta");
-  if (!app?.name) throw new Error("Firebase Android app app.suzeta was not found");
+  let app = apps.apps?.find((candidate) => candidate.packageName === "app.suzeta");
+  if (!app?.name) {
+    // Recuperare idempotentă pentru proiectele vechi care aveau cheia de
+    // service account pentru FCM, dar nu înregistraseră încă aplicația Android.
+    // Valorile sunt fixe; endpoint-ul nu acceptă input și nu poate provisiona
+    // alte package-uri sau resurse arbitrare.
+    const createResponse = await fetch(
+      `https://firebase.googleapis.com/v1beta1/projects/${encodeURIComponent(account.project_id)}/androidApps`,
+      {
+        method: "POST",
+        headers: { ...headers, "content-type": "application/json" },
+        body: JSON.stringify({ packageName: "app.suzeta", displayName: "Suzeta Android" }),
+      },
+    );
+    if (!createResponse.ok) {
+      throw new Error(`Firebase Android app creation failed [${createResponse.status}]`);
+    }
+    const operation = (await createResponse.json()) as { name?: string };
+    if (!operation.name) throw new Error("Firebase Android app creation returned no operation");
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      const operationResponse = await fetch(
+        `https://firebase.googleapis.com/v1beta1/${operation.name}`,
+        { headers },
+      );
+      if (!operationResponse.ok) {
+        throw new Error(`Firebase operation lookup failed [${operationResponse.status}]`);
+      }
+      const state = (await operationResponse.json()) as {
+        done?: boolean;
+        error?: { message?: string };
+        response?: { name?: string; packageName?: string };
+      };
+      if (state.error) throw new Error(state.error.message || "Firebase app creation failed");
+      if (state.done && state.response?.name) {
+        app = state.response;
+        break;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+  if (!app?.name) throw new Error("Firebase Android app app.suzeta is not ready");
   const configResponse = await fetch(
     `https://firebase.googleapis.com/v1beta1/${app.name}/config`,
     { headers },
