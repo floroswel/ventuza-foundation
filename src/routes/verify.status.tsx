@@ -15,9 +15,12 @@ import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { getMyDiditStatus, syncMyDiditStatus } from "@/lib/didit.functions";
+import { getNativeDiditStatus, syncNativeDiditStatus } from "@/lib/native-didit-client";
+import { isNativePlatformSync } from "@/lib/native-platform-sync";
 import { computeAccountFlow } from "@/lib/account-flow";
 import { AccountFlowSteps } from "@/components/AccountFlowSteps";
 import { logAccountFlowEvent } from "@/lib/account-flow.functions";
+import type { DiditStatusResponse } from "@/lib/didit-types";
 
 
 export const Route = createFileRoute("/verify/status")({
@@ -34,30 +37,13 @@ export const Route = createFileRoute("/verify/status")({
 
 type AgeStatus = "unverified" | "pending" | "verified" | "failed" | "expired" | null;
 
-type DiditStatus = {
-  profile: {
-    age_status: string | null;
-    age_verified_at: string | null;
-    age_provider: string | null;
-  } | null;
-  lastSession: {
-    session_id: string;
-    status: string;
-    result: string | null;
-    estimated_age: number | null;
-    session_url: string | null;
-    created_at: string;
-    resolved_at: string | null;
-  } | null;
-};
-
 function VerifyStatusPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const fetchStatus = useServerFn(getMyDiditStatus);
   const syncStatus = useServerFn(syncMyDiditStatus);
 
-  const [status, setStatus] = useState<DiditStatus | null>(null);
+  const [status, setStatus] = useState<DiditStatusResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const startedAt = useRef<number>(Date.now());
@@ -72,14 +58,18 @@ function VerifyStatusPage() {
     async (opts?: { force?: boolean }) => {
       setRefreshing(true);
       try {
+        const native = isNativePlatformSync();
         if (opts?.force) {
           try {
-            await syncStatus();
+            if (native) await syncNativeDiditStatus();
+            else await syncStatus();
           } catch {
             // ignoră — cădem pe read-ul de mai jos
           }
         }
-        const res = (await fetchStatus()) as DiditStatus;
+        const res = native
+          ? await getNativeDiditStatus()
+          : ((await fetchStatus()) as DiditStatusResponse);
         setStatus(res);
       } catch {
         // silențios — banner-ul de eroare rămâne; retry manual disponibil
