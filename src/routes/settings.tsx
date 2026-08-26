@@ -135,10 +135,12 @@ function SettingsPage() {
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPwd, setNewPwd] = useState("");
-  // Reautentificare prin cod pe email (Supabase cere AAL2 / nonce pentru
-  // schimbarea parolei când contul are MFA activ).
+  // Confirmarea schimbării parolei poate cere fie nonce email, fie AAL2 real
+  // prin aplicația Authenticator când contul are un factor TOTP activ.
   const [pwdCodeRequired, setPwdCodeRequired] = useState(false);
   const [pwdCode, setPwdCode] = useState("");
+  const [pwdCodeKind, setPwdCodeKind] = useState<"email" | "totp">("email");
+  const [pwdTotpFactorId, setPwdTotpFactorId] = useState<string | null>(null);
   const [pwdBusy, setPwdBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState("");
   const [deleteEmail, setDeleteEmail] = useState("");
@@ -275,9 +277,36 @@ function SettingsPage() {
     }
     setPwdBusy(true);
     try {
+      if (pwdCodeRequired && pwdCodeKind === "totp") {
+        if (!pwdTotpFactorId) {
+          toast.error("Factorul Authenticator nu este disponibil. Reîncarcă pagina și încearcă din nou.");
+          return;
+        }
+        const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({
+          factorId: pwdTotpFactorId,
+        });
+        if (challengeError) {
+          toast.error(challengeError.message);
+          return;
+        }
+        if (!challenge) {
+          toast.error("Nu am putut iniția verificarea Authenticator.");
+          return;
+        }
+        const { error: verifyError } = await supabase.auth.mfa.verify({
+          factorId: pwdTotpFactorId,
+          challengeId: challenge.id,
+          code: pwdCode,
+        });
+        if (verifyError) {
+          setPwdCode("");
+          toast.error("Cod Authenticator incorect. Folosește codul curent din aplicația ta.");
+          return;
+        }
+      }
       const attempt = () =>
         supabase.auth.updateUser(
-          pwdCodeRequired ? { password: newPwd, nonce: pwdCode } : { password: newPwd },
+          pwdCodeRequired && pwdCodeKind === "email" ? { password: newPwd, nonce: pwdCode } : { password: newPwd },
         );
       let { error } = await attempt();
       // Dacă tokenul de acces a expirat între timp, reîmprospătăm sesiunea și reîncercăm o dată.
@@ -294,22 +323,34 @@ function SettingsPage() {
       }
       const msg = error.message.toLowerCase();
 
-      const needsCode =
-        msg.includes("aal2") ||
-        msg.includes("reauthentication") ||
-        msg.includes("nonce") ||
-        msg.includes("mfa");
+      const needsAal2 = msg.includes("aal2") || msg.includes("mfa verification required");
+      const needsCode = msg.includes("reauthentication") || msg.includes("nonce");
+      if (needsAal2) {
+        const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
+        const factor = factors?.totp.find((item) => item.status === "verified");
+        if (factorsError || !factor) {
+          toast.error(factorsError?.message ?? "Contul cere MFA, dar factorul Authenticator nu este disponibil.");
+          return;
+        }
+        setPwdTotpFactorId(factor.id);
+        setPwdCodeKind("totp");
+        setPwdCodeRequired(true);
+        setPwdCode("");
+        toast.error("Introdu codul din aplicația Authenticator. Codul email nu poate confirma MFA.");
+        return;
+      }
       if (needsCode && !pwdCodeRequired) {
         const { error: sendErr } = await supabase.auth.reauthenticate();
         if (sendErr) {
           toast.error(sendErr.message);
           return;
         }
+        setPwdCodeKind("email");
         setPwdCodeRequired(true);
         toast.success("Ți-am trimis un cod de verificare pe email. Introdu-l mai jos.");
         return;
       }
-      if (needsCode && pwdCodeRequired) {
+      if (needsCode && pwdCodeRequired && pwdCodeKind === "email") {
         setPwdCode("");
         toast.error("Cod incorect sau expirat. Cere un cod nou și încearcă din nou.");
         return;
@@ -424,8 +465,9 @@ function SettingsPage() {
               {pwdCodeRequired && (
                 <div className="mt-2 space-y-2 rounded-xl border border-border bg-background/60 p-3">
                   <p className="text-[11px] text-muted-foreground">
-                    Contul tău are verificare suplimentară. Introdu codul de 6 cifre trimis pe{" "}
-                    {email}.
+                    {pwdCodeKind === "totp"
+                      ? "Introdu codul curent de 6 cifre din aplicația Authenticator folosită la activarea MFA."
+                      : `Introdu codul de 6 cifre trimis pe ${email}.`}
                   </p>
                   <div className="flex gap-2">
                     <input
@@ -445,18 +487,20 @@ function SettingsPage() {
                       Confirmă
                     </button>
                   </div>
-                  <button
-                    onClick={() => {
-                      void supabase.auth.reauthenticate().then(({ error }) =>
-                        error
-                          ? toast.error(error.message)
-                          : toast.success("Cod nou trimis pe email."),
-                      );
-                    }}
-                    className="text-[11px] underline text-muted-foreground"
-                  >
-                    Trimite codul din nou
-                  </button>
+                  {pwdCodeKind === "email" && (
+                    <button
+                      onClick={() => {
+                        void supabase.auth.reauthenticate().then(({ error }) =>
+                          error
+                            ? toast.error(error.message)
+                            : toast.success("Cod nou trimis pe email."),
+                        );
+                      }}
+                      className="text-[11px] underline text-muted-foreground"
+                    >
+                      Trimite codul din nou
+                    </button>
+                  )}
                 </div>
               )}
             </div>
