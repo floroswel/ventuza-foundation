@@ -199,7 +199,7 @@ async function deliverBroadcast(params: {
     await supabaseAdmin.from("push_subscriptions").delete().in("id", expired);
   }
 
-  // 7) Fallback email → coadă `transactional_emails`. Doar cu consimțământ marketing.
+  // 7) Fallback email → trimitere gestionată de Lovable. Doar cu consimțământ marketing.
   let emailsQueued = 0;
   if (emailFallbackTargets.length > 0) {
     // Adresele de email vin din auth.users; folosim admin.
@@ -212,11 +212,8 @@ async function deliverBroadcast(params: {
       if (u.id && u.email) emailByUser.set(u.id, u.email);
     }
 
-    const SENDER_DOMAIN = "notify.suzeta.app";
-    const FROM = "Suzeta <noreply@suzeta.ro>";
-    const subject = `Suzeta: ${broadcast.title}`;
-    const safeTitle = escapeHtml(broadcast.title);
-    const safeBody = escapeHtml(broadcast.body).replace(/\n/g, "<br/>");
+    const { sendTemplateEmail } = await import("@/lib/email-templates/send-email");
+
     const linkAbs = link.startsWith("http")
       ? link
       : `https://suzeta.app${link.startsWith("/") ? "" : "/"}${link}`;
@@ -224,56 +221,49 @@ async function deliverBroadcast(params: {
     for (const uid of emailFallbackTargets) {
       const to = emailByUser.get(uid);
       if (!to) continue;
-      const messageId = crypto.randomUUID();
 
-      // Log pending
-      await supabaseAdmin.from("email_send_log").insert({
-        message_id: messageId,
-        template_name: "partner_broadcast",
-        recipient_email: to,
-        status: "pending",
-      });
-
-      const html = `<!doctype html><html><body style="font-family:system-ui,-apple-system,sans-serif;background:#0b0b0f;color:#f4f4f5;padding:24px">
-<div style="max-width:560px;margin:0 auto;background:#17171f;border-radius:12px;padding:24px">
-  <h2 style="margin:0 0 12px;color:#fff">${safeTitle}</h2>
-  <p style="margin:0 0 20px;color:#d4d4d8;line-height:1.5">${safeBody}</p>
-  <p><a href="${linkAbs}" style="display:inline-block;background:#e11d48;color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none">Deschide în Suzeta</a></p>
-  <hr style="border:0;border-top:1px solid #27272a;margin:24px 0"/>
-  <p style="font-size:12px;color:#a1a1aa">
-    Primești acest email pentru că ai activat comunicări marketing în Suzeta.
-    <a href="https://suzeta.app/settings" style="color:#a1a1aa">Dezactivează</a>
-  </p>
-</div></body></html>`;
-
-      const text = `${broadcast.title}\n\n${broadcast.body}\n\n${linkAbs}\n\nDezactivezi din Setări → Comunicări.`;
-
-      const { error: enqErr } = await supabaseAdmin.rpc("enqueue_email", {
-        queue_name: "transactional_emails",
-        payload: {
-          message_id: messageId,
-          to,
-          from: FROM,
-          sender_domain: SENDER_DOMAIN,
-          subject,
-          html,
-          text,
-          purpose: "transactional",
-          label: "partner_broadcast",
-          queued_at: new Date().toISOString(),
-        },
-      });
-
-      if (enqErr) {
-        await supabaseAdmin.from("email_send_log").insert({
-          message_id: messageId,
-          template_name: "partner_broadcast",
-          recipient_email: to,
-          status: "failed",
-          error_message: enqErr.message,
+      try {
+        const result = await sendTemplateEmail("partner-broadcast", to, {
+          templateData: {
+            title: broadcast.title,
+            body: broadcast.body,
+            link: linkAbs,
+          },
+          idempotencyKey: `partner-broadcast-${params.broadcastId}-${uid}`,
         });
-      } else {
-        emailsQueued++;
+
+        if (result.sent) {
+          emailsQueued++;
+          const { error: logErr } = await supabaseAdmin
+            .from("email_send_log")
+            .insert({
+              template_name: "partner_broadcast",
+              recipient_email: to,
+              status: "sent",
+            });
+          if (logErr) console.error("email_send_log insert failed", logErr);
+        } else {
+          const { error: logErr } = await supabaseAdmin
+            .from("email_send_log")
+            .insert({
+              template_name: "partner_broadcast",
+              recipient_email: to,
+              status: "suppressed",
+              error_message: "recipient_suppressed",
+            });
+          if (logErr) console.error("email_send_log insert failed", logErr);
+        }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err);
+        const { error: logErr } = await supabaseAdmin
+          .from("email_send_log")
+          .insert({
+            template_name: "partner_broadcast",
+            recipient_email: to,
+            status: "failed",
+            error_message: message.slice(0, 1000),
+          });
+        if (logErr) console.error("email_send_log insert failed", logErr);
       }
     }
   }
@@ -287,14 +277,6 @@ async function deliverBroadcast(params: {
   return { push: pushDelivered, emails: emailsQueued };
 }
 
-function escapeHtml(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
 
 export const partnerSendBroadcast = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

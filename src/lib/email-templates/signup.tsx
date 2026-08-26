@@ -25,29 +25,31 @@ export const SignupEmail = ({
   recipient,
   confirmationUrl,
 }: SignupEmailProps) => (
-  <Html lang="ro" dir="ltr">
+  <Html lang="en" dir="ltr">
     <Head />
-    <Preview>Confirmă adresa de email pentru {siteName}</Preview>
+    <Preview>Confirm your email for {siteName}</Preview>
     <Body style={main}>
       <Container style={container}>
-        <Heading style={h1}>Confirmă adresa ta de email</Heading>
+        <Heading style={h1}>Confirm your email</Heading>
         <Text style={text}>
-          Bine ai venit pe{' '}
+          Thanks for signing up for{' '}
           <Link href={siteUrl} style={link}>
             <strong>{siteName}</strong>
           </Link>
-          . Pentru a-ți activa contul, confirmă adresa{' '}
+          !
+        </Text>
+        <Text style={text}>
+          Please confirm your email address (
           <Link href={`mailto:${recipient}`} style={link}>
             {recipient}
           </Link>
-          .
+          ) by clicking the button below:
         </Text>
         <Button style={button} href={confirmationUrl}>
-          Confirmă emailul
+          Verify Email
         </Button>
         <Text style={footer}>
-          Dacă nu ai creat un cont pe Suzeta, poți ignora acest mesaj — nu se
-          va întâmpla nimic.
+          If you didn't create an account, you can safely ignore this email.
         </Text>
       </Container>
     </Body>
@@ -72,8 +74,8 @@ const text = {
 }
 const link = { color: 'inherit', textDecoration: 'underline' }
 const button = {
-  backgroundColor: '#D4A94A',
-  color: '#1a1610',
+  backgroundColor: '#000000',
+  color: '#ffffff',
   fontSize: '14px',
   borderRadius: '8px',
   padding: '12px 20px',
