@@ -94,6 +94,7 @@ function ResetPasswordPage() {
   const [codeLocked, setCodeLocked] = useState(false);
   const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
   const codeInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
