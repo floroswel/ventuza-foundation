@@ -235,9 +235,34 @@ function ResetPasswordPage() {
       // temporar `session expired` chiar dacă nonce-ul primit pe email este valid.
       // updateUser este operația autoritativă și validează atât sesiunea recovery,
       // cât și codul email (nonce) într-o singură cerere atomică.
-      const { error } = await supabase.auth.updateUser(
-        codeRequired ? { password, nonce: code } : { password },
-      );
+      const attempt = () =>
+        supabase.auth.updateUser(codeRequired ? { password, nonce: code } : { password });
+
+      let { error } = await attempt();
+
+      // Recuperare permanentă din „Sesiunea a expirat”:
+      // 1) reîmprospătăm tokenul de recovery și reîncercăm,
+      // 2) dacă tot nu merge, folosim codul de 6 cifre ca OTP de recovery
+      //    (verifyOtp creează o sesiune nouă) și scriem parola fără nonce.
+      if (error && isSessionExpiredError(error)) {
+        logReset("session_expired_retry");
+        const refreshed = await supabase.auth.refreshSession();
+        if (!refreshed.error && refreshed.data.session) {
+          ({ error } = await attempt());
+        }
+        if (error && isSessionExpiredError(error) && userEmail && /^\d{6}$/.test(code)) {
+          const otp = await supabase.auth.verifyOtp({
+            email: userEmail,
+            token: code,
+            type: "recovery",
+          });
+          if (!otp.error && otp.data.session) {
+            logReset("session_recovered_via_otp");
+            ({ error } = await supabase.auth.updateUser({ password }));
+          }
+        }
+      }
+
       if (error) {
         if (codeRequired && isInvalidEmailCode(error)) {
           const expired = isExpiredEmailCode(error);
