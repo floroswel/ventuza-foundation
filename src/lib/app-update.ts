@@ -207,7 +207,10 @@ export function explainUpdateReason(d: UpdateDiagnostics): string {
  */
 export async function checkForAppUpdate(opts: { force?: boolean } = {}): Promise<RemoteVersion | null> {
   const d = await checkForAppUpdateDetailed(opts);
-  return d.reason === "update_available" || (opts.force && d.update) ? d.update : null;
+  // Chiar și la verificarea forțată din Setări afișăm bannerul DOAR dacă există
+  // efectiv un build mai nou; altfel apărea „Actualizare disponibilă” pe un
+  // dispozitiv deja la zi (fals pozitiv raportat pe build 48).
+  return d.reason === "update_available" ? d.update : null;
 }
 
 /** Resetează dismiss-ul, ca butonul de test să poată reafișa bannerul. */
