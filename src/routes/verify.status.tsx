@@ -212,6 +212,10 @@ function VerifyStatusPage() {
           {statusAnnouncement}
         </p>
 
+        <AccountFlowSteps summary={flow} email={user.email} className="mt-6" />
+
+
+
         <div
           role="region"
           aria-label="Status verificare Didit"
