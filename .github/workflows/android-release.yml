@@ -469,14 +469,16 @@ jobs:
                   '<application', '<application tools:replace="%s"' % ','.join(REPLACE_ATTRS), 1
               )
           s = s.replace(app_tag, new_app, 1)
-          # e) hardening MainActivity: singleTask + portrait + adjustPan
+          # e) hardening MainActivity: singleTask + adjustResize
           m = re.search(r'<activity\b[^>]*android:name="[^"]*MainActivity"[^>]*>', s)
           if m:
               tag = m.group(0)
               new_tag = tag
+              # Google Play cere fără blocare de orientare/resizability; dacă există
+              # o restricție veche din template/plugin, o scoatem explicit.
+              new_tag = re.sub(r'\sandroid:screenOrientation="[^"]*"', '', new_tag)
               for attr, val in (
                   ('android:launchMode', 'singleTask'),
-                  ('android:screenOrientation', 'portrait'),
                   # `adjustPan` cerea Android-ului sa mute fereastra, ceea ce
                   # intra in conflict cu edge-to-edge (decorFitsSystemWindows=false)
                   # si cu redimensionarea din pluginul Keyboard. `adjustResize`
@@ -491,6 +493,10 @@ jobs:
                       new_tag = re.sub(rf'({re.escape(attr)}=")[^"]*(")', rf'\g<1>{val}\g<2>', new_tag, count=1)
                   else:
                       new_tag = new_tag.replace('<activity', f'<activity {attr}="{val}"', 1)
+              if 'android:resizeableActivity=' in new_tag:
+                  new_tag = re.sub(r'(android:resizeableActivity=")[^"]*(")', r'\g<1>true\g<2>', new_tag, count=1)
+              else:
+                  new_tag = new_tag.replace('<activity', '<activity android:resizeableActivity="true"', 1)
               s = s.replace(tag, new_tag, 1)
           else:
               raise SystemExit("MainActivity nu a fost găsit în AndroidManifest.xml")
@@ -767,7 +773,15 @@ jobs:
             echo "::error::autoVerify lipsește din intent filter-ul App Links."
             exit 1
           fi
-          echo "✓ App Links (suzeta.app, autoVerify) prezente"
+          if grep -q 'android:screenOrientation=' "$MANIFEST"; then
+            echo "::error::screenOrientation este interzis — Google Play cere fără restricție de orientare."
+            exit 1
+          fi
+          if ! grep -q 'android:resizeableActivity="true"' "$MANIFEST"; then
+            echo "::error::resizeableActivity=true lipsește pentru large screens/foldables."
+            exit 1
+          fi
+          echo "✓ App Links + resizable activity prezente"
 
 
 
