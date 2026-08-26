@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.34",
-  "versionCode": 44,
+  "versionName": "1.0.35",
+  "versionCode": 45,
   "track": "production",
   "status": "completed",
   "notes": "Resetare parola imbunatatita: mesaj clar la link expirat, suport 2FA cu cod de 6 cifre si erori explicite in formular."
