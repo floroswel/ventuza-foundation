@@ -1,34 +1,80 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { Heart, Loader2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Eye, Hand, Heart, Loader2, Star } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { supabase } from "@/integrations/supabase/client";
-import { signPhotos } from "@/lib/discover";
 import { fetchPublicProfiles, getOrCreateConversation, type PublicProfileMini } from "@/lib/chat";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
+import { PresenceDot } from "@/components/PresenceDot";
 import { cn } from "@/lib/utils";
 import { withGuardian } from "@/components/with-guardian";
 
 export const Route = createFileRoute("/matches")({
   ssr: false,
-  head: () => ({ meta: [{ title: "Potriviri — Suzeta" }, { name: "robots", content: "noindex" }] }),
+  head: () => ({
+    meta: [
+      { title: "Potriviri — Suzeta" },
+      { name: "robots", content: "noindex" },
+      { name: "description", content: "Potrivirile tale, vizitele pe profil, tap-urile primite și favoriții — într-un singur loc." },
+    ],
+  }),
   component: withGuardian("matching", MatchesPage, "matching"),
 });
 
-type MatchRow = {
-  id: string;
+type TabKey = "matches" | "visits" | "taps" | "favorites";
+
+const TABS: Array<{ key: TabKey; label: string; Icon: typeof Heart }> = [
+  { key: "matches", label: "Potriviri", Icon: Heart },
+  { key: "visits", label: "Vizite", Icon: Eye },
+  { key: "taps", label: "Tap-uri", Icon: Hand },
+  { key: "favorites", label: "Favoriți", Icon: Star },
+];
+
+type PersonRow = {
+  key: string;
   other_id: string;
-  created_at: string;
+  at: string;
+  note?: string | null;
   profile: PublicProfileMini | null;
-  photo_url: string | null;
 };
+
+const EMPTY: Record<TabKey, { title: string; body: string }> = {
+  matches: {
+    title: "Încă niciun match",
+    body: "Când tu și altcineva vă apreciați reciproc, apar aici.",
+  },
+  visits: {
+    title: "Nimeni nu ți-a vizitat profilul încă",
+    body: "Adaugă o poză clară și o descriere scurtă — profilurile complete primesc mult mai multe vizite.",
+  },
+  taps: {
+    title: "Niciun tap primit",
+    body: "Trimite tu primul tap din Descoperă; de obicei se răspunde la fel.",
+  },
+  favorites: {
+    title: "Nicio persoană salvată",
+    body: "Apasă ⭐ pe un profil ca să-l ai mereu la îndemână aici.",
+  },
+};
+
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = 60_000,
+    h = 60 * m,
+    d = 24 * h;
+  if (diff < h) return `acum ${Math.max(1, Math.floor(diff / m))} min`;
+  if (diff < d) return `acum ${Math.floor(diff / h)} h`;
+  if (diff < 7 * d) return `acum ${Math.floor(diff / d)} z`;
+  return new Date(iso).toLocaleDateString("ro-RO");
+}
 
 function MatchesPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [rows, setRows] = useState<MatchRow[]>([]);
+  const [tab, setTab] = useState<TabKey>("matches");
+  const [rows, setRows] = useState<PersonRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [opening, setOpening] = useState<string | null>(null);
 
@@ -36,45 +82,123 @@ function MatchesPage() {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
   }, [authLoading, user, navigate]);
 
-  useEffect(() => {
-    if (!user) return;
-    let alive = true;
-    async function load() {
-      setLoading(true);
-      try {
+  const loadTab = useCallback(
+    async (which: TabKey, uid: string): Promise<PersonRow[]> => {
+      if (which === "matches") {
         const { data, error } = await supabase
           .from("matches")
           .select("id, user_a, user_b, created_at")
-          .or(`user_a.eq.${user!.id},user_b.eq.${user!.id}`)
-          .order("created_at", { ascending: false });
+          .or(`user_a.eq.${uid},user_b.eq.${uid}`)
+          .order("created_at", { ascending: false })
+          .limit(200);
         if (error) throw error;
-        const items = (data ?? []).map((m) => ({
-          id: m.id as string,
-          created_at: m.created_at as string,
-          other_id: (m.user_a === user!.id ? m.user_b : m.user_a) as string,
+        return (data ?? []).map((m) => ({
+          key: m.id as string,
+          other_id: (m.user_a === uid ? m.user_b : m.user_a) as string,
+          at: m.created_at as string,
+          profile: null,
         }));
-        const profiles = await fetchPublicProfiles(items.map((x) => x.other_id));
-        const photoPaths = Array.from(profiles.values())
-          .map((p) => p?.photo)
-          .filter(Boolean) as string[];
-        const signed = photoPaths.length ? await signPhotos(photoPaths) : {};
-        const enriched: MatchRow[] = items.map((it) => {
-          const prof = profiles.get(it.other_id) ?? null;
-          const photo = prof?.photo ? (signed[prof.photo] ?? null) : null;
-          return { ...it, profile: prof, photo_url: photo };
-        });
+      }
+
+      if (which === "visits") {
+        const { data, error } = await supabase
+          .from("profile_views")
+          .select("viewer_id, viewed_at")
+          .eq("viewed_id", uid)
+          .order("viewed_at", { ascending: false })
+          .limit(300);
+        if (error) throw error;
+        const seen = new Set<string>();
+        const out: PersonRow[] = [];
+        for (const r of (data ?? []) as Array<{ viewer_id: string; viewed_at: string }>) {
+          if (r.viewer_id === uid || seen.has(r.viewer_id)) continue;
+          seen.add(r.viewer_id);
+          out.push({ key: r.viewer_id, other_id: r.viewer_id, at: r.viewed_at, profile: null });
+        }
+        return out;
+      }
+
+      if (which === "taps") {
+        const [taps, woofs] = await Promise.all([
+          supabase
+            .from("taps")
+            .select("id, sender_id, emoji, created_at")
+            .eq("receiver_id", uid)
+            .order("created_at", { ascending: false })
+            .limit(200),
+          supabase
+            .from("woofs")
+            .select("id, sender_id, created_at")
+            .eq("receiver_id", uid)
+            .order("created_at", { ascending: false })
+            .limit(200),
+        ]);
+        if (taps.error) throw taps.error;
+        const merged: PersonRow[] = [
+          ...(taps.data ?? []).map((t) => ({
+            key: `t-${t.id as string}`,
+            other_id: t.sender_id as string,
+            at: t.created_at as string,
+            note: (t as { emoji?: string | null }).emoji ?? "👋",
+            profile: null,
+          })),
+          ...(woofs.error ? [] : (woofs.data ?? [])).map((w) => ({
+            key: `w-${w.id as string}`,
+            other_id: w.sender_id as string,
+            at: w.created_at as string,
+            note: "🐺",
+            profile: null,
+          })),
+        ].sort((a, b) => (a.at < b.at ? 1 : -1));
+        const seen = new Set<string>();
+        return merged.filter((r) => (seen.has(r.other_id) ? false : (seen.add(r.other_id), true)));
+      }
+
+      const { data, error } = await supabase
+        .from("favorites")
+        .select("favorite_id, created_at")
+        .eq("user_id", uid)
+        .order("created_at", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      return (data ?? []).map((f) => ({
+        key: f.favorite_id as string,
+        other_id: f.favorite_id as string,
+        at: f.created_at as string,
+        profile: null,
+      }));
+    },
+    [],
+  );
+
+  useEffect(() => {
+    if (!user) return;
+    let alive = true;
+    setLoading(true);
+    void (async () => {
+      try {
+        const base = await loadTab(tab, user.id);
+        const profiles = await fetchPublicProfiles(
+          Array.from(new Set(base.map((r) => r.other_id))),
+        );
+        // Profilurile invizibile (blocate / șterse / incognito) nu apar deloc.
+        const enriched = base
+          .map((r) => ({ ...r, profile: profiles.get(r.other_id) ?? null }))
+          .filter((r) => r.profile);
         if (alive) setRows(enriched);
       } catch (e) {
-        toast.error((e as Error).message);
+        if (alive) {
+          setRows([]);
+          toast.error((e as Error).message);
+        }
       } finally {
         if (alive) setLoading(false);
       }
-    }
-    void load();
+    })();
     return () => {
       alive = false;
     };
-  }, [user]);
+  }, [user, tab, loadTab]);
 
   async function openChat(otherId: string) {
     if (opening) return;
@@ -89,10 +213,40 @@ function MatchesPage() {
     }
   }
 
+  const empty = useMemo(() => EMPTY[tab], [tab]);
+
   return (
     <div className="mx-auto flex min-h-dvh max-w-md flex-col bg-background pb-nav">
-      <header className="sticky top-0 z-20 border-b border-primary/20 bg-background/85 px-5 py-4 text-center backdrop-blur">
-        <h1 className="font-serif text-2xl tracking-wide text-primary">Potriviri</h1>
+      <header className="sticky top-0 z-20 border-b border-primary/20 bg-background/85 pt-safe backdrop-blur">
+        <h1 className="px-5 py-3 text-center font-serif text-2xl tracking-wide text-primary">
+          Potriviri
+        </h1>
+        <div
+          role="tablist"
+          aria-label="Filtre potriviri"
+          className="flex items-stretch gap-1 px-3 pb-2"
+        >
+          {TABS.map(({ key, label, Icon }) => {
+            const active = tab === key;
+            return (
+              <button
+                key={key}
+                role="tab"
+                aria-selected={active}
+                onClick={() => setTab(key)}
+                className={cn(
+                  "flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] font-medium transition-colors",
+                  active
+                    ? "bg-primary/15 text-primary"
+                    : "text-muted-foreground hover:text-foreground/80",
+                )}
+              >
+                <Icon className="size-[18px]" strokeWidth={active ? 2.2 : 1.8} />
+                {label}
+              </button>
+            );
+          })}
+        </div>
       </header>
 
       <div className="flex-1 px-4 py-4">
@@ -101,15 +255,11 @@ function MatchesPage() {
             <Loader2 className="size-5 animate-spin" />
           </div>
         ) : rows.length === 0 ? (
-          <EmptyState
-            icon={Heart}
-            title="Încă niciun match"
-            body="Când tu și altcineva vă apreciați reciproc, apar aici."
-          />
+          <EmptyState icon={TABS.find((t) => t.key === tab)!.Icon} title={empty.title} body={empty.body} />
         ) : (
           <ul className="grid grid-cols-2 gap-3">
             {rows.map((m) => (
-              <li key={m.id}>
+              <li key={m.key}>
                 <button
                   type="button"
                   onClick={() => void openChat(m.other_id)}
@@ -119,30 +269,36 @@ function MatchesPage() {
                     "hover:-translate-y-0.5 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)]",
                   )}
                 >
-                  {m.photo_url ? (
+                  {m.profile?.photo ? (
                     <img
-                      src={m.photo_url}
+                      src={m.profile.photo}
                       alt={m.profile?.name ?? ""}
+                      loading="lazy"
                       className="absolute inset-0 size-full object-cover"
                     />
                   ) : (
-                    <div className="absolute inset-0 flex items-center justify-center text-3xl text-muted-foreground/50">
-                      {(m.profile?.name ?? "?").slice(0, 1)}
+                    <div className="absolute inset-0 flex items-center justify-center text-4xl text-muted-foreground/60">
+                      {m.profile?.discreetAvatar ?? (m.profile?.name ?? "?").slice(0, 1)}
                     </div>
                   )}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+                  {m.note && (
+                    <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-sm backdrop-blur">
+                      {m.note}
+                    </span>
+                  )}
                   <div className="relative z-10 flex items-end justify-between p-3">
                     <div className="min-w-0">
                       <p className="truncate font-serif text-base text-primary">
                         {m.profile?.name ?? "—"}
                       </p>
-                      <p className="text-[11px] text-white/70">
-                        Trimite mesaj
-                      </p>
+                      <p className="text-[11px] text-white/70">{timeAgo(m.at)}</p>
                     </div>
-                    {m.profile?.online && (
-                      <span className="size-2.5 shrink-0 rounded-full bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.7)]" />
-                    )}
+                    <PresenceDot
+                      online={!!m.profile?.online}
+                      traveler={!!m.profile?.traveler}
+                      className="size-2.5"
+                    />
                   </div>
                   {opening === m.other_id && (
                     <div className="absolute inset-0 flex items-center justify-center bg-background/60">
