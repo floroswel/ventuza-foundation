@@ -169,13 +169,17 @@ export const adminReviewPhotos = createServerFn({ method: "POST" })
           .maybeSingle();
         const current: string[] = Array.isArray(prof?.photos) ? prof.photos : [];
         if (current.includes(r.storage_path)) {
-          await sa
+          const { error: upErr } = await sa
             .from("profiles")
             .update({ photos: current.filter((p) => p !== r.storage_path) })
             .eq("id", r.user_id);
+          // Fără această verificare, o eroare de trigger lăsa poza publică deși
+          // moderatorul o respinsese.
+          if (upErr) throw new Error(`Nu am putut scoate poza din profil: ${upErr.message}`);
         }
         await sa.storage.from("profile-photos").remove([r.storage_path]);
       }
+
 
       await sa
         .from("photo_reviews")
