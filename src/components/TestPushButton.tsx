@@ -2,30 +2,53 @@
  * Test rapid de livrare push, declanșat de utilizator.
  *
  * Verifică lanțul complet: token salvat în `push_subscriptions` → FCM /
- * Web Push → handler pe device. Funcționează identic cu aplicația deschisă
- * (handler foreground → toast + sunet) și închisă (notificare de sistem pe
- * canalul corect, tap → deep link).
+ * Web Push → handler pe device, în ambele scenarii:
+ *
+ *  - „Acum” (aplicație DESCHISĂ): `pushNotificationReceived` → toast + sunet.
+ *  - „În 15s” (aplicație ÎNCHISĂ): întârzierea este SERVER-SIDE, pentru că un
+ *    timer pe client moare odată cu procesul aplicației. Utilizatorul are timp
+ *    să închidă aplicația și să vadă notificarea de sistem pe canalul corect;
+ *    tap → deep link (`pushNotificationActionPerformed`, inclusiv cold start).
  */
 import { useState } from "react";
-import { BellRing, Loader2 } from "lucide-react";
+import { BellRing, Loader2, TimerReset } from "lucide-react";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { sendTestPush } from "@/lib/push.functions";
 
+const CLOSED_APP_DELAY = 15;
+
 export function TestPushButton({ className }: { className?: string }) {
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState<"now" | "delayed" | null>(null);
+  const [countdown, setCountdown] = useState(0);
   const run = useServerFn(sendTestPush);
 
-  async function send() {
-    setBusy(true);
+  async function send(mode: "now" | "delayed") {
+    setBusy(mode);
+    const delaySeconds = mode === "delayed" ? CLOSED_APP_DELAY : 0;
+    if (delaySeconds) {
+      setCountdown(delaySeconds);
+      const iv = setInterval(() => {
+        setCountdown((c) => {
+          if (c <= 1) {
+            clearInterval(iv);
+            return 0;
+          }
+          return c - 1;
+        });
+      }, 1000);
+      toast.info(`Notificarea pleacă în ${delaySeconds} secunde.`, {
+        description: "Închide acum aplicația ca să verifici notificarea de sistem.",
+        duration: delaySeconds * 1000,
+      });
+    }
     try {
-      const r = await run({ data: { kind: "message" } });
+      const r = await run({ data: { kind: "message", delaySeconds } });
       if (r.delivered > 0) {
         toast.success(`Notificare de test trimisă (${r.delivered}).`, {
-          description:
-            "Cu aplicația deschisă apare aici; cu aplicația închisă apare în bara de notificări. Atinge notificarea ca să verifici deep link-ul.",
-          duration: 8000,
+          description: `Canal Android: ${r.channel}. Dispozitive abonate: ${r.subscriptions} (FCM: ${r.fcm}, web: ${r.webpush}). Atinge notificarea ca să verifici deep link-ul spre Mesaje.`,
+          duration: 9000,
         });
       } else if (r.subscriptions === 0) {
         toast.error("Nu există niciun dispozitiv abonat.", {
@@ -41,25 +64,43 @@ export function TestPushButton({ className }: { className?: string }) {
     } catch {
       toast.error("Testul a eșuat. Încearcă din nou.");
     } finally {
-      setBusy(false);
+      setBusy(null);
+      setCountdown(0);
     }
   }
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="sm"
-      className={className}
-      disabled={busy}
-      onClick={send}
-    >
-      {busy ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-      ) : (
-        <BellRing className="mr-2 h-4 w-4" />
-      )}
-      Trimite notificare de test
-    </Button>
+    <div className={`flex flex-wrap gap-2 ${className ?? ""}`}>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={busy !== null}
+        onClick={() => send("now")}
+      >
+        {busy === "now" ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <BellRing className="mr-2 h-4 w-4" />
+        )}
+        Test acum (aplicație deschisă)
+      </Button>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        disabled={busy !== null}
+        onClick={() => send("delayed")}
+      >
+        {busy === "delayed" ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <TimerReset className="mr-2 h-4 w-4" />
+        )}
+        {busy === "delayed" && countdown > 0
+          ? `Trimit în ${countdown}s — închide aplicația`
+          : `Test în ${CLOSED_APP_DELAY}s (aplicație închisă)`}
+      </Button>
+    </div>
   );
 }
