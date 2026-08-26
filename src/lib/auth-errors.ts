@@ -33,6 +33,7 @@ export type FriendlyAuthErrorCode =
   | "signup_throttled"
   | "signup_disabled"
   | "session_expired"
+  | "mfa_required"
   | "otp_invalid"
   | "otp_expired"
   | "phone_invalid"
