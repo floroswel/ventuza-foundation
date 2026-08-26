@@ -221,29 +221,54 @@ function ResetPasswordPage() {
       );
       if (error) {
         if (codeRequired && isInvalidEmailCode(error)) {
+          const expired = isExpiredEmailCode(error);
           const attempts = codeAttempts + 1;
           setCodeAttempts(attempts);
           setCode("");
+          logReset(expired ? "code_expired" : "code_invalid", { attempts });
+          if (expired) {
+            // Codul expirat nu consumă încercări „greșite” — cerem doar unul nou.
+            setFieldErrors({
+              code: "Codul a expirat. Apasă „Trimite codul din nou” și folosește ultimul email.",
+            });
+            setFormError("Codul de verificare a expirat. Cere un cod nou.");
+            codeInputRef.current?.focus();
+            return;
+          }
           if (attempts >= MAX_CODE_ATTEMPTS) {
             setCodeLocked(true);
+            logReset("code_locked", { attempts });
             setFormError(
               "Prea multe coduri greșite. Din motive de securitate, cere un link nou de resetare.",
             );
             return;
           }
           setFieldErrors({
-            code: `Cod incorect sau expirat. Mai ai ${MAX_CODE_ATTEMPTS - attempts} încercări.`,
+            code: `Cod incorect. Mai ai ${MAX_CODE_ATTEMPTS - attempts} încercări.`,
           });
-          setFormError("Codul de pe email nu a fost acceptat. Verifică ultimul email primit.");
+          setFormError("Codul introdus nu este cel din ultimul email primit.");
           codeInputRef.current?.focus();
           return;
         }
         if (codeRequired) {
           const mapped = translateAuthError(t, error);
-          setFormError(`${mapped.message} ${mapped.action}`);
-          if (mapped.code === "same_password" || mapped.code === "weak_password") {
-            setFieldErrors((current) => ({ ...current, password: mapped.message }));
+          logReset("update_failed", { code: mapped.code });
+          if (mapped.code === "same_password") {
+            setFieldErrors((current) => ({
+              ...current,
+              password: "Parola nouă este identică cu cea veche. Alege alta.",
+            }));
+            setFormError(
+              "Codul a fost acceptat, dar parola nouă este aceeași cu cea veche. Alege o parolă diferită.",
+            );
+            return;
           }
+          if (mapped.code === "weak_password") {
+            setFieldErrors((current) => ({ ...current, password: mapped.message }));
+            setFormError(`Codul a fost acceptat, dar parola nu e acceptată. ${mapped.action}`);
+            return;
+          }
+          setFormError(`${mapped.message} ${mapped.action}`);
           toast.error(mapped.message, { description: mapped.action });
           return;
         }
