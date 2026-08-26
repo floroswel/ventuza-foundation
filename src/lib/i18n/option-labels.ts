@@ -309,3 +309,29 @@ if (import.meta.env?.DEV) {
   });
 }
 
+
+/**
+ * Raport de acoperire pentru etichetele de opțiuni (gen, pronume, orientare,
+ * „ce caut”, interese, triburi…). Consumat de scriptul `i18n:report` și de
+ * panoul admin „Traduceri”.
+ */
+export function optionLabelCoverage(
+  locales: readonly UiLocale[],
+): { locale: UiLocale; total: number; translated: number; percent: number; missing: string[] }[] {
+  const canonicals = Object.keys(DICT);
+  return locales
+    .filter((l) => l !== "en")
+    .map((locale) => {
+      const missing = canonicals.filter((c) => !DICT[c]?.[locale]);
+      const translated = canonicals.length - missing.length;
+      return {
+        locale,
+        total: canonicals.length,
+        translated,
+        percent: canonicals.length
+          ? Math.round((translated / canonicals.length) * 1000) / 10
+          : 100,
+        missing,
+      };
+    });
+}
