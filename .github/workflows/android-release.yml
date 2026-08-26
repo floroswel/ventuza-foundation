@@ -1105,6 +1105,22 @@ jobs:
               else
                 echo "✓ requestLegacyExternalStorage=$RLES (nu este true)"
               fi
+              # 5) Android 16 / ecrane mari: fără restricție de orientare și
+              #    activitate redimensionabilă (recomandare Play Console).
+              if grep -q 'android:screenOrientation' "$MERGED"; then
+                echo "::error::screenOrientation prezent în merged manifest. Android 16 ignoră restricțiile pe ecrane mari — elimină-l."
+                grep -o 'android:screenOrientation="[^"]*"' "$MERGED" | sort -u
+                FAIL=1
+              else
+                echo "✓ fără restricție de orientare (large screens ready)"
+              fi
+              RESIZE=$(grep -oP 'android:resizeableActivity="\K[^"]+' "$MERGED" | head -1 || echo "absent")
+              if [ "$RESIZE" = "false" ]; then
+                echo "::error::resizeableActivity=false — foldables/tablete ar rula în mod compatibilitate."
+                FAIL=1
+              else
+                echo "✓ resizeableActivity=$RESIZE"
+              fi
             fi
           done
           [ "$FAIL" = "0" ] || exit 1
