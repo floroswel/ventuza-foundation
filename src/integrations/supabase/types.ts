@@ -3643,6 +3643,7 @@ export type Database = {
           dealbreakers: string[] | null
           deleted_at: string | null
           diet: string | null
+          discreet_avatar: string | null
           discreet_mode_enabled: boolean
           discrete_mode: boolean
           display_name: string | null
@@ -3775,6 +3776,7 @@ export type Database = {
           dealbreakers?: string[] | null
           deleted_at?: string | null
           diet?: string | null
+          discreet_avatar?: string | null
           discreet_mode_enabled?: boolean
           discrete_mode?: boolean
           display_name?: string | null
@@ -3907,6 +3909,7 @@ export type Database = {
           dealbreakers?: string[] | null
           deleted_at?: string | null
           diet?: string | null
+          discreet_avatar?: string | null
           discreet_mode_enabled?: boolean
           discrete_mode?: boolean
           display_name?: string | null
@@ -6384,6 +6387,7 @@ export type Database = {
           birthdate: string
           body_type: string
           boost_until: string
+          discreet_avatar: string
           display_name: string
           gender: string
           height_cm: number
