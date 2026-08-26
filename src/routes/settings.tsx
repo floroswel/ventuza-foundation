@@ -503,7 +503,16 @@ function SettingsPage() {
               </div>
             </div>
             <div>
-              <label className="text-xs text-muted-foreground">Parolă nouă</label>
+              <label className="text-xs text-muted-foreground">Parola curentă</label>
+              <input
+                type="password"
+                value={currentPwd}
+                autoComplete="current-password"
+                onChange={(e) => setCurrentPwd(e.target.value)}
+                placeholder="parola ta actuală"
+                className="mt-1 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm outline-none focus:border-primary"
+              />
+              <label className="mt-3 block text-xs text-muted-foreground">Parolă nouă</label>
               <div className="mt-1 flex gap-2">
                 <input
                   type="password"
