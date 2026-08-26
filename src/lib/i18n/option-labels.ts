@@ -5,6 +5,7 @@
 
 import { useCallback } from "react";
 import { useUiLocale, type UiLocale } from "./locale";
+import { OPTION_LABELS_EXTRA } from "./option-labels-extra";
 
 type LocaleMap = Partial<Record<UiLocale, string>>;
 
@@ -204,6 +205,16 @@ const DICT: Record<string, LocaleMap> = {
   Meningitis: { ro: "Meningită", en: "Meningitis", de: "Meningitis", fr: "Méningite", es: "Meningitis", it: "Meningite" },
 };
 
+// Completările pentru limbile adăugate ulterior (pt/nl/pl/hu + goluri) trăiesc
+// într-un fișier separat, ca dicționarul de mai sus să rămână lizibil.
+// Nu suprascriu niciodată o valoare existentă.
+for (const [canonical, extra] of Object.entries(OPTION_LABELS_EXTRA)) {
+  const entry = (DICT[canonical] ??= {});
+  for (const [locale, label] of Object.entries(extra)) {
+    if (!(locale in entry)) (entry as Record<string, string>)[locale] = label;
+  }
+}
+
 /** Resolve a canonical option value into a label for the given locale. */
 export function optionLabel(value: string, locale: UiLocale): string {
   const entry = DICT[value];
@@ -298,3 +309,29 @@ if (import.meta.env?.DEV) {
   });
 }
 
+
+/**
+ * Raport de acoperire pentru etichetele de opțiuni (gen, pronume, orientare,
+ * „ce caut”, interese, triburi…). Consumat de scriptul `i18n:report` și de
+ * panoul admin „Traduceri”.
+ */
+export function optionLabelCoverage(
+  locales: readonly UiLocale[],
+): { locale: UiLocale; total: number; translated: number; percent: number; missing: string[] }[] {
+  const canonicals = Object.keys(DICT);
+  return locales
+    .filter((l) => l !== "en")
+    .map((locale) => {
+      const missing = canonicals.filter((c) => !DICT[c]?.[locale]);
+      const translated = canonicals.length - missing.length;
+      return {
+        locale,
+        total: canonicals.length,
+        translated,
+        percent: canonicals.length
+          ? Math.round((translated / canonicals.length) * 1000) / 10
+          : 100,
+        missing,
+      };
+    });
+}

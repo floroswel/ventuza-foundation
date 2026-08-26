@@ -154,6 +154,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  // Limba inițială vine din `Accept-Language` (SSR), deci `<html lang>` și
+  // prima randare sunt deja corecte. Alegerea manuală din localStorage are
+  // prioritate și e aplicată de i18next imediat după hidratare.
+  loader: async () => {
+    try {
+      const { getPreferredLanguage } = await import("@/lib/i18n/language.functions");
+      return await getPreferredLanguage();
+    } catch {
+      return { language: "en" as const };
+    }
+  },
+  staleTime: Infinity,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
@@ -214,8 +226,16 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 });
 
 function RootShell({ children }: { children: ReactNode }) {
+  // Limba detectată din header-ul browserului (fallback „ro” dacă loader-ul
+  // n-a rulat, ex. prerender static).
+  let lang = "ro";
+  try {
+    lang = (Route.useLoaderData() as { language?: string } | undefined)?.language ?? "ro";
+  } catch {
+    /* shell randat fără loader data */
+  }
   return (
-    <html lang="ro" suppressHydrationWarning>
+    <html lang={lang} suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
@@ -268,13 +288,30 @@ function ScreenSecurityMount() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const router = useRouter();
-
+  const serverLanguage = (Route.useLoaderData() as { language?: string } | undefined)?.language;
 
   useEffect(() => {
-    // i18n e deja inițializat de import eager; aici doar setăm <html lang>.
-    void import("@/lib/i18n").then((mod) => {
-      document.documentElement.lang = mod.default.language || "ro";
+    // i18n e deja inițializat de import eager. Dacă utilizatorul nu a ales
+    // manual o limbă, aplicăm ce a cerut browserul prin `Accept-Language`.
+    void import("@/lib/i18n").then(async (mod) => {
+      const manual = (() => {
+        try {
+          return window.localStorage.getItem("vz-lang");
+        } catch {
+          return null;
+        }
+      })();
+      if (!manual && serverLanguage) {
+        const target = mod.normalizeLanguage(serverLanguage);
+        if (mod.default.resolvedLanguage !== target) {
+          await mod.default.changeLanguage(target);
+        }
+      }
+      document.documentElement.lang = mod.default.resolvedLanguage || mod.default.language || "ro";
+      // Corecturi de copy publicate din admin, fără build nou.
+      void import("@/lib/i18n/overrides").then(({ loadI18nOverrides }) => loadI18nOverrides());
     });
+
 
     // Privacy screen: ecranul din multitasking/recents este ascuns.
     void import("@capacitor-community/privacy-screen")

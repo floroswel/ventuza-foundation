@@ -98,6 +98,7 @@ import {
   RiskReviewQueuePanel,
   SignupThrottlePanel,
   SettingsAndFlagsPanel,
+  I18nPanel,
   StaffManagementPanel,
   AdminToolsPanel,
   SupportTicketsPanel,
@@ -185,6 +186,7 @@ type Section =
   | "signals"
   | "signupthrottle"
   | "settings"
+  | "i18n"
   | "staff"
   | "tools"
   | "support"
@@ -280,6 +282,7 @@ function AdminDashboard() {
       "signals",
       "signupthrottle",
       "settings",
+      "i18n",
       "staff",
       "tools",
       "support",
@@ -583,6 +586,14 @@ function AdminDashboard() {
     { id: "data", label: "Date (toate)", icon: Database, group: "System", adminOnly: true },
     
     {
+      id: "i18n",
+      label: "Traduceri",
+      icon: KeyRound,
+      group: "System",
+      adminOnly: true,
+      hint: "Acoperire limbi + export/import dicționare",
+    },
+    {
       id: "settings",
       label: "Settings & flags",
       icon: KeyRound,
@@ -662,6 +673,7 @@ function AdminDashboard() {
       {section === "installfunnel" && <InstallFunnelPanel />}
       {section === "ratelimit" && <RateLimitPanel />}
       {section === "signupthrottle" && <SignupThrottlePanel />}
+      {section === "i18n" && isAdmin && <I18nPanel />}
       {section === "settings" && isAdmin && <SettingsAndFlagsPanel />}
       {section === "staff" && isAdmin && <StaffManagementPanel />}
       {section === "tools" && isAdmin && <AdminToolsPanel />}

@@ -73,6 +73,9 @@ export const RiskReviewQueuePanel = wrap(
 export const SignupThrottlePanel = wrap(
   lazy(() => import("./SignupThrottlePanel").then((m) => ({ default: m.SignupThrottlePanel }))),
 );
+export const I18nPanel = wrap(
+  lazy(() => import("./I18nPanel").then((m) => ({ default: m.I18nPanel }))),
+);
 export const SettingsAndFlagsPanel = wrap(
   lazy(() => import("./SettingsAndFlagsPanel").then((m) => ({ default: m.SettingsAndFlagsPanel }))),
 );

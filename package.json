@@ -19,7 +19,8 @@
     "version:bump:minor": "node scripts/bump-android-version.mjs minor",
     "version:bump:major": "node scripts/bump-android-version.mjs major",
     "release:internal": "bundle exec fastlane android internal",
-    "release:validate": "bundle exec fastlane android validate"
+    "release:validate": "bundle exec fastlane android validate",
+    "i18n:report": "bun scripts/i18n-report.mjs"
   },
   "dependencies": {
     "@capacitor-community/privacy-screen": "^8.0.0",
