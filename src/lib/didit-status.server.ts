@@ -100,23 +100,14 @@ export async function syncDiditStatusForUser(
       const estimatedAge = extractDiditEstimatedAge(decision.raw);
       const statusRaw = sanitizeDiditStatusRaw(decision.raw);
 
-      const rpcPayload: {
-        _session_id: string;
-        _status: string;
-        _result: string;
-        _estimated_age?: number;
-        _status_raw: unknown;
-      } = {
+      const { error } = await supabaseAdmin.rpc("didit_apply_result", {
         _session_id: sessionId,
         _status: mapped.status,
         _result: mapped.result,
-        _status_raw: statusRaw,
-      };
-      if (typeof estimatedAge === "number" && Number.isFinite(estimatedAge)) {
-        rpcPayload._estimated_age = estimatedAge;
-      }
-
-      const { error } = await supabaseAdmin.rpc("didit_apply_result", rpcPayload);
+        // Parametrul SQL este nullable; tipurile generate îl marchează numeric obligatoriu.
+        _estimated_age: estimatedAge as number,
+        _status_raw: statusRaw as never,
+      });
       if (error) {
         lastError = error.message;
         continue;
