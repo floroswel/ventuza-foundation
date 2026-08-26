@@ -25,6 +25,13 @@ export function isLegacyHost(host: string): boolean {
 export function oauthOrigin(): string {
   if (typeof window === "undefined") return CANONICAL_ORIGIN;
   const host = window.location.hostname.toLowerCase();
+  // Bundle-ul Android rulează de pe localhost; linkurile de confirmare/reset
+  // trebuie însă să fie publice și să poată reveni în aplicație prin App Links.
+  const native = Boolean(
+    (window as Window & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor
+      ?.isNativePlatform?.(),
+  );
+  if (native) return CANONICAL_ORIGIN;
   if (isLegacyHost(window.location.host)) return CANONICAL_ORIGIN;
   if (host === "suzeta.app" || host === "www.suzeta.app") return CANONICAL_ORIGIN;
   // dev / preview / capacitor: păstrăm originea locală

@@ -92,7 +92,9 @@ function VerifyStatusPage() {
   }, [user?.id, refresh]);
 
   const ageStatus = (status?.profile?.age_status as AgeStatus) ?? "unverified";
-  const isPending = ageStatus === "pending" || ageStatus === "unverified";
+  const hasSession = Boolean(status?.lastSession);
+  const isPending = ageStatus === "pending" || (ageStatus === "unverified" && hasSession);
+  const needsStart = ageStatus === "unverified" && !hasSession;
   const isVerified = ageStatus === "verified";
   const isFailed = ageStatus === "failed" || ageStatus === "expired";
 
@@ -182,6 +184,19 @@ function VerifyStatusPage() {
               )}
               <Button asChild className="mt-6 w-full">
                 <Link to="/discover">Continuă spre Discover</Link>
+              </Button>
+            </section>
+          )}
+
+          {needsStart && (
+            <section className="mt-8 rounded-lg border border-border bg-surface/50 p-6 text-center">
+              <ShieldCheck className="mx-auto size-10 text-primary" />
+              <p className="mt-4 text-lg font-semibold">Verificarea nu a fost pornită</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Pornește verificarea 18+ și acordă consimțământul explicit înainte de selfie.
+              </p>
+              <Button asChild className="mt-6 w-full">
+                <Link to="/verify">Pornește verificarea</Link>
               </Button>
             </section>
           )}
