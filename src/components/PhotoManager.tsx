@@ -16,7 +16,7 @@ import {
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { moderatePhoto } from "@/lib/verification.functions";
+import { moderateProfileUpload } from "@/lib/photo-moderation.functions";
 import { cn } from "@/lib/utils";
 import { computePhash } from "@/lib/phash";
 import { compressImageForChat } from "@/lib/image-compress";
@@ -67,7 +67,7 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
   );
   const [dragIndex, setDragIndex] = useState<number | null>(null);
   const [overIndex, setOverIndex] = useState<number | null>(null);
-  const moderate = useServerFn(moderatePhoto);
+  const moderateProfile = useServerFn(moderateProfileUpload);
   const fileRef = useRef<HTMLInputElement>(null);
 
   async function loadPending() {
@@ -159,6 +159,7 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
 
     setBusy(true);
     const added: string[] = [];
+    let movedToAlbum = 0;
     try {
       for (let idx = 0; idx < list.length; idx++) {
         let file: File | Blob = list[idx];
@@ -208,33 +209,6 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           continue;
         }
 
-        // AI moderation — BLOCKING
-        updateQueue(item.id, { status: "moderating" });
-        let aiAllowed: boolean | null = null;
-        let aiReason: string | null = null;
-        try {
-          const { data: signedData } = await supabase.storage
-            .from("profile-photos")
-            .createSignedUrl(path, 300);
-          if (signedData?.signedUrl) {
-            const mod: any = await moderate({ data: { photoUrl: signedData.signedUrl } });
-            aiReason = mod.reason || null;
-            if (!mod.allowed && mod.labels) {
-              // verdict clar de refuz (minor / armă / sânge / nud pe profil)
-              await supabase.storage.from("profile-photos").remove([path]);
-              updateQueue(item.id, {
-                status: "error",
-                error: `respinsă: ${mod.reason || "conținut nepermis pe profilul public"}`,
-              });
-              continue;
-            }
-            aiAllowed = mod.labels ? true : null; // null = AI indisponibil → doar om
-          }
-        } catch (modErr) {
-          aiAllowed = null;
-          aiReason = `moderare AI indisponibilă: ${(modErr as Error).message}`;
-        }
-
         // Perceptual hash → server (catfishing detection) — non-blocking
         try {
           const asFile = file instanceof File ? file : new File([file], `${path}`, { type: contentType });
@@ -244,25 +218,45 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
           /* non-blocking */
         }
 
-        // Coadă de moderare umană — poza NU devine publică acum.
-        const { error: revErr } = await supabase.from("photo_reviews").insert({
-          user_id: userId,
-          storage_path: path,
-          status: "pending",
-          surface: "profile",
-          source: "upload",
-          ai_allowed: aiAllowed,
-          ai_reason: aiReason,
-        });
+        // Moderare AI — BLOCKING. Nudul adult se mută automat în albumul privat.
+        updateQueue(item.id, { status: "moderating" });
+        let res: { outcome: string; reason: string };
+        try {
+          res = (await moderateProfile({ data: { path } })) as any;
+        } catch (modErr) {
+          updateQueue(item.id, {
+            status: "error",
+            error: `moderare indisponibilă: ${(modErr as Error).message}`,
+          });
+          continue;
+        }
 
-        if (revErr) {
-          await supabase.storage.from("profile-photos").remove([path]);
-          updateQueue(item.id, { status: "error", error: revErr.message });
+        if (res.outcome === "rejected") {
+          updateQueue(item.id, {
+            status: "error",
+            error: `respinsă: ${res.reason || "conținut nepermis"}`,
+          });
+          continue;
+        }
+
+        if (res.outcome === "moved_to_album") {
+          movedToAlbum += 1;
+          updateQueue(item.id, { status: "done", error: "mutată în albumul privat" });
           continue;
         }
 
         added.push(path);
         updateQueue(item.id, { status: "done" });
+      }
+
+      if (movedToAlbum > 0) {
+        toast.info(
+          movedToAlbum > 1
+            ? `${movedToAlbum} poze erau prea „hot” pentru profilul public — le-am pus în albumul tău privat. Pentru profil alege o poză normală, cu fața ta; le poți debloca oricând cui vrei.`
+            : "Poza era prea „hot” pentru profilul public — am pus-o în albumul tău privat. Pentru profil alege o poză normală, cu fața ta; albumul îl deblochezi cui vrei.",
+          { duration: 8000 },
+        );
+        await loadPending();
       }
 
       if (added.length) {
