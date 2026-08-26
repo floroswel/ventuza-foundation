@@ -731,12 +731,17 @@ function AuthPage() {
       />
 
       <div className="relative z-10 mx-auto flex min-h-dvh max-w-md flex-col px-6 py-10">
-        <Link
-          to="/"
-          className="self-start text-xs uppercase tracking-[0.22em] text-muted-foreground hover:text-primary"
-        >
-          {t("auth.back")}
-        </Link>
+        {/* În aplicația nativă nu există „site” în spate: săgeata Înapoi ducea
+            în gol și arăta ca un browser. O afișăm doar pe web. */}
+        {!isNativePlatformSync() && (
+          <Link
+            to="/"
+            className="self-start text-xs uppercase tracking-[0.22em] text-muted-foreground hover:text-primary"
+          >
+            {t("auth.back")}
+          </Link>
+        )}
+
 
         <div className="mt-10 flex flex-col items-center text-center">
           <img
