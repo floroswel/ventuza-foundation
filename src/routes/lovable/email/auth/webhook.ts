@@ -134,12 +134,19 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
           )
         }
 
-        // Build template props from payload.data (HookData structure)
+        const recoveryTokenHash = payload.data.token_hash || payload.data.hashed_token
+        const confirmationUrl =
+          emailType === 'recovery' && recoveryTokenHash
+            ? `https://${ROOT_DOMAIN}/reset-password?token_hash=${encodeURIComponent(recoveryTokenHash)}`
+            : payload.data.url
+
+        // Recovery opens directly on Suzeta. The client verifies the one-time
+        // token, so no infrastructure/provider domain is exposed in the browser.
         const templateProps = {
           siteName: SITE_NAME,
           siteUrl: `https://${ROOT_DOMAIN}`,
           recipient: payload.data.email,
-          confirmationUrl: payload.data.url,
+          confirmationUrl,
           token: payload.data.token,
           email: payload.data.email,
           oldEmail: payload.data.old_email,

@@ -47,12 +47,22 @@ function ResetPasswordPage() {
         setInvalidLink(false);
       }
     });
-    void supabase.auth.getSession().then(({ data }) => {
+    const tokenHash = new URLSearchParams(window.location.search).get("token_hash");
+    const recovery = tokenHash
+      ? supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" })
+      : supabase.auth.getSession();
+    void recovery.then(({ data, error }) => {
       if (!active) return;
-      if (data.session) {
+      if (error) {
+        window.clearTimeout(timeout);
+        setInvalidLink(true);
+        return;
+      }
+      if ("session" in data && data.session) {
         window.clearTimeout(timeout);
         setReady(true);
         setInvalidLink(false);
+        if (tokenHash) window.history.replaceState({}, "", "/reset-password");
       }
     });
     return () => {
