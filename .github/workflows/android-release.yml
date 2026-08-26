@@ -1237,23 +1237,8 @@ jobs:
           target: google_apis
           arch: x86_64
           disable-animations: true
-          script: |
-            set -eu
-            adb install -r /tmp/apks/universal.apk
-            adb logcat -c
-            adb shell am start -n app.suzeta/app.suzeta.MainActivity
-            sleep 15
-            if ! adb shell pidof app.suzeta > /dev/null; then
-              echo "::error::Aplicația s-a închis singură după pornire (crash la boot)."
-              adb logcat -d -t 400 | grep -iE "AndroidRuntime|FATAL|app.suzeta" | tail -80
-              exit 1
-            fi
-            if adb logcat -d | grep -q "FATAL EXCEPTION"; then
-              echo "::error::FATAL EXCEPTION în logcat la pornire."
-              adb logcat -d | grep -A 40 "FATAL EXCEPTION" | tail -80
-              exit 1
-            fi
-            echo "✓ Aplicația pornește și rămâne activă 15s pe emulator API 34."
+          script: bash scripts/emulator-smoke.sh /tmp/apks/universal.apk
+
 
 
       # Gardul suplimentar `github.ref`: un dispatch dintr-un branch de lucru nu
