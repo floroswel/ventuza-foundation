@@ -1,5 +1,1 @@
-Suzeta 1.0.38
-
-- Îmbunătățiri și corectări de bug-uri.
-
-Completează înainte de upload pe Play Console.
+Suport complet pentru ecrane mari (foldables, tablete), afișare edge-to-edge conformă cu Android 15/16 și optimizare R8: pornire mai rapidă și consum mai mic de memorie.
