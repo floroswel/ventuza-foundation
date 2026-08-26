@@ -135,6 +135,7 @@ function SettingsPage() {
   const [email, setEmail] = useState("");
   const [newEmail, setNewEmail] = useState("");
   const [newPwd, setNewPwd] = useState("");
+  const [currentPwd, setCurrentPwd] = useState("");
   // Confirmarea schimbării parolei poate cere fie nonce email, fie AAL2 real
   // prin aplicația Authenticator când contul are un factor TOTP activ.
   const [pwdCodeRequired, setPwdCodeRequired] = useState(false);
@@ -142,6 +143,10 @@ function SettingsPage() {
   const [pwdCodeKind, setPwdCodeKind] = useState<"email" | "totp">("email");
   const [pwdTotpFactorId, setPwdTotpFactorId] = useState<string | null>(null);
   const [pwdBusy, setPwdBusy] = useState(false);
+  const [mfaFactors, setMfaFactors] = useState<
+    { id: string; type: string; status: string; friendlyName: string | null; createdAt: string }[]
+  >([]);
+  const [mfaBusy, setMfaBusy] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState("");
   const [deleteEmail, setDeleteEmail] = useState("");
   const [deleteOpen, setDeleteOpen] = useState(false);
