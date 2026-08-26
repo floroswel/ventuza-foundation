@@ -435,6 +435,8 @@ jobs:
                'android:value="system"'),
               ('com.google.firebase.messaging.default_notification_icon',
                'android:resource="@drawable/ic_launcher_monochrome"'),
+              ('com.google.firebase.messaging.default_notification_color',
+               'android:resource="@color/notification_accent"'),
           )
           for name, value_attr in FCM_META:
               if name in s:
