@@ -71,6 +71,7 @@ import { adminBreakGlassReveal } from "@/lib/admin-break-glass.functions";
 import { adminGetMyRoles } from "@/lib/admin-staff.functions";
 import { EnterpriseUser360Panel } from "@/components/admin/EnterpriseUser360Panel";
 import { Eye, EyeOff } from "lucide-react";
+import { adminInviteVerification } from "@/lib/photo-moderation.functions";
 
 export const Route = createFileRoute("/admin/users/$id")({
   head: () => ({
@@ -474,6 +475,7 @@ function ActionsBar({
       <ForceLogoutDialog userId={userId} onDone={onSuccess} />
       <PasswordResetDialog userId={userId} onDone={onSuccess} />
       <ResendConfirmationDialog userId={userId} onDone={onSuccess} />
+      <InviteVerificationButton userId={userId} />
       <a
         href="/admin#verifqueue"
         className="inline-flex items-center rounded-md border border-input bg-background px-3 h-9 text-sm font-medium hover:bg-accent"
@@ -489,6 +491,31 @@ function ActionsBar({
       <SuspendDialog userId={userId} onDone={onSuccess} />
       <PurgeAccountDialog userId={userId} onDone={onSuccess} />
     </div>
+  );
+}
+
+function InviteVerificationButton({ userId }: { userId: string }) {
+  const fn = useServerFn(adminInviteVerification);
+  const [busy, setBusy] = useState(false);
+  return (
+    <Button
+      variant="outline"
+      disabled={busy}
+      onClick={async () => {
+        setBusy(true);
+        try {
+          await fn({ data: { userIds: [userId] } });
+          toast.success("Invitație la verificare trimisă.");
+        } catch (e) {
+          toast.error((e as Error).message);
+        } finally {
+          setBusy(false);
+        }
+      }}
+    >
+      <CheckCircle2 className="h-4 w-4 mr-1" />
+      Invită la verificare
+    </Button>
   );
 }
 
