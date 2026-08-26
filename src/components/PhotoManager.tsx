@@ -16,6 +16,8 @@ import {
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { DiscreetAvatarPicker } from "@/components/DiscreetAvatarPicker";
+
 import { moderateProfileUpload } from "@/lib/photo-moderation.functions";
 import { cn } from "@/lib/utils";
 import { computePhash } from "@/lib/phash";
