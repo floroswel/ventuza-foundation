@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { TurnstileWidget, isTurnstileConfigured } from "@/components/TurnstileWidget";
 import { translateAuthError, type FriendlyAuthError } from "@/lib/auth-errors";
+import { oauthOrigin } from "@/lib/canonical-origin";
 
 const searchSchema = z.object({ email: z.string().email().optional() });
 
@@ -70,7 +71,7 @@ function CheckEmailPage() {
         type: "signup",
         email,
         options: {
-          emailRedirectTo: `${window.location.origin}/n`,
+          emailRedirectTo: `${oauthOrigin()}/n`,
           captchaToken: captchaToken ?? undefined,
         },
       });
