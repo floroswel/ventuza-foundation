@@ -531,3 +531,148 @@ export const moderateAlbumUpload = createServerFn({ method: "POST" })
     });
     return { allowed: false, pending: false, reason: verdict.reason };
   });
+
+/* ---------------- MODERARE UPLOAD POZĂ DE PROFIL (user) ----------------
+ * Politica: profilul public nu acceptă nuditate. Dacă poza este doar
+ * "prea sexy" (nud adult, fără minori / arme / sânge), nu o aruncăm —
+ * o mutăm automat în albumul privat al userului și îl anunțăm prietenos.
+ */
+const ProfileCheckInput = z.object({ path: z.string().min(3).max(300) });
+
+export const moderateProfileUpload = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => ProfileCheckInput.parse(d))
+  .handler(async ({ data, context }) => {
+    if (!data.path.startsWith(`${context.userId}/`)) {
+      throw new Error("Poza trebuie să fie a ta.");
+    }
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { classifyPhoto } = await import("./photo-scan.server");
+    const sa = supabaseAdmin as any;
+
+    const { data: signed } = await sa.storage
+      .from("profile-photos")
+      .createSignedUrl(data.path, 600);
+    if (!signed?.signedUrl) throw new Error("Poza nu a putut fi citită.");
+
+    let verdict: any = null;
+    try {
+      verdict = await classifyPhoto(signed.signedUrl, "profile");
+    } catch {
+      verdict = null;
+    }
+
+    // AI indisponibil → verificare umană
+    if (!verdict) {
+      await sa.from("photo_reviews").upsert(
+        {
+          user_id: context.userId,
+          storage_path: data.path,
+          surface: "profile",
+          source: "upload",
+          status: "pending",
+          ai_allowed: null,
+          ai_reason: "Clasificare AI indisponibilă",
+        },
+        { onConflict: "storage_path" },
+      );
+      return { outcome: "pending" as const, reason: "" };
+    }
+
+    // Interzis oriunde: minori, arme, sânge → ștergem
+    if (verdict.minor || verdict.weapon || verdict.blood) {
+      await sa.storage.from("profile-photos").remove([data.path]);
+      await sa.from("photo_reviews").upsert(
+        {
+          user_id: context.userId,
+          storage_path: data.path,
+          surface: "profile",
+          source: "upload",
+          status: "rejected",
+          ai_allowed: false,
+          ai_reason: verdict.reason,
+          ai_labels: verdict,
+          severity: verdict.severity,
+          scanned_at: new Date().toISOString(),
+        },
+        { onConflict: "storage_path" },
+      );
+      await logAudit(sa, {
+        actor_id: context.userId,
+        action: "profile.photo.blocked",
+        target_table: "profiles",
+        target_id: context.userId,
+        after_data: { labels: verdict, surface: "profile" },
+        severity: verdict.severity === "critical" ? "critical" : "warning",
+      });
+      return { outcome: "rejected" as const, reason: verdict.reason };
+    }
+
+    // Nud adult → mutăm în albumul privat
+    if (verdict.nudity || verdict.sexual_act) {
+      const dl = await sa.storage.from("profile-photos").download(data.path);
+      if (dl.error || !dl.data) {
+        await sa.storage.from("profile-photos").remove([data.path]);
+        return { outcome: "rejected" as const, reason: "Poza nu a putut fi mutată." };
+      }
+      const buf = new Uint8Array(await dl.data.arrayBuffer());
+      const up = await sa.storage
+        .from("private-albums")
+        .upload(data.path, buf, { contentType: dl.data.type || "image/jpeg", upsert: true });
+      await sa.storage.from("profile-photos").remove([data.path]);
+      if (up.error) {
+        return { outcome: "rejected" as const, reason: "Poza nu a putut fi mutată." };
+      }
+
+      const { data: alb } = await sa
+        .from("private_albums")
+        .select("photos")
+        .eq("owner_id", context.userId)
+        .maybeSingle();
+      const cur: string[] = Array.isArray(alb?.photos) ? alb.photos : [];
+      if (!cur.includes(data.path)) {
+        await sa
+          .from("private_albums")
+          .upsert(
+            { owner_id: context.userId, photos: [...cur, data.path] },
+            { onConflict: "owner_id" },
+          );
+      }
+
+      await sa.from("photo_reviews").upsert(
+        {
+          user_id: context.userId,
+          storage_path: data.path,
+          surface: "album",
+          source: "upload",
+          status: "approved",
+          ai_allowed: true,
+          ai_reason: "Mutată automat din profil în albumul privat (nud adult).",
+          ai_labels: verdict,
+          scanned_at: new Date().toISOString(),
+        },
+        { onConflict: "storage_path" },
+      );
+
+      return {
+        outcome: "moved_to_album" as const,
+        reason: verdict.reason || "Conținut pentru adulți.",
+      };
+    }
+
+    // OK → coadă de verificare umană
+    await sa.from("photo_reviews").upsert(
+      {
+        user_id: context.userId,
+        storage_path: data.path,
+        surface: "profile",
+        source: "upload",
+        status: "pending",
+        ai_allowed: true,
+        ai_labels: verdict,
+        scanned_at: new Date().toISOString(),
+      },
+      { onConflict: "storage_path" },
+    );
+    return { outcome: "pending" as const, reason: "" };
+  });
