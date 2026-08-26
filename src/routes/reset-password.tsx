@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { Loader2, Lock } from "lucide-react";
@@ -35,7 +35,6 @@ function ResetPasswordPage() {
   const [submitting, setSubmitting] = useState(false);
   const [invalidLink, setInvalidLink] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
-  const recoverySessionRef = useRef(false);
 
   useEffect(() => {
     let active = true;
@@ -44,7 +43,6 @@ function ResetPasswordPage() {
     }, 8_000);
     const { data: sub } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") {
-        recoverySessionRef.current = true;
         window.clearTimeout(timeout);
         setReady(true);
         setInvalidLink(false);
@@ -62,7 +60,6 @@ function ResetPasswordPage() {
         return;
       }
       if ("session" in data && data.session) {
-        recoverySessionRef.current = Boolean(tokenHash) || data.session.user.recovery_sent_at !== undefined;
         window.clearTimeout(timeout);
         setReady(true);
         setInvalidLink(false);
@@ -108,7 +105,6 @@ function ResetPasswordPage() {
         return;
       }
 
-      recoverySessionRef.current = false;
       await supabase.auth.signOut({ scope: "local" });
       toast.success(t("auth.errors.passwordUpdated"));
       navigate({ to: "/auth", search: { mode: "login" }, replace: true });
