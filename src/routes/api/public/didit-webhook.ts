@@ -90,7 +90,27 @@ export const Route = createFileRoute("/api/public/didit-webhook")({
           return new Response(`rpc error: ${error.message}`, { status: 500 });
         }
 
+        // Audit: legăm evenimentul de user prin sesiune (fără PII în detail).
+        try {
+          const { data: sess } = await supabase
+            .from("didit_sessions")
+            .select("user_id")
+            .eq("session_id", sessionId)
+            .maybeSingle();
+          if (sess?.user_id) {
+            await supabase.rpc("record_account_flow_event", {
+              _kind: "didit",
+              _stage: `webhook_${mapped.status}`,
+              _detail: { result: mapped.result, estimated_age: estimatedAge ?? null } as never,
+              _user_id: sess.user_id,
+            });
+          }
+        } catch (auditErr) {
+          console.warn("[didit-webhook] audit log failed", auditErr);
+        }
+
         return new Response("ok", { status: 200 });
+
       },
     },
   },
