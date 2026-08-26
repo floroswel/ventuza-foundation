@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
-import { AlertCircle, Loader2, Lock, ShieldCheck } from "lucide-react";
+import { AlertCircle, Loader2, Lock, MailCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,12 +26,12 @@ export const Route = createFileRoute("/reset-password")({
 
 const passwordSchema = z.string().min(8, "password_min").max(72, "password_max");
 
-const MAX_MFA_ATTEMPTS = 5;
+const MAX_CODE_ATTEMPTS = 5;
 
 type FieldErrors = {
   password?: string;
   confirm?: string;
-  mfa?: string;
+  code?: string;
 };
 
 function isExpiredLinkError(error: unknown) {
@@ -42,6 +42,16 @@ function isExpiredLinkError(error: unknown) {
     msg.includes("not found") ||
     msg.includes("token has expired") ||
     msg.includes("otp_expired")
+  );
+}
+
+function needsEmailCode(error: unknown) {
+  const msg = String((error as { message?: string })?.message ?? error ?? "").toLowerCase();
+  return (
+    msg.includes("nonce") ||
+    msg.includes("reauthentication") ||
+    msg.includes("aal2 session is required") ||
+    msg.includes("mfa")
   );
 }
 
@@ -56,12 +66,13 @@ function ResetPasswordPage() {
   const [linkReason, setLinkReason] = useState<"expired" | "used" | "timeout">("expired");
   const [formError, setFormError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
-  const [mfaRequired, setMfaRequired] = useState(false);
-  const [mfaCode, setMfaCode] = useState("");
-  const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
-  const [mfaAttempts, setMfaAttempts] = useState(0);
-  const [mfaLocked, setMfaLocked] = useState(false);
-  const mfaInputRef = useRef<HTMLInputElement>(null);
+  const [codeRequired, setCodeRequired] = useState(false);
+  const [code, setCode] = useState("");
+  const [codeAttempts, setCodeAttempts] = useState(0);
+  const [codeLocked, setCodeLocked] = useState(false);
+  const [resending, setResending] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const codeInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -104,13 +115,19 @@ function ResetPasswordPage() {
     };
   }, []);
 
-  // Focus automat pe câmpul 2FA imediat ce devine vizibil (tastatură numerică pe mobil).
+  // Focus automat pe câmpul de cod imediat ce devine vizibil (tastatură numerică pe mobil).
   useEffect(() => {
-    if (mfaRequired && !mfaLocked) {
-      const id = window.setTimeout(() => mfaInputRef.current?.focus(), 60);
+    if (codeRequired && !codeLocked) {
+      const id = window.setTimeout(() => codeInputRef.current?.focus(), 60);
       return () => window.clearTimeout(id);
     }
-  }, [mfaRequired, mfaLocked]);
+  }, [codeRequired, codeLocked]);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const id = window.setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => window.clearTimeout(id);
+  }, [resendCooldown]);
 
   function failLink(reason: "expired" | "used") {
     setReady(false);
@@ -122,24 +139,41 @@ function ResetPasswordPage() {
     const errors: FieldErrors = {};
     const parsed = passwordSchema.safeParse(password);
     if (!parsed.success) {
-      const code = parsed.error.issues[0]?.message;
-      errors.password = t(code === "password_max" ? "auth.errors.passwordMax" : "auth.errors.passwordMin");
+      const c = parsed.error.issues[0]?.message;
+      errors.password = t(c === "password_max" ? "auth.errors.passwordMax" : "auth.errors.passwordMin");
     }
     if (password !== confirm) errors.confirm = t("auth.errors.passwordsDontMatch");
-    if (mfaRequired && !/^\d{6}$/.test(mfaCode)) {
-      errors.mfa = "Introdu codul de 6 cifre din aplicația ta de autentificare.";
+    if (codeRequired && !/^\d{6}$/.test(code)) {
+      errors.code = "Introdu codul de 6 cifre primit pe email.";
     }
     return errors;
   }
 
+  async function sendEmailCode(silent = false) {
+    setResending(true);
+    try {
+      const { error } = await supabase.auth.reauthenticate();
+      if (error) throw error;
+      setResendCooldown(60);
+      if (!silent) toast.success("Ți-am trimis un cod de verificare pe email.");
+      return true;
+    } catch (error) {
+      const mapped = translateAuthError(t, error);
+      setFormError(`${mapped.message} ${mapped.action}`);
+      return false;
+    } finally {
+      setResending(false);
+    }
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
-    if (submitting || mfaLocked) return;
+    if (submitting || codeLocked) return;
     const errors = validate();
     setFieldErrors(errors);
     if (Object.keys(errors).length > 0) {
       setFormError("Verifică datele marcate mai jos.");
-      if (errors.mfa) mfaInputRef.current?.focus();
+      if (errors.code) codeInputRef.current?.focus();
       return;
     }
     setFormError(null);
@@ -154,42 +188,37 @@ function ResetPasswordPage() {
         return;
       }
 
-      if (mfaRequired) {
-        const { error: mfaError } = await supabase.auth.mfa.challengeAndVerify({
-          factorId: mfaFactorId!,
-          code: mfaCode,
-        });
-        if (mfaError) {
-          const attempts = mfaAttempts + 1;
-          setMfaAttempts(attempts);
-          setMfaCode("");
-          if (attempts >= MAX_MFA_ATTEMPTS) {
-            setMfaLocked(true);
+      const { error } = await supabase.auth.updateUser(
+        codeRequired ? { password, nonce: code } : { password },
+      );
+      if (error) {
+        if (codeRequired) {
+          const attempts = codeAttempts + 1;
+          setCodeAttempts(attempts);
+          setCode("");
+          if (attempts >= MAX_CODE_ATTEMPTS) {
+            setCodeLocked(true);
             setFormError(
               "Prea multe coduri greșite. Din motive de securitate, cere un link nou de resetare.",
             );
             return;
           }
           setFieldErrors({
-            mfa: `Cod incorect sau expirat. Mai ai ${MAX_MFA_ATTEMPTS - attempts} încercări.`,
+            code: `Cod incorect sau expirat. Mai ai ${MAX_CODE_ATTEMPTS - attempts} încercări.`,
           });
-          setFormError("Codul 2FA nu a fost acceptat. Introdu codul afișat acum în aplicație.");
-          mfaInputRef.current?.focus();
+          setFormError("Codul de pe email nu a fost acceptat. Verifică ultimul email primit.");
+          codeInputRef.current?.focus();
           return;
         }
-      }
-
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) {
-        if (/aal2 session is required|mfa.*required/i.test(error.message)) {
-          const { data: factors, error: factorsError } = await supabase.auth.mfa.listFactors();
-          const verifiedFactor = factors?.all.find((factor) => factor.status === "verified");
-          if (!factorsError && verifiedFactor) {
-            setMfaFactorId(verifiedFactor.id);
-            setMfaRequired(true);
-            setFormError("Pentru protecția contului, confirmă schimbarea cu codul 2FA.");
-            return;
-          }
+        if (needsEmailCode(error)) {
+          setCodeRequired(true);
+          const sent = await sendEmailCode(true);
+          setFormError(
+            sent
+              ? "Pentru siguranță, confirmă schimbarea cu codul de 6 cifre trimis pe email."
+              : "Pentru siguranță e nevoie de un cod pe email. Apasă „Trimite codul din nou”.",
+          );
+          return;
         }
         if (isExpiredLinkError(error)) {
           failLink("expired");
@@ -324,62 +353,77 @@ function ResetPasswordPage() {
                 </p>
               )}
             </div>
-            {mfaRequired && (
-              <div className="space-y-1.5" data-testid="reset-mfa-step">
+            {codeRequired && (
+              <div className="space-y-1.5" data-testid="reset-email-code-step">
                 <Label
-                  htmlFor="mfa-code"
+                  htmlFor="email-code"
                   className="text-xs uppercase tracking-[0.18em] text-muted-foreground"
                 >
-                  Cod de verificare 2FA
+                  Cod de verificare primit pe email
                 </Label>
                 <div className="relative">
-                  <ShieldCheck className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                  <MailCheck className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    id="mfa-code"
-                    ref={mfaInputRef}
+                    id="email-code"
+                    ref={codeInputRef}
                     type="text"
                     inputMode="numeric"
                     autoComplete="one-time-code"
                     pattern="[0-9]{6}"
                     maxLength={6}
                     required
-                    disabled={mfaLocked}
-                    aria-invalid={!!fieldErrors.mfa}
-                    aria-describedby="mfa-hint"
-                    value={mfaCode}
+                    disabled={codeLocked}
+                    aria-invalid={!!fieldErrors.code}
+                    aria-describedby="code-hint"
+                    value={code}
                     onChange={(event) => {
-                      setMfaCode(event.target.value.replace(/\D/g, "").slice(0, 6));
-                      if (fieldErrors.mfa) setFieldErrors((prev) => ({ ...prev, mfa: undefined }));
+                      setCode(event.target.value.replace(/\D/g, "").slice(0, 6));
+                      if (fieldErrors.code) setFieldErrors((prev) => ({ ...prev, code: undefined }));
                     }}
                     className="h-12 pl-10 text-center text-lg tracking-[0.4em]"
                     placeholder="000000"
                   />
                 </div>
                 <p
-                  id="mfa-hint"
-                  role={fieldErrors.mfa ? "alert" : undefined}
+                  id="code-hint"
+                  role={fieldErrors.code ? "alert" : undefined}
                   aria-live="polite"
-                  className={fieldErrors.mfa ? "text-xs text-destructive" : "text-xs text-muted-foreground"}
+                  className={fieldErrors.code ? "text-xs text-destructive" : "text-xs text-muted-foreground"}
                 >
-                  {fieldErrors.mfa ??
-                    "Deschide aplicația de autentificare și introdu codul de 6 cifre valabil acum."}
+                  {fieldErrors.code ??
+                    "Deschide emailul primit acum de la Suzeta și introdu codul de 6 cifre."}
                 </p>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="w-full rounded-full text-xs"
+                  disabled={resending || resendCooldown > 0 || codeLocked}
+                  onClick={() => void sendEmailCode()}
+                >
+                  {resending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : resendCooldown > 0 ? (
+                    `Trimite codul din nou în ${resendCooldown}s`
+                  ) : (
+                    "Trimite codul din nou"
+                  )}
+                </Button>
               </div>
             )}
             <Button
               type="submit"
-              disabled={submitting || mfaLocked || (mfaRequired && mfaCode.length !== 6)}
+              disabled={submitting || codeLocked || (codeRequired && code.length !== 6)}
               className="h-12 w-full rounded-full text-sm uppercase tracking-[0.18em]"
             >
               {submitting ? (
                 <Loader2 className="size-4 animate-spin" />
-              ) : mfaRequired ? (
+              ) : codeRequired ? (
                 "Confirmă și schimbă parola"
               ) : (
                 t("auth.resetPassword.submit")
               )}
             </Button>
-            {mfaLocked && (
+            {codeLocked && (
               <Button
                 type="button"
                 variant="outline"
