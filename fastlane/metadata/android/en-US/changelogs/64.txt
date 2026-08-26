@@ -1,5 +1,1 @@
-Suzeta 1.0.54
-
-- Improvements and bug fixes.
-
-Completează înainte de upload pe Play Console.
+Pull down to refresh any screen and instantly check for a new app update.

@@ -1,5 +1,1 @@
-Suzeta 1.0.54
-
-- Îmbunătățiri și corectări de bug-uri.
-
-Completează înainte de upload pe Play Console.
+Trage de sus în jos pentru a reîmprospăta orice ecran și a verifica instant dacă există o actualizare nouă.
