@@ -6039,6 +6039,7 @@ export type Database = {
           required: boolean
         }[]
       }
+      cron_didit_reconcile: { Args: never; Returns: undefined }
       current_week_start: { Args: never; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }

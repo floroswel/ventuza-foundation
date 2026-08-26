@@ -196,6 +196,21 @@ function PrivacyPage() {
                 .
               </p>
 
+              <h2 className="mt-6 text-base font-semibold">
+                4.2. Responsabilul cu protecția datelor (DPO)
+              </h2>
+              <p className="mt-2 text-foreground/85">
+                Am desemnat un punct de contact dedicat pentru protecția datelor (DPO — Data
+                Protection Officer), care supraveghează conformitatea GDPR și răspunde cererilor
+                persoanelor vizate și ale autorităților de supraveghere:
+                <a className="text-primary" href="mailto:dpo@suzeta.ro">
+                  {" "}
+                  dpo@suzeta.ro
+                </a>
+                . Poți contacta DPO-ul pentru orice întrebare despre prelucrarea datelor tale,
+                inclusiv pentru datele din categorii speciale (Art. 9 GDPR).
+              </p>
+
               <h2 className="mt-6 text-base font-semibold">5. Drepturile tale GDPR</h2>
               <ul className="mt-2 list-disc space-y-1 pl-5 text-foreground/85">
                 <li>
