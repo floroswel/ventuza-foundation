@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.31",
-  "versionCode": 41,
+  "versionName": "1.0.32",
+  "versionCode": 42,
   "notes": "Resetare parola imbunatatita: mesaj clar la link expirat, suport 2FA cu cod de 6 cifre si erori explicite in formular.",
-  "updatedAt": "2026-08-26T03:20:54.524Z"
+  "updatedAt": "2026-08-26T03:30:04.555Z"
 }
