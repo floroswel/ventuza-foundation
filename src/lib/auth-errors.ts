@@ -198,11 +198,11 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
 
   if (msg.includes("aal2 session is required") || msg.includes("mfa verification required")) {
     return {
-      code: "session_expired",
-      i18nKey: "authErrors.sessionExpired",
-      actionKey: "authErrors.actions.sessionExpired",
+      code: "mfa_required",
+      i18nKey: "authErrors.mfaRequired",
+      actionKey: "authErrors.actions.mfaRequired",
       message: "Este necesară confirmarea 2FA.",
-      action: "Introdu codul de 6 cifre din aplicația ta de autentificare.",
+      action: "Introdu codul curent de 6 cifre din aplicația Authenticator, nu codul primit pe email.",
     };
   }
 
