@@ -179,6 +179,23 @@ export function mapAuthError(err: unknown): FriendlyAuthError {
     };
   }
 
+  // RECOVERY SESSION / LINK EXPIRED
+  if (
+    msg.includes("session_not_found") ||
+    msg.includes("auth session missing") ||
+    msg.includes("invalid jwt") ||
+    msg.includes("jwt expired") ||
+    msg.includes("token has expired")
+  ) {
+    return {
+      code: "session_expired",
+      i18nKey: "authErrors.sessionExpired",
+      actionKey: "authErrors.actions.sessionExpired",
+      message: "Linkul de resetare a expirat.",
+      action: "Cere un link nou din ecranul de autentificare și folosește-l o singură dată.",
+    };
+  }
+
   // ALREADY REGISTERED
   if (
     msg.includes("already registered") ||
