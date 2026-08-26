@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Lock, Loader2, Plus, X, ImagePlus } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { moderateAlbumUpload } from "@/lib/photo-moderation.functions";
 import { ProtectedImage } from "@/components/ProtectedImage";
 
 const MAX = 12;
 const MAX_SIZE_MB = 8;
 
 export function PrivateAlbumManager({ userId }: { userId: string }) {
+  const moderateAlbum = useServerFn(moderateAlbumUpload);
   const [photos, setPhotos] = useState<string[]>([]);
   const [signed, setSigned] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -16,6 +19,7 @@ export function PrivateAlbumManager({ userId }: { userId: string }) {
     Array<{ id: string; requester_id: string; requester_name: string | null }>
   >([]);
   const fileRef = useRef<HTMLInputElement>(null);
+
 
   async function load() {
     setLoading(true);
