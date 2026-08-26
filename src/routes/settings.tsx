@@ -75,6 +75,8 @@ function SettingsPage() {
   const navigate = useNavigate();
   const deleteAcct = useServerFn(deleteMyAccount);
   const exportData = useServerFn(exportMyData);
+  const listFactorsFn = useServerFn(listMyMfaFactors);
+  const disableMfaFn = useServerFn(disableMyMfa);
   // Sursa unică pentru preferințele de notificări + discrete mode. Se
   // hidratează la login și se actualizează în realtime în toate suprafețele
   // (inbox, toast) fără refresh.
