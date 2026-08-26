@@ -88,17 +88,41 @@ jobs:
           h = {"Authorization": f"Bearer {creds.token}", "Content-Type": "application/json"}
           base = f"https://androidpublisher.googleapis.com/androidpublisher/v3/applications/{PKG}"
 
-          edit = requests.post(f"{base}/edits", headers=h).json()
-          eid = edit["id"]
+          er = requests.post(f"{base}/edits", headers=h)
+          if er.status_code >= 300:
+              sys.exit(
+                  "Nu pot deschide un edit în Play Console: "
+                  f"{er.status_code} {er.text}\n"
+                  "Cauze uzuale: contul de serviciu nu are acces la aplicația app.suzeta "
+                  "(Play Console → Users and permissions → invită service account-ul cu "
+                  "'Release to production' pe această aplicație), sau Google Play Android "
+                  "Developer API nu e activat în proiectul Google Cloud."
+              )
+          eid = er.json()["id"]
 
           # 1) confirmă că versionCode-ul chiar există pe track-ul sursă
-          src = requests.get(f"{base}/edits/{eid}/tracks/{from_track}", headers=h).json()
+          tr = requests.get(f"{base}/edits/{eid}/tracks/{from_track}", headers=h)
+          if tr.status_code >= 300:
+              sys.exit(f"Nu pot citi track-ul '{from_track}': {tr.status_code} {tr.text}")
+          src = tr.json()
           found = any(
               code in [int(c) for c in r.get("versionCodes", [])]
               for r in src.get("releases", [])
           )
           if not found:
-              sys.exit(f"versionCode {code} nu se află pe track-ul '{from_track}'. Rulează întâi build-ul.")
+              all_tracks = requests.get(f"{base}/edits/{eid}/tracks", headers=h).json()
+              inventar = {
+                  t.get("track"): sorted(
+                      int(c) for rel in t.get("releases", []) for c in rel.get("versionCodes", []) or []
+                  )
+                  for t in all_tracks.get("tracks", [])
+              }
+              sys.exit(
+                  f"versionCode {code} nu se află pe track-ul '{from_track}'.\n"
+                  f"Ce există acum în Play: {json.dumps(inventar)}\n"
+                  "Rulează întâi workflow-ul „Android Release” ca să urce build-ul pe internal."
+              )
+
 
           # 2) scrie release-ul în production cu userFraction (rollout etapizat)
           notes = (local.get("notes") or "").strip()[:490]
