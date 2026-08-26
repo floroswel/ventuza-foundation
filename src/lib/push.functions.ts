@@ -324,6 +324,13 @@ export const sendPushToUser = createServerFn({ method: "POST" })
 const TestInput = z.object({
   /** Canalul verificat: `message` → messages_v2, `update` → updates_v1. */
   kind: z.enum(["message", "update", "system"]).default("message"),
+  /**
+   * Întârziere înainte de trimitere, ca utilizatorul să apuce să ÎNCHIDĂ
+   * aplicația și să verifice notificarea de sistem (nu doar toast-ul din
+   * foreground). Un timer pe client nu ar funcționa: procesul moare odată cu
+   * aplicația. Plafonat la 30s ca să nu ținem request-ul deschis inutil.
+   */
+  delaySeconds: z.number().int().min(0).max(30).default(0),
 });
 
 export const sendTestPush = createServerFn({ method: "POST" })
