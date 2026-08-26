@@ -98,6 +98,10 @@ self.addEventListener("fetch", (event) => {
         .then((res) => {
           if (res && res.ok) {
             cache.put(req, res.clone()).then(() => trimImageCache(cache));
+          } else if (res && (res.status === 400 || res.status === 403 || res.status === 404)) {
+            // Obiectul a fost șters (ex: poză respinsă de moderare) — nu mai
+            // servim varianta veche din cache pe termen nelimitat.
+            cache.delete(req, { ignoreSearch: true });
           }
           return res;
         })
@@ -109,3 +113,4 @@ self.addEventListener("fetch", (event) => {
     })(),
   );
 });
+
