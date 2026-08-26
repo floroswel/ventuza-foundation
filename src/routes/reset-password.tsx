@@ -77,6 +77,22 @@ function isExpiredEmailCode(error: unknown) {
   return msg.includes("nonce") && (msg.includes("expired") || msg.includes("otp_expired"));
 }
 
+/** Sesiunea de recovery nu mai e validă la momentul submit-ului. */
+function isSessionExpiredError(error: unknown) {
+  const msg = String((error as { message?: string })?.message ?? error ?? "").toLowerCase();
+  return (
+    msg.includes("auth session missing") ||
+    msg.includes("session_not_found") ||
+    msg.includes("session from session_id claim in jwt does not exist") ||
+    msg.includes("jwt expired") ||
+    msg.includes("session expired") ||
+    msg.includes("sesiunea a expirat") ||
+    msg.includes("refresh token") ||
+    (msg.includes("session") && msg.includes("expired"))
+  );
+}
+
+
 function ResetPasswordPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
