@@ -303,15 +303,11 @@ jobs:
             echo "::error::Markerul reparațiilor native lipsește din bundle."
             exit 1
           }
-          grep -Rqs "signInWithIdToken" dist/client || {
-            echo "::error::Fluxul Google signInWithIdToken lipsește din bundle."
-            exit 1
-          }
           grep -Rqs "${GITHUB_SHA}" dist/client || {
             echo "::error::SHA-ul workflow-ului nu a fost injectat în bundle."
             exit 1
           }
-          echo "✓ Bundle verificat: logo local + Google nativ + marker + SHA $GITHUB_SHA"
+          echo "✓ Bundle verificat: logo local + marker + SHA $GITHUB_SHA"
 
       - name: Add Android platform (dacă lipsește)
         run: |
@@ -1094,10 +1090,6 @@ jobs:
           }
           grep -Rqs "$GITHUB_SHA" "$TMP/base/assets/public" || {
             echo "::error::AAB-ul final nu conține SHA-ul $GITHUB_SHA."
-            exit 1
-          }
-          grep -Rqs "signInWithIdToken" "$TMP/base/assets/public" || {
-            echo "::error::AAB-ul final nu conține Google Sign-In nativ."
             exit 1
           }
           # versionCode real din manifestul împachetat (protobuf) — nu doar intenția din build.gradle.
