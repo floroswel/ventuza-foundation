@@ -275,9 +275,16 @@ function SettingsPage() {
     }
     setPwdBusy(true);
     try {
-      const { error } = await supabase.auth.updateUser(
-        pwdCodeRequired ? { password: newPwd, nonce: pwdCode } : { password: newPwd },
-      );
+      const attempt = () =>
+        supabase.auth.updateUser(
+          pwdCodeRequired ? { password: newPwd, nonce: pwdCode } : { password: newPwd },
+        );
+      let { error } = await attempt();
+      // Dacă tokenul de acces a expirat între timp, reîmprospătăm sesiunea și reîncercăm o dată.
+      if (error && /session|jwt/i.test(error.message) && /expired|missing|not exist/i.test(error.message)) {
+        const refreshed = await supabase.auth.refreshSession();
+        if (!refreshed.error && refreshed.data.session) ({ error } = await attempt());
+      }
       if (!error) {
         toast.success("Parolă actualizată.");
         setNewPwd("");
@@ -286,6 +293,7 @@ function SettingsPage() {
         return;
       }
       const msg = error.message.toLowerCase();
+
       const needsCode =
         msg.includes("aal2") ||
         msg.includes("reauthentication") ||

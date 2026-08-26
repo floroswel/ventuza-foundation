@@ -77,6 +77,22 @@ function isExpiredEmailCode(error: unknown) {
   return msg.includes("nonce") && (msg.includes("expired") || msg.includes("otp_expired"));
 }
 
+/** Sesiunea de recovery nu mai e validă la momentul submit-ului. */
+function isSessionExpiredError(error: unknown) {
+  const msg = String((error as { message?: string })?.message ?? error ?? "").toLowerCase();
+  return (
+    msg.includes("auth session missing") ||
+    msg.includes("session_not_found") ||
+    msg.includes("session from session_id claim in jwt does not exist") ||
+    msg.includes("jwt expired") ||
+    msg.includes("session expired") ||
+    msg.includes("sesiunea a expirat") ||
+    msg.includes("refresh token") ||
+    (msg.includes("session") && msg.includes("expired"))
+  );
+}
+
+
 function ResetPasswordPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -95,7 +111,9 @@ function ResetPasswordPage() {
   const [resending, setResending] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
   const [codeSentAt, setCodeSentAt] = useState<number | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const codeInputRef = useRef<HTMLInputElement>(null);
+
 
   useEffect(() => {
     let active = true;
@@ -105,13 +123,15 @@ function ResetPasswordPage() {
         setInvalidLink(true);
       }
     }, 8_000);
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session?.user?.email) setUserEmail(session.user.email);
       if (event === "PASSWORD_RECOVERY") {
         window.clearTimeout(timeout);
         setReady(true);
         setInvalidLink(false);
       }
     });
+
     const tokenHash = new URLSearchParams(window.location.search).get("token_hash");
     const recovery = tokenHash
       ? supabase.auth.verifyOtp({ token_hash: tokenHash, type: "recovery" })
@@ -126,10 +146,12 @@ function ResetPasswordPage() {
       }
       if ("session" in data && data.session) {
         window.clearTimeout(timeout);
+        setUserEmail(data.session.user?.email ?? null);
         setReady(true);
         setInvalidLink(false);
         if (tokenHash) window.history.replaceState({}, "", "/reset-password");
       }
+
     });
     return () => {
       active = false;
@@ -213,10 +235,44 @@ function ResetPasswordPage() {
       // temporar `session expired` chiar dacă nonce-ul primit pe email este valid.
       // updateUser este operația autoritativă și validează atât sesiunea recovery,
       // cât și codul email (nonce) într-o singură cerere atomică.
-      const { error } = await supabase.auth.updateUser(
-        codeRequired ? { password, nonce: code } : { password },
-      );
+      const attempt = () =>
+        supabase.auth.updateUser(codeRequired ? { password, nonce: code } : { password });
+
+      let { error } = await attempt();
+
+      // Recuperare permanentă din „Sesiunea a expirat”:
+      // 1) reîmprospătăm tokenul de recovery și reîncercăm,
+      // 2) dacă tot nu merge, folosim codul de 6 cifre ca OTP de recovery
+      //    (verifyOtp creează o sesiune nouă) și scriem parola fără nonce.
+      if (error && isSessionExpiredError(error)) {
+        logReset("session_expired_retry");
+        const refreshed = await supabase.auth.refreshSession();
+        if (!refreshed.error && refreshed.data.session) {
+          ({ error } = await attempt());
+        }
+        if (error && isSessionExpiredError(error) && userEmail && /^\d{6}$/.test(code)) {
+          const otp = await supabase.auth.verifyOtp({
+            email: userEmail,
+            token: code,
+            type: "recovery",
+          });
+          if (!otp.error && otp.data.session) {
+            logReset("session_recovered_via_otp");
+            ({ error } = await supabase.auth.updateUser({ password }));
+          }
+        }
+      }
+
       if (error) {
+        if (isSessionExpiredError(error)) {
+          logReset("session_expired_final");
+          failLink("expired");
+          setFormError(
+            "Sesiunea de resetare nu mai este validă. Cere un link nou de resetare și finalizează-l în aceeași fereastră.",
+          );
+          return;
+        }
+
         if (codeRequired && isInvalidEmailCode(error)) {
           const expired = isExpiredEmailCode(error);
           const attempts = codeAttempts + 1;
