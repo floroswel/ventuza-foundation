@@ -1,46 +1,53 @@
 /**
  * Card de diagnostic al versiunii: arată build-ul instalat vs. build-ul publicat
- * (`https://suzeta.app/app-version.json`) și dă link direct spre Google Play.
+ * (`https://suzeta.app/app-version.json`), motivul EXACT pentru care bannerul de
+ * actualizare apare sau nu, și dă link direct spre Google Play.
  *
- * Spre deosebire de `UpdateAvailableBanner` (doar nativ), acest card
- * funcționează și pe web, ca să poți verifica oricând ce versiune a ajuns live.
+ * Butonul „Verifică update” forțează o verificare imediată și cere bannerului
+ * să se reafișeze (ignoră dismiss-ul și holdback-ul de rollout), ca să poți
+ * testa fluxul fără să aștepți următoarea verificare periodică (6h).
  */
 import { useCallback, useEffect, useState } from "react";
-import { RefreshCw, Download } from "lucide-react";
+import { RefreshCw, Download, BellRing, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { APP_VERSION, APP_VERSION_CODE, detectPlatform } from "@/lib/app-version";
+import {
+  checkForAppUpdateDetailed,
+  explainUpdateReason,
+  requestUpdateCheck,
+  resetUpdateDismiss,
+  type UpdateDiagnostics,
+} from "@/lib/app-update";
 import { PLAY_STORE_URL } from "@/lib/store-links";
 
-type Remote = { versionName: string; versionCode: number; notes?: string; updatedAt?: string };
-
 export function AppVersionCard() {
-  const [remote, setRemote] = useState<Remote | null>(null);
+  const [diag, setDiag] = useState<UpdateDiagnostics | null>(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [showLog, setShowLog] = useState(false);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async (force = false) => {
     setLoading(true);
-    setError(null);
     try {
-      const res = await fetch(`https://suzeta.app/app-version.json?t=${Date.now()}`, {
-        cache: "no-store",
-      });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      setRemote((await res.json()) as Remote);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Verificare eșuată");
+      setDiag(await checkForAppUpdateDetailed({ force }));
     } finally {
       setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    void load();
+    void load(false);
   }, [load]);
 
   const platform = detectPlatform();
   const isNative = platform === "android" || platform === "ios";
-  const behind = !!remote && Number(remote.versionCode) > APP_VERSION_CODE;
+  const behind = !!diag?.remoteVersionCode && diag.remoteVersionCode > APP_VERSION_CODE;
+  const error = diag?.reason === "fetch_failed" || diag?.reason === "bad_payload";
+
+  async function testBanner() {
+    resetUpdateDismiss();
+    await load(true);
+    requestUpdateCheck(true);
+  }
 
   return (
     <div className="rounded-xl border border-border bg-card/50 p-3">
@@ -54,37 +61,48 @@ export function AppVersionCard() {
           <p className="text-xs text-muted-foreground">
             Publicat:{" "}
             {error ? (
-              <span className="text-destructive">indisponibil ({error})</span>
-            ) : remote ? (
+              <span className="text-destructive">indisponibil ({diag?.error ?? "eroare"})</span>
+            ) : diag?.remoteVersionCode ? (
               <>
-                <span className="font-mono">v{remote.versionName}</span> (build {remote.versionCode})
+                <span className="font-mono">v{diag.remoteVersionName}</span> (build{" "}
+                {diag.remoteVersionCode})
+                {typeof diag.rolloutPercent === "number" && diag.rolloutPercent < 100 && (
+                  <> · rollout {diag.rolloutPercent}%</>
+                )}
               </>
             ) : (
               "se verifică…"
             )}
           </p>
-          {remote?.notes && (
-            <p className="mt-1 text-[11px] text-muted-foreground">{remote.notes}</p>
+          {diag?.update?.notes && (
+            <p className="mt-1 text-[11px] text-muted-foreground">{diag.update.notes}</p>
           )}
-          {remote && !behind && !error && (
-            <p className="mt-1 text-[11px] text-emerald-500">Ești pe ultima versiune publicată.</p>
-          )}
-          {behind && (
-            <p className="mt-1 text-[11px] text-amber-500">
-              {isNative
-                ? "Există o versiune mai nouă în Google Play."
-                : "Web-ul tău e în cache — reîncarcă pagina pentru ultima versiune."}
+          {diag && (
+            <p
+              className={`mt-1 text-[11px] ${
+                diag.reason === "update_available"
+                  ? "text-amber-500"
+                  : diag.reason === "up_to_date"
+                    ? "text-emerald-500"
+                    : "text-muted-foreground"
+              }`}
+            >
+              {explainUpdateReason(diag)}
             </p>
           )}
         </div>
-        <Button size="sm" variant="outline" onClick={() => void load()} disabled={loading}>
+        <Button size="sm" variant="outline" onClick={() => void load(false)} disabled={loading}>
           <RefreshCw className={`size-4 ${loading ? "animate-spin" : ""}`} aria-hidden />
           <span className="ml-1.5">Verifică</span>
         </Button>
       </div>
 
-      {behind && (
-        <div className="mt-3">
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button size="sm" variant="secondary" onClick={() => void testBanner()} disabled={loading}>
+          <BellRing className="size-4" aria-hidden />
+          <span className="ml-1.5">Verifică update (test banner)</span>
+        </Button>
+        {behind && (
           <Button
             size="sm"
             onClick={() => {
@@ -95,7 +113,46 @@ export function AppVersionCard() {
             <Download className="size-4" aria-hidden />
             <span className="ml-1.5">{isNative ? "Deschide Google Play" : "Reîncarcă"}</span>
           </Button>
-        </div>
+        )}
+        <Button
+          size="sm"
+          variant="ghost"
+          onClick={() => setShowLog((v) => !v)}
+          aria-expanded={showLog}
+        >
+          <ChevronDown
+            className={`size-4 transition-transform ${showLog ? "rotate-180" : ""}`}
+            aria-hidden
+          />
+          <span className="ml-1.5">Log diagnostic</span>
+        </Button>
+      </div>
+
+      {showLog && diag && (
+        <pre className="mt-2 max-h-64 overflow-auto rounded-lg bg-muted/40 p-2 text-[10px] leading-relaxed text-muted-foreground">
+          {JSON.stringify(
+            {
+              motiv: diag.reason,
+              explicatie: explainUpdateReason(diag),
+              platforma: diag.platform,
+              instalat: { versionName: diag.localVersionName, versionCode: diag.localVersionCode },
+              publicat: {
+                versionName: diag.remoteVersionName,
+                versionCode: diag.remoteVersionCode,
+                rolloutPercent: diag.rolloutPercent,
+              },
+              rollout: { bucketDispozitiv: diag.rolloutBucket, prag: diag.rolloutPercent },
+              dismissSalvat: diag.dismissedCode,
+              fortat: diag.forced,
+              httpStatus: diag.httpStatus,
+              eroare: diag.error,
+              verificatLa: diag.checkedAt,
+              sursa: "https://suzeta.app/app-version.json",
+            },
+            null,
+            2,
+          )}
+        </pre>
       )}
     </div>
   );
