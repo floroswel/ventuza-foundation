@@ -329,6 +329,37 @@ export function PhotoManager({ userId, photos, onChange, persist = true, classNa
         {remaining > 0 && photos.length > 0 ? ` · mai poți adăuga ${remaining}` : ""}
       </p>
 
+      {pending.length > 0 && (
+        <div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-3">
+          <p className="mb-2 flex items-center gap-2 text-xs font-medium text-amber-500">
+            <ShieldCheck className="size-3.5" />
+            {pending.length} {pending.length === 1 ? "poză" : "poze"} în verificare · devin publice
+            doar după aprobarea echipei
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {pending.map((p) => (
+              <div
+                key={p.id}
+                className="relative aspect-[3/4] overflow-hidden rounded-lg border border-border/60"
+              >
+                {p.url ? (
+                  <img
+                    src={p.url}
+                    alt="Poză în verificare"
+                    className="size-full object-cover opacity-60"
+                  />
+                ) : null}
+                <span className="absolute inset-x-1 bottom-1 rounded bg-background/80 px-1 py-0.5 text-center text-[10px] text-amber-500">
+                  În verificare
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+
+
       <div className="grid grid-cols-3 gap-2">
         {photos.map((p, i) => {
           const isDragging = dragIndex === i;
