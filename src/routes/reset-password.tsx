@@ -208,15 +208,11 @@ function ResetPasswordPage() {
     setFormError(null);
     setSubmitting(true);
     try {
-      // getUser verifică tokenul la server; getSession singur poate întoarce o
-      // sesiune locală expirată și formularul ar eșua apoi cu o eroare generică.
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError || !userData.user) {
-        failLink("expired");
-        setFormError("Linkul de resetare nu mai este valid. Cere un link nou.");
-        return;
-      }
-
+      // Nu revalidăm sesiunea cu getUser() aici: linkul recovery a fost deja
+      // verificat la încărcarea paginii, iar un refresh concurent poate întoarce
+      // temporar `session expired` chiar dacă nonce-ul primit pe email este valid.
+      // updateUser este operația autoritativă și validează atât sesiunea recovery,
+      // cât și codul email (nonce) într-o singură cerere atomică.
       const { error } = await supabase.auth.updateUser(
         codeRequired ? { password, nonce: code } : { password },
       );
@@ -284,7 +280,7 @@ function ResetPasswordPage() {
           );
           return;
         }
-        if (isExpiredLinkError(error)) {
+        if (isExpiredLinkError(error) && !codeRequired) {
           failLink("expired");
           logReset("link_expired");
           setFormError("Linkul de resetare a expirat. Cere un link nou.");

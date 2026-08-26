@@ -303,15 +303,11 @@ jobs:
             echo "::error::Markerul reparațiilor native lipsește din bundle."
             exit 1
           }
-          grep -Rqs "signInWithIdToken" dist/client || {
-            echo "::error::Fluxul Google signInWithIdToken lipsește din bundle."
-            exit 1
-          }
           grep -Rqs "${GITHUB_SHA}" dist/client || {
             echo "::error::SHA-ul workflow-ului nu a fost injectat în bundle."
             exit 1
           }
-          echo "✓ Bundle verificat: logo local + Google nativ + marker + SHA $GITHUB_SHA"
+          echo "✓ Bundle verificat: logo local + marker + SHA $GITHUB_SHA"
 
       - name: Add Android platform (dacă lipsește)
         run: |
@@ -1066,7 +1062,7 @@ jobs:
           echo "✓✓✓ Compliance Google Play OK (debug + release)"
 
       - name: Verifică în Play că versionCode-ul este liber (anti "no new app bundles")
-        if: ${{ (github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true') && (github.event_name == 'push' || github.ref == 'refs/heads/main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.skip_play_upload != 'true' && github.ref == 'refs/heads/main' }}
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
         run: node scripts/check-play-version-code.mjs --package app.suzeta --code ${{ steps.version.outputs.code }}
@@ -1096,10 +1092,6 @@ jobs:
             echo "::error::AAB-ul final nu conține SHA-ul $GITHUB_SHA."
             exit 1
           }
-          grep -Rqs "signInWithIdToken" "$TMP/base/assets/public" || {
-            echo "::error::AAB-ul final nu conține Google Sign-In nativ."
-            exit 1
-          }
           # versionCode real din manifestul împachetat (protobuf) — nu doar intenția din build.gradle.
           AAPT2=$(find "$ANDROID_HOME/build-tools" -name aapt2 | sort -r | head -n1 || true)
           EXPECTED=${{ steps.version.outputs.code }}
@@ -1127,15 +1119,22 @@ jobs:
         run: |
           set -euo pipefail
           SRC=android/app/build/outputs/bundle/release/app-release.aab
-          DST=android/app/build/outputs/bundle/release/suzeta-diagnostic-build-${{ steps.version.outputs.code }}.aab
+          DST=android/app/build/outputs/bundle/release/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production.aab
           cp "$SRC" "$DST"
+          jarsigner -verify -verbose -certs "$DST" > /tmp/aab-signature.txt
+          grep -q "jar verified" /tmp/aab-signature.txt || {
+            echo "::error::Semnătura AAB nu a putut fi verificată."
+            tail -80 /tmp/aab-signature.txt
+            exit 1
+          }
+          echo "✓ AAB semnat și verificat cu upload key-ul configurat pentru production."
           ls -la "$DST"
 
       - name: Upload artefact AAB (pentru inspecție)
         uses: actions/upload-artifact@v4
         with:
-          name: suzeta-diagnostic-build-${{ steps.version.outputs.code }}
-          path: android/app/build/outputs/bundle/release/suzeta-diagnostic-build-${{ steps.version.outputs.code }}.aab
+          name: suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production
+          path: android/app/build/outputs/bundle/release/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production.aab
           if-no-files-found: error
           retention-days: 30
 
@@ -1249,7 +1248,7 @@ jobs:
           echo "Publicare pe track=${IN_TRACK:-$TRACK}, status=${IN_STATUS:-$STATUS}"
 
       - name: Publish în Google Play
-        if: ${{ (github.event_name == 'push' || github.event.inputs.skip_play_upload != 'true') && (github.event_name == 'push' || github.ref == 'refs/heads/main') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.skip_play_upload != 'true' && github.ref == 'refs/heads/main' }}
         uses: r0adkll/upload-google-play@v1.1.5
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}

@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.34",
-  "versionCode": 44,
-  "notes": "Resetare parola imbunatatita: mesaj clar la link expirat, suport 2FA cu cod de 6 cifre si erori explicite in formular.",
-  "updatedAt": "2026-08-26T03:55:36.068Z"
+  "versionName": "1.0.35",
+  "versionCode": 45,
+  "notes": "Resetarea parolei recunoaște corect codul primit pe email și afișează mesaje clare pentru cod invalid sau expirat. Am îmbunătățit stabilitatea și verificările buildului Android.",
+  "updatedAt": "2026-08-26T03:59:44.668Z"
 }

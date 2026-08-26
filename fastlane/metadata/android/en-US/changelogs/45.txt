@@ -1,0 +1,1 @@
+Password reset now correctly accepts the verification code received by email. Messages clearly distinguish an incorrect or expired code from an invalid password. This release also includes Android stability and build verification improvements.
