@@ -204,6 +204,16 @@ const DICT: Record<string, LocaleMap> = {
   Meningitis: { ro: "Meningită", en: "Meningitis", de: "Meningitis", fr: "Méningite", es: "Meningitis", it: "Meningite" },
 };
 
+// Completările pentru limbile adăugate ulterior (pt/nl/pl/hu + goluri) trăiesc
+// într-un fișier separat, ca dicționarul de mai sus să rămână lizibil.
+// Nu suprascriu niciodată o valoare existentă.
+for (const [canonical, extra] of Object.entries(OPTION_LABELS_EXTRA)) {
+  const entry = (DICT[canonical] ??= {});
+  for (const [locale, label] of Object.entries(extra)) {
+    if (!(locale in entry)) (entry as Record<string, string>)[locale] = label;
+  }
+}
+
 /** Resolve a canonical option value into a label for the given locale. */
 export function optionLabel(value: string, locale: UiLocale): string {
   const entry = DICT[value];
