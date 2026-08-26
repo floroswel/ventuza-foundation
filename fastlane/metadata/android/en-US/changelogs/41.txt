@@ -1,5 +1,1 @@
-Suzeta 1.0.31
-
-- Improvements and bug fixes.
-
-Completează înainte de upload pe Play Console.
+Password reset now works reliably: clear expired-link message, a dedicated 6-digit 2FA step, and inline error messages in the form.
