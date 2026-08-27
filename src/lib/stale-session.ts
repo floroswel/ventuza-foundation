@@ -86,11 +86,17 @@ export async function reapStaleSession(): Promise<boolean> {
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) return false;
   const { error } = await supabase.auth.getUser();
-  if (isStale(error)) {
-    await purgeStaleSession(String((error as { code?: string })?.code ?? error?.message));
-    return true;
-  }
-  return false;
+  if (!isStale(error)) return false;
+
+  // A doua opinie: la cold start (mai ales imediat după un update de aplicație)
+  // o rotație concurentă de refresh token poate produce o eroare tranzitorie.
+  // Nu scoatem userul din cont pe prima eroare — reîncercăm o dată.
+  await new Promise((r) => setTimeout(r, 1500));
+  const retry = await supabase.auth.getUser();
+  if (!isStale(retry.error)) return false;
+
+  await purgeStaleSession(String((retry.error as { code?: string })?.code ?? retry.error?.message));
+  return true;
 }
 
 export { isStale as isStaleSessionError };
