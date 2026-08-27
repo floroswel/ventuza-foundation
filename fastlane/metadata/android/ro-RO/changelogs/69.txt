@@ -1,5 +1,7 @@
 Suzeta 1.0.59
 
-- Îmbunătățiri și corectări de bug-uri.
-
-Completează înainte de upload pe Play Console.
+• Rămâi conectat: sesiunea nu se mai pierde după actualizarea aplicației, nu mai trebuie să reintroduci emailul și parola.
+• Pornire și încărcare mai rapide, cu mai puține blocaje la deschidere.
+• Cod optimizat și protejat (R8), aplicație mai mică și mai stabilă.
+• Corecții pentru chat, notificări și afișarea pozelor.
+• Confidențialitate: datele rămân procesate conform GDPR, cu control complet din Setări (consimțăminte, export, ștergere cont).

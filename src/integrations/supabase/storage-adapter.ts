@@ -64,7 +64,7 @@ function nativeStorage(): SupportedStorage {
   // Lazy import ca să nu se ceară în bundle-ul web unde plugin-ul nu există la runtime.
   const preferencesPromise = import("@capacitor/preferences").then((m) => m.Preferences);
   const fallback = webStorage();
-  const within = async <T,>(operation: Promise<T>, fallbackValue: T, timeoutMs = 750): Promise<T> => {
+  const within = async <T,>(operation: Promise<T>, fallbackValue: T, timeoutMs = 4000): Promise<T> => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       return await Promise.race([
@@ -84,7 +84,10 @@ function nativeStorage(): SupportedStorage {
       const localValue = await fallback.getItem(k);
       if (localValue !== null) return localValue;
       try {
-        const P = await within(preferencesPromise, null, 500);
+        // Cold start după un update de aplicație: bridge-ul Capacitor poate
+        // răspunde în >1s. Un timeout scurt aici înseamnă "sesiune inexistentă"
+        // → userul e scos din cont fără motiv. Așteptăm generos.
+        const P = await within(preferencesPromise, null, 4000);
         if (!P) return null;
         const result = await within(P.get({ key: k }), { value: null });
         if (result.value !== null) await fallback.setItem(k, result.value);

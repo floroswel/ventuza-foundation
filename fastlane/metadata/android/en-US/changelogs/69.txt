@@ -1,5 +1,7 @@
 Suzeta 1.0.59
 
-- Improvements and bug fixes.
-
-Completează înainte de upload pe Play Console.
+• Stay signed in: your session now survives app updates, so you no longer have to re-enter your email and password.
+• Faster startup and loading, with fewer freezes.
+• Optimized and protected code (R8): smaller, more stable app.
+• Fixes for chat, notifications and photo loading.
+• Privacy: data is processed under GDPR, with full control in Settings (consents, export, account deletion).
