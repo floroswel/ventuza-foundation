@@ -1015,16 +1015,15 @@ jobs:
           fi
 
 
-      - name: Injectează signing config în build.gradle (dacă lipsește)
+      - name: Injectează signing config + R8 în build.gradle
         run: |
+          set -euo pipefail
           GRADLE=android/app/build.gradle
-          if ! grep -q "signingConfigs" "$GRADLE"; then
-            echo "Adding signingConfigs block..."
-            # Inserează după linia "android {"
-            python3 <<'PY'
+          python3 <<'PY'
           import re
           p = "android/app/build.gradle"
           s = open(p).read()
+
           signing = """
               signingConfigs {
                   release {
@@ -1040,62 +1039,47 @@ jobs:
                   }
               }
           """
-          s = re.sub(r'(android\s*\{)', r'\1' + signing, s, count=1)
-          # Aplică signingConfig + R8 minification pe buildType release.
-          # Capacitor generează mereu un bloc buildTypes în build.gradle, deci
-          # trebuie să injectăm minifyEnabled/shrinkResources/proguardFiles
-          # ÎNTOCMAI în blocul release existent — altfel R8 nu rulează și Play
-          # Console raportează "Obfuscation 4%" (de fapt 0%, minifyEnabled=false).
-          if 'buildTypes' in s:
-              # Injectează toate setările de release într-un singur pas
-              s = re.sub(
-                  r'(buildTypes\s*\{\s*release\s*\{)',
-                  r'\1\n            signingConfig signingConfigs.release'
-                  '\n            minifyEnabled true'
-                  '\n            shrinkResources true'
-                  "\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'",
-                  s, count=1
-              )
-          else:
-              # Adaugă întreg blocul buildTypes înainte de închiderea android {}
-              build_types = """
-              buildTypes {
-                  release {
-                      signingConfig signingConfigs.release
-                      minifyEnabled true
-                      shrinkResources true
-                      proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-                  }
-              }
-          """
-              # Inserează înainte de ultimul } al blocului android
-              s = s.rstrip()
-              # închide penultimul } (al android)
-              idx = s.rfind('}')
-              s = s[:idx] + build_types + '\n}\n'
+          if 'signingConfigs' not in s:
+              s = re.sub(r'(android\s*\{)', r'\1' + signing, s, count=1)
 
-          # Verifică că minifyEnabled true a fost efectiv injectat.
-          # Dacă regex-ul nu a matchat (format neașteptat), forțăm prin
-          # înlocuire directă.
-          if 'minifyEnabled true' not in s:
-              s = s.replace(
-                  'buildTypes {\n        release {',
-                  'buildTypes {\n        release {\n'
-                  '            minifyEnabled true\n'
-                  '            shrinkResources true\n'
-                  "            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'",
-                  1
+          # Curăță orice setare existentă de minificare/shrink/signingConfig/proguardFiles.
+          # Capacitor generează `minifyEnabled false`; dacă o lăsăm, ea suprascrie
+          # valoarea injectată de noi și Gradle eșuează cu
+          # "Removing unused resources requires unused code shrinking to be turned on".
+          s = re.sub(r'^[ \t]*(minifyEnabled|shrinkResources)\b.*\n', '', s, flags=re.M)
+          s = re.sub(r'^[ \t]*signingConfig\s+signingConfigs\.\w+.*\n', '', s, flags=re.M)
+          s = re.sub(r'^[ \t]*proguardFiles\b.*\n', '', s, flags=re.M)
+
+          release_body = (
+              '\n            signingConfig signingConfigs.release'
+              '\n            minifyEnabled true'
+              '\n            shrinkResources true'
+              "\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'"
+          )
+
+          if re.search(r'buildTypes\s*\{', s):
+              if re.search(r'buildTypes\s*\{[^}]*release\s*\{', s, flags=re.S):
+                  s = re.sub(r'(buildTypes\s*\{\s*(?:[^{}]*?)release\s*\{)',
+                             lambda m: m.group(1) + release_body, s, count=1, flags=re.S)
+              else:
+                  s = re.sub(r'(buildTypes\s*\{)',
+                             lambda m: m.group(1) + '\n        release {' + release_body + '\n        }',
+                             s, count=1)
+          else:
+              build_types = (
+                  '\n    buildTypes {\n        release {' + release_body + '\n        }\n    }\n'
               )
+              s = s.rstrip()
+              idx = s.rfind('}')
+              s = s[:idx] + build_types + '}\n'
 
           open(p, 'w').write(s)
-          has_minify = 'minifyEnabled true' in open(p).read()
-          print(f"Injected signing config. minifyEnabled={has_minify}")
-          if not has_minify:
-              raise SystemExit("EROARE: minifyEnabled true nu a fost injectat în build.gradle!")
+          out = open(p).read()
+          ok = 'minifyEnabled true' in out and 'shrinkResources true' in out
+          print(f"R8 injectat: {ok}")
+          if not ok or 'minifyEnabled false' in out:
+              raise SystemExit("EROARE: R8 nu a fost configurat corect în build.gradle!")
           PY
-          else
-            echo "signingConfigs already present, skipping injection."
-          fi
           echo "--- build.gradle after ---"
           cat "$GRADLE"
 
