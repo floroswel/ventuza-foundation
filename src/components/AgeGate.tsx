@@ -22,7 +22,10 @@ import { getNativeDiditStatus, syncNativeDiditStatus } from "@/lib/native-didit-
 
 const GATED_PREFIXES = [
   "/discover",
+  "/explore",
+  "/matches",
   "/messages",
+  "/notifications",
   "/swipe",
   "/visitors",
   "/favorites",
@@ -31,6 +34,7 @@ const GATED_PREFIXES = [
   "/quests",
   "/cruise",
   "/nearby",
+  "/u/",
 ];
 
 type Status = "unverified" | "pending" | "verified" | "failed" | "expired" | null;
