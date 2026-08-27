@@ -5928,6 +5928,7 @@ export type Database = {
         Args: { p_reason: string; p_user_id: string }
         Returns: Json
       }
+      admin_sync_my_mfa: { Args: never; Returns: boolean }
       admin_unpublish_legal_document: {
         Args: { _slug: string }
         Returns: {
