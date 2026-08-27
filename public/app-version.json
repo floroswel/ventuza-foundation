@@ -1,6 +1,7 @@
 {
   "versionName": "1.0.58",
   "versionCode": 68,
-  "notes": "Discover se încarcă vizibil mai repede (profiluri și poze), plus sunet și vibrație la trimiterea și primirea mesajelor.",
-  "updatedAt": "2026-08-27T22:20:42.577Z"
+  "notes": "Securitate: cod obfuscat R8 (ProGuard). Edge-to-edge Android 15+.",
+  "rolloutPercent": 100,
+  "updatedAt": "2026-08-27T22:22:38.128Z"
 }
