@@ -1041,11 +1041,19 @@ jobs:
               }
           """
           s = re.sub(r'(android\s*\{)', r'\1' + signing, s, count=1)
-          # Aplică signingConfig pe buildType release
+          # Aplică signingConfig + R8 minification pe buildType release.
+          # Capacitor generează mereu un bloc buildTypes în build.gradle, deci
+          # trebuie să injectăm minifyEnabled/shrinkResources/proguardFiles
+          # ÎNTOCMAI în blocul release existent — altfel R8 nu rulează și Play
+          # Console raportează "Obfuscation 4%" (de fapt 0%, minifyEnabled=false).
           if 'buildTypes' in s:
+              # Injectează toate setările de release într-un singur pas
               s = re.sub(
                   r'(buildTypes\s*\{\s*release\s*\{)',
-                  r'\1\n            signingConfig signingConfigs.release',
+                  r'\1\n            signingConfig signingConfigs.release'
+                  '\n            minifyEnabled true'
+                  '\n            shrinkResources true'
+                  "\n            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'",
                   s, count=1
               )
           else:
@@ -1065,8 +1073,25 @@ jobs:
               # închide penultimul } (al android)
               idx = s.rfind('}')
               s = s[:idx] + build_types + '\n}\n'
+
+          # Verifică că minifyEnabled true a fost efectiv injectat.
+          # Dacă regex-ul nu a matchat (format neașteptat), forțăm prin
+          # înlocuire directă.
+          if 'minifyEnabled true' not in s:
+              s = s.replace(
+                  'buildTypes {\n        release {',
+                  'buildTypes {\n        release {\n'
+                  '            minifyEnabled true\n'
+                  '            shrinkResources true\n'
+                  "            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'",
+                  1
+              )
+
           open(p, 'w').write(s)
-          print("Injected signing config.")
+          has_minify = 'minifyEnabled true' in open(p).read()
+          print(f"Injected signing config. minifyEnabled={has_minify}")
+          if not has_minify:
+              raise SystemExit("EROARE: minifyEnabled true nu a fost injectat în build.gradle!")
           PY
           else
             echo "signingConfigs already present, skipping injection."
