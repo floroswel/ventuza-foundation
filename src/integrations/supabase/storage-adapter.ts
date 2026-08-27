@@ -64,7 +64,7 @@ function nativeStorage(): SupportedStorage {
   // Lazy import ca să nu se ceară în bundle-ul web unde plugin-ul nu există la runtime.
   const preferencesPromise = import("@capacitor/preferences").then((m) => m.Preferences);
   const fallback = webStorage();
-  const within = async <T,>(operation: Promise<T>, fallbackValue: T, timeoutMs = 750): Promise<T> => {
+  const within = async <T,>(operation: Promise<T>, fallbackValue: T, timeoutMs = 4000): Promise<T> => {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
       return await Promise.race([
