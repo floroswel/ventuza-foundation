@@ -87,6 +87,63 @@ jobs:
           fetch-depth: 2
           persist-credentials: true
 
+      # Preflight secrete: spune EXACT ce lipsește și cum se completează,
+      # înainte să se consume 20 de minute de build ca să pice la semnare.
+      - name: Preflight secrete (keystore + Play)
+        id: preflight
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KS_KEYPASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          set -euo pipefail
+          MISSING_KS=""
+          [ -n "${KS_B64:-}" ]     || MISSING_KS="$MISSING_KS ANDROID_KEYSTORE_BASE64"
+          [ -n "${KS_PASS:-}" ]    || MISSING_KS="$MISSING_KS ANDROID_KEYSTORE_PASSWORD"
+          [ -n "${KS_ALIAS:-}" ]   || MISSING_KS="$MISSING_KS ANDROID_KEY_ALIAS"
+          [ -n "${KS_KEYPASS:-}" ] || MISSING_KS="$MISSING_KS ANDROID_KEY_PASSWORD"
+          PLAY_OK=true
+          [ -n "${PLAY_JSON:-}" ] || PLAY_OK=false
+          echo "play_secret=$PLAY_OK" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Preflight secrete"
+            echo ""
+            echo "| Secret | Stare |"
+            echo "|---|---|"
+            echo "| ANDROID_KEYSTORE_BASE64 | $([ -n "${KS_B64:-}" ] && echo '✅ prezent' || echo '❌ LIPSEȘTE') |"
+            echo "| ANDROID_KEYSTORE_PASSWORD | $([ -n "${KS_PASS:-}" ] && echo '✅ prezent' || echo '❌ LIPSEȘTE') |"
+            echo "| ANDROID_KEY_ALIAS | $([ -n "${KS_ALIAS:-}" ] && echo '✅ prezent' || echo '❌ LIPSEȘTE') |"
+            echo "| ANDROID_KEY_PASSWORD | $([ -n "${KS_KEYPASS:-}" ] && echo '✅ prezent' || echo '❌ LIPSEȘTE') |"
+            echo "| PLAY_SERVICE_ACCOUNT_JSON | $([ "$PLAY_OK" = true ] && echo '✅ prezent' || echo '⚠️ lipsește (upload automat indisponibil)') |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -n "$MISSING_KS" ]; then
+            echo "::error::Secrete de semnare lipsă:$MISSING_KS"
+            {
+              echo ""
+              echo "### Cum completezi secretele de semnare"
+              echo ""
+              echo "Lipsesc: \`$(echo $MISSING_KS)\`"
+              echo ""
+              echo "1. Rulează workflow-ul **Bootstrap Android Upload Key** (Actions → Bootstrap Android Keystore → Run workflow)."
+              echo "2. Descarcă artefactul \`android-keystore-BACKUP-IMMEDIATELY\` și salvează \`release.keystore\` în password manager."
+              echo "3. Repo → **Settings → Environments → production → Add secret** și adaugă valorile din \`keystore-info.txt\`:"
+              echo "   - \`ANDROID_KEYSTORE_BASE64\` = tot conținutul din \`release.keystore.b64\`"
+              echo "   - \`ANDROID_KEYSTORE_PASSWORD\`, \`ANDROID_KEY_ALIAS\`, \`ANDROID_KEY_PASSWORD\`"
+              echo "4. Rulează din nou **Android Release**."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          if [ "$PLAY_OK" != true ]; then
+            echo "::warning::PLAY_SERVICE_ACCOUNT_JSON lipsește — buildul continuă, dar AAB-ul se urcă MANUAL în Play Console."
+          fi
+          echo "✓ Preflight secrete OK (keystore complet; Play upload=$PLAY_OK)"
+
+
       - name: Trasabilitate sursă release
         run: |
           set -euo pipefail
@@ -1298,7 +1355,8 @@ jobs:
       # smoke test. workflow_dispatch → track-ul ales manual, dacă
       # skip_play_upload=false.
       - name: Publish în Google Play
-        if: ${{ github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_play_upload != 'true') }}
+        id: play
+        if: ${{ steps.preflight.outputs.play_secret == 'true' && github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_play_upload != 'true') }}
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           PLAY_PACKAGE_NAME: app.suzeta
@@ -1312,7 +1370,60 @@ jobs:
           pip install --quiet google-auth requests
           python3 scripts/play-upload.py
 
+      # Dacă uploadul automat nu a rulat (secret lipsă, skip_play_upload=true,
+      # sau branch de lucru), scriem pașii exacți de urcare manuală.
+      - name: Instrucțiuni upload manual în Play Console
+        if: ${{ always() && steps.play.outcome == 'skipped' }}
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.preflight.outputs.play_secret }}" != "true" ]; then
+            REASON="secretul \`PLAY_SERVICE_ACCOUNT_JSON\` lipsește din environment-ul **production**"
+          elif [ "${{ github.event.inputs.skip_play_upload }}" = "true" ]; then
+            REASON="ai bifat **Doar produce AAB (nu urca pe Play)** la pornirea workflow-ului"
+          else
+            REASON="rularea nu pornește din \`main\` (publicarea automată e permisă doar din main sau prin tag)"
+          fi
+          {
+            echo ""
+            echo "## Upload MANUAL în Play Console"
+            echo ""
+            echo "Uploadul automat nu a rulat pentru că $REASON."
+            echo ""
+            echo "1. Descarcă AAB-ul din secțiunea **Artifacts** a acestei rulări."
+            echo "2. Deschide [Play Console → app.suzeta](https://play.google.com/console/u/0/developers/app/app.suzeta/tracks/internal-testing)."
+            echo "3. **Testing → Internal testing → Create new release** → urcă fișierul \`.aab\`."
+            echo "4. Release notes: copiază din \`fastlane/metadata/android/ro-RO/changelogs/${{ steps.version.outputs.code }}.txt\` (și \`en-US\`)."
+            echo "5. **Save → Review release → Start rollout to Internal testing**."
+            echo "6. Promovare în producție: [Production track](https://play.google.com/console/u/0/developers/app/app.suzeta/tracks/production) sau workflow-ul **Android Promote**."
+            echo ""
+            echo "Pentru automatizare pe viitor: [Play Console → API access](https://play.google.com/console/u/0/developers/api-access) → service account → cheie JSON → GitHub **Settings → Environments → production** → secret \`PLAY_SERVICE_ACCOUNT_JSON\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Rezumat final rulare
+        if: always()
+        run: |
+          set -euo pipefail
+          MODE="manual (descarcă artefactul)"
+          if [ "${{ steps.play.outcome }}" = "success" ]; then MODE="automat pe Play ✅"; fi
+          if [ "${{ steps.play.outcome }}" = "failure" ]; then MODE="automat — EȘUAT ❌ (vezi logul pasului Publish)"; fi
+          {
+            echo ""
+            echo "## Rezumat rulare"
+            echo ""
+            echo "| Câmp | Valoare |"
+            echo "|---|---|"
+            echo "| Rezultat job | ${{ job.status }} |"
+            echo "| Mod livrare | $MODE |"
+            echo "| versionName | ${{ steps.version.outputs.name }} |"
+            echo "| versionCode | ${{ steps.version.outputs.code }} |"
+            echo "| Track | ${{ steps.playtarget.outputs.track }} |"
+            echo "| Status Play | ${{ steps.playtarget.outputs.status }} |"
+            echo "| Commit | \`${GITHUB_SHA:0:7}\` |"
+            echo "| Declanșat de | ${{ github.event_name }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Curăță secretele de pe runner
         if: always()
         run: |
           rm -f android/app/release.keystore android/keystore.properties
+
