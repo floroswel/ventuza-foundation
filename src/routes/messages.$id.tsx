@@ -359,7 +359,7 @@ function ThreadPage() {
               void import("@/lib/notification-sound").then((s) =>
                 s.playMessageReceivedSound(),
               );
-              void import("@/lib/native-runtime").then((n) => n.hapticLight?.());
+              void import("@/lib/native-runtime").then((n) => n.haptic("light"));
             }
             void markDelivered(id);
             void markRead(id, userId);
@@ -645,6 +645,7 @@ function ThreadPage() {
     anchorToBottom(true);
     try {
       const real = await sendMessage(id, body, replyId);
+      void import("@/lib/notification-sound").then((s) => s.playMessageSentSound());
       setMessages((prev) => {
         const without = prev.filter((m) => m.id !== tempId && m.id !== real.id);
         return [...without, real];
