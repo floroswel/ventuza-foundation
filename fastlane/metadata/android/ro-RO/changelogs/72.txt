@@ -1,0 +1,5 @@
+Suzeta 1.0.62
+
+- Îmbunătățiri și corectări de bug-uri.
+
+Completează înainte de upload pe Play Console.
