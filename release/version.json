@@ -1,8 +1,8 @@
 {
-  "versionName": "1.0.60",
-  "versionCode": 70,
+  "versionName": "1.0.61",
+  "versionCode": 71,
   "track": "internal",
   "status": "completed",
-  "notes": "Securitate: cod obfuscat R8 (ProGuard). Edge-to-edge Android 15+.",
+  "notes": "Rămâi conectat după actualizarea din Google Play: sesiunea se restaurează din stocarea nativă, fără ecran de login inutil.",
   "rolloutPercent": 100
 }
