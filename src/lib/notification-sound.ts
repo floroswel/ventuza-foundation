@@ -135,3 +135,64 @@ export function playNotificationSound() {
     osc.stop(now + n.t + n.d + 0.02);
   }
 }
+
+/**
+ * Motor generic pentru micro-sunete de chat (mai scurte și mai discrete decât
+ * semnătura de notificare). Aceleași garanții: mut dacă userul a dezactivat,
+ * niciodată nu aruncă.
+ */
+function playNotes(notes: Note[], opts: { lpFrom: number; lpTo: number; tail: number }) {
+  if (!isNotificationSoundEnabled()) return;
+  const c = getCtx();
+  if (!c) return;
+  if (c.state === "suspended") void c.resume().catch(() => {});
+
+  const now = c.currentTime + 0.005;
+  const master = c.createGain();
+  master.gain.setValueAtTime(0.0001, now);
+  master.gain.exponentialRampToValueAtTime(1, now + 0.015);
+  master.gain.exponentialRampToValueAtTime(0.0001, now + opts.tail);
+
+  const lp = c.createBiquadFilter();
+  lp.type = "lowpass";
+  lp.frequency.setValueAtTime(opts.lpFrom, now);
+  lp.frequency.exponentialRampToValueAtTime(opts.lpTo, now + opts.tail * 0.6);
+  lp.Q.value = 0.6;
+  master.connect(lp).connect(c.destination);
+
+  for (const n of notes) {
+    const osc = c.createOscillator();
+    const g = c.createGain();
+    osc.type = n.type ?? "sine";
+    osc.frequency.setValueAtTime(n.f, now + n.t);
+    g.gain.setValueAtTime(0.0001, now + n.t);
+    g.gain.exponentialRampToValueAtTime(n.g, now + n.t + 0.012);
+    g.gain.exponentialRampToValueAtTime(0.0001, now + n.t + n.d);
+    osc.connect(g).connect(master);
+    osc.start(now + n.t);
+    osc.stop(now + n.t + n.d + 0.02);
+  }
+}
+
+/** „Whoosh" scurt, descendent — mesaj trimis. */
+export function playMessageSentSound() {
+  playNotes(
+    [
+      { f: 880, t: 0, d: 0.09, g: 0.16, type: "sine" },
+      { f: 587.33, t: 0.05, d: 0.12, g: 0.12, type: "sine" },
+    ],
+    { lpFrom: 2600, lpTo: 900, tail: 0.22 },
+  );
+}
+
+/** Două note ascendente, foarte scurte — mesaj primit în conversația deschisă. */
+export function playMessageReceivedSound() {
+  playNotes(
+    [
+      { f: 783.99, t: 0, d: 0.1, g: 0.18, type: "sine" },
+      { f: 1174.66, t: 0.07, d: 0.16, g: 0.14, type: "sine" },
+      { f: 2349.32, t: 0.07, d: 0.16, g: 0.04, type: "triangle" },
+    ],
+    { lpFrom: 1200, lpTo: 6000, tail: 0.32 },
+  );
+}
