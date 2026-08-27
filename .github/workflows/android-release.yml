@@ -1201,7 +1201,8 @@ jobs:
         run: |
           set -euo pipefail
           SRC=android/app/build/outputs/bundle/release/app-release.aab
-          DST=android/app/build/outputs/bundle/release/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production.aab
+          mkdir -p dist-play
+          DST=dist-play/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}.aab
           cp "$SRC" "$DST"
           jarsigner -verify -verbose -certs "$DST" > /tmp/aab-signature.txt
           grep -q "jar verified" /tmp/aab-signature.txt || {
@@ -1212,20 +1213,30 @@ jobs:
           echo "✓ AAB semnat și verificat cu upload key-ul configurat pentru production."
           ls -la "$DST"
 
-      # `always()` + glob: AAB-ul trebuie să fie descărcabil chiar dacă un pas
-      # ulterior (smoke test pe emulator, upload Play) eșuează. Altfel rămâi
-      # fără nimic de urcat manual în Play Console.
-      - name: Upload artefact AAB (pentru inspecție)
+      # Artefact cu UN SINGUR fișier .aab — exact ce se urcă în Play Console.
+      # `always()`: trebuie descărcabil chiar dacă un pas ulterior (emulator,
+      # upload Play) eșuează.
+      - name: Upload artefact AAB (un singur fișier)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production
-          path: |
-            android/app/build/outputs/bundle/release/*.aab
-            android/app/build/outputs/mapping/release/mapping.txt
+          path: dist-play/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}.aab
           if-no-files-found: warn
           retention-days: 30
           compression-level: 0
+          overwrite: true
+
+      # Mapping R8 separat — necesar doar pentru deobfuscarea crash-urilor,
+      # nu se urcă în Play odată cu bundle-ul.
+      - name: Upload mapping R8 (separat)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: suzeta-${{ steps.version.outputs.code }}-mapping
+          path: android/app/build/outputs/mapping/release/mapping.txt
+          if-no-files-found: ignore
+          retention-days: 30
           overwrite: true
 
       # Rezumat vizibil în UI-ul rulării: nume artefact + dimensiune + sha256,
