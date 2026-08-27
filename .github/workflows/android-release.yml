@@ -87,6 +87,63 @@ jobs:
           fetch-depth: 2
           persist-credentials: true
 
+      # Preflight secrete: spune EXACT ce lipsește și cum se completează,
+      # înainte să se consume 20 de minute de build ca să pice la semnare.
+      - name: Preflight secrete (keystore + Play)
+        id: preflight
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KS_KEYPASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          PLAY_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+        run: |
+          set -euo pipefail
+          MISSING_KS=""
+          [ -n "${KS_B64:-}" ]     || MISSING_KS="$MISSING_KS ANDROID_KEYSTORE_BASE64"
+          [ -n "${KS_PASS:-}" ]    || MISSING_KS="$MISSING_KS ANDROID_KEYSTORE_PASSWORD"
+          [ -n "${KS_ALIAS:-}" ]   || MISSING_KS="$MISSING_KS ANDROID_KEY_ALIAS"
+          [ -n "${KS_KEYPASS:-}" ] || MISSING_KS="$MISSING_KS ANDROID_KEY_PASSWORD"
+          PLAY_OK=true
+          [ -n "${PLAY_JSON:-}" ] || PLAY_OK=false
+          echo "play_secret=$PLAY_OK" >> "$GITHUB_OUTPUT"
+
+          {
+            echo "## Preflight secrete"
+            echo ""
+            echo "| Secret | Stare |"
+            echo "|---|---|"
+            echo "| ANDROID_KEYSTORE_BASE64 | $([ -n "${KS_B64:-}" ] && echo '✅ prezent' || echo '❌ LIPSEȘTE') |"
+            echo "| ANDROID_KEYSTORE_PASSWORD | $([ -n "${KS_PASS:-}" ] && echo '✅ prezent' || echo '❌ LIPSEȘTE') |"
+            echo "| ANDROID_KEY_ALIAS | $([ -n "${KS_ALIAS:-}" ] && echo '✅ prezent' || echo '❌ LIPSEȘTE') |"
+            echo "| ANDROID_KEY_PASSWORD | $([ -n "${KS_KEYPASS:-}" ] && echo '✅ prezent' || echo '❌ LIPSEȘTE') |"
+            echo "| PLAY_SERVICE_ACCOUNT_JSON | $([ "$PLAY_OK" = true ] && echo '✅ prezent' || echo '⚠️ lipsește (upload automat indisponibil)') |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ -n "$MISSING_KS" ]; then
+            echo "::error::Secrete de semnare lipsă:$MISSING_KS"
+            {
+              echo ""
+              echo "### Cum completezi secretele de semnare"
+              echo ""
+              echo "Lipsesc: \`$(echo $MISSING_KS)\`"
+              echo ""
+              echo "1. Rulează workflow-ul **Bootstrap Android Upload Key** (Actions → Bootstrap Android Keystore → Run workflow)."
+              echo "2. Descarcă artefactul \`android-keystore-BACKUP-IMMEDIATELY\` și salvează \`release.keystore\` în password manager."
+              echo "3. Repo → **Settings → Environments → production → Add secret** și adaugă valorile din \`keystore-info.txt\`:"
+              echo "   - \`ANDROID_KEYSTORE_BASE64\` = tot conținutul din \`release.keystore.b64\`"
+              echo "   - \`ANDROID_KEYSTORE_PASSWORD\`, \`ANDROID_KEY_ALIAS\`, \`ANDROID_KEY_PASSWORD\`"
+              echo "4. Rulează din nou **Android Release**."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          fi
+
+          if [ "$PLAY_OK" != true ]; then
+            echo "::warning::PLAY_SERVICE_ACCOUNT_JSON lipsește — buildul continuă, dar AAB-ul se urcă MANUAL în Play Console."
+          fi
+          echo "✓ Preflight secrete OK (keystore complet; Play upload=$PLAY_OK)"
+
+
       - name: Trasabilitate sursă release
         run: |
           set -euo pipefail
