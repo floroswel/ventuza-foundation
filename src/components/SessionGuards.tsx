@@ -30,6 +30,10 @@ export function SessionGuards() {
   // Sesiune fantomă (user șters server-side / refresh token revocat) → curățăm
   // local și trimitem la /auth, altfel app-ul rămâne blocat în 403/409.
   useEffect(() => {
+    // Doar după ce bootstrap-ul a livrat un user. Rulat la montare, verificarea
+    // pornea în paralel cu restaurarea sesiunii și putea concura cu rotația
+    // refresh tokenului la cold start după update.
+    if (!user) return;
     void (async () => {
       console.log("[AUTH] GUARD_SESSION_RESTORE_STARTED");
       try {
@@ -42,7 +46,8 @@ export function SessionGuards() {
         });
       }
     })();
-  }, []);
+  }, [user]);
+
 
 
 
