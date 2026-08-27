@@ -3,6 +3,6 @@
   "versionCode": 68,
   "track": "internal",
   "status": "completed",
-  "notes": "Discover se încarcă vizibil mai repede (profiluri și poze), plus sunet și vibrație la trimiterea și primirea mesajelor.",
+  "notes": "Securitate: cod obfuscat R8 (ProGuard). Edge-to-edge Android 15+.",
   "rolloutPercent": 100
 }
