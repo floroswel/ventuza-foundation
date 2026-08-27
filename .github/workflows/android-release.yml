@@ -1270,7 +1270,8 @@ jobs:
       - name: Rezumat artefact AAB
         run: |
           set -euo pipefail
-          F=dist-play/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}.aab
+          NAME=Suzeta-release-v${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.aab
+          F=dist-play/$NAME
           SIZE=$(du -h "$F" | cut -f1)
           SHA=$(sha256sum "$F" | awk '{print $1}')
           {
@@ -1278,14 +1279,16 @@ jobs:
             echo ""
             echo "| Câmp | Valoare |"
             echo "|---|---|"
-            echo "| Artefact | \`suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production\` |"
+            echo "| Fișier | \`$NAME\` |"
             echo "| versionName | ${{ steps.version.outputs.name }} |"
             echo "| versionCode | ${{ steps.version.outputs.code }} |"
             echo "| Dimensiune | $SIZE |"
             echo "| SHA-256 | \`$SHA\` |"
+            echo "| GitHub Release | ${RELEASE_URL:-indisponibil} |"
             echo ""
-            echo "Descarcă din secțiunea **Artifacts** a acestei rulări (30 zile)."
+            echo "Descarcă **din GitHub Release** ca să primești direct fișierul .aab (fără zip)."
           } >> "$GITHUB_STEP_SUMMARY"
+
 
 
       - name: Pregătește release notes (din fastlane/metadata)
