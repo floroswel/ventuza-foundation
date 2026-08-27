@@ -1355,7 +1355,8 @@ jobs:
       # smoke test. workflow_dispatch → track-ul ales manual, dacă
       # skip_play_upload=false.
       - name: Publish în Google Play
-        if: ${{ github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_play_upload != 'true') }}
+        id: play
+        if: ${{ steps.preflight.outputs.play_secret == 'true' && github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || github.event.inputs.skip_play_upload != 'true') }}
         env:
           PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           PLAY_PACKAGE_NAME: app.suzeta
@@ -1369,7 +1370,60 @@ jobs:
           pip install --quiet google-auth requests
           python3 scripts/play-upload.py
 
+      # Dacă uploadul automat nu a rulat (secret lipsă, skip_play_upload=true,
+      # sau branch de lucru), scriem pașii exacți de urcare manuală.
+      - name: Instrucțiuni upload manual în Play Console
+        if: ${{ always() && steps.play.outcome == 'skipped' }}
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.preflight.outputs.play_secret }}" != "true" ]; then
+            REASON="secretul \`PLAY_SERVICE_ACCOUNT_JSON\` lipsește din environment-ul **production**"
+          elif [ "${{ github.event.inputs.skip_play_upload }}" = "true" ]; then
+            REASON="ai bifat **Doar produce AAB (nu urca pe Play)** la pornirea workflow-ului"
+          else
+            REASON="rularea nu pornește din \`main\` (publicarea automată e permisă doar din main sau prin tag)"
+          fi
+          {
+            echo ""
+            echo "## Upload MANUAL în Play Console"
+            echo ""
+            echo "Uploadul automat nu a rulat pentru că $REASON."
+            echo ""
+            echo "1. Descarcă AAB-ul din secțiunea **Artifacts** a acestei rulări."
+            echo "2. Deschide [Play Console → app.suzeta](https://play.google.com/console/u/0/developers/app/app.suzeta/tracks/internal-testing)."
+            echo "3. **Testing → Internal testing → Create new release** → urcă fișierul \`.aab\`."
+            echo "4. Release notes: copiază din \`fastlane/metadata/android/ro-RO/changelogs/${{ steps.version.outputs.code }}.txt\` (și \`en-US\`)."
+            echo "5. **Save → Review release → Start rollout to Internal testing**."
+            echo "6. Promovare în producție: [Production track](https://play.google.com/console/u/0/developers/app/app.suzeta/tracks/production) sau workflow-ul **Android Promote**."
+            echo ""
+            echo "Pentru automatizare pe viitor: [Play Console → API access](https://play.google.com/console/u/0/developers/api-access) → service account → cheie JSON → GitHub **Settings → Environments → production** → secret \`PLAY_SERVICE_ACCOUNT_JSON\`."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Rezumat final rulare
+        if: always()
+        run: |
+          set -euo pipefail
+          MODE="manual (descarcă artefactul)"
+          if [ "${{ steps.play.outcome }}" = "success" ]; then MODE="automat pe Play ✅"; fi
+          if [ "${{ steps.play.outcome }}" = "failure" ]; then MODE="automat — EȘUAT ❌ (vezi logul pasului Publish)"; fi
+          {
+            echo ""
+            echo "## Rezumat rulare"
+            echo ""
+            echo "| Câmp | Valoare |"
+            echo "|---|---|"
+            echo "| Rezultat job | ${{ job.status }} |"
+            echo "| Mod livrare | $MODE |"
+            echo "| versionName | ${{ steps.version.outputs.name }} |"
+            echo "| versionCode | ${{ steps.version.outputs.code }} |"
+            echo "| Track | ${{ steps.playtarget.outputs.track }} |"
+            echo "| Status Play | ${{ steps.playtarget.outputs.status }} |"
+            echo "| Commit | \`${GITHUB_SHA:0:7}\` |"
+            echo "| Declanșat de | ${{ github.event_name }} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Curăță secretele de pe runner
         if: always()
         run: |
           rm -f android/app/release.keystore android/keystore.properties
+
