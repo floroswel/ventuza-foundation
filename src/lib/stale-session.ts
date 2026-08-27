@@ -42,9 +42,26 @@ export async function purgeStaleSession(reason: string) {
     } catch {
       /* ignore */
     }
+    const sessionKeys: string[] = [];
     try {
       for (const k of Object.keys(window.localStorage)) {
-        if (k.startsWith("sb-") && k.includes("auth-token")) window.localStorage.removeItem(k);
+        if (k.startsWith("sb-") && k.includes("auth-token")) {
+          sessionKeys.push(k);
+          window.localStorage.removeItem(k);
+        }
+      }
+    } catch {
+      /* ignore */
+    }
+    // Pe nativ copia autoritară stă în Capacitor Preferences: dacă nu o ștergem,
+    // sesiunea moartă se rehidratează la următoarea pornire și userul intră
+    // într-un ciclu de deconectări.
+    try {
+      const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+        .Capacitor;
+      if (cap?.isNativePlatform?.()) {
+        const { Preferences } = await import("@capacitor/preferences");
+        await Promise.all(sessionKeys.map((k) => Preferences.remove({ key: k }).catch(() => {})));
       }
     } catch {
       /* ignore */
