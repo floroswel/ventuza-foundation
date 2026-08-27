@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.59",
-  "versionCode": 69,
+  "versionName": "1.0.60",
+  "versionCode": 70,
   "notes": "Securitate: cod obfuscat R8 (ProGuard). Edge-to-edge Android 15+.",
-  "updatedAt": "2026-08-27T22:28:55.277Z"
+  "updatedAt": "2026-08-27T23:10:04.525Z"
 }

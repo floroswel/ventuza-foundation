@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.59",
-  "versionCode": 69,
+  "versionName": "1.0.60",
+  "versionCode": 70,
   "track": "internal",
   "status": "completed",
   "notes": "Securitate: cod obfuscat R8 (ProGuard). Edge-to-edge Android 15+.",
