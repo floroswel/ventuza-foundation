@@ -345,9 +345,22 @@ function ThreadPage() {
         },
         (payload) => {
           const m = payload.new as MessageRow;
-          setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]));
+          let isNew = false;
+          setMessages((prev) => {
+            if (prev.some((x) => x.id === m.id)) return prev;
+            isNew = true;
+            return [...prev, m];
+          });
           if (m.sender_id !== userId) {
             setOtherTyping(false);
+            // Feedback audio + haptic pentru mesajul primit cu chat-ul deschis
+            // (push-ul nativ acoperă cazul app închisă).
+            if (isNew) {
+              void import("@/lib/notification-sound").then((s) =>
+                s.playMessageReceivedSound(),
+              );
+              void import("@/lib/native-runtime").then((n) => n.haptic("light"));
+            }
             void markDelivered(id);
             void markRead(id, userId);
           }
@@ -632,6 +645,7 @@ function ThreadPage() {
     anchorToBottom(true);
     try {
       const real = await sendMessage(id, body, replyId);
+      void import("@/lib/notification-sound").then((s) => s.playMessageSentSound());
       setMessages((prev) => {
         const without = prev.filter((m) => m.id !== tempId && m.id !== real.id);
         return [...without, real];

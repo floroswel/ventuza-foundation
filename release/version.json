@@ -1,8 +1,8 @@
 {
-  "versionName": "1.0.56",
-  "versionCode": 66,
+  "versionName": "1.0.57",
+  "versionCode": 67,
   "track": "internal",
   "status": "completed",
-  "notes": "Trage de sus în jos pentru a reîmprospăta orice ecran și a verifica instant dacă există o actualizare nouă.",
+  "notes": "Discover se încarcă vizibil mai repede (profiluri și poze), plus sunet și vibrație la trimiterea și primirea mesajelor.",
   "rolloutPercent": 100
 }
