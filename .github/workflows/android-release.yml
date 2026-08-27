@@ -1244,7 +1244,7 @@ jobs:
       - name: Rezumat artefact AAB
         run: |
           set -euo pipefail
-          F=android/app/build/outputs/bundle/release/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production.aab
+          F=dist-play/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}.aab
           SIZE=$(du -h "$F" | cut -f1)
           SHA=$(sha256sum "$F" | awk '{print $1}')
           {
