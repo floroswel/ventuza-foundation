@@ -1,5 +1,3 @@
-Suzeta 1.0.58
-
-- Îmbunătățiri și corectări de bug-uri.
-
-Completează înainte de upload pe Play Console.
+Optimizare securitate: codul aplicației este acum obfuscat prin R8 (ProGuard) pentru protecție împotriva ingineriei inverse.
+Îmbunătățiri edge-to-edge pentru Android 15+.
+多元化 performanță generală.
