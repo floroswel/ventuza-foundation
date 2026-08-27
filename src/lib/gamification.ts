@@ -20,6 +20,10 @@ export type DailyRewardResult = {
 };
 
 export async function fetchGamification(): Promise<GamificationState | null> {
+  // Fără sesiune, RPC-ul întoarce 401 și poluează consola pe paginile publice
+  // (ex: /legal/*). Ieșim devreme.
+  const { data: sess } = await supabase.auth.getSession();
+  if (!sess?.session) return null;
   const { data, error } = await supabase.rpc("get_my_gamification");
   if (error) return null;
   return data as unknown as GamificationState;
