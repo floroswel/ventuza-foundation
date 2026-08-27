@@ -275,22 +275,15 @@ export async function fetchDiscover(
   }
 
   const offset = Math.max(0, options?.offset ?? 0);
-  let limit = Math.min(DISCOVER_PAGE_SIZE, Math.max(1, options?.limit ?? DISCOVER_PAGE_SIZE));
+  const limit = Math.min(DISCOVER_PAGE_SIZE, Math.max(1, options?.limit ?? DISCOVER_PAGE_SIZE));
 
-  // Anti-scraping: progressive throttle. După 5 cereri/oră, page size scade
-  // la 20. Bot-urile de scraping devin nepractice; userii normali (< 5
-  // cereri/oră) nu observă diferența. Sursa de adevăr rămâne DB (hard cap
-  // 500/oră via discover_rate_limited). Vezi migrarea discover_throttle.
-  try {
-    const { data: recent } = await (supabase.rpc as any)("discover_recent_call_count", {
-      _user: viewerId,
-    });
-    if (typeof recent === "number" && recent >= 5) {
-      limit = Math.min(limit, 20);
-    }
-  } catch {
-    /* dacă RPC-ul nu răspunde, aplică cap-ul standard */
-  }
+  // NB: throttle-ul progresiv client-side (RPC `discover_recent_call_count`
+  // înainte de fiecare fetch) a fost eliminat — adăuga un round-trip în calea
+  // critică și tăia pagina la 20 de profiluri pentru userii activi normali,
+  // ceea ce se vedea pe telefon ca „nu se încarcă profilurile". Sursa de adevăr
+  // pentru anti-scraping rămâne DB-ul (hard cap 50/pagină + 500/oră prin
+  // `discover_rate_limited`), deci protecția nu slăbește.
+
 
   // Cache-ul păstrează DOAR prima pagină (offset=0). Paginile ulterioare merg
   // direct la RPC (sunt cerute doar când userul scrollează, deci sunt puține).
