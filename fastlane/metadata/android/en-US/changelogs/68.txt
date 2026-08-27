@@ -1,0 +1,3 @@
+Security optimization: app code is now obfuscated via R8 (ProGuard) for reverse-engineering protection.
+Edge-to-edge improvements for Android 15+.
+General performance improvements.

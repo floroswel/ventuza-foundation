@@ -1,7 +1,6 @@
 {
-  "versionName": "1.0.57",
-  "versionCode": 67,
+  "versionName": "1.0.58",
+  "versionCode": 68,
   "notes": "Discover se încarcă vizibil mai repede (profiluri și poze), plus sunet și vibrație la trimiterea și primirea mesajelor.",
-  "rolloutPercent": 100,
-  "updatedAt": "2026-08-27T15:00:15.340Z"
+  "updatedAt": "2026-08-27T22:20:42.577Z"
 }

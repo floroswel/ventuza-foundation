@@ -1,0 +1,3 @@
+Optimizare securitate: codul aplicației este acum obfuscat prin R8 (ProGuard) pentru protecție împotriva ingineriei inverse.
+Îmbunătățiri edge-to-edge pentru Android 15+.
+Îmbunătățiri generale de performanță.
