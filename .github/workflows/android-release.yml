@@ -1203,12 +1203,18 @@ jobs:
           echo "✓ AAB semnat și verificat cu upload key-ul configurat pentru production."
           ls -la "$DST"
 
+      # `always()` + glob: AAB-ul trebuie să fie descărcabil chiar dacă un pas
+      # ulterior (smoke test pe emulator, upload Play) eșuează. Altfel rămâi
+      # fără nimic de urcat manual în Play Console.
       - name: Upload artefact AAB (pentru inspecție)
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production
-          path: android/app/build/outputs/bundle/release/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production.aab
-          if-no-files-found: error
+          path: |
+            android/app/build/outputs/bundle/release/*.aab
+            android/app/build/outputs/mapping/release/mapping.txt
+          if-no-files-found: warn
           retention-days: 30
           compression-level: 0
           overwrite: true
