@@ -64,33 +64,67 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       if (cancelled) return;
       setSession(s);
-      setLoading(false);
+      // Un eveniment fără sesiune la boot NU înseamnă "delogat": poate fi
+      // INITIAL_SESSION emis înainte ca storage-ul nativ să răspundă.
+      // Ridicăm ecranul de încărcare doar când avem sesiune sau când
+      // bootstrap-ul (inclusiv recuperarea nativă) s-a încheiat.
+      if (s) setLoading(false);
       maybeLinkBiz(s);
     });
 
-    // Then hydrate the current session. Native Preferences can occasionally be
-    // slow on a cold WebView start; never keep the auth screen behind an
-    // indefinite spinner while storage wakes up.
-    const loadingGuard = window.setTimeout(() => {
-      if (!cancelled) setLoading(false);
-    }, 1500);
-    const sessionHydration = Promise.race([
-      supabase.auth.getSession(),
-      new Promise<never>((_, reject) => {
-        window.setTimeout(() => reject(new Error("initial_session_timeout")), 5_000);
-      }),
-    ]);
-    void sessionHydration.then(({ data }) => {
+    // Bootstrap-ul sesiunii. Pe nativ, bridge-ul Capacitor poate răspunde în
+    // câteva secunde la primul cold start de după un update din Play Store;
+    // dacă declarăm prematur "fără sesiune", userul vede ecranul de Login deși
+    // refresh tokenul lui este valid.
+    const native = (() => {
+      try {
+        const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+          .Capacitor;
+        return !!cap?.isNativePlatform?.();
+      } catch {
+        return false;
+      }
+    })();
+    // Plafon absolut: aplicația nu rămâne niciodată blocată pe splash.
+    const loadingGuard = window.setTimeout(
+      () => {
+        if (!cancelled) setLoading(false);
+      },
+      native ? 9_000 : 2_500,
+    );
+    const withTimeout = <T,>(p: Promise<T>, ms: number) =>
+      Promise.race([
+        p,
+        new Promise<never>((_, reject) => {
+          window.setTimeout(() => reject(new Error("auth_bootstrap_timeout")), ms);
+        }),
+      ]);
+
+    void (async () => {
+      let restored: Session | null = null;
+      try {
+        const { data } = await withTimeout(supabase.auth.getSession(), native ? 7_000 : 5_000);
+        restored = data.session ?? null;
+      } catch {
+        restored = null;
+      }
+      // Fallback nativ: copia autoritară din Capacitor Preferences. Rulează
+      // doar dacă storage-ul rapid (WebView) nu a livrat nimic — de ex. după
+      // un update care a golit localStorage-ul WebView-ului.
+      if (!restored && native) {
+        try {
+          const { recoverNativeSession } = await import("@/lib/session-recovery");
+          restored = await withTimeout(recoverNativeSession(), 8_000).catch(() => null);
+        } catch {
+          restored = null;
+        }
+      }
       if (cancelled) return;
       window.clearTimeout(loadingGuard);
-      setSession(data.session ?? null);
+      setSession((current) => current ?? restored);
       setLoading(false);
-      maybeLinkBiz(data.session);
-    }).catch(() => {
-      if (cancelled) return;
-      window.clearTimeout(loadingGuard);
-      setLoading(false);
-    });
+      maybeLinkBiz(restored);
+    })();
 
     return () => {
       cancelled = true;
@@ -98,6 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       sub.subscription.unsubscribe();
     };
   }, []);
+
 
   return (
     <Ctx.Provider
