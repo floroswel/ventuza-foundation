@@ -1,0 +1,6 @@
+Suzeta 1.0.61
+
+- Stay signed in after updating: your session is restored automatically from secure device storage.
+- No more login screen flashing during startup — the app waits for session restore first.
+- No false sign-outs when the connection is temporarily missing or slow.
+- Faster startup and minor fixes.

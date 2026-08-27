@@ -83,10 +83,17 @@ export async function purgeStaleSession(reason: string) {
  */
 export async function reapStaleSession(): Promise<boolean> {
   if (typeof window === "undefined") return false;
+  // Offline: nicio verificare de identitate nu e concludentă. Păstrăm sesiunea
+  // locală și reîncercăm la revenirea conexiunii.
+  if (typeof navigator !== "undefined" && navigator.onLine === false) {
+    window.addEventListener("online", () => void reapStaleSession(), { once: true });
+    return false;
+  }
   const { data: sessionData } = await supabase.auth.getSession();
   if (!sessionData.session) return false;
   const { error } = await supabase.auth.getUser();
   if (!isStale(error)) return false;
+
 
   // A doua opinie: la cold start (mai ales imediat după un update de aplicație)
   // o rotație concurentă de refresh token poate produce o eroare tranzitorie.

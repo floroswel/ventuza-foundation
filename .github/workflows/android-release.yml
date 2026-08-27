@@ -1202,7 +1202,7 @@ jobs:
           set -euo pipefail
           SRC=android/app/build/outputs/bundle/release/app-release.aab
           mkdir -p dist-play
-          DST=dist-play/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}.aab
+          DST=dist-play/Suzeta-release-v${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.aab
           cp "$SRC" "$DST"
           jarsigner -verify -verbose -certs "$DST" > /tmp/aab-signature.txt
           grep -q "jar verified" /tmp/aab-signature.txt || {
@@ -1211,6 +1211,9 @@ jobs:
             exit 1
           }
           echo "✓ AAB semnat și verificat cu upload key-ul configurat pentru production."
+          # Garantăm un singur fișier livrabil: nimic altceva în dist-play.
+          find dist-play -type f ! -name '*.aab' -delete
+          test "$(find dist-play -type f | wc -l)" -eq 1
           ls -la "$DST"
 
       # Artefact cu UN SINGUR fișier .aab — exact ce se urcă în Play Console.
@@ -1220,12 +1223,34 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production
-          path: dist-play/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}.aab
+          name: Suzeta-release-v${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}
+          path: dist-play/Suzeta-release-v${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.aab
           if-no-files-found: warn
           retention-days: 30
           compression-level: 0
           overwrite: true
+
+      # GitHub Release: singurul mod prin care descărcarea NU este împachetată
+      # într-un .zip. Userul primește exact fișierul .aab, gata de urcat în
+      # Play Console.
+      - name: Publică AAB ca asset în GitHub Release
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          F=dist-play/Suzeta-release-v${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.aab
+          [ -f "$F" ] || { echo "AAB lipsă, sar peste release"; exit 0; }
+          TAG=android-v${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$F" --clobber
+          else
+            gh release create "$TAG" "$F" \
+              --title "Suzeta ${{ steps.version.outputs.name }} (build ${{ steps.version.outputs.code }})" \
+              --notes "AAB semnat pentru Google Play. Descarcă fișierul .aab și urcă-l direct în Play Console." \
+              --target "$GITHUB_SHA"
+          fi
+          echo "RELEASE_URL=$(gh release view "$TAG" --json url -q .url)" >> "$GITHUB_ENV"
 
       # Mapping R8 separat — necesar doar pentru deobfuscarea crash-urilor,
       # nu se urcă în Play odată cu bundle-ul.
@@ -1239,12 +1264,14 @@ jobs:
           retention-days: 30
           overwrite: true
 
+
       # Rezumat vizibil în UI-ul rulării: nume artefact + dimensiune + sha256,
       # ca descărcarea pentru Play Console să poată fi verificată local.
       - name: Rezumat artefact AAB
         run: |
           set -euo pipefail
-          F=dist-play/suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}.aab
+          NAME=Suzeta-release-v${{ steps.version.outputs.name }}-${{ steps.version.outputs.code }}.aab
+          F=dist-play/$NAME
           SIZE=$(du -h "$F" | cut -f1)
           SHA=$(sha256sum "$F" | awk '{print $1}')
           {
@@ -1252,14 +1279,16 @@ jobs:
             echo ""
             echo "| Câmp | Valoare |"
             echo "|---|---|"
-            echo "| Artefact | \`suzeta-${{ steps.version.outputs.name }}-build-${{ steps.version.outputs.code }}-production\` |"
+            echo "| Fișier | \`$NAME\` |"
             echo "| versionName | ${{ steps.version.outputs.name }} |"
             echo "| versionCode | ${{ steps.version.outputs.code }} |"
             echo "| Dimensiune | $SIZE |"
             echo "| SHA-256 | \`$SHA\` |"
+            echo "| GitHub Release | ${RELEASE_URL:-indisponibil} |"
             echo ""
-            echo "Descarcă din secțiunea **Artifacts** a acestei rulări (30 zile)."
+            echo "Descarcă **din GitHub Release** ca să primești direct fișierul .aab (fără zip)."
           } >> "$GITHUB_STEP_SUMMARY"
+
 
 
       - name: Pregătește release notes (din fastlane/metadata)

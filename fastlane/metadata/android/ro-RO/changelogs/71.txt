@@ -1,0 +1,6 @@
+Suzeta 1.0.61
+
+- Rămâi conectat după actualizare: sesiunea se restaurează automat din stocarea sigură a telefonului, fără să ți se ceară din nou parola.
+- Fără ecran de login afișat greșit în timpul pornirii: aplicația așteaptă întâi restaurarea sesiunii.
+- Fără deconectări false când internetul lipsește temporar sau e lent.
+- Îmbunătățiri de viteză la pornire și corectări minore.
