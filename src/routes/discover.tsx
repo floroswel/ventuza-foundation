@@ -342,21 +342,27 @@ function DiscoverPage() {
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [travelStatus, setTravelStatus] = useState<TravelStatus>(null);
 
-  const refreshTravel = useCallback(async () => {
+  const refreshTravel = useCallback(async (): Promise<TravelStatus> => {
     if (!user) {
       setTravelStatus(null);
-      return;
+      return null;
     }
-    setTravelStatus(await getMyTravelStatus());
+    const next = await getMyTravelStatus();
+    setTravelStatus(next);
+    return next;
   }, [user]);
 
   useEffect(() => {
     void refreshTravel();
-    // Expirarea e impusă în DB (max 24h); re-verificăm periodic ca indicatorul
-    // să dispară singur fără reload de pagină.
-    const t = setInterval(() => void refreshTravel(), 60_000);
+    // Expirarea e impusă în DB (max 24h). Când expiră, reîncărcăm și profilurile,
+    // ca grila să revină automat la locația reală, nu doar bannerul.
+    const t = setInterval(async () => {
+      const next = await refreshTravel();
+      const wasExplorer = Boolean(travelStatus);
+      if (wasExplorer !== Boolean(next)) await load();
+    }, 60_000);
     return () => clearInterval(t);
-  }, [refreshTravel]);
+  }, [refreshTravel, load, travelStatus]);
 
   const onTravelChanged = useCallback(async () => {
     await refreshTravel();
@@ -962,6 +968,8 @@ function DiscoverPage() {
           hasFilters={JSON.stringify(debouncedFilters) !== JSON.stringify(DEFAULT_FILTERS)}
           onResetFilters={() => setFilters(DEFAULT_FILTERS)}
           currentDistanceKm={filters.maxDistanceKm}
+          explorerCity={travelStatus?.city}
+          onBackToReal={backToRealLocation}
           onExpandDistance={(km) => setFilters({ ...filters, maxDistanceKm: km })}
         />
       ) : view === "swipe" ? (
