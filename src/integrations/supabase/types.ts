@@ -2885,6 +2885,27 @@ export type Database = {
         }
         Relationships: []
       }
+      ops_alert_log: {
+        Row: {
+          alert_kind: string
+          created_at: string
+          details: Json
+          id: string
+        }
+        Insert: {
+          alert_kind: string
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Update: {
+          alert_kind?: string
+          created_at?: string
+          details?: Json
+          id?: string
+        }
+        Relationships: []
+      }
       partner_boost_orders: {
         Row: {
           active: boolean
@@ -6041,6 +6062,7 @@ export type Database = {
         }[]
       }
       cron_didit_reconcile: { Args: never; Returns: undefined }
+      cron_ops_health_alerts: { Args: never; Returns: undefined }
       current_week_start: { Args: never; Returns: string }
       delete_email: {
         Args: { message_id: number; queue_name: string }
@@ -6664,6 +6686,11 @@ export type Database = {
           claim_count: number
           redeemed_count: number
         }[]
+      }
+      ops_health_signals: { Args: never; Returns: Json }
+      ops_try_record_alert: {
+        Args: { _details?: Json; _kind: string }
+        Returns: boolean
       }
       partner_active_entitlements: {
         Args: { _owner_id: string }
