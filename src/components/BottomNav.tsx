@@ -48,13 +48,21 @@ export function BottomNav() {
               aria-current={active ? "page" : undefined}
             >
               <span className="relative flex h-7 items-center justify-center">
+                <span
+                  aria-hidden
+                  className={cn(
+                    "absolute inset-x-[-10px] inset-y-[-3px] rounded-full transition-all duration-200",
+                    active ? "bg-primary/12 opacity-100" : "opacity-0",
+                  )}
+                />
                 <Icon
-                  className={cn(NAV_ICON_SIZE, "transition-transform duration-150", active && "scale-105")}
+                  className={cn("relative", NAV_ICON_SIZE, "transition-transform duration-150", active && "scale-105")}
                   strokeWidth={active ? 2 : NAV_ICON_STROKE}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   fill={active && fillWhenActive ? "currentColor" : "none"}
                 />
+
                 {badge > 0 && (
                   <span className="absolute -right-2 -top-0.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground ring-2 ring-background">
                     {badge > 9 ? "9+" : badge}
