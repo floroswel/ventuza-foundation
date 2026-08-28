@@ -243,7 +243,7 @@ export function FiltersDrawer({
         />
       </div>
 
-      <footer className="border-t border-border/50 px-6 py-4">
+      <footer className="border-t border-border/50 px-5 py-3">
         <Button
           variant="hero"
           size="lg"
@@ -253,9 +253,10 @@ export function FiltersDrawer({
             onClose();
           }}
         >
-          Apply filters
+          Aplică filtrele
         </Button>
       </footer>
+      </div>
     </div>
   );
 }
