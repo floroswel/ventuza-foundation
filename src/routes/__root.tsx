@@ -13,6 +13,8 @@ import { lazy, useEffect, useState, type ReactNode } from "react";
 import { DeferredOverlay } from "@/components/DeferredOverlay";
 
 // Overlay-uri condiționale: nu apar în primul cadru, deci nu intră în bundle-ul de pornire.
+const PullToRefreshMount = lazy(() => import("@/components/PullToRefreshMount").then((m) => ({ default: m.PullToRefreshMount })));
+const NativePushNavigatorMount = lazy(() => import("@/components/NativePushNavigatorMount").then((m) => ({ default: m.NativePushNavigatorMount })));
 const OfflineBanner = lazy(() => import("@/components/OfflineBanner").then((m) => ({ default: m.OfflineBanner })));
 const CookieBanner = lazy(() => import("@/components/CookieBanner").then((m) => ({ default: m.CookieBanner })));
 const TravelWarning = lazy(() => import("@/components/TravelWarning").then((m) => ({ default: m.TravelWarning })));
@@ -42,7 +44,6 @@ import { GuardianBoundary } from "@/components/GuardianBoundary";
 import { CountryRiskGuard } from "@/components/CountryRiskGuard";
 import { AgeGate } from "@/components/AgeGate";
 import { AppSplash } from "@/components/AppSplash";
-import { PullToRefreshMount } from "@/components/PullToRefreshMount";
 import { useProximityForegroundWatcher } from "@/lib/proximity-watcher";
 import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
 import { useLocationWatcher } from "@/hooks/useLocationWatcher";
@@ -53,7 +54,6 @@ import "@/lib/i18n";
 
 import { VersionGate } from "@/components/VersionGate";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import { NativePushNavigatorMount } from "@/components/NativePushNavigatorMount";
 
 function NotFoundComponent() {
   return (
@@ -492,7 +492,9 @@ function RootComponent() {
             <CountryRiskGuard />
             <ProximityWatcherMount />
             <ScreenSecurityMount />
-            <NativePushNavigatorMount />
+            <DeferredOverlay>
+              <NativePushNavigatorMount />
+            </DeferredOverlay>
             <GuardianBoundary area="app" category="react">
               <PageTransition>
                 <Outlet />
@@ -514,7 +516,9 @@ function RootComponent() {
 
             <LanguageToggle />
             <VersionGate />
-            <PullToRefreshMount />
+            <DeferredOverlay>
+              <PullToRefreshMount />
+            </DeferredOverlay>
             <DeferredOverlay>
               <ConsentPromptHost />
               <UpdateAvailableBanner />
