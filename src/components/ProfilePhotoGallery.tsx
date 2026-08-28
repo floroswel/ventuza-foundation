@@ -193,6 +193,9 @@ export function ProfilePhotoGallery({
         role="region"
         aria-roledescription="carusel"
         aria-label={galleryLabel}
+        // `pan-y`: gestul vertical rămâne al scroll-ului paginii, doar
+        // orizontalul este preluat de galerie.
+        style={{ touchAction: "pan-y" }}
       >
         <AnimatePresence initial={false} mode="popLayout">
           <GalleryImage
@@ -202,10 +205,12 @@ export function ProfilePhotoGallery({
             onClick={() => setFs(true)}
             className="size-full cursor-zoom-in object-cover"
             motionProps={{
-              drag: "x",
+              drag: total > 1 ? "x" : false,
+              dragDirectionLock: true,
               dragConstraints: { left: 0, right: 0 },
               dragElastic: 0.6,
               onDragEnd: handleDragEnd,
+              style: { touchAction: "pan-y" },
               initial: { opacity: 0.6, scale: 1.02 },
               animate: { opacity: 1, scale: 1 },
               exit: { opacity: 0 },
@@ -213,6 +218,13 @@ export function ProfilePhotoGallery({
             }}
           />
         </AnimatePresence>
+
+        {/* Contor 1/5 — util când sunt multe poze și dots-urile devin mici */}
+        {total > 1 && (
+          <span className="pointer-events-none absolute right-3 top-3 z-20 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white backdrop-blur">
+            {idx + 1}/{total}
+          </span>
+        )}
 
         {/* Invisible tap zones for desktop / accessibility */}
         {total > 1 && (
