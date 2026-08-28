@@ -361,7 +361,7 @@ export async function fetchDiscover(
 
 export async function signPhotos(paths: string[]): Promise<Record<string, string>> {
   const { getSignedUrls } = await import("@/lib/signed-url-cache");
-  const out = await getSignedUrls("profile-photos", paths, 3600);
+  const out = await getSignedUrls("profile-photos", paths);
   const missing = paths.filter((p) => !out[p]);
   if (missing.length) {
     const { reportSignedUrlMissing } = await import("@/lib/media-telemetry");
@@ -371,6 +371,56 @@ export async function signPhotos(paths: string[]): Promise<Record<string, string
   }
   return out;
 }
+
+// Cache sincron al URL-urilor deja semnate — evită „ecran gol" la deschiderea
+// unui profil: dacă poza a fost semnată pentru grilă, o randăm instant.
+let peekFn: ((bucket: string, path: string) => string | null) | null = null;
+void import("@/lib/signed-url-cache").then((m) => {
+  peekFn = m.peekSignedUrl;
+});
+
+/** Citire sincronă din cache pentru un set de căi (fără rețea). */
+export function peekPhotos(paths: string[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!peekFn) return out;
+  for (const p of paths) {
+    const u = peekFn("profile-photos", p);
+    if (u) out[p] = u;
+  }
+  return out;
+}
+
+/**
+ * Pre-semnează TOATE pozele profilurilor vizibile (un singur request batch) și
+ * încălzește cache-ul browserului descărcând imaginile în fundal. Deschiderea
+ * unui profil devine instantă.
+ */
+export async function prefetchProfilePhotos(
+  profiles: Array<{ photos?: string[] | null }>,
+  opts: { warm?: number } = {},
+): Promise<void> {
+  const paths = Array.from(
+    new Set(profiles.flatMap((p) => (p.photos ?? []).filter(Boolean) as string[])),
+  );
+  if (!paths.length) return;
+  const urls = await signPhotos(paths);
+  if (typeof window === "undefined") return;
+  const warm = opts.warm ?? 24;
+  const list = Object.values(urls).slice(0, warm);
+  const run = () => {
+    for (const url of list) {
+      const img = new Image();
+      img.decoding = "async";
+      (img as HTMLImageElement & { fetchPriority?: string }).fetchPriority = "low";
+      img.src = url;
+    }
+  };
+  const ric = (window as Window & { requestIdleCallback?: (cb: () => void) => void })
+    .requestIdleCallback;
+  if (ric) ric(run);
+  else setTimeout(run, 200);
+}
+
 
 
 export async function logProfileView(viewedId: string) {
