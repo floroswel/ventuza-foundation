@@ -1,5 +1,6 @@
 import type { ComponentType } from 'react'
 import { template as partnerBroadcastTemplate } from './partner-broadcast'
+import { template as opsAlertTemplate } from './ops-alert'
 
 export interface TemplateEntry {
   component: ComponentType<any>
@@ -20,4 +21,5 @@ export interface TemplateEntry {
  */
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'partner-broadcast': partnerBroadcastTemplate,
+  'ops-alert': opsAlertTemplate,
 }
