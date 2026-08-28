@@ -245,7 +245,15 @@ function MatchesPage() {
         const enriched = base
           .map((r) => ({ ...r, profile: profiles.get(r.other_id) ?? null }))
           .filter((r) => r.profile);
-        if (alive) setRows(enriched);
+        if (!alive) return;
+        setRows(enriched);
+        // Contor „nou de la ultima vizită”: pragul rămâne înghețat cât stai pe
+        // tab (ca să vezi ce e nou), dar se salvează imediat ca văzut.
+        const threshold = readSeen(user.id, tab);
+        const fresh = enriched.filter((r) => new Date(r.at).getTime() > threshold).length;
+        setSeenAt((prev) => ({ ...prev, [tab]: threshold }));
+        setNewCounts((prev) => ({ ...prev, [tab]: fresh }));
+        writeSeen(user.id, tab, Date.now());
       } catch (e) {
         if (alive) {
           setRows([]);
@@ -259,6 +267,18 @@ function MatchesPage() {
       alive = false;
     };
   }, [user, tab, loadTab]);
+
+  /**
+   * Vizite / Tap-uri / Favoriți → profilul persoanei (acolo există deja buton
+   * de mesaj). Potriviri → direct conversația, acolo are sens.
+   */
+  function openPerson(row: PersonRow) {
+    if (tab === "matches") {
+      void openChat(row.other_id);
+      return;
+    }
+    navigate({ to: "/u/$slug", params: { slug: row.other_id } });
+  }
 
   async function openChat(otherId: string) {
     if (opening) return;
@@ -322,7 +342,7 @@ function MatchesPage() {
               <li key={m.key}>
                 <button
                   type="button"
-                  onClick={() => void openChat(m.other_id)}
+                  onClick={() => openPerson(m)}
                   disabled={opening === m.other_id}
                   className={cn(
                     "group relative flex aspect-[3/4] w-full flex-col justify-end overflow-hidden rounded-2xl border border-primary/25 bg-surface text-left shadow-sm transition-transform",
