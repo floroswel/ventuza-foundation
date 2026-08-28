@@ -116,6 +116,10 @@ export const Route = createFileRoute("/discover")({
 
 type Tab = "nearby" | "fresh";
 
+/** Raza maximă în mod Explorer: vrei orașul ales, nu tot continentul. */
+const EXPLORER_RADIUS_KM = 100;
+
+
 function DiscoverPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
