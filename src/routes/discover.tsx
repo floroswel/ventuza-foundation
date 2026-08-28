@@ -1549,22 +1549,41 @@ function ProfileSheet({
           </button>
         )}
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain no-scrollbar">
           <ProfilePhotoGallery
           photos={signedPhotos}
           alt={profile.display_name ?? ""}
+          indicator="bars"
+          // Cadru „o singură ecranare": poza ocupă tot ce rămâne peste bara de
+          // acțiuni, deci butoanele sunt vizibile fără derulare. Pe telefoane
+          // scunde poza se micșorează, butoanele rămân.
+          frameClassName="h-[max(38dvh,calc(100dvh-var(--safe-top)-var(--safe-bottom)-9.5rem))]"
           topRight={
-            <button
-              onClick={onClose}
-              className="flex size-9 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur"
-              aria-label="Close"
-            >
-              <X className="size-4" />
-            </button>
+            <div className="flex items-center gap-2">
+              <ReportBlockDialog
+                targetUserId={profile.id}
+                targetName={profile.display_name ?? undefined}
+                trigger={
+                  <button
+                    className="flex size-11 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur"
+                    aria-label="Raportează profilul"
+                  >
+                    <Flag className="size-4" />
+                  </button>
+                }
+              />
+              <button
+                onClick={onClose}
+                className="flex size-11 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur"
+                aria-label="Close"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
           }
           overlay={
             <>
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-surface via-surface/20 to-transparent" />
+              <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/85 via-black/45 to-transparent" />
               <div className="relative p-5">
                 <h2 className="flex items-center gap-2 font-display text-3xl font-medium text-white">
                   {profile.display_name}
@@ -1582,6 +1601,9 @@ function ProfileSheet({
                     {lastSeenText}
                   </span>
                   <DistanceLabel meters={profile.distance_m} />
+                  {profile.pronouns?.length ? (
+                    <span>{profile.pronouns.join(" · ")}</span>
+                  ) : null}
                   {heightStr && (
                     <span className="inline-flex items-center gap-1">
                       <Ruler className="size-3" /> {heightStr}
@@ -1593,6 +1615,7 @@ function ProfileSheet({
             </>
           }
         />
+
 
         <div className="space-y-5 px-5 pb-6 pt-4">
           {profile.tribes && profile.tribes.length > 0 && (
