@@ -1216,8 +1216,9 @@ function Cascade({
           <button
             key={p.id}
             onClick={() => onOpen(p)}
+            style={{ contentVisibility: eager ? "visible" : "auto", containIntrinsicSize: "160px 213px" }}
             className={cn(
-              "group relative aspect-square overflow-hidden bg-surface transition-transform duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98]",
+              "group relative aspect-[3/4] overflow-hidden bg-surface transition-transform duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98]",
               unread > 0 && "snake-border",
             )}
           >
@@ -1226,8 +1227,19 @@ function Cascade({
                 src={url}
                 alt={p.display_name ?? ""}
                 loading={eager ? "eager" : "lazy"}
+                decoding={eager ? "sync" : "async"}
                 fetchPriority={eager ? "high" : "low"}
+                width={320}
+                height={427}
                 className="size-full object-cover"
+              />
+            ) : path ? (
+              // Schelet cât timp URL-ul semnat nu e încă disponibil — fără salt
+              // de layout, tile-ul păstrează deja raportul 3:4.
+              <div
+                role="status"
+                aria-label="Se încarcă poza"
+                className="size-full animate-pulse bg-gradient-to-br from-surface via-surface-elevated to-surface"
               />
             ) : (
               <div className="flex size-full items-center justify-center text-2xl text-muted-foreground/40">
