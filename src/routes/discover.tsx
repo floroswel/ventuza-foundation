@@ -353,15 +353,21 @@ function DiscoverPage() {
   }, [user]);
 
   useEffect(() => {
-    void refreshTravel();
+    let active = true;
+    const syncTravel = async () => {
+      const wasExplorer = Boolean(travelStatus);
+      const next = await refreshTravel();
+      // La redeschidere sau expirare, sincronizăm și grila cu locația efectivă.
+      if (active && wasExplorer !== Boolean(next)) await load();
+    };
+    void syncTravel();
     // Expirarea e impusă în DB (max 24h). Când expiră, reîncărcăm și profilurile,
     // ca grila să revină automat la locația reală, nu doar bannerul.
-    const t = setInterval(async () => {
-      const next = await refreshTravel();
-      const wasExplorer = Boolean(travelStatus);
-      if (wasExplorer !== Boolean(next)) await load();
-    }, 60_000);
-    return () => clearInterval(t);
+    const t = setInterval(() => void syncTravel(), 60_000);
+    return () => {
+      active = false;
+      clearInterval(t);
+    };
   }, [refreshTravel, load, travelStatus]);
 
   const onTravelChanged = useCallback(async () => {
