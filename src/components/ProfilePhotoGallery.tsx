@@ -118,6 +118,14 @@ type Props = {
   topRight?: ReactNode;
   /** Extra content rendered below the image inside the fullscreen viewer (vertically scrollable). */
   fullscreenExtra?: ReactNode;
+  /**
+   * Clasa care dictează dimensiunea cadrului. Implicit `aspect-square`.
+   * Pentru cardul de profil (Tinder/Badoo) se trimite o înălțime calculată
+   * din `100dvh` ca butoanele să rămână vizibile fără derulare.
+   */
+  frameClassName?: string;
+  /** Indicatori de progres subțiri (stories) în locul dots-urilor. */
+  indicator?: "dots" | "bars";
 };
 
 const SWIPE_THRESHOLD = 60;
@@ -135,6 +143,8 @@ export function ProfilePhotoGallery({
   overlay,
   topRight,
   fullscreenExtra,
+  frameClassName = "aspect-square",
+  indicator = "dots",
 }: Props) {
   const [idx, setIdx] = useState(0);
   const [fs, setFs] = useState(false);
@@ -147,16 +157,20 @@ export function ProfilePhotoGallery({
     return (
       <div
         className={cn(
-          "relative flex aspect-square w-full items-center justify-center bg-background text-5xl text-muted-foreground/40",
+          "relative flex w-full items-center justify-center bg-surface-elevated",
+          frameClassName,
           className,
         )}
       >
-        {alt?.[0]?.toUpperCase() ?? "?"}
+        <span className="font-display text-6xl font-semibold text-muted-foreground/40">
+          {alt?.[0]?.toUpperCase() ?? "?"}
+        </span>
         {topRight && <div className="absolute right-3 top-3 z-10">{topRight}</div>}
         {overlay && <div className="absolute inset-x-0 bottom-0 z-10">{overlay}</div>}
       </div>
     );
   }
+
 
   const go = (dir: -1 | 1) => setIdx((i) => (i + dir + photos.length) % photos.length);
 
