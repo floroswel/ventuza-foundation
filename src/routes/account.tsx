@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
 import { signPhotos } from "@/lib/discover";
-import { setIncognito } from "@/lib/incognito";
+import { setHideOnline } from "@/lib/incognito";
 
 import { BottomNav } from "@/components/BottomNav";
 import { StaffRoleBadge } from "@/components/StaffRoleBadge";
@@ -91,7 +91,7 @@ function AccountPage() {
     setProfile({ ...profile, [field]: value });
     try {
       if (field === "hide_online") {
-        await setIncognito(user.id, value);
+        await setHideOnline(user.id, value);
       } else {
         const { error } = await supabase
           .from("profiles")

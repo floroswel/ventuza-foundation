@@ -3,6 +3,7 @@ import { ConversationListSkeleton } from "@/components/skeletons/FirstScreenSkel
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { BLOCKS_CHANGED_EVENT } from "@/lib/block-events";
 import { Image as ImageIcon, Loader2, MessageCircle, Sparkles, SquarePen } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-context";
 import { signPhotos } from "@/lib/discover";
@@ -115,7 +116,14 @@ function MessagesPage() {
       queryClient.invalidateQueries({ queryKey: ["conversations", userId] });
     // BottomNav deține unicul canal Realtime `conv-list:<uid>`. Pagina
     // ascultă evenimentele lui, fără să creeze încă un canal cu același topic.
-    return subscribeConversationChanges(invalidate);
+    // Blocare/deblocare: conversația dispare din listă (mesajele rămân în DB)
+    // și reapare la deblocare, cu istoricul intact.
+    window.addEventListener(BLOCKS_CHANGED_EVENT, invalidate);
+    const unsubscribe = subscribeConversationChanges(invalidate);
+    return () => {
+      window.removeEventListener(BLOCKS_CHANGED_EVENT, invalidate);
+      unsubscribe?.();
+    };
   }, [user?.id, queryClient]);
 
 

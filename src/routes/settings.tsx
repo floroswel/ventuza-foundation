@@ -39,7 +39,7 @@ import { listMyMfaFactors, disableMyMfa } from "@/lib/mfa.functions";
 import { openCookieSettings } from "@/components/CookieBanner";
 import { BottomNav } from "@/components/BottomNav";
 import { setLookingNow } from "@/lib/social";
-import { setIncognito } from "@/lib/incognito";
+import { setHideOnline } from "@/lib/incognito";
 
 import { UniquesCard } from "@/components/UniquesCard";
 import { SosCard } from "@/components/SosCard";
@@ -226,7 +226,7 @@ function SettingsPage() {
     if (!error && wasHidden !== next.hide_online) {
       // Reapari/dispari instant (touch_last_seen + heartbeat).
       try {
-        await setIncognito(user.id, next.hide_online);
+        await setHideOnline(user.id, next.hide_online);
       } catch {
         /* deja salvat mai sus */
       }

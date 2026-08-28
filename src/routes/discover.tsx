@@ -93,6 +93,7 @@ import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { withGuardian } from "@/components/with-guardian";
+import { BLOCKS_CHANGED_EVENT } from "@/lib/block-events";
 import { OnlineIndicator } from "@/components/ui-kit/OnlineIndicator";
 import { DistanceLabel } from "@/components/ui-kit/DistanceLabel";
 
@@ -196,11 +197,17 @@ function DiscoverPage() {
         }),
       );
     patch(next);
-    const { error } = await supabase.from("profiles").update({ incognito: next }).eq("id", user.id);
+    let failure: Error | null = null;
+    try {
+      const { setIncognito } = await import("@/lib/incognito");
+      await setIncognito(user.id, next);
+    } catch (e) {
+      failure = e as Error;
+    }
     setIncognitoBusy(false);
-    if (error) {
+    if (failure) {
       patch(!next);
-      toast.error(error.message);
+      toast.error(failure.message);
     } else {
       void myProfileQuery.refetch();
       toast.success(
@@ -441,6 +448,22 @@ function DiscoverPage() {
       supabase.removeChannel(ch);
     };
   }, [user, load, loadError?.code]);
+
+  // Bara de derulare verticală se desena peste conținut pe /discover.
+  // O ascundem vizual cât timp ecranul e montat; derularea rămâne intactă.
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    document.documentElement.classList.add("hide-scrollbars");
+    return () => document.documentElement.classList.remove("hide-scrollbars");
+  }, []);
+
+  // După blocare/deblocare grila trebuie să se reîncarce imediat.
+  useEffect(() => {
+    if (!user) return;
+    const onBlocks = () => void load();
+    window.addEventListener(BLOCKS_CHANGED_EVENT, onBlocks);
+    return () => window.removeEventListener(BLOCKS_CHANGED_EVENT, onBlocks);
+  }, [user, load]);
 
   // Re-fetch când watcher-ul de locație raportează mișcare semnificativă.
   useEffect(() => {

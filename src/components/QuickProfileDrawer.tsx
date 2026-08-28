@@ -24,6 +24,7 @@ type Me = {
   display_name: string | null;
   photos: string[] | null;
   hide_online: boolean | null;
+  incognito: boolean | null;
   looking_now_until: string | null;
 };
 
@@ -42,7 +43,7 @@ export function QuickProfileDrawer() {
     (async () => {
       const { data } = await supabase
         .from("profiles")
-        .select("display_name, photos, hide_online, looking_now_until")
+        .select("display_name, photos, hide_online, incognito, looking_now_until")
         .eq("id", user.id)
         .maybeSingle();
       if (cancel || !data) return;
@@ -63,13 +64,13 @@ export function QuickProfileDrawer() {
   async function toggleIncognito(next: boolean) {
     if (!user || !me) return;
     setSavingHide(true);
-    setMe({ ...me, hide_online: next });
+    setMe({ ...me, hide_online: next, incognito: next });
     try {
       await setIncognito(user.id, next);
       toast.success(next ? "Incognito activat" : "Online vizibil");
     } catch (e) {
       toast.error((e as Error).message);
-      setMe({ ...me, hide_online: !next });
+      setMe({ ...me, hide_online: !next, incognito: !next });
     } finally {
       setSavingHide(false);
     }
@@ -95,7 +96,7 @@ export function QuickProfileDrawer() {
     }
   }
 
-  const incognito = !!me?.hide_online;
+  const incognito = !!me?.incognito;
   const rightNowActive = !!(me?.looking_now_until && new Date(me.looking_now_until) > new Date());
 
   return (

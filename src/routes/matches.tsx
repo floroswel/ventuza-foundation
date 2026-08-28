@@ -10,6 +10,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { PresenceDot } from "@/components/PresenceDot";
 import { cn } from "@/lib/utils";
 import { withGuardian } from "@/components/with-guardian";
+import { safeFormat } from "@/lib/safe-locale";
+import { dayKey } from "@/components/ui-kit/DaySeparator";
 
 export const Route = createFileRoute("/matches")({
   ssr: false,
@@ -59,15 +61,49 @@ const EMPTY: Record<TabKey, { title: string; body: string }> = {
   },
 };
 
+/**
+ * Timp cu ORA vizibilă: relativ pentru azi/ieri, dată + oră pentru mai vechi.
+ * „acum 12 min”, „acum 2 ore”, „ieri, 21:40”, „04.08.2026, 18:12”.
+ */
 function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = 60_000,
-    h = 60 * m,
-    d = 24 * h;
+  const then = new Date(iso);
+  if (Number.isNaN(then.getTime())) return "";
+  const diff = Date.now() - then.getTime();
+  const m = 60_000;
+  const h = 60 * m;
+  const hhmm = safeFormat(then, { hour: "2-digit", minute: "2-digit" }, "time");
   if (diff < h) return `acum ${Math.max(1, Math.floor(diff / m))} min`;
-  if (diff < d) return `acum ${Math.floor(diff / h)} h`;
-  if (diff < 7 * d) return `acum ${Math.floor(diff / d)} z`;
-  return new Date(iso).toLocaleDateString("ro-RO");
+  const today = dayKey(new Date().toISOString());
+  const yesterday = dayKey(new Date(Date.now() - 24 * h).toISOString());
+  const key = dayKey(iso);
+  if (key === today) {
+    const hours = Math.floor(diff / h);
+    return hours <= 1 ? `acum o oră · ${hhmm}` : `acum ${hours} ore · ${hhmm}`;
+  }
+  if (key === yesterday) return `ieri, ${hhmm}`;
+  return `${safeFormat(then, { day: "2-digit", month: "2-digit", year: "numeric" }, "date")}, ${hhmm}`;
+}
+
+/** Marcaj local „ce am văzut deja” per tab — nu are nevoie de backend. */
+function seenKey(uid: string, tab: TabKey) {
+  return `vz_matches_seen:${uid}:${tab}`;
+}
+
+function readSeen(uid: string, tab: TabKey): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    return Number(window.localStorage.getItem(seenKey(uid, tab)) ?? 0) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeSeen(uid: string, tab: TabKey, at: number) {
+  try {
+    window.localStorage.setItem(seenKey(uid, tab), String(at));
+  } catch {
+    /* private mode */
+  }
 }
 
 function MatchesPage() {
@@ -77,6 +113,30 @@ function MatchesPage() {
   const [rows, setRows] = useState<PersonRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [opening, setOpening] = useState<string | null>(null);
+  // Praguri „văzut până la” per tab (timestamp ms), citite din localStorage.
+  const [seenAt, setSeenAt] = useState<Record<TabKey, number>>({
+    matches: 0,
+    visits: 0,
+    taps: 0,
+    favorites: 0,
+  });
+  // Contoare de intrări noi per tab, calculate la încărcarea fiecărui tab.
+  const [newCounts, setNewCounts] = useState<Record<TabKey, number>>({
+    matches: 0,
+    visits: 0,
+    taps: 0,
+    favorites: 0,
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    setSeenAt({
+      matches: readSeen(user.id, "matches"),
+      visits: readSeen(user.id, "visits"),
+      taps: readSeen(user.id, "taps"),
+      favorites: readSeen(user.id, "favorites"),
+    });
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
@@ -185,7 +245,15 @@ function MatchesPage() {
         const enriched = base
           .map((r) => ({ ...r, profile: profiles.get(r.other_id) ?? null }))
           .filter((r) => r.profile);
-        if (alive) setRows(enriched);
+        if (!alive) return;
+        setRows(enriched);
+        // Contor „nou de la ultima vizită”: pragul rămâne înghețat cât stai pe
+        // tab (ca să vezi ce e nou), dar se salvează imediat ca văzut.
+        const threshold = readSeen(user.id, tab);
+        const fresh = enriched.filter((r) => new Date(r.at).getTime() > threshold).length;
+        setSeenAt((prev) => ({ ...prev, [tab]: threshold }));
+        setNewCounts((prev) => ({ ...prev, [tab]: fresh }));
+        writeSeen(user.id, tab, Date.now());
       } catch (e) {
         if (alive) {
           setRows([]);
@@ -199,6 +267,18 @@ function MatchesPage() {
       alive = false;
     };
   }, [user, tab, loadTab]);
+
+  /**
+   * Vizite / Tap-uri / Favoriți → profilul persoanei (acolo există deja buton
+   * de mesaj). Potriviri → direct conversația, acolo are sens.
+   */
+  function openPerson(row: PersonRow) {
+    if (tab === "matches") {
+      void openChat(row.other_id);
+      return;
+    }
+    navigate({ to: "/u/$slug", params: { slug: row.other_id } });
+  }
 
   async function openChat(otherId: string) {
     if (opening) return;
@@ -228,6 +308,7 @@ function MatchesPage() {
         >
           {TABS.map(({ key, label, Icon }) => {
             const active = tab === key;
+            const badge = newCounts[key];
             return (
               <button
                 key={key}
@@ -235,7 +316,7 @@ function MatchesPage() {
                 aria-selected={active}
                 onClick={() => setTab(key)}
                 className={cn(
-                  "flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] font-medium transition-colors",
+                  "relative flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] font-medium transition-colors",
                   active
                     ? "bg-primary/15 text-primary"
                     : "text-muted-foreground hover:text-foreground/80",
@@ -243,9 +324,18 @@ function MatchesPage() {
               >
                 <Icon className="size-[18px]" strokeWidth={active ? 2.2 : 1.8} />
                 {label}
+                {badge > 0 && (
+                  <span
+                    aria-label={`${badge} noi`}
+                    className="absolute right-1.5 top-0.5 min-w-[16px] rounded-full bg-primary px-1 text-[9px] font-bold leading-4 text-primary-foreground"
+                  >
+                    {badge > 9 ? "9+" : badge}
+                  </span>
+                )}
               </button>
             );
           })}
+
         </div>
       </header>
 
@@ -262,7 +352,7 @@ function MatchesPage() {
               <li key={m.key}>
                 <button
                   type="button"
-                  onClick={() => void openChat(m.other_id)}
+                  onClick={() => openPerson(m)}
                   disabled={opening === m.other_id}
                   className={cn(
                     "group relative flex aspect-[3/4] w-full flex-col justify-end overflow-hidden rounded-2xl border border-primary/25 bg-surface text-left shadow-sm transition-transform",
@@ -285,6 +375,11 @@ function MatchesPage() {
                   {m.note && (
                     <span className="absolute left-2 top-2 rounded-full bg-black/60 px-2 py-0.5 text-sm backdrop-blur">
                       {m.note}
+                    </span>
+                  )}
+                  {new Date(m.at).getTime() > seenAt[tab] && (
+                    <span className="absolute right-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary-foreground">
+                      Nou
                     </span>
                   )}
                   <div className="relative z-10 flex items-end justify-between p-3">
