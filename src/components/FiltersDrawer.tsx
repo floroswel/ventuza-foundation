@@ -93,7 +93,7 @@ export function FiltersDrawer({
             onClick={() => setDraft({ ...draft, onlineOnly: !draft.onlineOnly })}
           >
             <span className="mr-1.5 inline-block size-1.5 rounded-full bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" />
-            Online now
+            Online acum
           </Toggle>
           <Toggle
             active={draft.lookingNowOnly}
@@ -106,20 +106,20 @@ export function FiltersDrawer({
             active={draft.verifiedOnly}
             onClick={() => setDraft({ ...draft, verifiedOnly: !draft.verifiedOnly })}
           >
-            ✓ Verified only
+            ✓ Doar verificați
           </Toggle>
           <Toggle
             active={draft.withPhotoOnly}
             onClick={() => setDraft({ ...draft, withPhotoOnly: !draft.withPhotoOnly })}
           >
-            With photo
+            Cu poză
           </Toggle>
         </section>
 
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>Distance</Label>
+            <Label>Distanță</Label>
             <span className="text-sm text-primary">{draft.maxDistanceKm} km</span>
           </div>
           <input
@@ -134,7 +134,7 @@ export function FiltersDrawer({
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>Age range</Label>
+            <Label>Vârstă</Label>
             <span className="text-sm text-primary">
               {draft.minAge} – {draft.maxAge}
             </span>
@@ -165,7 +165,7 @@ export function FiltersDrawer({
 
         <section className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label>Height</Label>
+            <Label>Înălțime</Label>
             <span className="text-sm text-primary">
               {draft.minHeight ?? 140}cm – {draft.maxHeight ?? 210}cm
             </span>
@@ -205,38 +205,38 @@ export function FiltersDrawer({
         </section>
 
         <ChipSection
-          label="Tribes"
+          label="Triburi"
           options={TRIBE_OPTIONS}
           value={draft.tribes}
           onChange={(v) => setDraft({ ...draft, tribes: v })}
         />
         <ChipSection
-          label="Body type"
+          label="Corp"
           options={BODY_TYPE_OPTIONS}
           value={draft.bodyTypes}
           onChange={(v) => setDraft({ ...draft, bodyTypes: v })}
         />
         <ChipSection
-          label="Position"
+          label="Poziție"
           options={POSITION_OPTIONS}
           value={draft.positions}
           onChange={(v) => setDraft({ ...draft, positions: v })}
         />
         {/* Filtru HIV status: eliminat — Suzeta nu procesează datele HIV. */}
         <ChipSection
-          label="Looking for"
+          label="Caută"
           options={LOOKING_FOR_OPTIONS}
           value={draft.lookingFor}
           onChange={(v) => setDraft({ ...draft, lookingFor: v })}
         />
         <ChipSection
-          label="Gender"
+          label="Gen"
           options={GENDER_OPTIONS}
           value={draft.gender}
           onChange={(v) => setDraft({ ...draft, gender: v })}
         />
         <ChipSection
-          label="Orientation"
+          label="Orientare"
           options={ORIENTATION_OPTIONS}
           value={draft.orientation}
           onChange={(v) => setDraft({ ...draft, orientation: v })}
