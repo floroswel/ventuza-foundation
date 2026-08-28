@@ -294,6 +294,19 @@ function DiscoverPage() {
   const [autoExpanded, setAutoExpanded] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const [travelStatus, setTravelStatus] = useState<TravelStatus>(null);
+
+  // În mod Explorer grila trebuie să arate ORAȘUL ales, nu jumătate de continent.
+  // Fără plafon, raza implicită (5000 km) aducea exact aceiași oameni ca acasă.
+  const explorerFilters = useMemo<DiscoverFilters>(() => {
+    if (!travelStatus) return debouncedFilters;
+    return {
+      ...debouncedFilters,
+      maxDistanceKm: Math.min(debouncedFilters.maxDistanceKm, EXPLORER_RADIUS_KM),
+    };
+  }, [debouncedFilters, travelStatus]);
+
   const effectiveFiltersRef = useRef<DiscoverFilters>(debouncedFilters);
   const load = useCallback(async () => {
     if (!user) return;
@@ -304,8 +317,9 @@ function DiscoverPage() {
     try {
       // Explorer trebuie să arate exclusiv zona aleasă. Fallback-ul automat la
       // 5000 km ar scoate utilizatorul din destinație și ar face funcția înșelătoare.
-      const data = await fetchDiscover(debouncedFilters, "distance", { offset: 0 });
-      effectiveFiltersRef.current = debouncedFilters;
+      const data = await fetchDiscover(explorerFilters, "distance", { offset: 0 });
+      effectiveFiltersRef.current = explorerFilters;
+
       setProfiles(data);
       setHasMore(data.length >= DISCOVER_PAGE_SIZE);
       // Fetch server-side badges for the loaded profiles (fire-and-forget).
