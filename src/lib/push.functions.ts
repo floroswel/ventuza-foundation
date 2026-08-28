@@ -179,6 +179,73 @@ export const sendPushToUser = createServerFn({ method: "POST" })
     return dispatchPush({ ...data, actorId: context.userId });
   });
 
+const MessagePushInput = z.object({
+  conversationId: z.string().uuid(),
+});
+
+/**
+ * Push de mesaj pornit din client — PLASĂ DE SIGURANȚĂ PE DURATA TRANZIȚIEI.
+ *
+ * Calea principală este acum baza de date: trigger-ul `tg_notify_new_message`
+ * scrie în `push_outbox`, iar livrarea se face server-side. Aceea nu depinde
+ * de telefonul expeditorului și este cea corectă.
+ *
+ * De ce mai există totuși aceasta: migrațiile sunt aplicate de platformă, nu
+ * de CI, deci nu putem garanta că ajung în baza de date exact odată cu codul.
+ * Dacă bundle-ul nou ar ajunge primul FĂRĂ nicio cale în client, notificările
+ * s-ar opri complet până se aplică migrația — exact problema pe care o
+ * reparăm. Cu ambele active, cel mai rău caz este o trimitere în plus.
+ *
+ * De ce nu se văd duble: ambele căi folosesc același `tag`
+ * (`msg:<conversationId>`). Android înlocuiește notificarea cu aceeași
+ * etichetă, iar service worker-ul web face la fel (`public/push-sw.js`).
+ * Utilizatorul vede o singură notificare, indiferent câte pleacă.
+ *
+ * DE ȘTERS după ce se confirmă că outbox-ul livrează:
+ *   select status, count(*) from push_outbox group by status;
+ * Când apar rânduri `done` cu `delivered > 0`, această funcție și apelul din
+ * `chat.ts` pot fi eliminate.
+ */
+export const sendMessagePush = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: unknown) => MessagePushInput.parse(d))
+  .handler(async ({ data, context }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { dispatchPush } = await import("./push-dispatch.server");
+
+    const { data: conv } = await supabaseAdmin
+      .from("conversations")
+      .select("user_a,user_b")
+      .eq("id", data.conversationId)
+      .maybeSingle();
+    if (!conv) return { delivered: 0, skipped: "no_conversation" as const };
+    if (conv.user_a !== context.userId && conv.user_b !== context.userId) {
+      return { delivered: 0, skipped: "not_participant" as const };
+    }
+    const toUserId = conv.user_a === context.userId ? conv.user_b : conv.user_a;
+    if (!toUserId || toUserId === context.userId) {
+      return { delivered: 0, skipped: "self" as const };
+    }
+
+    const { data: sender } = await supabaseAdmin
+      .from("profiles")
+      .select("display_name")
+      .eq("id", context.userId)
+      .maybeSingle();
+
+    return dispatchPush({
+      actorId: context.userId,
+      toUserId,
+      title: (sender as { display_name?: string } | null)?.display_name || "Mesaj nou",
+      // Constanta generică, identică cu cea scrisă de trigger în SQL.
+      // Conținutul mesajului nu părăsește telefonul pentru notificări.
+      body: "Ai un mesaj nou",
+      url: `/messages/${data.conversationId}`,
+      tag: `msg:${data.conversationId}`,
+      category: "messages",
+    });
+  });
+
 // ────────────────────────────────────────────────────────────────────────────
 // Test de livrare — trimis EXPLICIT de utilizator către propriul device.
 //

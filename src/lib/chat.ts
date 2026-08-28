@@ -105,22 +105,34 @@ async function signPhoto(path: string | null): Promise<string | null> {
   return getSignedUrl("profile-photos", path, 3600);
 }
 
-/*
- * PUSH-UL DE MESAJ NU MAI PLEACĂ DE AICI.
+/**
+ * Notificare de mesaj — PLASĂ DE SIGURANȚĂ pe durata tranziției.
  *
- * Trimiterea era pornită de pe telefonul expeditorului, imediat după insert.
- * Dacă expeditorul bloca ecranul în acel interval — ce face oricine după ce
- * trimite un mesaj — Android suspenda procesul și notificarea nu mai pleca
- * niciodată. Mesajul exista, destinatarul nu afla.
+ * Calea principală este acum baza de date: notificarea se programează în
+ * `push_outbox` în ACEEAȘI tranzacție cu mesajul, iar livrarea o face
+ * serverul. Aceea funcționează chiar dacă expeditorul blochează ecranul
+ * imediat după trimitere — problema care făcea ca notificările să nu ajungă
+ * niciodată cu aplicația închisă.
  *
- * Acum notificarea se programează în baza de date, în ACEEAȘI tranzacție cu
- * mesajul (trigger `tg_notify_new_message` → `push_outbox`), și se livrează
- * server-side. Dacă mesajul există, notificarea este garantat programată,
- * indiferent ce face telefonul expeditorului după aceea.
+ * Apelul de aici rămâne temporar pentru că migrațiile sunt aplicate de
+ * platformă, nu de CI: dacă bundle-ul nou ar ajunge pe telefoane înaintea
+ * migrației, iar clientul nu ar mai trimite nimic, notificările s-ar opri
+ * complet în intervalul dintre ele.
  *
- * Vezi supabase/migrations/20260828121000_push_outbox_server_side_dispatch.sql
- * și src/routes/api/public/cron/push-dispatch.ts.
+ * Nu produce notificări duble: ambele căi folosesc `msg:<conversationId>` ca
+ * etichetă, iar Android și service worker-ul web înlocuiesc notificarea cu
+ * aceeași etichetă în loc să o adauge.
+ *
+ * Se șterge împreună cu `sendMessagePush` după ce outbox-ul se confirmă activ.
  */
+async function pushNewMessageNotification(conversationId: string): Promise<void> {
+  try {
+    const { sendMessagePush } = await import("@/lib/push.functions");
+    await sendMessagePush({ data: { conversationId } });
+  } catch {
+    // Eșecul este acceptabil: baza de date a programat deja notificarea.
+  }
+}
 
 export async function getOrCreateConversation(otherUserId: string): Promise<string> {
   const { data, error } = await supabase.rpc("get_or_create_conversation", { _other: otherUserId });
@@ -310,6 +322,8 @@ export async function sendMessage(
     throw error;
   }
 
+  void pushNewMessageNotification(conversationId);
+
   return data as unknown as MessageRow;
 }
 
@@ -374,6 +388,7 @@ export async function sendMediaMessage(
     if (error) throw error;
     const row = Array.isArray(data) ? data[0] : data;
     if (!row) throw new Error("Nu am putut trimite locația.");
+    void pushNewMessageNotification(conversationId);
     return row as unknown as MessageRow;
   } else {
     const ext = payload.kind === "image" ? "jpg" : "webm";
@@ -399,6 +414,7 @@ export async function sendMediaMessage(
     .select(MESSAGE_SELECT)
     .single();
   if (error) throw error;
+  void pushNewMessageNotification(conversationId);
   return data as unknown as MessageRow;
 }
 
