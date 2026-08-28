@@ -352,12 +352,9 @@ function DiscoverPage() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedFilters, user]);
+  }, [explorerFilters, user]);
 
   // ---- Mod Explorer (locație aleasă manual) -------------------------------
-  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
-  const [travelStatus, setTravelStatus] = useState<TravelStatus>(null);
-
   const refreshTravel = useCallback(async (): Promise<TravelStatus> => {
     if (!user) {
       setTravelStatus(null);
@@ -387,9 +384,29 @@ function DiscoverPage() {
   }, [refreshTravel, load, travelStatus]);
 
   const onTravelChanged = useCallback(async () => {
-    await refreshTravel();
-    await load();
-  }, [refreshTravel, load]);
+    // Rezultatele vechi (locația precedentă) nu mai sunt valabile.
+    clearDiscoverCache();
+    const next = await refreshTravel();
+    // Nu așteptăm re-render-ul: calculăm aici raza efectivă pentru noua stare.
+    const nextFilters: DiscoverFilters = next
+      ? { ...debouncedFilters, maxDistanceKm: Math.min(debouncedFilters.maxDistanceKm, EXPLORER_RADIUS_KM) }
+      : debouncedFilters;
+    setLoading(true);
+    setLoadError(null);
+    setAutoExpanded(null);
+    try {
+      const data = await fetchDiscover(nextFilters, "distance", { offset: 0, forceRefresh: true });
+      effectiveFiltersRef.current = nextFilters;
+      setProfiles(data);
+      setHasMore(data.length >= DISCOVER_PAGE_SIZE);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Couldn't load discover";
+      setLoadError({ message, code: (e as { code?: string } | null)?.code });
+    } finally {
+      setLoading(false);
+    }
+  }, [refreshTravel, debouncedFilters]);
+
 
   const backToRealLocation = useCallback(async () => {
     try {
