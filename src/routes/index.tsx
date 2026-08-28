@@ -126,32 +126,109 @@ export const Route = createFileRoute("/")({
 });
 
 const FEATURES = [
-  { icon: Heart, label: "Create a personal dating profile with photos, pronouns and interests" },
-  { icon: MapPin, label: "Discover gay, bisexual and queer people around you" },
-  { icon: MessageCircle, label: "Match and chat privately with text, photos and voice messages" },
-  { icon: ShieldBan, label: "Block and report any account, at any time" },
-  { icon: EyeOff, label: "Control profile visibility, hide your age and your distance" },
-  { icon: Trash2, label: "Delete your account and personal data whenever you want" },
+  {
+    icon: MapPin,
+    title: "Discover nearby",
+    body: "Browse gay, bisexual and queer people around you. Approximate distance only, never an exact location.",
+  },
+  {
+    icon: Heart,
+    title: "Match on interest",
+    body: "Show interest in a profile. When it is mutual, a private conversation opens.",
+  },
+  {
+    icon: MessageCircle,
+    title: "Private chat",
+    body: "Text, photos and voice messages, with delivery and read receipts.",
+  },
+  {
+    icon: Smartphone,
+    title: "Web and Android",
+    body: "Runs in any modern browser at suzeta.app and as a native Android app.",
+  },
+  {
+    icon: EyeOff,
+    title: "Your profile, your rules",
+    body: "Pick what shows up. Hide your age, hide your distance, go invisible in Discover.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Age-verified accounts",
+    body: "Every account passes age verification before it can be used. No minors, ever.",
+  },
+];
+
+const SAFETY = [
+  {
+    icon: ShieldBan,
+    title: "Blocking works both ways",
+    body: "Block an account and messaging stops in both directions, immediately.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Report anything",
+    body: "Profiles, photos and messages can be reported. Moderators review reports and remove abusive accounts.",
+  },
+  {
+    icon: EyeOff,
+    title: "Hide age and distance",
+    body: "Both are optional on your profile, and you can turn them off at any time.",
+  },
+  {
+    icon: MapPin,
+    title: "Discreet mode",
+    body: "Make your profile invisible in Discover without losing your account or your conversations.",
+  },
+  {
+    icon: Trash2,
+    title: "Delete everything",
+    body: "Delete your account from Settings and your profile, photos, messages and personal data go with it.",
+  },
 ];
 
 const STEPS = [
   {
-    title: "1. Create your account",
-    body: "Sign up with your email address, confirm you are 18 or over and complete age verification.",
+    title: "Create your account",
+    body: "Sign up with your email, confirm you are 18 or over and complete age verification.",
   },
   {
-    title: "2. Build your profile",
-    body: "Add photos, pronouns, what you are looking for and the details you want other members to see.",
+    title: "Build your profile",
+    body: "Add photos, pronouns, what you are looking for and the details you want others to see.",
   },
   {
-    title: "3. Discover people",
-    body: "Browse LGBTQ+ people nearby or use filters to find members who match what you are looking for.",
+    title: "Discover people",
+    body: "Browse LGBTQ+ people nearby or filter for the members who match what you want.",
   },
   {
-    title: "4. Match and chat",
-    body: "Show interest, get a match and start a private conversation. Block or report anyone who makes you uncomfortable.",
+    title: "Match and chat",
+    body: "Show interest, get a match, start a private conversation. Block or report anyone who makes you uncomfortable.",
   },
 ];
+
+/**
+ * Capturi reale din aplicație. Nu există încă în repo, deci rămân
+ * placeholdere marcate; adaugă fișierele în `public/screenshots/`.
+ */
+const SHOTS: Shot[] = [
+  { label: "Discover", expectedFile: "/screenshots/discover.jpg" },
+  { label: "Chat", expectedFile: "/screenshots/chat.jpg" },
+  { label: "Profile", expectedFile: "/screenshots/profile.jpg" },
+  { label: "Privacy", expectedFile: "/screenshots/privacy.jpg" },
+];
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
+      {children}
+    </p>
+  );
+}
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mt-2 text-2xl font-bold tracking-[-0.03em] sm:text-3xl">{children}</h2>
+  );
+}
 
 function Landing() {
   const { user, loading } = useAuth();
@@ -186,27 +263,26 @@ function Landing() {
     })();
   }, [user, loading, navigate]);
 
-
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="min-h-dvh overflow-x-hidden bg-background text-foreground">
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
-        {/* Hero */}
+        {/* 1 — Hero */}
         <section className="flex flex-col items-center text-center">
           <img
             src={SUZETA_ICON_URL}
             alt="Suzeta logo"
-            width={88}
-            height={88}
-            className="mb-5 size-22 rounded-3xl shadow-xl shadow-primary/20"
+            width={72}
+            height={72}
+            className="mb-5 size-18 rounded-2xl border border-border"
           />
-          <h1 className="text-3xl font-semibold leading-tight tracking-tight sm:text-4xl">
-            Suzeta – Gay Dating &amp; LGBTQ+ Chat App
+          <h1 className="text-3xl font-bold leading-[1.05] tracking-[-0.03em] sm:text-5xl">
+            Gay dating and chat, done privately
           </h1>
-          <p className="mt-5 max-w-2xl text-base leading-relaxed text-muted-foreground">
-            {INTRO_PARAGRAPH}
+          <p className="mt-4 max-w-[38ch] text-base leading-relaxed text-muted-foreground">
+            Meet LGBTQ+ people near you, match and talk — on your terms.
           </p>
 
-          <div className="mt-8 flex w-full max-w-xs flex-col gap-3">
+          <div className="mt-7 flex w-full max-w-sm flex-col gap-3 sm:flex-row sm:justify-center">
             <a
               href={storeUrlForPlatform("hero_cta")}
               onClick={(e) => {
@@ -226,39 +302,130 @@ function Landing() {
               }}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary text-sm font-medium uppercase tracking-[0.18em] text-primary-foreground transition-colors hover:bg-primary/90"
+              className="inline-flex h-12 flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-5 text-sm font-semibold tracking-tight text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Smartphone className="size-4" />
               {installCtaLabel(ctaVariant, appInstalled)}
             </a>
-            <p className="text-xs text-muted-foreground">
-              {appInstalled
-                ? "The Android app is already installed on this device"
-                : "Free Android app · or continue in your browser below"}
-            </p>
 
             <Link
               to="/auth"
               search={{ mode: "signup" }}
-              className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 bg-surface text-sm font-medium uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary/10"
+              className="inline-flex h-12 flex-1 items-center justify-center rounded-lg border border-border bg-card px-5 text-sm font-semibold tracking-tight text-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
             >
-              Create account
+              Continue in browser
             </Link>
+          </div>
 
-            <Link
-              to="/auth"
-              search={{ mode: "login" }}
-              className="inline-flex h-12 items-center justify-center rounded-full border border-primary/30 bg-surface text-sm font-medium uppercase tracking-[0.18em] text-primary transition-colors hover:bg-primary/10"
-            >
-              Sign in
-            </Link>
+          {/* 2 — Trei dovezi */}
+          <p className="mt-5 max-w-[46ch] text-xs leading-relaxed text-muted-foreground">
+            Built in Romania <span aria-hidden>·</span> Data stays in the EU{" "}
+            <span aria-hidden>·</span> Every account is age-verified
+          </p>
+
+          <p className="mt-3 text-xs text-muted-foreground">
+            {appInstalled ? (
+              "The Android app is already installed on this device"
+            ) : (
+              <>
+                Free Android app ·{" "}
+                <Link to="/auth" search={{ mode: "login" }} className="text-primary hover:underline">
+                  Sign in
+                </Link>
+              </>
+            )}
+          </p>
+        </section>
+
+        {/* 3 — Galerie de ecrane */}
+        <section className="mt-14" id="screens">
+          <Eyebrow>Inside the app</Eyebrow>
+          <SectionTitle>What it looks like</SectionTitle>
+          <div className="mt-5">
+            <ScreenshotGallery shots={SHOTS} />
           </div>
         </section>
 
-        {/* What is Suzeta */}
+        {/* 4 — Carduri de funcții */}
+        <section className="mt-14" id="features">
+          <Eyebrow>Features</Eyebrow>
+          <SectionTitle>What you can do</SectionTitle>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+            {FEATURES.map(({ icon: Icon, title, body }) => (
+              <li key={title} className="rounded-xl border border-border bg-card p-4">
+                <span className="flex size-8 items-center justify-center rounded-lg bg-primary/15 text-primary">
+                  <Icon className="size-4" />
+                </span>
+                <h3 className="mt-3 text-sm font-semibold tracking-tight">{title}</h3>
+                <p className="mt-1 max-w-[60ch] text-sm leading-relaxed text-muted-foreground">
+                  {body}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        {/* 5 — Siguranță și confidențialitate */}
+        <section className="mt-14" id="safety-and-privacy">
+          <Eyebrow>Safety</Eyebrow>
+          <SectionTitle>Safety and privacy</SectionTitle>
+          <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
+            Suzeta is a moderated community. Your exact location is never shown to other members —
+            only an approximate distance range. Sensitive data is encrypted and processed in the EU
+            under GDPR.
+          </p>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+            {SAFETY.map(({ icon: Icon, title, body }) => (
+              <li key={title} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2">
+                  <Icon className="size-4 text-primary" />
+                  <h3 className="text-sm font-semibold tracking-tight">{title}</h3>
+                </div>
+                <p className="mt-1 max-w-[60ch] text-sm leading-relaxed text-muted-foreground">
+                  {body}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-4 text-sm">
+            <Link to="/safety" className="text-primary hover:underline">
+              Read the full safety guide
+            </Link>{" "}
+            or the{" "}
+            <Link to="/legal/privacy" className="text-primary hover:underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </section>
+
+        {/* 6 — Cum funcționează */}
+        <section className="mt-14" id="how-suzeta-works">
+          <Eyebrow>Getting started</Eyebrow>
+          <SectionTitle>How Suzeta works</SectionTitle>
+          <ol className="mt-5 grid gap-3 sm:grid-cols-2">
+            {STEPS.map((s, i) => (
+              <li key={s.title} className="rounded-xl border border-border bg-card p-4">
+                <div className="flex items-center gap-2">
+                  <span className="flex size-6 items-center justify-center rounded-md bg-primary/15 text-xs font-bold text-primary">
+                    {i + 1}
+                  </span>
+                  <h3 className="text-sm font-semibold tracking-tight">{s.title}</h3>
+                </div>
+                <p className="mt-1 max-w-[60ch] text-sm leading-relaxed text-muted-foreground">
+                  {s.body}
+                </p>
+              </li>
+            ))}
+          </ol>
+        </section>
+
+        {/* SEO — textul lung rămâne, mutat sub dovezi și funcții */}
         <section className="mt-14" id="what-is-suzeta">
-          <h2 className="text-2xl font-semibold tracking-tight">What is Suzeta?</h2>
-          <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+          <Eyebrow>About</Eyebrow>
+          <SectionTitle>What is Suzeta?</SectionTitle>
+          <div className="mt-3 max-w-[65ch] space-y-3 text-sm leading-relaxed text-muted-foreground">
+            <p>{INTRO_PARAGRAPH}</p>
             <p>
               Suzeta is a gay dating and LGBTQ+ chat app for adults. You create a profile, discover
               people around you, match with the members you like and chat privately. It runs in any
@@ -275,10 +442,9 @@ function Landing() {
           </div>
         </section>
 
-        {/* Who is it for */}
         <section className="mt-12" id="who-is-suzeta-for">
-          <h2 className="text-2xl font-semibold tracking-tight">Who is Suzeta for?</h2>
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+          <SectionTitle>Who is Suzeta for?</SectionTitle>
+          <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
             Suzeta is for gay, bisexual, queer and other LGBTQ+ adults aged 18 and over who want to
             meet new people — for dating, for private chat, for friendship or for community events.
             Accounts must pass age verification before they can be used, and Suzeta is never
@@ -286,41 +452,9 @@ function Landing() {
           </p>
         </section>
 
-        {/* How it works */}
-        <section className="mt-12" id="how-suzeta-works">
-          <h2 className="text-2xl font-semibold tracking-tight">How Suzeta works</h2>
-          <ol className="mt-5 grid gap-3 sm:grid-cols-2">
-            {STEPS.map((s) => (
-              <li key={s.title} className="rounded-2xl border border-border bg-surface p-4">
-                <h3 className="text-sm font-semibold text-foreground">{s.title}</h3>
-                <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{s.body}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        {/* Features */}
-        <section className="mt-12" id="features">
-          <h2 className="text-2xl font-semibold tracking-tight">Key features</h2>
-          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
-            {FEATURES.map(({ icon: Icon, label }) => (
-              <li
-                key={label}
-                className="flex items-start gap-3 rounded-2xl border border-border bg-surface p-4"
-              >
-                <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
-                  <Icon className="size-4" />
-                </span>
-                <span className="text-sm leading-relaxed">{label}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {/* Dating & chat */}
         <section className="mt-12" id="gay-dating-and-private-chat">
-          <h2 className="text-2xl font-semibold tracking-tight">Gay dating and private chat</h2>
-          <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
+          <SectionTitle>Gay dating and private chat</SectionTitle>
+          <div className="mt-3 max-w-[65ch] space-y-3 text-sm leading-relaxed text-muted-foreground">
             <p>
               Dating on Suzeta starts in Discover: you browse LGBTQ+ profiles and show interest in
               the people you like. When the interest is mutual, a match opens a private
@@ -334,40 +468,9 @@ function Landing() {
           </div>
         </section>
 
-        {/* Safety */}
-        <section className="mt-12" id="safety-and-privacy">
-          <h2 className="flex items-center gap-2 text-2xl font-semibold tracking-tight">
-            <ShieldCheck className="size-5 text-primary" /> Safety and privacy
-          </h2>
-          <div className="mt-4 space-y-3 text-sm leading-relaxed text-muted-foreground">
-            <p>
-              Suzeta is a moderated community. Any member can block another account at any time and
-              report profiles, photos or messages that break the community rules. Reports are
-              reviewed by the moderation team and abusive accounts are removed.
-            </p>
-            <p>
-              Suzeta never shows your exact location to other users — only an approximate distance
-              range. You decide what appears on your profile, you can hide your distance and your
-              age, and you can make your profile invisible in Discover at any moment. Sensitive data
-              is encrypted and processed in the EU under GDPR.
-            </p>
-            <p>
-              <Link to="/safety" className="text-primary hover:underline">
-                Read the full safety guide
-              </Link>{" "}
-              or the{" "}
-              <Link to="/legal/privacy" className="text-primary hover:underline">
-                Privacy Policy
-              </Link>
-              .
-            </p>
-          </div>
-        </section>
-
-        {/* Community guidelines */}
         <section className="mt-12" id="community-guidelines">
-          <h2 className="text-2xl font-semibold tracking-tight">Community guidelines</h2>
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+          <SectionTitle>Community guidelines</SectionTitle>
+          <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
             Suzeta has clear rules: no minors, no harassment, no hate speech, no racism, no
             homophobia or transphobia, no outing another person without consent, no non-consensual
             sharing of images and no illegal content. Breaking the rules leads to content removal,
@@ -379,10 +482,9 @@ function Landing() {
           </p>
         </section>
 
-        {/* Account deletion */}
         <section className="mt-12" id="account-deletion">
-          <h2 className="text-2xl font-semibold tracking-tight">Account deletion</h2>
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+          <SectionTitle>Account deletion</SectionTitle>
+          <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
             You can delete your Suzeta account at any time from Settings in the app, or from the
             public{" "}
             <Link to="/account-deletion" className="text-primary hover:underline">
@@ -397,16 +499,19 @@ function Landing() {
           </p>
         </section>
 
-        {/* FAQ — răspunsuri scurte, citabile de motoarele de căutare și AI */}
-        <section className="mt-12" id="faq">
-          <h2 className="text-2xl font-semibold tracking-tight">Frequently asked questions</h2>
-          <dl className="mt-5 space-y-4">
+        {/* 7 — FAQ — răspunsuri scurte, citabile de motoarele de căutare și AI */}
+        <section className="mt-14" id="faq">
+          <Eyebrow>FAQ</Eyebrow>
+          <SectionTitle>Frequently asked questions</SectionTitle>
+          <dl className="mt-5 space-y-3">
             {FAQ.map((item) => (
-              <div key={item.q} className="rounded-2xl border border-border bg-surface p-5">
-                <dt className="text-base font-semibold text-foreground">
+              <div key={item.q} className="rounded-xl border border-border bg-card p-5">
+                <dt className="text-base font-semibold tracking-tight text-foreground">
                   <h3>{item.q}</h3>
                 </dt>
-                <dd className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.a}</dd>
+                <dd className="mt-2 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
+                  {item.a}
+                </dd>
               </div>
             ))}
           </dl>
@@ -417,10 +522,9 @@ function Landing() {
           </p>
         </section>
 
-        {/* Contact */}
         <section className="mt-12" id="contact">
-          <h2 className="text-2xl font-semibold tracking-tight">Contact and support</h2>
-          <p className="mt-4 text-sm leading-relaxed text-muted-foreground">
+          <SectionTitle>Contact and support</SectionTitle>
+          <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
             Support:{" "}
             <a className="text-primary hover:underline" href={`mailto:${SUPPORT_EMAIL}`}>
               {SUPPORT_EMAIL}
@@ -437,7 +541,7 @@ function Landing() {
       <PublicFooter />
       <GetAppBanner />
       <FunnelDebugOverlay />
-
     </div>
   );
 }
+
