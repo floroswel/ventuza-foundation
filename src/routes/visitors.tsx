@@ -177,7 +177,7 @@ function VisitorsPage() {
                   )}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-2">
                     <p className="truncate text-sm font-medium text-white">
-                      {v.display_name ?? "Unknown"}
+                      {v.display_name ?? "Utilizator Suzeta"}
                       {v.age ? <span className="text-white/70">, {v.age}</span> : null}
                     </p>
                     <p className="text-[10px] text-white/60">
