@@ -119,6 +119,13 @@ type Tab = "nearby" | "fresh";
 /** Raza maximă în mod Explorer: vrei orașul ales, nu tot continentul. */
 const EXPLORER_RADIUS_KM = 100;
 
+/** Raza folosită în Explorer: cea aleasă explicit de user, altfel plafonul de oraș. */
+function explorerRadius(f: DiscoverFilters): number {
+  return f.maxDistanceKm < DEFAULT_FILTERS.maxDistanceKm
+    ? f.maxDistanceKm
+    : EXPLORER_RADIUS_KM;
+}
+
 
 function DiscoverPage() {
   const { user, loading: authLoading } = useAuth();
@@ -305,10 +312,7 @@ function DiscoverPage() {
   // Fără plafon, raza implicită (5000 km) aducea exact aceiași oameni ca acasă.
   const explorerFilters = useMemo<DiscoverFilters>(() => {
     if (!travelStatus) return debouncedFilters;
-    return {
-      ...debouncedFilters,
-      maxDistanceKm: Math.min(debouncedFilters.maxDistanceKm, EXPLORER_RADIUS_KM),
-    };
+    return { ...debouncedFilters, maxDistanceKm: explorerRadius(debouncedFilters) };
   }, [debouncedFilters, travelStatus]);
 
   const effectiveFiltersRef = useRef<DiscoverFilters>(debouncedFilters);
@@ -393,7 +397,7 @@ function DiscoverPage() {
     const next = await refreshTravel();
     // Nu așteptăm re-render-ul: calculăm aici raza efectivă pentru noua stare.
     const nextFilters: DiscoverFilters = next
-      ? { ...debouncedFilters, maxDistanceKm: Math.min(debouncedFilters.maxDistanceKm, EXPLORER_RADIUS_KM) }
+      ? { ...debouncedFilters, maxDistanceKm: explorerRadius(debouncedFilters) }
       : debouncedFilters;
     setLoading(true);
     setLoadError(null);
