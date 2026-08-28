@@ -302,7 +302,6 @@ export async function sendMessage(
     throw error;
   }
 
-  void pushNewMessageNotification(conversationId);
 
   return data as unknown as MessageRow;
 }
@@ -368,7 +367,6 @@ export async function sendMediaMessage(
     if (error) throw error;
     const row = Array.isArray(data) ? data[0] : data;
     if (!row) throw new Error("Nu am putut trimite locația.");
-    void pushNewMessageNotification(conversationId);
     return row as unknown as MessageRow;
   } else {
     const ext = payload.kind === "image" ? "jpg" : "webm";
@@ -394,7 +392,6 @@ export async function sendMediaMessage(
     .select(MESSAGE_SELECT)
     .single();
   if (error) throw error;
-  void pushNewMessageNotification(conversationId);
   return data as unknown as MessageRow;
 }
 
