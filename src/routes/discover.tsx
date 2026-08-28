@@ -1967,6 +1967,8 @@ function EmptyState({
   onResetFilters,
   onExpandDistance,
   currentDistanceKm,
+  explorerCity,
+  onBackToReal,
 }: {
   onRefresh: () => void;
   hasLocation: boolean;
@@ -1974,7 +1976,38 @@ function EmptyState({
   onResetFilters?: () => void;
   onExpandDistance?: (km: number) => void;
   currentDistanceKm?: number;
+  explorerCity?: string | null;
+  onBackToReal?: () => void;
 }) {
+  // Explorer activ dar nimeni acolo: userul trebuie să poată reveni dintr-un tap,
+  // nu să sape prin selector.
+  if (explorerCity) {
+    const nextKm = (currentDistanceKm ?? 0) < 50 ? 50 : (currentDistanceKm ?? 0) < 200 ? 200 : 5000;
+    return (
+      <CenterMessage
+        icon={<Compass className="size-8 text-primary" />}
+        title={`Nimeni în ${explorerCity} acum`}
+        desc="Nu e nimeni activ în zona pe care o explorezi. Poți extinde raza sau te poți întoarce la locația ta reală."
+        action={
+          <div className="flex flex-wrap justify-center gap-2">
+            {onBackToReal && (
+              <Button variant="hero" onClick={onBackToReal}>
+                Înapoi la locația mea
+              </Button>
+            )}
+            {onExpandDistance && (
+              <Button variant="outline" onClick={() => onExpandDistance(nextKm)}>
+                Extinde la {nextKm === 5000 ? "toată țara" : `${nextKm} km`}
+              </Button>
+            )}
+            <Button variant="outline" onClick={onRefresh}>
+              Reîncarcă
+            </Button>
+          </div>
+        }
+      />
+    );
+  }
   if (!hasLocation) {
     return (
       <CenterMessage
@@ -1985,6 +2018,7 @@ function EmptyState({
       />
     );
   }
+
   if (hasFilters) {
     return (
       <CenterMessage
