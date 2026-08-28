@@ -196,3 +196,20 @@ export function playMessageReceivedSound() {
     { lpFrom: 1200, lpTo: 6000, tail: 0.32 },
   );
 }
+
+/**
+ * Click foarte scurt la tastare (~35 ms), throttled la max 1 / 55 ms ca să nu
+ * se suprapună la scris rapid. Folosește același toggle de sunet ca restul.
+ */
+let lastKeyTick = 0;
+export function playTypingSound() {
+  const now = typeof performance !== "undefined" ? performance.now() : Date.now();
+  if (now - lastKeyTick < 55) return;
+  lastKeyTick = now;
+  playNotes([{ f: 1046.5, t: 0, d: 0.035, g: 0.05, type: "sine" }], {
+    lpFrom: 2200,
+    lpTo: 1400,
+    tail: 0.07,
+  });
+}
+
