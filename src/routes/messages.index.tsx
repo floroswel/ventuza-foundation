@@ -20,6 +20,8 @@ import {
 import { buildInboxPreview } from "@/lib/notification-privacy";
 import { StoriesStrip } from "@/components/StoriesStrip";
 import { cn } from "@/lib/utils";
+import { OnlineIndicator } from "@/components/ui-kit/OnlineIndicator";
+import { UnreadBadge } from "@/components/ui-kit/UnreadBadge";
 import { subscribeConversationChanges } from "@/hooks/useUnreadMessages";
 
 export const Route = createFileRoute("/messages/")({
@@ -221,44 +223,44 @@ function MessagesPage() {
             body="Deschide un profil în Discover și apasă Mesaj ca să începi."
           />
         ) : (
-          <ul className="divide-y divide-border/30">
+          <ul className="space-y-0.5 px-1">
             {visible.map((c) => (
               <li key={c.id}>
                 <Link
                   to="/messages/$id"
                   params={{ id: c.id }}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-muted/30",
-                    c.unread && "bg-primary/5",
+                    "relative flex items-center gap-3 rounded-2xl py-2.5 pl-3 pr-3 transition-colors active:bg-muted/50 hover:bg-muted/30",
+                    c.unread && "bg-primary/[0.06]",
                   )}
-
                 >
-                  {/* Avatar — mereu în stânga, cu inel auriu */}
+                  {c.unread ? (
+                    <span
+                      aria-hidden
+                      className="absolute left-0 top-1/2 h-8 w-[3px] -translate-y-1/2 rounded-r-full bg-primary"
+                    />
+                  ) : null}
+                  {/* Avatar pătrat rotunjit — layout de aplicație, nu de site */}
                   <div className="relative shrink-0">
-                    <div
-                      className={cn(
-                        "size-14 rounded-2xl p-[2px]",
-                        "bg-gradient-to-tr from-primary/70 via-primary to-primary/70",
+                    <div className="size-[52px] overflow-hidden rounded-2xl bg-surface ring-1 ring-border/60">
+                      {c.other_photo ? (
+                        <img
+                          src={c.other_photo}
+                          alt={c.other_name ?? ""}
+                          className="size-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
+                          {(c.other_name ?? "?").slice(0, 1)}
+                        </div>
                       )}
-                    >
-                      <div className="size-full overflow-hidden rounded-[14px] bg-surface ring-2 ring-background">
-                        {c.other_photo ? (
-                          <img
-                            src={c.other_photo}
-                            alt={c.other_name ?? ""}
-                            className="size-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
-                            {(c.other_name ?? "?").slice(0, 1)}
-                          </div>
-                        )}
-                      </div>
                     </div>
                     {c.other_online && (
-                      <span
-                        aria-label="Online"
-                        className="absolute bottom-0 right-0 size-3 rounded-full border-2 border-background bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.7)]"
+                      <OnlineIndicator
+                        online
+                        size="md"
+                        ring
+                        className="absolute -bottom-0.5 -right-0.5"
                       />
                     )}
                   </div>
@@ -292,11 +294,7 @@ function MessagesPage() {
                       >
                         {buildInboxPreview(showPreview, c.last_message_preview, !!c.last_message_at)}
                       </p>
-                      {c.unread_count > 0 ? (
-                        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold leading-none text-primary-foreground shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
-                          {c.unread_count > 99 ? "99+" : c.unread_count}
-                        </span>
-                      ) : null}
+                      <UnreadBadge count={c.unread_count} className="shrink-0" />
                     </div>
                   </div>
                 </Link>
