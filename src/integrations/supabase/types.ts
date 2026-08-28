@@ -6391,7 +6391,7 @@ export type Database = {
           boost_until: string
           discreet_avatar: string
           display_name: string
-          gender: string
+          gender: string[]
           height_cm: number
           hide_age: boolean
           hide_distance: boolean
@@ -6404,7 +6404,7 @@ export type Database = {
           photos: string[]
           position: string
           profile_slug: string
-          pronouns: string
+          pronouns: string[]
           travel_city: string
           travel_until: string
           tribes: string[]
@@ -6545,7 +6545,7 @@ export type Database = {
           body_type: string
           boost_until: string
           display_name: string
-          gender: string
+          gender: string[]
           height_cm: number
           hide_age: boolean
           hide_distance: boolean
@@ -6558,7 +6558,7 @@ export type Database = {
           photos: string[]
           position: string
           profile_slug: string
-          pronouns: string
+          pronouns: string[]
           travel_city: string
           travel_until: string
           tribes: string[]
