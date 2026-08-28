@@ -169,7 +169,7 @@ export async function unblock(targetId: string) {
     .eq("blocker_id", u.user.id)
     .eq("blocked_id", targetId);
   if (error) throw error;
-  // La deblocare persoana trebuie să REAPARĂ imediat în grilă → invalidăm cache-ul.
-  const { clearDiscoverCache } = await import("@/lib/discover");
-  clearDiscoverCache();
+  // La deblocare persoana trebuie să REAPARĂ imediat în grilă și în inbox.
+  const { emitBlocksChanged } = await import("@/lib/block-events");
+  await emitBlocksChanged();
 }

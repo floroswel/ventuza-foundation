@@ -716,3 +716,21 @@ html.reduce-motion .snake-border,
 html.reduce-motion .snake-border::before {
   animation: none !important;
 }
+
+/* ============================================================
+   SCROLLBAR ASCUNS (doar vizual) — clasa .hide-scrollbars este pusă pe <html>
+   de ecranele care ocupă tot viewportul (ex. /discover). Derularea rămâne
+   complet funcțională, inclusiv cu tastatura; dispare doar bara desenată
+   peste conținut.
+   ============================================================ */
+html.hide-scrollbars,
+html.hide-scrollbars body {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html.hide-scrollbars::-webkit-scrollbar,
+html.hide-scrollbars body::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none;
+}

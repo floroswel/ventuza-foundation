@@ -88,9 +88,10 @@ export function ReportBlockDialog({
             { onConflict: "blocker_id,blocked_id" },
           );
         if (blockError) throw blockError;
-        // Persoana blocată trebuie să dispară INSTANT din grilă (cache local 3 min).
-        const { clearDiscoverCache } = await import("@/lib/discover");
-        clearDiscoverCache();
+        // Persoana blocată trebuie să dispară INSTANT din grilă și din inbox
+        // (mesajele rămân în DB — doar se ascund din UI).
+        const { emitBlocksChanged } = await import("@/lib/block-events");
+        await emitBlocksChanged();
         onBlocked?.();
       }
 

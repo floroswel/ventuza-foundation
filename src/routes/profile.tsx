@@ -639,11 +639,12 @@ function ProfilePage() {
           <button
             onClick={async () => {
               const next = !profile.incognito;
-              const { error } = await supabase
-                .from("profiles")
-                .update({ incognito: next })
-                .eq("id", profile.id);
-              if (error) return toast.error(error.message);
+              try {
+                const { setIncognito } = await import("@/lib/incognito");
+                await setIncognito(profile.id, next);
+              } catch (e) {
+                return toast.error((e as Error).message);
+              }
               setProfile({ ...profile, incognito: next });
               // Discover ține aceeași valoare în cache-ul ["my-profile"]. Fără
               // invalidare, cele două ecrane arătau stări diferite până la
