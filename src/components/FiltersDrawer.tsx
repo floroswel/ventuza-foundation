@@ -43,18 +43,33 @@ export function FiltersDrawer({
   if (!open) return null;
 
   return (
-    // `pt-safe pb-safe`: overlay-ul acoperă tot ecranul, deci fără ele antetul
-    // cu „Resetează” intră sub bara de stare.
-    <div className="fixed inset-0 z-40 flex flex-col bg-background/95 pb-safe pt-safe backdrop-blur">
-      <header className="flex items-center justify-between border-b border-border/50 px-6 py-4">
+    // Bottom sheet nativ: backdrop + panou ancorat jos, care urcă din marginea
+    // de jos a ecranului. `pb-safe` ține butonul Aplică deasupra barei de sistem.
+    <div className="fixed inset-0 z-40 flex flex-col justify-end">
+      <button
+        type="button"
+        aria-label="Închide filtrele"
+        onClick={onClose}
+        className="absolute inset-0 bg-black/60 backdrop-blur-[2px] animate-in fade-in duration-150"
+      />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Filtre"
+        className="relative flex max-h-[88dvh] flex-col rounded-t-3xl border-t border-border/60 bg-background pb-safe shadow-[0_-16px_40px_-12px_rgba(0,0,0,0.6)] animate-in slide-in-from-bottom duration-200"
+      >
+        <div className="flex justify-center pt-2">
+          <span aria-hidden className="h-1.5 w-10 rounded-full bg-muted-foreground/30" />
+        </div>
+      <header className="flex items-center justify-between border-b border-border/50 px-5 py-3">
         <button
           onClick={onClose}
-          aria-label="Close"
+          aria-label="Închide"
           className="text-muted-foreground hover:text-foreground"
         >
           <X className="size-5" />
         </button>
-        <h2 className="font-display text-lg">Filters</h2>
+        <h2 className="font-display text-lg">Filtre</h2>
         <button
           onClick={() => {
             setDraft(DEFAULT_FILTERS);
@@ -70,7 +85,7 @@ export function FiltersDrawer({
       {/* `min-h-0`: fără el, `flex-1` păstrează `min-height: auto`, scroller-ul
           nu primește o cutie mai mică decât conținutul și filtrele de jos
           (distanță, vârstă) rămân inaccesibile pe ecrane mici. */}
-      <div className="min-h-0 flex-1 space-y-8 overflow-y-auto overscroll-contain px-6 py-6">
+      <div className="min-h-0 flex-1 space-y-7 overflow-y-auto overscroll-contain px-5 py-5">
         {/* quick toggles */}
         <section className="flex flex-wrap gap-2">
           <Toggle
