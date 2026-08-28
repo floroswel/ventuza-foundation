@@ -201,7 +201,8 @@ export function ProfilePhotoGallery({
     <>
       <div
         className={cn(
-          "relative aspect-square w-full overflow-hidden bg-background select-none",
+          "relative w-full overflow-hidden bg-background select-none",
+          frameClassName,
           className,
         )}
         role="region"
