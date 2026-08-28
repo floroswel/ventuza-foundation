@@ -377,6 +377,11 @@ function MatchesPage() {
                       {m.note}
                     </span>
                   )}
+                  {new Date(m.at).getTime() > seenAt[tab] && (
+                    <span className="absolute right-2 top-2 rounded-full bg-primary px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary-foreground">
+                      Nou
+                    </span>
+                  )}
                   <div className="relative z-10 flex items-end justify-between p-3">
                     <div className="min-w-0">
                       <p className="truncate font-serif text-base text-primary">
