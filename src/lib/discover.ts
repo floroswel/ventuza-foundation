@@ -67,6 +67,8 @@ export type DiscoverProfile = {
   travel_until: string | null;
   looking_now_until: string | null;
   looking_now_intent: string | null;
+  /** true = profilul e în mod Explorer (locație aleasă manual, distanță aproximativă). */
+  is_explorer?: boolean | null;
 };
 
 export function ageFrom(iso?: string | null) {
