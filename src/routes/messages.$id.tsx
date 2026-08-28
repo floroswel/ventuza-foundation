@@ -67,6 +67,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { cn } from "@/lib/utils";
+import { OnlineIndicator } from "@/components/ui-kit/OnlineIndicator";
+import { VerifiedBadge } from "@/components/ui-kit/VerifiedBadge";
 import { bottomScrollTop, isNearBottom, installAppViewportTracking } from "@/lib/keyboard-inset";
 import { uniqueRealtimeTopic } from "@/lib/realtime-topic";
 import { SwipeToReply } from "@/components/SwipeToReply";
