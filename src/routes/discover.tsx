@@ -68,8 +68,10 @@ import { LocationOnboarding } from "@/components/LocationOnboarding";
 import {
   DEFAULT_FILTERS,
   DISCOVER_PAGE_SIZE,
+  clearDiscoverCache,
   fetchDiscover,
   requestAndStoreLocation,
+
   signPhotos,
   peekPhotos,
   prefetchProfilePhotos,
