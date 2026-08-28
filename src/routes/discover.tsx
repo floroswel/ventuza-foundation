@@ -11,6 +11,7 @@ import {
   Compass,
   Eye,
   EyeOff,
+  Flag,
   Flame,
   Hand,
   Heart,
