@@ -32,8 +32,8 @@ export function BottomNav() {
   ];
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border/60 bg-background/95 backdrop-blur-xl">
-      <div className="mx-auto flex max-w-md items-stretch justify-around pt-1 pb-[max(0.375rem,var(--safe-bottom))] pl-[max(0.25rem,var(--safe-left))] pr-[max(0.25rem,var(--safe-right))]">
+    <nav className="fixed inset-x-0 bottom-0 z-30 px-2 pb-[max(0.5rem,var(--safe-bottom))] pt-1">
+      <div className="mx-auto flex max-w-md items-stretch gap-1 rounded-[26px] border border-border/70 bg-surface/95 p-1.5 shadow-[0_10px_30px_-12px_rgba(0,0,0,0.9)] backdrop-blur-xl">
         {items.map(({ to, label, Icon, badge = 0, fillWhenActive }) => {
           const active = pathname === to || pathname.startsWith(`${to}/`);
           return (
@@ -42,29 +42,23 @@ export function BottomNav() {
               to={to}
               preload={false}
               className={cn(
-                "group relative flex flex-1 flex-col items-center gap-1 px-1 pb-1 pt-1.5 transition-colors",
-                active ? "text-primary" : cn(NAV_ICON_INACTIVE, "hover:text-foreground/80"),
+                "relative flex flex-1 flex-col items-center justify-center gap-1 rounded-[20px] px-1 py-2 transition-colors duration-150",
+                active
+                  ? "bg-primary text-primary-foreground shadow-[0_6px_18px_-8px_hsl(var(--primary))]"
+                  : cn(NAV_ICON_INACTIVE, "hover:text-foreground/80 active:bg-muted/40"),
               )}
               aria-current={active ? "page" : undefined}
             >
-              <span
-                className={cn(
-                  "relative flex h-8 min-w-[54px] items-center justify-center rounded-full transition-all duration-200",
-                  active
-                    ? "bg-primary text-primary-foreground shadow-[0_4px_14px_-4px_hsl(var(--primary)/0.7)]"
-                    : "bg-transparent",
-                )}
-              >
+              <span className="relative flex items-center justify-center">
                 <Icon
-                  className={cn("relative", NAV_ICON_SIZE, "transition-transform duration-150")}
-                  strokeWidth={active ? 2.1 : NAV_ICON_STROKE}
+                  className={NAV_ICON_SIZE}
+                  strokeWidth={active ? 2.2 : NAV_ICON_STROKE}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   fill={active && fillWhenActive ? "currentColor" : "none"}
                 />
-
                 {badge > 0 && (
-                  <span className="absolute right-1 -top-1 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground ring-2 ring-background">
+                  <span className="absolute -right-2.5 -top-1.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground ring-2 ring-surface">
                     {badge > 9 ? "9+" : badge}
                   </span>
                 )}
@@ -72,7 +66,7 @@ export function BottomNav() {
               <span
                 className={cn(
                   "text-[10px] leading-none tracking-tight",
-                  active ? "font-semibold text-primary opacity-100" : "font-medium opacity-75",
+                  active ? "font-semibold" : "font-medium opacity-80",
                 )}
               >
                 {label}
