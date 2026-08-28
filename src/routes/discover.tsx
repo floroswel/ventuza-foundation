@@ -1215,10 +1215,12 @@ function Cascade({
               <SmartImage
                 src={url}
                 alt={p.display_name ?? ""}
-                loading="lazy"
+                loading={eager ? "eager" : "lazy"}
+                fetchPriority={eager ? "high" : "low"}
                 className="size-full object-cover transition-transform group-active:scale-95"
               />
             ) : (
+
               <div className="flex size-full items-center justify-center text-2xl text-muted-foreground/40">
                 {p.display_name?.[0]?.toUpperCase() ?? "?"}
               </div>
