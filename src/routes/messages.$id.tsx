@@ -1000,8 +1000,9 @@ function ThreadPage() {
             Date.now() - new Date(m.created_at).getTime() < 5 * 60_000;
           const isDeleted = !!m.deleted_at;
           return (
+            <Fragment key={m.id}>
+            {dayStartIds.has(m.id) ? <DaySeparator iso={m.created_at} /> : null}
             <li
-              key={m.id}
               className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}
             >
               <SwipeToReply
