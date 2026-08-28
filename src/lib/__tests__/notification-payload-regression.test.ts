@@ -75,13 +75,11 @@ describe("Notificări push — regresie confidențialitate", () => {
     // tranzacție cu mesajul. `chat.ts` nu mai atinge stratul de push, deci
     // conținutul mesajului nu mai părăsește telefonul pentru notificări.
     const chatSrc = read(join(SRC, "lib/chat.ts"));
-    // Clientul mai poate declanșa push (plasă de siguranță până se confirmă
-    // outbox-ul), dar NU are voie să trimită text de mesaj: predă doar
-    // `conversationId`, iar corpul îl decide serverul.
     expect(chatSrc).not.toMatch(/body:\s*preview\.slice/);
     expect(chatSrc).not.toMatch(/body:\s*preview\s*[,}]/);
-    expect(chatSrc).not.toMatch(/sendMessagePush\([^)]*preview/);
-    expect(chatSrc).not.toMatch(/sendMessagePush\([^)]*body/);
+    expect(chatSrc).not.toMatch(/sendMessagePush/);
+    expect(chatSrc).not.toMatch(/pushNewMessageNotification/);
+
 
     // Corpul programat în SQL este constanta generică, nu NEW.body.
     const mig = read(

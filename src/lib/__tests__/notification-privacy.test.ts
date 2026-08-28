@@ -77,10 +77,10 @@ describe("Invariante de sursă — nicio suprafață nu scurge conținut", () =>
     const src = read("lib/chat.ts");
     expect(src).not.toMatch(/body:\s*preview\b/);
     expect(src).not.toMatch(/body:\s*payload\.body/);
-    // Clientul poate cere trimiterea, dar nu poate influența conținutul:
-    // predă exclusiv `conversationId`. Corpul se construiește pe server
-    // (și în SQL, pe calea principală din baza de date).
-    expect(src).not.toMatch(/sendMessagePush\([^)]*(preview|body|text)/);
+    // Clientul nu mai atinge deloc stratul de push pentru mesaje: notificarea
+    // se programează în SQL (trigger `tg_notify_new_message`).
+    expect(src).not.toMatch(/sendMessagePush/);
+
   });
 
   it("notifications-context trece toast body prin buildToastBody, nu n.body direct", () => {

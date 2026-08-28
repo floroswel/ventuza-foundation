@@ -106,33 +106,13 @@ async function signPhoto(path: string | null): Promise<string | null> {
 }
 
 /**
- * Notificare de mesaj — PLASĂ DE SIGURANȚĂ pe durata tranziției.
- *
- * Calea principală este acum baza de date: notificarea se programează în
- * `push_outbox` în ACEEAȘI tranzacție cu mesajul, iar livrarea o face
- * serverul. Aceea funcționează chiar dacă expeditorul blochează ecranul
- * imediat după trimitere — problema care făcea ca notificările să nu ajungă
- * niciodată cu aplicația închisă.
- *
- * Apelul de aici rămâne temporar pentru că migrațiile sunt aplicate de
- * platformă, nu de CI: dacă bundle-ul nou ar ajunge pe telefoane înaintea
- * migrației, iar clientul nu ar mai trimite nimic, notificările s-ar opri
- * complet în intervalul dintre ele.
- *
- * Nu produce notificări duble: ambele căi folosesc `msg:<conversationId>` ca
- * etichetă, iar Android și service worker-ul web înlocuiesc notificarea cu
- * aceeași etichetă în loc să o adauge.
- *
- * Se șterge împreună cu `sendMessagePush` după ce outbox-ul se confirmă activ.
+ * Notificările de mesaj sunt programate exclusiv de baza de date:
+ * trigger-ul `tg_notify_new_message` scrie în `push_outbox` în aceeași
+ * tranzacție cu mesajul, cu corp generic („Ai un mesaj nou”), iar livrarea
+ * o face serverul. Clientul nu mai trimite nimic.
  */
-async function pushNewMessageNotification(conversationId: string): Promise<void> {
-  try {
-    const { sendMessagePush } = await import("@/lib/push.functions");
-    await sendMessagePush({ data: { conversationId } });
-  } catch {
-    // Eșecul este acceptabil: baza de date a programat deja notificarea.
-  }
-}
+
+
 
 export async function getOrCreateConversation(otherUserId: string): Promise<string> {
   const { data, error } = await supabase.rpc("get_or_create_conversation", { _other: otherUserId });
@@ -322,7 +302,6 @@ export async function sendMessage(
     throw error;
   }
 
-  void pushNewMessageNotification(conversationId);
 
   return data as unknown as MessageRow;
 }
@@ -388,7 +367,6 @@ export async function sendMediaMessage(
     if (error) throw error;
     const row = Array.isArray(data) ? data[0] : data;
     if (!row) throw new Error("Nu am putut trimite locația.");
-    void pushNewMessageNotification(conversationId);
     return row as unknown as MessageRow;
   } else {
     const ext = payload.kind === "image" ? "jpg" : "webm";
@@ -414,7 +392,6 @@ export async function sendMediaMessage(
     .select(MESSAGE_SELECT)
     .single();
   if (error) throw error;
-  void pushNewMessageNotification(conversationId);
   return data as unknown as MessageRow;
 }
 
