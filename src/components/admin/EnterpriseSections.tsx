@@ -1471,7 +1471,7 @@ export function SecurityPanel() {
         code,
       });
       if (vErr) throw vErr;
-      await markMfa({ data: { enrolled: true } });
+      await markMfa();
       toast.success("MFA activat ✓");
       setEnrolling(false);
       setQr(null);
@@ -1489,7 +1489,7 @@ export function SecurityPanel() {
     try {
       const { data: factors } = await supabase.auth.mfa.listFactors();
       for (const f of factors?.totp ?? []) await supabase.auth.mfa.unenroll({ factorId: f.id });
-      await markMfa({ data: { enrolled: false } });
+      await markMfa();
       toast.success("MFA dezactivat");
       getMfa().then(setStatus);
     } catch (e: any) {

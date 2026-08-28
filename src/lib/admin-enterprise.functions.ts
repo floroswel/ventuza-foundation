@@ -705,22 +705,20 @@ export const adminGetMyMfa = createServerFn({ method: "GET" })
 
 export const adminMarkMfaEnrolled = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((d: unknown) => z.object({ enrolled: z.boolean() }).parse(d))
-  .handler(async ({ data, context }) => {
-    const { error } = await context.supabase.from("admin_mfa_status").upsert({
-      user_id: context.userId,
-      enrolled: data.enrolled,
-      enrolled_at: data.enrolled ? new Date().toISOString() : null,
-      updated_at: new Date().toISOString(),
-    });
+  .handler(async ({ context }) => {
+    // Statusul nu mai este auto-declarat: se sincronizează din factorii MFA
+    // realmente verificați în Auth (SECURITY DEFINER `admin_sync_my_mfa`).
+    const { data, error } = await context.supabase.rpc("admin_sync_my_mfa");
     if (error) throw new Error(error.message);
+    const enrolled = data === true;
     await logAudit({
       actorId: context.userId,
-      action: data.enrolled ? "mfa.enroll" : "mfa.unenroll",
+      action: enrolled ? "mfa.enroll" : "mfa.unenroll",
       severity: "warning",
     });
-    return { ok: true };
+    return { ok: true, enrolled };
   });
+
 
 /* ---------------- ALERT RULES ENGINE ---------------- */
 const AlertRuleUpsert = z.object({
