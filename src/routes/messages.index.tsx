@@ -223,7 +223,7 @@ function MessagesPage() {
             body="Deschide un profil în Discover și apasă Mesaj ca să începi."
           />
         ) : (
-          <ul className="divide-y divide-border/30">
+          <ul className="space-y-0.5 px-1">
             {visible.map((c) => (
               <li key={c.id}>
                 <Link
