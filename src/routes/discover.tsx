@@ -300,34 +300,10 @@ function DiscoverPage() {
     setAutoExpanded(null);
     setHasMore(false);
     try {
-      let data = await fetchDiscover(debouncedFilters, "distance", { offset: 0 });
-      let effective = debouncedFilters;
-      // Auto-fallback progresiv: dacă userul nu are NICIUN rezultat la raza
-      // curentă, încercăm trepte 25→50→200→5000 km. Nu modificăm filtrele
-      // userului (nu rescriem `filters`) — doar arătăm rezultate marcate
-      // "raza extinsă". Userul rămâne în control.
-      if (data.length === 0) {
-        // O singură treaptă de fallback ca să economisim quota (10 apeluri/h server-side).
-        const current = debouncedFilters.maxDistanceKm ?? 25;
-        const fallbackKm = current < 5000 ? 5000 : null;
-        if (fallbackKm) {
-          try {
-            const alt = await fetchDiscover(
-              { ...debouncedFilters, maxDistanceKm: fallbackKm },
-              "distance",
-              { offset: 0 },
-            );
-            if (alt.length > 0) {
-              data = alt;
-              effective = { ...debouncedFilters, maxDistanceKm: fallbackKm };
-              setAutoExpanded(fallbackKm);
-            }
-          } catch {
-            // ignorăm erori pe fallback — arătăm empty state, nu blocăm ecranul
-          }
-        }
-      }
-      effectiveFiltersRef.current = effective;
+      // Explorer trebuie să arate exclusiv zona aleasă. Fallback-ul automat la
+      // 5000 km ar scoate utilizatorul din destinație și ar face funcția înșelătoare.
+      const data = await fetchDiscover(debouncedFilters, "distance", { offset: 0 });
+      effectiveFiltersRef.current = debouncedFilters;
       setProfiles(data);
       setHasMore(data.length >= DISCOVER_PAGE_SIZE);
       // Fetch server-side badges for the loaded profiles (fire-and-forget).
