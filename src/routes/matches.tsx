@@ -10,6 +10,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { PresenceDot } from "@/components/PresenceDot";
 import { cn } from "@/lib/utils";
 import { withGuardian } from "@/components/with-guardian";
+import { safeFormat } from "@/lib/safe-locale";
+import { dayKey } from "@/components/ui-kit/DaySeparator";
 
 export const Route = createFileRoute("/matches")({
   ssr: false,
@@ -59,15 +61,49 @@ const EMPTY: Record<TabKey, { title: string; body: string }> = {
   },
 };
 
+/**
+ * Timp cu ORA vizibilă: relativ pentru azi/ieri, dată + oră pentru mai vechi.
+ * „acum 12 min”, „acum 2 ore”, „ieri, 21:40”, „04.08.2026, 18:12”.
+ */
 function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const m = 60_000,
-    h = 60 * m,
-    d = 24 * h;
+  const then = new Date(iso);
+  if (Number.isNaN(then.getTime())) return "";
+  const diff = Date.now() - then.getTime();
+  const m = 60_000;
+  const h = 60 * m;
+  const hhmm = safeFormat(then, { hour: "2-digit", minute: "2-digit" }, "time");
   if (diff < h) return `acum ${Math.max(1, Math.floor(diff / m))} min`;
-  if (diff < d) return `acum ${Math.floor(diff / h)} h`;
-  if (diff < 7 * d) return `acum ${Math.floor(diff / d)} z`;
-  return new Date(iso).toLocaleDateString("ro-RO");
+  const today = dayKey(new Date().toISOString());
+  const yesterday = dayKey(new Date(Date.now() - 24 * h).toISOString());
+  const key = dayKey(iso);
+  if (key === today) {
+    const hours = Math.floor(diff / h);
+    return hours <= 1 ? `acum o oră · ${hhmm}` : `acum ${hours} ore · ${hhmm}`;
+  }
+  if (key === yesterday) return `ieri, ${hhmm}`;
+  return `${safeFormat(then, { day: "2-digit", month: "2-digit", year: "numeric" }, "date")}, ${hhmm}`;
+}
+
+/** Marcaj local „ce am văzut deja” per tab — nu are nevoie de backend. */
+function seenKey(uid: string, tab: TabKey) {
+  return `vz_matches_seen:${uid}:${tab}`;
+}
+
+function readSeen(uid: string, tab: TabKey): number {
+  if (typeof window === "undefined") return 0;
+  try {
+    return Number(window.localStorage.getItem(seenKey(uid, tab)) ?? 0) || 0;
+  } catch {
+    return 0;
+  }
+}
+
+function writeSeen(uid: string, tab: TabKey, at: number) {
+  try {
+    window.localStorage.setItem(seenKey(uid, tab), String(at));
+  } catch {
+    /* private mode */
+  }
 }
 
 function MatchesPage() {
@@ -77,6 +113,30 @@ function MatchesPage() {
   const [rows, setRows] = useState<PersonRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [opening, setOpening] = useState<string | null>(null);
+  // Praguri „văzut până la” per tab (timestamp ms), citite din localStorage.
+  const [seenAt, setSeenAt] = useState<Record<TabKey, number>>({
+    matches: 0,
+    visits: 0,
+    taps: 0,
+    favorites: 0,
+  });
+  // Contoare de intrări noi per tab, calculate la încărcarea fiecărui tab.
+  const [newCounts, setNewCounts] = useState<Record<TabKey, number>>({
+    matches: 0,
+    visits: 0,
+    taps: 0,
+    favorites: 0,
+  });
+
+  useEffect(() => {
+    if (!user) return;
+    setSeenAt({
+      matches: readSeen(user.id, "matches"),
+      visits: readSeen(user.id, "visits"),
+      taps: readSeen(user.id, "taps"),
+      favorites: readSeen(user.id, "favorites"),
+    });
+  }, [user]);
 
   useEffect(() => {
     if (!authLoading && !user) navigate({ to: "/auth", search: { mode: "login" } });
