@@ -1341,7 +1341,9 @@ function ThreadPage() {
               setText(e.target.value);
               sendTypingPing();
               autoGrow();
+              void import("@/lib/notification-sound").then((s) => s.playTypingSound());
             }}
+
             onFocus={() => {
               autoGrow();
               anchorToBottom(true);

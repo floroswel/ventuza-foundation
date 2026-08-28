@@ -62,6 +62,9 @@ import {
   fetchDiscover,
   requestAndStoreLocation,
   signPhotos,
+  peekPhotos,
+  prefetchProfilePhotos,
+
   formatDistance,
   ageFrom,
   isOnline,
@@ -1183,15 +1186,22 @@ function Cascade({
   const label = useOptionLabel();
   const { bySender } = useUnreadMessages();
   useEffect(() => {
-    const paths = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
-    if (paths.length) signPhotos(paths).then(setUrls);
+    const first = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
+    if (!first.length) return;
+    setUrls((prev) => ({ ...prev, ...peekPhotos(first) }));
+    // 1) semnăm rapid pozele de copertă (afișare grilă)
+    signPhotos(first).then((next) => setUrls((prev) => ({ ...prev, ...next })));
+    // 2) în fundal, pre-semnăm și pre-descărcăm restul pozelor fiecărui profil
+    void prefetchProfilePhotos(profiles);
   }, [profiles]);
 
   return (
     <div className="grid grid-cols-3 gap-[1px] bg-border/40">
-      {profiles.map((p) => {
+      {profiles.map((p, i) => {
         const path = p.photos?.[0];
         const url = path ? urls[path] : null;
+        const eager = i < 12;
+
         const online = isOnline(p.last_seen);
         const age = ageFrom(p.birthdate);
         const unread = bySender[p.id] ?? 0;
@@ -1208,10 +1218,12 @@ function Cascade({
               <SmartImage
                 src={url}
                 alt={p.display_name ?? ""}
-                loading="lazy"
+                loading={eager ? "eager" : "lazy"}
+                fetchPriority={eager ? "high" : "low"}
                 className="size-full object-cover transition-transform group-active:scale-95"
               />
             ) : (
+
               <div className="flex size-full items-center justify-center text-2xl text-muted-foreground/40">
                 {p.display_name?.[0]?.toUpperCase() ?? "?"}
               </div>
@@ -1411,7 +1423,11 @@ function ProfileSheet({
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
   onMessage: (p: DiscoverProfile) => void;
 }) {
-  const [urls, setUrls] = useState<Record<string, string>>({});
+  // Init sincron din cache: dacă poza a fost deja semnată pentru grilă,
+  // apare instant, fără flash de gol.
+  const [urls, setUrls] = useState<Record<string, string>>(() =>
+    peekPhotos(profile?.photos ?? []),
+  );
   const sheetLabel = useOptionLabel();
   const liked = decision === "like" || decision === "super";
 
@@ -1420,8 +1436,10 @@ function ProfileSheet({
       setUrls({});
       return;
     }
-    signPhotos(profile.photos).then(setUrls);
+    setUrls(peekPhotos(profile.photos));
+    signPhotos(profile.photos).then((next) => setUrls((prev) => ({ ...prev, ...next })));
   }, [profile]);
+
 
   const currentIndex = profile ? allProfiles.findIndex((p) => p.id === profile.id) : -1;
   const prev = currentIndex > 0 ? allProfiles[currentIndex - 1] : null;
