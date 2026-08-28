@@ -270,7 +270,12 @@ export function ProfilePhotoGallery({
             aria-label="Selectează poza"
             aria-orientation="horizontal"
             onKeyDown={onRailKey}
-            className="absolute left-1/2 top-2 z-20 flex -translate-x-1/2 gap-1"
+            className={cn(
+              "absolute z-20 flex gap-1",
+              indicator === "bars"
+                ? "inset-x-3 top-[calc(0.5rem+var(--safe-top))]"
+                : "left-1/2 top-2 -translate-x-1/2",
+            )}
           >
             {photos.map((_, i) => {
               const active = i === idx;
@@ -289,14 +294,17 @@ export function ProfilePhotoGallery({
                     setIdx(i);
                   }}
                   className={cn(
-                    "h-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
-                    active ? "w-6 bg-white" : "w-3 bg-white/40 hover:bg-white/70",
+                    "rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
+                    indicator === "bars"
+                      ? cn("h-1 flex-1", active ? "bg-white" : "bg-white/30")
+                      : cn("h-2", active ? "w-6 bg-white" : "w-3 bg-white/40 hover:bg-white/70"),
                   )}
                 />
               );
             })}
           </div>
         )}
+
 
         {/* Live region: anunță schimbarea pozei pentru screen readers */}
         <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
