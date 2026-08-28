@@ -820,6 +820,19 @@ function ThreadPage() {
       }))
     : [];
   const renderedMessages: UiMessage[] = [...messages, ...outboxAsMessages];
+  // Marcăm primul mesaj al fiecărei zile — separatorul se randează inline,
+  // ca să funcționeze identic și în modul virtualizat.
+  const dayStartIds = new Set<string>();
+  {
+    let prevDay = "";
+    for (const m of renderedMessages) {
+      const k = dayKey(m.created_at);
+      if (k && k !== prevDay) {
+        dayStartIds.add(m.id);
+        prevDay = k;
+      }
+    }
+  }
 
   if (convMissing) {
     return (
