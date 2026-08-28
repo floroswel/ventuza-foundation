@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchProfilesChunked } from "@/lib/profile-rpc";
 import { moderatePhoto } from "@/lib/verification.functions";
 
 export type Story = {

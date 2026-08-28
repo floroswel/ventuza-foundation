@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchProfilesChunked } from "@/lib/profile-rpc";
 
 export const TAP_EMOJIS = ["👋", "🔥", "😈", "👀", "💋", "🍆"] as const;
 export type TapEmoji = (typeof TAP_EMOJIS)[number];
