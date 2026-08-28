@@ -13,6 +13,7 @@ import {
   EyeOff,
   Flag,
   Flame,
+  Globe2,
   Hand,
   Heart,
   LayoutGrid,
@@ -1035,6 +1036,13 @@ function DiscoverPage() {
           />
         </>
       )}
+
+      <LocationPickerSheet
+        open={locationPickerOpen}
+        onClose={() => setLocationPickerOpen(false)}
+        status={travelStatus}
+        onChanged={onTravelChanged}
+      />
 
       <FiltersDrawer
         open={filtersOpen}
