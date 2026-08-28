@@ -68,8 +68,10 @@ import { LocationOnboarding } from "@/components/LocationOnboarding";
 import {
   DEFAULT_FILTERS,
   DISCOVER_PAGE_SIZE,
+  clearDiscoverCache,
   fetchDiscover,
   requestAndStoreLocation,
+
   signPhotos,
   peekPhotos,
   prefetchProfilePhotos,
@@ -113,6 +115,17 @@ export const Route = createFileRoute("/discover")({
 });
 
 type Tab = "nearby" | "fresh";
+
+/** Raza maximă în mod Explorer: vrei orașul ales, nu tot continentul. */
+const EXPLORER_RADIUS_KM = 100;
+
+/** Raza folosită în Explorer: cea aleasă explicit de user, altfel plafonul de oraș. */
+function explorerRadius(f: DiscoverFilters): number {
+  return f.maxDistanceKm < DEFAULT_FILTERS.maxDistanceKm
+    ? f.maxDistanceKm
+    : EXPLORER_RADIUS_KM;
+}
+
 
 function DiscoverPage() {
   const { user, loading: authLoading } = useAuth();
@@ -292,6 +305,16 @@ function DiscoverPage() {
   const [autoExpanded, setAutoExpanded] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const [travelStatus, setTravelStatus] = useState<TravelStatus>(null);
+
+  // În mod Explorer grila trebuie să arate ORAȘUL ales, nu jumătate de continent.
+  // Fără plafon, raza implicită (5000 km) aducea exact aceiași oameni ca acasă.
+  const explorerFilters = useMemo<DiscoverFilters>(() => {
+    if (!travelStatus) return debouncedFilters;
+    return { ...debouncedFilters, maxDistanceKm: explorerRadius(debouncedFilters) };
+  }, [debouncedFilters, travelStatus]);
+
   const effectiveFiltersRef = useRef<DiscoverFilters>(debouncedFilters);
   const load = useCallback(async () => {
     if (!user) return;
@@ -302,8 +325,9 @@ function DiscoverPage() {
     try {
       // Explorer trebuie să arate exclusiv zona aleasă. Fallback-ul automat la
       // 5000 km ar scoate utilizatorul din destinație și ar face funcția înșelătoare.
-      const data = await fetchDiscover(debouncedFilters, "distance", { offset: 0 });
-      effectiveFiltersRef.current = debouncedFilters;
+      const data = await fetchDiscover(explorerFilters, "distance", { offset: 0 });
+      effectiveFiltersRef.current = explorerFilters;
+
       setProfiles(data);
       setHasMore(data.length >= DISCOVER_PAGE_SIZE);
       // Fetch server-side badges for the loaded profiles (fire-and-forget).
@@ -336,12 +360,9 @@ function DiscoverPage() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedFilters, user]);
+  }, [explorerFilters, user]);
 
   // ---- Mod Explorer (locație aleasă manual) -------------------------------
-  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
-  const [travelStatus, setTravelStatus] = useState<TravelStatus>(null);
-
   const refreshTravel = useCallback(async (): Promise<TravelStatus> => {
     if (!user) {
       setTravelStatus(null);
@@ -371,9 +392,29 @@ function DiscoverPage() {
   }, [refreshTravel, load, travelStatus]);
 
   const onTravelChanged = useCallback(async () => {
-    await refreshTravel();
-    await load();
-  }, [refreshTravel, load]);
+    // Rezultatele vechi (locația precedentă) nu mai sunt valabile.
+    clearDiscoverCache();
+    const next = await refreshTravel();
+    // Nu așteptăm re-render-ul: calculăm aici raza efectivă pentru noua stare.
+    const nextFilters: DiscoverFilters = next
+      ? { ...debouncedFilters, maxDistanceKm: explorerRadius(debouncedFilters) }
+      : debouncedFilters;
+    setLoading(true);
+    setLoadError(null);
+    setAutoExpanded(null);
+    try {
+      const data = await fetchDiscover(nextFilters, "distance", { offset: 0, forceRefresh: true });
+      effectiveFiltersRef.current = nextFilters;
+      setProfiles(data);
+      setHasMore(data.length >= DISCOVER_PAGE_SIZE);
+    } catch (e) {
+      const message = e instanceof Error ? e.message : "Couldn't load discover";
+      setLoadError({ message, code: (e as { code?: string } | null)?.code });
+    } finally {
+      setLoading(false);
+    }
+  }, [refreshTravel, debouncedFilters]);
+
 
   const backToRealLocation = useCallback(async () => {
     try {
