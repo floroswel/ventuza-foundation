@@ -1,7 +1,8 @@
 import { setActiveConversation } from "@/lib/active-conversation";
 import { withGuardian } from "@/components/with-guardian";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { DaySeparator, dayKey } from "@/components/ui-kit/DaySeparator";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   enqueueMessage,
