@@ -189,7 +189,7 @@ function EventDetailPage() {
                     )}
                   </div>
                   <p className="mt-1 truncate text-[11px] text-muted-foreground">
-                    {a.display_name ?? "Unknown"}
+                    {a.display_name ?? "Utilizator Suzeta"}
                   </p>
                 </li>
               ))}

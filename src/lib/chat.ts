@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchProfilesChunked } from "@/lib/profile-rpc";
 
 export type ConversationRow = {
   id: string;
@@ -169,11 +170,8 @@ export async function fetchPublicProfiles(
 ): Promise<Map<string, PublicProfileMini>> {
   const map = new Map<string, PublicProfileMini>();
   if (!ids.length) return map;
-  const { data, error } = await supabase.rpc("get_public_profiles", { _ids: ids });
-  if (error) {
-    console.error("get_public_profiles failed", error);
-    return map;
-  }
+  const data = await fetchProfilesChunked("get_public_profiles", ids);
+
   const rows = (data ?? []) as Array<{
     id: string;
     display_name: string | null;

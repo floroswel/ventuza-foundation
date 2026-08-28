@@ -6391,7 +6391,7 @@ export type Database = {
           boost_until: string
           discreet_avatar: string
           display_name: string
-          gender: string
+          gender: string[]
           height_cm: number
           hide_age: boolean
           hide_distance: boolean
@@ -6404,7 +6404,7 @@ export type Database = {
           photos: string[]
           position: string
           profile_slug: string
-          pronouns: string
+          pronouns: string[]
           travel_city: string
           travel_until: string
           tribes: string[]
@@ -6518,6 +6518,15 @@ export type Database = {
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_verification_staff: { Args: { _uid: string }; Returns: boolean }
       list_my_block_relations: { Args: never; Returns: string[] }
+      list_my_blocked_profiles: {
+        Args: never
+        Returns: {
+          blocked_id: string
+          created_at: string
+          display_name: string
+          photos: string[]
+        }[]
+      }
       list_queue_claims: {
         Args: { _queue: string }
         Returns: {
@@ -6536,7 +6545,7 @@ export type Database = {
           body_type: string
           boost_until: string
           display_name: string
-          gender: string
+          gender: string[]
           height_cm: number
           hide_age: boolean
           hide_distance: boolean
@@ -6549,7 +6558,7 @@ export type Database = {
           photos: string[]
           position: string
           profile_slug: string
-          pronouns: string
+          pronouns: string[]
           travel_city: string
           travel_until: string
           tribes: string[]
@@ -6907,9 +6916,10 @@ export type Database = {
           voice_url: string
         }[]
       }
-      set_looking_now:
-        | { Args: { _hours: number; _intent?: string }; Returns: undefined }
-        | { Args: { _hours: number; _intent: string }; Returns: undefined }
+      set_looking_now: {
+        Args: { _hours: number; _intent: string }
+        Returns: undefined
+      }
       set_my_profile_link: { Args: { _slug: string }; Returns: string }
       shares_conversation_with: {
         Args: { _a: string; _b: string }

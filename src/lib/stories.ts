@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchProfilesChunked } from "@/lib/profile-rpc";
 import { moderatePhoto } from "@/lib/verification.functions";
 
 export type Story = {
@@ -107,8 +108,8 @@ export async function fetchActiveStoryGroups(): Promise<StoryGroup[]> {
   if (!stories.length) return [];
 
   const userIds = Array.from(new Set(stories.map((s) => s.user_id)));
-  const [{ data: profs }, { data: seenRows }] = await Promise.all([
-    supabase.rpc("get_public_profiles", { _ids: userIds }),
+  const [profs, { data: seenRows }] = await Promise.all([
+    fetchProfilesChunked("get_public_profiles", userIds),
     supabase
       .from("story_views")
       .select("story_id")
@@ -118,6 +119,7 @@ export async function fetchActiveStoryGroups(): Promise<StoryGroup[]> {
         stories.map((s) => s.id),
       ),
   ]);
+
   const profMap = new Map<
     string,
     { display_name: string | null; photos: string[] | null; profile_slug: string | null }

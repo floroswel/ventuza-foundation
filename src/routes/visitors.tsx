@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { ChevronLeft, Eye, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchProfilesChunked } from "@/lib/profile-rpc";
 import { useAuth } from "@/lib/auth-context";
 import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
@@ -93,11 +94,8 @@ function VisitorsPage() {
         }
 
         // Vizitatorii blocați (ambele direcții) sau în incognito nu mai apar.
-        const { data: profs, error: pErr } = await (supabase.rpc as any)(
-          "list_visible_profiles",
-          { _ids: ids },
-        );
-        if (pErr) throw pErr;
+        const profs = await fetchProfilesChunked("list_visible_profiles", ids);
+
         type Prow = {
           id: string;
           display_name: string | null;
@@ -179,7 +177,7 @@ function VisitorsPage() {
                   )}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-2">
                     <p className="truncate text-sm font-medium text-white">
-                      {v.display_name ?? "Unknown"}
+                      {v.display_name ?? "Utilizator Suzeta"}
                       {v.age ? <span className="text-white/70">, {v.age}</span> : null}
                     </p>
                     <p className="text-[10px] text-white/60">

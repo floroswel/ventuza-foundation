@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchProfilesChunked } from "@/lib/profile-rpc";
 
 export const TAP_EMOJIS = ["👋", "🔥", "😈", "👀", "💋", "🍆"] as const;
 export type TapEmoji = (typeof TAP_EMOJIS)[number];
@@ -88,7 +89,8 @@ export async function listFavorites(): Promise<FavoriteRow[]> {
   if (!ids.length) return [];
   // `list_visible_profiles` exclude blocurile (ambele direcții) și profilurile
   // în incognito → favoritul dispare din listă, nu rămâne ca „Anonim".
-  const { data: profs } = await (supabase.rpc as any)("list_visible_profiles", { _ids: ids });
+  const profs = await fetchProfilesChunked("list_visible_profiles", ids);
+
   const map = new Map<
     string,
     { display_name: string | null; photos: string[] | null; last_seen: string | null }
@@ -110,12 +112,16 @@ export async function listFavorites(): Promise<FavoriteRow[]> {
 }
 
 export async function setLookingNow(hours: number, intent?: string) {
+  // Semnătura unică rămasă este `set_looking_now(_intent text, _hours integer)`
+  // (cea veche, fără age gate, a fost eliminată). Ambele argumente sunt
+  // obligatorii — trimitem `null` explicit, nu `undefined`.
   const { error } = await supabase.rpc("set_looking_now", {
+    _intent: intent ?? null,
     _hours: hours,
-    _intent: intent ?? undefined,
-  });
+  } as never);
   if (error) throw error;
 }
+
 
 export async function toggleMessageReaction(messageId: string, emoji: ReactionEmoji) {
   const { data, error } = await supabase.rpc("toggle_message_reaction", {
@@ -136,28 +142,23 @@ export type BlockedUser = {
 export async function listBlocked(): Promise<BlockedUser[]> {
   const { data: u } = await supabase.auth.getUser();
   if (!u.user) return [];
-  const { data: bls, error } = await supabase
-    .from("blocks")
-    .select("blocked_id, created_at")
-    .eq("blocker_id", u.user.id)
-    .order("created_at", { ascending: false });
+  // `get_public_profiles` filtrează acum blocările în ambele direcții, deci lista
+  // de utilizatori blocați are RPC propriu (owner-only, minim de câmpuri).
+  const { data, error } = await (supabase.rpc as any)("list_my_blocked_profiles");
   if (error) throw error;
-  const ids = (bls ?? []).map((b) => b.blocked_id);
-  if (!ids.length) return [];
-  const { data: profs } = await supabase.rpc("get_public_profiles", { _ids: ids });
-  const map = new Map<string, { display_name: string | null; photos: string[] | null }>();
-  (profs ?? []).forEach((p) =>
-    map.set((p as { id: string }).id, {
-      display_name: (p as { display_name: string | null }).display_name,
-      photos: (p as { photos: string[] | null }).photos,
-    }),
-  );
-  return (bls ?? []).map((b) => ({
-    blocked_id: b.blocked_id,
-    created_at: b.created_at,
-    ...(map.get(b.blocked_id) ?? { display_name: null, photos: null }),
+  return ((data ?? []) as Array<{
+    blocked_id: string;
+    created_at: string;
+    display_name: string | null;
+    photos: string[] | null;
+  }>).map((r) => ({
+    blocked_id: r.blocked_id,
+    created_at: r.created_at,
+    display_name: r.display_name ?? null,
+    photos: r.photos ?? null,
   }));
 }
+
 
 export async function unblock(targetId: string) {
   const { data: u } = await supabase.auth.getUser();

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { ChevronLeft, Loader2, LogOut, Send, Users } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchProfilesChunked } from "@/lib/profile-rpc";
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -67,7 +68,7 @@ function GroupChatPage() {
       const memberIds = ((mems ?? []) as { user_id: string }[]).map((m) => m.user_id);
       setIsMember(memberIds.includes(user.id));
       if (memberIds.length) {
-        const { data: profs } = await supabase.rpc("get_public_profiles", { _ids: memberIds });
+        const profs = await fetchProfilesChunked("get_public_profiles", memberIds);
         const map: Record<string, Member> = {};
         for (const p of (profs ?? []) as { id: string; display_name: string | null }[]) {
           map[p.id] = { user_id: p.id, display_name: p.display_name };

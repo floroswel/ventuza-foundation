@@ -272,7 +272,7 @@ function MessagesPage() {
                           c.unread ? "font-semibold" : "font-medium",
                         )}
                       >
-                        {c.other_name ?? "Unknown"}
+                        {c.other_name ?? "Utilizator Suzeta"}
                       </p>
                       <span
                         className={cn(
