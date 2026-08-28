@@ -13,6 +13,7 @@ import {
   EyeOff,
   Flag,
   Flame,
+  Globe2,
   Hand,
   Heart,
   LayoutGrid,
@@ -52,6 +53,13 @@ import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
 import { MatchModal } from "@/components/MatchModal";
+import { LocationPickerSheet } from "@/components/LocationPickerSheet";
+import {
+  clearTravelLocation,
+  formatRemaining,
+  getMyTravelStatus,
+  type TravelStatus,
+} from "@/lib/travel";
 
 import { GoldenHourBadge } from "@/components/GoldenHourBadge";
 import { QuickFiltersStrip } from "@/components/QuickFiltersStrip";
@@ -353,6 +361,42 @@ function DiscoverPage() {
       setLoading(false);
     }
   }, [debouncedFilters, user]);
+
+  // ---- Mod Explorer (locație aleasă manual) -------------------------------
+  const [locationPickerOpen, setLocationPickerOpen] = useState(false);
+  const [travelStatus, setTravelStatus] = useState<TravelStatus>(null);
+
+  const refreshTravel = useCallback(async () => {
+    if (!user) {
+      setTravelStatus(null);
+      return;
+    }
+    setTravelStatus(await getMyTravelStatus());
+  }, [user]);
+
+  useEffect(() => {
+    void refreshTravel();
+    // Expirarea e impusă în DB (max 24h); re-verificăm periodic ca indicatorul
+    // să dispară singur fără reload de pagină.
+    const t = setInterval(() => void refreshTravel(), 60_000);
+    return () => clearInterval(t);
+  }, [refreshTravel]);
+
+  const onTravelChanged = useCallback(async () => {
+    await refreshTravel();
+    await load();
+  }, [refreshTravel, load]);
+
+  const backToRealLocation = useCallback(async () => {
+    try {
+      await clearTravelLocation();
+      toast.success("Ai revenit la locația ta reală.");
+      await onTravelChanged();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Nu am putut reveni la locația ta.");
+    }
+  }, [onTravelChanged]);
+
 
   const loadMore = useCallback(async () => {
     if (!user || loadingMore || loading || !hasMore) return;
@@ -708,11 +752,21 @@ function DiscoverPage() {
             <QuickProfileDrawer />
             <button
               type="button"
-              onClick={() => setFiltersOpen(true)}
-              className="flex min-w-0 flex-1 items-center gap-2 rounded-full border border-border bg-surface px-3 py-2 text-left text-[13px] text-muted-foreground transition-colors hover:text-foreground"
+              onClick={() => setLocationPickerOpen(true)}
+              aria-label="Alege locația"
+              className={cn(
+                "flex min-w-0 flex-1 items-center gap-2 rounded-full border px-3 py-2 text-left text-[13px] transition-colors",
+                travelStatus
+                  ? "border-primary/50 bg-primary/10 text-primary"
+                  : "border-border bg-surface text-muted-foreground hover:text-foreground",
+              )}
             >
-              <MapPin className="size-4 shrink-0 text-primary" aria-hidden />
-              <span className="truncate">Locația curentă</span>
+              {travelStatus ? (
+                <Plane className="size-4 shrink-0" aria-hidden />
+              ) : (
+                <MapPin className="size-4 shrink-0 text-primary" aria-hidden />
+              )}
+              <span className="truncate">{travelStatus?.city ?? "Locația curentă"}</span>
             </button>
           </div>
 
@@ -803,6 +857,24 @@ function DiscoverPage() {
               className="shrink-0 rounded-full border border-amber-500/50 px-2.5 py-1 font-medium hover:bg-amber-500/20"
             >
               Ieși
+            </button>
+          </div>
+        )}
+
+        {/* Indicator permanent: unde ești setat si cat mai dureaza. Fara el,
+            userii uita ca au pornit Explorer si raman "in Barcelona" saptamani. */}
+        {travelStatus && (
+          <div className="mt-3 flex items-center gap-2 rounded-2xl border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
+            <Plane className="size-4 shrink-0" />
+            <p className="flex-1">
+              Explorezi din <strong>{travelStatus.city}</strong> — mai{" "}
+              {formatRemaining(travelStatus.until)}. Distanțele sunt aproximative.
+            </p>
+            <button
+              onClick={backToRealLocation}
+              className="shrink-0 rounded-full border border-primary/50 px-2.5 py-1 font-medium hover:bg-primary/20"
+            >
+              Locația mea
             </button>
           </div>
         )}
@@ -964,6 +1036,13 @@ function DiscoverPage() {
           />
         </>
       )}
+
+      <LocationPickerSheet
+        open={locationPickerOpen}
+        onClose={() => setLocationPickerOpen(false)}
+        status={travelStatus}
+        onChanged={onTravelChanged}
+      />
 
       <FiltersDrawer
         open={filtersOpen}
@@ -1318,8 +1397,19 @@ function Cascade({
                   {age ? <span className="font-normal text-white/75">, {age}</span> : null}
                 </p>
                 <div className="mt-0.5 flex items-center gap-1 text-[10px] leading-none text-white/80 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
-                  <DistanceLabel meters={p.distance_m} iconClassName="size-2.5" />
-                  {traveling && p.travel_city ? (
+                  <DistanceLabel
+                    meters={p.distance_m}
+                    iconClassName="size-2.5"
+                    approximate={!!p.is_explorer}
+                  />
+                  {p.is_explorer ? (
+                    <span
+                      title="Locație aleasă manual"
+                      className="inline-flex shrink-0 items-center gap-0.5 rounded-full bg-black/55 px-1 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-white/90"
+                    >
+                      <Globe2 className="size-2.5" /> Explorer
+                    </span>
+                  ) : traveling && p.travel_city ? (
                     <span className="inline-flex min-w-0 items-center gap-0.5">
                       <Plane className="size-2.5 shrink-0" />
                       <span className="truncate">{p.travel_city}</span>
@@ -1602,7 +1692,18 @@ function ProfileSheet({
                     )}
                     {lastSeenText}
                   </span>
-                  <DistanceLabel meters={profile.distance_m} />
+                  <DistanceLabel
+                    meters={profile.distance_m}
+                    approximate={!!profile.is_explorer}
+                  />
+                  {profile.is_explorer && (
+                    <span
+                      title="Locație aleasă manual — distanța e aproximativă"
+                      className="inline-flex items-center gap-1 rounded-full bg-white/15 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide"
+                    >
+                      <Globe2 className="size-3" /> Explorer
+                    </span>
+                  )}
                   {profile.pronouns?.length ? (
                     <span>{profile.pronouns.join(" · ")}</span>
                   ) : null}

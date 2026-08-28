@@ -3746,6 +3746,7 @@ export type Database = {
           top_artists: Json | null
           travel_city: string | null
           travel_location: unknown
+          travel_set_at: string | null
           travel_until: string | null
           tribes: string[]
           tz_offset_minutes: number
@@ -3879,6 +3880,7 @@ export type Database = {
           top_artists?: Json | null
           travel_city?: string | null
           travel_location?: unknown
+          travel_set_at?: string | null
           travel_until?: string | null
           tribes?: string[]
           tz_offset_minutes?: number
@@ -4012,6 +4014,7 @@ export type Database = {
           top_artists?: Json | null
           travel_city?: string | null
           travel_location?: unknown
+          travel_set_at?: string | null
           travel_until?: string | null
           tribes?: string[]
           tz_offset_minutes?: number
@@ -6042,6 +6045,7 @@ export type Database = {
       cleanup_rate_limit_log: { Args: never; Returns: number }
       cleanup_signup_attempts: { Args: never; Returns: undefined }
       cleanup_signup_throttle_logs: { Args: never; Returns: undefined }
+      clear_travel_location: { Args: never; Returns: undefined }
       compute_geo_bucket_id: {
         Args: { p_lat: number; p_lng: number }
         Returns: string
@@ -6126,6 +6130,7 @@ export type Database = {
           hide_online: boolean
           id: string
           interests: string[]
+          is_explorer: boolean
           last_seen: string
           looking_for: string[]
           looking_now_intent: string
@@ -6197,6 +6202,7 @@ export type Database = {
       }
       ensure_referral_code: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      expire_travel_locations: { Args: never; Returns: number }
       geometry: { Args: { "": string }; Returns: unknown }
       geometry_above: {
         Args: { geom1: unknown; geom2: unknown }
@@ -6948,6 +6954,10 @@ export type Database = {
         Returns: undefined
       }
       set_my_profile_link: { Args: { _slug: string }; Returns: string }
+      set_travel_location: {
+        Args: { _city: string; _hours?: number; _lat: number; _lng: number }
+        Returns: undefined
+      }
       shares_conversation_with: {
         Args: { _a: string; _b: string }
         Returns: boolean
