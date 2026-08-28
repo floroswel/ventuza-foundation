@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.68",
-  "versionCode": 78,
+  "versionName": "1.0.69",
+  "versionCode": 79,
   "notes": "Rămâi conectat după actualizarea din Google Play: sesiunea se restaurează din stocarea nativă, fără ecran de login inutil.",
-  "updatedAt": "2026-08-28T01:35:30.691Z"
+  "updatedAt": "2026-08-28T01:45:19.061Z"
 }
