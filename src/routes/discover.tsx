@@ -1643,8 +1643,9 @@ function ProfileSheet({
         </div>
 
         {/* Sticky action bar */}
-        <div className="z-10 shrink-0 border-t border-border/60 bg-surface/95 px-4 py-2 pb-bar backdrop-blur">
+        <div className="z-10 shrink-0 border-t border-border/60 bg-surface/95 px-4 py-2.5 pb-bar shadow-[0_-8px_24px_-12px_rgba(0,0,0,0.6)] backdrop-blur">
           <div className="flex items-center gap-2">
+
             <button
               onClick={() => onDecision(profile, "pass")}
               className="flex h-12 flex-1 items-center justify-center gap-2 rounded-full border border-border bg-background text-sm text-muted-foreground hover:text-foreground"
