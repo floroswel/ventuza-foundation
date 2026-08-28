@@ -62,6 +62,9 @@ import {
   fetchDiscover,
   requestAndStoreLocation,
   signPhotos,
+  peekPhotos,
+  prefetchProfilePhotos,
+
   formatDistance,
   ageFrom,
   isOnline,
