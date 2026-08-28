@@ -2,7 +2,6 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { installNativeApiOrigin } from "./lib/native-api-origin";
-import { setupQueryPersistence } from "./lib/query-persister";
 
 // Nativ (Capacitor): rescrie `/_serverFn` și `/api/` către originul de producție.
 installNativeApiOrigin();
@@ -100,13 +99,18 @@ export const getRouter = () => {
   // shell-ului și cu hidratarea, în loc să se așeze după ele. Import static,
   // intenționat: un `await import` aici ar reintroduce chiar întârzierea pe
   // care o eliminăm.
-  try {
-    setupQueryPersistence(queryClient);
-  } catch (e) {
-    // Storage blocat (mod privat, cotă plină) nu are voie să oprească
-    // pornirea: aplicația funcționează la fel, doar fără cache pe disc.
-    console.warn("[router] persistența cache-ului nu a putut porni", e);
-  }
+  //
+  // Import DINAMIC, dar pornit imediat, nu dintr-un efect React: cererea pleacă
+  // în paralel cu restul pornirii, iar modulul nu intră în chunk-ul principal
+  // (care e deja peste buget). Un import static ar fi adăugat persisterul și
+  // dependențele lui la octeții parsați înainte de primul pixel.
+  void import("./lib/query-persister")
+    .then(({ setupQueryPersistence }) => setupQueryPersistence(queryClient))
+    .catch((e) => {
+      // Storage blocat (mod privat, cotă plină) nu are voie să oprească
+      // pornirea: aplicația funcționează la fel, doar fără cache pe disc.
+      console.warn("[router] persistența cache-ului nu a putut porni", e);
+    });
 
   const router = createRouter({
     routeTree,
