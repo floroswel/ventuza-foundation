@@ -21,6 +21,7 @@ import {
 import { getInstallCtaVariant, installCtaLabel } from "@/lib/install-ab-test";
 import { FunnelDebugOverlay } from "@/components/FunnelDebugOverlay";
 import { GetAppBanner } from "@/components/GetAppBanner";
+import { ScreenshotGallery, type Shot } from "@/components/landing/ScreenshotGallery";
 
 
 import { useAuth } from "@/lib/auth-context";
