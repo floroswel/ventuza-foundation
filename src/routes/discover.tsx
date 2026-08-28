@@ -300,34 +300,10 @@ function DiscoverPage() {
     setAutoExpanded(null);
     setHasMore(false);
     try {
-      let data = await fetchDiscover(debouncedFilters, "distance", { offset: 0 });
-      let effective = debouncedFilters;
-      // Auto-fallback progresiv: dacă userul nu are NICIUN rezultat la raza
-      // curentă, încercăm trepte 25→50→200→5000 km. Nu modificăm filtrele
-      // userului (nu rescriem `filters`) — doar arătăm rezultate marcate
-      // "raza extinsă". Userul rămâne în control.
-      if (data.length === 0) {
-        // O singură treaptă de fallback ca să economisim quota (10 apeluri/h server-side).
-        const current = debouncedFilters.maxDistanceKm ?? 25;
-        const fallbackKm = current < 5000 ? 5000 : null;
-        if (fallbackKm) {
-          try {
-            const alt = await fetchDiscover(
-              { ...debouncedFilters, maxDistanceKm: fallbackKm },
-              "distance",
-              { offset: 0 },
-            );
-            if (alt.length > 0) {
-              data = alt;
-              effective = { ...debouncedFilters, maxDistanceKm: fallbackKm };
-              setAutoExpanded(fallbackKm);
-            }
-          } catch {
-            // ignorăm erori pe fallback — arătăm empty state, nu blocăm ecranul
-          }
-        }
-      }
-      effectiveFiltersRef.current = effective;
+      // Explorer trebuie să arate exclusiv zona aleasă. Fallback-ul automat la
+      // 5000 km ar scoate utilizatorul din destinație și ar face funcția înșelătoare.
+      const data = await fetchDiscover(debouncedFilters, "distance", { offset: 0 });
+      effectiveFiltersRef.current = debouncedFilters;
       setProfiles(data);
       setHasMore(data.length >= DISCOVER_PAGE_SIZE);
       // Fetch server-side badges for the loaded profiles (fire-and-forget).
@@ -366,21 +342,33 @@ function DiscoverPage() {
   const [locationPickerOpen, setLocationPickerOpen] = useState(false);
   const [travelStatus, setTravelStatus] = useState<TravelStatus>(null);
 
-  const refreshTravel = useCallback(async () => {
+  const refreshTravel = useCallback(async (): Promise<TravelStatus> => {
     if (!user) {
       setTravelStatus(null);
-      return;
+      return null;
     }
-    setTravelStatus(await getMyTravelStatus());
+    const next = await getMyTravelStatus();
+    setTravelStatus(next);
+    return next;
   }, [user]);
 
   useEffect(() => {
-    void refreshTravel();
-    // Expirarea e impusă în DB (max 24h); re-verificăm periodic ca indicatorul
-    // să dispară singur fără reload de pagină.
-    const t = setInterval(() => void refreshTravel(), 60_000);
-    return () => clearInterval(t);
-  }, [refreshTravel]);
+    let active = true;
+    const syncTravel = async () => {
+      const wasExplorer = Boolean(travelStatus);
+      const next = await refreshTravel();
+      // La redeschidere sau expirare, sincronizăm și grila cu locația efectivă.
+      if (active && wasExplorer !== Boolean(next)) await load();
+    };
+    void syncTravel();
+    // Expirarea e impusă în DB (max 24h). Când expiră, reîncărcăm și profilurile,
+    // ca grila să revină automat la locația reală, nu doar bannerul.
+    const t = setInterval(() => void syncTravel(), 60_000);
+    return () => {
+      active = false;
+      clearInterval(t);
+    };
+  }, [refreshTravel, load, travelStatus]);
 
   const onTravelChanged = useCallback(async () => {
     await refreshTravel();
@@ -986,6 +974,8 @@ function DiscoverPage() {
           hasFilters={JSON.stringify(debouncedFilters) !== JSON.stringify(DEFAULT_FILTERS)}
           onResetFilters={() => setFilters(DEFAULT_FILTERS)}
           currentDistanceKm={filters.maxDistanceKm}
+          explorerCity={travelStatus?.city}
+          onBackToReal={backToRealLocation}
           onExpandDistance={(km) => setFilters({ ...filters, maxDistanceKm: km })}
         />
       ) : view === "swipe" ? (
@@ -1967,6 +1957,8 @@ function EmptyState({
   onResetFilters,
   onExpandDistance,
   currentDistanceKm,
+  explorerCity,
+  onBackToReal,
 }: {
   onRefresh: () => void;
   hasLocation: boolean;
@@ -1974,7 +1966,38 @@ function EmptyState({
   onResetFilters?: () => void;
   onExpandDistance?: (km: number) => void;
   currentDistanceKm?: number;
+  explorerCity?: string | null;
+  onBackToReal?: () => void;
 }) {
+  // Explorer activ dar nimeni acolo: userul trebuie să poată reveni dintr-un tap,
+  // nu să sape prin selector.
+  if (explorerCity) {
+    const nextKm = (currentDistanceKm ?? 0) < 50 ? 50 : (currentDistanceKm ?? 0) < 200 ? 200 : 5000;
+    return (
+      <CenterMessage
+        icon={<Compass className="size-8 text-primary" />}
+        title={`Nimeni în ${explorerCity} acum`}
+        desc="Nu e nimeni activ în zona pe care o explorezi. Poți extinde raza sau te poți întoarce la locația ta reală."
+        action={
+          <div className="flex flex-wrap justify-center gap-2">
+            {onBackToReal && (
+              <Button variant="hero" onClick={onBackToReal}>
+                Înapoi la locația mea
+              </Button>
+            )}
+            {onExpandDistance && (
+              <Button variant="outline" onClick={() => onExpandDistance(nextKm)}>
+                Extinde la {nextKm === 5000 ? "toată țara" : `${nextKm} km`}
+              </Button>
+            )}
+            <Button variant="outline" onClick={onRefresh}>
+              Reîncarcă
+            </Button>
+          </div>
+        }
+      />
+    );
+  }
   if (!hasLocation) {
     return (
       <CenterMessage
@@ -1985,6 +2008,7 @@ function EmptyState({
       />
     );
   }
+
   if (hasFilters) {
     return (
       <CenterMessage
