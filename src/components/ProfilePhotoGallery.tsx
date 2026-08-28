@@ -235,7 +235,7 @@ export function ProfilePhotoGallery({
         </AnimatePresence>
 
         {/* Contor 1/5 — util când sunt multe poze și dots-urile devin mici */}
-        {total > 1 && (
+        {total > 1 && indicator !== "bars" && (
           <span className="pointer-events-none absolute left-3 top-3 z-20 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white backdrop-blur">
             {idx + 1}/{total}
           </span>
@@ -250,7 +250,7 @@ export function ProfilePhotoGallery({
                 e.stopPropagation();
                 go(-1);
               }}
-              className="absolute left-0 top-0 h-full w-1/4"
+              className={cn("absolute left-0 top-0 h-full", indicator === "bars" ? "w-1/3" : "w-1/4")}
             />
             <button
               aria-label="Poza următoare"
@@ -258,10 +258,14 @@ export function ProfilePhotoGallery({
                 e.stopPropagation();
                 go(1);
               }}
-              className="absolute right-0 top-0 h-full w-1/4"
+              className={cn(
+                "absolute right-0 top-0 h-full",
+                indicator === "bars" ? "w-1/3" : "w-1/4",
+              )}
             />
           </>
         )}
+
 
         {/* Indicator rail — keyboard-navigable tablist cu roving tabindex */}
         {total > 1 && (
