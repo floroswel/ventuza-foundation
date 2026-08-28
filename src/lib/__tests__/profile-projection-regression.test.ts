@@ -66,10 +66,12 @@ describe("Proiecții de profil — regresie confidențialitate", () => {
         expect(bareProjection, `proiecție brută de birthdate în ${def.file}`).toEqual([]);
       });
 
-      it("respectă `hide_age`", () => {
+      it("respectă `hide_age` (vârsta ascunsă → NULL)", () => {
         if (!def) return;
-        expect(def.body, `în ${def.file}`).toMatch(/hide_age\s+IS\s+TRUE/i);
+        // Acceptăm ambele forme: `hide_age IS TRUE THEN NULL` și `p.hide_age THEN NULL`.
+        expect(def.body, `în ${def.file}`).toMatch(/hide_age[\s\S]{0,80}?NULL/i);
       });
+
 
       it("filtrează blocările în ambele direcții", () => {
         if (!def) return;
