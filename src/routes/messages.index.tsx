@@ -294,11 +294,7 @@ function MessagesPage() {
                       >
                         {buildInboxPreview(showPreview, c.last_message_preview, !!c.last_message_at)}
                       </p>
-                      {c.unread_count > 0 ? (
-                        <span className="flex h-5 min-w-5 shrink-0 items-center justify-center rounded-full bg-primary px-1.5 text-[11px] font-semibold leading-none text-primary-foreground shadow-[0_0_10px_hsl(var(--primary)/0.5)]">
-                          {c.unread_count > 99 ? "99+" : c.unread_count}
-                        </span>
-                      ) : null}
+                      <UnreadBadge count={c.unread_count} className="shrink-0" />
                     </div>
                   </div>
                 </Link>
