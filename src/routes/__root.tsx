@@ -9,7 +9,16 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { BootPerformanceMount } from "@/components/BootPerformanceMount";
-import { useEffect, useState, type ReactNode } from "react";
+import { lazy, useEffect, useState, type ReactNode } from "react";
+import { DeferredOverlay } from "@/components/DeferredOverlay";
+
+// Overlay-uri condiționale: nu apar în primul cadru, deci nu intră în bundle-ul de pornire.
+const CookieBanner = lazy(() => import("@/components/CookieBanner").then((m) => ({ default: m.CookieBanner })));
+const TravelWarning = lazy(() => import("@/components/TravelWarning").then((m) => ({ default: m.TravelWarning })));
+const UpdateAvailableBanner = lazy(() => import("@/components/UpdateAvailableBanner").then((m) => ({ default: m.UpdateAvailableBanner })));
+const DebugPanel = lazy(() => import("@/components/DebugPanel").then((m) => ({ default: m.DebugPanel })));
+const ConsentPromptHost = lazy(() => import("@/components/ConsentPromptHost").then((m) => ({ default: m.ConsentPromptHost })));
+const LocationPermissionPrompt = lazy(() => import("@/components/LocationPermissionPrompt").then((m) => ({ default: m.LocationPermissionPrompt })));
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -25,8 +34,6 @@ import { LazyMotion } from "framer-motion";
 const loadMotionFeatures = () => import("@/lib/motion-features").then((m) => m.default);
 
 import { Toaster } from "sonner";
-import { CookieBanner } from "@/components/CookieBanner";
-import { TravelWarning } from "@/components/TravelWarning";
 import { PinLockGate } from "@/components/PinLockGate";
 import { SessionGuards } from "@/components/SessionGuards";
 import { GuardianBoundary } from "@/components/GuardianBoundary";
@@ -34,7 +41,6 @@ import { GuardianBoundary } from "@/components/GuardianBoundary";
 import { CountryRiskGuard } from "@/components/CountryRiskGuard";
 import { AgeGate } from "@/components/AgeGate";
 import { AppSplash } from "@/components/AppSplash";
-import { UpdateAvailableBanner } from "@/components/UpdateAvailableBanner";
 import { PullToRefreshMount } from "@/components/PullToRefreshMount";
 import { useProximityForegroundWatcher } from "@/lib/proximity-watcher";
 import { usePresenceHeartbeat } from "@/hooks/usePresenceHeartbeat";
@@ -44,12 +50,9 @@ import { useLocationWatcher } from "@/hooks/useLocationWatcher";
 import "@/lib/i18n";
 
 
-import { ConsentPromptHost } from "@/components/ConsentPromptHost";
 import { VersionGate } from "@/components/VersionGate";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import { DebugPanel } from "@/components/DebugPanel";
 import { OfflineBanner } from "@/components/OfflineBanner";
-import { LocationPermissionPrompt } from "@/components/LocationPermissionPrompt";
 import { NativePushNavigatorMount } from "@/components/NativePushNavigatorMount";
 
 function NotFoundComponent() {
@@ -300,7 +303,11 @@ function ProximityWatcherMount() {
 function LocationPermissionPromptMount() {
   const location = useLocation();
   if (location.pathname.startsWith("/admin")) return null;
-  return <LocationPermissionPrompt />;
+  return (
+    <DeferredOverlay>
+      <LocationPermissionPrompt />
+    </DeferredOverlay>
+  );
 }
 
 /** Anti-screenshot: blocat pe conținut privat, permis pe ecranele publice. */
@@ -496,17 +503,21 @@ function RootComponent() {
             <LocationPermissionPromptMount />
             <AppSplash />
             <AgeGate />
-            <CookieBanner />
-            <TravelWarning />
+            <DeferredOverlay>
+              <CookieBanner />
+              <TravelWarning />
+            </DeferredOverlay>
             <PinLockGate />
             <Toaster theme="dark" position="top-center" richColors />
 
             <LanguageToggle />
-            <ConsentPromptHost />
             <VersionGate />
-            <UpdateAvailableBanner />
             <PullToRefreshMount />
-            <DebugPanel />
+            <DeferredOverlay>
+              <ConsentPromptHost />
+              <UpdateAvailableBanner />
+              <DebugPanel />
+            </DeferredOverlay>
           </NotificationsProvider>
         </NotificationPrefsProvider>
       </AuthProvider>
