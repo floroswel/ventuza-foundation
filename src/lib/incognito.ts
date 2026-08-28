@@ -15,7 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const INCOGNITO_EVENT = "suzeta:incognito-change";
 
-async function applyIncognito(userId: string, patch: Record<string, boolean>, hidden: boolean) {
+async function applyIncognito(userId: string, patch: { incognito?: boolean; hide_online?: boolean }, hidden: boolean) {
   const { error } = await supabase.from("profiles").update(patch).eq("id", userId);
   if (error) throw error;
 
