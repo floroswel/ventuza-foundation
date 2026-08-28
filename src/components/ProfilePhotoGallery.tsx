@@ -221,7 +221,7 @@ export function ProfilePhotoGallery({
 
         {/* Contor 1/5 — util când sunt multe poze și dots-urile devin mici */}
         {total > 1 && (
-          <span className="pointer-events-none absolute right-3 top-3 z-20 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white backdrop-blur">
+          <span className="pointer-events-none absolute left-3 top-3 z-20 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white backdrop-blur">
             {idx + 1}/{total}
           </span>
         )}
