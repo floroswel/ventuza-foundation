@@ -208,3 +208,122 @@ src/lib/email-templates/send-email.ts.
 Trimite maximum un email pe zi per tip de alertă, ca să nu devină zgomot
 pe care îl ignor.
 ```
+
+---
+
+## Prompt 5 — Refă pagina publică ca pagină de produs
+
+### Ce se poate prelua dintr-o pagină de referință și ce nu
+
+Reper folosit ca inspirație: `freegrind.imaoreo.dev`. Înainte de prompt,
+trei lucruri de știut.
+
+**Se poate:** structura de secțiuni (hero scurt → dovadă vizuală → carduri de
+funcții → galerie de ecrane → FAQ → footer), nivelul de finisaj, convențiile
+de UI întunecat. Tiparele de layout nu sunt protejate de drepturi de autor.
+
+**NU se poate:** copiat HTML/CSS de pe site (licența lor e „personal use"),
+copiat textele lor cuvânt cu cuvânt (acelea sunt expresie originală,
+protejată), și nici preluat poziționarea lor de client neoficial — secțiuni
+gen Discord / GitHub / issue tracker / lista de contribuitori.
+
+**Motivul cel mai important pentru care nu copiem poziționarea lor:** Free
+Grind este un client NEOFICIAL de Grindr, construit pe API reverse-engineered,
+și scrie explicit „Not affiliated with Grindr LLC". Suzeta este o aplicație
+independentă, legitimă, publicată în Google Play. Dacă pagina Suzeta ajunge să
+semene cu a unui client neoficial, riscul nu e cu Free Grind — e cu Google Play
+și cu Grindr LLC. Preluăm calitatea execuției, nu identitatea.
+
+**Vestea bună:** Suzeta are deja tokeni foarte apropiați ca senzație — fundal
+aproape negru, borduri albe la 8% opacitate, suprafețe stratificate. Nu e
+nevoie de nicio culoare nouă.
+
+### Promptul
+
+```
+Reface pagina publică `src/routes/index.tsx`. Astăzi e un document SEO:
+paragrafe lungi („What is Suzeta?", „Who is Suzeta for?") care răspund la
+Google, nu unui om care decide în cinci secunde dacă descarcă aplicația.
+Vreau o pagină de produs, cu același conținut, dar altfel compusă.
+
+FOLOSEȘTE EXCLUSIV TOKENII EXISTENȚI din src/styles.css
+(--background, --card, --primary, --accent, --border, --muted-foreground).
+NU introduce culori noi, NU adăuga fonturi noi, NU instala biblioteci noi.
+Identitatea vizuală rămâne a Suzeta.
+
+STRUCTURA NOUĂ, în această ordine:
+
+1. HERO — maximum 8 cuvinte titlu, o propoziție subtitlu, două butoane
+   (Google Play + Continuă în browser). Fără paragraf de introducere.
+
+2. DOVADĂ, imediat sub hero — trei afirmații scurte, pe un rând,
+   despărțite de puncte. Ele sunt diferențiatorii REALI ai Suzeta:
+   construită în România · datele rămân în UE · fiecare cont verificat.
+
+3. GALERIE DE ECRANE — capturi reale din aplicație, derulabile
+   orizontal, cu etichetă sub fiecare (Discover, Chat, Profil, Setări de
+   confidențialitate). Container cu `overflow-x: auto`, niciodată scroll
+   orizontal pe body. Dacă nu există capturi în repo, lasă locuri
+   marcate clar și spune-mi ce fișiere să adaug.
+
+4. CARDURI DE FUNCȚII — grilă, un titlu scurt și două rânduri de text
+   per card. Conținutul îl iei din secțiunea „Key features" existentă,
+   dar rescris scurt. Fără liste cu bullet-uri lungi.
+
+5. SIGURANȚĂ ȘI CONFIDENȚIALITATE — secțiune proprie, nu o notă la
+   subsol. Blocare bidirecțională, raportare, ascunderea vârstei și a
+   distanței, mod discret, ștergerea contului. Pentru o aplicație de
+   dating asta e argument de vânzare, nu literă mică.
+
+6. CUM FUNCȚIONEAZĂ — cei patru pași existenți, ca pași numerotați.
+   Numerotarea are sens aici: chiar sunt o secvență.
+
+7. FAQ — păstrează componenta și datele existente, neatinse.
+
+8. Footer — `PublicFooter`, neschimbat.
+
+CE NU AI VOIE SĂ STRICI:
+- Toate schemele JSON-LD (inclusiv `faqPageSchema`) rămân exact cum sunt.
+  Pagina rankează pe ele.
+- Textul SEO substanțial NU se șterge. Se mută mai jos în pagină, în
+  secțiuni cu titluri proprii. Vreau pagină mai bună, nu trafic pierdut.
+- `trackStoreFunnel`, `getInstallCtaVariant` / `installCtaLabel`
+  (testul A/B pe butonul de instalare) și `GetAppBanner` rămân
+  funcționale, cu aceleași evenimente.
+- Redirectul pentru utilizatorii deja autentificați rămâne.
+
+REGULI DE CONȚINUT:
+- Scrie textele de la zero, în limba paginii. Nu copia formulări de pe
+  alte site-uri.
+- Fără superlative goale („cea mai bună", „revoluționar"). Spune ce face
+  aplicația.
+- Fiecare afirmație trebuie să fie adevărată și verificabilă în produs.
+  Dacă nu ești sigur că o funcție există, întreabă-mă, nu o inventa.
+
+RESPONSIVE ȘI TEME:
+- Mobil primul. Galeria se derulează cu degetul.
+- Pagina trebuie să arate corect și în tema deschisă, și în cea închisă,
+  prin tokeni. Nicio culoare scrisă direct în componentă.
+
+La final rulează `bun run typecheck` și `bun run test` și arată-mi
+rezultatele. Nu modifica alte rute.
+```
+
+### Dacă vrei și mai aproape de senzația de acolo
+
+Reperul folosește titluri foarte strânse (letter-spacing negativ, greutate
+700) pe fundal aproape negru, cu carduri delimitate de borduri subțiri în loc
+de umbre. Sunt convenții generice, nu elemente protejate. Le poți cere separat:
+
+```
+Doar tipografie și delimitări, fără schimbări de culoare sau conținut:
+- titlurile de secțiune: greutate 700, letter-spacing între -0.02em și
+  -0.03em, dimensiuni clar diferențiate față de textul curent
+- cardurile: delimitate prin `1px solid var(--border)`, colțuri mici
+  (8-12px), fără umbre
+- etichetele de secțiune (eyebrow): majuscule, mici, letter-spacing
+  pozitiv, culoare `var(--muted-foreground)`
+- textul curent: maximum ~65 de caractere pe rând
+
+Aplică pe pagina publică. Nu atinge componentele din aplicație.
+```
