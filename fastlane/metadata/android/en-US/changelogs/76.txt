@@ -1,0 +1,8 @@
+Suzeta 1.0.66
+
+Security & stability update:
+- Hardened profile privacy: exact birthdates and precise location data no longer exposed between users.
+- Fixed privilege escalation via profile delete + re-create (ban evasion).
+- Added rate limiting on profile lookups to prevent abuse.
+- Location messages now expire exact coordinates after 60 minutes for recipients.
+- Various bug fixes and performance improvements.
