@@ -3,7 +3,7 @@ import { ConversationListSkeleton } from "@/components/skeletons/FirstScreenSkel
 import { createFileRoute, Link, useNavigate, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Loader2, MessageCircle, Sparkles, SquarePen } from "lucide-react";
+import { Image as ImageIcon, Loader2, MessageCircle, Sparkles, SquarePen } from "lucide-react";
 import { useNotifications } from "@/lib/notifications-context";
 import { signPhotos } from "@/lib/discover";
 
