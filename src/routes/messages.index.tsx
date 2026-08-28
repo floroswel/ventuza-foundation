@@ -286,6 +286,16 @@ function MessagesPage() {
                       </span>
                     </div>
                     <div className="mt-0.5 flex items-center gap-2">
+                      {/* Indicator media: derivat din previzualizarea existentă,
+                          fără date noi de la server. */}
+                      {/(📷|🎤|poz[ăa]|foto|imagine|vocal)/i.test(
+                        c.last_message_preview ?? "",
+                      ) && (
+                        <ImageIcon
+                          aria-label="Mesaj cu media"
+                          className="size-3.5 shrink-0 text-muted-foreground"
+                        />
+                      )}
                       <p
                         className={cn(
                           "min-w-0 flex-1 truncate text-sm",
