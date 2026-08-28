@@ -91,6 +91,7 @@ import { useOptionLabel } from "@/lib/i18n/option-labels";
 import { PositionTag } from "@/components/PositionTag";
 import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
+import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { withGuardian } from "@/components/with-guardian";
