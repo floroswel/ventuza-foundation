@@ -20,6 +20,8 @@ import {
 import { buildInboxPreview } from "@/lib/notification-privacy";
 import { StoriesStrip } from "@/components/StoriesStrip";
 import { cn } from "@/lib/utils";
+import { OnlineIndicator } from "@/components/ui-kit/OnlineIndicator";
+import { UnreadBadge } from "@/components/ui-kit/UnreadBadge";
 import { subscribeConversationChanges } from "@/hooks/useUnreadMessages";
 
 export const Route = createFileRoute("/messages/")({
