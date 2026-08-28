@@ -1539,17 +1539,14 @@ function ProfileSheet({
                 <PositionTag value={profile.position} />
                 <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-white/85">
                   <span className="inline-flex items-center gap-1.5">
-                    <span
-                      className={cn(
-                        "size-1.5 rounded-full",
-                        online ? "bg-emerald-400 shadow-[0_0_6px_rgb(52,211,153)]" : "bg-white/40",
-                      )}
-                    />
+                    {online ? (
+                      <OnlineIndicator online size="sm" />
+                    ) : (
+                      <span className="size-1.5 rounded-full bg-white/40" />
+                    )}
                     {lastSeenText}
                   </span>
-                  <span className="inline-flex items-center gap-1">
-                    <MapPin className="size-3" /> {formatDistance(profile.distance_m)}
-                  </span>
+                  <DistanceLabel meters={profile.distance_m} />
                   {heightStr && (
                     <span className="inline-flex items-center gap-1">
                       <Ruler className="size-3" /> {heightStr}
