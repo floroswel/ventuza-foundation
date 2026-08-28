@@ -1411,7 +1411,11 @@ function ProfileSheet({
   onDecision: (p: DiscoverProfile, a: "like" | "pass" | "super") => void;
   onMessage: (p: DiscoverProfile) => void;
 }) {
-  const [urls, setUrls] = useState<Record<string, string>>({});
+  // Init sincron din cache: dacă poza a fost deja semnată pentru grilă,
+  // apare instant, fără flash de gol.
+  const [urls, setUrls] = useState<Record<string, string>>(() =>
+    peekPhotos(profile?.photos ?? []),
+  );
   const sheetLabel = useOptionLabel();
   const liked = decision === "like" || decision === "super";
 
@@ -1420,8 +1424,10 @@ function ProfileSheet({
       setUrls({});
       return;
     }
-    signPhotos(profile.photos).then(setUrls);
+    setUrls(peekPhotos(profile.photos));
+    signPhotos(profile.photos).then((next) => setUrls((prev) => ({ ...prev, ...next })));
   }, [profile]);
+
 
   const currentIndex = profile ? allProfiles.findIndex((p) => p.id === profile.id) : -1;
   const prev = currentIndex > 0 ? allProfiles[currentIndex - 1] : null;
