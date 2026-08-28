@@ -172,6 +172,13 @@ export async function getSignedUrls(
   return out;
 }
 
+/** Citire sincronă din cache (fără rețea) — folosită pentru randare instantă. */
+export function peekSignedUrl(bucket: string, path: string | null | undefined): string | null {
+  if (!path) return null;
+  if (isRemote(path)) return path;
+  return getFresh(bucket, path);
+}
+
 /** Invalidează o intrare (URL semnat expirat / imagine care nu se încarcă). */
 export function invalidateSignedUrl(bucket: string, path: string) {
   const k = keyOf(bucket, path);
@@ -179,3 +186,4 @@ export function invalidateSignedUrl(bucket: string, path: string) {
   inflight.delete(k);
   persistSoon();
 }
+
