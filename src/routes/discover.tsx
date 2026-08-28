@@ -93,6 +93,8 @@ import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { withGuardian } from "@/components/with-guardian";
+import { OnlineIndicator } from "@/components/ui-kit/OnlineIndicator";
+import { DistanceLabel } from "@/components/ui-kit/DistanceLabel";
 
 export const Route = createFileRoute("/discover")({
   head: () => ({ meta: [{ title: "Discover — Suzeta" }] }),
