@@ -1196,7 +1196,7 @@ function Cascade({
   }, [profiles]);
 
   return (
-    <div className="grid grid-cols-3 gap-1.5 px-1.5 pb-2">
+    <div className="grid grid-cols-3 gap-[3px] pb-2">
       {profiles.map((p, i) => {
         const path = p.photos?.[0];
         const url = path ? urls[path] : null;
@@ -1205,12 +1205,17 @@ function Cascade({
         const online = isOnline(p.last_seen);
         const age = ageFrom(p.birthdate);
         const unread = bySender[p.id] ?? 0;
+        const traveling =
+          !!p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date());
+        const boosted = !!p.boost_until && new Date(p.boost_until) > new Date();
+        const lookingNow =
+          !!p.looking_now_until && new Date(p.looking_now_until) > new Date();
         return (
           <button
             key={p.id}
             onClick={() => onOpen(p)}
             className={cn(
-              "group relative aspect-[3/4] overflow-hidden rounded-2xl bg-surface ring-1 ring-border/50 transition-transform duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.97]",
+              "group relative aspect-square overflow-hidden bg-surface transition-transform duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.98]",
               unread > 0 && "snake-border",
             )}
           >
@@ -1223,82 +1228,68 @@ function Cascade({
                 className="size-full object-cover"
               />
             ) : (
-
               <div className="flex size-full items-center justify-center text-2xl text-muted-foreground/40">
                 {p.display_name?.[0]?.toUpperCase() ?? "?"}
               </div>
             )}
-            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/95 via-black/45 to-transparent" />
+            {/* Gradient scurt, doar cât să susțină textul — imaginea rămâne eroul */}
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
 
-            {unread > 0 && (
-              <span className="absolute left-1.5 top-1.5 z-10 flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white shadow-[0_0_10px_rgba(244,63,94,0.75)] ring-2 ring-black/40">
-                <MessageCircle className="mr-0.5 size-2.5" />
-                {unread > 9 ? "9+" : unread}
-              </span>
-            )}
-            {p.boost_until && new Date(p.boost_until) > new Date() && (
-              <span
-                aria-label="boosted"
-                className="absolute left-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-lg backdrop-blur"
-              >
-                <Rocket className="size-2.5" /> BOOST
-              </span>
-            )}
-            {!(p.boost_until && new Date(p.boost_until) > new Date()) && (() => {
-              const hasEntry = Object.prototype.hasOwnProperty.call(badgesMap, p.id);
-              const codes = badgesMap[p.id] ?? [];
-              // Show skeleton only while the initial batch is in-flight AND
-              // this profile hasn't been resolved yet. Once resolved (even to
-              // an empty list), we render the final state to avoid flicker.
-              if (!hasEntry && badgesLoading) {
-                return (
-                  <div className="absolute left-1.5 top-1.5">
-                    <BadgeStrip codes={[]} max={3} size="xs" loading />
-                  </div>
-                );
-              }
-              if (codes.length === 0 || badgesError) return null;
-              return (
-                <div className="absolute left-1.5 top-1.5">
-                  <BadgeStrip codes={codes} max={3} size="xs" />
-                </div>
-              );
-            })()}
-            {p.looking_now_until && new Date(p.looking_now_until) > new Date() && (
-              <span className="absolute right-1.5 top-1.5 flex items-center gap-0.5 rounded-full bg-rose-500/95 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-lg backdrop-blur">
-                <Flame className="size-2.5" /> NOW
-              </span>
-            )}
-            {p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date()) && (
-              <span className="absolute right-1.5 bottom-8 flex items-center gap-0.5 rounded-full bg-black/70 px-1.5 py-0.5 text-[9px] text-white backdrop-blur">
-                <Plane className="size-2.5" /> {p.travel_city}
-              </span>
-            )}
-            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 px-1.5 pb-1 text-left">
+            {/* Colț stânga-sus: semnale rare (mesaj necitit / boost / badge-uri) */}
+            <div className="absolute left-1 top-1 z-10 flex flex-col items-start gap-1">
+              {unread > 0 ? (
+                <span className="flex h-[19px] min-w-[19px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white shadow-[0_0_10px_rgba(244,63,94,0.75)]">
+                  <MessageCircle className="mr-0.5 size-2.5" />
+                  {unread > 9 ? "9+" : unread}
+                </span>
+              ) : boosted ? (
+                <span
+                  aria-label="boosted"
+                  className="flex items-center gap-0.5 rounded-full bg-primary/90 px-1.5 py-0.5 text-[9px] font-bold text-primary-foreground shadow-lg backdrop-blur"
+                >
+                  <Rocket className="size-2.5" /> BOOST
+                </span>
+              ) : (
+                (() => {
+                  const hasEntry = Object.prototype.hasOwnProperty.call(badgesMap, p.id);
+                  const codes = badgesMap[p.id] ?? [];
+                  if (!hasEntry && badgesLoading) {
+                    return <BadgeStrip codes={[]} max={2} size="xs" loading />;
+                  }
+                  if (codes.length === 0 || badgesError) return null;
+                  return <BadgeStrip codes={codes} max={2} size="xs" />;
+                })()
+              )}
+            </div>
+
+            {/* Colț dreapta-sus: prezență (punct verde / avion pentru călător) */}
+            <div className="absolute right-1 top-1 z-10 flex items-center gap-1">
+              {lookingNow && (
+                <span className="flex items-center gap-0.5 rounded-full bg-rose-500/95 px-1.5 py-0.5 text-[9px] font-bold text-white shadow-lg backdrop-blur">
+                  <Flame className="size-2.5" /> NOW
+                </span>
+              )}
+              <OnlineIndicator online={online} traveler={traveling} size="sm" />
+            </div>
+
+            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-1 px-1.5 pb-1.5 text-left">
               <div className="min-w-0">
-                <p className="flex items-center gap-1 truncate text-[12px] font-semibold leading-tight text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                  <PresenceDot
-                    online={online}
-                    traveler={
-                      !!p.travel_city && (!p.travel_until || new Date(p.travel_until) > new Date())
-                    }
-                    className="size-2"
-                  />
-
-                  <span className="truncate">
-                    {p.display_name}
-                    {age ? <span className="font-normal text-white/75">, {age}</span> : null}
-                  </span>
+                <p className="truncate text-[12.5px] font-semibold leading-tight text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
+                  {p.display_name}
+                  {age ? <span className="font-normal text-white/75">, {age}</span> : null}
                 </p>
-                {p.distance_m != null && (
-                  <p className="truncate text-[10px] leading-tight text-white/75 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
-                    {formatDistance(p.distance_m)}
-                  </p>
-                )}
+                <div className="mt-0.5 flex items-center gap-1 text-[10px] leading-none text-white/80 drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
+                  <DistanceLabel meters={p.distance_m} iconClassName="size-2.5" />
+                  {traveling && p.travel_city ? (
+                    <span className="inline-flex min-w-0 items-center gap-0.5">
+                      <Plane className="size-2.5 shrink-0" />
+                      <span className="truncate">{p.travel_city}</span>
+                    </span>
+                  ) : null}
+                </div>
               </div>
               <PositionTag value={p.position} size="sm" />
             </div>
-
           </button>
         );
       })}
