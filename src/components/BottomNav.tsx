@@ -42,29 +42,29 @@ export function BottomNav() {
               to={to}
               preload={false}
               className={cn(
-                "group relative flex flex-1 flex-col items-center gap-0.5 px-1 py-1.5 transition-colors",
+                "group relative flex flex-1 flex-col items-center gap-1 px-1 pb-1 pt-1.5 transition-colors",
                 active ? "text-primary" : cn(NAV_ICON_INACTIVE, "hover:text-foreground/80"),
               )}
               aria-current={active ? "page" : undefined}
             >
-              <span className="relative flex h-7 items-center justify-center">
-                <span
-                  aria-hidden
-                  className={cn(
-                    "absolute inset-x-[-10px] inset-y-[-3px] rounded-full transition-all duration-200",
-                    active ? "bg-primary/12 opacity-100" : "opacity-0",
-                  )}
-                />
+              <span
+                className={cn(
+                  "relative flex h-8 min-w-[54px] items-center justify-center rounded-full transition-all duration-200",
+                  active
+                    ? "bg-primary text-primary-foreground shadow-[0_4px_14px_-4px_hsl(var(--primary)/0.7)]"
+                    : "bg-transparent",
+                )}
+              >
                 <Icon
-                  className={cn("relative", NAV_ICON_SIZE, "transition-transform duration-150", active && "scale-105")}
-                  strokeWidth={active ? 2 : NAV_ICON_STROKE}
+                  className={cn("relative", NAV_ICON_SIZE, "transition-transform duration-150")}
+                  strokeWidth={active ? 2.1 : NAV_ICON_STROKE}
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   fill={active && fillWhenActive ? "currentColor" : "none"}
                 />
 
                 {badge > 0 && (
-                  <span className="absolute -right-2 -top-0.5 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground ring-2 ring-background">
+                  <span className="absolute right-1 -top-1 flex h-[16px] min-w-[16px] items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold leading-none text-destructive-foreground ring-2 ring-background">
                     {badge > 9 ? "9+" : badge}
                   </span>
                 )}
@@ -72,7 +72,7 @@ export function BottomNav() {
               <span
                 className={cn(
                   "text-[10px] leading-none tracking-tight",
-                  active ? "font-semibold opacity-100" : "font-medium opacity-75",
+                  active ? "font-semibold text-primary opacity-100" : "font-medium opacity-75",
                 )}
               >
                 {label}
