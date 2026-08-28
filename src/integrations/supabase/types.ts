@@ -6518,6 +6518,15 @@ export type Database = {
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_verification_staff: { Args: { _uid: string }; Returns: boolean }
       list_my_block_relations: { Args: never; Returns: string[] }
+      list_my_blocked_profiles: {
+        Args: never
+        Returns: {
+          blocked_id: string
+          created_at: string
+          display_name: string
+          photos: string[]
+        }[]
+      }
       list_queue_claims: {
         Args: { _queue: string }
         Returns: {
@@ -6907,9 +6916,10 @@ export type Database = {
           voice_url: string
         }[]
       }
-      set_looking_now:
-        | { Args: { _hours: number; _intent?: string }; Returns: undefined }
-        | { Args: { _hours: number; _intent: string }; Returns: undefined }
+      set_looking_now: {
+        Args: { _hours: number; _intent: string }
+        Returns: undefined
+      }
       set_my_profile_link: { Args: { _slug: string }; Returns: string }
       shares_conversation_with: {
         Args: { _a: string; _b: string }
