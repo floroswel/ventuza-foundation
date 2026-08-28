@@ -1196,7 +1196,7 @@ function Cascade({
   }, [profiles]);
 
   return (
-    <div className="grid grid-cols-3 gap-[1px] bg-border/40">
+    <div className="grid grid-cols-3 gap-1.5 px-1.5 pb-2">
       {profiles.map((p, i) => {
         const path = p.photos?.[0];
         const url = path ? urls[path] : null;
@@ -1210,7 +1210,7 @@ function Cascade({
             key={p.id}
             onClick={() => onOpen(p)}
             className={cn(
-              "group relative aspect-square overflow-hidden bg-surface focus:outline-none",
+              "group relative aspect-[3/4] overflow-hidden rounded-2xl bg-surface ring-1 ring-border/50 transition-transform duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary active:scale-[0.97]",
               unread > 0 && "snake-border",
             )}
           >
@@ -1220,7 +1220,7 @@ function Cascade({
                 alt={p.display_name ?? ""}
                 loading={eager ? "eager" : "lazy"}
                 fetchPriority={eager ? "high" : "low"}
-                className="size-full object-cover transition-transform group-active:scale-95"
+                className="size-full object-cover"
               />
             ) : (
 
@@ -1228,7 +1228,8 @@ function Cascade({
                 {p.display_name?.[0]?.toUpperCase() ?? "?"}
               </div>
             )}
-            <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/35 to-transparent" />
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-black/95 via-black/45 to-transparent" />
+
             {unread > 0 && (
               <span className="absolute left-1.5 top-1.5 z-10 flex h-[20px] min-w-[20px] items-center justify-center rounded-full bg-rose-500 px-1.5 text-[10px] font-bold leading-none text-white shadow-[0_0_10px_rgba(244,63,94,0.75)] ring-2 ring-black/40">
                 <MessageCircle className="mr-0.5 size-2.5" />
