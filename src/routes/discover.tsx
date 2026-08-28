@@ -1183,15 +1183,22 @@ function Cascade({
   const label = useOptionLabel();
   const { bySender } = useUnreadMessages();
   useEffect(() => {
-    const paths = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
-    if (paths.length) signPhotos(paths).then(setUrls);
+    const first = profiles.map((p) => p.photos?.[0]).filter(Boolean) as string[];
+    if (!first.length) return;
+    setUrls((prev) => ({ ...prev, ...peekPhotos(first) }));
+    // 1) semnăm rapid pozele de copertă (afișare grilă)
+    signPhotos(first).then((next) => setUrls((prev) => ({ ...prev, ...next })));
+    // 2) în fundal, pre-semnăm și pre-descărcăm restul pozelor fiecărui profil
+    void prefetchProfilePhotos(profiles);
   }, [profiles]);
 
   return (
     <div className="grid grid-cols-3 gap-[1px] bg-border/40">
-      {profiles.map((p) => {
+      {profiles.map((p, i) => {
         const path = p.photos?.[0];
         const url = path ? urls[path] : null;
+        const eager = i < 12;
+
         const online = isOnline(p.last_seen);
         const age = ageFrom(p.birthdate);
         const unread = bySender[p.id] ?? 0;
