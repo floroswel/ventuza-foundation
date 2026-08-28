@@ -734,3 +734,14 @@ html.hide-scrollbars body::-webkit-scrollbar {
   height: 0;
   display: none;
 }
+
+/* Scrollbar ascuns pentru containere interne (ex. cardul de profil). */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    display: none;
+  }
+}

@@ -118,6 +118,14 @@ type Props = {
   topRight?: ReactNode;
   /** Extra content rendered below the image inside the fullscreen viewer (vertically scrollable). */
   fullscreenExtra?: ReactNode;
+  /**
+   * Clasa care dictează dimensiunea cadrului. Implicit `aspect-square`.
+   * Pentru cardul de profil (Tinder/Badoo) se trimite o înălțime calculată
+   * din `100dvh` ca butoanele să rămână vizibile fără derulare.
+   */
+  frameClassName?: string;
+  /** Indicatori de progres subțiri (stories) în locul dots-urilor. */
+  indicator?: "dots" | "bars";
 };
 
 const SWIPE_THRESHOLD = 60;
@@ -135,6 +143,8 @@ export function ProfilePhotoGallery({
   overlay,
   topRight,
   fullscreenExtra,
+  frameClassName = "aspect-square",
+  indicator = "dots",
 }: Props) {
   const [idx, setIdx] = useState(0);
   const [fs, setFs] = useState(false);
@@ -147,16 +157,20 @@ export function ProfilePhotoGallery({
     return (
       <div
         className={cn(
-          "relative flex aspect-square w-full items-center justify-center bg-background text-5xl text-muted-foreground/40",
+          "relative flex w-full items-center justify-center bg-surface-elevated",
+          frameClassName,
           className,
         )}
       >
-        {alt?.[0]?.toUpperCase() ?? "?"}
+        <span className="font-display text-6xl font-semibold text-muted-foreground/40">
+          {alt?.[0]?.toUpperCase() ?? "?"}
+        </span>
         {topRight && <div className="absolute right-3 top-3 z-10">{topRight}</div>}
         {overlay && <div className="absolute inset-x-0 bottom-0 z-10">{overlay}</div>}
       </div>
     );
   }
+
 
   const go = (dir: -1 | 1) => setIdx((i) => (i + dir + photos.length) % photos.length);
 
@@ -187,7 +201,8 @@ export function ProfilePhotoGallery({
     <>
       <div
         className={cn(
-          "relative aspect-square w-full overflow-hidden bg-background select-none",
+          "relative w-full overflow-hidden bg-background select-none",
+          frameClassName,
           className,
         )}
         role="region"
@@ -220,7 +235,7 @@ export function ProfilePhotoGallery({
         </AnimatePresence>
 
         {/* Contor 1/5 — util când sunt multe poze și dots-urile devin mici */}
-        {total > 1 && (
+        {total > 1 && indicator !== "bars" && (
           <span className="pointer-events-none absolute left-3 top-3 z-20 rounded-full bg-black/55 px-2 py-0.5 text-[11px] font-semibold tabular-nums text-white backdrop-blur">
             {idx + 1}/{total}
           </span>
@@ -235,7 +250,7 @@ export function ProfilePhotoGallery({
                 e.stopPropagation();
                 go(-1);
               }}
-              className="absolute left-0 top-0 h-full w-1/4"
+              className={cn("absolute left-0 top-0 h-full", indicator === "bars" ? "w-1/3" : "w-1/4")}
             />
             <button
               aria-label="Poza următoare"
@@ -243,10 +258,14 @@ export function ProfilePhotoGallery({
                 e.stopPropagation();
                 go(1);
               }}
-              className="absolute right-0 top-0 h-full w-1/4"
+              className={cn(
+                "absolute right-0 top-0 h-full",
+                indicator === "bars" ? "w-1/3" : "w-1/4",
+              )}
             />
           </>
         )}
+
 
         {/* Indicator rail — keyboard-navigable tablist cu roving tabindex */}
         {total > 1 && (
@@ -255,7 +274,12 @@ export function ProfilePhotoGallery({
             aria-label="Selectează poza"
             aria-orientation="horizontal"
             onKeyDown={onRailKey}
-            className="absolute left-1/2 top-2 z-20 flex -translate-x-1/2 gap-1"
+            className={cn(
+              "absolute z-20 flex gap-1",
+              indicator === "bars"
+                ? "inset-x-3 top-[calc(0.5rem+var(--safe-top))]"
+                : "left-1/2 top-2 -translate-x-1/2",
+            )}
           >
             {photos.map((_, i) => {
               const active = i === idx;
@@ -274,14 +298,17 @@ export function ProfilePhotoGallery({
                     setIdx(i);
                   }}
                   className={cn(
-                    "h-2 rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
-                    active ? "w-6 bg-white" : "w-3 bg-white/40 hover:bg-white/70",
+                    "rounded-full transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white",
+                    indicator === "bars"
+                      ? cn("h-1 flex-1", active ? "bg-white" : "bg-white/30")
+                      : cn("h-2", active ? "w-6 bg-white" : "w-3 bg-white/40 hover:bg-white/70"),
                   )}
                 />
               );
             })}
           </div>
         )}
+
 
         {/* Live region: anunță schimbarea pozei pentru screen readers */}
         <p role="status" aria-live="polite" aria-atomic="true" className="sr-only">
