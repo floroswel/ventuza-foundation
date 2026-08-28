@@ -13,6 +13,7 @@ import { lazy, useEffect, useState, type ReactNode } from "react";
 import { DeferredOverlay } from "@/components/DeferredOverlay";
 
 // Overlay-uri condiționale: nu apar în primul cadru, deci nu intră în bundle-ul de pornire.
+const OfflineBanner = lazy(() => import("@/components/OfflineBanner").then((m) => ({ default: m.OfflineBanner })));
 const CookieBanner = lazy(() => import("@/components/CookieBanner").then((m) => ({ default: m.CookieBanner })));
 const TravelWarning = lazy(() => import("@/components/TravelWarning").then((m) => ({ default: m.TravelWarning })));
 const UpdateAvailableBanner = lazy(() => import("@/components/UpdateAvailableBanner").then((m) => ({ default: m.UpdateAvailableBanner })));
@@ -52,7 +53,6 @@ import "@/lib/i18n";
 
 import { VersionGate } from "@/components/VersionGate";
 import { LanguageToggle } from "@/components/LanguageToggle";
-import { OfflineBanner } from "@/components/OfflineBanner";
 import { NativePushNavigatorMount } from "@/components/NativePushNavigatorMount";
 
 function NotFoundComponent() {
@@ -499,7 +499,9 @@ function RootComponent() {
               </PageTransition>
             </GuardianBoundary>
 
-            <OfflineBanner />
+            <DeferredOverlay>
+              <OfflineBanner />
+            </DeferredOverlay>
             <LocationPermissionPromptMount />
             <AppSplash />
             <AgeGate />
