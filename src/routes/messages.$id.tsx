@@ -836,64 +836,66 @@ function ThreadPage() {
   return (
 
     <div className="chat-shell mx-auto flex w-full min-h-0 min-w-0 max-w-md flex-col bg-background">
-      <header className="z-20 flex shrink-0 items-center gap-3 border-b border-border/60 bg-background/85 px-3 py-3 backdrop-blur">
+      <header className="z-20 flex shrink-0 items-center gap-2 border-b border-border/60 bg-background/90 px-2 py-2 backdrop-blur">
         <Link
           to="/messages"
-          className="rounded-full p-2 text-muted-foreground hover:text-foreground"
+          className="-ml-0.5 rounded-full p-2 text-foreground/80 active:bg-muted/60 hover:text-foreground"
+          aria-label="Înapoi la Inbox"
         >
-          <ChevronLeft className="size-5" />
+          <ChevronLeft className="size-6" />
         </Link>
         {other ? (
           <Link
             to="/u/$slug"
             params={{ slug: other.profile_slug || other.id }}
-            className="flex min-w-0 flex-1 items-center gap-3 rounded-full pr-2 hover:bg-muted/40"
+            className="flex min-w-0 flex-1 items-center gap-2.5 rounded-2xl px-1 py-1 active:bg-muted/50"
             aria-label={`Deschide profilul ${other?.name ?? ""}`}
           >
-            <div className="size-9 shrink-0 overflow-hidden rounded-full bg-muted">
-              {other?.photo ? (
-                <img src={other.photo} alt="" className="size-full object-cover" />
+            <div className="relative shrink-0">
+              <div className="size-10 overflow-hidden rounded-2xl bg-muted ring-1 ring-border/60">
+                {other?.photo ? (
+                  <img src={other.photo} alt="" className="size-full object-cover" />
+                ) : null}
+              </div>
+              {connected && !otherTyping ? (
+                <OnlineIndicator
+                  online
+                  size="sm"
+                  ring
+                  className="absolute -bottom-0.5 -right-0.5"
+                />
               ) : null}
             </div>
             <div className="min-w-0 flex-1">
-              <p className="flex items-center gap-1 truncate text-sm font-semibold">
+              <p className="flex items-center gap-1 truncate text-[15px] font-semibold leading-tight">
                 {other?.name ?? "…"}
-                {other?.verified && (
-                  <span title="Acest cont este verificat" className="inline-flex">
-                    <BadgeCheck
-                      className="size-3.5 shrink-0 text-primary"
-                      aria-label="Acest cont este verificat"
-                    />
-                  </span>
-                )}
-
-
+                {other?.verified && <VerifiedBadge size="sm" />}
               </p>
-              <p className="truncate text-[10px] text-muted-foreground">
+              <p className="truncate text-[11px] leading-tight text-muted-foreground">
                 {otherTyping ? (
-                  <span className="text-primary">typing…</span>
+                  <span className="text-primary">scrie…</span>
                 ) : connected ? (
                   "online"
                 ) : (
-                  "reconnecting…"
+                  "se reconectează…"
                 )}
               </p>
             </div>
           </Link>
         ) : (
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="size-9 shrink-0 overflow-hidden rounded-full bg-muted">
+          <div className="flex min-w-0 flex-1 items-center gap-2.5">
+            <div className="size-10 shrink-0 overflow-hidden rounded-2xl bg-muted">
               <div className="size-full animate-pulse bg-muted-foreground/10" />
             </div>
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold">…</p>
-              <p className="truncate text-[10px] text-muted-foreground">
+              <p className="truncate text-[15px] font-semibold leading-tight">…</p>
+              <p className="truncate text-[11px] leading-tight text-muted-foreground">
                 {otherTyping ? (
-                  <span className="text-primary">typing…</span>
+                  <span className="text-primary">scrie…</span>
                 ) : connected ? (
                   "online"
                 ) : (
-                  "reconnecting…"
+                  "se reconectează…"
                 )}
               </p>
             </div>
