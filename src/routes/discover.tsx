@@ -1198,7 +1198,7 @@ function Cascade({
   }, [profiles]);
 
   return (
-    <div className="grid grid-cols-3 gap-[3px] pb-2">
+    <div className="grid grid-cols-3 gap-px pb-2">
       {profiles.map((p, i) => {
         const path = p.photos?.[0];
         const url = path ? urls[path] : null;

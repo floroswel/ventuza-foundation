@@ -223,55 +223,51 @@ function MessagesPage() {
             body="Deschide un profil în Discover și apasă Mesaj ca să începi."
           />
         ) : (
-          <ul className="space-y-0.5 px-1">
+          <ul className="space-y-2 px-1">
             {visible.map((c) => (
               <li key={c.id}>
                 <Link
                   to="/messages/$id"
                   params={{ id: c.id }}
                   className={cn(
-                    "relative flex items-center gap-3 rounded-2xl py-2.5 pl-3 pr-3 transition-colors active:bg-muted/50 hover:bg-muted/30",
-                    c.unread && "bg-primary/[0.06]",
+                    "flex items-stretch overflow-hidden rounded-2xl border border-border/60 bg-surface/70 transition-colors active:bg-muted/50 hover:bg-muted/30",
+                    c.unread && "border-primary/40 bg-primary/[0.07]",
                   )}
                 >
-                  {c.unread ? (
-                    <span
-                      aria-hidden
-                      className="absolute left-0 top-1/2 h-8 w-[3px] -translate-y-1/2 rounded-r-full bg-primary"
-                    />
-                  ) : null}
-                  {/* Avatar pătrat rotunjit — layout de aplicație, nu de site */}
-                  <div className="relative shrink-0">
-                    <div className="size-[52px] overflow-hidden rounded-2xl bg-surface ring-1 ring-border/60">
-                      {c.other_photo ? (
-                        <img
-                          src={c.other_photo}
-                          alt={c.other_name ?? ""}
-                          className="size-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex size-full items-center justify-center text-sm text-muted-foreground">
-                          {(c.other_name ?? "?").slice(0, 1)}
-                        </div>
-                      )}
-                    </div>
-                    {c.other_online && (
-                      <OnlineIndicator
-                        online
-                        size="md"
-                        ring
-                        className="absolute -bottom-0.5 -right-0.5"
+                  {/* Avatar pătrat lipit de marginea stângă, ca într-o listă nativă */}
+                  <div className="relative w-[92px] shrink-0 bg-surface">
+                    {c.other_photo ? (
+                      <img
+                        src={c.other_photo}
+                        alt={c.other_name ?? ""}
+                        loading="lazy"
+                        className="size-full object-cover"
                       />
+                    ) : (
+                      <div className="flex size-full items-center justify-center text-lg text-muted-foreground">
+                        {(c.other_name ?? "?").slice(0, 1)}
+                      </div>
                     )}
                   </div>
+                  {/* Bară verticală de accent — verde pentru online, primar pentru necitit */}
+                  <span
+                    aria-hidden
+                    className={cn(
+                      "w-[3px] shrink-0",
+                      c.other_online
+                        ? "bg-emerald-400"
+                        : c.unread
+                          ? "bg-primary"
+                          : "bg-transparent",
+                    )}
+                  />
 
-                  {/* Corp — nume+oră pe rândul 1, preview+badge pe rândul 2 */}
-                  <div className="min-w-0 flex-1">
+                  <div className="min-w-0 flex-1 px-3 py-3">
                     <div className="flex items-baseline gap-2">
                       <p
                         className={cn(
-                          "min-w-0 flex-1 truncate text-[15px] leading-tight text-foreground",
-                          c.unread ? "font-semibold" : "font-medium",
+                          "min-w-0 flex-1 truncate text-[16px] leading-tight text-foreground",
+                          c.unread ? "font-bold" : "font-semibold",
                         )}
                       >
                         {c.other_name ?? "Utilizator Suzeta"}
@@ -282,12 +278,10 @@ function MessagesPage() {
                           c.unread ? "text-primary" : "text-muted-foreground",
                         )}
                       >
-                          {formatWhen(c.last_message_at)}
+                        {formatWhen(c.last_message_at)}
                       </span>
                     </div>
-                    <div className="mt-0.5 flex items-center gap-2">
-                      {/* Indicator media: derivat din previzualizarea existentă,
-                          fără date noi de la server. */}
+                    <div className="mt-1.5 flex items-center gap-2">
                       {/(📷|🎤|poz[ăa]|foto|imagine|vocal)/i.test(
                         c.last_message_preview ?? "",
                       ) && (
@@ -298,8 +292,8 @@ function MessagesPage() {
                       )}
                       <p
                         className={cn(
-                          "min-w-0 flex-1 truncate text-sm",
-                          c.unread ? "text-foreground/90" : "text-muted-foreground",
+                          "min-w-0 flex-1 truncate text-[15px]",
+                          c.unread ? "font-semibold text-foreground" : "text-muted-foreground",
                         )}
                       >
                         {buildInboxPreview(showPreview, c.last_message_preview, !!c.last_message_at)}

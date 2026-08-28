@@ -1,7 +1,8 @@
 import { setActiveConversation } from "@/lib/active-conversation";
 import { withGuardian } from "@/components/with-guardian";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { DaySeparator, dayKey } from "@/components/ui-kit/DaySeparator";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   enqueueMessage,
@@ -820,6 +821,19 @@ function ThreadPage() {
       }))
     : [];
   const renderedMessages: UiMessage[] = [...messages, ...outboxAsMessages];
+  // Marcăm primul mesaj al fiecărei zile — separatorul se randează inline,
+  // ca să funcționeze identic și în modul virtualizat.
+  const dayStartIds = new Set<string>();
+  {
+    let prevDay = "";
+    for (const m of renderedMessages) {
+      const k = dayKey(m.created_at);
+      if (k && k !== prevDay) {
+        dayStartIds.add(m.id);
+        prevDay = k;
+      }
+    }
+  }
 
   if (convMissing) {
     return (
@@ -987,8 +1001,9 @@ function ThreadPage() {
             Date.now() - new Date(m.created_at).getTime() < 5 * 60_000;
           const isDeleted = !!m.deleted_at;
           return (
+            <Fragment key={m.id}>
+            {dayStartIds.has(m.id) ? <DaySeparator iso={m.created_at} /> : null}
             <li
-              key={m.id}
               className={cn("flex flex-col gap-1", mine ? "items-end" : "items-start")}
             >
               <SwipeToReply
@@ -1268,6 +1283,7 @@ function ThreadPage() {
                   </button>
                 ))}
             </li>
+            </Fragment>
           );
         }}
       />
