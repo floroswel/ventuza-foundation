@@ -93,11 +93,8 @@ function VisitorsPage() {
         }
 
         // Vizitatorii blocați (ambele direcții) sau în incognito nu mai apar.
-        const { data: profs, error: pErr } = await (supabase.rpc as any)(
-          "list_visible_profiles",
-          { _ids: ids },
-        );
-        if (pErr) throw pErr;
+        const profs = await fetchProfilesChunked("list_visible_profiles", ids);
+
         type Prow = {
           id: string;
           display_name: string | null;

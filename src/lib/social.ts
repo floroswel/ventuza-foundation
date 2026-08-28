@@ -88,7 +88,8 @@ export async function listFavorites(): Promise<FavoriteRow[]> {
   if (!ids.length) return [];
   // `list_visible_profiles` exclude blocurile (ambele direcții) și profilurile
   // în incognito → favoritul dispare din listă, nu rămâne ca „Anonim".
-  const { data: profs } = await (supabase.rpc as any)("list_visible_profiles", { _ids: ids });
+  const profs = await fetchProfilesChunked("list_visible_profiles", ids);
+
   const map = new Map<
     string,
     { display_name: string | null; photos: string[] | null; last_seen: string | null }
