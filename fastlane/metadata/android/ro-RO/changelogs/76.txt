@@ -1,5 +1,8 @@
 Suzeta 1.0.66
 
-- Îmbunătățiri și corectări de bug-uri.
-
-Completează înainte de upload pe Play Console.
+Actualizare de securitate și stabilitate:
+- Intărită confidențialitatea profilului: data exactă de naștere și locația precisă nu mai sunt expuse între utilizatori.
+- Remediată escaladarea privilegiilor prin ștergere + recreare profil (evaziune ban).
+- Adăugat limită de rate pe căutările de profil pentru a preveni abuzul.
+- Mesajele de locație expiră coordonatele exacte după 60 de minute pentru destinatari.
+- Diverse corecturi de bug-uri și îmbunătățiri de performanță.
