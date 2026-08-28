@@ -101,6 +101,7 @@ import { Route as ApiPublicGooglePlayRtdnRouteImport } from './routes/api/public
 import { Route as ApiPublicSignupGuardRouteImport } from './routes/api/public/signup-guard'
 import { Route as AdminUsersIdNotificationsRouteImport } from './routes/admin.users.$id.notifications'
 import { Route as ApiPublicCronDiditReconcileRouteImport } from './routes/api/public/cron/didit-reconcile'
+import { Route as ApiPublicCronPushDispatchRouteImport } from './routes/api/public/cron/push-dispatch'
 import { Route as ApiPublicHooksBillingTickRouteImport } from './routes/api/public/hooks/billing-tick'
 import { Route as LovableEmailAuthPreviewRouteImport } from './routes/lovable/email/auth/preview'
 import { Route as LovableEmailAuthWebhookRouteImport } from './routes/lovable/email/auth/webhook'
@@ -572,6 +573,12 @@ const ApiPublicCronDiditReconcileRoute =
     path: '/api/public/cron/didit-reconcile',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCronPushDispatchRoute =
+  ApiPublicCronPushDispatchRouteImport.update({
+    id: '/api/public/cron/push-dispatch',
+    path: '/api/public/cron/push-dispatch',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksBillingTickRoute =
   ApiPublicHooksBillingTickRouteImport.update({
     id: '/api/public/hooks/billing-tick',
@@ -688,6 +695,7 @@ export interface FileRoutesByFullPath {
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/admin/users/$id/notifications': typeof AdminUsersIdNotificationsRoute
   '/api/public/cron/didit-reconcile': typeof ApiPublicCronDiditReconcileRoute
+  '/api/public/cron/push-dispatch': typeof ApiPublicCronPushDispatchRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -785,6 +793,7 @@ export interface FileRoutesByTo {
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/admin/users/$id/notifications': typeof AdminUsersIdNotificationsRoute
   '/api/public/cron/didit-reconcile': typeof ApiPublicCronDiditReconcileRoute
+  '/api/public/cron/push-dispatch': typeof ApiPublicCronPushDispatchRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -884,6 +893,7 @@ export interface FileRoutesById {
   '/api/public/signup-guard': typeof ApiPublicSignupGuardRoute
   '/admin/users/$id/notifications': typeof AdminUsersIdNotificationsRoute
   '/api/public/cron/didit-reconcile': typeof ApiPublicCronDiditReconcileRoute
+  '/api/public/cron/push-dispatch': typeof ApiPublicCronPushDispatchRoute
   '/api/public/hooks/billing-tick': typeof ApiPublicHooksBillingTickRoute
   '/lovable/email/auth/preview': typeof LovableEmailAuthPreviewRoute
   '/lovable/email/auth/webhook': typeof LovableEmailAuthWebhookRoute
@@ -984,6 +994,7 @@ export interface FileRouteTypes {
     | '/api/public/signup-guard'
     | '/admin/users/$id/notifications'
     | '/api/public/cron/didit-reconcile'
+    | '/api/public/cron/push-dispatch'
     | '/api/public/hooks/billing-tick'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1081,6 +1092,7 @@ export interface FileRouteTypes {
     | '/api/public/signup-guard'
     | '/admin/users/$id/notifications'
     | '/api/public/cron/didit-reconcile'
+    | '/api/public/cron/push-dispatch'
     | '/api/public/hooks/billing-tick'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1179,6 +1191,7 @@ export interface FileRouteTypes {
     | '/api/public/signup-guard'
     | '/admin/users/$id/notifications'
     | '/api/public/cron/didit-reconcile'
+    | '/api/public/cron/push-dispatch'
     | '/api/public/hooks/billing-tick'
     | '/lovable/email/auth/preview'
     | '/lovable/email/auth/webhook'
@@ -1265,6 +1278,7 @@ export interface RootRouteChildren {
   ApiPublicGooglePlayRtdnRoute: typeof ApiPublicGooglePlayRtdnRoute
   ApiPublicSignupGuardRoute: typeof ApiPublicSignupGuardRoute
   ApiPublicCronDiditReconcileRoute: typeof ApiPublicCronDiditReconcileRoute
+  ApiPublicCronPushDispatchRoute: typeof ApiPublicCronPushDispatchRoute
   ApiPublicHooksBillingTickRoute: typeof ApiPublicHooksBillingTickRoute
   LovableEmailAuthPreviewRoute: typeof LovableEmailAuthPreviewRoute
   LovableEmailAuthWebhookRoute: typeof LovableEmailAuthWebhookRoute
@@ -1917,6 +1931,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronDiditReconcileRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/push-dispatch': {
+      id: '/api/public/cron/push-dispatch'
+      path: '/api/public/cron/push-dispatch'
+      fullPath: '/api/public/cron/push-dispatch'
+      preLoaderRoute: typeof ApiPublicCronPushDispatchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/billing-tick': {
       id: '/api/public/hooks/billing-tick'
       path: '/api/public/hooks/billing-tick'
@@ -2139,6 +2160,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicGooglePlayRtdnRoute: ApiPublicGooglePlayRtdnRoute,
   ApiPublicSignupGuardRoute: ApiPublicSignupGuardRoute,
   ApiPublicCronDiditReconcileRoute: ApiPublicCronDiditReconcileRoute,
+  ApiPublicCronPushDispatchRoute: ApiPublicCronPushDispatchRoute,
   ApiPublicHooksBillingTickRoute: ApiPublicHooksBillingTickRoute,
   LovableEmailAuthPreviewRoute: LovableEmailAuthPreviewRoute,
   LovableEmailAuthWebhookRoute: LovableEmailAuthWebhookRoute,

@@ -49,8 +49,13 @@ describe("FCM payload privacy — show_preview=false → generic", () => {
     expect(src).toMatch(/export\s+function\s+isFcmConfigured/);
   });
 
-  it("push.functions.ts nu trimite body brut de mesaj către FCM", () => {
-    const src = read("lib/push.functions.ts");
+  it("nucleul de dispatch nu trimite body brut de mesaj către FCM", () => {
+    // Livrarea a fost extrasă din `push.functions.ts` în
+    // `push-dispatch.server.ts`, ca să poată fi apelată ȘI de ruta internă pe
+    // care o cheamă baza de date (push server-side, independent de telefonul
+    // expeditorului). Garanția de confidențialitate se verifică acolo unde
+    // trăiește acum — implementarea e unică, deci nu poate fi ocolită.
+    const src = read("lib/push-dispatch.server.ts");
     // singurul body: variabila `body` decisă server-side (discrete_mode / preview)
     // sub nicio formă `msg.body`, `NEW.body`, `payload.body` etc.
     // singurul `.body` acceptat este cel al payload-ului sanitizat central

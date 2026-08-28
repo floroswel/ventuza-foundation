@@ -62,12 +62,24 @@ describe("buildInboxPreview — listă conversații", () => {
 
 
 describe("Invariante de sursă — nicio suprafață nu scurge conținut", () => {
-  it("chat.ts folosește buildMessageNotificationBody, nu string literal", () => {
+  it("corpul push-ului de mesaj se construiește pe server, prin buildMessageNotificationBody", () => {
+    // Garanția s-a mutat din client în server: `chat.ts` nu trimite nimic,
+    // trigger-ul din baza de date compune corpul. Mai strict decât
+    // înainte — textul mesajului nu mai părăsește deloc telefonul pentru push.
+    // Corpul notificării de mesaj se scrie acum în SQL, în trigger, ca o
+    // constantă generică — `buildMessageNotificationBody` întorcea oricum
+    // mereu aceeași valoare, deci garanția e identică, doar mutată acolo unde
+    // se ia decizia.
+    const push = read("lib/push-dispatch.server.ts");
+    expect(push).not.toMatch(/body:\s*preview\b/);
+    expect(push).not.toMatch(/body:\s*payload\.body/);
+
     const src = read("lib/chat.ts");
-    expect(src).toContain("buildMessageNotificationBody");
-    // Nu ar trebui să apară strings hardcodate cu conținut de mesaj în payload push
     expect(src).not.toMatch(/body:\s*preview\b/);
     expect(src).not.toMatch(/body:\s*payload\.body/);
+    // Clientul nu mai atinge deloc stratul de push: notificarea de mesaj este
+    // programată de baza de date, în aceeași tranzacție cu mesajul.
+    expect(src).not.toMatch(/sendPushToUser|sendMessagePush/);
   });
 
   it("notifications-context trece toast body prin buildToastBody, nu n.body direct", () => {

@@ -1,7 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { sanitizeNotificationPayload } from "./notification-privacy";
 
 
 const SubInput = z.object({
@@ -168,29 +167,6 @@ const SendInput = z.object({
   category: z.enum(["matches", "messages", "likes", "taps", "events", "marketing"]).optional(),
 });
 
-type Prefs = {
-  matches?: boolean;
-  messages?: boolean;
-  likes?: boolean;
-  taps?: boolean;
-  events?: boolean;
-  marketing?: boolean;
-  master_push?: boolean;
-  quiet_enabled?: boolean;
-  quiet_start?: number;
-  quiet_end?: number;
-};
-
-function inQuietWindow(prefs: Prefs, tzOffsetMinutes: number): boolean {
-  if (!prefs?.quiet_enabled) return false;
-  const start = Number(prefs.quiet_start ?? 23);
-  const end = Number(prefs.quiet_end ?? 7);
-  if (!Number.isFinite(start) || !Number.isFinite(end) || start === end) return false;
-  const nowLocal = new Date(Date.now() + (tzOffsetMinutes ?? 0) * 60_000);
-  const h = nowLocal.getUTCHours();
-  // Window wraps midnight (e.g. 23 → 7) vs. same-day (e.g. 13 → 14).
-  return start < end ? h >= start && h < end : h >= start || h < end;
-}
 
 /** Send a push to another user (used internally on message/tap/woof/match). */
 export const sendPushToUser = createServerFn({ method: "POST" })
@@ -199,120 +175,9 @@ export const sendPushToUser = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     // Don't ping yourself.
     if (data.toUserId === context.userId) return { delivered: 0, skipped: "self" as const };
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { sendOne } = await import("./web-push.server");
-    const { sendFcmOne, isFcmConfigured } = await import("./fcm-push.server");
-
-    // Respect recipient preferences (master toggle, per-category, quiet hours,
-    // discrete mode, show_preview). FAIL-CLOSED: dacă nu putem citi
-    // preferințele destinatarului, NU trimitem preview — nici măcar generic
-    // dacă profilul lipsește complet.
-    const { data: profile, error: profileErr } = await supabaseAdmin
-      .from("profiles")
-      .select("notification_prefs, tz_offset_minutes, discrete_mode")
-      .eq("id", data.toUserId)
-      .maybeSingle();
-
-    if (profileErr || !profile) {
-      // Preferințele destinatarului sunt necunoscute → nu riscăm scurgere de
-      // preview. Renunțăm complet la dispatch.
-      return { delivered: 0, skipped: "prefs_unknown" as const };
-    }
-
-    const prefs = (profile.notification_prefs ?? {}) as Prefs & { show_preview?: boolean };
-    if (prefs.master_push === false) return { delivered: 0, skipped: "master_off" as const };
-    if (data.category && prefs[data.category] === false) {
-      return { delivered: 0, skipped: "category_off" as const };
-    }
-    if (inQuietWindow(prefs, profile.tz_offset_minutes ?? 0)) {
-      return { delivered: 0, skipped: "quiet_hours" as const };
-    }
-
-    // Preview permis DOAR dacă destinatarul are explicit `show_preview=true`
-    // ȘI NU este în mod discret. Orice altă valoare (undefined, false, mod
-    // discret) → generic. Fail-closed pe preview.
-    const showPreview = prefs.show_preview === true && profile.discrete_mode !== true;
-    const rawTitle = showPreview ? data.title : "Suzeta";
-    const rawBody = showPreview ? data.body : "Ai o notificare nouă";
-
-    const { data: subs } = await supabaseAdmin
-      .from("push_subscriptions")
-      .select("id,endpoint,p256dh,auth,kind")
-      .eq("user_id", data.toUserId);
-
-    if (!subs?.length) return { delivered: 0 };
-
-    const kindForLog = (data.category ?? "generic") as string;
-
-    // Filtru central: mascăm/eliminăm orice câmp sensibil ÎNAINTE să iasă
-    // payload-ul din server (indiferent de canal — web push sau FCM).
-    const safePayload = sanitizeNotificationPayload({
-      title: rawTitle,
-      body: rawBody,
-      // URL-ul rămâne mereu: e o rută internă (ex. /messages/<uuid>), fără
-      // conținut personal, și fără el tap-ul pe notificare nu duce la ecranul
-      // corect când aplicația e închisă.
-      url: data.url,
-      tag: data.tag,
-      type: data.category,
-      category: data.category,
-    });
-
-    let delivered = 0;
-    const expired: string[] = [];
-    const fcmConfigured = isFcmConfigured();
-    for (const s of subs) {
-      if (!s.endpoint) continue;
-      const payload = {
-        title: safePayload.title,
-        body: safePayload.body,
-        url: safePayload.url,
-        tag: safePayload.tag,
-        type: safePayload.type,
-      };
-
-      if (s.kind === "fcm") {
-        if (!fcmConfigured) continue;
-        const r = await sendFcmOne({ id: s.id, endpoint: s.endpoint }, payload);
-        if (r.ok) {
-          delivered++;
-          try {
-            await supabaseAdmin.rpc("log_notification_dispatch", {
-              _actor: context.userId,
-              _target: data.toUserId,
-              _kind: kindForLog,
-              _channel: "fcm",
-            });
-          } catch {
-            /* logging must never block dispatch */
-          }
-        } else if (r.gone) expired.push(s.id);
-      } else if (s.kind === "webpush") {
-        const r = await sendOne(
-          { id: s.id, endpoint: s.endpoint, p256dh: s.p256dh, auth: s.auth },
-          payload,
-        );
-        if (r.ok) {
-          delivered++;
-          try {
-            await supabaseAdmin.rpc("log_notification_dispatch", {
-              _actor: context.userId,
-              _target: data.toUserId,
-              _kind: kindForLog,
-              _channel: "webpush",
-            });
-          } catch {
-            /* noop */
-          }
-        } else if (r.gone) expired.push(s.id);
-      }
-    }
-    if (expired.length) {
-      await supabaseAdmin.from("push_subscriptions").delete().in("id", expired);
-    }
-    return { delivered };
+    const { dispatchPush } = await import("./push-dispatch.server");
+    return dispatchPush({ ...data, actorId: context.userId });
   });
-
 
 // ────────────────────────────────────────────────────────────────────────────
 // Test de livrare — trimis EXPLICIT de utilizator către propriul device.

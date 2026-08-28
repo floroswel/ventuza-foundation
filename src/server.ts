@@ -77,6 +77,17 @@ function isApiPath(pathname: string): boolean {
   return pathname.startsWith("/_serverFn") || pathname.startsWith("/api/");
 }
 
+/**
+ * Cât timp ține browserul rezultatul unui preflight. FĂRĂ acest header,
+ * specificația Fetch impune 5 secunde, iar cache-ul de preflight este cheiat
+ * pe URL, nu pe origine. Fiecare server function are URL propriu
+ * (`/_serverFn/<id>`), deci în aplicație practic FIECARE apel plătea un
+ * OPTIONS complet înainte de POST: dublu RTT pe date mobile, pe orice ecran.
+ *
+ * 7200s = plafonul Chromium (valorile mai mari sunt reduse tăcut la 2h).
+ */
+const CORS_MAX_AGE = "7200";
+
 function applyNativeCors(response: Response, request: Request, url: URL): Response {
   const origin = request.headers.get("origin");
   if (!origin || !NATIVE_ORIGINS.has(origin) || !isApiPath(url.pathname)) return response;
@@ -85,6 +96,7 @@ function applyNativeCors(response: Response, request: Request, url: URL): Respon
   headers.set("Access-Control-Allow-Credentials", "true");
   headers.set("Access-Control-Allow-Headers", "authorization, content-type, x-requested-with");
   headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  headers.set("Access-Control-Max-Age", CORS_MAX_AGE);
   headers.set("Vary", "Origin");
   return new Response(response.body, {
     status: response.status,

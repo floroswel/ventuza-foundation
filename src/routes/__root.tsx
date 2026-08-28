@@ -154,11 +154,40 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   );
 }
 
+/**
+ * Platformă nativă (Capacitor). Verificare sincronă, fără import dinamic:
+ * loader-ul rădăcină rulează înaintea primei randări, iar un `await import`
+ * aici ar reintroduce exact întârzierea pe care o eliminăm.
+ */
+function isNativeApp(): boolean {
+  if (typeof window === "undefined") return false;
+  const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+    .Capacitor;
+  return cap?.isNativePlatform?.() === true;
+}
+
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   // Limba inițială vine din `Accept-Language` (SSR), deci `<html lang>` și
   // prima randare sunt deja corecte. Alegerea manuală din localStorage are
   // prioritate și e aplicată de i18next imediat după hidratare.
+  //
+  // PE NATIV SE SARE COMPLET. `getPreferredLanguage` este un server function:
+  // în aplicația împachetată, apelul e rescris cross-origin către suzeta.app
+  // (vezi native-api-origin.ts), iar loader-ul rădăcină BLOCHEAZĂ prima
+  // randare până se întoarce. Rezultatul: un drum complet prin rețea înaintea
+  // primului pixel, la fiecare pornire — pe date mobile, sute de milisecunde
+  // de ecran gol.
+  //
+  // Și e un drum inutil: header-ul `Accept-Language` citit acolo aparține
+  // WebView-ului local, nu telefonului, deci răspunsul nu spune nimic despre
+  // utilizator. Limba reală o stabilește `syncNativeDeviceLanguage()` din
+  // bootstrap-ul nativ, local și instantaneu.
+  //
+  // Verificat: `dist/client/index.html` produs de `build:mobile` NU conține
+  // starea router-ului dehidratată, deci loader-ul chiar rulează pe client la
+  // fiecare pornire — nu era servit din prerender.
   loader: async () => {
+    if (isNativeApp()) return { language: "ro" as const };
     try {
       const { getPreferredLanguage } = await import("@/lib/i18n/language.functions");
       return await getPreferredLanguage();
@@ -291,6 +320,14 @@ function RootComponent() {
   const router = useRouter();
   const serverLanguage = (Route.useLoaderData() as { language?: string } | undefined)?.language;
 
+  // Splash-ul nativ pleacă abia când shell-ul e montat ȘI cadrul a fost
+  // pictat (`hideSplash` așteaptă două rAF-uri). Înlocuiește cronometrul fix
+  // de 900ms din capacitor.config.ts, care fie irosea timp, fie descoperea un
+  // ecran gol. No-op pe web.
+  useEffect(() => {
+    void import("@/lib/splash").then(({ hideSplash }) => hideSplash());
+  }, []);
+
   useEffect(() => {
     // i18n e deja inițializat de import eager. Dacă utilizatorul nu a ales
     // manual o limbă, aplicăm ce a cerut browserul prin `Accept-Language`.
@@ -305,6 +342,9 @@ function RootComponent() {
       if (!manual && serverLanguage) {
         const target = mod.normalizeLanguage(serverLanguage);
         if (mod.default.resolvedLanguage !== target) {
+          // Dicționarul întâi: limbile în afară de `ro`/`en` se încarcă leneș,
+          // iar o comutare fără el ar afișa engleza până sosește pachetul.
+          await mod.ensureLanguageLoaded(target);
           await mod.default.changeLanguage(target);
         }
       }
@@ -412,11 +452,13 @@ function RootComponent() {
   }, [router]);
 
   useEffect(() => {
-    // Offline persist pentru TanStack Query (allowlist, 24h, buster = APP_VERSION).
-    let cleanup: (() => void) | null = null;
-    void import("@/lib/query-persister").then(({ setupQueryPersistence }) => {
-      cleanup = setupQueryPersistence(queryClient);
-    });
+    // Persistența cache-ului NU mai pornește aici: a fost mutată în
+    // `getRouter()` (src/router.tsx), ca restaurarea de pe disc să se
+    // suprapună cu prima randare în loc să o urmeze. Pornirea de aici o
+    // întârzia cu o randare + un import dinamic, iar pe nativ storage-ul e
+    // asincron, deci utilizatorul apuca să vadă spinner în locul listei lui
+    // de conversații, deja salvate local.
+
     // Outbox mesaje offline — auto-flush la reconectare.
     void import("@/lib/message-outbox")
       .then((module) => {
@@ -427,9 +469,6 @@ function RootComponent() {
       .catch((error) => {
         console.warn("[outbox] inițializarea automată nu este disponibilă", error);
       });
-    return () => {
-      cleanup?.();
-    };
   }, [queryClient]);
 
 

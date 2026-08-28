@@ -32,6 +32,17 @@ export interface SendTemplateEmailOptions {
  * ({ sent: false }); any other failure throws — EmailAPIError exposes
  * .code and .status for branching.
  */
+/**
+ * Un destinatar suprimat nu este o eroare de sistem: adresa a cerut
+ * dezabonarea sau a produs un bounce permanent, iar API-ul refuză definitiv.
+ * Refuzul este 4xx și NU este reîncercabil — exact opusul unui 429 sau 5xx.
+ */
+function isSuppressed(error: EmailAPIError): boolean {
+  if (error.retryable) return false
+  if (error.status < 400 || error.status >= 500) return false
+  return /suppress|unsubscrib|bounce|blocklist|blacklist/i.test(error.message)
+}
+
 export async function sendTemplateEmail(
   templateName: string,
   to: string,
@@ -82,7 +93,13 @@ export async function sendTemplateEmail(
       { apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
     )
   } catch (error) {
-    if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
+    // `EmailAPIError` expune doar `status`, `retryAfterSeconds` și `retryable`
+    // (v0.0.4). Codul verifica `error.code`, care este mereu `undefined`, deci
+    // condiția nu se împlinea NICIODATĂ: un destinatar suprimat — dezabonat
+    // sau marcat ca bounce permanent — arunca în loc să întoarcă
+    // `{ sent: false }`, iar apelantul raporta o eroare pentru un rezultat
+    // complet normal. Detectăm suprimarea din status + mesaj.
+    if (error instanceof EmailAPIError && isSuppressed(error)) {
       return { sent: false, reason: 'recipient_suppressed' }
     }
     throw error

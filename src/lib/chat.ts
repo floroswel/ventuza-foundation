@@ -105,48 +105,22 @@ async function signPhoto(path: string | null): Promise<string | null> {
   return getSignedUrl("profile-photos", path, 3600);
 }
 
-async function pushNewMessageNotification(
-  conversationId: string,
-  senderId: string,
-  preview: string,
-): Promise<void> {
-  try {
-    const { data: conv } = await supabase
-      .from("conversations")
-      .select("user_a,user_b")
-      .eq("id", conversationId)
-      .maybeSingle();
-    if (!conv) return;
-    const toUserId = conv.user_a === senderId ? conv.user_b : conv.user_a;
-    if (!toUserId || toUserId === senderId) return;
-
-    const [{ data: me }, { data: recip }] = await Promise.all([
-      supabase.from("profiles").select("display_name").eq("id", senderId).maybeSingle(),
-      supabase.from("profiles").select("notification_prefs").eq("id", toUserId).maybeSingle(),
-    ]);
-    const showPreview =
-      ((recip as { notification_prefs?: { show_preview?: boolean } } | null)?.notification_prefs
-        ?.show_preview ?? false) === true;
-    const { buildMessageNotificationBody } = await import("@/lib/notification-privacy");
-    const body = buildMessageNotificationBody(showPreview, preview);
-    const { sendPushToUser } = await import("@/lib/push.functions");
-    const result = await sendPushToUser({
-      data: {
-        toUserId,
-        title: (me as { display_name?: string } | null)?.display_name || "Mesaj nou",
-        body,
-        url: `/messages/${conversationId}`,
-        tag: `msg:${conversationId}`,
-        category: "messages",
-      },
-    });
-    if (result.delivered === 0) {
-      console.info("[messages] push notification not delivered", result);
-    }
-  } catch (error) {
-    console.warn("[messages] push notification failed", error);
-  }
-}
+/*
+ * PUSH-UL DE MESAJ NU MAI PLEACĂ DE AICI.
+ *
+ * Trimiterea era pornită de pe telefonul expeditorului, imediat după insert.
+ * Dacă expeditorul bloca ecranul în acel interval — ce face oricine după ce
+ * trimite un mesaj — Android suspenda procesul și notificarea nu mai pleca
+ * niciodată. Mesajul exista, destinatarul nu afla.
+ *
+ * Acum notificarea se programează în baza de date, în ACEEAȘI tranzacție cu
+ * mesajul (trigger `tg_notify_new_message` → `push_outbox`), și se livrează
+ * server-side. Dacă mesajul există, notificarea este garantat programată,
+ * indiferent ce face telefonul expeditorului după aceea.
+ *
+ * Vezi supabase/migrations/20260828121000_push_outbox_server_side_dispatch.sql
+ * și src/routes/api/public/cron/push-dispatch.ts.
+ */
 
 export async function getOrCreateConversation(otherUserId: string): Promise<string> {
   const { data, error } = await supabase.rpc("get_or_create_conversation", { _other: otherUserId });
@@ -336,8 +310,6 @@ export async function sendMessage(
     throw error;
   }
 
-  void pushNewMessageNotification(conversationId, u.user.id, trimmed);
-
   return data as unknown as MessageRow;
 }
 
@@ -402,7 +374,6 @@ export async function sendMediaMessage(
     if (error) throw error;
     const row = Array.isArray(data) ? data[0] : data;
     if (!row) throw new Error("Nu am putut trimite locația.");
-    void pushNewMessageNotification(conversationId, uid, "📍 Locație partajată");
     return row as unknown as MessageRow;
   } else {
     const ext = payload.kind === "image" ? "jpg" : "webm";
@@ -428,7 +399,6 @@ export async function sendMediaMessage(
     .select(MESSAGE_SELECT)
     .single();
   if (error) throw error;
-  void pushNewMessageNotification(conversationId, uid, String(insert.body ?? "Mesaj nou"));
   return data as unknown as MessageRow;
 }
 

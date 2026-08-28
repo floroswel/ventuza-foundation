@@ -8,16 +8,17 @@
 // Traducerile pot fi parțiale: i18next cade pe engleză cheie-cu-cheie
 // (`fallbackLng: "en"`), deci nu apar niciodată chei brute în UI.
 
+// `ro` și `en` se încarcă EAGER: româna este limba principală, iar engleza
+// este `fallbackLng` — orice cheie netradusă cade pe ea, deci ambele trebuie
+// să existe din primul cadru.
+//
+// Restul se încarcă LENEȘ. Erau opt dicționare importate static, adică ~52 KB
+// pe care fiecare utilizator îi parsa la FIECARE pornire pentru limbi pe care
+// nu le va vedea niciodată. În aplicația împachetată nu există gzip: bundle-ul
+// se citește local, deci octeții aceia sunt timp de CPU direct, înainte de
+// primul pixel.
 import { ro } from "./ro";
 import { en } from "./en";
-import de from "./de";
-import fr from "./fr";
-import es from "./es";
-import it from "./it";
-import pt from "./pt";
-import nl from "./nl";
-import pl from "./pl";
-import hu from "./hu";
 
 import type { PartialDict } from "./types";
 
@@ -65,23 +66,50 @@ export function languageMeta(code: AppLanguage): LanguageMeta {
   return APP_LANGUAGES.find((l) => l.code === code) ?? APP_LANGUAGES[1]!;
 }
 
-const PARTIALS: Record<Exclude<AppLanguage, "ro" | "en">, PartialDict> = {
-  de,
-  fr,
-  es,
-  it,
-  pt,
-  nl,
-  pl,
-  hu,
+/** Limbile care NU sunt împachetate la pornire. */
+export type LazyLanguage = Exclude<AppLanguage, "ro" | "en">;
+
+/**
+ * Import-uri dinamice, câte unul per limbă. Vite le transformă în chunk-uri
+ * separate, descărcate abia când cineva chiar alege limba respectivă.
+ */
+const LAZY_DICTS: Record<LazyLanguage, () => Promise<{ default: PartialDict }>> = {
+  de: () => import("./de"),
+  fr: () => import("./fr"),
+  es: () => import("./es"),
+  it: () => import("./it"),
+  pt: () => import("./pt"),
+  nl: () => import("./nl"),
+  pl: () => import("./pl"),
+  hu: () => import("./hu"),
 };
 
-export const RESOURCES: Record<AppLanguage, { translation: unknown }> = {
+export function isLazyLanguage(code: AppLanguage): code is LazyLanguage {
+  return code !== "ro" && code !== "en";
+}
+
+/**
+ * Încarcă dicționarul unei limbi leneșe. Întoarce `null` dacă limba este deja
+ * împachetată (ro/en) sau dacă încărcarea eșuează — apelantul continuă, iar
+ * i18next cade cheie-cu-cheie pe engleză, exact ca pentru un dicționar parțial.
+ */
+export async function loadLanguageDict(code: AppLanguage): Promise<PartialDict | null> {
+  if (!isLazyLanguage(code)) return null;
+  try {
+    const mod = await LAZY_DICTS[code]();
+    return mod.default;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Resursele disponibile din primul cadru. Celelalte limbi se adaugă la runtime
+ * prin `i18n.addResourceBundle` (vezi `ensureLanguageLoaded` din lib/i18n.ts).
+ */
+export const RESOURCES: Record<"ro" | "en", { translation: unknown }> = {
   ro: { translation: ro },
   en: { translation: en },
-  ...(Object.fromEntries(
-    Object.entries(PARTIALS).map(([code, dict]) => [code, { translation: dict }]),
-  ) as Record<Exclude<AppLanguage, "ro" | "en">, { translation: unknown }>),
 };
 
 export { ro, en };

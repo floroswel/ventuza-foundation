@@ -34,8 +34,21 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 900,
-      launchAutoHide: true,
+      // `launchAutoHide: false` + `SplashScreen.hide()` apelat din aplicație,
+      // în momentul în care primul ecran chiar are conținut (vezi
+      // src/lib/splash.ts).
+      //
+      // Varianta veche era un cronometru fix de 900ms, deconectat de starea
+      // reală, deci greșea în ambele sensuri: dacă aplicația era gata în
+      // 300ms se aștepta degeaba 600ms, iar dacă pornirea dura 3s splash-ul
+      // dispărea la 900ms și utilizatorul rămânea 2s pe un ecran gol — exact
+      // senzația de „nu se încarcă". `SplashScreen.hide()` nu era apelat
+      // nicăieri în tot codul.
+      //
+      // `launchShowDuration` rămâne ca plasă de siguranță: dacă JS-ul moare
+      // înainte să apuce să ascundă splash-ul, Android nu rămâne blocat pe el.
+      launchShowDuration: 4000,
+      launchAutoHide: false,
       launchFadeOutDuration: 300,
       backgroundColor: "#0B0B10",
       androidSplashResourceName: "splash",

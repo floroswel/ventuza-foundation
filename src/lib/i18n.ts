@@ -5,6 +5,7 @@ import LanguageDetector from "i18next-browser-languagedetector";
 import {
   APP_LANGUAGE_CODES,
   RESOURCES,
+  loadLanguageDict,
   normalizeLanguage,
   type AppLanguage,
 } from "@/locales";
@@ -43,7 +44,13 @@ if (!i18n.isInitialized) {
         caches: ["localStorage"],
       },
     })
-    .then(() => {
+    .then(async () => {
+      // Detectorul poate alege, la prima pornire, o limbă încărcată leneș
+      // (telefon setat pe germană, poloneză etc.). Fără pasul ăsta,
+      // utilizatorul ar primi engleza — regresie față de comportamentul de
+      // dinainte de lazy-loading. Încărcăm dicționarul și îl atașăm; pentru
+      // `ro`/`en` funcția iese imediat, deci nu costă nimic în cazul comun.
+      await ensureLanguageLoaded(normalizeLanguage(i18n.resolvedLanguage ?? i18n.language));
       if (typeof document !== "undefined") {
         document.documentElement.lang = i18n.resolvedLanguage ?? i18n.language ?? "en";
       }
@@ -56,6 +63,22 @@ if (!i18n.isInitialized) {
   });
 }
 
+/**
+ * Se asigură că dicționarul unei limbi este atașat înainte de a comuta pe ea.
+ *
+ * `ro` și `en` sunt împachetate, deci ies imediat. Restul se descarcă o
+ * singură dată; `addResourceBundle` este idempotent aici pentru că verificăm
+ * întâi dacă pachetul există deja.
+ *
+ * Eșecul nu aruncă: i18next cade cheie-cu-cheie pe engleză, exact ca pentru
+ * orice dicționar parțial. O limbă lipsă degradează, nu strică ecranul.
+ */
+export async function ensureLanguageLoaded(lng: AppLanguage): Promise<void> {
+  if (i18n.hasResourceBundle(lng, "translation")) return;
+  const dict = await loadLanguageDict(lng);
+  if (dict) i18n.addResourceBundle(lng, "translation", dict, true, true);
+}
+
 export default i18n;
 
 /** Limba activă, normalizată la un cod din registru. */
@@ -65,6 +88,9 @@ export function currentLanguage(): AppLanguage {
 
 export async function setLanguage(lng: AppLanguage) {
   const target = normalizeLanguage(lng);
+  // Întâi dicționarul, apoi comutarea: altfel primul render după schimbare ar
+  // afișa engleza și abia apoi limba cerută — un flicker vizibil.
+  await ensureLanguageLoaded(target);
   await i18n.changeLanguage(target);
   if (typeof document !== "undefined") {
     document.documentElement.lang = target;
@@ -105,7 +131,12 @@ export async function syncNativeDeviceLanguage(): Promise<void> {
     const { Device } = await import("@capacitor/device");
     const { value } = await Device.getLanguageCode();
     const target = normalizeLanguage(value);
-    if (i18n.resolvedLanguage !== target) await i18n.changeLanguage(target);
+    if (i18n.resolvedLanguage !== target) {
+      // Calea nativă: limba telefonului poate fi una încărcată leneș (maghiară
+      // sau poloneză sunt frecvente în România). Dicționarul întâi.
+      await ensureLanguageLoaded(target);
+      await i18n.changeLanguage(target);
+    }
     if (typeof document !== "undefined") document.documentElement.lang = target;
   } catch {
     /* plugin absent / offline — rămâne detecția din navigator */

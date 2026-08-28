@@ -34,3 +34,15 @@ dist-ssr
 # Capacitor (mobile native projects - generated locally)
 /android
 /ios
+
+# Env local — NU se versionează. Fișierul `.env` de la rădăcină ESTE versionat
+# intenționat (doar valori publice; vezi scripts/check-env-safety.mjs), dar
+# orice variantă locală poate conține secrete reale.
+.env.local
+.env.*.local
+.env.development.local
+.env.production.local
+*.keystore
+*.jks
+google-services.local.json
+service-account*.json

@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import { createRouter } from "@tanstack/react-router";
 import { routeTree } from "./routeTree.gen";
 import { installNativeApiOrigin } from "./lib/native-api-origin";
+import { setupQueryPersistence } from "./lib/query-persister";
 
 // Nativ (Capacitor): rescrie `/_serverFn` și `/api/` către originul de producție.
 installNativeApiOrigin();
@@ -86,6 +87,26 @@ export const getRouter = () => {
     },
   });
 
+  // Restaurarea cache-ului pornește AICI, la crearea clientului, nu dintr-un
+  // `useEffect` din __root.tsx.
+  //
+  // Varianta veche plătea, în ordine: prima randare → efect → `await import`
+  // al modulului de persistență → abia apoi citirea din storage. Pe nativ,
+  // storage-ul este Capacitor Preferences (asincron), deci datele soseau cu
+  // mult după primul cadru: utilizatorul vedea spinner, iar lista lui de
+  // conversații — deja pe disc — apărea vizibil mai târziu.
+  //
+  // Pornită de la crearea router-ului, citirea se suprapune cu randarea
+  // shell-ului și cu hidratarea, în loc să se așeze după ele. Import static,
+  // intenționat: un `await import` aici ar reintroduce chiar întârzierea pe
+  // care o eliminăm.
+  try {
+    setupQueryPersistence(queryClient);
+  } catch (e) {
+    // Storage blocat (mod privat, cotă plină) nu are voie să oprească
+    // pornirea: aplicația funcționează la fel, doar fără cache pe disc.
+    console.warn("[router] persistența cache-ului nu a putut porni", e);
+  }
 
   const router = createRouter({
     routeTree,

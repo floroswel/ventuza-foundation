@@ -69,12 +69,24 @@ describe("Notificări push — regresie confidențialitate", () => {
     }
   });
 
-  it("callerul din chat.ts trece prin buildMessageNotificationBody (gated pe show_preview)", () => {
+  it("clientul nu mai trimite deloc push de mesaj", () => {
+    // Garanția s-a mutat în baza de date: trigger-ul `tg_notify_new_message`
+    // programează notificarea cu un corp generic scris în SQL, în aceeași
+    // tranzacție cu mesajul. `chat.ts` nu mai atinge stratul de push, deci
+    // conținutul mesajului nu mai părăsește telefonul pentru notificări.
     const chatSrc = read(join(SRC, "lib/chat.ts"));
-    expect(chatSrc).toMatch(/buildMessageNotificationBody\s*\(\s*showPreview\s*,/);
-    // Nu mai scrie manual `body: preview...`
+    expect(chatSrc).not.toMatch(/sendPushToUser|sendMessagePush|pushNewMessageNotification/);
     expect(chatSrc).not.toMatch(/body:\s*preview\.slice/);
     expect(chatSrc).not.toMatch(/body:\s*preview\s*[,}]/);
+
+    // Corpul programat în SQL este constanta generică, nu NEW.body.
+    const mig = read(
+      join(process.cwd(), "supabase/migrations/20260828121000_push_outbox_server_side_dispatch.sql"),
+    );
+    const enqueue = /PERFORM public\.enqueue_push\(([\s\S]*?)\);/.exec(mig);
+    expect(enqueue, "migrația trebuie să programeze push-ul").not.toBeNull();
+    expect(enqueue![1]).toContain("'Ai un mesaj nou'");
+    expect(enqueue![1]).not.toMatch(/NEW\.body|body_out/);
   });
 });
 

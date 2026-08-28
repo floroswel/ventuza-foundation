@@ -246,12 +246,17 @@ describe("dispatcher source invariants — no raw-data escape hatch in productio
   const SRC = join(process.cwd(), "src");
   const read = (rel: string) => readFileSync(join(SRC, rel), "utf8");
 
-  it("push.functions.ts does not pass a `data` field to sanitizeNotificationPayload without going through the allowlist", () => {
-    // The real dispatcher (L249) intentionally omits `data` from
+  it("the dispatcher does not pass a `data` field to sanitizeNotificationPayload without going through the allowlist", () => {
+    // The real dispatcher intentionally omits `data` from
     // `sanitizeNotificationPayload({...})` — routing IDs travel via
     // `tag` / `url`. Regression guard: no one adds a `data:` sibling that
     // would carry raw fields into the push payload.
-    const src = read("lib/push.functions.ts");
+    //
+    // Delivery moved out of `push.functions.ts` into `push-dispatch.server.ts`
+    // so the database-triggered route can reuse it (server-side push, no
+    // longer dependent on the sender's phone). One implementation, so this
+    // guard still covers every caller.
+    const src = read("lib/push-dispatch.server.ts");
     // Extract the sanitizeNotificationPayload({...}) block(s) and assert none
     // introduces a `data:` property assignment. We match a single-level block.
     const blocks = src.match(/sanitizeNotificationPayload\(\s*\{[\s\S]*?\}\s*\)/g) ?? [];

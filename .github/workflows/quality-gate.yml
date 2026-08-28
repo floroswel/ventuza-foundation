@@ -35,6 +35,13 @@ jobs:
       - name: Install
         run: bun install --frozen-lockfile
 
+      # Repository-ul este public: `.env` este versionat intenționat, dar are
+      # voie să conțină exclusiv valori publice prin design. Pasul cade dacă
+      # apare o cheie necunoscută, un tipar de secret sau un JWT cu alt rol
+      # decât `anon` — inclusiv ascuns sub un nume de variabilă permis.
+      - name: Fișierul .env conține doar valori publice (blocking)
+        run: node scripts/check-env-safety.mjs
+
       - name: Resurse Android XML valide (blocking)
         # `android-overrides/res/*` este copiat direct în proiectul Android, iar
         # AAPT respinge orice XML malformat. Până acum eroarea apărea abia în

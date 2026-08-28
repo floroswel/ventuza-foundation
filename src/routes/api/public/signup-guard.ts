@@ -6,19 +6,18 @@ import type { Database } from "@/integrations/supabase/types";
 
 // LIMITARE CUNOSCUTĂ (documentată, necorectată aici — vezi mai jos)
 // ------------------------------------------------------------------
-// Handler-ul construiește clientul cu `process.env.SUPABASE_SERVICE_ROLE_KEY!`.
-// În orice mediu fără acea cheie — CI, dev local, orice deployment care nu o
-// setează — `createClient` aruncă ÎNAINTE de RPC, iar ruta răspunde **HTTP 500**.
-// Consecință: throttle-ul anti-bot la signup este inactiv în acele medii, iar
-// clientul continuă înscrierea (fail-open pe client). Confirmat în e2e:
-// `POST /api/public/signup-guard` → 500, urmat de `POST /auth/v1/signup` → 200.
+// Asimetria semnalată anterior a fost eliminată: lipsa configurației și
+// eroarea de RPC produc acum ACELAȘI rezultat — 200 cu `degraded: true`.
 //
-// Observă asimetria: mai jos există fail-open EXPLICIT pentru erori de RPC
-// („don't lock real users out"), dar nu pentru cheia lipsă.
+// Înainte, `createClient(..!, ..!)` arunca înaintea RPC-ului și ruta răspundea
+// HTTP 500 în orice mediu fără `SUPABASE_SERVICE_ROLE_KEY` (CI, dev local,
+// deployment neconfigurat). Efectul practic era același — clientul continua
+// înscrierea — dar starea era invizibilă: un 500 se citește ca un bug
+// oarecare, nu ca „protecția anti-bot nu rulează".
 //
-// Nu se repară în acest PR (ar însemna modificarea fluxului de autentificare) și
-// NU se adaugă `SUPABASE_SERVICE_ROLE_KEY` în workflow-ul E2E doar ca testele să
-// treacă — ar introduce o cheie privilegiată într-un mediu de test.
+// Rămâne fail-open deliberat: fail-closed ar bloca înscrierea tuturor
+// utilizatorilor reali la lipsa unei variabile de mediu. `degraded: true` este
+// semnalul pe care trebuie să se pună alertă.
 //
 // Anti-bot signup throttle. Called by /auth right before supabase.auth.signUp.
 // Hashes the caller IP server-side (never stored or returned in clear) and
@@ -72,11 +71,37 @@ export const Route = createFileRoute("/api/public/signup-guard")({
           return Response.json({ ok: true, throttled: null });
         }
 
-        const supabase = createClient<Database>(
-          process.env.SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!,
-          { auth: { persistSession: false, autoRefreshToken: false } },
-        );
+        // Fără configurație nu putem interoga throttle-ul. Degradăm EXPLICIT,
+        // cu același contract de răspuns ca pe calea de eroare RPC de mai jos.
+        //
+        // Înainte, `createClient(...!, ...!)` arunca aici, iar ruta răspundea
+        // 500. Clientul continua oricum înscrierea (fail-open pe client), deci
+        // efectul era identic — dar invizibil: un 500 arată ca un bug oarecare,
+        // nu ca „protecția anti-bot este oprită". Acum starea e explicită în
+        // corpul răspunsului (`degraded`) și în log, deci poate fi alertată.
+        //
+        // De ce fail-open și nu fail-closed: fail-closed ar bloca înscrierea
+        // TUTUROR utilizatorilor reali în momentul în care lipsește o variabilă
+        // de mediu. Boți lăsați să treacă temporar este răul mai mic — dar
+        // trebuie să se vadă că se întâmplă.
+        const supabaseUrl = process.env.SUPABASE_URL;
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (!supabaseUrl || !serviceKey) {
+          console.error(
+            "[signup-guard] SUPABASE_URL sau SUPABASE_SERVICE_ROLE_KEY lipsesc — " +
+              "throttle-ul anti-bot este INACTIV în acest mediu",
+          );
+          return Response.json({
+            ok: true,
+            throttled: null,
+            degraded: true,
+            reason: "not_configured",
+          });
+        }
+
+        const supabase = createClient<Database>(supabaseUrl, serviceKey, {
+          auth: { persistSession: false, autoRefreshToken: false },
+        });
 
         const { error } = await supabase.rpc("check_signup_throttle", {
           _ip_hash: ipHash ?? "",
