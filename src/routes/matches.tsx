@@ -308,6 +308,7 @@ function MatchesPage() {
         >
           {TABS.map(({ key, label, Icon }) => {
             const active = tab === key;
+            const badge = newCounts[key];
             return (
               <button
                 key={key}
@@ -315,7 +316,7 @@ function MatchesPage() {
                 aria-selected={active}
                 onClick={() => setTab(key)}
                 className={cn(
-                  "flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] font-medium transition-colors",
+                  "relative flex flex-1 flex-col items-center gap-0.5 rounded-xl px-1 py-1.5 text-[11px] font-medium transition-colors",
                   active
                     ? "bg-primary/15 text-primary"
                     : "text-muted-foreground hover:text-foreground/80",
@@ -323,9 +324,18 @@ function MatchesPage() {
               >
                 <Icon className="size-[18px]" strokeWidth={active ? 2.2 : 1.8} />
                 {label}
+                {badge > 0 && (
+                  <span
+                    aria-label={`${badge} noi`}
+                    className="absolute right-1.5 top-0.5 min-w-[16px] rounded-full bg-primary px-1 text-[9px] font-bold leading-4 text-primary-foreground"
+                  >
+                    {badge > 9 ? "9+" : badge}
+                  </span>
+                )}
               </button>
             );
           })}
+
         </div>
       </header>
 
