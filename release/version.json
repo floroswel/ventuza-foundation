@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.82",
-  "versionCode": 92,
+  "versionName": "1.0.83",
+  "versionCode": 93,
   "track": "internal",
   "status": "completed",
   "notes": "Rămâi conectat după actualizarea din Google Play: sesiunea se restaurează din stocarea nativă, fără ecran de login inutil.",
