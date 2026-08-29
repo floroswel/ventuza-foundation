@@ -48,6 +48,7 @@ import { Route as SafetyRouteImport } from './routes/safety'
 import { Route as SalePitchRouteImport } from './routes/sale-pitch'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatusRouteImport } from './routes/status'
+import { Route as SupportUsRouteImport } from './routes/support-us'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as VisitorsRouteImport } from './routes/visitors'
 import { Route as WalletRouteImport } from './routes/wallet'
@@ -301,6 +302,11 @@ const SettingsRoute = SettingsRouteImport.update({
 const StatusRoute = StatusRouteImport.update({
   id: '/status',
   path: '/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportUsRoute = SupportUsRouteImport.update({
+  id: '/support-us',
+  path: '/support-us',
   getParentRoute: () => rootRouteImport,
 } as any)
 const VerifyRoute = VerifyRouteImport.update({
@@ -648,6 +654,7 @@ export interface FileRoutesByFullPath {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
+  '/support-us': typeof SupportUsRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
   '/wallet': typeof WalletRoute
@@ -747,6 +754,7 @@ export interface FileRoutesByTo {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
+  '/support-us': typeof SupportUsRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
   '/wallet': typeof WalletRoute
@@ -848,6 +856,7 @@ export interface FileRoutesById {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
+  '/support-us': typeof SupportUsRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
   '/wallet': typeof WalletRoute
@@ -950,6 +959,7 @@ export interface FileRouteTypes {
     | '/sale-pitch'
     | '/settings'
     | '/status'
+    | '/support-us'
     | '/verify'
     | '/visitors'
     | '/wallet'
@@ -1049,6 +1059,7 @@ export interface FileRouteTypes {
     | '/sale-pitch'
     | '/settings'
     | '/status'
+    | '/support-us'
     | '/verify'
     | '/visitors'
     | '/wallet'
@@ -1149,6 +1160,7 @@ export interface FileRouteTypes {
     | '/sale-pitch'
     | '/settings'
     | '/status'
+    | '/support-us'
     | '/verify'
     | '/visitors'
     | '/wallet'
@@ -1250,6 +1262,7 @@ export interface RootRouteChildren {
   SalePitchRoute: typeof SalePitchRoute
   SettingsRoute: typeof SettingsRoute
   StatusRoute: typeof StatusRoute
+  SupportUsRoute: typeof SupportUsRoute
   VerifyRoute: typeof VerifyRouteWithChildren
   VisitorsRoute: typeof VisitorsRoute
   WalletRoute: typeof WalletRoute
@@ -1571,6 +1584,13 @@ declare module '@tanstack/react-router' {
       path: '/status'
       fullPath: '/status'
       preLoaderRoute: typeof StatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support-us': {
+      id: '/support-us'
+      path: '/support-us'
+      fullPath: '/support-us'
+      preLoaderRoute: typeof SupportUsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/verify': {
@@ -2139,6 +2159,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalePitchRoute: SalePitchRoute,
   SettingsRoute: SettingsRoute,
   StatusRoute: StatusRoute,
+  SupportUsRoute: SupportUsRoute,
   VerifyRoute: VerifyRouteWithChildren,
   VisitorsRoute: VisitorsRoute,
   WalletRoute: WalletRoute,
