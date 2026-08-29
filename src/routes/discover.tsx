@@ -103,6 +103,8 @@ import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
+import { WhatsNewStrip } from "@/components/WhatsNewStrip";
+import { CityWaitlistCard } from "@/components/CityWaitlistCard";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { withGuardian } from "@/components/with-guardian";
 import { BLOCKS_CHANGED_EVENT } from "@/lib/block-events";
