@@ -1052,6 +1052,7 @@ function DiscoverPage() {
         </>
       ) : (
         <>
+          <WhatsNewStrip />
           <OnlineRow
             profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)}
             onOpen={setSelected}
