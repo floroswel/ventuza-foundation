@@ -14,6 +14,8 @@ const LINKS: { to: string; label: string }[] = [
   { to: "/contact", label: "Contact & support" },
   { to: "/legal/privacy", label: "Privacy Policy" },
   { to: "/legal/terms", label: "Terms of Service" },
+  { to: "/legal/transparency-report", label: "Transparency report" },
+  { to: "/support-us", label: "Support Suzeta" },
   { to: "/account-deletion", label: "Account deletion" },
 ];
 
