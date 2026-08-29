@@ -147,6 +147,10 @@ export function ReportBlockDialog({
             rows={2}
             className="w-full rounded-xl border border-border bg-background p-2 text-sm outline-none focus:border-primary"
           />
+          <p className="pt-1 text-[11px] leading-relaxed text-muted-foreground">
+            Termene asumate: risc pentru minori sub 1 oră, hărțuire sau conținut sexual neconsimțit
+            sub 24 de ore, spam sub 72 de ore. Primești o notificare în aplicație după analiză.
+          </p>
           <div className="flex gap-2 pt-2">
             <button
               disabled={busy}
