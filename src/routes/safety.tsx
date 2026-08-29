@@ -125,6 +125,8 @@ function SafetyCenter() {
           body="Dacă cineva îți cere bani, IBAN, criptomonede, sau să-i finanțezi „o urgență” — e scam. Raportează imediat."
         />
 
+        <SafetyCheckinCard />
+
         <PanicToolsCard />
 
         <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4">
