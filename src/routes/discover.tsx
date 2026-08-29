@@ -363,20 +363,29 @@ function DiscoverPage() {
   }, [explorerFilters, user]);
 
   // ---- Mod Explorer (locație aleasă manual) -------------------------------
+  // Ținem starea într-un ref ca polling-ul de 60s să nu recreeze efectul
+  // (obiect nou la fiecare tick => reîncărcare în buclă a grilei).
+  const travelRef = useRef<TravelStatus>(null);
   const refreshTravel = useCallback(async (): Promise<TravelStatus> => {
     if (!user) {
+      travelRef.current = null;
       setTravelStatus(null);
       return null;
     }
     const next = await getMyTravelStatus();
-    setTravelStatus(next);
+    const prev = travelRef.current;
+    travelRef.current = next;
+    const same =
+      (prev?.city ?? null) === (next?.city ?? null) &&
+      (prev?.until ?? null) === (next?.until ?? null);
+    if (!same) setTravelStatus(next);
     return next;
   }, [user]);
 
   useEffect(() => {
     let active = true;
     const syncTravel = async () => {
-      const wasExplorer = Boolean(travelStatus);
+      const wasExplorer = Boolean(travelRef.current);
       const next = await refreshTravel();
       // La redeschidere sau expirare, sincronizăm și grila cu locația efectivă.
       if (active && wasExplorer !== Boolean(next)) await load();
@@ -389,7 +398,8 @@ function DiscoverPage() {
       active = false;
       clearInterval(t);
     };
-  }, [refreshTravel, load, travelStatus]);
+  }, [refreshTravel, load]);
+
 
   const onTravelChanged = useCallback(async () => {
     // Rezultatele vechi (locația precedentă) nu mai sunt valabile.
