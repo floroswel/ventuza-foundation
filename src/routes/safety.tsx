@@ -15,6 +15,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { PanicToolsCard } from "@/components/PanicToolsCard";
+import { SafetyCheckinCard } from "@/components/SafetyCheckinCard";
 
 export const Route = createFileRoute("/safety")({
   ssr: true,
