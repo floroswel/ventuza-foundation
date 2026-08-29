@@ -2090,17 +2090,20 @@ function EmptyState({
     <CenterMessage
       icon={<Compass className="size-8 text-primary" />}
       title="Nimeni nou prin zonă acum"
-      desc="Comunitatea Suzeta crește. Extinde raza ca să vezi cine e mai departe — sau revino în câteva ore."
+      desc="Comunitatea Suzeta crește. Extinde raza ca să vezi cine e mai departe — sau lasă-ne orașul tău și te anunțăm când se umple."
       action={
-        <div className="flex flex-wrap justify-center gap-2">
-          {onExpandDistance && (
-            <Button variant="hero" onClick={() => onExpandDistance(next)}>
-              Extinde la {nextLabel}
+        <div className="w-full">
+          <div className="flex flex-wrap justify-center gap-2">
+            {onExpandDistance && (
+              <Button variant="hero" onClick={() => onExpandDistance(next)}>
+                Extinde la {nextLabel}
+              </Button>
+            )}
+            <Button variant="outline" onClick={onRefresh}>
+              Reîncarcă
             </Button>
-          )}
-          <Button variant="outline" onClick={onRefresh}>
-            Reîncarcă
-          </Button>
+          </div>
+          <CityWaitlistCard />
         </div>
       }
     />
