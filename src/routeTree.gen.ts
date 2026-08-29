@@ -79,6 +79,7 @@ import { Route as LegalSecurityIncidentsRouteImport } from './routes/legal.secur
 import { Route as LegalSubprocessorsRouteImport } from './routes/legal.subprocessors'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalTransfersRouteImport } from './routes/legal.transfers'
+import { Route as LegalTransparencyReportRouteImport } from './routes/legal.transparency-report'
 import { Route as LegalWalletTermsRouteImport } from './routes/legal.wallet-terms'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
@@ -462,6 +463,11 @@ const LegalTransfersRoute = LegalTransfersRouteImport.update({
   path: '/legal/transfers',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LegalTransparencyReportRoute = LegalTransparencyReportRouteImport.update({
+  id: '/legal/transparency-report',
+  path: '/legal/transparency-report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LegalWalletTermsRoute = LegalWalletTermsRouteImport.update({
   id: '/legal/wallet-terms',
   path: '/legal/wallet-terms',
@@ -685,6 +691,7 @@ export interface FileRoutesByFullPath {
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/legal/transfers': typeof LegalTransfersRoute
+  '/legal/transparency-report': typeof LegalTransparencyReportRoute
   '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
@@ -785,6 +792,7 @@ export interface FileRoutesByTo {
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/legal/transfers': typeof LegalTransfersRoute
+  '/legal/transparency-report': typeof LegalTransparencyReportRoute
   '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
@@ -887,6 +895,7 @@ export interface FileRoutesById {
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/legal/transfers': typeof LegalTransfersRoute
+  '/legal/transparency-report': typeof LegalTransparencyReportRoute
   '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
@@ -990,6 +999,7 @@ export interface FileRouteTypes {
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/legal/transfers'
+    | '/legal/transparency-report'
     | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
@@ -1090,6 +1100,7 @@ export interface FileRouteTypes {
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/legal/transfers'
+    | '/legal/transparency-report'
     | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
@@ -1191,6 +1202,7 @@ export interface FileRouteTypes {
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/legal/transfers'
+    | '/legal/transparency-report'
     | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
@@ -1288,6 +1300,7 @@ export interface RootRouteChildren {
   LegalSubprocessorsRoute: typeof LegalSubprocessorsRoute
   LegalTermsRoute: typeof LegalTermsRoute
   LegalTransfersRoute: typeof LegalTransfersRoute
+  LegalTransparencyReportRoute: typeof LegalTransparencyReportRoute
   LegalWalletTermsRoute: typeof LegalWalletTermsRoute
   OffersIdRoute: typeof OffersIdRoute
   USlugRoute: typeof USlugRoute
@@ -1803,6 +1816,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LegalTransfersRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/legal/transparency-report': {
+      id: '/legal/transparency-report'
+      path: '/legal/transparency-report'
+      fullPath: '/legal/transparency-report'
+      preLoaderRoute: typeof LegalTransparencyReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/legal/wallet-terms': {
       id: '/legal/wallet-terms'
       path: '/legal/wallet-terms'
@@ -2186,6 +2206,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalSubprocessorsRoute: LegalSubprocessorsRoute,
   LegalTermsRoute: LegalTermsRoute,
   LegalTransfersRoute: LegalTransfersRoute,
+  LegalTransparencyReportRoute: LegalTransparencyReportRoute,
   LegalWalletTermsRoute: LegalWalletTermsRoute,
   OffersIdRoute: OffersIdRoute,
   USlugRoute: USlugRoute,
