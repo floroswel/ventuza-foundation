@@ -103,6 +103,8 @@ import { useUnreadMessages } from "@/hooks/useUnreadMessages";
 import { QuickProfileDrawer } from "@/components/QuickProfileDrawer";
 import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { DailyRewardCard } from "@/components/DailyRewardCard";
+import { WhatsNewStrip } from "@/components/WhatsNewStrip";
+import { CityWaitlistCard } from "@/components/CityWaitlistCard";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { withGuardian } from "@/components/with-guardian";
 import { BLOCKS_CHANGED_EVENT } from "@/lib/block-events";
@@ -1050,6 +1052,7 @@ function DiscoverPage() {
         </>
       ) : (
         <>
+          <WhatsNewStrip />
           <OnlineRow
             profiles={profiles.filter((p) => isOnline(p.last_seen)).slice(0, 12)}
             onOpen={setSelected}
@@ -2088,17 +2091,20 @@ function EmptyState({
     <CenterMessage
       icon={<Compass className="size-8 text-primary" />}
       title="Nimeni nou prin zonă acum"
-      desc="Comunitatea Suzeta crește. Extinde raza ca să vezi cine e mai departe — sau revino în câteva ore."
+      desc="Comunitatea Suzeta crește. Extinde raza ca să vezi cine e mai departe — sau lasă-ne orașul tău și te anunțăm când se umple."
       action={
-        <div className="flex flex-wrap justify-center gap-2">
-          {onExpandDistance && (
-            <Button variant="hero" onClick={() => onExpandDistance(next)}>
-              Extinde la {nextLabel}
+        <div className="w-full">
+          <div className="flex flex-wrap justify-center gap-2">
+            {onExpandDistance && (
+              <Button variant="hero" onClick={() => onExpandDistance(next)}>
+                Extinde la {nextLabel}
+              </Button>
+            )}
+            <Button variant="outline" onClick={onRefresh}>
+              Reîncarcă
             </Button>
-          )}
-          <Button variant="outline" onClick={onRefresh}>
-            Reîncarcă
-          </Button>
+          </div>
+          <CityWaitlistCard />
         </div>
       }
     />

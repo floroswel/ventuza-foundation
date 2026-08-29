@@ -48,6 +48,7 @@ import { Route as SafetyRouteImport } from './routes/safety'
 import { Route as SalePitchRouteImport } from './routes/sale-pitch'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as StatusRouteImport } from './routes/status'
+import { Route as SupportUsRouteImport } from './routes/support-us'
 import { Route as VerifyRouteImport } from './routes/verify'
 import { Route as VisitorsRouteImport } from './routes/visitors'
 import { Route as WalletRouteImport } from './routes/wallet'
@@ -78,6 +79,7 @@ import { Route as LegalSecurityIncidentsRouteImport } from './routes/legal.secur
 import { Route as LegalSubprocessorsRouteImport } from './routes/legal.subprocessors'
 import { Route as LegalTermsRouteImport } from './routes/legal.terms'
 import { Route as LegalTransfersRouteImport } from './routes/legal.transfers'
+import { Route as LegalTransparencyReportRouteImport } from './routes/legal.transparency-report'
 import { Route as LegalWalletTermsRouteImport } from './routes/legal.wallet-terms'
 import { Route as MessagesIndexRouteImport } from './routes/messages.index'
 import { Route as MessagesIdRouteImport } from './routes/messages.$id'
@@ -303,6 +305,11 @@ const StatusRoute = StatusRouteImport.update({
   path: '/status',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SupportUsRoute = SupportUsRouteImport.update({
+  id: '/support-us',
+  path: '/support-us',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const VerifyRoute = VerifyRouteImport.update({
   id: '/verify',
   path: '/verify',
@@ -454,6 +461,11 @@ const LegalTermsRoute = LegalTermsRouteImport.update({
 const LegalTransfersRoute = LegalTransfersRouteImport.update({
   id: '/legal/transfers',
   path: '/legal/transfers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LegalTransparencyReportRoute = LegalTransparencyReportRouteImport.update({
+  id: '/legal/transparency-report',
+  path: '/legal/transparency-report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LegalWalletTermsRoute = LegalWalletTermsRouteImport.update({
@@ -648,6 +660,7 @@ export interface FileRoutesByFullPath {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
+  '/support-us': typeof SupportUsRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
   '/wallet': typeof WalletRoute
@@ -678,6 +691,7 @@ export interface FileRoutesByFullPath {
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/legal/transfers': typeof LegalTransfersRoute
+  '/legal/transparency-report': typeof LegalTransparencyReportRoute
   '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
@@ -747,6 +761,7 @@ export interface FileRoutesByTo {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
+  '/support-us': typeof SupportUsRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
   '/wallet': typeof WalletRoute
@@ -777,6 +792,7 @@ export interface FileRoutesByTo {
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/legal/transfers': typeof LegalTransfersRoute
+  '/legal/transparency-report': typeof LegalTransparencyReportRoute
   '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
@@ -848,6 +864,7 @@ export interface FileRoutesById {
   '/sale-pitch': typeof SalePitchRoute
   '/settings': typeof SettingsRoute
   '/status': typeof StatusRoute
+  '/support-us': typeof SupportUsRoute
   '/verify': typeof VerifyRouteWithChildren
   '/visitors': typeof VisitorsRoute
   '/wallet': typeof WalletRoute
@@ -878,6 +895,7 @@ export interface FileRoutesById {
   '/legal/subprocessors': typeof LegalSubprocessorsRoute
   '/legal/terms': typeof LegalTermsRoute
   '/legal/transfers': typeof LegalTransfersRoute
+  '/legal/transparency-report': typeof LegalTransparencyReportRoute
   '/legal/wallet-terms': typeof LegalWalletTermsRoute
   '/messages/$id': typeof MessagesIdRoute
   '/offers/$id': typeof OffersIdRoute
@@ -950,6 +968,7 @@ export interface FileRouteTypes {
     | '/sale-pitch'
     | '/settings'
     | '/status'
+    | '/support-us'
     | '/verify'
     | '/visitors'
     | '/wallet'
@@ -980,6 +999,7 @@ export interface FileRouteTypes {
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/legal/transfers'
+    | '/legal/transparency-report'
     | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
@@ -1049,6 +1069,7 @@ export interface FileRouteTypes {
     | '/sale-pitch'
     | '/settings'
     | '/status'
+    | '/support-us'
     | '/verify'
     | '/visitors'
     | '/wallet'
@@ -1079,6 +1100,7 @@ export interface FileRouteTypes {
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/legal/transfers'
+    | '/legal/transparency-report'
     | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
@@ -1149,6 +1171,7 @@ export interface FileRouteTypes {
     | '/sale-pitch'
     | '/settings'
     | '/status'
+    | '/support-us'
     | '/verify'
     | '/visitors'
     | '/wallet'
@@ -1179,6 +1202,7 @@ export interface FileRouteTypes {
     | '/legal/subprocessors'
     | '/legal/terms'
     | '/legal/transfers'
+    | '/legal/transparency-report'
     | '/legal/wallet-terms'
     | '/messages/$id'
     | '/offers/$id'
@@ -1250,6 +1274,7 @@ export interface RootRouteChildren {
   SalePitchRoute: typeof SalePitchRoute
   SettingsRoute: typeof SettingsRoute
   StatusRoute: typeof StatusRoute
+  SupportUsRoute: typeof SupportUsRoute
   VerifyRoute: typeof VerifyRouteWithChildren
   VisitorsRoute: typeof VisitorsRoute
   WalletRoute: typeof WalletRoute
@@ -1275,6 +1300,7 @@ export interface RootRouteChildren {
   LegalSubprocessorsRoute: typeof LegalSubprocessorsRoute
   LegalTermsRoute: typeof LegalTermsRoute
   LegalTransfersRoute: typeof LegalTransfersRoute
+  LegalTransparencyReportRoute: typeof LegalTransparencyReportRoute
   LegalWalletTermsRoute: typeof LegalWalletTermsRoute
   OffersIdRoute: typeof OffersIdRoute
   USlugRoute: typeof USlugRoute
@@ -1573,6 +1599,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StatusRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/support-us': {
+      id: '/support-us'
+      path: '/support-us'
+      fullPath: '/support-us'
+      preLoaderRoute: typeof SupportUsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/verify': {
       id: '/verify'
       path: '/verify'
@@ -1781,6 +1814,13 @@ declare module '@tanstack/react-router' {
       path: '/legal/transfers'
       fullPath: '/legal/transfers'
       preLoaderRoute: typeof LegalTransfersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/legal/transparency-report': {
+      id: '/legal/transparency-report'
+      path: '/legal/transparency-report'
+      fullPath: '/legal/transparency-report'
+      preLoaderRoute: typeof LegalTransparencyReportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/legal/wallet-terms': {
@@ -2139,6 +2179,7 @@ const rootRouteChildren: RootRouteChildren = {
   SalePitchRoute: SalePitchRoute,
   SettingsRoute: SettingsRoute,
   StatusRoute: StatusRoute,
+  SupportUsRoute: SupportUsRoute,
   VerifyRoute: VerifyRouteWithChildren,
   VisitorsRoute: VisitorsRoute,
   WalletRoute: WalletRoute,
@@ -2165,6 +2206,7 @@ const rootRouteChildren: RootRouteChildren = {
   LegalSubprocessorsRoute: LegalSubprocessorsRoute,
   LegalTermsRoute: LegalTermsRoute,
   LegalTransfersRoute: LegalTransfersRoute,
+  LegalTransparencyReportRoute: LegalTransparencyReportRoute,
   LegalWalletTermsRoute: LegalWalletTermsRoute,
   OffersIdRoute: OffersIdRoute,
   USlugRoute: USlugRoute,

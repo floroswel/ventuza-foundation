@@ -15,6 +15,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { PanicToolsCard } from "@/components/PanicToolsCard";
+import { SafetyCheckinCard } from "@/components/SafetyCheckinCard";
 
 export const Route = createFileRoute("/safety")({
   ssr: true,
@@ -125,6 +126,8 @@ function SafetyCenter() {
           body="Dacă cineva îți cere bani, IBAN, criptomonede, sau să-i finanțezi „o urgență” — e scam. Raportează imediat."
         />
 
+        <SafetyCheckinCard />
+
         <PanicToolsCard />
 
         <div className="rounded-2xl border border-destructive/40 bg-destructive/5 p-4">
@@ -157,9 +160,17 @@ function SafetyCenter() {
         <div className="rounded-2xl border border-border bg-surface p-4">
           <h2 className="text-sm font-semibold">Ai fost hărțuit sau te simți în pericol?</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Folosește butonul „Raportează” din fiecare profil sau chat. Echipa noastră analizează în
-            maxim 24h. Conturile cu 3+ rapoarte sunt revizuite automat.
+            Folosește butonul „Raportează” din fiecare profil sau chat. Termene asumate: risc pentru
+            minori sub 1 oră, hărțuire sau conținut sexual neconsimțit sub 24 de ore, spam sub 72 de
+            ore. Primești o notificare în aplicație după analiză. Conturile cu 3+ rapoarte sunt
+            revizuite automat.
           </p>
+          <Link
+            to="/legal/transparency-report"
+            className="mt-2 inline-block text-xs font-medium text-primary underline"
+          >
+            Raport de transparență
+          </Link>
         </div>
       </section>
     </main>

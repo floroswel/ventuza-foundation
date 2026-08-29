@@ -254,3 +254,38 @@ materială a fluxurilor de date.
 - [ ] Operator (Florin, Administrator VOMIX GENIUS S.R.L.) — data:
 - [ ] DPO extern (consultant) — data:
 - [ ] Consilier juridic (dacă e cazul) — data:
+
+---
+
+## Anexă — actualizare 2026-08-29 (Explorer, retenție, safety check-in)
+
+### 1. Modul Explorer (locație aleasă manual)
+- **Prelucrare:** utilizatorul alege manual un oraș; coordonatele sunt rotunjite
+  la ~1 km înainte de stocare în `profiles.travel_location` și expiră automat
+  după maximum 24 de ore.
+- **Temei:** Art. 6(1)(a) consimțământ — acțiune explicită a utilizatorului.
+- **Risc:** dezvăluirea prezenței într-o zonă; mitigat prin rotunjire, expirare
+  automată, insignă „Explorer" vizibilă (transparență față de ceilalți) și
+  avertisment de risc de țară afișat ÎNAINTE de confirmare.
+- **Reziduu:** scăzut. Nu se stochează istoric de trasee.
+
+### 2. Notificări de revenire și remindere de conversație
+- **Prelucrare:** `last_seen` și existența unui match fără mesaje, evaluate
+  server-side de sarcini programate.
+- **Temei:** Art. 6(1)(f) interes legitim (reactivarea propriului cont), cu
+  frecvență plafonată (o singură notificare la câteva zile) și dezabonare din
+  setările de notificări.
+- **Conținut:** generic, fără date despre alt utilizator.
+
+### 3. Safety check-in
+- **Prelucrare:** momentul verificării, o notă scrisă de utilizator pentru el
+  însuși, starea (în așteptare / confirmat / escaladat).
+- **Temei:** Art. 6(1)(a) + Art. 6(1)(d) interese vitale la escaladare.
+- **Nu se stochează locație.** Escaladarea produce o notificare doar către
+  utilizatorul în cauză, cu resursele de urgență.
+- **Retenție:** 90 de zile de la finalizare.
+
+### 4. Waitlist pe oraș
+- **Prelucrare:** ID utilizator + numele orașului declarat.
+- **Temei:** Art. 6(1)(a) consimțământ; înregistrarea poate fi ștearsă oricând
+  de utilizator. Contorul afișat este agregat, fără identități.

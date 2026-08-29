@@ -979,6 +979,18 @@ function SettingsPage() {
               <Shield className="size-4" /> Centrul de siguranță
             </Link>
             <Link
+              to="/support-us"
+              className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
+            >
+              <Shield className="size-4" /> Susține Suzeta
+            </Link>
+            <Link
+              to="/legal/transparency-report"
+              className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
+            >
+              <Shield className="size-4" /> Raport de transparență
+            </Link>
+            <Link
               to="/legal/terms"
               className="flex items-center gap-2 py-1.5 text-foreground hover:text-primary"
             >

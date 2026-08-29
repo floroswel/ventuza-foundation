@@ -1126,6 +1126,27 @@ export type Database = {
         }
         Relationships: []
       }
+      city_waitlist: {
+        Row: {
+          city: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          city: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          city?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       client_errors: {
         Row: {
           app_version: string | null
@@ -4337,6 +4358,42 @@ export type Database = {
         }
         Relationships: []
       }
+      safety_checkins: {
+        Row: {
+          confirmed_at: string | null
+          created_at: string
+          due_at: string
+          escalated_at: string | null
+          id: string
+          note: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          created_at?: string
+          due_at: string
+          escalated_at?: string | null
+          id?: string
+          note?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          created_at?: string
+          due_at?: string
+          escalated_at?: string | null
+          id?: string
+          note?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       signup_attempts: {
         Row: {
           created_at: string
@@ -6018,6 +6075,7 @@ export type Database = {
         Args: { _fingerprint: string; _ip_hash: string }
         Returns: undefined
       }
+      city_waitlist_count: { Args: { _city: string }; Returns: number }
       claim_business_application_by_code: {
         Args: { _app_id: string }
         Returns: Json
@@ -6064,6 +6122,10 @@ export type Database = {
           kind: string
           required: boolean
         }[]
+      }
+      create_safety_checkin: {
+        Args: { _minutes: number; _note?: string }
+        Returns: string
       }
       cron_didit_reconcile: { Args: never; Returns: undefined }
       cron_ops_health_alerts: { Args: never; Returns: undefined }
@@ -6196,12 +6258,15 @@ export type Database = {
       }
       email_queue_dispatch: { Args: never; Returns: undefined }
       enablelongtransactions: { Args: never; Returns: string }
+      enqueue_comeback_notifications: { Args: never; Returns: number }
       enqueue_email: {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
+      enqueue_match_no_message_reminders: { Args: never; Returns: number }
       ensure_referral_code: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
+      escalate_due_safety_checkins: { Args: never; Returns: number }
       expire_travel_locations: { Args: never; Returns: number }
       geometry: { Args: { "": string }; Returns: unknown }
       geometry_above: {
@@ -6545,6 +6610,7 @@ export type Database = {
       }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_verification_staff: { Args: { _uid: string }; Returns: boolean }
+      join_city_waitlist: { Args: { _city: string }; Returns: number }
       list_my_block_relations: { Args: never; Returns: string[] }
       list_my_blocked_profiles: {
         Args: never
@@ -6891,6 +6957,10 @@ export type Database = {
         Returns: boolean
       }
       reset_stale_age_verifications_batch: { Args: never; Returns: number }
+      resolve_safety_checkin: {
+        Args: { _id: string; _status: string }
+        Returns: undefined
+      }
       rl_enforce: {
         Args: { _action: string; _max: number; _window_seconds: number }
         Returns: undefined
@@ -7710,6 +7780,7 @@ export type Database = {
         Returns: undefined
       }
       wallet_recalc: { Args: { _uid: string }; Returns: undefined }
+      whats_new_today: { Args: never; Returns: Json }
       wipe_seed_admin_appendonly: { Args: never; Returns: Json }
     }
     Enums: {
