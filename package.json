@@ -34,6 +34,7 @@
     "@capacitor/filesystem": "^8.1.2",
     "@capacitor/geolocation": "^8.2.0",
     "@capacitor/haptics": "^8.0.2",
+    "@capacitor/ios": "^8.4.1",
     "@capacitor/keyboard": "^8.0.5",
     "@capacitor/network": "^8.0.1",
     "@capacitor/preferences": "^8.0.1",
@@ -74,6 +75,7 @@
     "@radix-ui/react-toggle-group": "^1.1.11",
     "@radix-ui/react-tooltip": "^1.2.8",
     "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.10",
     "@revenuecat/purchases-capacitor": "^13.2.0",
     "@supabase/supabase-js": "^2.110.0",
     "@tailwindcss/vite": "^4.2.1",
@@ -118,8 +120,7 @@
     "vite-tsconfig-paths": "^6.0.2",
     "web-push": "^3.6.7",
     "web-vitals": "^5.3.0",
-    "zod": "^3.24.2",
-    "@react-email/render": "^2.0.10"
+    "zod": "^3.24.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.32.0",
