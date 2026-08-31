@@ -4091,6 +4091,63 @@ export type Database = {
         }
         Relationships: []
       }
+      push_outbox: {
+        Row: {
+          actor_id: string | null
+          attempts: number
+          body: string
+          category: string | null
+          claimed_at: string | null
+          created_at: string
+          delivered: number | null
+          id: string
+          last_error: string | null
+          processed_at: string | null
+          recipient_id: string
+          skipped_reason: string | null
+          status: string
+          tag: string | null
+          title: string
+          url: string | null
+        }
+        Insert: {
+          actor_id?: string | null
+          attempts?: number
+          body: string
+          category?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          delivered?: number | null
+          id?: string
+          last_error?: string | null
+          processed_at?: string | null
+          recipient_id: string
+          skipped_reason?: string | null
+          status?: string
+          tag?: string | null
+          title: string
+          url?: string | null
+        }
+        Update: {
+          actor_id?: string | null
+          attempts?: number
+          body?: string
+          category?: string | null
+          claimed_at?: string | null
+          created_at?: string
+          delivered?: number | null
+          id?: string
+          last_error?: string | null
+          processed_at?: string | null
+          recipient_id?: string
+          skipped_reason?: string | null
+          status?: string
+          tag?: string | null
+          title?: string
+          url?: string | null
+        }
+        Relationships: []
+      }
       push_subscriptions: {
         Row: {
           auth: string | null
@@ -6088,6 +6145,20 @@ export type Database = {
           redemption_code: string
         }[]
       }
+      claim_push_outbox: {
+        Args: { _limit?: number }
+        Returns: {
+          actor_id: string
+          attempts: number
+          body: string
+          category: string
+          id: string
+          recipient_id: string
+          tag: string
+          title: string
+          url: string
+        }[]
+      }
       claim_quest_reward: { Args: { _quest_id: string }; Returns: Json }
       claim_queue_item: {
         Args: { _item_id: string; _queue: string; _ttl_seconds?: number }
@@ -6264,6 +6335,18 @@ export type Database = {
         Returns: number
       }
       enqueue_match_no_message_reminders: { Args: never; Returns: number }
+      enqueue_push: {
+        Args: {
+          _actor: string
+          _body: string
+          _category: string
+          _recipient: string
+          _tag: string
+          _title: string
+          _url: string
+        }
+        Returns: undefined
+      }
       ensure_referral_code: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       escalate_due_safety_checkins: { Args: never; Returns: number }
@@ -6611,6 +6694,7 @@ export type Database = {
       is_staff: { Args: { _user_id: string }; Returns: boolean }
       is_verification_staff: { Args: { _uid: string }; Returns: boolean }
       join_city_waitlist: { Args: { _city: string }; Returns: number }
+      kick_push_dispatch: { Args: never; Returns: undefined }
       list_my_block_relations: { Args: never; Returns: string[] }
       list_my_blocked_profiles: {
         Args: never
@@ -6895,6 +6979,7 @@ export type Database = {
       }
       postgis_version: { Args: never; Returns: string }
       postgis_wagyu_version: { Args: never; Returns: string }
+      prune_push_outbox: { Args: never; Returns: undefined }
       public_partner_pricing: {
         Args: never
         Returns: {
