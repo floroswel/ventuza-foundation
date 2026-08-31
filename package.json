@@ -20,7 +20,11 @@
     "version:bump:major": "node scripts/bump-android-version.mjs major",
     "release:internal": "bundle exec fastlane android internal",
     "release:validate": "bundle exec fastlane android validate",
-    "i18n:report": "bun scripts/i18n-report.mjs"
+    "i18n:report": "bun scripts/i18n-report.mjs",
+    "ios:add": "npx cap add ios",
+    "ios:sync": "bun run build:mobile && npx cap sync ios && bash scripts/apply-ios-overrides.sh",
+    "ios:open": "npx cap open ios",
+    "android:widget:apply": "bash scripts/apply-android-overrides.sh"
   },
   "dependencies": {
     "@capacitor-community/privacy-screen": "^8.0.0",
