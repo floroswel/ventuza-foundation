@@ -59,3 +59,18 @@ DUPĂ `cap sync` și ÎNAINTE de copierea `android-overrides/res/*`, ca override
 Pasul „Validează resursele Android" oprește build-ul înainte de Gradle dacă:
 PNG/JPEG/WEBP invalid sau deghizat, XML neparsabil, resurse duplicate în `values*/`,
 sau referințe `@drawable/@mipmap/@color/@style/@string` inexistente.
+
+## Widget home-screen (4x1)
+
+Fișiere: `SuzetaWidgetProvider.java`, `res/layout/widget_suzeta.xml`,
+`res/xml/widget_suzeta_info.xml`, `res/values/widget.xml`,
+`res/drawable/widget_background.xml`, `widget_button.xml`,
+`widget_button_ghost.xml`, plus blocul `<receiver>` din
+`AndroidManifest.additions.xml`.
+
+Aplicare: `bun run android:widget:apply`.
+
+Confidențialitate: widget-ul NU afișează mesaje, nume, poze sau distanțe și
+nu face niciun apel de rețea. Are exact două acțiuni — App Link către
+`/discover` și un sheet de share cu linkul de invitație (UTM `android_widget`).
+Nu adaugă nicio permisiune nouă.
