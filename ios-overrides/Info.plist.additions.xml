@@ -1,0 +1,31 @@
+<!--
+  Chei de adăugat în `ios/App/App/Info.plist` după `npx cap add ios`.
+  Fără ele App Store respinge build-ul (motivele de permisiune sunt obligatorii).
+-->
+<key>NSCameraUsageDescription</key>
+<string>Suzeta folosește camera pentru pozele de profil și pentru verificarea vârstei (selfie live).</string>
+
+<key>NSPhotoLibraryUsageDescription</key>
+<string>Suzeta accesează galeria ca să poți alege poze pentru profil.</string>
+
+<key>NSPhotoLibraryAddUsageDescription</key>
+<string>Suzeta salvează în galerie doar imaginile pe care alegi să le descarci.</string>
+
+<key>NSMicrophoneUsageDescription</key>
+<string>Suzeta folosește microfonul pentru mesajele vocale trimise de tine.</string>
+
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Suzeta folosește locația doar cât aplicația e deschisă, ca să îți arate persoane din apropiere. Coordonatele exacte nu sunt niciodată afișate altor utilizatori — doar distanță aproximativă.</string>
+
+<key>NSFaceIDUsageDescription</key>
+<string>Suzeta poate debloca aplicația cu Face ID, ca să îți protejeze conversațiile.</string>
+
+<key>NSUserTrackingUsageDescription</key>
+<string>Suzeta nu urmărește activitatea ta în alte aplicații.</string>
+
+<!-- Fără criptare proprietară: doar HTTPS standard. Evită chestionarul de export la fiecare upload. -->
+<key>ITSAppUsesNonExemptEncryption</key>
+<false/>
+
+<key>UIViewControllerBasedStatusBarAppearance</key>
+<true/>
