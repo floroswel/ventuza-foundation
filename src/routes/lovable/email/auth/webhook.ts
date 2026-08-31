@@ -173,26 +173,34 @@ export const Route = createFileRoute("/lovable/email/auth/webhook")({
             return json(400, { error: "invalid_body" });
           }
           payload = raw as EmailWebhookPayload;
-          const link = String(
-            ((payload?.data ?? {}) as AuthEmailData).url ?? "",
-          );
+          const d = (payload?.data ?? {}) as AuthEmailData & {
+            site_url?: string;
+            redirect_to?: string;
+          };
           const projectRef = process.env["SUPABASE_PROJECT_ID"] ?? "";
-          let host = "";
-          try {
-            host = new URL(link).host;
-          } catch {
-            host = "";
-          }
-          const allowed =
-            host === `${projectRef}.supabase.co` ||
-            host === ROOT_DOMAIN ||
-            host === `www.${ROOT_DOMAIN}` ||
-            host.endsWith(".supabase.co");
-          if (!projectRef || !allowed) {
-            console.warn("[auth-email] link cu origine necunoscută — refuz");
+          const hostOf = (value?: string) => {
+            try {
+              return value ? new URL(value).host : "";
+            } catch {
+              return "";
+            }
+          };
+          const trusted = (host: string) =>
+            host !== "" &&
+            (host.endsWith(".supabase.co") ||
+              host === ROOT_DOMAIN ||
+              host === `www.${ROOT_DOMAIN}` ||
+              host === SENDER_DOMAIN);
+          const originOk = [d.url, d.site_url, d.redirect_to]
+            .map(hostOf)
+            .some(trusted);
+          const hasToken = Boolean(d.token || d.token_hash || d.hashed_token || d.url);
+          if (!projectRef || !originOk || !hasToken) {
+            console.warn("[auth-email] cerere fără origine de încredere — refuz");
             return json(401, { error: "untrusted_action_link" });
           }
         }
+
 
 
         const data = (payload.data ?? {}) as AuthEmailData;
