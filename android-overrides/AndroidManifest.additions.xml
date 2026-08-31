@@ -33,3 +33,16 @@
   <data android:scheme="https" android:host="suzeta.app"/>
   <data android:scheme="https" android:host="www.suzeta.app"/>
 </intent-filter>
+
+<!--
+  Widget home-screen (4x1). Se adaugă în interiorul tag-ului <application>.
+  Fără permisiuni noi: widget-ul deschide un App Link și un sheet de share.
+-->
+<receiver android:name="app.suzeta.SuzetaWidgetProvider"
+          android:exported="false">
+  <intent-filter>
+    <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+  </intent-filter>
+  <meta-data android:name="android.appwidget.provider"
+             android:resource="@xml/widget_suzeta_info"/>
+</receiver>

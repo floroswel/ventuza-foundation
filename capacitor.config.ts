@@ -25,6 +25,15 @@ const config: CapacitorConfig = {
         },
       }
     : {}),
+  ios: {
+    // Fundal identic cu splash-ul, ca tranziția să nu clipească alb.
+    backgroundColor: "#0B0B10",
+    contentInset: "never",
+    limitsNavigationsToAppBoundDomains: false,
+    // Scroll nativ iOS (bounce) dezactivat: aplicația are propriile liste.
+    scrollEnabled: true,
+    preferredContentMode: "mobile",
+  },
   android: {
     allowMixedContent: false,
     backgroundColor: "#0B0B10",
