@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texte widget (RO). Fără conținut sensibil: widget-ul nu afișează
+     niciodată mesaje, nume de useri sau distanțe. -->
+<resources>
+    <string name="widget_title">Suzeta</string>
+    <string name="widget_subtitle">Vezi cine e aproape</string>
+    <string name="widget_action_discover">Deschide</string>
+    <string name="widget_action_invite">Invită</string>
+    <string name="widget_description">Acces rapid la Suzeta și invitarea prietenilor.</string>
+    <string name="widget_share_text">Hai pe Suzeta — aplicația gratuită de dating LGBTQ+ pentru România. https://suzeta.app/invite?utm_source=android_widget&amp;utm_medium=referral&amp;utm_campaign=widget_invite</string>
+    <string name="widget_share_title">Recomandă Suzeta</string>
+</resources>
