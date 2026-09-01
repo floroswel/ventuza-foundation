@@ -1,6 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { withGuardian } from "@/components/with-guardian";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, useEffect, useMemo, useState } from "react";
+
+// Chunk-uri separate (buget bundle /profile).
+const ProfilePremiumPanel = lazy(() =>
+  import("@/components/ProfilePremiumPanel").then((m) => ({ default: m.ProfilePremiumPanel })),
+);
+const PrivateAlbumManager = lazy(() =>
+  import("@/components/PrivateAlbum").then((m) => ({ default: m.PrivateAlbumManager })),
+);
+const ShareProfileCard = lazy(() =>
+  import("@/components/ShareProfileCard").then((m) => ({ default: m.ShareProfileCard })),
+);
 import { toast } from "sonner";
 import {
   BadgeCheck,
@@ -31,14 +42,11 @@ import { Chip } from "@/components/Chip";
 import { BottomNav } from "@/components/BottomNav";
 import { PhotoManager } from "@/components/PhotoManager";
 import { NotificationBell } from "@/components/NotificationBell";
-import { ProfilePremiumPanel } from "@/components/ProfilePremiumPanel";
 import { RightNowCard } from "@/components/RightNowCard";
-import { PrivateAlbumManager } from "@/components/PrivateAlbum";
 import { ProfileCompleteness } from "@/components/ProfileCompleteness";
 import { ProfileStatsRow } from "@/components/ProfileStatsRow";
 // VoicePromptCard, MusicAnthemCard, VideoClipCard, DateVibesCard, LifestyleFactsCard —
 // demontate din editor (câmpuri orfane la target). Reactivabile prin re-import + remontare.
-import { ShareProfileCard } from "@/components/ShareProfileCard";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
 import { BackButton } from "@/components/BackButton";
 import { formatHeight } from "@/lib/discover";
@@ -382,7 +390,9 @@ function ProfilePage() {
 
         <ProfileStatsRow userId={profile.id} />
 
-        <ShareProfileCard slug={profile.profile_slug} displayName={profile.display_name} />
+        <Suspense fallback={null}>
+          <ShareProfileCard slug={profile.profile_slug} displayName={profile.display_name} />
+        </Suspense>
 
         {/* Orfane la target — carduri demontate din editor (reversibil).
             Coloanele DB rămân intacte: voice_prompt_*, anthem, video_clip_path,
@@ -612,6 +622,7 @@ function ProfilePage() {
               if (data) setProfile(data as unknown as Profile);
             }}
           />
+          <Suspense fallback={null}>
           <ProfilePremiumPanel
             userId={profile.id}
             mainPhotoPath={profile.photos?.[0] ?? null}
@@ -628,10 +639,13 @@ function ProfilePage() {
               if (data) setProfile(data as unknown as Profile);
             }}
           />
+          </Suspense>
         </Section>
 
         <Section title="Album privat">
-          <PrivateAlbumManager userId={profile.id} />
+          <Suspense fallback={null}>
+            <PrivateAlbumManager userId={profile.id} />
+          </Suspense>
         </Section>
 
         {/* Privacy quick actions */}

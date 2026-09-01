@@ -1,0 +1,8 @@
+Suzeta 1.0.89
+
+- Notificări push funcționale și cu aplicația închisă (mesaje, potriviri, tap-uri, woof, favoriți). Textul rămâne generic, fără conținutul mesajului.
+- Date și ore afișate corect în limba aleasă în aplicație.
+- Grila Discover se încarcă mai repede și fără bară de derulare vizibilă.
+- Mod Explorer mai stabil: mesaj clar când nu e nimeni în orașul selectat.
+- Widget pentru ecranul principal: acces rapid la Discover și invitații.
+- Corectări de stabilitate și îmbunătățiri de performanță.
