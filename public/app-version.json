@@ -2,5 +2,6 @@
   "versionName": "1.0.89",
   "versionCode": 99,
   "notes": "Notificări push cu aplicația închisă, date/ore în limba aleasă, Discover mai rapid, mod Explorer mai stabil, widget pentru ecranul principal.",
-  "updatedAt": "2026-09-01T00:16:31.583Z"
+  "rolloutPercent": 100,
+  "updatedAt": "2026-09-01T00:24:05.336Z"
 }
