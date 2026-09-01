@@ -1139,7 +1139,11 @@ function DiscoverPage() {
             : undefined
         }
       />
+      </Suspense>
+      ) : null}
+
       <ProfileSheet
+
         profile={selected}
         allProfiles={visible}
         currentUserId={user?.id ?? null}
