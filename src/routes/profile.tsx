@@ -622,6 +622,7 @@ function ProfilePage() {
               if (data) setProfile(data as unknown as Profile);
             }}
           />
+          <Suspense fallback={null}>
           <ProfilePremiumPanel
             userId={profile.id}
             mainPhotoPath={profile.photos?.[0] ?? null}
@@ -638,6 +639,7 @@ function ProfilePage() {
               if (data) setProfile(data as unknown as Profile);
             }}
           />
+          </Suspense>
         </Section>
 
         <Section title="Album privat">
