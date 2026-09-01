@@ -3,6 +3,6 @@
   "versionCode": 99,
   "track": "internal",
   "status": "completed",
-  "notes": "Rămâi conectat după actualizarea din Google Play: sesiunea se restaurează din stocarea nativă, fără ecran de login inutil.",
+  "notes": "Notificări push cu aplicația închisă, date/ore în limba aleasă, Discover mai rapid, mod Explorer mai stabil, widget pentru ecranul principal.",
   "rolloutPercent": 100
 }
