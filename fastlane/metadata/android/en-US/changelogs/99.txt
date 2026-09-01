@@ -1,5 +1,8 @@
 Suzeta 1.0.89
 
-- Improvements and bug fixes.
-
-Completează înainte de upload pe Play Console.
+- Push notifications now work with the app closed (messages, matches, taps, woofs, favorites). Text stays generic, never the message content.
+- Dates and times follow the language selected in the app.
+- Faster Discover grid, no visible scrollbar.
+- More stable Explorer mode: clear message when nobody is in the selected city.
+- Home screen widget: quick access to Discover and invites.
+- Stability fixes and performance improvements.
