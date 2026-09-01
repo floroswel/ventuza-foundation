@@ -1,6 +1,17 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { DiscoverSkeleton } from "@/components/skeletons/FirstScreenSkeletons";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+// Chunk-uri separate: se descarcă doar la deschidere (buget bundle /discover).
+const PrivateAlbumViewer = lazy(() =>
+  import("@/components/PrivateAlbum").then((m) => ({ default: m.PrivateAlbumViewer })),
+);
+const MatchModal = lazy(() =>
+  import("@/components/MatchModal").then((m) => ({ default: m.MatchModal })),
+);
+const LocationPickerSheet = lazy(() =>
+  import("@/components/LocationPickerSheet").then((m) => ({ default: m.LocationPickerSheet })),
+);
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { toast } from "sonner";
@@ -44,7 +55,6 @@ import { useServerFn } from "@tanstack/react-start";
 import { matchScore } from "@/lib/ai.functions";
 import { useCachedUserBadges } from "@/lib/badges-cache";
 import { BadgeStrip } from "@/components/BadgeStrip";
-import { PrivateAlbumViewer } from "@/components/PrivateAlbum";
 import { getOrCreateConversation } from "@/lib/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/auth-context";
@@ -52,8 +62,6 @@ import { useCountryGate } from "@/lib/country-gate";
 import { Button } from "@/components/ui/button";
 import { BottomNav } from "@/components/BottomNav";
 import { FiltersDrawer } from "@/components/FiltersDrawer";
-import { MatchModal } from "@/components/MatchModal";
-import { LocationPickerSheet } from "@/components/LocationPickerSheet";
 import {
   clearTravelLocation,
   formatRemaining,
@@ -1081,12 +1089,16 @@ function DiscoverPage() {
         </>
       )}
 
+      {locationPickerOpen ? (
+      <Suspense fallback={null}>
       <LocationPickerSheet
         open={locationPickerOpen}
         onClose={() => setLocationPickerOpen(false)}
         status={travelStatus}
         onChanged={onTravelChanged}
       />
+      </Suspense>
+      ) : null}
 
       <FiltersDrawer
         open={filtersOpen}
@@ -1106,6 +1118,8 @@ function DiscoverPage() {
 
       />
 
+      {match ? (
+      <Suspense fallback={null}>
       <MatchModal
         open={!!match}
         onClose={() => setMatch(null)}
@@ -1819,7 +1833,9 @@ function ProfileSheet({
           ) : null}
 
           {currentUserId && (
-            <PrivateAlbumViewer ownerId={profile.id} currentUserId={currentUserId} />
+            <Suspense fallback={null}>
+              <PrivateAlbumViewer ownerId={profile.id} currentUserId={currentUserId} />
+            </Suspense>
           )}
 
           {profile.looking_now_until && new Date(profile.looking_now_until) > new Date() && (
