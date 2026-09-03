@@ -149,6 +149,7 @@ export async function fetchPublicProfiles(
     travel_until?: string | null;
     discreet_avatar?: string | null;
     profile_slug?: string | null;
+    distance_bucket_m?: number | null;
   }>;
   const now = Date.now();
   await Promise.all(
@@ -167,6 +168,7 @@ export async function fetchPublicProfiles(
         travelCity: p.travel_city ?? null,
         slug: p.profile_slug ?? p.id,
         discreetAvatar: p.discreet_avatar ?? null,
+        distanceBucketM: p.distance_bucket_m ?? null,
       });
     }),
   );
