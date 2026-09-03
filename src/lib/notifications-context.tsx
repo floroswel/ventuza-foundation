@@ -110,7 +110,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     if (!user) return;
     void (async () => {
       try {
-        const { resumeNativePush, initNativePush } = await import("@/lib/native-push");
+        const { resumeNativePush } = await import("@/lib/native-push");
         const saveToken = async (token: string) => {
           await saveFcm({
             data: {

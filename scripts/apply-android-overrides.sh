@@ -10,6 +10,9 @@ fi
 
 cp android-overrides/variables.gradle android/variables.gradle
 cp -r android-overrides/res/* android/app/src/main/res/
+if [ -f android-overrides/google-services.json ]; then
+  cp android-overrides/google-services.json android/app/google-services.json
+fi
 mkdir -p android/app/src/main/java/app/suzeta
 cp android-overrides/MainActivity.java android/app/src/main/java/app/suzeta/MainActivity.java
 cp android-overrides/SuzetaWidgetProvider.java android/app/src/main/java/app/suzeta/SuzetaWidgetProvider.java

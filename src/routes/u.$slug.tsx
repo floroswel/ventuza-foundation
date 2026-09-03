@@ -153,24 +153,29 @@ function PublicProfilePage() {
 
   if (!profile) {
     const needsAgeVerification = !!loadError && loadError.includes("age_verification_required");
+    const needsEmailConfirmation = !!loadError && loadError.includes("email_not_confirmed");
     const needsAuth = !!loadError && loadError.includes("not_authenticated");
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background px-6 text-center">
         <h1 className="text-xl font-medium">
           {needsAgeVerification
             ? "Verificare 18+ necesară"
-            : needsAuth
-              ? "Trebuie să fii conectat"
-              : "Profil indisponibil"}
+            : needsEmailConfirmation
+              ? "Confirmă-ți emailul"
+              : needsAuth
+                ? "Trebuie să fii conectat"
+                : "Profil indisponibil"}
         </h1>
         <p className="text-sm text-muted-foreground">
           {needsAgeVerification
             ? "Profilurile altor utilizatori sunt vizibile doar după verificarea vârstei."
-            : needsAuth
-              ? "Conectează-te pentru a vedea profilurile."
-              : loadError
-                ? "Nu am putut încărca profilul. Încearcă din nou."
-                : "Link-ul nu mai este valid sau profilul a fost ascuns."}
+            : needsEmailConfirmation
+              ? "Confirmă adresa de email pentru a vedea persoane și a folosi funcțiile sociale."
+              : needsAuth
+                ? "Conectează-te pentru a vedea profilurile."
+                : loadError
+                  ? "Nu am putut încărca profilul. Încearcă din nou."
+                  : "Link-ul nu mai este valid sau profilul a fost ascuns."}
         </p>
         {needsAgeVerification ? (
           <Link
@@ -179,13 +184,13 @@ function PublicProfilePage() {
           >
             Începe verificarea
           </Link>
-        ) : needsAuth ? (
+        ) : needsEmailConfirmation || needsAuth ? (
           <Link
             to="/auth"
             search={{ mode: "login" }}
             className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground"
           >
-            Conectează-te
+            Intră în cont
           </Link>
         ) : (
           <Link to="/" className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground">
