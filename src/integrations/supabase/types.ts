@@ -6347,6 +6347,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      enqueue_verification_reminders: { Args: never; Returns: number }
       ensure_referral_code: { Args: never; Returns: string }
       equals: { Args: { geom1: unknown; geom2: unknown }; Returns: boolean }
       escalate_due_safety_checkins: { Args: never; Returns: number }
@@ -6535,7 +6536,14 @@ export type Database = {
           bio: string
           birthdate: string
           body_type: string
+          cannabis: string
+          children: string
+          company: string
+          dealbreakers: string[]
+          diet: string
           display_name: string
+          drinking: string
+          education: string
           gender: string[]
           height_cm: number
           hide_age: boolean
@@ -6543,18 +6551,24 @@ export type Database = {
           ideal_match: string
           interests: string[]
           job_title: string
+          languages: string[]
+          pets: string[]
           photos: string[]
           position: string
           preferred_language: string
           profile_slug: string
           prompts: Json
           pronouns: string[]
+          school: string
+          sleep_schedule: string
+          smoking: string
           tribes: string[]
           verified: boolean
           verified_at: string
           video_clip_path: string
           voice_prompt_path: string
           voice_prompt_question: string
+          workout: string
           zodiac: string
         }[]
       }
