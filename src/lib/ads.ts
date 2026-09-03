@@ -88,25 +88,8 @@ export async function sendWoof(receiverId: string) {
     .from("woofs")
     .insert({ sender_id: u.user.id, receiver_id: receiverId });
   if (error && !/duplicate/i.test(error.message)) throw error;
-  // Push woof. Row `notifications` e creat de triggerul DB `woofs_notify`
-  // (mirror al `taps_notify`). Respectă discrete_mode + prefs.
-  void (async () => {
-    try {
-      const { sendPushToUser } = await import("@/lib/push.functions");
-      await sendPushToUser({
-        data: {
-          toUserId: receiverId,
-          title: "Cineva ți-a dat woof! 🐺",
-          body: "Deschide Suzeta să vezi cine.",
-          url: "/notifications",
-          tag: `woof:${u.user.id}:${receiverId}`,
-          category: "taps",
-        },
-      });
-    } catch (e) {
-      console.warn("[ads] woof push failed", e);
-    }
-  })();
+  // Notificarea și push-ul sunt create exclusiv de triggerul DB `woofs_notify`.
+  // Clientul nu trimite push-uri; triggerul aplică preferințele și privacy gates.
 }
 
 export async function hasWoofed(receiverId: string): Promise<boolean> {

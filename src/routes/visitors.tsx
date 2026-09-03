@@ -8,10 +8,11 @@ import { BottomNav } from "@/components/BottomNav";
 import { EmptyState } from "@/components/EmptyState";
 import { getOrCreateConversation } from "@/lib/chat";
 import { toast } from "sonner";
+import { withGuardian } from "@/components/with-guardian";
 
 export const Route = createFileRoute("/visitors")({
   head: () => ({ meta: [{ title: "Visitors — Suzeta" }] }),
-  component: VisitorsPage,
+  component: withGuardian("visitors", VisitorsPage, "matching"),
 });
 
 type Visitor = {
@@ -21,6 +22,7 @@ type Visitor = {
   display_name: string | null;
   photo: string | null;
   age: number | null;
+  slug: string | null;
 };
 
 async function signPhoto(p: string | null): Promise<string | null> {
@@ -101,6 +103,7 @@ function VisitorsPage() {
           display_name: string | null;
           photos: string[] | null;
           birthdate: string | null;
+          profile_slug: string | null;
         };
         const profMap = new Map<string, Prow>();
         for (const p of (profs ?? []) as Prow[]) profMap.set(p.id, p);
@@ -117,6 +120,7 @@ function VisitorsPage() {
             display_name: p.display_name ?? null,
             photo: await signPhoto(p.photos?.[0] ?? null),
             age: age(p.birthdate),
+            slug: p.profile_slug ?? p.id,
           });
         }
         out.sort(
@@ -167,24 +171,29 @@ function VisitorsPage() {
                 key={v.viewer_id}
                 className="group overflow-hidden rounded-2xl border border-border bg-surface"
               >
-                <div className="relative aspect-[3/4] bg-muted">
-                  {v.photo ? (
-                    <img src={v.photo} alt="" className="size-full object-cover" />
-                  ) : (
-                    <div className="flex size-full items-center justify-center text-3xl text-muted-foreground/40">
-                      {(v.display_name ?? "?").slice(0, 1)}
+                <button
+                  onClick={() => navigate({ to: "/u/$slug", params: { slug: v.slug ?? v.viewer_id } })}
+                  className="relative block w-full text-left transition-transform active:scale-[0.98]"
+                >
+                  <div className="relative aspect-[3/4] bg-muted">
+                    {v.photo ? (
+                      <img src={v.photo} alt="" className="size-full object-cover" />
+                    ) : (
+                      <div className="flex size-full items-center justify-center text-3xl text-muted-foreground/40">
+                        {(v.display_name ?? "?").slice(0, 1)}
+                      </div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-2">
+                      <p className="truncate text-sm font-medium text-white">
+                        {v.display_name ?? "Utilizator Suzeta"}
+                        {v.age ? <span className="text-white/70">, {v.age}</span> : null}
+                      </p>
+                      <p className="text-[10px] text-white/60">
+                        {fmt(v.last_viewed_at)} · {v.view_count} view{v.view_count > 1 ? "s" : ""}
+                      </p>
                     </div>
-                  )}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-2">
-                    <p className="truncate text-sm font-medium text-white">
-                      {v.display_name ?? "Utilizator Suzeta"}
-                      {v.age ? <span className="text-white/70">, {v.age}</span> : null}
-                    </p>
-                    <p className="text-[10px] text-white/60">
-                      {fmt(v.last_viewed_at)} · {v.view_count} view{v.view_count > 1 ? "s" : ""}
-                    </p>
                   </div>
-                </div>
+                </button>
                 <button
                   onClick={async () => {
                     try {

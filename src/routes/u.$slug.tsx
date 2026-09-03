@@ -18,12 +18,14 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Chip } from "@/components/Chip";
 import { ProfileBadgesRow } from "@/components/ProfileBadgesRow";
+import { ReportBlockDialog } from "@/components/ReportBlockDialog";
 import { ProfilePhotoGallery } from "@/components/ProfilePhotoGallery";
 import { formatHeight } from "@/lib/discover";
 import { useOptionLabel } from "@/lib/i18n/option-labels";
 import { PositionTag } from "@/components/PositionTag";
 import { translateProfile } from "@/lib/translate.functions";
 import { useAuth } from "@/lib/auth-context";
+import { withGuardian } from "@/components/with-guardian";
 
 
 export const Route = createFileRoute("/u/$slug")({
@@ -35,7 +37,7 @@ export const Route = createFileRoute("/u/$slug")({
       { property: "og:type", content: "profile" },
     ],
   }),
-  component: PublicProfilePage,
+  component: withGuardian("profile", PublicProfilePage, "matching"),
 });
 
 function age(iso?: string | null) {
@@ -59,10 +61,6 @@ function PublicProfilePage() {
   const [signedVoice, setSignedVoice] = useState<string | null>(null);
   const [signedVideo, setSignedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  // `get_profile_by_slug` rulează `assert_age_verified()` → `assert_account_usable()`,
-  // care ridică excepții (`age_verification_required`, `not_authenticated`,
-  // `account_temporarily_banned`) cu ERRCODE 42501. Eroarea RPC era complet
-  // ignorată, deci orice refuz al gate-ului apărea ca „Profil indisponibil".
   const [loadError, setLoadError] = useState<string | null>(null);
   const [translation, setTranslation] = useState<{
     bio?: string | null;
@@ -116,7 +114,6 @@ function PublicProfilePage() {
     })();
   }, [slug]);
 
-  // Auto-translate if viewer's language differs from author's stated language.
   useEffect(() => {
     if (!canTranslate || translation) return;
     const supported = ["ro", "en", "es", "fr", "de", "it", "pt", "pl"];
@@ -155,27 +152,30 @@ function PublicProfilePage() {
   }
 
   if (!profile) {
-    // Cererea respinsă de un gate NU este același lucru cu „profil inexistent".
-    // Fără această distincție, un refuz de verificare 18+ arăta ca un link rupt.
     const needsAgeVerification = !!loadError && loadError.includes("age_verification_required");
+    const needsEmailConfirmation = !!loadError && loadError.includes("email_not_confirmed");
     const needsAuth = !!loadError && loadError.includes("not_authenticated");
     return (
       <main className="flex min-h-dvh flex-col items-center justify-center gap-4 bg-background px-6 text-center">
         <h1 className="text-xl font-medium">
           {needsAgeVerification
             ? "Verificare 18+ necesară"
-            : needsAuth
-              ? "Trebuie să fii conectat"
-              : "Profil indisponibil"}
+            : needsEmailConfirmation
+              ? "Confirmă-ți emailul"
+              : needsAuth
+                ? "Trebuie să fii conectat"
+                : "Profil indisponibil"}
         </h1>
         <p className="text-sm text-muted-foreground">
           {needsAgeVerification
             ? "Profilurile altor utilizatori sunt vizibile doar după verificarea vârstei."
-            : needsAuth
-              ? "Conectează-te pentru a vedea profilurile."
-              : loadError
-                ? "Nu am putut încărca profilul. Încearcă din nou."
-                : "Link-ul nu mai este valid sau profilul a fost ascuns."}
+            : needsEmailConfirmation
+              ? "Confirmă adresa de email pentru a vedea persoane și a folosi funcțiile sociale."
+              : needsAuth
+                ? "Conectează-te pentru a vedea profilurile."
+                : loadError
+                  ? "Nu am putut încărca profilul. Încearcă din nou."
+                  : "Link-ul nu mai este valid sau profilul a fost ascuns."}
         </p>
         {needsAgeVerification ? (
           <Link
@@ -184,13 +184,13 @@ function PublicProfilePage() {
           >
             Începe verificarea
           </Link>
-        ) : needsAuth ? (
+        ) : needsEmailConfirmation || needsAuth ? (
           <Link
             to="/auth"
             search={{ mode: "login" }}
             className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground"
           >
-            Conectează-te
+            Intră în cont
           </Link>
         ) : (
           <Link to="/" className="rounded-full bg-primary px-5 py-2 text-sm text-primary-foreground">
@@ -243,8 +243,6 @@ function PublicProfilePage() {
       </section>
 
       <div className="space-y-6 px-6 pt-6">
-        {/* Acțiuni pentru vizitatori logați. Gate-ul 18+ e server-side; aici doar
-            traducem eroarea în mesaj clar + link la verificare. */}
         {user && profile.id && user.id !== profile.id && (
           <ProfileActions targetId={profile.id} name={profile.display_name ?? "profil"} />
         )}
@@ -271,7 +269,6 @@ function PublicProfilePage() {
             )}
           </div>
         )}
-
 
         {signedVideo && (
           <div className="rounded-2xl border border-border bg-surface p-3">
@@ -405,6 +402,37 @@ function PublicProfilePage() {
           </section>
         )}
 
+        <LifestyleSection profile={profile} />
+
+        {profile.dealbreakers?.length > 0 && (
+          <section>
+            <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Dealbreakers
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {profile.dealbreakers.map((d: string) => (
+                <Chip key={d} active>
+                  🚫 {d}
+                </Chip>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Raportare/blocare direct din profil: siguranța nu trebuie să ceară
+            un ocol prin chat sau prin grila Discover. */}
+        {user && profile.id && user.id !== profile.id && (
+          <div className="flex justify-center pt-2">
+            <ReportBlockDialog
+              targetUserId={profile.id}
+              targetName={profile.display_name ?? undefined}
+              onBlocked={() => router.history.back()}
+            />
+          </div>
+        )}
+
+
+
         {user ? (
           <button
             type="button"
@@ -428,9 +456,57 @@ function PublicProfilePage() {
 }
 
 /**
- * Bara de acțiuni de pe profilul public, pentru vizitatori logați.
- * „Mesaj" deschide/creează conversația (RPC gated 18+), „Salvează" adaugă la favorite.
+ * Faptele de lifestyle vin din `get_profile_by_slug`. Proiecția server-side
+ * exclude deja datele sensibile GDPR Art. 9 (religie, orientare politică,
+ * sănătate, consum de droguri) — aici doar le afișăm pe cele sigure.
  */
+function LifestyleSection({ profile }: { profile: any }) {
+  const facts: Array<[string, string]> = [];
+  const add = (emoji: string, value: unknown) => {
+    if (typeof value === "string" && value.trim()) facts.push([emoji, value]);
+  };
+
+  add("🎓", profile.education);
+  add("🏫", profile.school);
+  add("🏢", profile.company);
+  add("👶", profile.children);
+  add("🍷", profile.drinking);
+  add("🚬", profile.smoking);
+  add("🌿", profile.cannabis);
+  add("💪", profile.workout);
+  add("🥗", profile.diet);
+  add("🌙", profile.sleep_schedule);
+
+  const languages: string[] = Array.isArray(profile.languages) ? profile.languages : [];
+  const pets: string[] = Array.isArray(profile.pets) ? profile.pets : [];
+
+  if (!facts.length && !languages.length && !pets.length) return null;
+
+  return (
+    <section>
+      <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">Lifestyle</h2>
+      <div className="flex flex-wrap gap-2">
+        {languages.map((l) => (
+          <Chip key={`lang-${l}`} active>
+            🗣 {l}
+          </Chip>
+        ))}
+        {pets.map((p) => (
+          <Chip key={`pet-${p}`} active>
+            🐾 {p}
+          </Chip>
+        ))}
+        {facts.map(([emoji, value]) => (
+          <Chip key={`${emoji}-${value}`} active>
+            {emoji} {value}
+          </Chip>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+
 function ProfileActions({ targetId, name }: { targetId: string; name: string }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState<null | "msg" | "fav">(null);

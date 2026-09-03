@@ -110,7 +110,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
     if (!user) return;
     void (async () => {
       try {
-        const { resumeNativePush, initNativePush } = await import("@/lib/native-push");
+        const { resumeNativePush } = await import("@/lib/native-push");
         const saveToken = async (token: string) => {
           await saveFcm({
             data: {
@@ -120,17 +120,9 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
             },
           });
         };
-        const resumed = await resumeNativePush({ saveToken });
-        // Fără token FCM în `push_subscriptions` NU există notificare cu
-        // aplicația închisă. Flag-ul „am întrebat o dată" din localStorage
-        // bloca definitiv înregistrarea (localStorage se poate goli, iar
-        // permisiunea putea fi acordată ulterior din Setările telefonului).
-        // Încercăm la fiecare pornire: Android limitează singur dialogul de
-        // permisiune, iar dacă permisiunea există deja, apelul doar salvează
-        // tokenul — fără niciun dialog.
-        if (!resumed.ok) {
-          await initNativePush({ saveToken });
-        }
+        // Reluăm doar tokenul și listener-ele deja autorizate. Cererea de
+        // permisiune rămâne exclusiv în acțiunea explicită „Activează push”.
+        await resumeNativePush({ saveToken });
 
       } catch (e) {
         console.warn("[notifications] resumeNativePush failed", e);

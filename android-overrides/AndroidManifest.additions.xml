@@ -22,6 +22,10 @@
 <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
 
+<!-- Android 13+: notificările sunt cerute doar din acțiunea explicită a userului. -->
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+
 <!--
   App Links pentru email confirmation, reset password și revenirea din Didit.
   Se injectează în <activity android:name="...MainActivity"> în build-ul Android.

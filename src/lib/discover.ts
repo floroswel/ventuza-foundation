@@ -62,6 +62,7 @@ export type DiscoverProfile = {
   verified: boolean;
   distance_m: number | null;
   score: number;
+  profile_slug?: string | null;
   boost_until: string | null;
   travel_city: string | null;
   travel_until: string | null;

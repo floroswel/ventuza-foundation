@@ -190,7 +190,7 @@ export async function sendFcmOne(
           color: "#E11D48",
           // Sunetul și vibrația implicite ale canalului (canalul are ultimul
           // cuvânt pe Android 8+, dar pe 7.x aceste flag-uri contează).
-          sound: "default",
+          // Nu setăm `sound`: canalul Android versionat controlează sunetul.
           default_vibrate_timings: true,
           default_light_settings: true,
           notification_priority: channel === "system" || channel === "updates_v1" ? "PRIORITY_DEFAULT" : "PRIORITY_HIGH",
