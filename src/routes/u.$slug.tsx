@@ -450,6 +450,58 @@ function PublicProfilePage() {
   );
 }
 
+/**
+ * Faptele de lifestyle vin din `get_profile_by_slug`. Proiecția server-side
+ * exclude deja datele sensibile GDPR Art. 9 (religie, orientare politică,
+ * sănătate, consum de droguri) — aici doar le afișăm pe cele sigure.
+ */
+function LifestyleSection({ profile }: { profile: any }) {
+  const facts: Array<[string, string]> = [];
+  const add = (emoji: string, value: unknown) => {
+    if (typeof value === "string" && value.trim()) facts.push([emoji, value]);
+  };
+
+  add("🎓", profile.education);
+  add("🏫", profile.school);
+  add("🏢", profile.company);
+  add("👶", profile.children);
+  add("🍷", profile.drinking);
+  add("🚬", profile.smoking);
+  add("🌿", profile.cannabis);
+  add("💪", profile.workout);
+  add("🥗", profile.diet);
+  add("🌙", profile.sleep_schedule);
+
+  const languages: string[] = Array.isArray(profile.languages) ? profile.languages : [];
+  const pets: string[] = Array.isArray(profile.pets) ? profile.pets : [];
+
+  if (!facts.length && !languages.length && !pets.length) return null;
+
+  return (
+    <section>
+      <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">Lifestyle</h2>
+      <div className="flex flex-wrap gap-2">
+        {languages.map((l) => (
+          <Chip key={`lang-${l}`} active>
+            🗣 {l}
+          </Chip>
+        ))}
+        {pets.map((p) => (
+          <Chip key={`pet-${p}`} active>
+            🐾 {p}
+          </Chip>
+        ))}
+        {facts.map(([emoji, value]) => (
+          <Chip key={`${emoji}-${value}`} active>
+            {emoji} {value}
+          </Chip>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+
 function ProfileActions({ targetId, name }: { targetId: string; name: string }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState<null | "msg" | "fav">(null);
