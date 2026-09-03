@@ -24,6 +24,7 @@ import { useOptionLabel } from "@/lib/i18n/option-labels";
 import { PositionTag } from "@/components/PositionTag";
 import { translateProfile } from "@/lib/translate.functions";
 import { useAuth } from "@/lib/auth-context";
+import { withGuardian } from "@/components/with-guardian";
 
 
 export const Route = createFileRoute("/u/$slug")({
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/u/$slug")({
       { property: "og:type", content: "profile" },
     ],
   }),
-  component: PublicProfilePage,
+  component: withGuardian("profile", PublicProfilePage, "matching"),
 });
 
 function age(iso?: string | null) {
@@ -59,10 +60,6 @@ function PublicProfilePage() {
   const [signedVoice, setSignedVoice] = useState<string | null>(null);
   const [signedVideo, setSignedVideo] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  // `get_profile_by_slug` rulează `assert_age_verified()` → `assert_account_usable()`,
-  // care ridică excepții (`age_verification_required`, `not_authenticated`,
-  // `account_temporarily_banned`) cu ERRCODE 42501. Eroarea RPC era complet
-  // ignorată, deci orice refuz al gate-ului apărea ca „Profil indisponibil".
   const [loadError, setLoadError] = useState<string | null>(null);
   const [translation, setTranslation] = useState<{
     bio?: string | null;
@@ -116,7 +113,6 @@ function PublicProfilePage() {
     })();
   }, [slug]);
 
-  // Auto-translate if viewer's language differs from author's stated language.
   useEffect(() => {
     if (!canTranslate || translation) return;
     const supported = ["ro", "en", "es", "fr", "de", "it", "pt", "pl"];
@@ -155,8 +151,6 @@ function PublicProfilePage() {
   }
 
   if (!profile) {
-    // Cererea respinsă de un gate NU este același lucru cu „profil inexistent".
-    // Fără această distincție, un refuz de verificare 18+ arăta ca un link rupt.
     const needsAgeVerification = !!loadError && loadError.includes("age_verification_required");
     const needsAuth = !!loadError && loadError.includes("not_authenticated");
     return (
@@ -243,8 +237,6 @@ function PublicProfilePage() {
       </section>
 
       <div className="space-y-6 px-6 pt-6">
-        {/* Acțiuni pentru vizitatori logați. Gate-ul 18+ e server-side; aici doar
-            traducem eroarea în mesaj clar + link la verificare. */}
         {user && profile.id && user.id !== profile.id && (
           <ProfileActions targetId={profile.id} name={profile.display_name ?? "profil"} />
         )}
@@ -271,7 +263,6 @@ function PublicProfilePage() {
             )}
           </div>
         )}
-
 
         {signedVideo && (
           <div className="rounded-2xl border border-border bg-surface p-3">
@@ -427,10 +418,6 @@ function PublicProfilePage() {
   );
 }
 
-/**
- * Bara de acțiuni de pe profilul public, pentru vizitatori logați.
- * „Mesaj" deschide/creează conversația (RPC gated 18+), „Salvează" adaugă la favorite.
- */
 function ProfileActions({ targetId, name }: { targetId: string; name: string }) {
   const navigate = useNavigate();
   const [busy, setBusy] = useState<null | "msg" | "fav">(null);

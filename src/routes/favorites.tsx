@@ -5,14 +5,14 @@ import { toast } from "sonner";
 import { useAuth } from "@/lib/auth-context";
 import { listFavorites, removeFavorite, type FavoriteRow } from "@/lib/social";
 import { signPhotos, formatLastSeen, isOnline } from "@/lib/discover";
-import { getOrCreateConversation } from "@/lib/chat";
 import { BottomNav } from "@/components/BottomNav";
 import { cn } from "@/lib/utils";
+import { withGuardian } from "@/components/with-guardian";
 
 export const Route = createFileRoute("/favorites")({
   ssr: false,
   head: () => ({ meta: [{ title: "Favorite — Suzeta" }, { name: "robots", content: "noindex" }] }),
-  component: FavoritesPage,
+  component: withGuardian("favorites", FavoritesPage, "matching"),
 });
 
 function FavoritesPage() {
@@ -47,15 +47,6 @@ function FavoritesPage() {
     try {
       await removeFavorite(id);
       setRows((r) => r.filter((x) => x.favorite_id !== id));
-    } catch (e) {
-      toast.error((e as Error).message);
-    }
-  }
-
-  async function openChat(id: string) {
-    try {
-      const convId = await getOrCreateConversation(id);
-      navigate({ to: "/messages/$id", params: { id: convId } });
     } catch (e) {
       toast.error((e as Error).message);
     }
@@ -99,8 +90,8 @@ function FavoritesPage() {
                   className="overflow-hidden rounded-2xl border border-border bg-surface"
                 >
                   <button
-                    onClick={() => openChat(r.favorite_id)}
-                    className="relative block aspect-[3/4] w-full bg-background"
+                    onClick={() => navigate({ to: "/u/$slug", params: { slug: r.profile_slug ?? r.favorite_id } })}
+                    className="relative block aspect-[3/4] w-full bg-background transition-transform active:scale-[0.98]"
                   >
                     {photoUrl ? (
                       <img

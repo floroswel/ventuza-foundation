@@ -14,26 +14,9 @@ export async function sendTap(receiverId: string, emoji: TapEmoji) {
     .from("taps")
     .insert({ sender_id: u.user.id, receiver_id: receiverId, emoji });
   if (error) throw error;
-  // Push către receiver. Row `notifications` (toast + badge) e creat de
-  // triggerul DB `taps_notify`. `sendPushToUser` respectă master_push,
-  // per-category (`taps`), quiet hours și discrete_mode.
-  void (async () => {
-    try {
-      const { sendPushToUser } = await import("@/lib/push.functions");
-      await sendPushToUser({
-        data: {
-          toUserId: receiverId,
-          title: `Cineva ți-a trimis ${emoji}`,
-          body: "Deschide Suzeta să răspunzi.",
-          url: "/notifications",
-          tag: `tap:${u.user.id}:${receiverId}`,
-          category: "taps",
-        },
-      });
-    } catch (e) {
-      console.warn("[social] tap push failed", e);
-    }
-  })();
+  // Notificarea și push-ul sunt create exclusiv de triggerul DB `taps_notify`.
+  // Clientul nu trimite push-uri: astfel rămân active gate-urile, preferințele
+  // și corpul generic impuse server-side.
 }
 
 export async function addFavorite(targetId: string) {
@@ -74,6 +57,7 @@ export type FavoriteRow = {
   display_name: string | null;
   photos: string[] | null;
   last_seen: string | null;
+  profile_slug: string | null;
 };
 
 export async function listFavorites(): Promise<FavoriteRow[]> {
@@ -93,13 +77,14 @@ export async function listFavorites(): Promise<FavoriteRow[]> {
 
   const map = new Map<
     string,
-    { display_name: string | null; photos: string[] | null; last_seen: string | null }
+    { display_name: string | null; photos: string[] | null; last_seen: string | null; profile_slug: string | null }
   >();
   (profs ?? []).forEach((p: unknown) =>
     map.set((p as { id: string }).id, {
       display_name: (p as { display_name: string | null }).display_name,
       photos: (p as { photos: string[] | null }).photos,
-      last_seen: (p as { last_seen: string | null }).last_seen,
+      last_seen: (p as { last_seen: string | null; profile_slug: string | null }).last_seen,
+      profile_slug: (p as { profile_slug: string | null }).profile_slug || (p as { id: string }).id,
     }),
   );
   return (favs ?? [])

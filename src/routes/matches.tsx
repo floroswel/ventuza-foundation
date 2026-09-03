@@ -61,10 +61,6 @@ const EMPTY: Record<TabKey, { title: string; body: string }> = {
   },
 };
 
-/**
- * Timp cu ORA vizibilă: relativ pentru azi/ieri, dată + oră pentru mai vechi.
- * „acum 12 min”, „acum 2 ore”, „ieri, 21:40”, „04.08.2026, 18:12”.
- */
 function timeAgo(iso: string) {
   const then = new Date(iso);
   if (Number.isNaN(then.getTime())) return "";
@@ -84,7 +80,6 @@ function timeAgo(iso: string) {
   return `${safeFormat(then, { day: "2-digit", month: "2-digit", year: "numeric" }, "date")}, ${hhmm}`;
 }
 
-/** Marcaj local „ce am văzut deja” per tab — nu are nevoie de backend. */
 function seenKey(uid: string, tab: TabKey) {
   return `vz_matches_seen:${uid}:${tab}`;
 }
@@ -102,7 +97,6 @@ function writeSeen(uid: string, tab: TabKey, at: number) {
   try {
     window.localStorage.setItem(seenKey(uid, tab), String(at));
   } catch {
-    /* private mode */
   }
 }
 
@@ -113,14 +107,12 @@ function MatchesPage() {
   const [rows, setRows] = useState<PersonRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [opening, setOpening] = useState<string | null>(null);
-  // Praguri „văzut până la” per tab (timestamp ms), citite din localStorage.
   const [seenAt, setSeenAt] = useState<Record<TabKey, number>>({
     matches: 0,
     visits: 0,
     taps: 0,
     favorites: 0,
   });
-  // Contoare de intrări noi per tab, calculate la încărcarea fiecărui tab.
   const [newCounts, setNewCounts] = useState<Record<TabKey, number>>({
     matches: 0,
     visits: 0,
@@ -241,14 +233,11 @@ function MatchesPage() {
         const profiles = await fetchPublicProfiles(
           Array.from(new Set(base.map((r) => r.other_id))),
         );
-        // Profilurile invizibile (blocate / șterse / incognito) nu apar deloc.
         const enriched = base
           .map((r) => ({ ...r, profile: profiles.get(r.other_id) ?? null }))
           .filter((r) => r.profile);
         if (!alive) return;
         setRows(enriched);
-        // Contor „nou de la ultima vizită”: pragul rămâne înghețat cât stai pe
-        // tab (ca să vezi ce e nou), dar se salvează imediat ca văzut.
         const threshold = readSeen(user.id, tab);
         const fresh = enriched.filter((r) => new Date(r.at).getTime() > threshold).length;
         setSeenAt((prev) => ({ ...prev, [tab]: threshold }));
@@ -268,29 +257,8 @@ function MatchesPage() {
     };
   }, [user, tab, loadTab]);
 
-  /**
-   * Vizite / Tap-uri / Favoriți → profilul persoanei (acolo există deja buton
-   * de mesaj). Potriviri → direct conversația, acolo are sens.
-   */
   function openPerson(row: PersonRow) {
-    if (tab === "matches") {
-      void openChat(row.other_id);
-      return;
-    }
-    navigate({ to: "/u/$slug", params: { slug: row.other_id } });
-  }
-
-  async function openChat(otherId: string) {
-    if (opening) return;
-    setOpening(otherId);
-    try {
-      const convId = await getOrCreateConversation(otherId);
-      navigate({ to: "/messages/$id", params: { id: convId } });
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setOpening(null);
-    }
+    navigate({ to: "/u/$slug", params: { slug: row.profile?.slug ?? row.other_id } });
   }
 
   const empty = useMemo(() => EMPTY[tab], [tab]);
@@ -326,7 +294,7 @@ function MatchesPage() {
                 {label}
                 {badge > 0 && (
                   <span
-                    aria-label={`${badge} noi`}
+                    aria-label="${badge} noi"
                     className="absolute right-1.5 top-0.5 min-w-[16px] rounded-full bg-primary px-1 text-[9px] font-bold leading-4 text-primary-foreground"
                   >
                     {badge > 9 ? "9+" : badge}
@@ -335,7 +303,6 @@ function MatchesPage() {
               </button>
             );
           })}
-
         </div>
       </header>
 
@@ -353,7 +320,6 @@ function MatchesPage() {
                 <button
                   type="button"
                   onClick={() => openPerson(m)}
-                  disabled={opening === m.other_id}
                   className={cn(
                     "group relative flex aspect-[3/4] w-full flex-col justify-end overflow-hidden rounded-2xl border border-primary/25 bg-surface text-left shadow-sm transition-transform",
                     "hover:-translate-y-0.5 hover:shadow-[0_0_20px_hsl(var(--primary)/0.25)]",
@@ -395,11 +361,6 @@ function MatchesPage() {
                       className="size-2.5"
                     />
                   </div>
-                  {opening === m.other_id && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-background/60">
-                      <Loader2 className="size-5 animate-spin text-primary" />
-                    </div>
-                  )}
                 </button>
               </li>
             ))}

@@ -127,6 +127,7 @@ export type PublicProfileMini = {
   /** Călător: e plecat în alt oraș → afișăm avion, nu bulină verde. */
   traveler: boolean;
   travelCity: string | null;
+  slug: string | null;
   /** Emoticon ales de user în locul pozei („persoană discretă”). */
   discreetAvatar: string | null;
 };
@@ -147,6 +148,7 @@ export async function fetchPublicProfiles(
     travel_city?: string | null;
     travel_until?: string | null;
     discreet_avatar?: string | null;
+    profile_slug?: string | null;
   }>;
   const now = Date.now();
   await Promise.all(
@@ -163,6 +165,7 @@ export async function fetchPublicProfiles(
         online: isOnline,
         traveler,
         travelCity: p.travel_city ?? null,
+        slug: p.profile_slug ?? p.id,
         discreetAvatar: p.discreet_avatar ?? null,
       });
     }),
