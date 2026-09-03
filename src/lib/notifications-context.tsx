@@ -120,9 +120,30 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
             },
           });
         };
-        // Reluăm doar tokenul și listener-ele deja autorizate. Cererea de
-        // permisiune rămâne exclusiv în acțiunea explicită „Activează push”.
-        await resumeNativePush({ saveToken });
+        // Reluăm tokenul și listener-ele deja autorizate.
+        const resumed = await resumeNativePush({ saveToken });
+        // Pe Android, dacă permisiunea n-a fost niciodată cerută, o cerem O
+        // SINGURĂ DATĂ după login: fără token FCM notificările nu ajung deloc
+        // în aplicație (userul le primea doar în browser, iar tap-ul îl scotea
+        // din aplicație). Refuzul se respectă — nu mai insistăm.
+        if (!resumed.ok && resumed.reason === "not_granted") {
+          const askedKey = `vz_native_push_asked:${user.id}`;
+          let asked = "1";
+          try {
+            asked = window.localStorage.getItem(askedKey) ?? "";
+          } catch {
+            asked = "1";
+          }
+          if (!asked) {
+            try {
+              window.localStorage.setItem(askedKey, String(Date.now()));
+            } catch {
+              /* noop */
+            }
+            const { initNativePush } = await import("@/lib/native-push");
+            await initNativePush({ saveToken });
+          }
+        }
 
       } catch (e) {
         console.warn("[notifications] resumeNativePush failed", e);
