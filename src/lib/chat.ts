@@ -130,6 +130,8 @@ export type PublicProfileMini = {
   slug: string | null;
   /** Emoticon ales de user în locul pozei („persoană discretă”). */
   discreetAvatar: string | null;
+  /** Distanță deja bucketizată server-side (metri). Niciodată exactă. */
+  distanceBucketM: number | null;
 };
 
 export async function fetchPublicProfiles(
