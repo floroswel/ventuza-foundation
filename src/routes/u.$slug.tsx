@@ -396,6 +396,37 @@ function PublicProfilePage() {
           </section>
         )}
 
+        <LifestyleSection profile={profile} />
+
+        {profile.dealbreakers?.length > 0 && (
+          <section>
+            <h2 className="mb-2 text-xs uppercase tracking-[0.2em] text-muted-foreground">
+              Dealbreakers
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {profile.dealbreakers.map((d: string) => (
+                <Chip key={d} active>
+                  🚫 {d}
+                </Chip>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Raportare/blocare direct din profil: siguranța nu trebuie să ceară
+            un ocol prin chat sau prin grila Discover. */}
+        {user && profile.id && user.id !== profile.id && (
+          <div className="flex justify-center pt-2">
+            <ReportBlockDialog
+              targetUserId={profile.id}
+              targetName={profile.display_name ?? undefined}
+              onBlocked={() => router.history.back()}
+            />
+          </div>
+        )}
+
+
+
         {user ? (
           <button
             type="button"
