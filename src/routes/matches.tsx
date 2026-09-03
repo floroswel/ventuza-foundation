@@ -11,6 +11,7 @@ import { PresenceDot } from "@/components/PresenceDot";
 import { cn } from "@/lib/utils";
 import { withGuardian } from "@/components/with-guardian";
 import { safeFormat } from "@/lib/safe-locale";
+import { formatDistance } from "@/lib/discover";
 import { dayKey } from "@/components/ui-kit/DaySeparator";
 
 export const Route = createFileRoute("/matches")({
@@ -104,6 +105,7 @@ function MatchesPage() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<TabKey>("matches");
+  const [favDir, setFavDir] = useState<"mine" | "theirs">("mine");
   const [rows, setRows] = useState<PersonRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [opening, setOpening] = useState<string | null>(null);
@@ -206,6 +208,17 @@ function MatchesPage() {
         return merged.filter((r) => (seen.has(r.other_id) ? false : (seen.add(r.other_id), true)));
       }
 
+      if (favDir === "theirs") {
+        const { data, error } = await supabase.rpc("get_favorited_me" as never);
+        if (error) throw error;
+        return ((data ?? []) as Array<{ user_id: string; created_at: string }>).map((f) => ({
+          key: `fm-${f.user_id}`,
+          other_id: f.user_id,
+          at: f.created_at,
+          profile: null,
+        }));
+      }
+
       const { data, error } = await supabase
         .from("favorites")
         .select("favorite_id, created_at")
@@ -220,7 +233,7 @@ function MatchesPage() {
         profile: null,
       }));
     },
-    [],
+    [favDir],
   );
 
   useEffect(() => {
@@ -304,6 +317,28 @@ function MatchesPage() {
             );
           })}
         </div>
+        {tab === "favorites" && (
+          <div className="flex gap-2 px-3 pb-2">
+            {([
+              { k: "mine" as const, l: "Pe cine am salvat" },
+              { k: "theirs" as const, l: "Cine m-a salvat" },
+            ]).map(({ k, l }) => (
+              <button
+                key={k}
+                type="button"
+                onClick={() => setFavDir(k)}
+                className={cn(
+                  "flex-1 rounded-full border px-3 py-1 text-[11px] font-medium transition-colors",
+                  favDir === k
+                    ? "border-primary/60 bg-primary/15 text-primary"
+                    : "border-primary/20 text-muted-foreground",
+                )}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
+        )}
       </header>
 
       <div className="flex-1 px-4 py-4">
@@ -354,6 +389,11 @@ function MatchesPage() {
                         {m.profile?.name ?? "—"}
                       </p>
                       <p className="text-[11px] text-white/70">{timeAgo(m.at)}</p>
+                      {m.profile?.distanceBucketM != null && (
+                        <p className="text-[11px] text-white/60">
+                          {formatDistance(m.profile.distanceBucketM)}
+                        </p>
+                      )}
                     </div>
                     <PresenceDot
                       online={!!m.profile?.online}
