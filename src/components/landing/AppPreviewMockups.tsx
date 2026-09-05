@@ -41,7 +41,7 @@ function DiscoverPreview() {
         <MapPin className="size-3 text-muted-foreground" aria-hidden />
       </div>
       <div className="grid grid-cols-3 gap-px bg-border">
-        {["A", "M", "R", "V", "D", "L", "S", "T", "C", "N", "B", "F"].map((i, idx) => (
+        {["A", "M", "R", "V", "D", "L", "S", "T", "C", "N", "B", "F", "G", "I", "P", "E", "O", "K"].map((i, idx) => (
           <Tile key={i} initial={i} live={idx % 4 === 0} />
         ))}
       </div>
