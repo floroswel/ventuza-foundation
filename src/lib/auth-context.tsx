@@ -18,9 +18,16 @@ const Ctx = createContext<AuthCtx>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Fast path: dacă sesiunea e deja pe device și validă, pornim direct logat.
+  // Fără asta, aplicația stă pe splash până răspunde bridge-ul nativ / rețeaua.
+  const cached = useRef<Session | null>(null);
+  if (cached.current === null && typeof window !== "undefined") {
+    cached.current = readCachedSession();
+  }
+  const [session, setSession] = useState<Session | null>(cached.current);
+  const [loading, setLoading] = useState(!cached.current);
   const linkedRef = useRef<string | null>(null);
+
 
   useEffect(() => {
     let cancelled = false;
