@@ -27,8 +27,8 @@ export function installCtaLabel(
   variant: InstallCtaVariant,
   appInstalled: boolean | null,
 ): string {
-  if (appInstalled) return "Deschide în aplicație";
-  return variant === "open_app" ? "Deschide în aplicație" : "Get it on Google Play";
+  if (appInstalled) return "Open the app";
+  return variant === "open_app" ? "Open the app" : "Get it on Google Play";
 }
 
 /** Variantă scurtă, pentru bannerul sticky. */
@@ -36,6 +36,6 @@ export function installCtaShortLabel(
   variant: InstallCtaVariant,
   appInstalled: boolean | null,
 ): string {
-  if (appInstalled) return "Deschide";
-  return variant === "open_app" ? "Deschide" : "Instalează";
+  if (appInstalled) return "Open";
+  return variant === "open_app" ? "Open" : "Install";
 }

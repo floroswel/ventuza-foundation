@@ -21,7 +21,7 @@ import {
 import { getInstallCtaVariant, installCtaLabel } from "@/lib/install-ab-test";
 import { FunnelDebugOverlay } from "@/components/FunnelDebugOverlay";
 import { GetAppBanner } from "@/components/GetAppBanner";
-import { ScreenshotGallery, type Shot } from "@/components/landing/ScreenshotGallery";
+import { AppPreviewMockups } from "@/components/landing/AppPreviewMockups";
 
 
 import { useAuth } from "@/lib/auth-context";
@@ -206,16 +206,6 @@ const STEPS = [
   },
 ];
 
-/**
- * Capturi reale din aplicație. Nu există încă în repo, deci rămân
- * placeholdere marcate; adaugă fișierele în `public/screenshots/`.
- */
-const SHOTS: Shot[] = [
-  { label: "Discover", expectedFile: "/screenshots/discover.jpg" },
-  { label: "Chat", expectedFile: "/screenshots/chat.jpg" },
-  { label: "Profile", expectedFile: "/screenshots/profile.jpg" },
-  { label: "Privacy", expectedFile: "/screenshots/privacy.jpg" },
-];
 
 function Eyebrow({ children }: { children: React.ReactNode }) {
   return (
@@ -343,7 +333,7 @@ function Landing() {
           <Eyebrow>Inside the app</Eyebrow>
           <SectionTitle>What it looks like</SectionTitle>
           <div className="mt-5">
-            <ScreenshotGallery shots={SHOTS} />
+            <AppPreviewMockups />
           </div>
         </section>
 
