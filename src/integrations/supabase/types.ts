@@ -6475,6 +6475,13 @@ export type Database = {
           risk_level: string
         }[]
       }
+      get_favorited_me: {
+        Args: never
+        Returns: {
+          created_at: string
+          user_id: string
+        }[]
+      }
       get_local_leaderboard: {
         Args: { _radius_km?: number }
         Returns: {
@@ -6581,6 +6588,7 @@ export type Database = {
           boost_until: string
           discreet_avatar: string
           display_name: string
+          distance_bucket_m: number
           gender: string[]
           height_cm: number
           hide_age: boolean
