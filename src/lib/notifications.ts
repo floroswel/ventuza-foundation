@@ -10,7 +10,9 @@ export type NotificationType =
   | "event_reminder"
   | "tap"
   | "like"
-  | "favorite";
+  | "favorite"
+  | "admin_message"
+  | "partner_broadcast";
 
 export type NotificationRow = {
   id: string;
