@@ -14,7 +14,12 @@ const LINKS: { to: string; label: string }[] = [
   { to: "/contact", label: "Contact & support" },
   { to: "/legal/privacy", label: "Privacy Policy" },
   { to: "/legal/terms", label: "Terms of Service" },
+  { to: "/legal/cookies", label: "Cookies" },
+  { to: "/legal/gdpr-center", label: "Your privacy choices" },
   { to: "/legal/transparency-report", label: "Transparency report" },
+  { to: "/legal/dsa", label: "DSA contact point" },
+  { to: "/advertise", label: "Advertise with us" },
+  { to: "/status", label: "Service status" },
   { to: "/support-us", label: "Support Suzeta" },
   { to: "/account-deletion", label: "Account deletion" },
 ];
