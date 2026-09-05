@@ -426,9 +426,24 @@ export async function prefetchProfilePhotos(
 
 
 
+/**
+ * Înregistrează o vizită pe profilul altcuiva. Deduplicat 1h per profil ca să
+ * nu umflăm lista „Vizite" când cineva revine de câteva ori.
+ */
 export async function logProfileView(viewedId: string) {
+  const { data: u } = await supabase.auth.getUser();
+  const me = u.user?.id;
+  if (!me || !viewedId || me === viewedId) return;
+  const key = `vz_view:${viewedId}`;
+  try {
+    const last = Number(window.localStorage.getItem(key) ?? 0);
+    if (Date.now() - last < 60 * 60 * 1000) return;
+    window.localStorage.setItem(key, String(Date.now()));
+  } catch {
+    /* storage indisponibil → logăm oricum */
+  }
   await supabase.from("profile_views").insert({
     viewed_id: viewedId,
-    viewer_id: (await supabase.auth.getUser()).data.user?.id ?? "",
+    viewer_id: me,
   } as never);
 }

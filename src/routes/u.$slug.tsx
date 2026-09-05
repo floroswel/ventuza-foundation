@@ -88,6 +88,12 @@ function PublicProfilePage() {
       setLoadError(error ? (error.message || error.code || "unknown") : null);
       setProfile(data ?? null);
       setLoading(false);
+      // Vizita se înregistrează aici (o singură dată pe oră, niciodată pe
+      // propriul profil) ca să apară în tab-ul „Vizite" al celuilalt.
+      if (data?.id) {
+        const { logProfileView } = await import("@/lib/discover");
+        void logProfileView(data.id as string).catch(() => {});
+      }
       const paths: string[] = Array.isArray(data?.photos) ? data.photos : [];
       if (paths.length) {
         const urls: string[] = [];

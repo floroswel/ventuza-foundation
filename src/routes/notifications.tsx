@@ -10,6 +10,7 @@ import {
   Heart,
   Loader2,
   Lock,
+  Megaphone,
   MessageCircle,
   Star,
 
@@ -42,7 +43,8 @@ const ICONS: Record<NotificationType, React.ComponentType<{ className?: string }
   tap: Hand,
   like: Heart,
   favorite: Star,
-
+  admin_message: Bell,
+  partner_broadcast: Megaphone,
 };
 
 function timeAgo(iso: string) {
