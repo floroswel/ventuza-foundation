@@ -329,6 +329,8 @@ function Landing() {
               </>
             )}
           </p>
+
+          <DownloadQr />
         </section>
 
         {/* 3 — Galerie de ecrane */}
