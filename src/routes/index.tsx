@@ -478,6 +478,76 @@ function Landing() {
           </p>
         </section>
 
+        {/* Community resources — echivalentul „Community Resources" de la Grindr/Hornet */}
+        <section className="mt-14" id="community-resources">
+          <Eyebrow>Community</Eyebrow>
+          <SectionTitle>Community resources and help</SectionTitle>
+          <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
+            If you are in danger, being harassed or need support, you do not have to handle it
+            alone. In Romania you can reach:
+          </p>
+          <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+            <li className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-semibold tracking-tight">Emergency — 112</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                Immediate danger, violence or a medical emergency. Free, 24/7.
+              </p>
+            </li>
+            <li className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-semibold tracking-tight">ACCEPT Romania</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                LGBTQ+ rights, legal advice and psychological support.{" "}
+                <a
+                  className="text-primary hover:underline"
+                  href="https://acceptromania.ro/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  acceptromania.ro
+                </a>
+              </p>
+            </li>
+            <li className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-semibold tracking-tight">ARAS</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                Free, confidential HIV and STI testing and counselling.{" "}
+                <a
+                  className="text-primary hover:underline"
+                  href="https://arasnet.ro/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  arasnet.ro
+                </a>
+              </p>
+            </li>
+            <li className="rounded-xl border border-border bg-card p-4">
+              <h3 className="text-sm font-semibold tracking-tight">Suzeta support</h3>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+                Report an account, ask about your data or get help with the app.{" "}
+                <Link to="/contact" className="text-primary hover:underline">
+                  Contact us
+                </Link>
+              </p>
+            </li>
+          </ul>
+          <p className="mt-4 text-sm">
+            <Link to="/safety" className="text-primary hover:underline">
+              Safety guide
+            </Link>{" "}
+            ·{" "}
+            <Link to="/legal/transparency-report" className="text-primary hover:underline">
+              Transparency report
+            </Link>{" "}
+            ·{" "}
+            <Link to="/status" className="text-primary hover:underline">
+              Service status
+            </Link>
+          </p>
+        </section>
+
+
+
         <section className="mt-12" id="account-deletion">
           <SectionTitle>Account deletion</SectionTitle>
           <p className="mt-3 max-w-[65ch] text-sm leading-relaxed text-muted-foreground">
