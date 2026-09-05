@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useRef, useState, type ReactNode 
 import type { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { linkOrphanBusinessApps } from "@/lib/business.functions";
+import { readCachedSession } from "@/lib/cached-session";
 
 type AuthCtx = {
   user: User | null;
@@ -18,9 +19,16 @@ const Ctx = createContext<AuthCtx>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState(true);
+  // Fast path: dacă sesiunea e deja pe device și validă, pornim direct logat.
+  // Fără asta, aplicația stă pe splash până răspunde bridge-ul nativ / rețeaua.
+  const cached = useRef<Session | null>(null);
+  if (cached.current === null && typeof window !== "undefined") {
+    cached.current = readCachedSession();
+  }
+  const [session, setSession] = useState<Session | null>(cached.current);
+  const [loading, setLoading] = useState(!cached.current);
   const linkedRef = useRef<string | null>(null);
+
 
   useEffect(() => {
     let cancelled = false;
@@ -61,8 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     // Listener first so we never miss an event.
+    let bootstrapped = false;
     const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
       if (cancelled) return;
+      // Un `null` la boot (INITIAL_SESSION emis înainte ca storage-ul să
+      // răspundă) nu trebuie să șteargă sesiunea deja restaurată din cache.
+      if (!s && !bootstrapped && _event !== "SIGNED_OUT") return;
       setSession(s);
       // Un eveniment fără sesiune la boot NU înseamnă "delogat": poate fi
       // INITIAL_SESSION emis înainte ca storage-ul nativ să răspundă.
@@ -90,7 +102,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       () => {
         if (!cancelled) setLoading(false);
       },
-      native ? 9_000 : 2_500,
+      native ? 4_000 : 2_000,
     );
     const withTimeout = <T,>(p: Promise<T>, ms: number) =>
       Promise.race([
@@ -103,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     void (async () => {
       let restored: Session | null = null;
       try {
-        const { data } = await withTimeout(supabase.auth.getSession(), native ? 7_000 : 5_000);
+        const { data } = await withTimeout(supabase.auth.getSession(), native ? 6_000 : 4_000);
         restored = data.session ?? null;
       } catch {
         restored = null;
@@ -120,8 +132,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       }
       if (cancelled) return;
+      bootstrapped = true;
       window.clearTimeout(loadingGuard);
-      setSession((current) => current ?? restored);
+      setSession((current) => restored ?? current);
       setLoading(false);
       maybeLinkBiz(restored);
     })();
