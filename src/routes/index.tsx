@@ -22,6 +22,8 @@ import { getInstallCtaVariant, installCtaLabel } from "@/lib/install-ab-test";
 import { FunnelDebugOverlay } from "@/components/FunnelDebugOverlay";
 import { GetAppBanner } from "@/components/GetAppBanner";
 import { AppPreviewMockups } from "@/components/landing/AppPreviewMockups";
+import { PublicHeader } from "@/components/landing/PublicHeader";
+import { DownloadQr } from "@/components/landing/DownloadQr";
 
 
 import { useAuth } from "@/lib/auth-context";
@@ -256,6 +258,7 @@ function Landing() {
 
   return (
     <div className="min-h-dvh overflow-x-hidden bg-background text-foreground">
+      <PublicHeader />
       <main className="mx-auto w-full max-w-3xl px-6 py-12">
         {/* 1 — Hero */}
         <section className="flex flex-col items-center text-center">
