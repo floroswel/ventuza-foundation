@@ -28,20 +28,21 @@ export type NotificationRow = {
 };
 
 /**
- * Clopoțelul afișează TOT (tap, like, favorite, match, vizite, albume,
- * evenimente…), mai puțin mesajele — acelea trăiesc în tab-ul Mesaje.
- * Regulă permanentă.
+ * Clopoțelul păstrează DOAR notificările „de sistem": mesaje de la echipă,
+ * rezultatul rapoartelor/moderării, oferte și anunțuri de la parteneri, cereri
+ * de acces la albume private și evenimente.
+ *
+ * Interacțiunile sociale (match, tap, like, favorite, vizite) NU mai apar în
+ * clopoțel — ele trăiesc în ecranul Potriviri (tab-urile Potriviri / Vizite /
+ * Tap-uri / Favoriți). Mesajele trăiesc în tab-ul Mesaje.
  */
 export const BELL_TYPES: NotificationType[] = [
-  "match",
-  "profile_view",
+  "admin_message",
+  "partner_broadcast",
   "album_request",
   "album_granted",
   "event_rsvp",
   "event_reminder",
-  "tap",
-  "like",
-  "favorite",
 ];
 
 
