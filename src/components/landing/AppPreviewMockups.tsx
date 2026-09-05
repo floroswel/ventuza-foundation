@@ -70,20 +70,20 @@ function ChatPreview() {
       </div>
       <div className="flex flex-1 flex-col gap-1.5 p-2">
         <span className="self-center rounded-full bg-muted px-2 py-0.5 text-[8px] text-muted-foreground">
-          Azi
+          Today
         </span>
         <span className="max-w-[80%] self-start rounded-xl rounded-bl-sm bg-muted px-2 py-1 text-[9px] leading-snug">
-          Salut! Cum e seara ta?
+          Hey! How is your evening?
         </span>
         <span className="max-w-[80%] self-end rounded-xl rounded-br-sm bg-primary px-2 py-1 text-[9px] leading-snug text-primary-foreground">
-          Liniștită. Bem o cafea mâine?
+          Quiet. Coffee tomorrow?
         </span>
         <span className="flex items-center gap-0.5 self-end text-[7px] text-muted-foreground">
-          Citit <Check className="size-2" aria-hidden />
+          Read <Check className="size-2" aria-hidden />
         </span>
       </div>
       <div className="m-2 rounded-full border border-border px-2 py-1 text-[8px] text-muted-foreground">
-        Scrie un mesaj…
+        Write a message…
       </div>
     </>
   );
@@ -91,16 +91,16 @@ function ChatPreview() {
 
 function PrivacyPreview() {
   const rows = [
-    { label: "Ascunde vârsta", on: true },
-    { label: "Ascunde distanța", on: true },
-    { label: "Mod discret", on: false },
-    { label: "Notificări", on: true },
+    { label: "Hide age", on: true },
+    { label: "Hide distance", on: true },
+    { label: "Discreet mode", on: false },
+    { label: "Notifications", on: true },
   ];
   return (
     <>
       <div className="flex items-center gap-1 border-b border-border px-2 py-2">
         <EyeOff className="size-3 text-primary" aria-hidden />
-        <span className="text-[10px] font-semibold tracking-tight">Confidențialitate</span>
+        <span className="text-[10px] font-semibold tracking-tight">Privacy</span>
       </div>
       <ul className="flex flex-col gap-1.5 p-2">
         {rows.map((r) => (
@@ -119,7 +119,7 @@ function PrivacyPreview() {
         ))}
       </ul>
       <p className="mt-auto border-t border-border p-2 text-[8px] leading-snug text-muted-foreground">
-        Coordonatele exacte nu părăsesc niciodată contul tău.
+        Your exact coordinates never leave your account.
       </p>
     </>
   );
@@ -134,10 +134,10 @@ function MatchPreview() {
       </div>
       <ul className="flex flex-col">
         {[
-          ["A", "Potrivire nouă", "acum"],
-          ["R", "Ți-a dat tap", "12 min"],
-          ["V", "Ți-a vizitat profilul", "1 h"],
-          ["D", "Te-a salvat la favorite", "3 h"],
+          ["A", "New match", "now"],
+          ["R", "Sent you a tap", "12 min"],
+          ["V", "Viewed your profile", "1 h"],
+          ["D", "Saved you to favourites", "3 h"],
         ].map(([i, t, s]) => (
           <li key={t} className="flex items-center gap-2 border-b border-border px-2 py-2">
             <span className="flex size-5 items-center justify-center rounded-full bg-muted text-[9px] font-bold text-muted-foreground">
