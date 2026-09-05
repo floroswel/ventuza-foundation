@@ -1,6 +1,6 @@
 {
-  "versionName": "1.0.94",
-  "versionCode": 104,
+  "versionName": "1.0.95",
+  "versionCode": 105,
   "track": "internal",
   "status": "completed",
   "notes": "Notificări push cu aplicația închisă, date/ore în limba aleasă, Discover mai rapid, mod Explorer mai stabil, widget pentru ecranul principal.",
